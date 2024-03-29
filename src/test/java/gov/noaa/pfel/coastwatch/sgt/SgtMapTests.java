@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
@@ -21,8 +21,6 @@ import tags.TagFontDependent;
 
 class SgtMapTests {
   private final static String testImageExtension = ".png";
-
-  private final static String expectedDir = SgtMapTests.class.getResource("/data/images/").getPath() + "/";
 
   @BeforeAll
   static void init() {
@@ -49,14 +47,14 @@ class SgtMapTests {
       testBathymetryMap(true, (Graphics2D) bufferedImage.getGraphics(),
           0, 0, 480, 480, region, 0, 1);
       String fileName = "SgtMapTestBathymetry" + region;
-      String tName = SSR.getTempDirectory() + fileName + testImageExtension;
+      String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + fileName + testImageExtension;
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
       // Test.displayInBrowser("file://" + tName);
-      Image2.testImagesIdentical(
+      Image2Tests.testImagesIdentical(
           tName,
-          expectedDir + fileName + ".png",
-          File2.getSystemTempDirectory() + fileName + "_diff.png");
+          fileName + ".png",
+          fileName + "_diff.png");
     }
   }
 
@@ -78,15 +76,15 @@ class SgtMapTests {
       testBathymetryMap(false, (Graphics2D) bufferedImage.getGraphics(),
           0, 0, 480, 480, region, 0, 1);
       String baseName = "SgtMapTestTopography" + region;
-      String tName = SSR.getTempDirectory() + baseName + testImageExtension;
+      String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName + testImageExtension;
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
       // String2.log("displaying " + tName);
       // Test.displayInBrowser("file://" + tName);
-      Image2.testImagesIdentical(
+      Image2Tests.testImagesIdentical(
           tName,
-          expectedDir + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+          baseName + ".png",
+          baseName + "_diff.png");
     }
   }
 
@@ -120,13 +118,13 @@ class SgtMapTests {
       int regionsResult[] = SgtMap.makeRegionsMap(
           classRB2.getInt("regionMapMaxWidth", 228),
           classRB2.getInt("regionMapMaxHeight", 200),
-          regionInfo, SSR.getTempDirectory(), baseName + testImageExtension);
-      // Test.displayInBrowser("file://" + SSR.getTempDirectory() +
+          regionInfo, Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR), baseName + testImageExtension);
+      // Test.displayInBrowser("file://" + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
       // "tempRegionsMap" + testImageExtension);
-      Image2.testImagesIdentical(
-          SSR.getTempDirectory() + baseName + testImageExtension,
-          expectedDir + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          baseName + testImageExtension,
+          baseName + ".png",
+          baseName + "_diff.png");
 
       // these match the sizes in CWBrowser.properties
       int imageWidths[] = new int[] { 240, 480, 720 }; // these were updated 9/1/06
@@ -135,9 +133,9 @@ class SgtMapTests {
       int pdfHeights[] = new int[] { 780, 980, 1280 }; // 9*144
       String regionNames[] = new String[] { "_C2_", "_C_", "_USMexico_", };
 
-      // make SSR.getTempDirectory() + temp + testImageExtension
+      // make Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + temp + testImageExtension
       baseName = "SgtMapBasicTestA";
-      tName = SSR.getTempDirectory() + baseName + testImageExtension;
+      tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName + testImageExtension;
       File2.delete(tName); // old version? delete it
       bufferedImage = SgtUtil.getBufferedImage(imageWidths[1], imageHeights[1]);
       testMakeMap((Graphics2D) bufferedImage.getGraphics(), "over",
@@ -146,10 +144,10 @@ class SgtMapTests {
       SgtUtil.saveImage(bufferedImage, tName);
       // Test.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" +
       // testImageExtension);
-      Image2.testImagesIdentical(
+      Image2Tests.testImagesIdentical(
           tName,
-          expectedDir + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+          baseName + ".png",
+          baseName + "_diff.png");
 
       // test of properly created maps and test for memory leak (testForMemoryLeak)
       // make a series of images and .pdf's:
@@ -163,7 +161,7 @@ class SgtMapTests {
           for (int size = (allSizes ? 0 : 1); size < (allSizes ? 3 : 2); size++) {
 
             baseName = "SgtMapBasicTest" + regionNames[region] + size;
-            tName = SSR.getTempDirectory() + baseName + testImageExtension;
+            tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName + testImageExtension;
             File2.delete(tName); // old version? delete it
             bufferedImage = SgtUtil.getBufferedImage(imageWidths[size], imageHeights[size]);
             testMakeMap((Graphics2D) bufferedImage.getGraphics(), "over",
@@ -175,10 +173,10 @@ class SgtMapTests {
             if (showInBrowser && rep == 0 && region == 2 && size == 1) {
               String2.log("displaying " + tName);
               // Test.displayInBrowser("file://" + tName);
-              Image2.testImagesIdentical(
+              Image2Tests.testImagesIdentical(
                   tName,
-                  expectedDir + baseName + ".png",
-                  File2.getSystemTempDirectory() + baseName + "_diff.png");
+                  baseName + ".png",
+                  baseName + "_diff.png");
             }
 
             // make a pdf file
@@ -186,7 +184,7 @@ class SgtMapTests {
             // make y smaller, looks goofy to have huge legend, but not small enough to
             // reduce width
             String2.log("\n*** Test SgtUtil.createPdf");
-            tName = SSR.getTempDirectory() + "temp" + regionNames[region] + size + ".pdf";
+            tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + "temp" + regionNames[region] + size + ".pdf";
             File2.delete(tName); // old version? delete it
             Object oar[] = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT,
                 pdfWidths[size], pdfHeights[size], tName);
@@ -212,7 +210,7 @@ class SgtMapTests {
       long lpr = (using - baseMemory) / nReps;
       String2.log("\n**** SgtMap test for memory leak: nReps=" + nReps +
           " memoryUsing=" + using + " leak/rep=" + lpr +
-          "\n-> See all the " + SSR.getTempDirectory() +
+          "\n-> See all the " + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
           "tempXXX" + testImageExtension + " and .pdf files." +
           "\nPress CtrlBreak in console window to generate hprof heap info.");
       if (lpr > 0)
@@ -225,15 +223,15 @@ class SgtMapTests {
     testMakeMap((Graphics2D) bufferedImage.getGraphics(), "over",
         0, 0, 600, 600, 2, 0, 1);
     baseName = "SgtMapBasicTestTransparent";
-    tName = SSR.getTempDirectory() + baseName;
+    tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName;
     File2.delete(tName);
     SgtUtil.saveAsTransparentPng(bufferedImage, SgtMap.oceanColor, tName);
     // String2.log(" transparentName = " + tName);
     // Test.displayInBrowser("file://" + tranName + ".png");
-    Image2.testImagesIdentical(
+    Image2Tests.testImagesIdentical(
         tName + ".png",
-        expectedDir + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+        baseName + ".png",
+        baseName + "_diff.png");
 
   }
 
@@ -283,14 +281,14 @@ class SgtMapTests {
       g.drawLine(size, 0, size, size * 2);
       g.drawLine(size * 2, 0, size * 2, size * 2);
       String baseName = "SgtMapTestMakeCleanMap" + im;
-      String tName = SSR.getTempDirectory() + baseName;
+      String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseName;
       File2.delete(tName + ".png");
       SgtUtil.saveAsTransparentPng(bufferedImage, null, tName); // oceanColor?
       // Test.displayInBrowser("file://" + tName + ".png");
-      Image2.testImagesIdentical(
+      Image2Tests.testImagesIdentical(
           tName + ".png",
-          expectedDir + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+          baseName + ".png",
+          baseName + "_diff.png");
     }
 
   }
@@ -321,7 +319,7 @@ class SgtMapTests {
         { "0x00FFFFFF", "" + minX, "" + maxX, "" + minY, "" + maxY, "" + (-150 + offset), "10", "World" },
         { "0x30FF00FF", "" + (-135 + offset), "" + (-105 + offset), "22", "50",
             "" + (-131 + offset), "25", "US+Mexico" } };
-    String dir = "c:/temp/";
+    String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     String baseName = "SgtMapTestRegionsMapW" + minX + "E" + maxX + "S" + minY + "N" + maxY;
     String name = baseName + testImageExtension;
 
@@ -331,10 +329,10 @@ class SgtMapTests {
     // view it
     // ImageViewer.display("SgtMap", image);
     // Test.displayInBrowser("file://" + dir + name);
-    Image2.testImagesIdentical(
-        dir + name,
-        expectedDir + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        name,
+        baseName + ".png",
+        baseName + "_diff.png");
 
   }
 
@@ -510,7 +508,7 @@ class SgtMapTests {
     for (int i = first; i <= last; i++) { // 0..7
       BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 500);
       Grid bath = SgtMap.createTopographyGrid(
-          SSR.getTempDirectory(),
+          Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
           cx[i] - inc[i], cx[i] + inc[i], cy[i] - inc[i], cy[i] + inc[i],
           460, 460);
       SgtMap.makeMap(false,
@@ -531,15 +529,15 @@ class SgtMapTests {
           0, // no boundaryResAdjust,
           1);
       String fileName = "SgtMapOceanPalette" + i;
-      String tName = SSR.getTempDirectory() + fileName + ".png";
+      String tName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + fileName + ".png";
       File2.delete(tName); // old version? delete it
       SgtUtil.saveImage(bufferedImage, tName);
       String2.log("displaying " + tName);
       // Test.displayInBrowser("file://" + tName);
-      Image2.testImagesIdentical(
+      Image2Tests.testImagesIdentical(
           tName,
-          expectedDir + fileName + ".png",
-          File2.getSystemTempDirectory() + fileName + "_diff.png");
+          fileName + ".png",
+          fileName + "_diff.png");
     }
 
   }

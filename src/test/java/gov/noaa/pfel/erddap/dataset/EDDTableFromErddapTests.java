@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -26,6 +26,7 @@ class EDDTableFromErddapTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -366,12 +367,12 @@ class EDDTableFromErddapTests {
     // test .png
     String baseName = "EDDTableFromErddap_GraphM_" + tRedirect;
     tName = baseName + ".png";
-    SSR.downloadFile(url + ".png?" + mapDapQuery, dir + tName, true);
+    SSR.downloadFile(url + ".png?" + mapDapQuery, Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + tName, true);
     // Test.displayInBrowser("file://" + dir + tName);
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
   } // end of testBasic
 

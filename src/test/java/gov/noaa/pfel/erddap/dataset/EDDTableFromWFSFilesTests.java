@@ -23,6 +23,7 @@ class EDDTableFromWFSFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**

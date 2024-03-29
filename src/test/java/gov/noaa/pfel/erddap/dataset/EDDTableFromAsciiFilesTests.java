@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import com.cohort.array.Attributes;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -30,6 +30,7 @@ class EDDTableFromAsciiFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -524,12 +525,12 @@ class EDDTableFromAsciiFilesTests {
       dapQuery = "longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
       String baseName = eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test;
       tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery,
-          dir, baseName, ".png");
+          Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR), baseName, ".png");
       // Test.displayInBrowser("file://" + dir + tName);
-      Image2.testImagesIdentical(
-          dir + tName,
-          String2.unitTestImagesDir() + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          tName,
+          baseName + ".png",
+          baseName + "_diff.png");
     }
 
     EDD.debugMode = oDebugMode;
@@ -1429,7 +1430,9 @@ class EDDTableFromAsciiFilesTests {
         useLocal + "", catalogUrl, dataDir, numberRegex, "-1" }, // defaultStandardizeWhat
         false); // doIt loop?
 
-    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo549122v20150217\" active=\"true\">\n"
+    String suggDatasetID = "bcodmo549122v20150217";
+    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID
+        + "\" active=\"true\">\n"
         +
         "    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
         "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +
@@ -2375,9 +2378,10 @@ class EDDTableFromAsciiFilesTests {
         "", // tSortFilesBySourceNames,
         "", "", "", "", 2048, "", null); // info, institution, summary, title,
                                          // standardizeWhat=2048, cacheFromUrl, atts
+    String suggDatasetID = EDDTableFromAsciiFiles.suggestDatasetID(dataDir + "standardizeWhat.*\\.csv");
     expected = "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
         "  below, notably 'units' for each of the dataVariables. -->\n" +
-        "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"ascii_a194_ca4d_a781\" active=\"true\">\n"
+        "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
@@ -2531,7 +2535,9 @@ class EDDTableFromAsciiFilesTests {
         xmlFile, "", "" + whichChild, dataDir, fileName, "-1" }, // defaultStandardizeWhat
         false); // doIt loop?
 
-    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938\" active=\"true\">\n"
+    String suggDatasetID = "afscInPort26938";
+    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID
+        + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
         "    <fileDir>" + dataDir + "/26938/</fileDir>\n" +
@@ -2692,7 +2698,8 @@ class EDDTableFromAsciiFilesTests {
         xmlFile, "", "" + whichChild, dataDir, fileName, "-1" }, // defaultStandardizeWhat
         false); // doIt loop?
 
-    expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938ce26939\" active=\"true\">\n"
+    suggDatasetID = "afscInPort26938ce26939";
+    expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
         "    <fileDir>" + dataDir + "/26938/</fileDir>\n" +
@@ -3686,7 +3693,9 @@ class EDDTableFromAsciiFilesTests {
         xmlFile, xmlDir, "" + whichChild, dataDir, "", "-1" }, // defaultStandardizeWhat
         false); // doIt loop?
 
-    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377\" active=\"true\">\n"
+    String suggDatasetID = "akroInPort27377";
+    String expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID
+        + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
         "    <fileDir>" + dataDir + "/27377/</fileDir>\n" +
@@ -3897,7 +3906,8 @@ class EDDTableFromAsciiFilesTests {
         xmlFile, xmlDir, "" + whichChild, dataDir, dataFile, "-1" }, // defaultStandardizeWhat
         false); // doIt loop?
 
-    expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377c1\" active=\"true\">\n"
+    suggDatasetID = "akroInPort27377c1";
+    expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
         "    <fileDir>" + dataDir + "/27377/</fileDir>\n" +
@@ -4893,9 +4903,10 @@ class EDDTableFromAsciiFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
+    suggDatasetID = EDDTableFromAsciiFiles.suggestDatasetID(destDir + "latest41004.csv");
     String expected = "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
         "  below, notably 'units' for each of the dataVariables. -->\n" +
-        "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"Temp_020b_ee27_51e8\" active=\"true\">\n"
+        "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +

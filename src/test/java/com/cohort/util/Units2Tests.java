@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 
+import gov.noaa.pfel.erddap.dataset.EDD;
 import tags.TagIncompleteTest;
 import ucar.units.Unit;
 
@@ -22,6 +23,7 @@ class Units2Tests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+EDD.debugMode = true;
   }
 
   /**

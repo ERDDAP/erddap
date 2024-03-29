@@ -28,6 +28,7 @@ class EDDTableFromFileNamesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -47,7 +48,8 @@ class EDDTableFromFileNamesTests {
     String tSummary = "Images from JPL MUR SST Daily.";
     String tTitle = "JPL MUR SST Images";
     // datasetID changes with different unitTestDataDir
-    String tDatasetID = "fileNames_7527_f8c6_13b7";
+    String tDatasetID = EDDTableFromFileNames.suggestDatasetID(tDir + "/" + tRegex + "(EDDTableFromFileNames)");
+
     String expected = "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
         "    <fileDir>" + tDir + "/</fileDir>\n" +
         "    <fileNameRegex>.*\\.png</fileNameRegex>\n" +
@@ -209,7 +211,7 @@ class EDDTableFromFileNamesTests {
     String tInstitution = "NASA Earth Exchange";
     String tSummary = "My great summary";
     String tTitle = "My Great Title";
-    String tDatasetID = "s3nasanex_38fd_82f7_2ede";
+    String tDatasetID = EDDTableFromFileNames.suggestDatasetID(tDir + "/" + tRegex + "(EDDTableFromFileNames)");
     String expected = "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
         "    <fileDir>" + tDir + "/</fileDir>\n" +
         "    <fileNameRegex>" + tRegex + "</fileNameRegex>\n" +
@@ -368,7 +370,7 @@ class EDDTableFromFileNamesTests {
     String tInstitution = "NOAA";
     String tSummary = "My great summary";
     String tTitle = "My Great Title";
-    String tDatasetID = "noaa_goes17_s3_us_east_1_amazonaws_com_7dc2_0874_d8a7";
+    String tDatasetID = EDDTableFromFileNames.suggestDatasetID(tDir + tRegex + "(EDDTableFromFileNames)");
     String results = EDDTableFromFileNames.generateDatasetsXml(tDir, tRegex, tRecursive, -1,
         tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
     String expected = "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
@@ -1035,7 +1037,7 @@ class EDDTableFromFileNamesTests {
     String tInstitution = "NOAA";
     String tSummary = ""; // test the auto-generated summary
     String tTitle = ""; // test the auto-generated title
-    String tDatasetID = "noaa_goes17_s3_us_east_1_amazonaws_com_b19f_eecd_cc72";
+    String tDatasetID = EDDTableFromFileNames.suggestDatasetID(tDir + "/" + tRegex + "(EDDTableFromFileNames)");
     String results = EDDTableFromFileNames.generateDatasetsXml(tDir, tRegex, tRecursive, -1,
         tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
     String expected = "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +

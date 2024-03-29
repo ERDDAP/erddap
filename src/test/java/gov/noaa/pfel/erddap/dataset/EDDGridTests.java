@@ -10,7 +10,7 @@ import java.util.HashMap;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -27,6 +27,7 @@ class EDDGridTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -42,7 +43,7 @@ class EDDGridTests {
     // EDDGrid eddGrid = (EDDGrid) EDDGrid.oneFromDatasetsXml(null,
     // "erdMHchla8day");
     int language = 0;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     // String requestUrl = "/erddap/griddap/erdMHchla8day.transparentPng";
     String userDapQueryTemplate = "MWchla%5B(2022-01-16T12:00:00Z):1:(2022-01-16T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
     String baseName, tName;
@@ -55,10 +56,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Invalid min y.
     baseName = "EDDGrid_testSaveAsImage_invalidMinY";
@@ -67,10 +68,10 @@ class EDDGridTests {
                                                                         // maxLat, minLon,
                                                                         // maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // 2020-08-03 For tests below, some generated images have data, some don't,
     // but results seem inconsistent.
@@ -83,10 +84,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220), // #'s are minLat,
                                                                        // maxLat, minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // All invalid.
     baseName = "EDDGrid_testSaveAsImage_allInvalid";
@@ -95,10 +96,10 @@ class EDDGridTests {
                                                                           // maxLat, minLon,
                                                                           // maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Out of range min x.
     baseName = "EDDGrid_testSaveAsImage_OORMinX";
@@ -106,10 +107,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 40, 200, 210), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Out of range max x.
     baseName = "EDDGrid_testSaveAsImage_OORMaxX";
@@ -117,10 +118,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 40, 250, 260), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Out of range min y.
     baseName = "EDDGrid_testSaveAsImage_OORMinY";
@@ -128,10 +129,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 20, 30, 210, 220), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Out of range max y.
     baseName = "EDDGrid_testSaveAsImage_OORMaxY";
@@ -139,10 +140,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 50, 60, 210, 220), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Fully out of range min x.
     baseName = "EDDGrid_testSaveAsImage_FOORMinX";
@@ -150,10 +151,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 40, 190, 200), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Fully out of range max x.
     baseName = "EDDGrid_testSaveAsImage_FOORMaxX";
@@ -161,10 +162,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 30, 40, 260, 270), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Fully out of range min y.
     baseName = "EDDGrid_testSaveAsImage_FOORMinY";
@@ -172,10 +173,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 10, 20, 210, 220), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
     // Fully out of range max y.
     baseName = "EDDGrid_testSaveAsImage_FOORMaxY";
@@ -183,10 +184,10 @@ class EDDGridTests {
         MessageFormat.format(userDapQueryTemplate, 60, 70, 210, 220), // #'s are minLat, maxLat,
                                                                       // minLon, maxLon
         dir, baseName, ".transparentPng");
-    Image2.testImagesIdentical(
-        dir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
   }
 

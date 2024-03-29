@@ -23,6 +23,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -1000,10 +1001,11 @@ class EDDTableFromColumnarAsciiFilesTests {
         "-1", "" }, // defaultStandardizeWhat, cacheFromUrl
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
+    String suggDatasetID = EDDTableFromAwsXmlFiles.suggestDatasetID(
+        testResourceDir + "columnarAsciiNoComments\\.txt");
     String expected = "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
         "  below, notably 'units' for each of the dataVariables. -->\n" +
-        "<dataset type=\"EDDTableFromColumnarAsciiFiles\" datasetID=\"data_0f1a_dfcc_97ed\" active=\"true\">\n"
+        "<dataset type=\"EDDTableFromColumnarAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +

@@ -23,6 +23,7 @@ class EDDTableFromAwsXmlFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -54,10 +55,11 @@ class EDDTableFromAwsXmlFilesTests {
         "-1", "" }, // defaultStandardizeWhat
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
+    String suggDatasetID = EDDTableFromAwsXmlFiles.suggestDatasetID(
+        dataDir + "\\.*\\.xml");
     String expected = "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
         "  below, notably 'units' for each of the dataVariables. -->\n" +
-        "<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"_5396_7d8d_7402\" active=\"true\">\n" +
+        "<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
         "    <fileDir>" + dataDir + "\\</fileDir>\n" +

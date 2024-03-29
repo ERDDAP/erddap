@@ -25694,4 +25694,14127 @@ public class EDDTestDataset {
             "    </dataVariable>\n" + //
             "</dataset>");
   }
+
+  public static EDD getnosCoopsWLR6() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLR6\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelrawsixmin/plain/response.jsp?unit=0&amp;timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Meters</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time    WL      Sigma   O F R L&lt;/b&gt;</beforeData3>    <beforeData4>==========================================================================================================</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID,deployment,longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, change, co-ops, coastal, collection, count, data, date, datum, deployment, designation, deviation, due, established, flag, flat, geocentric, height, identifier, level, limit, minute, name, noaa, nos, ocean, oceans, ops, outlier, platform, preliminary, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, sensor, shef_id, shefID, standard, state, station, surface, tidal, tide, tides, time, tolerance, topography, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These raw data have not been subjected to the National Ocean Service's quality control\n" + //
+            "or quality assurance procedures and do not meet the criteria and standards of\n" + //
+            "official National Ocean Service data. They are released for limited public use as\n" + //
+            "preliminary data to be used only with appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has recent, preliminary (not quality-controlled), 6-minute, water level\n" + //
+            "(tide) data from NOAA NOS Center for Operational Oceanographic Products and Services\n" + //
+            "(CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These raw data have not been subjected to the National Ocean Service's\n" + //
+            "quality control or quality assurance procedures and do not meet the criteria and\n" + //
+            "standards of official National Ocean Service data. They are released for limited\n" + //
+            "public use as preliminary data to be used only with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, datum=, time&gt;=.\n" + //
+            "* Queries for data USUALLY include time&lt;=.\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "  The default time&lt;= value corresponds to 'now'.\n" + //
+            "* Different stations support different datums.\n" + //
+            "  Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Make sure the station you specified supports the datum you specified.\n" + //
+            "  * Try revising the request (e.g., a different datum or a different time range).\n" + //
+            "  * The list of stations offering this data (or the list of datums) may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Preliminary, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "ID      D S  Date       Time    WL      Sigma   O F R L\n" + //
+            "==========================================================================================================\n"
+            + //
+            "9414290 1 NT 2010-11-10 05:00   4.145   0.092     0 0 0 -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datum</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=\".\n" + //
+            "Different stations support different datums.\n" + //
+            "Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  The possible datums are:\n" + //
+            "DATUM  DESCRIPTION\n" + //
+            "DHQ    Mean Diurnal High Water Inequality\n" + //
+            "DLQ    Mean Diurnal Low  Water Inequality\n" + //
+            "DTL    Mean Diurnal Tide Level\n" + //
+            "GT     Great Diurnal Range\n" + //
+            "HWI    Greenwich High Water Interval (in Hours)\n" + //
+            "LWI    Greenwich Low  Water Interval (in Hours)\n" + //
+            "MHHW   Mean Higher-High Water\n" + //
+            "MHW    Mean High Water\n" + //
+            "MLLW   Mean Lower-Low Water\n" + //
+            "MLW    Mean Low Water\n" + //
+            "MN     Mean Range of Tide\n" + //
+            "MSL    Mean Sea Level\n" + //
+            "MTL    Mean Tide Level\n" + //
+            "NAVD   North American Vertical Datum\n" + //
+            "STND   Station Datum\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 37</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sigma</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"comment\">Standard deviation of 1 second samples used to compute the water level height</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Standard Deviation of Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">38, 44</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>O</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"short\">32767</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">The number of samples that fall outside a 3-sigma band about the mean</att>\n"
+            + //
+            "            <att name=\"long_name\">Outlier Count</att>\n" + //
+            "            <att name=\"units\">count</att>\n" + //
+            "            <att name=\"responseSubstring\">46, 48</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>F</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the flat tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Flat Tolerance Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">50, 51</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Change Tolerance Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">52, 53</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>L</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">54, 55</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLR1() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLR1\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelrawonemin/plain/response.jsp?unit=0&amp;timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <!-- Latitude and Longitude are read first. Then... -->\n" + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>&lt;pre&gt;</beforeData2>\n" + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">1-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, collection, data, date, datum, deployment, designation, due, established, geocentric, height, identifier, level, minute, name, noaa, nos, ocean, oceans, ops, platform, preliminary, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, sensor, shef_id, shefID, state, station, surface, tidal, tide, tides, time, topography, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These raw data have not been subjected to the National Ocean Service's quality control\n" + //
+            "or quality assurance procedures and do not meet the criteria and standards of\n" + //
+            "official National Ocean Service data. They are released for limited public use as\n" + //
+            "preliminary data to be used only with appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has recent, preliminary (not quality-controlled), 1-minute, water level\n" + //
+            "(tide) data from NOAA NOS Center for Operational Oceanographic Products and Services\n" + //
+            "(CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These raw data have not been subjected to the National Ocean Service's\n" + //
+            "quality control or quality assurance procedures and do not meet the criteria and\n" + //
+            "standards of official National Ocean Service data. They are released for limited\n" + //
+            "public use as preliminary data to be used only with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, datum=, and time&gt;=.\n" + //
+            "* Queries for data USUALLY include time&lt;=.\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "  The default time&lt;= value corresponds to 'now'.\n" + //
+            "* Different stations support different datums.\n" + //
+            "  Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Make sure the station you specified supports the datum you specified.\n" + //
+            "  * Try revising the request (e.g., a different datum or a different time range).\n" + //
+            "  * The list of stations offering this data (or the list of datums) may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Preliminary, 1-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!-- 6 minute:\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "ID      D S  Date       Time    WL      Sigma   O F R L\n" + //
+            "==========================================================================================================\n"
+            + //
+            "9414290 1 NT 2010-11-10 05:00   4.145   0.092     0 0 0\n" + //
+            "1 minute:\n" + //
+            "9414290 1 U1 2010-11-13 21:01   0.880\n" + //
+            "-->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datum</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=\".\n" + //
+            "Different stations support different datums.\n" + //
+            "Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  The possible datums are:\n" + //
+            "DATUM  DESCRIPTION\n" + //
+            "DHQ    Mean Diurnal High Water Inequality\n" + //
+            "DLQ    Mean Diurnal Low  Water Inequality\n" + //
+            "DTL    Mean Diurnal Tide Level\n" + //
+            "GT     Great Diurnal Range\n" + //
+            "HWI    Greenwich High Water Interval (in Hours)\n" + //
+            "LWI    Greenwich Low  Water Interval (in Hours)\n" + //
+            "MHHW   Mean Higher-High Water\n" + //
+            "MHW    Mean High Water\n" + //
+            "MLLW   Mean Lower-Low Water\n" + //
+            "MLW    Mean Low Water\n" + //
+            "MN     Mean Range of Tide\n" + //
+            "MSL    Mean Sea Level\n" + //
+            "MTL    Mean Tide Level\n" + //
+            "NAVD   North American Vertical Datum\n" + //
+            "STND   Station Datum\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 37</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLV6() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLV6\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifiedsixmin/plain/response.jsp?unit=0&amp;timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Meters</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      Date       Time    WL      Sigma   I F R T&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>We are sorry</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, change, co-ops, coastal, data, date, datum, deployment, designation, deviation, due, established, flag, flat, geocentric, height, identifier, inferred, level, limit, minute, name, noaa, nos, ocean, oceans, ops, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, standard, state, station, surface, tidal, tide, tides, time, tolerance, topography, verified, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has verified (quality-controlled), 6-minute, water level (tide)\n" + //
+            "data from NOAA NOS Center for Operational Oceanographic Products and Services\n" + //
+            "(CO-OPS).  This is a delayed dataset, not a near-real-time dataset.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, datum=, time&gt;=, and time&lt;=.\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* Different stations support different datums.\n" + //
+            "  Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Make sure the station you specified supports the datum you specified.\n" + //
+            "  * Try revising the request (e.g., a different datum or a different time range).\n" + //
+            "  * The list of stations offering this data (or the list of datums) may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Verified, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "ID      Date       Time    WL      Sigma   I F R T\n" + //
+            "==========================================================================================================\n"
+            + //
+            "9414290 2010-09-06 21:00   1.034   0.021   0 0 0 0 -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 24</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datum</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=\".\n" + //
+            "Different stations support different datums.\n" + //
+            "Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  The possible datums are:\n" + //
+            "DATUM  DESCRIPTION\n" + //
+            "DHQ    Mean Diurnal High Water Inequality\n" + //
+            "DLQ    Mean Diurnal Low  Water Inequality\n" + //
+            "DTL    Mean Diurnal Tide Level\n" + //
+            "GT     Great Diurnal Range\n" + //
+            "HWI    Greenwich High Water Interval (in Hours)\n" + //
+            "LWI    Greenwich Low  Water Interval (in Hours)\n" + //
+            "MHHW   Mean Higher-High Water\n" + //
+            "MHW    Mean High Water\n" + //
+            "MLLW   Mean Lower-Low Water\n" + //
+            "MLW    Mean Low Water\n" + //
+            "MN     Mean Range of Tide\n" + //
+            "MSL    Mean Sea Level\n" + //
+            "MTL    Mean Tide Level\n" + //
+            "NAVD   North American Vertical Datum\n" + //
+            "STND   Station Datum\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">25, 32</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sigma</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"comment\">Standard deviation of 1 second samples used to compute the water level height</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Standard Deviation of Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">33, 40</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>I</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=not inferred, 1=inferred</att>\n" + //
+            "            <att name=\"long_name\">Inferred Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">43, 44</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>F</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the flat tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Flat Tolerance Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">45, 46</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Change Tolerance Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">47, 48</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>L</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">49, 50</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLV60() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLV60\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifiedhourly/plain/response.jsp?unit=0&amp;timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Meters</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      Date       Time    WL      Sigma   I L&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>No data</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, data, date, datum, deployment, designation, deviation, due, flag, established, geocentric, height, hourly, identifier, inferred, level, limit, name, noaa, nos, ocean, oceans, ops, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, standard, state, station, surface, tidal, tide, tides, time, topography, verified, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has verified (quality-controlled), hourly, water level (tide) data\n" + //
+            "from NOAA NOS Center for Operational Oceanographic Products and Services\n" + //
+            "(CO-OPS).   This is a delayed dataset, not a near-real-time dataset.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, datum=, time&gt;=, and time&lt;=.\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* Different stations support different datums.\n" + //
+            "  Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Make sure the station you specified supports the datum you specified.\n" + //
+            "  * Try revising the request (e.g., a different datum or a different time range).\n" + //
+            "  * The list of stations offering this data (or the list of datums) may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Verified, Hourly</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "ID      Date       Time    WL      Sigma   I L\n" + //
+            "==========================================================================================================\n"
+            + //
+            "9414290 2010-09-06 21:00   1.034   0.021   0 0 -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 24</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datum</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=\".\n" + //
+            "Different stations support different datums.\n" + //
+            "Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  The possible datums are:\n" + //
+            "DATUM  DESCRIPTION\n" + //
+            "DHQ    Mean Diurnal High Water Inequality\n" + //
+            "DLQ    Mean Diurnal Low  Water Inequality\n" + //
+            "DTL    Mean Diurnal Tide Level\n" + //
+            "GT     Great Diurnal Range\n" + //
+            "HWI    Greenwich High Water Interval (in Hours)\n" + //
+            "LWI    Greenwich Low  Water Interval (in Hours)\n" + //
+            "MHHW   Mean Higher-High Water\n" + //
+            "MHW    Mean High Water\n" + //
+            "MLLW   Mean Lower-Low Water\n" + //
+            "MLW    Mean Low Water\n" + //
+            "MN     Mean Range of Tide\n" + //
+            "MSL    Mean Sea Level\n" + //
+            "MTL    Mean Tide Level\n" + //
+            "NAVD   North American Vertical Datum\n" + //
+            "STND   Station Datum\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">25, 32</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sigma</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"comment\">Standard deviation of 1 second samples used to compute the water level height</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Standard Deviation of Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">33, 40</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>I</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=not inferred, 1=inferred</att>\n" + //
+            "            <att name=\"long_name\">Inferred Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">43, 44</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>L</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">45, 46</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLVHL() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLVHL\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifiedhighlow/plain/response.jsp?unit=0&amp;timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22San%20Francisco%22&amp;datum=%22STND%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Meters</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      Date       Time    WL      TY   I L&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, data, date, datum, deployment, designation, due, established, flag, geocentric, height, high, identifier, inferred, level, limit, low, name, noaa, nos, ocean, oceans, ops, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, state, station, surface, tidal, tide, tides, time, topography, verified, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has verified (quality-controlled), daily, high low water level\n" + //
+            "(tide) data from NOAA NOS Center for Operational Oceanographic Products and\n" + //
+            "Services (CO-OPS). This is a delayed dataset, not a near-real-time dataset.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, datum=, time&gt;=, and time&lt;=.\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* Different stations support different datums.\n" + //
+            "  Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Make sure the station you specified supports the datum you specified.\n" + //
+            "  * Try revising the request (e.g., a different datum or a different time range).\n" + //
+            "  * The list of stations offering this data (or the list of datums) may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Verified, High Low</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "    TY               --   Designation of Water level height.\n" + //
+            "                          HH = Higher High water, H = High water, L = low water, LL = lower low water\n" + //
+            "    I                --   A flag that indicates that the water level value has been inferred\n" + //
+            "    L                --   A flag that when set to 1 indicates that either the maximum or minimum expected water\n"
+            + //
+            "                          level height limit was exceeded\n" + //
+            "==========================================================================================================\n"
+            + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "ID      Date       Time    WL      TY   I L\n" + //
+            "==========================================================================================================\n"
+            + //
+            "\n" + //
+            "9414290 2010-09-06 18:12   1.606   H    0 0\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 24</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datum</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=\".\n" + //
+            "Different stations support different datums.\n" + //
+            "Use ERDDAP's Subset web page to find out which datums a given station supports.\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  The possible datums are:\n" + //
+            "DATUM  DESCRIPTION\n" + //
+            "DHQ    Mean Diurnal High Water Inequality\n" + //
+            "DLQ    Mean Diurnal Low  Water Inequality\n" + //
+            "DTL    Mean Diurnal Tide Level\n" + //
+            "GT     Great Diurnal Range\n" + //
+            "HWI    Greenwich High Water Interval (in Hours)\n" + //
+            "LWI    Greenwich Low  Water Interval (in Hours)\n" + //
+            "MHHW   Mean Higher-High Water\n" + //
+            "MHW    Mean High Water\n" + //
+            "MLLW   Mean Lower-Low Water\n" + //
+            "MLW    Mean Low Water\n" + //
+            "MN     Mean Range of Tide\n" + //
+            "MSL    Mean Sea Level\n" + //
+            "MTL    Mean Tide Level\n" + //
+            "NAVD   North American Vertical Datum\n" + //
+            "STND   Station Datum\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">25, 32</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>type</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"comment\">HH=Higher High water, H=High water, L=Low water, LL=Lower Low water</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Designation of Water level Height</att>\n" + //
+            "            <att name=\"responseSubstring\">35, 37</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>I</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=not inferred, 1=inferred</att>\n" + //
+            "            <att name=\"long_name\">Inferred Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>L</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLTPHL() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLTPHL\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/highlowtidepred/plain/response.jsp?unit=1&amp;timeZone=1&amp;datum=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,waterLevel&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>MLLW</beforeData2>\n" + //
+            "    <beforeData3>Meters</beforeData3>\n" + //
+            "    <beforeData4>&lt;b&gt;Date        Time    Pred   Type&lt;/b&gt;</beforeData4>\n" + //
+            "    <beforeData5>&lt;pre&gt;</beforeData5>\n" + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, data, datum, deployment, designation, due, geocentric, height, high, identifier, level, low, name, noaa, nos, ocean, oceans, ops, prediction, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, station, surface, tidal, tide, tides, time, topography, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has High Low Tide Predictions from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, time&gt;= and time&lt;=.\n" + //
+            "  Queries MUST be for less than 30 days worth of data.\n" + //
+            "* This dataset only returns data for the MLLW (Mean Lower-Low Water) datum.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, High Low Tide Prediction</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>Date        Time    Pred Type</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "11/24/2010   02:24   -0.4  L     09:24    5.2  H     15:08    0.0  L     21:59    4.4  H\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">MM/dd/yyyy HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">0, 10</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>=\"MLLW\"</sourceName>\n" + //
+            "        <destinationName>datum</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">This dataset only returns data with the MLLW (Mean Lower-Low Water) datum.</att>\n"
+            + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>waterLevel</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>type</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"comment\">H=High water, L=Low water</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Designation of Water Level Height</att>\n" + //
+            "            <att name=\"responseSubstring\">11, 10000</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLTP6() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLTP6\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?unit=0&amp;timeZone=0&amp;datum=0&amp;dataInterval=6&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,predictedWL&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>MLLW</beforeData2>\n" + //
+            "    <beforeData3>Meters</beforeData3>\n" + //
+            "    <beforeData4>6 Min</beforeData4>\n" + //
+            "    <beforeData5>&lt;b&gt;ID       Date       Time    Pred &lt;/b&gt;</beforeData5>    <beforeData6>&lt;pre&gt;</beforeData6>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, data, datum, deployment, designation, due, geocentric, height, identifier, level, minute, name, noaa, nos, ocean, oceans, ops, predicted, prediction, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, station, surface, tidal, tide, tides, time, topography, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has High Low Tide Predictions from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, time&gt;= and time&lt;=.\n" + //
+            "  Queries MUST be for less than 30 days worth of data.\n" + //
+            "* This dataset only returns data for the MLLW (Mean Lower-Low Water) datum.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Tide Prediction, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>ID       Date       Time    Pred </b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "1611400  11/22/2010 00:00   0.240\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">MM/dd/yyyy HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">9, 25</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>=\"MLLW\"</sourceName>\n" + //
+            "        <destinationName>datum</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">This dataset only returns data with the MLLW (Mean Lower-Low Water) datum.</att>\n"
+            + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>predictedWL</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Predicted Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">26, 40</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsWLTP60() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsWLTP60\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?unit=0&amp;timeZone=0&amp;datum=0&amp;dataInterval=60&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,predictedWL&amp;time%3E=now&amp;time%3C=now+7days&amp;stationName=%22San%20Francisco%22&amp;datum=%22MLLW%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>MLLW</beforeData2>\n" + //
+            "    <beforeData3>Meters</beforeData3>\n" + //
+            "    <beforeData4>60 Min</beforeData4>\n" + //
+            "    <beforeData5>&lt;b&gt;ID       Date       Time    Pred &lt;/b&gt;</beforeData5>    <beforeData6>&lt;pre&gt;</beforeData6>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude, datum</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">60-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Coastal Processes &gt; Tidal Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" + //
+            "Earth Science &gt; Oceans &gt; Tides &gt; Tidal Height,\n" + //
+            "amplitude, co-ops, coastal, data, datum, deployment, designation, due, geocentric, height, identifier, level, minute, name, noaa, nos, ocean, oceans, ops, predicted, prediction, processes, sea, sea level, sea_surface_height_amplitude_due_to_geocentric_ocean_tide, seawater, shef_id, shefID, station, surface, tidal, tide, tides, time, topography, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has High Low Tide Predictions from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "The official Tide and Tidal Current prediction tables are published annually on\n" + //
+            "October 1, for the following calendar year. Tide and Tidal Current predictions\n" + //
+            "generated prior to the publishing date of the official tables are subject to\n" + //
+            "change. The enclosed data are based upon the latest information available as of\n" + //
+            "the date of your request. Tide and Tidal Current predictions generated may\n" + //
+            "differ from the official predictions if information for the station requested\n" + //
+            "has been updated since the publishing date of the official tables.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID=, time&gt;= and time&lt;=.\n" + //
+            "  Queries MUST be for less than 30 days worth of data.\n" + //
+            "* This dataset only returns data for the MLLW (Mean Lower-Low Water) datum.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Water Level Data, Tide Prediction, 60-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>ID       Date       Time    Pred </b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "1611400  11/22/2010 00:00   0.240\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and \"time&lt;=\".</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">MM/dd/yyyy HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">9, 25</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>=\"MLLW\"</sourceName>\n" + //
+            "        <destinationName>datum</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">This dataset only returns data with the MLLW (Mean Lower-Low Water) datum.</att>\n"
+            + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>predictedWL</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Predicted Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"responseSubstring\">26, 40</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMAT() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMAT\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/airtemperature/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,AT&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Degrees Centigrade</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      AT    X N R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" + //
+            "air, air_temperature, atmosphere, atmospheric, co-ops, collection, data, date, deployment, designation, established, flag, identifier, limit, meteorological, minute, name, noaa, nos, ops, platform, sensor, shef_id, shefID, state, station, temperature, time</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Air Temperature data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Air Temperature, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>ID      D S  Date       Time      AT    X N R</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "8454000 1 D1 2010-10-24 00:00    12.1   0 0 0\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>AT</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-10</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Air Temperature</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "            <att name=\"standard_name\">air_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected air temperature was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>N</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the minimum expected air temperature was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">44, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMBP() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMBP\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/barometricpressure/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,BP&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Millibars</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      BP    X N R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,\n" + //
+            "air, air_pressure, atmosphere, atmospheric, barometric, co-ops, collection, data, date, deployment, designation, established, flag, identifier, level, limit, measurements, meteorological, minute, name, noaa, nos, ops, platform, pressure, sea, sensor, shef_id, shefID, state, static, station, time</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Barometric Pressure data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Barometric Pressure, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>BP</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">950</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1050</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "            <att name=\"long_name\">Barometric Pressure</att>\n" + //
+            "            <att name=\"standard_name\">air_pressure</att>\n" + //
+            "            <att name=\"units\">hPa</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected barometric pressure was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>N</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the minimum expected barometric pressure was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">44, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMC() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMC\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/conductivity/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Newport%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,CN&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Newport%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>mS/cm</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      CN    X N R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>No data was found</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Salinity/Density &gt; Conductivity,\n" + //
+            "co-ops, collection, conductivity, data, date, established, density, deployment, designation, electrical, flag, identifier, limit, meteorological, minute, name, noaa, nos, oceans, ops, platform, salinity, sea, sea_water_electrical_conductivity, seawater, sensor, shef_id, shefID, state, station, time, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Conductivity data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Conductivity, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CN</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"long_name\">Electrical Conductivity</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_electrical_conductivity</att>\n" + //
+            "            <att name=\"units\">mS/cm</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected conductivity was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>N</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the minimum expected conductivity was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">44, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMRF() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMRF\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22Mayaguez%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,RF&amp;time%3E=now-77days&amp;time%3C=now-70days&amp;stationName=%22Mayaguez%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>millimeters</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      RF    X R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Convection,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Precipitation &gt; Precipitation Amount,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Precipitation &gt; Rain,\n" + //
+            "amount, atmosphere, atmospheric, co-ops, collection, convection, convective, convective_rainfall_amount, data, date, deployment, designation, established, fall, flag, identifier, limit, meteorological, meteorology, minute, name, noaa, nos, ops, platform, precipitation, rain, rainfall, sensor, shef_id, shefID, state, station, time, winds</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Rain Fall data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Rain Fall, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>RF</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Meteorology</att>\n" + //
+            "            <att name=\"long_name\">Rain Fall</att>\n" + //
+            "            <att name=\"standard_name\">convective_rainfall_amount</att>\n" + //
+            "            <att name=\"units\">mm</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected rain fall was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMRH() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMRH\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/relativehumidity/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Duluth%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,RH&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Duluth%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>percentage</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      RH    X N R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" + //
+            "atmosphere, atmospheric, co-ops, collection, data, date, deployment, designation, established, flag, humidity, identifier, limit, meteorological, meteorology, minute, name, noaa, nos, ops, platform, relative, relative_humidity, sensor, shef_id, shefID, state, station, time, vapor, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Relative Humidity data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Relative Humidity, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>RH</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">20</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100</att>\n" + //
+            "            <att name=\"ioos_category\">Meteorology</att>\n" + //
+            "            <att name=\"long_name\">Relative Humidity</att>\n" + //
+            "            <att name=\"standard_name\">relative_humidity</att>\n" + //
+            "            <att name=\"units\">percent</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected relative humidity was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>N</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the minimum expected relative humidity was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">44, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMWT() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMWT\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/watertemperature/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,WT&amp;time%3E=now-1days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Degrees Centigrade</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      WT    X N R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "co-ops, collection, data, date, deployment, designation, established, flag, identifier, limit, meteorological, minute, name, noaa, nos, ocean, oceans, ops, platform, sea, sea_water_temperature, seawater, sensor, shef_id, shefID, state, station, temperature, time, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Water Temperature data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Water Temperature, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>ID      D S  Date       Time      WT    X N R</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "8454000 1 D1 2010-10-24 00:00    12.1   0 0 0\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WT</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Temperature</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 39</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected water temperature was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">40, 41</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>N</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the minimum expected water temperature was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">42, 43</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">44, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMW() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMW\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,WS&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22San%20Francisco%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Wind speed and gust in meters per second, Wind direction in degrees</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;ID      D S  Date       Time      WS     WD       WG    X R&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+            "atmosphere, atmospheric, co-ops, collection, data, date, deployment, designation, direction, established, flag, from, gust, identifier, limit, meteorological, minute, name, noaa, nos, ops, platform, sensor, shef_id, shefID, speed, state, station, surface, time, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Wind data from NOAA NOS Center for Operational Oceanographic\n" + //
+            "Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Wind, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>ID      D S  Date       Time      WS     WD       WG    X R</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "8454000 1 C1 2010-11-21 00:00     6.9     2.0    10.6   0 0\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">13, 29</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcp</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "            <att name=\"responseSubstring\">8, 9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sensor</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "            <att name=\"responseSubstring\">10, 12</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WS</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"long_name\">Wind Speed</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "            <att name=\"responseSubstring\">30, 37</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WD</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"long_name\">Wind From Direction</att>\n" + //
+            "            <att name=\"standard_name\">wind_from_direction</att>\n" + //
+            "            <att name=\"units\">degrees_true</att>\n" + //
+            "            <att name=\"responseSubstring\">38, 45</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WG</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"long_name\">Wind Speed of Gust</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed_of_gust</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "            <att name=\"responseSubstring\">46, 53</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>X</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the maximum expected wind speed was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">56, 57</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">0=okay, 1=the rate of change tolerance limit was exceeded</att>\n" + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "            <att name=\"responseSubstring\">58, 59</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsMV() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsMV\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/visibility/plain/response.jsp?timeZone=0&amp;metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Pier%2017%2C%20San%20Francisco%20Bay%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,Vis&amp;time%3E=now-7days&amp;time%3C=now&amp;stationName=%22Pier%2017%2C%20San%20Francisco%20Bay%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData2>Nautical Miles (NM)</beforeData2>\n" + //
+            "    <beforeData3>&lt;b&gt;Date       Time      Vis&lt;/b&gt;</beforeData3>    <beforeData4>&lt;pre&gt;</beforeData4>\n"
+            + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, state, dateEstablished, shefID, deployment, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Air Quality &gt; Visibility,\n" + //
+            "air, atmosphere, co-ops, data, date, deployment, designation, established, identifier, meteorological, meteorology, minute, name, noaa, nos, ops, quality, shef_id, shefID, state, station, time, visibility, visibility_in_air</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These preliminary data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has Visibility data from NOAA NOS Center for Operational\n" + //
+            "Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These preliminary data have not been subjected to the National Ocean\n" + //
+            "Services (NOS) Quality Control procedures, and do not necessarily meet the\n" + //
+            "criteria and standards of official NOS data. They are released for limited\n" + //
+            "public use with appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Meteorological Data, Visibility, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>Date       Time      Vis</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "    <pre>\n" + //
+            "2010-11-21 00:00     5.40\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>state</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">State</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>shefID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A.K.A. NWS Location Identifier (NWSLI)</att>\n" + //
+            "            <att name=\"long_name\">SHEF ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deployment</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Deployment Designation</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">0, 16</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Vis</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5</att>\n" + //
+            "            <att name=\"ioos_category\">Meteorology</att>\n" + //
+            "            <att name=\"long_name\">Visibility in Air</att>\n" + //
+            "            <att name=\"standard_name\">visibility_in_air</att>\n" + //
+            "            <att name=\"units\">nautical_miles</att>\n" + //
+            "            <att name=\"responseSubstring\">17, 25</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsCA() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromAsciiServiceNOS\" datasetID=\"nosCoopsCA\" active=\"true\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/axis/webservices/currents/plain/response.jsp?metadata=yes&amp;Submit=Submit</sourceUrl>\n"
+            + //
+            "    <defaultDataQuery>&amp;time%3E=now-2days&amp;time%3C=now&amp;stationName=%22Philadelphia%22</defaultDataQuery>\n"
+            + //
+            "    <defaultGraphQuery>time,CS&amp;time%3E=now-2days&amp;time%3C=now&amp;stationName=%22Philadelphia%22&amp;.draw=lines</defaultGraphQuery>\n"
+            + //
+            "    <beforeData1>GMT</beforeData1>\n" + //
+            "    <beforeData2>Current speed (knots)</beforeData2>\n" + //
+            "    <beforeData3>Current direction (degrees true)</beforeData3>\n" + //
+            "    <beforeData4>&lt;b&gt;Date       Time      CS       CD&lt;/b&gt;</beforeData4>    \n" + //
+            "    <beforeData5>&lt;pre&gt;</beforeData5>\n" + //
+            "    <afterData>&lt;/pre&gt;</afterData>\n" + //
+            "    <noData>no data is available</noData>\n" + //
+            "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">stationID, stationName, dateEstablished, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">stationID, stationName, dateEstablished, longitude, latitude</att>\n"
+            + //
+            "        <att name=\"creator_name\">NOAA NOS COOPS</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://tidesandcurrents.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"keywords\">6-minute,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Circulation &gt; Ocean Currents,\n" + //
+            "active, circulation, co-ops, current, currents, data, date, direction, direction_of_sea_water_velocity, established, identifier, minute, name, noaa, nos, ocean, oceans, ops, sea, sea_water_speed, seawater, speed, station, time, velocity, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">\n" + //
+            "These raw data have not been subjected to the National Ocean Services (NOS)\n" + //
+            "Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has surface Active Currents data from NOAA NOS Center for\n" + //
+            "Operational Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: These raw data have not been subjected to the National Ocean Services\n" + //
+            "(NOS) Quality Control procedures, and do not necessarily meet the criteria and\n" + //
+            "standards of official NOS data. They are released for limited public use with\n" + //
+            "appropriate caution.\n" + //
+            "\n" + //
+            "WARNING:\n" + //
+            "* Queries for data MUST include stationID= and time&gt;=.\n" + //
+            "* Queries USUALLY include time&lt;= (the default end time corresponds to 'now').\n" + //
+            "* Queries MUST be for less than 30 days worth of data.\n" + //
+            "* The data source isn't completely reliable. If your request returns no data\n" + //
+            "  when you think it should:\n" + //
+            "  * Try revising the request (e.g., a different time range).\n" + //
+            "  * The list of stations offering this data may be incorrect.\n" + //
+            "  * Sometimes a station or the entire data service is unavailable.\n" + //
+            "    Wait a while and try again.\n" + //
+            "</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Active Currents Data, 6-Minute</att>\n" + //
+            "    </addAttributes>\n" + //
+            "<!--\n" + //
+            "          1         2         3         4         5\n" + //
+            "012345678901234567890123456789012345678901234567890123456789\n" + //
+            "<b>Date       Time      CS        CD</b>\n" + //
+            "==========================================================================================================\n"
+            + //
+            "<pre>\n" + //
+            "2010-11-21 00:03    1.526    199.0\n" + //
+            "\n" + //
+            " -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationID</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"stationID=\".</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>stationName</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dateEstablished</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Date Established</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"time&gt;=\" and USUALLY include \"time&lt;=\"\n"
+            + //
+            "(the default end time corresponds to 'now').</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd HH:mm</att>\n" + //
+            "            <att name=\"responseSubstring\">0, 16</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CS</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-1</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Current Speed</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_speed</att>\n" + //
+            "            <att name=\"units\">knots</att>\n" + //
+            "            <att name=\"responseSubstring\">17, 25</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CD</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Current Direction</att>\n" + //
+            "            <att name=\"standard_name\">direction_of_sea_water_velocity</att>\n" + //
+            "            <att name=\"units\">degrees_true</att>\n" + //
+            "            <att name=\"responseSubstring\">26, 34</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getcimtPsdac() throws Throwable {
+    return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"cimtPsdac\">\n" + //
+        "    <sourceUrl>http://cimt.dyndns.org:8080/dods/drds/vCTD</sourceUrl>\n" + //
+        "    <reloadEveryNMinutes>10</reloadEveryNMinutes>\n" + //
+        "    <outerSequenceName>vCTD</outerSequenceName>\n" + //
+        "    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+        "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+        "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+        "        <att name=\"institution\">Center for Integrated Marine Technology</att>\n" + //
+        "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD.info</att>\n" + //
+        "        <att name=\"keywords\">Oceans &gt; Salinity/Density &gt; Salinity</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+        "        <att name=\"summary\">PSDAC File</att>\n" + //
+        "        <att name=\"title\">Center for Integrated Marine Technology</att>\n" + //
+        "    </addAttributes>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>station</sourceName>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"coordinates\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "            <att name=\"long_name\">Station ID</att>\n" + //
+        "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>longitude</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>latitude</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"units\">yyyy-MM-dd HH:mm:ss.S</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>depth</sourceName>\n" + //
+        "        <addAttributes>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>temperature</sourceName>\n" + //
+        "        <destinationName>waterTemperature</destinationName>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"coordinates\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Temperature</att>\n" + //
+        "            <att name=\"long_name\">Sea Water Temperature</att>\n" + //
+        "            <att name=\"units\">degree_C</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>salinity</sourceName>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"coordinates\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Salinity</att>\n" + //
+        "            <att name=\"long_name\">Sea Water Salinity</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>");
+  }
+
+  public static EDD getnwioosGroundfish() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"nwioosGroundfish\" active=\"false\"> <!-- 2020-01-07 server is gone -->\n"
+            + //
+            "    <sourceUrl>http://nwioos.coas.oregonstate.edu:8080/dods/drds/Groundfish%20Survey%202003-2006</sourceUrl>\n"
+            + //
+            "    <outerSequenceName>FRAM_SURVEY_CATCH</outerSequenceName>\n" + //
+            "    <innerSequenceName></innerSequenceName>\n" + //
+            "    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Trajectory</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">haul_id</att>\n" + //
+            "        <att name=\"subsetVariables\">haul_id, longitude, latitude, time, common_name, scientific_name, position_description</att>\n"
+            + //
+            "        <att name=\"title\">NWFSC Groundfish Data for U.S. West Coast (2003-2005)</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "The data available for downloading is summarized data from the 2003-2005\n" + //
+            "U.S. West Coast Bottom Trawl Survey (WCGTS) of Groundfish Resources off\n" + //
+            "Washington, Oregon and California.\n" + //
+            "\n" + //
+            "The Northwest Fisheries Science Center's Fishery Resource Analysis and\n" + //
+            "Monitoring Division (FRAM) completed the sixth in an annual series of\n" + //
+            "groundfish bottom trawl surveys in 2003. The survey was conducted June\n" + //
+            "24 to October 23, 2003 and targeted the commercial groundfish resources\n" + //
+            "inhabiting depths of 55 to 1,280 meters [m], (30 - 700 fathoms [fm])\n" + //
+            "from the area off Cape Flattery, Washington (latitude [lat.] 48ï¿½10'N)\n" + //
+            "to the U.S.-Mexican border (lat. 32ï¿½30'N) using chartered West Coast\n" + //
+            "commercial trawlers. These ongoing series of annual surveys, conducted\n" + //
+            "by FRAM since 1998, are designed to monitor long-term trends in\n" + //
+            "distribution and abundance of west coast groundfish, especially those\n" + //
+            "species of management concern. The 2003 survey represents the first\n" + //
+            "year in which the depth range was expanded to include both the\n" + //
+            "continental shelf (55 - 183 m) and continental slope (183 - 1,280 m)\n" + //
+            "area and the first year in which a stratified-random sampling design\n" + //
+            "was adopted.\n" + //
+            "\n" + //
+            "In 2003, a total of 574 successful tows were completed out of 643\n" + //
+            "attempts. Simrad ITI net mensuration data, as well as global\n" + //
+            "positioning system (GPS) navigation data and bottom contact sensor\n" + //
+            "data, used to document performance (e.g. bottom tending), were\n" + //
+            "obtained for most tows.\n" + //
+            "\n" + //
+            "An Aberdeen-style net with a small mesh (2\" stretched measure or less)\n" + //
+            "liner in the codend (to retain smaller specimens) was used to sample\n" + //
+            "fish biomass.  Target duration of each tow was 15 minutes. Tow\n" + //
+            "duration was the time between touchdown and lift-off of the trawl net\n" + //
+            "from the seafloor based on readings from bottom contact sensors.\n" + //
+            "\n" + //
+            "Catches were sorted to species, aggregate or other appropriate\n" + //
+            "taxonomic level and then weighed using an electronic,\n" + //
+            "motion-compensated scale.  A total of 517 species or families (fish\n" + //
+            "and invertebrates) were identified within the survey area. Although\n" + //
+            "biological sampling effort continues to include Dover sole\n" + //
+            "(Microstomus pacificus), shortspine thornyhead (Sebastolobus\n" + //
+            "alascanus), longspine thornyhead (Sebastolobus altivelis), and\n" + //
+            "sablefish (Anoplopoma fimbria), focus has increasingly shifted to\n" + //
+            "encompass all groundfish species of management concern. Up to 100\n" + //
+            "length measurements, sex determinations, and individual weights\n" + //
+            "and up to 25 age structures were collected per haul for these species.\n" + //
+            "</att>\n" + //
+            "        <att name=\"institution\">NOAA NWFSC</att>\n" + //
+            "        <att name=\"infoUrl\">http://nwioos.coas.oregonstate.edu:8080/dods/drds/Groundfish%20Survey%202003-2005.info</att>\n"
+            + //
+            "        <att name=\"keywords\">\n" + //
+            "Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat,\n" + //
+            "Earth Science &gt; Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat,\n" + //
+            "Earth Science &gt; Biological Classification &gt; Animals/Vertebrates &gt; Fish,\n" + //
+            "Earth Science &gt; Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" + //
+            "2003-2005, abundance, beginning, catch, coast, common, data, description, fish, fish abundance, groundfish, haul, identifier, legend, map, max, min, name, noaa, nwfsc, position, range, scientific, survey, taxonomy, time, u.s., west, west coast, year</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <!-- actual_range info is from EDDTable.getEmpiricalMinMax 2007-11-30; found nRows=11869 -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HAUL_ID</sourceName>\n" + //
+            "        <destinationName>haul_id</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <!-- There are 7 values for this.\n" + //
+            "                 What is it encoding?  It is close to YYYYMMDD.dddd, but not quite -->\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">200303001600 200503009536</att>\n" + //
+            "            <att name=\"Description\" />\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Haul Identifier</att>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HAUL_LONGITUDE_DD</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">-125.8555 -117.2767</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-135</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">-115</att>\n" + //
+            "            <att name=\"Description\" />\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HAUL_LATITUDE_DD</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">32.5708 48.4525</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">55</att>\n" + //
+            "            <att name=\"Description\" />\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SURVEY_YEAR</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time (Beginning of Survey Year)</att>\n" + //
+            "            <att name=\"units\">yyyy</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SCIENTIFIC_NAME</sourceName>\n" + //
+            "        <destinationName>scientific_name</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"Description\" />\n" + //
+            "            <att name=\"ioos_category\">Taxonomy</att>\n" + //
+            "            <att name=\"long_name\">Scientific Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>COMMON_NAME</sourceName>\n" + //
+            "        <destinationName>common_name</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"Description\" />\n" + //
+            "            <att name=\"ioos_category\">Taxonomy</att>\n" + //
+            "            <att name=\"long_name\">Common Name</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITION_DESCRIPTION</sourceName>\n" + //
+            "        <destinationName>position_description</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Position Description</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CATCH_RANGE_MIN_KG_PER_SQKM</sourceName>\n" + //
+            "        <destinationName>catch_range_min</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">0.0 4530.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">4500</att>\n" + //
+            "            <att name=\"ioos_category\">Fish Abundance</att>\n" + //
+            "            <att name=\"long_name\">Catch Range Min</att>\n" + //
+            "            <att name=\"units\">kg km-2</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CATCH_RANGE_MAX_KG_PER_SQKM</sourceName>\n" + //
+            "        <destinationName>catch_range_max</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">0.0 257606.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">250000</att>\n" + //
+            "            <att name=\"ioos_category\">Fish Abundance</att>\n" + //
+            "            <att name=\"long_name\">Catch Range Max</att>\n" + //
+            "            <att name=\"units\">kg km-2</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>MAP_LEGEND_KG_PER_SQKM</sourceName>\n" + //
+            "        <destinationName>map_legend</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">250000</att>\n" + //
+            "            <att name=\"ioos_category\">Fish Abundance</att>\n" + //
+            "            <att name=\"long_name\">Map Legend</att>\n" + //
+            "            <att name=\"units\">kg km-2</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnosCoopsRWL() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"nosCoopsRWL\" active=\"false\">\n" + //
+            "    <sourceUrl>https://opendap.co-ops.nos.noaa.gov/dods/IOOS/Raw_Water_Level</sourceUrl>\n" + //
+            "    <outerSequenceName>WATERLEVEL_RAW_PX</outerSequenceName>\n" + //
+            "    <skipDapperSpacerRows>false</skipDapperSpacerRows>\n" + //
+            "    <sourceCanConstrainStringEQNE>true</sourceCanConstrainStringEQNE>\n" + //
+            "    <sourceCanConstrainStringGTLT>true</sourceCanConstrainStringGTLT>\n" + //
+            "    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"creator_email\">COOPS.IOOS@noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://opendap.co-ops.nos.noaa.gov/dods/IOOS/Raw_Water_Level.html</att>\n" + //
+            "        <att name=\"institution\">NOAA NOS CO-OPS</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <!--att name=\"subsetVariables\">stationId, datum</att -->\n" + //
+            "        <att name=\"summary\">\n" + //
+            "This dataset has recent, raw (not quality-controlled) water level (tide) data\n" + //
+            "from NOAA NOS Center for Operational Oceanographic Products and Services (CO-OPS).\n" + //
+            "\n" + //
+            "WARNING: THIS DATASET IS VERY HARD TO USE!\n" + //
+            "Queries for data MUST include station=, datum=, beginTime=, and endTime=.\n" + //
+            "The list of stations is at\n" + //
+            "https://opendap.co-ops.nos.noaa.gov/stations/index.jsp\n" + //
+            "See the metadata for the datum variable for a description of the supported datums.\n" + //
+            "\n" + //
+            "WARNING: Queries for more than one month's worth of data will fail.\n" + //
+            "\n" + //
+            "WARNING: The error messages returned by this dataset are often wrong.</att>\n" + //
+            "        <att name=\"title\">NOS CO-OPS Raw Water Level Data</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>_STATION_ID</sourceName>\n" + //
+            "        <destinationName>station</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">REQUIRED 7-character Station ID surrounded in double quotes. To view the station id listing go to: https://opendap.co-ops.nos.noaa.gov/stations/index.jsp  </att>\n"
+            + //
+            "            <att name=\"long_name\">Station Id</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"station=...\".\n" + //
+            "\n" + //
+            "The list of stations is at\n" + //
+            "https://opendap.co-ops.nos.noaa.gov/stations/index.jsp</att>\n" + //
+            "            <att name=\"long_name\">Station ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>_DATUM</sourceName>\n" + //
+            "        <destinationName>datum</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">REQUIRED 3- to 4-character Datum surrounded in double quotes:MLLW, MSL, MHW, STND , NGVD, NAVD or IGLD </att>\n"
+            + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"datum=...\"\n" + //
+            "\n" + //
+            "A datum is a base elevation used as a reference from which to reckon heights or\n" + //
+            "depths.  In a data query, the datum MUST be one of:\n" + //
+            "MLLW (Mean Lower Low Water) - The average of the lower low water height of each\n" + //
+            "  tidal day observed over the National Tidal Datum Epoch.\n" + //
+            "MSL (Mean Sea Level) - The arithmetic mean of hourly heights observed over the\n" + //
+            "  National Tidal Datum Epoch.\n" + //
+            "MHW (Mean High Water) - The average of all the high water heights observed over\n" + //
+            "  the National Tidal Datum Epoch.\n" + //
+            "STND (Station Datum) - A fixed base elevation at a tide station to which all\n" + //
+            "  water level measurements are referred. The datum is unique to each station\n" + //
+            "  and is established at a lower elevation than the water is ever expected to\n" + //
+            "  reach.\n" + //
+            "NGVD (National Geodetic Vertical Datum of 1929) - It is a hybrid model, not a\n" + //
+            "  pure model of mean sea level, the geoid, or any other equipotential surface.\n" + //
+            "NAVD (North American Vertical Datum of 1988) - It held fixed the height of the\n" + //
+            "  primary tidal bench mark, referenced to the International Great Lakes Datum\n" + //
+            "  of 1985 local mean sea level height value.\n" + //
+            "IGLD (?)\n" + //
+            "(The descriptions are from https://tidesandcurrents.noaa.gov/datum_options.html .)\n" + //
+            "</att>\n" + //
+            "            <att name=\"long_name\">Datum</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>_BEGIN_DATE</sourceName>\n" + //
+            "        <destinationName>beginTime</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"Examples\"> 20040321  OR 20030712 19:02 </att>\n" + //
+            "            <att name=\"long_name\">REQUIRED 8- to 14-character Begin Date (yyyymmdd hh:mi) surrounded in double quotes</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"Examples\"></att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"beginTime=...\".\n" + //
+            "The value you request will be included in the results table, where it is meaningless.</att>\n" + //
+            "            <att name=\"long_name\">Begin Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMdd HH:mm</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>_END_DATE</sourceName>\n" + //
+            "        <destinationName>endTime</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Up to one month</att>\n" + //
+            "            <att name=\"long_name\">REQUIRED 8- to 14-character End Date (yyyymmdd hh:mi) surrounded in double quotes</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\">Queries for data MUST include \"endTime=...\".\n" + //
+            "The value you request will be included in the results table, where it is meaningless.</att>\n" + //
+            "            <att name=\"long_name\">End Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMdd HH:mm</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_TIME</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">The date time stamp unit is in UTC, presented in a 12hr format. You may want to convert to 24 hr format before use. (E.g. 12:06 AM = 0006 UTC, 11:48 PM = 2348 UTC)</att>\n"
+            + //
+            "            <att name=\"long_name\">Converted UTC Date Time Stamp in double quotes (MMM DD YYYY hh:mm(AM or PM)) (E.g. Jul 13 2004 3:48PM)</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <!-- DATE_TIME is not parsable by Java SimpleDateTime: d and h(1-12) may be 1 digit.\n" + //
+            "              Date and hour are space padded. Joda doesn't like space padded hour.\n" + //
+            "              \"Nov  8 2010  7:00AM\"-->\n" + //
+            "            <att name=\"units\">MMM  d yyyy  h:mma</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DCP</sourceName>\n" + //
+            "        <destinationName>dcp</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">1-character DCP number surrounded in double quotes</att>\n" + //
+            "            <att name=\"long_name\">DCP number</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\">A one character identifier for the data collection platform (DCP) at a station.</att>\n"
+            + //
+            "            <att name=\"long_name\">Data Collection Platform</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SENSOR_ID</sourceName>\n" + //
+            "        <destinationName>sensorId</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">2-character Sensor ID surrounded in double quotes: A1 - Acoustic WL   B1 - Backup WL   N1 - Pressure WL   NT - Pressure WL   V1 - SAE WL      X1 - ADR WL   </att>\n"
+            + //
+            "            <att name=\"long_name\">Sensor Id</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"comment\"></att>\n" + //
+            "            <att name=\"long_name\">Sensor ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WL_VALUE</sourceName>\n" + //
+            "        <destinationName>waterLevel</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Water level value in meters</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height_amplitude_due_to_geocentric_ocean_tide</att>\n"
+            + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SIGMA</sourceName>\n" + //
+            "        <destinationName>sigma</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Standard deviation of 1 second samples used to compute the water level height</att>\n"
+            + //
+            "            <att name=\"long_name\">Standard deviation </att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"long_name\">Standard Deviation of Water Level</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>O</sourceName>\n" + //
+            "        <destinationName>O</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">outliers: Count of number of samples that fall outside a 3-sigma band about the mean</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">The number of samples that fall outside a 3-sigma band about the mean</att>\n"
+            + //
+            "            <att name=\"long_name\">Outlier Count</att>\n" + //
+            "            <att name=\"units\">count</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>F</sourceName>\n" + //
+            "        <destinationName>F</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">A flag that when set to 1 indicates that the flat tolerance limit was exceeded</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">A flag that when set to 1 indicates that the flat tolerance limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Flat Tolerance Flag</att>\n" + //
+            "\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>R</sourceName>\n" + //
+            "        <destinationName>R</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">A flag that when set to 1 indicates that the rate of change tolerance limit was exceeded</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">A flag that when set to 1 indicates that the rate of change tolerance limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Change Tolerance Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>L</sourceName>\n" + //
+            "        <destinationName>L</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">limit: A flag that when set to 1 indicates that either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"comment\">A flag that when set to 1 indicates that either the maximum or minimum expected water level height limit was exceeded</att>\n"
+            + //
+            "            <att name=\"long_name\">Limit Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD geterdQSwind8day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDGridSideBySide\" datasetID=\"erdQSwind8day\">\n" + //
+        "    <defaultGraphQuery>&amp;.draw=vectors</defaultGraphQuery>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSux108day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/ux10/8day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_ux10\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T16:08:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQSux10S8day_19990725000000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Surface Winds</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"intList\">10793 10794 10795 10796 10797 10798 10799 10800</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" + //
+        "        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-29T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal</att>\n" + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+        "atmospheric, coast, coastwatch, data, degrees, global, noaa, node, ocean, oceans,\n" + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Surface Winds,\n" + //
+        "QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is an 8 day composite.)</att>\n"
+        + //
+        "        <att name=\"title\">Wind, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, 1999-2009 (8 Day)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.328608E8 9.328608E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"add_offset\" type=\"double\">10</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QSux10</sourceName>\n" + //
+        "        <destinationName>x_wind</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-27.1068 25.3007</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">1</att>\n" + //
+        "            <att name=\"long_name\">Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">2106050</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.608670721870384</att>\n" + //
+        "            <att name=\"standard_name\">x_wind</att>\n" + //
+        "            <att name=\"units\">m s-1</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Zonal Wind</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSuy108day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/uy10/8day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_uy10\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T16:08:50Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQSuy10S8day_19990725000000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Surface Winds</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"intList\">10793 10794 10795 10796 10797 10798 10799 10800</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" + //
+        "        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-29T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Meridional</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_uy10_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+        "atmospheric, coast, coastwatch, data, degrees, global, meridional, noaa, node, ocean, oceans,\n" + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Surface Winds,\n" + //
+        "QSuy10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, y_wind</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"title\">Wind, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, Meridional (8 Day Composite)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.328608E8 9.328608E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"add_offset\" type=\"double\">10</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QSuy10</sourceName>\n" + //
+        "        <destinationName>y_wind</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-20.8175 26.3729</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">1</att>\n" + //
+        "            <att name=\"long_name\">Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Meridional</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">2106050</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.608670721870384</att>\n" + //
+        "            <att name=\"standard_name\">y_wind</att>\n" + //
+        "            <att name=\"units\">m s-1</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Meridional Wind</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "</dataset>");
+  }
+
+  public static EDD geterdQSstress1day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDGridSideBySide\" datasetID=\"erdQSstress1day\">\n" + //
+        "    <defaultGraphQuery>&amp;.draw=vectors</defaultGraphQuery>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQStaux1day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/taux/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_taux\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T07:36:13Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQStauxS1day_19990721120000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Wind Stress</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"int\">10793</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality wind stress data in zonal, meridional, modulus, and wind stress curl sets.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-22T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_taux_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" + //
+        "atmospheric, coast, coastwatch, data, degrees, downward, eastward, global, noaa, node, ocean, oceans,\n" + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Wind Stress,\n" + //
+        "QStaux, quality, quikscat, science, science quality, seawinds, stress, surface, surface_downward_eastward_stress, time, wcn, west, wind, winds, zonal</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality wind stress data in zonal, meridional, modulus, and wind stress curl sets.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl. (This is a 1 day composite.)</att>\n"
+        + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, 1999-2009 (1 Day)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.325584E8 9.325584E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QStaux</sourceName>\n" + //
+        "        <destinationName>taux</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-4.34712 3.51033</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">1923627</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.5559485457132362</att>\n" + //
+        "            <att name=\"units\">Pa</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Zonal Wind Stress</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "            <att name=\"standard_name\">surface_downward_eastward_stress</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQStauy1day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/tauy/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_tauy\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T07:36:16Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQStauyS1day_19990721120000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Wind Stress</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"int\">10793</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality wind stress data in zonal, meridional, modulus, and wind stress curl sets.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-22T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Meridional</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_tauy_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" + //
+        "atmospheric, coast, coastwatch, data, degrees, downward, global, meridional, noaa, node, northward, ocean, oceans,\n"
+        + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Wind Stress,\n" + //
+        "QStauy, quality, quikscat, science, science quality, seawinds, stress, surface, surface_downward_northward_stress, time, wcn, west, wind, winds</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, Meridional (1 Day Composite)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.325584E8 9.325584E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QStauy</sourceName>\n" + //
+        "        <destinationName>tauy</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-4.02987 4.48576</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Meridional</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">1923627</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.5559485457132362</att>\n" + //
+        "            <att name=\"units\">Pa</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Meridional Wind Stress</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "            <att name=\"standard_name\">surface_downward_northward_stress</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQScurl1day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/curl/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_curl\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T07:36:04Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQScurlS1day_19990721120000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Wind Stress</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"int\">10793</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality wind stress data in zonal, meridional, modulus, and wind stress curl sets.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-22T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Curl</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_curl_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" + //
+        "atmospheric, coast, coastwatch, curl, data, degrees, downward, global, noaa, node, northward, ocean, oceans,\n"
+        + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Wind Stress,\n" + //
+        "QScurl, quality, quikscat, science, science quality, seawinds, stress, surface, surface_downward_northward_stress, time, wcn, west, wind, winds</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, Curl (1 Day Composite)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.325584E8 9.325584E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QScurl</sourceName>\n" + //
+        "        <destinationName>curl</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-1.60711E-4 2.17132E-4</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">8</att>\n" + //
+        "            <att name=\"long_name\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Curl</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">1818331</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.5255168881884557</att>\n" + //
+        "            <att name=\"units\">Pa m-1</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Curl of Wind Stress</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "            <att name=\"standard_name\">surface_downward_northward_stress</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQStmod1day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/tmod/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_tmod\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T07:36:19Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQStmodS1day_19990721120000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Wind Stress</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"int\">10793</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality wind stress data in zonal, meridional, modulus, and wind stress curl sets.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-22T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Modulus</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_tmod_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, atmosphere,\n" + //
+        "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" + //
+        "atmospheric, coast, coastwatch, data, degrees, downward, global, modulus, noaa, node, northward, ocean, oceans,\n"
+        + //
+        "Earth Science &gt; Oceans &gt; Ocean Winds &gt; Wind Stress,\n" + //
+        "QStmod, quality, quikscat, science, science quality, seawinds, stress, surface, surface_downward_northward_stress, time, wcn, west, wind, winds</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"title\">Wind Stress, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, Modulus (1 Day Composite)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.325584E8 9.325584E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QStmod</sourceName>\n" + //
+        "        <destinationName>modStress</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">1.13022E-6 5.86218</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Wind Stress, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Modulus</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">1923627</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.5559485457132362</att>\n" + //
+        "            <att name=\"units\">Pa</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+        "            <att name=\"colorBarPalette\">WhiteRedBlack</att>\n" + //
+        "            <att name=\"ioos_category\">Wind</att>\n" + //
+        "            <att name=\"long_name\">Modulus of Wind Stress</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "            <att name=\"standard_name\">surface_downward_northward_stress</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwekm1day\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
+        "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/wekm/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <recursive>true</recursive>\n" + //
+        "    <fileNameRegex>QS.*_wekm\\.nc</fileNameRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+        "        <att name=\"cols\" type=\"int\">2881</att>\n" + //
+        "        <att name=\"composite\">true</att>\n" + //
+        "        <att name=\"contributor_name\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+        "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+        "        <att name=\"date_created\">2010-10-22Z</att>\n" + //
+        "        <att name=\"date_issued\">2010-10-22Z</att>\n" + //
+        "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.125 0.125 0.0 0.0 -75.0</att>\n" + //
+        "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+        "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+        + //
+        "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+        "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+        "        <att name=\"geospatial_lat_max\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_min\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+        "        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" + //
+        "        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.125</att>\n" + //
+        "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+        "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+        "        <att name=\"history\">Remote Sensing Systems, Inc.\n" + //
+        "2010-10-22T07:36:37Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+        "        <att name=\"id\">LQSwekmS1day_19990721120000</att>\n" + //
+        "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+        "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Circulation &gt; Upwelling/Downwelling</att>\n"
+        + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+        + //
+        "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+        "        <att name=\"Northernmost_Northing\" type=\"double\">75.0</att>\n" + //
+        "        <att name=\"origin\">Remote Sensing Systems, Inc.</att>\n" + //
+        "        <att name=\"pass_date\" type=\"int\">10793</att>\n" + //
+        "        <att name=\"polygon_latitude\" type=\"doubleList\">-75.0 75.0 75.0 -75.0 -75.0</att>\n" + //
+        "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" + //
+        "        <att name=\"processing_level\">3</att>\n" + //
+        "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"projection\">geographic</att>\n" + //
+        "        <att name=\"projection_type\">mapped</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: http://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\" type=\"int\">1201</att>\n" + //
+        "        <att name=\"satellite\">QuikSCAT</att>\n" + //
+        "        <att name=\"sensor\">SeaWinds</att>\n" + //
+        "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" + //
+        "        <att name=\"Southernmost_Northing\" type=\"double\">-75.0</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+        "        <att name=\"start_time\" type=\"double\">0.0</att>\n" + //
+        "        <att name=\"summary\">NOAA CoastWatch distributes science quality Ekman current (in zonal, meridional, and modulus sets) and Ekman upwelling data.  This data begins with wind velocity measurements from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  NOAA CoastWatch processes wind velocity to wind stress and wind stress curl, and finally to Ekman current and Ekman upwelling.</att>\n"
+        + //
+        "        <att name=\"time_coverage_end\">1999-07-22T00:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">1999-07-21T00:00:00Z</att>\n" + //
+        "        <att name=\"title\">Ekman Upwelling, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality</att>\n"
+        + //
+        "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"cols\">null</att>\n" + //
+        "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"creator_type\">institution</att>\n" + //
+        "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"cwhdf_version\">null</att>\n" + //
+        "        <att name=\"et_affine\">null</att>\n" + //
+        "        <att name=\"gctp_datum\">null</att>\n" + //
+        "        <att name=\"gctp_parm\">null</att>\n" + //
+        "        <att name=\"gctp_sys\">null</att>\n" + //
+        "        <att name=\"gctp_zone\">null</att>\n" + //
+        "        <att name=\"id\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_wekm_las.html</att>\n" + //
+        "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"keywords\">altitude, circulation, coast, coastwatch, data, degrees, downwelling, ekman, global, noaa, node, ocean, oceans,\n"
+        + //
+        "Earth Science &gt; Oceans &gt; Ocean Circulation &gt; Upwelling/Downwelling,\n" + //
+        "QSwekm, quality, quikscat, science, science quality, seawinds, time, upwelling, wcn, west, wind</att>\n" + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+        "        <att name=\"pass_date\">null</att>\n" + //
+        "        <att name=\"polygon_latitude\">null</att>\n" + //
+        "        <att name=\"polygon_longitude\">null</att>\n" + //
+        "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+        "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+        "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+        "        <att name=\"publisher_type\">institution</att>\n" + //
+        "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+        "        <att name=\"references\">NASA/JPL Winds: https://winds.jpl.nasa.gov/ .</att>\n" + //
+        "        <att name=\"rows\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"title\">Ekman Upwelling, QuikSCAT SeaWinds, 0.125ï¿½, Global, Science Quality, 1999-2009 (1 Day Composite)</att>\n"
+        + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">9.325584E8 9.325584E8</att>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Centered Time</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>altitude</sourceName>\n" + //
+        "        <destinationName>altitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+        "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+        "            <att name=\"long_name\">Altitude</att>\n" + //
+        "            <att name=\"positive\">up</att>\n" + //
+        "            <att name=\"standard_name\">altitude</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">-75.0 75.0</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+        "            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "            <att name=\"point_spacing\">even</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>QSwekm</sourceName>\n" + //
+        "        <destinationName>upwelling</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"actual_range\" type=\"floatList\">-0.00397393 0.00442478</att>\n" + //
+        "            <att name=\"coordsys\">geographic</att>\n" + //
+        "            <att name=\"fraction_digits\" type=\"int\">6</att>\n" + //
+        "            <att name=\"long_name\">Ekman Upwelling, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality</att>\n"
+        + //
+        "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+        "            <att name=\"numberOfObservations\" type=\"int\">1790102</att>\n" + //
+        "            <att name=\"percentCoverage\" type=\"double\">0.5173584086615314</att>\n" + //
+        "            <att name=\"units\">m s-1</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"actual_range\">null</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">2e-5</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-2e-5</att>\n" + //
+        "            <att name=\"ioos_category\">Currents</att>\n" + //
+        "            <att name=\"long_name\">Ekman Upwelling</att>\n" + //
+        "            <att name=\"numberOfObservations\">null</att>\n" + //
+        "            <att name=\"percentCoverage\">null</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "</dataset>");
+  }
+
+  public static EDD gettestDuplicateSourceNames() throws Throwable {
+    return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDGridSideBySide\" datasetID=\"testDuplicateSourceNames\">\n"
+        + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"sideBySideA\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <fileNameRegex>.*fv04\\.1\\.nc</fileNameRegex>\n" + //
+        "    <recursive>true</recursive>\n" + //
+        "    <pathRegex>.*</pathRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n"
+        + //
+        "        <att name=\"acknowledgment\">null</att>\n" + //
+        "        <att name=\"comment\">MUR = &quot;Multi-scale Ultra-high Resolution&quot;</att>\n" + //
+        "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_type\">group</att>\n" + //
+        "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"easternmost_longitude\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"institution\">NASA JPL</att>\n" + //
+        "        <att name=\"keywords\">analysed</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+        "        <att name=\"metadata_link\">null</att>\n" + //
+        "        <att name=\"northernmost_latitude\">null</att>\n" + //
+        "        <att name=\"references\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"southernmost_latitude\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"stop_time\">null</att>\n" + //
+        "        <att name=\"summary\">This is a test of EDDGridSideBySide.</att>\n" + //
+        "        <att name=\"testOutOfDate\">now-3days</att>\n" + //
+        "        <att name=\"title\">Test of EDDGridSideBySide</att>\n" + //
+        "        <att name=\"uuid\">null</att>\n" + //
+        "        <att name=\"westernmost_longitude\">null</att>\n" + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"comment\">Nominal time of analyzed fields</att>\n" + //
+        "            <att name=\"long_name\">reference time of sst field</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1981-01-01 00:00:00 UTC</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_ChunkSize\" type=\"int\">17999</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"comment\">none</att>\n" + //
+        "            <att name=\"long_name\">latitude</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">90.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"comment\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_ChunkSize\" type=\"int\">36000</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"comment\">none</att>\n" + //
+        "            <att name=\"long_name\">longitude</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">180.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"comment\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>analysed_sst</sourceName>\n" + //
+        "        <destinationName>analysed_sst_a</destinationName>\n" + //
+        "        <dataType>short</dataType>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"add_offset\" type=\"double\">25.0</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"coordinates\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Temperature</att>\n" + //
+        "            <att name=\"long_name\">Analysed Sea Surface Temperature</att>\n" + //
+        "            <att name=\"units\">degree_C</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"sideBySideB\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI()).toString()
+        + "</fileDir>\n" +
+        "    <fileNameRegex>.*fv04\\.1\\.nc</fileNameRegex>\n" + //
+        "    <recursive>true</recursive>\n" + //
+        "    <pathRegex>.*</pathRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n" + //
+        "    <addAttributes>\n" + //
+        "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n"
+        + //
+        "        <att name=\"acknowledgment\">null</att>\n" + //
+        "        <att name=\"comment\">MUR = &quot;Multi-scale Ultra-high Resolution&quot;</att>\n" + //
+        "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_type\">group</att>\n" + //
+        "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"easternmost_longitude\">null</att>\n" + //
+        "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"institution\">NASA JPL</att>\n" + //
+        "        <att name=\"keywords\">analysed</att>\n" + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">[standard]</att>\n" + //
+        "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+        "        <att name=\"metadata_link\">null</att>\n" + //
+        "        <att name=\"northernmost_latitude\">null</att>\n" + //
+        "        <att name=\"references\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" + //
+        "        <att name=\"southernmost_latitude\">null</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"start_time\">null</att>\n" + //
+        "        <att name=\"stop_time\">null</att>\n" + //
+        "        <att name=\"summary\">This is a test of EDDGridSideBySide.</att>\n" + //
+        "        <att name=\"testOutOfDate\">now-3days</att>\n" + //
+        "        <att name=\"title\">Test of EDDGridSideBySide</att>\n" + //
+        "        <att name=\"uuid\">null</att>\n" + //
+        "        <att name=\"westernmost_longitude\">null</att>\n" + //
+        "    </addAttributes>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>time</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"comment\">Nominal time of analyzed fields</att>\n" + //
+        "            <att name=\"long_name\">reference time of sst field</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">seconds since 1981-01-01 00:00:00 UTC</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"ioos_category\">Time</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lat</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_ChunkSize\" type=\"int\">17999</att>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"comment\">none</att>\n" + //
+        "            <att name=\"long_name\">latitude</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">90.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"comment\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "            <att name=\"long_name\">Latitude</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <axisVariable>\n" + //
+        "        <sourceName>lon</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_ChunkSize\" type=\"int\">36000</att>\n" + //
+        "            <att name=\"axis\">X</att>\n" + //
+        "            <att name=\"comment\">none</att>\n" + //
+        "            <att name=\"long_name\">longitude</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">180.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"comment\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Location</att>\n" + //
+        "            <att name=\"long_name\">Longitude</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </axisVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>analysed_sst</sourceName>\n" + //
+        "        <destinationName>analysed_sst_b</destinationName>\n" + //
+        "        <dataType>short</dataType>\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"_ChunkSize\">null</att>\n" + //
+        "            <att name=\"_ChunkSizes\">null</att>\n" + //
+        "            <att name=\"add_offset\" type=\"double\">25.0</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"coordinates\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Temperature</att>\n" + //
+        "            <att name=\"long_name\">Analysed Sea Surface Temperature</att>\n" + //
+        "            <att name=\"units\">degree_C</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>\n" + //
+        "</dataset>");
+  }
+
+  public static EDD gettest_erdVHNchlamday_Lon0360() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"test_erdVHNchlamday_Lon0360\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"test_erdVHNchlamday_Lon0360Child\">\n" + //
+            "        <!-- Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)\n"
+            + //
+            "             minLon=-180.03375 maxLon=-110.00625 -->\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettest_nesdisVHNchlaWeekly_Lon0360() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"test_nesdisVHNchlaWeekly_Lon0360\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"test_nesdisVHNchlaWeekly_Lon0360Child\">\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getecocast_Lon0360() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"ecocast_Lon0360\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"ecocast_Lon0360Child\">\n" + //
+            "        <!-- Relative Bycatch:Target Catch Probability Product (daily), EcoCast Project \n" + //
+            "             minLon=-131.5914 maxLon=-115.67100192 -->\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ecocast</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettest_etopo180_Lon0360() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"test_etopo180_Lon0360\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromEtopo\" datasetID=\"etopo180\" />\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnotApplicable_Lon0360() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"notApplicable_Lon0360\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"notApplicable_0360Child\">\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMPchlamday</sourceUrl>  <!-- lon is 90 to 160 -->\n"
+            + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestLon0360Insert() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLon0360\" datasetID=\"testLon0360Insert\" active=\"true\">\n" + //
+            "<!-- sample .nc file created with \n" + //
+            "  https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdHadISST.graph?sst%5B(2020-12-16T12:00:00Z)%5D%5B(20):(-40)%5D%5B(-30):(25)%5D&.draw=surface&.vars=longitude%7Clatitude%7Csst&.colorBar=%7C%7C%7C%7C%7C&.bgColor=0xffccccff -->\n"
+            + //
+            "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdHadISSTAfrica\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>12000</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nc/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>erdHadISST_Africa.nc.gz</fileNameRegex>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"summary\">This is a test dataset for EDDGridLon0360.</att>\n" + //
+            "        <att name=\"title\">Test for EDDGridLon0630</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sst</sourceName>\n" + //
+            "        <destinationName>sst</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD geterdRWdhws1day_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdRWdhws1day_LonPM180\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdRWdhws1day_LonPM180Child\">\n" + //
+            "        <!-- Coral Reef Watch, Degree Heating Weeks, 50 km\n" + //
+            "             minLon=0.25 maxLon=359.75 -->\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdRWdhws1day</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettest_erdMHsstnmday_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"test_erdMHsstnmday_LonPM180\" active=\"true\">\n" + //
+            "    <dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"test_erdMHsstnmday_LonPM180Child\">\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "    <dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getnotApplicable_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"notApplicable_LonPM180\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"notApplicable_LonPM180Child\">\n" + //
+            "        <!-- maxLon is 179.9792 -->\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD geterdMBsstdmday_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMBsstdmday_LonPM180\" active=\"true\">\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Child\">\n" + //
+            "        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime (Monthly Composite)\n" + //
+            "             minLon=120.0 maxLon=320.0 -->\n" + //
+            "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" + //
+            "    </dataset>\n" + //
+            "</dataset>\n" + //
+            "");
+  }
+
+  public static EDD gettest_erdPHsstamday_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"test_erdPHsstamday_LonPM180\" active=\"true\">\n" + //
+            "    <!--dataset type=\"EDDGridFromErddap\" datasetID=\"test_erdPHsstamday_LonPM180Child\">\n" + //
+            "        <!-- SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality (Monthly Composite)\n"
+            + //
+            "             minLon=0.02197266 maxLon=359.978 -->\n" + //
+            "        <!--sourceUrl>http://localhost:8080/cwexperimental/griddap/erdPHsstamday</sourceUrl>\n" + //
+            "    </dataset -->\n" + //
+            "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n" + //
+            "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"test_erdPHsstamday_LonPM180Child\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH/ssta/mday/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>.*_ssta\\.nc(|.gz)</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>15</matchAxisNDigits>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"cols\" type=\"int\">8192</att>\n" + //
+            "        <att name=\"composite\">true</att>\n" + //
+            "        <att name=\"contributor_name\">NOAA NODC</att>\n" + //
+            "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" + //
+            "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" + //
+            "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" + //
+            "        <att name=\"creator_url\">https://coastwatch.pfel.noaa.gov</att>\n" + //
+            "        <att name=\"cwhdf_version\">3.4</att>\n" + //
+            "        <att name=\"date_created\">2009-09-10Z</att>\n" + //
+            "        <att name=\"date_issued\">2009-09-10Z</att>\n" + //
+            "        <att name=\"Easternmost_Easting\" type=\"double\">359.978</att>\n" + //
+            "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.0439453137973138 0.04394530916127457 0.0 0.02197266 -89.97803</att>\n"
+            + //
+            "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" + //
+            "        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+            + //
+            "        <att name=\"gctp_sys\" type=\"int\">0</att>\n" + //
+            "        <att name=\"gctp_zone\" type=\"int\">0</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"double\">89.97803</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"double\">-89.97803</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\" type=\"double\">0.0439453137973138</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"double\">359.978</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"double\">0.02197266</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\" type=\"double\">0.04394530916127457</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+            "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+            "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+            "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+            "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+            "        <att name=\"history\">NOAA NODC\n" + //
+            "2009-09-10T14:06:58Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //
+            "        <att name=\"id\">LPHsstaSmday_19810916000000</att>\n" + //
+            "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" + //
+            "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n"
+            + //
+            "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" + //
+            "        <att name=\"Northernmost_Northing\" type=\"double\">89.97803</att>\n" + //
+            "        <att name=\"origin\">NOAA NODC</att>\n" + //
+            "        <att name=\"pass_date\" type=\"intList\">4261 4262 4263 4264 4265 4266 4267 4268 4269 4270 4271 4272 4273 4274 4275 4276 4277 4278 4279 4280 4281 4282 4283 4284 4285 4286 4287 4288 4289 4290</att>\n"
+            + //
+            "        <att name=\"polygon_latitude\" type=\"doubleList\">-89.97803 89.97803 89.97803 -89.97803 -89.97803</att>\n"
+            + //
+            "        <att name=\"polygon_longitude\" type=\"doubleList\">0.02197266 0.02197266 359.978 359.978 0.02197266</att>\n"
+            + //
+            "        <att name=\"processing_level\">3</att>\n" + //
+            "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" + //
+            "        <att name=\"projection\">geographic</att>\n" + //
+            "        <att name=\"projection_type\">mapped</att>\n" + //
+            "        <att name=\"references\">Pathfinder project: http://www.nodc.noaa.gov/sog/pathfinder4km/ .</att>\n"
+            + //
+            "        <att name=\"rows\" type=\"int\">4096</att>\n" + //
+            "        <att name=\"satellite\">POES</att>\n" + //
+            "        <att name=\"sensor\">AVHRR</att>\n" + //
+            "        <att name=\"source\">satellite observation: POES, AVHRR</att>\n" + //
+            "        <att name=\"Southernmost_Northing\" type=\"double\">-89.97803</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" + //
+            "        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n"
+            + //
+            "        <att name=\"summary\">AVHRR Pathfinder Oceans Project seeks to create a long-term, continuous sea surface temperature data series for use in climate research.  The Pathfinder SST data begins with historic AVHRR Global Area Coverage SST.  This data is re-evaluated and re-calibrated, improving both the accuracy and number of valid SST values (due to improved cloud-masking).</att>\n"
+            + //
+            "        <att name=\"time_coverage_end\">1981-10-01T00:00:00Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">1981-09-01T00:00:00Z</att>\n" + //
+            "        <att name=\"title\">SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality</att>\n"
+            + //
+            "        <att name=\"Westernmost_Easting\" type=\"double\">0.02197266</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cols\">null</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" + //
+            "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" + //
+            "        <att name=\"cwhdf_version\">null</att>\n" + //
+            "        <att name=\"et_affine\">null</att>\n" + //
+            "        <att name=\"gctp_datum\">null</att>\n" + //
+            "        <att name=\"gctp_parm\">null</att>\n" + //
+            "        <att name=\"gctp_sys\">null</att>\n" + //
+            "        <att name=\"gctp_zone\">null</att>\n" + //
+            "        <att name=\"id\">null</att>\n" + //
+            "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/PH_ssta_las.html</att>\n" + //
+            "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"keywords\">advanced, altitude, area, avhrr, coast, coastwatch, coverage, data, day, gac, global, high, night, noaa, node, ocean, oceans,\n"
+            + //
+            "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" + //
+            "pathfinder, PHssta, quality, radiometer, resolution, science, science quality, sea, sea_surface_temperature, sst, surface, temperature, time, very, vhrr, wcn, west</att>\n"
+            + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"pass_date\">null</att>\n" + //
+            "        <att name=\"polygon_latitude\">null</att>\n" + //
+            "        <att name=\"polygon_longitude\">null</att>\n" + //
+            "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" + //
+            "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"publisher_type\">institution</att>\n" + //
+            "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+            "        <att name=\"references\">Pathfinder project: https://www.nodc.noaa.gov/sog/pathfinder4km/ .</att>\n"
+            + //
+            "        <att name=\"rows\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"start_time\">null</att>\n" + //
+            "        <att name=\"title\">SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality (Monthly Composite) DEPRECATED</att>\n"
+            + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">3.694464E8 3.694464E8</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+            "            <att name=\"long_name\">Centered Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>altitude</sourceName>\n" + //
+            "        <destinationName>altitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+            "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" + //
+            "            <att name=\"long_name\">Altitude</att>\n" + //
+            "            <att name=\"positive\">up</att>\n" + //
+            "            <att name=\"standard_name\">altitude</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">-89.97803 89.97803</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"fraction_digits\" type=\"int\">3</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"point_spacing\">even</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">0.02197266 359.978</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"fraction_digits\" type=\"int\">3</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"point_spacing\">even</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PHssta</sourceName>\n" + //
+            "        <destinationName>sst</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-1.725 34.05</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"fraction_digits\" type=\"int\">1</att>\n" + //
+            "            <att name=\"long_name\">SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality</att>\n"
+            + //
+            "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" + //
+            "            <att name=\"numberOfObservations\" type=\"int\">16317457</att>\n" + //
+            "            <att name=\"percentCoverage\" type=\"double\">0.4862981140613556</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Surface Temperature</att>\n" + //
+            "            <att name=\"numberOfObservations\">null</att>\n" + //
+            "            <att name=\"percentCoverage\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestPM180LonValidMinMax() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridLonPM180\" datasetID=\"testPM180LonValidMinMax\" active=\"true\">\n" + //
+            "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testPM180LonValidMinMax_child\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/satellite/oi2/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>.*\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>20</matchAxisNDigits>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"Contact\">null</att>\n" + //
+            "        <att name=\"contact\">oisst-help@noaa.gov</att>\n" + //
+            "        <att name=\"contributor_name\">NOAA NCDC</att>\n" + //
+            "        <att name=\"contributor_role\">Source of data.</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">oisst-help@noaa.gov</att>\n" + //
+            "        <att name=\"creator_name\">NOAA NCEI</att>\n" + //
+            "        <att name=\"creator_type\">group</att>\n" + //
+            "        <att name=\"creator_url\">https://www.ncei.noaa.gov/</att>\n" + //
+            "        <att name=\"History\">null</att>\n" + //
+            "        <att name=\"id\">ncdcOisst2Agg</att>\n" + //
+            "        <att name=\"infoUrl\">https://www.ncdc.noaa.gov/oisst</att>\n" + //
+            "        <att name=\"institution\">NOAA NCEI</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+            "        <att name=\"source\">NOAA/National Climatic Data Center</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">My summary.</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" + //
+            "            <att name=\"long_name\">Center time of the day</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1978-01-01T12:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>zlev</sourceName>\n" + //
+            "        <destinationName>zlev</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" + //
+            "            <att name=\"actual_range\">0, 0</att>\n" + //
+            "            <att name=\"long_name\">Sea surface height</att>\n" + //
+            "            <att name=\"units\">meters</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_height</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">720</att>\n" + //
+            "            <att name=\"grids\">Uniform grid from -89.875 to 89.875 by 0.25</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1440</att>\n" + //
+            "            <att name=\"grids\">Uniform grid from 0.125 to 359.875 by 0.25</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">359.875</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.125</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sst</sourceName>\n" + //
+            "        <destinationName>sst</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 1 720 1440</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"short\">-999</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"long_name\">Daily sea surface temperature</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.01</att>\n" + //
+            "            <att name=\"units\">degrees C</att>\n" + //
+            "            <att name=\"valid_max\" type=\"short\">4500</att>\n" + //
+            "            <att name=\"valid_min\" type=\"short\">-300</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestInvalidCRAFiles() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromInvalidCRAFiles\" datasetID=\"testInvalidCRAFiles\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/nccf/wod/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>wod_drb_.*\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Profile</att>\n" + //
+            "        <att name=\"cdm_profile_variables\">country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, latitude, longitude, time, date, GMT_time, Access_no, Platform, Institute, Orig_Stat_Num, dataset, real_time, Ocean_Vehicle, Temperature_WODprofileflag, Temperature_Instrument, Salinity_WODprofileflag, Salinity_Instrument, Oxygen_WODprofileflag, Oxygen_Original_units, Primary_Investigator, Primary_Investigator_VAR</att>\n"
+            + //
+            "        <att name=\"Conventions\">CF-1.6</att>\n" + //
+            "        <att name=\"creator_email\">OCLhelp@noaa.gov</att>\n" + //
+            "        <att name=\"creator_name\">Ocean Climate Lab/NCEI</att>\n" + //
+            "        <att name=\"creator_url\">http://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"crs_epsg_code\">EPSG:4326</att>\n" + //
+            "        <att name=\"crs_grid_mapping_name\">latitude_longitude</att>\n" + //
+            "        <att name=\"crs_inverse_flattening\" type=\"float\">298.25723</att>\n" + //
+            "        <att name=\"crs_longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" + //
+            "        <att name=\"crs_semi_major_axis\" type=\"float\">6378137.0</att>\n" + //
+            "        <att name=\"date_created\">2018-03-25</att>\n" + //
+            "        <att name=\"date_modified\">2018-03-25</att>\n" + //
+            "        <att name=\"featureType\">Profile</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"float\">87.5248</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"float\">68.572</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\">point</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"float\">-11.6521</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"float\">-153.0565</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\">point</att>\n" + //
+            "        <att name=\"geospatial_vertical_max\" type=\"float\">780.2255</att>\n" + //
+            "        <att name=\"geospatial_vertical_min\" type=\"float\">5.0467224</att>\n" + //
+            "        <att name=\"geospatial_vertical_positive\">down</att>\n" + //
+            "        <att name=\"geospatial_vertical_units\">meters</att>\n" + //
+            "        <att name=\"id\">/nodc/data/oc5.clim.0/wod_update_nc/2006/wod_drb_2006.nc</att>\n" + //
+            "        <att name=\"institution\">National Centers for Environmental Information (NCEI), NOAA</att>\n" + //
+            "        <att name=\"naming_authority\">gov.noaa.nodc</att>\n" + //
+            "        <att name=\"project\">World Ocean Database</att>\n" + //
+            "        <att name=\"publisher_email\">NODC.Services@noaa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">US DOC; NESDIS; NATIONAL CENTERS FOR ENVIRONMENTAL INFORMATION</att>\n"
+            + //
+            "        <att name=\"publisher_url\">http://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"references\">World Ocean Database 2013. URL:http://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n"
+            + //
+            "        <att name=\"source\">World Ocean Database</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v41</att>\n" + //
+            "        <att name=\"summary\">Data for multiple casts from the World Ocean Database</att>\n" + //
+            "        <att name=\"time_coverage_end\">2006-12-31</att>\n" + //
+            "        <att name=\"time_coverage_start\">2006-01-01</att>\n" + //
+            "        <att name=\"title\">World Ocean Database - Multi-cast file</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"history\">World Ocean Database</att>\n" + //
+            "        <att name=\"infoUrl\">https://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"institution\">NCEI, NOAA</att>\n" + //
+            "        <att name=\"keywords\">Access_no, accession, below, cast, center, centers, chemistry, country, cruise, data, database, dataset, date, density, depth, depth status_flag, dissolved, dissolved o2, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Oxygen, Earth Science &gt; Oceans &gt; Ocean Pressure &gt; Water Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, environmental, figures, file, flag, fraction, GMT_time, identifier, information, institute, instrument, investigator, latitude, level, longitude, multi, multi-cast, name, national, ncei, nesdis, noaa, nodc, number, O2, observation, ocean, Ocean_Vehicle, oceanographic, oceans, Orig_Stat_Num, original, originators, originators_cruise_identifier, oxygen, Oxygen_Original_units, Oxygen_sigfigs, Oxygen_WODflag, Oxygen_WODprofileflag, platform, practical, pressure, Pressure_sigfigs, primary, Primary_Investigator, Primary_Investigator_VAR, profile, quality, real, real_time, responsible, salinity, Salinity_Instrument, Salinity_sigfigs, Salinity_WODflag, Salinity_WODprofileflag, science, sea, sea_water_practical_salinity, sea_water_pressure, sea_water_salinity status_flag, sea_water_temperature, sea_water_temperature status_flag, seawater, significant, station, statistics, status, surface, temperature, Temperature_Instrument, Temperature_sigfigs, Temperature_WODflag, Temperature_WODprofileflag, time, unique, units, vehicle, volume, volume_fraction_of_oxygen_in_sea_water, volume_fraction_of_oxygen_in_sea_water status_flag, water, wod, WOD_cruise_identifier, wod_unique_cast, world, z_sigfigs, z_WODflag</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"publisher_type\">institution</att>\n" + //
+            "        <att name=\"publisher_url\">https://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n"
+            + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"subsetVariables\">dataset, Temperature_WODprofileflag, Salinity_WODprofileflag, Oxygen_WODprofileflag, z_WODflag, Temperature_WODflag</att>\n"
+            + //
+            "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n"
+            + //
+            "        <att name=\"title\">World Ocean Database, Multi-cast file</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>country</sourceName>\n" + //
+            "        <destinationName>country</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Country</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WOD_cruise_identifier</sourceName>\n" + //
+            "        <destinationName>WOD_cruise_identifier</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">two byte country code + WOD cruise number (unique to country code)</att>\n"
+            + //
+            "            <att name=\"long_name\">WOD_cruise_identifier</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>originators_cruise_identifier</sourceName>\n" + //
+            "        <destinationName>originators_cruise_identifier</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Originators Cruise Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>wod_unique_cast</sourceName>\n" + //
+            "        <destinationName>wod_unique_cast</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"cf_role\">profile_id</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Wod Unique Cast</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1770-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">days since 1770-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>date</sourceName>\n" + //
+            "        <destinationName>date</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">YYYYMMDD</att>\n" + //
+            "            <att name=\"long_name\">date</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>GMT_time</sourceName>\n" + //
+            "        <destinationName>GMT_time</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">GMT_time</att>\n" + //
+            "            <att name=\"units\">hours</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Access_no</sourceName>\n" + //
+            "        <destinationName>Access_no</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">-99999</att>\n" + //
+            "            <att name=\"comment\">used to find original data at NODC</att>\n" + //
+            "            <att name=\"long_name\">NODC_accession_number</att>\n" + //
+            "            <att name=\"units_wod\">NODC_code</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Platform</sourceName>\n" + //
+            "        <destinationName>Platform</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">name of platform from which measurements were taken</att>\n" + //
+            "            <att name=\"long_name\">Platform_name</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Institute</sourceName>\n" + //
+            "        <destinationName>Institute</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">name of institute which collected data</att>\n" + //
+            "            <att name=\"long_name\">Responsible_institute</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Orig_Stat_Num</sourceName>\n" + //
+            "        <destinationName>Orig_Stat_Num</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">-99999</att>\n" + //
+            "            <att name=\"comment\">number assigned to a given station by data originator</att>\n" + //
+            "            <att name=\"long_name\">Originators_Station_Number</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dataset</sourceName>\n" + //
+            "        <destinationName>dataset</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">WOD_dataset</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>real_time</sourceName>\n" + //
+            "        <destinationName>real_time</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">timeliness and quality status</att>\n" + //
+            "            <att name=\"long_name\">real_time_data</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Real Time Data</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Ocean_Vehicle</sourceName>\n" + //
+            "        <destinationName>Ocean_Vehicle</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Ocean_vehicle</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "            <att name=\"long_name\">Ocean Vehicle</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_WODprofileflag</sourceName>\n" + //
+            "        <destinationName>Temperature_WODprofileflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_profile_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_Instrument</sourceName>\n" + //
+            "        <destinationName>Temperature_Instrument</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Device used for measurement</att>\n" + //
+            "            <att name=\"long_name\">Instrument</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Salinity_WODprofileflag</sourceName>\n" + //
+            "        <destinationName>Salinity_WODprofileflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_profile_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Salinity_Instrument</sourceName>\n" + //
+            "        <destinationName>Salinity_Instrument</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Device used for measurement</att>\n" + //
+            "            <att name=\"long_name\">Instrument</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Oxygen_WODprofileflag</sourceName>\n" + //
+            "        <destinationName>Oxygen_WODprofileflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_profile_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Oxygen_Original_units</sourceName>\n" + //
+            "        <destinationName>Oxygen_Original_units</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"comment\">Units originally used: coverted to standard units</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Dissolved O2</att>\n" + //
+            "            <att name=\"long_name\">Oxygen Original Units</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Primary_Investigator</sourceName>\n" + //
+            "        <destinationName>Primary_Investigator</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "            <att name=\"long_name\">Primary Investigator</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Primary_Investigator_VAR</sourceName>\n" + //
+            "        <destinationName>Primary_Investigator_VAR</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "            <att name=\"long_name\">Primary Investigator VAR</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>z</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"ancillary_variables\">z_sigfigs z_WODflag</att>\n" + //
+            "            <att name=\"long_name\">depth_below_sea_surface</att>\n" + //
+            "            <att name=\"positive\">down</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cdm_ioos_category\">Location</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" + //
+            "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Depth Below Sea Surface</att>\n" + //
+            "            <att name=\"source_name\">z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>z_WODflag</sourceName>\n" + //
+            "        <destinationName>z_WODflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted duplicate_or_inversion density_inversion</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2</att>\n" + //
+            "            <att name=\"long_name\">WOD_depth_level_flag</att>\n" + //
+            "            <att name=\"standard_name\">depth status_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>z_sigfigs</sourceName>\n" + //
+            "        <destinationName>z_sigfigs</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">depth significant figures   </att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature</sourceName>\n" + //
+            "        <destinationName>Temperature</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E10</att>\n" + //
+            "            <att name=\"ancillary_variables\">Temperature_sigfigs Temperature_WODflag Temperature_WODprofileflag</att>\n"
+            + //
+            "            <att name=\"coordinates\">time lat lon z</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_sigfigs</sourceName>\n" + //
+            "        <destinationName>Temperature_sigfigs</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">sea_water_temperature significant_figures</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_WODflag</sourceName>\n" + //
+            "        <destinationName>Temperature_WODflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted range_out inversion gradient anomaly gradient+inversion range+inversion range+gradient range+anomaly range+inversion+gradient</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_observation_flag</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Salinity</sourceName>\n" + //
+            "        <destinationName>Salinity</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E10</att>\n" + //
+            "            <att name=\"ancillary_variables\">Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag</att>\n"
+            + //
+            "            <att name=\"coordinates\">time lat lon z</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Salinity</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Salinity_sigfigs</sourceName>\n" + //
+            "        <destinationName>Salinity_sigfigs</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">sea_water_salinity significant_figures</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Salinity_WODflag</sourceName>\n" + //
+            "        <destinationName>Salinity_WODflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted range_out inversion gradient anomaly gradient+inversion range+inversion range+gradient range+anomaly range+inversion+gradient</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_observation_flag</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity status_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Pressure</sourceName>\n" + //
+            "        <destinationName>Pressure</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E10</att>\n" + //
+            "            <att name=\"ancillary_variables\">Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag</att>\n"
+            + //
+            "            <att name=\"coordinates\">time lat lon z</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">dbar</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Pressure</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Pressure_sigfigs</sourceName>\n" + //
+            "        <destinationName>Pressure_sigfigs</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">sea_water_pressure significant_figures</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Oxygen</sourceName>\n" + //
+            "        <destinationName>Oxygen</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E10</att>\n" + //
+            "            <att name=\"ancillary_variables\">Oxygen_sigfigs Oxygen_WODflag Oxygen_WODprofileflag</att>\n"
+            + //
+            "            <att name=\"coordinates\">time lat lon z</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">volume_fraction_of_oxygen_in_sea_water</att>\n" + //
+            "            <att name=\"standard_name\">volume_fraction_of_oxygen_in_sea_water</att>\n" + //
+            "            <att name=\"units\">ml/l</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved O2</att>\n" + //
+            "            <att name=\"long_name\">Volume Fraction Of Oxygen In Sea Water</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Oxygen_sigfigs</sourceName>\n" + //
+            "        <destinationName>Oxygen_sigfigs</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">volume_fraction_of_oxygen_in_sea_water significant_figures</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved O2</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Oxygen_WODflag</sourceName>\n" + //
+            "        <destinationName>Oxygen_WODflag</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted range_out inversion gradient anomaly gradient+inversion range+inversion range+gradient range+anomaly range+inversion+gradient</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_observation_flag</att>\n" + //
+            "            <att name=\"standard_name\">volume_fraction_of_oxygen_in_sea_water status_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestJsonlCSV() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromJsonlCSVFiles\" datasetID=\"testJsonlCSV\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/jsonl/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>sampleCSV\\.jsonl</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames>ship time</sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+            "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+            "    -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Trajectory</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">ship</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">https://jsonlines.org/examples/</att>\n" + //
+            "        <att name=\"institution\">jsonlines.org</att>\n" + //
+            "        <att name=\"keywords\">data, latitude, local, long, longitude, sea, ship, source, sst, status, surface, temperature, test, testLong, time</att>\n"
+            + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"subsetVariables\">ship</att>\n" + //
+            "        <att name=\"summary\">This is the sample summary.</att>\n" + //
+            "        <att name=\"title\">Test of JSON Lines CSV</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ship</sourceName>\n" + //
+            "        <destinationName>ship</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Ship</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">yyyy-MM-dd'T'HH:mm:ssZ</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>status</sourceName>\n" + //
+            "        <destinationName>status</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "            <att name=\"long_name\">Status</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>testLong</sourceName>\n" + //
+            "        <destinationName>testLong</destinationName>\n" + //
+            "        <dataType>long</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "            <att name=\"long_name\">Test Long</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sst</sourceName>\n" + //
+            "        <destinationName>sst</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Surface Temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getmergeIR() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIR\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>merg_[0-9]{10}_4km-pixel</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"delta_t\">0000-00-00 00:30:00</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ir</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"int\">170</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"int\">330</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">IR Brightness Temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">330</att>\n" + //
+            "            <att name=\"standard_name\">brightness_temperature</att>\n" + //
+            "            <att name=\"units\">degreeK</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>flux</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">500.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">Flux</att>\n" + //
+            "            <att name=\"missing_value\" type=\"double\">470.0</att>\n" + //
+            "            <att name=\"standard_name\">surface_upwelling_shortwave_flux</att>\n" + //
+            "            <att name=\"units\">W/m^2</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getmergeIRZ() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIRZ\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.Z</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_name\">Bob Joyce</att>\n" + //
+            "        <att name=\"creator_email\">robert.joyce@noaa.gov</att>\n" + //
+            "        <att name=\"creator_url\">https://www.cpc.ncep.noaa.gov/</att>\n" + //
+            "        <att name=\"infoUrl\">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>\n" + //
+            "        <att name=\"institution\">NOAA NWS NCEP CPC</att>\n" + //
+            "        <att name=\"keywords\">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"summary\">The Climate Prediction Center/NCEP/NWS is now making available\n" + //
+            "globally-merged (60N-60S) pixel-resolution IR brightness\n" + //
+            "temperature data (equivalent blackbody temps), merged from all\n" + //
+            "available geostationary satellites (GOES-8/10, METEOSAT-7/5 and\n" + //
+            "GMS).  The availability of data from METEOSAT-7, which is\n" + //
+            "located at 57E at the present time, yields a unique opportunity\n" + //
+            "for total global (60N-60S) coverage.</att>\n" + //
+            "        <att name=\"title\">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"delta_t\">0000-00-00 00:30:00</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ir</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"int\">170</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"int\">330</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">IR Brightness Temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">330</att>\n" + //
+            "            <att name=\"standard_name\">brightness_temperature</att>\n" + //
+            "            <att name=\"units\">degreeK</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>flux</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">500.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">Flux</att>\n" + //
+            "            <att name=\"missing_value\" type=\"double\">470.0</att>\n" + //
+            "            <att name=\"standard_name\">surface_upwelling_shortwave_flux</att>\n" + //
+            "            <att name=\"units\">W/m^2</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getmergeIRgz() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIRgz\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.gz</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_name\">Bob Joyce</att>\n" + //
+            "        <att name=\"creator_email\">robert.joyce@noaa.gov</att>\n" + //
+            "        <att name=\"creator_url\">https://www.cpc.ncep.noaa.gov/</att>\n" + //
+            "        <att name=\"infoUrl\">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>\n" + //
+            "        <att name=\"institution\">NOAA NWS NCEP CPC</att>\n" + //
+            "        <att name=\"keywords\">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"summary\">The Climate Prediction Center/NCEP/NWS is now making available\n" + //
+            "globally-merged (60N-60S) pixel-resolution IR brightness\n" + //
+            "temperature data (equivalent blackbody temps), merged from all\n" + //
+            "available geostationary satellites (GOES-8/10, METEOSAT-7/5 and\n" + //
+            "GMS).  The availability of data from METEOSAT-7, which is\n" + //
+            "located at 57E at the present time, yields a unique opportunity\n" + //
+            "for total global (60N-60S) coverage.</att>\n" + //
+            "        <att name=\"title\">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"delta_t\">0000-00-00 00:30:00</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ir</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"int\">170</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"int\">330</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">IR Brightness Temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">330</att>\n" + //
+            "            <att name=\"standard_name\">brightness_temperature</att>\n" + //
+            "            <att name=\"units\">degreeK</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>flux</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">500.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_cateory\">Heat Flux</att>\n" + //
+            "            <att name=\"long_name\">Flux</att>\n" + //
+            "            <att name=\"missing_value\" type=\"double\">470.0</att>\n" + //
+            "            <att name=\"standard_name\">surface_upwelling_shortwave_flux</att>\n" + //
+            "            <att name=\"units\">W/m^2</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestNcCF1b() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testNcCF1b\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nccf/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>ncCF1b\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames>line_station time</sortFilesBySourceNames>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">line_station</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"Easternmost_Easting\" type=\"float\">-123.49333</att>\n" + //
+            "        <att name=\"featureType\">TimeSeries</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"float\">33.388332</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"float\">32.245</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"float\">-123.49333</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"float\">-124.32333</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+            "        <att name=\"geospatial_vertical_max\" type=\"float\">-211.5</att>\n" + //
+            "        <att name=\"geospatial_vertical_min\" type=\"float\">-216.7</att>\n" + //
+            "        <att name=\"geospatial_vertical_positive\">up</att>\n" + //
+            "        <att name=\"geospatial_vertical_units\">m</att>\n" + //
+            "        <att name=\"history\">Data originally from CalCOFI project.\n" + //
+            "At ERD, Roy Mendelssohn processed the data into .nc files.\n" + //
+            "2010-12-28 At ERD, Lynn DeWitt made the files available to Bob Simons.\n" + //
+            "2010-12-31 Bob Simons reprocessed the files with Projects.calcofiBio().\n" + //
+            "2012-08-02T16:13:53Z (local files)\n" + //
+            "2012-08-02T16:13:53Z http://localhost:8080/cwexperimental/tabledap/erdCalcofiBio.ncCF?line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits&amp;station=100.0&amp;time&gt;=2004-11-12T00:00:00Z&amp;time&lt;=2004-11-19T08:32:00Z&amp;obsUnits=%22number%20of%20larvae%22&amp;orderBy%28%22line_station,time,obsScientific%22%29</att>\n"
+            + //
+            "        <att name=\"id\">ncCF1b</att>\n" + //
+            "        <att name=\"infoUrl\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" + //
+            "        <att name=\"institution\">CalCOFI</att>\n" + //
+            "        <att name=\"keywords\">Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat,\n" + //
+            "Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat,\n" + //
+            "Biological Classification &gt; Animals/Vertebrates &gt; Fish,\n" + //
+            "Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" + //
+            "1984-2004, altitude, atmosphere, biology, calcofi, code, common, count, cruise, fish, height, identifier, larvae, line, name, number, observ\n"
+            + //
+            "ed, occupancy, order, scientific, ship, start, station, time, tow, units, value</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">The data may be used and redistributed for free but is not intended\n" + //
+            "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+            "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+            "of their employees or contractors, makes any warranty, express or\n" + //
+            "implied, including warranties of merchantability and fitness for a\n" + //
+            "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+            "completeness, or usefulness, of this information.</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"Northernmost_Northing\" type=\"float\">33.388332</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"Southernmost_Northing\" type=\"float\">32.245</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"subsetVariables\">line_station</att>\n" + //
+            "        <att name=\"summary\">This is the CalCOFI distributional atlas of fish larvae. Routine oceanographic sampling within the California Cu\n"
+            + //
+            "rrent System has occurred under the auspices of the California Cooperative Oceanic Fisheries Investigations (CalCOFI) since 1949, providing\n"
+            + //
+            "one of the longest existing time-series of the physics, chemistry and biology of a dynamic oceanic regime.</att>\n"
+            + //
+            "        <att name=\"time_coverage_end\">2004-11-16T21:20:00Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">2004-11-12T16:26:00Z</att>\n" + //
+            "        <att name=\"title\">CalCOFI Fish Larvae Count, 1984-2004</att>\n" + //
+            "        <att name=\"Westernmost_Easting\" type=\"float\">-124.32333</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"keywords\">1984-2004,\n" + //
+            "Atmosphere &gt; Altitude &gt; Station Height,\n" + //
+            "Biological Classification &gt; Animals/Vertebrates &gt; Fish,\n" + //
+            "Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat,\n" + //
+            "Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat,\n" + //
+            "Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" + //
+            "altitude, animals, aquatic, atmosphere, biological, biology, biosphere, calcofi, classification, coastal, code, common, count, cruise, ecosystems, fish, fisheries, habitat, height, identifier, larvae, line, marine, name, number, observed, occupancy, oceans, order, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n"
+            + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>line_station</sourceName>\n" + //
+            "        <destinationName>line_station</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">CalCOFI Line + Station</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-124.32333 -123.49333</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">32.245 33.388332</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>altitude</sourceName>\n" + //
+            "        <destinationName>altitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Height</att>\n" + //
+            "            <att name=\"_CoordinateZisPositive\">up</att>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-216.7 -211.5</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Altitude at Start of Tow</att>\n" + //
+            "            <att name=\"positive\">up</att>\n" + //
+            "            <att name=\"standard_name\">altitude</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">-210.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-218.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">1.10027676E9 1.10064E9</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"time_origin\">01-JAN-1970 00:00:00</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.1007E9</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">1.1002E9</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>obsScientific</sourceName>\n" + //
+            "        <destinationName>obsScientific</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"coordinates\">time latitude longitude altitude</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Observed (Scientific Name)</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>obsValue</sourceName>\n" + //
+            "        <destinationName>obsValue</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"intList\">1 22</att>\n" + //
+            "            <att name=\"coordinates\">time latitude longitude altitude</att>\n" + //
+            "            <att name=\"ioos_category\">Biology</att>\n" + //
+            "            <att name=\"long_name\">Observed Value</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">25.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>obsUnits</sourceName>\n" + //
+            "        <destinationName>obsUnits</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"coordinates\">time latitude longitude altitude</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Observed Units</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestKevin20130109() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testKevin20130109\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/largeFiles/kevin/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>interpolated_gld\\.20120620_045152_and_meta\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Trajectory</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">traj, trajectory, id, wmo, expno, typebuoy, deploy_date, dlat, dlon, end_date, elat, elon, lost_date, typedeath</att>\n"
+            + //
+            "        <att name=\"Conventions\">CF-1.0</att>\n" + //
+            "        <att name=\"featureType\">trajectory</att>\n" + //
+            "        <att name=\"history\">FERRET V6.84    4-Jan-13</att>\n" + //
+            "        <att name=\"subsetVariables\">traj, trajectory, id, wmo, expno, typebuoy, deploy_date, dlat, dlon, end_date, elat, elon, lost_date, typedeath</att>\n"
+            + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">???</att>\n" + //
+            "        <att name=\"institution\">???</att>\n" + //
+            "        <att name=\"keywords\">aground, alive, aoml, buoy, center, data, date, death, deployment, eastward, end, experiment, from, identification, local, lost, meteorological, noaa, northward, number, observations, picked, pkey, ran, source., speed, sporadic, standard, still, stop, surface, svp, temperature, time, traj, trajectory, transmissions, transmitting, type, variance, velocity, vessel, world</att>\n"
+            + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">Data from a local source.</att>\n" + //
+            "        <att name=\"title\">Data from a local source.</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>traj</sourceName>\n" + //
+            "        <destinationName>traj</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"point_spacing\">even</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"long_name\">Traj</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>trajectory</sourceName>\n" + //
+            "        <destinationName>trajectory</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">trajectory ID</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>obs</sourceName>\n" + //
+            "        <destinationName>obs</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"point_spacing\">even</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"long_name\">Obs</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"units\">Days since 1-jan-1900</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1900-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>temp</sourceName>\n" + //
+            "        <destinationName>temp</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">Deg C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ve</sourceName>\n" + //
+            "        <destinationName>ve</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Eastward velocity</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">cm/s</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>vn</sourceName>\n" + //
+            "        <destinationName>vn</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Northward velocity</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">cm/s</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>speed</sourceName>\n" + //
+            "        <destinationName>speed</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Speed</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">cm/s</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>varlat</sourceName>\n" + //
+            "        <destinationName>varlat</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Variance latitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>varlon</sourceName>\n" + //
+            "        <destinationName>varlon</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Variance longitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>vart</sourceName>\n" + //
+            "        <destinationName>vart</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From interpolated_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Variance temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>id</sourceName>\n" + //
+            "        <destinationName>id</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">AOML buoy identification number (PKey)</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>wmo</sourceName>\n" + //
+            "        <destinationName>wmo</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">World Meteorological Center buoy identification number</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>expno</sourceName>\n" + //
+            "        <destinationName>expno</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Experiment number</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>typebuoy</sourceName>\n" + //
+            "        <destinationName>typebuoy</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Buoy type (SVP=standard Surface)</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deploy_date</sourceName>\n" + //
+            "        <destinationName>deploy_date</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Deployment date and time</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"units\">Days Since 1-jan-1990</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">days since 1900-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dlat</sourceName>\n" + //
+            "        <destinationName>dlat</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Deployment latitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dlon</sourceName>\n" + //
+            "        <destinationName>dlon</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Deployment longitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>end_date</sourceName>\n" + //
+            "        <destinationName>end_date</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">End date and time</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"units\">Days Since 1-jan-1990</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">days since 1900-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>elat</sourceName>\n" + //
+            "        <destinationName>elat</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">End latitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>elon</sourceName>\n" + //
+            "        <destinationName>elon</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">End longitude</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">999.999</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lost_date</sourceName>\n" + //
+            "        <destinationName>lost_date</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">date and time lost</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-693962.0</att>\n" + //
+            "            <att name=\"units\">Days Since 1-jan-1990</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">days since 1900-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>typedeath</sourceName>\n" + //
+            "        <destinationName>typedeath</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-1.0E34</att>\n" + //
+            "            <att name=\"history\">From metadata_gld.20120620_045152</att>\n" + //
+            "            <att name=\"long_name\">Type of death (0=buoy still alive, 1=buoy ran aground, 2=picked up by vessel, 3=stop transmitting, 4=sporadic transmissions, 5=b</att>\n"
+            + //
+            "            <att name=\"missing_value\" type=\"float\">-1.0E34</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"long_name\">Type of Death</att>\n" + //
+            "            <att name=\"comment\">Type of death (0=buoy still alive, 1=buoy ran aground, 2=picked up by vessel, 3=stop transmitting, 4=sporadic transmissions, 5=b ???</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getpmelTaoMonPos() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"pmelTaoMonPos\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/points/tao/monthly/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <recursive>false</recursive>\n" + //
+            "    <fileNameRegex>pos[0-9].*_mon\\.cdf</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" + //
+            "    <sortFilesBySourceNames>global:site_code time</sortFilesBySourceNames>\n" + //
+            "    <defaultGraphQuery>longitude,latitude,LON_502&amp;time&gt;=now-2months</defaultGraphQuery>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"_FillValue\" type=\"float\">1.0E35</att>\n" + //
+            "        <att name=\"CREATION_DATE\">07:37 12-JUL-2011</att>\n" + //
+            "        <att name=\"Data_info\">Contact Paul Freitag: 206-526-6727</att>\n" + //
+            "        <att name=\"Data_Source\">GTMBA Project Office/NOAA/PMEL</att>\n" + //
+            "        <att name=\"File_info\">Contact: Dai.C.McClurg@noaa.gov</att>\n" + //
+            "        <att name=\"missing_value\" type=\"float\">1.0E35</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"_FillValue\"></att>\n" + //
+            "        <att name=\"platform_code\"></att>\n" + //
+            "        <att name=\"site_code\"></att>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">array, station, wmo_platform_code, longitude, latitude, depth</att>\n"
+            + //
+            "        <att name=\"subsetVariables\">array, station, wmo_platform_code, longitude, latitude, depth</att>\n"
+            + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_name\">GTMBA Project Office/NOAA/PMEL</att>\n" + //
+            "        <att name=\"creator_email\">Dai.C.McClurg@noaa.gov</att>\n" + //
+            "        <att name=\"creator_type\">group</att>\n" + //
+            "        <att name=\"creator_url\">https://www.pmel.noaa.gov/gtmba/mission</att>\n" + //
+            "        <att name=\"id\"></att>\n" + //
+            "        <att name=\"infoUrl\">https://www.pmel.noaa.gov/gtmba/mission</att>\n" + //
+            "        <att name=\"institution\">NOAA PMEL, TAO/TRITON, RAMA, PIRATA</att>\n" + //
+            "        <att name=\"keywords\">buoys, depth, identifier, monthly, noaa, pirata, pmel, position, precise, quality, rama, station, tao, time, triton</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\n"
+            + //
+            "\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"missing_value\"></att>\n" + //
+            "        <att name=\"project\">TAO/TRITON, RAMA, PIRATA</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">This dataset has monthly Position data from the\n" + //
+            "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\n" + //
+            "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\n" + //
+            "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\n" + //
+            "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\n"
+            + //
+            "https://www.pmel.noaa.gov/gtmba/mission .</att>\n" + //
+            "        <att name=\"testOutOfDate\">now-60days</att>\n" + //
+            "        <att name=\"title\">TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>global:array</sourceName>\n" + //
+            "        <destinationName>array</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Array</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>global:site_code</sourceName>\n" + //
+            "        <destinationName>station</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Station</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>global:wmo_platform_code</sourceName>\n" + //
+            "        <destinationName>wmo_platform_code</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">WMO Platform Code</att>\n" + //
+            "            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">502</att>\n" + //
+            "            <att name=\"type\">EVEN</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Nominal Longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">500</att>\n" + //
+            "            <att name=\"type\">EVEN</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Nominal Latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"type\">EVEN</att>\n" + //
+            "            <att name=\"units\">days since 1983-04-16 12:00:00</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>depth</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">3</att>\n" + //
+            "            <att name=\"type\">EVEN</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Depth</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LON_502</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">502</att>\n" + //
+            "            <att name=\"FORTRAN_format\">f10.4</att>\n" + //
+            "            <att name=\"generic_name\">lon</att>\n" + //
+            "            <att name=\"long_name\">LONGITUDE</att>\n" + //
+            "            <att name=\"name\">LON</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Precise Longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>QX_5502</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">5502</att>\n" + //
+            "            <att name=\"generic_name\">qx</att>\n" + //
+            "            <att name=\"long_name\">EAST LONGITUDE QUALITY</att>\n" + //
+            "            <att name=\"name\">QX</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">6</att>\n" + //
+            "            <att name=\"colorBarContinuous\">false</att>\n" + //
+            "            <att name=\"description\">Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QX_5502&gt;=1 and QX_5502&lt;=3.</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Longitude Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LAT_500</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">500</att>\n" + //
+            "            <att name=\"FORTRAN_format\">f10.4</att>\n" + //
+            "            <att name=\"generic_name\">lat</att>\n" + //
+            "            <att name=\"long_name\">LATITUDE</att>\n" + //
+            "            <att name=\"name\">LAT</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Precise Latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>QY_5500</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">5500</att>\n" + //
+            "            <att name=\"generic_name\">qy</att>\n" + //
+            "            <att name=\"long_name\">LATITUDE QUALITY</att>\n" + //
+            "            <att name=\"name\">QY</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">1e35</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">6</att>\n" + //
+            "            <att name=\"colorBarContinuous\">false</att>\n" + //
+            "            <att name=\"description\">Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QY_5500&gt;=1 and QY_5500&lt;=3.</att>\n"
+            + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Latitude Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestNoAttName1() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testNoAttName1\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/bridger/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>B01\\.accelerometer.*\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"\" />\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>station</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getUMaineAccB01() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"UMaineAccB01\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/bridger/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>B01\\.accelerometer.*\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"breakout_id\" type=\"int\">7</att>\n" + //
+            "        <att name=\"buffer_type\">accelerometer</att>\n" + //
+            "        <att name=\"cdm_data_type\">Station</att>\n" + //
+            "        <att name=\"comment\">processed with MATLAB</att>\n" + //
+            "        <att name=\"contact\">nealp@maine.edu,ljm@umeoce.maine.edu,jevans@umeoce.maine.edu</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6</att>\n" + //
+            "        <att name=\"creator_email\">nealp@maine.edu,ljm@umeoce.maine.edu,jevans@umeoce.maine.edu</att>\n" + //
+            "        <att name=\"creator_name\">Neal Pettigrew</att>\n" + //
+            "        <att name=\"creator_url\">http://gyre.umeoce.maine.edu/</att>\n" + //
+            "        <att name=\"delta_t\" type=\"int\">60</att>\n" + //
+            "        <att name=\"ending_julian_day_number\" type=\"double\">56463.45833333349</att>\n" + //
+            "        <att name=\"ending_julian_day_string\">2013-06-20 11:00:00</att>\n" + //
+            "        <att name=\"featureType\">timeSeries</att>\n" + //
+            "        <att name=\"history\">Thu Jun 20 13:50:50 2013: /usr/local/bin/ncrcat B01.accelerometer.historical.nc B0124.accelerometer.realtime.nc B01.accelerometer.historical.nc.new\n"
+            + //
+            "... lots of other info\n" + //
+            "</att>\n" + //
+            "        <att name=\"id\">B01</att>\n" + //
+            "        <att name=\"institution\">Department of Physical Oceanography, School of Marine Sciences, University of Maine</att>\n"
+            + //
+            "        <att name=\"institution_url\">http://gyre.umeoce.maine.edu/</att>\n" + //
+            "        <att name=\"instrument_number\" type=\"int\">0</att>\n" + //
+            "        <att name=\"julian_day_convention\">Julian date convention starts at 00:00:00 UTC on 17 November 1858 AD</att>\n"
+            + //
+            "        <att name=\"keywords\">Oceans &gt; Ocean Temperature &gt; Water Temperature,Oceans &gt; Ocean Pressure &gt; Sea Level Pressure,Oceans &gt; Ocean Chemistry &gt; Oxygen,Oceans &gt; Ocean Chemistry &gt; Chlorophyll,Oceans &gt; Ocean Optics &gt; Turbidity,Oceans &gt; Salinity/Density &gt; Conductivity,Oceans &gt; Salinity/Density &gt; Salinity,Oceans &gt; Salinity/Density &gt; Density,Oceans &gt;Ocean Waves &gt; Significant Wave Height,Oceans &gt; Ocean Waves &gt; Wave Period,Oceans &gt; Ocean Winds &gt; Surface Winds,Oceans &gt; Ocean Circulation &gt; Ocean Currents </att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"latitude\" type=\"double\">43.180439</att>\n" + //
+            "        <att name=\"longitude\" type=\"double\">-70.427548</att>\n" + //
+            "        <att name=\"magnetic_variation\" type=\"double\">-16.4</att>\n" + //
+            "        <att name=\"mooring_site_desc\">Western Maine Shelf</att>\n" + //
+            "        <att name=\"mooring_site_id\">B01</att>\n" + //
+            "        <att name=\"naming_authority\">edu.maine</att>\n" + //
+            "        <att name=\"nco_openmp_thread_number\" type=\"int\">1</att>\n" + //
+            "        <att name=\"processing\">historical</att>\n" + //
+            "        <att name=\"project\">GOMOOS</att>\n" + //
+            "        <att name=\"project_url\">http://gomoos.org</att>\n" + //
+            "        <att name=\"projejct\">NERACOOS</att>\n" + //
+            "        <att name=\"publisher\">Department of Physical Oceanography, School of Marine Sciences, University of Maine</att>\n"
+            + //
+            "        <att name=\"publisher_email\">info@neracoos.org</att>\n" + //
+            "        <att name=\"publisher_name\">Northeastern Regional Association of Coastal and Ocean Observing Systems (NERACOOS)</att>\n"
+            + //
+            "        <att name=\"publisher_phone\">(603) 319 1785</att>\n" + //
+            "        <att name=\"publisher_url\">http://www.neracoos.org/</att>\n" + //
+            "        <att name=\"references\">http://gyre.umeoce.maine.edu/data/gomoos/doc/buoy_system_doc/buoy_system/book1.html</att>\n"
+            + //
+            "        <att name=\"source\">surface observation</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"starting_julian_day_number\" type=\"double\">52361.875</att>\n" + //
+            "        <att name=\"starting_julian_day_string\">2002-03-28 21:00:00</att>\n" + //
+            "        <att name=\"station_name\">B01</att>\n" + //
+            "        <att name=\"summary\">Ocean observation data from the Northeastern Regional Association of Coastal &amp;amp; Ocean Observing Systems (NERACOOS). The NERACOOS region includes the northeast United States and Canadian Maritime provinces, as part of the United States Integrated Ocean Observing System (IOOS).  These data are served by Unidata&#39;s Thematic Realtime Environmental Distributed Data Services (THREDDS) Data Server (TDS) in a variety of interoperable data services and output formats.</att>\n"
+            + //
+            "        <att name=\"time_zone\">UTC</att>\n" + //
+            "        <att name=\"title\">Department of Physical Oceanography, School of Marine Sciences, University of Maine B01 Accelerometer Buoy Sensor</att>\n"
+            + //
+            "        <att name=\"water_depth\" type=\"double\">62.0</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"delta_t\" />\n" + //
+            "        <att name=\"starting_julian_day_number\" />\n" + //
+            "        <att name=\"starting_julian_day_string\" />\n" + //
+            "        <att name=\"ending_julian_day_number\" />\n" + //
+            "        <att name=\"ending_julian_day_string\" />\n" + //
+            "        <att name=\"julian_day_convention\" />\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station</att>\n" + //
+            "        <att name=\"subsetVariables\">station</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">http://gyre.umeoce.maine.edu/</att>\n" + //
+            "        <att name=\"keywords\">accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, height, level, maine, marine, name, o2, ocean, oceanography, oceans,\n"
+            + //
+            "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" + //
+            "Oceans &gt; Ocean Chemistry &gt; Oxygen,\n" + //
+            "Oceans &gt; Ocean Circulation &gt; Ocean Currents,\n" + //
+            "Oceans &gt; Ocean Optics &gt; Turbidity,\n" + //
+            "Oceans &gt; Ocean Pressure &gt; Sea Level Pressure,\n" + //
+            "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" + //
+            "Oceans &gt; Ocean Waves &gt; Swells,\n" + //
+            "Oceans &gt; Ocean Waves &gt; Wave Period,\n" + //
+            "Oceans &gt; Ocean Winds &gt; Surface Winds,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Conductivity,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Density,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Salinity,\n" + //
+            "optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds</att>\n"
+            + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"project_url\">http://www.neracoos.org</att>\n" + //
+            "        <att name=\"project\">NERACOOS</att>\n" + //
+            "        <att name=\"projejct\">null</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"title\">University of Maine, B01 Accelerometer Buoy Sensor</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>station</sourceName>\n" + //
+            "        <destinationName>station</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "            <att name=\"long_name\">B01</att>\n" + //
+            "            <att name=\"name\">B01</att>\n" + //
+            "            <att name=\"short_name\">B01</att>\n" + //
+            "            <att name=\"standard_name\">station_name</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>depth</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"positive\">down</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" + //
+            "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Depth</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"calendar\">gregorian</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1858-11-17 00:00:00 +0:00</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "   <dataVariable>\n" + //
+            "       <sourceName>time_created</sourceName>\n" + //
+            "       <destinationName>time_created</destinationName>\n" + //
+            "       <dataType>double</dataType>\n" + //
+            "       <!-- sourceAttributes>\n" + //
+            "           <att name=\"_ChunkSize\" type=\"int\">1</att>\n" + //
+            "           <att name=\"_FillValue\" type=\"double\">-999.0</att>\n" + //
+            "           <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "           <att name=\"long_name\">Time Record Created</att>\n" + //
+            "           <att name=\"short_name\">time_cr</att>\n" + //
+            "           <att name=\"standard_name\">time_created</att>\n" + //
+            "           <att name=\"units\">days since 1858-11-17 00:00:00</att>\n" + //
+            "           <att name=\"valid_range\" type=\"doubleList\">0.0 99999.0</att>\n" + //
+            "       </sourceAttributes -->\n" + //
+            "       <addAttributes>\n" + //
+            "            <att name=\"_ChunkSize\">null</att>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "           <att name=\"ioos_category\">Time</att>\n" + //
+            "           <att name=\"standard_name\">time</att>\n" + //
+            "       </addAttributes>\n" + //
+            "   </dataVariable>\n" + //
+            "   <dataVariable>\n" + //
+            "       <sourceName>time_modified</sourceName>\n" + //
+            "       <destinationName>time_modified</destinationName>\n" + //
+            "       <dataType>double</dataType>\n" + //
+            "       <!-- sourceAttributes>\n" + //
+            "           <att name=\"_ChunkSize\" type=\"int\">1</att>\n" + //
+            "           <att name=\"_FillValue\" type=\"double\">-999.0</att>\n" + //
+            "           <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "           <att name=\"long_name\">Time Record Last Modified</att>\n" + //
+            "           <att name=\"short_name\">time_mod</att>\n" + //
+            "           <att name=\"standard_name\">time_modified</att>\n" + //
+            "           <att name=\"units\">days since 1858-11-17 00:00:00</att>\n" + //
+            "           <att name=\"valid_range\" type=\"doubleList\">0.0 99999.0</att>\n" + //
+            "       </sourceAttributes -->\n" + //
+            "       <addAttributes>\n" + //
+            "            <att name=\"_ChunkSize\">null</att>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "           <att name=\"ioos_category\">Time</att>\n" + //
+            "           <att name=\"standard_name\">time</att>\n" + //
+            "       </addAttributes>\n" + //
+            "   </dataVariable>\n" + //
+            "   <dataVariable>\n" + //
+            "        <sourceName>significant_wave_height</sourceName>\n" + //
+            "        <destinationName>significant_wave_height</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-999.0</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"ancillary_variables\">significant_wave_height_qc</att>\n" + //
+            "            <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">4061</att>\n" + //
+            "            <att name=\"long_name\">Significant Wave Height</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"short_name\">SWH</att>\n" + //
+            "            <att name=\"standard_name\">significant_height_of_wind_and_swell_waves</att>\n" + //
+            "            <att name=\"units\">meters</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">0.0 40.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Surface Waves</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>significant_wave_height_qc</sourceName>\n" + //
+            "        <destinationName>significant_wave_height_qc</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "            <att name=\"flag_meanings\">quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3</att>\n" + //
+            "            <att name=\"intent\">data_quality</att>\n" + //
+            "            <att name=\"long_name\">Significant Wave Height Quality Control</att>\n" + //
+            "            <att name=\"short_name\">SWHQC</att>\n" + //
+            "            <att name=\"standard_name\">significant_wave_height data_quality</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "            <att name=\"valid_range\" type=\"shortList\">-127 127</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dominant_wave_period</sourceName>\n" + //
+            "        <destinationName>dominant_wave_period</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-999.0</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"ancillary_variables\">dominant_wave_period_qc</att>\n" + //
+            "            <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "            <att name=\"epic_code\" type=\"int\">4063</att>\n" + //
+            "            <att name=\"long_name\">Dominant Wave Period</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"short_name\">DWP</att>\n" + //
+            "            <att name=\"standard_name\">period</att>\n" + //
+            "            <att name=\"units\">seconds</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">0.0 32.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Surface Waves</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dominant_wave_period_qc</sourceName>\n" + //
+            "        <destinationName>dominant_wave_period_qc</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"coordinates\">time lon lat depth</att>\n" + //
+            "            <att name=\"flag_meanings\">quality_good out_of_range sensor_nonfunctional algorithm_failure_no_infl_pt</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3</att>\n" + //
+            "            <att name=\"intent\">data_quality</att>\n" + //
+            "            <att name=\"long_name\">Dominant Wave Period Quality</att>\n" + //
+            "            <att name=\"short_name\">DWPQ</att>\n" + //
+            "            <att name=\"standard_name\">dominant_wave_period data_quality</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "            <att name=\"valid_range\" type=\"shortList\">-127 127</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestNcCF7SampleDimensions() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testNcCF7SampleDimensions\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>0</updateEveryNMillis>\n" + //
+            "    <fileDir>E:/data/ncei/</fileDir>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nccf/ncei/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>ind199105_ctd\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <removeMVRows>true</removeMVRows>\n" + //
+            "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <addAttributes>\n" + //
+            "      <!-- !!!Because the file has featureType=Profile, to be a cdm_data_type=Profile\n" + //
+            "       in ERDDAP, it must have an altitude/depth variable. \n" + //
+            "       That's fine if reading the z-obs variables.\n" + //
+            "       But for others (e.g., temperature_obs) I change to cdm_data_type=TimeSeries below. \n" + //
+            "       Also, for wod_unique_cast, I changed cf_role=profile_id to cf_role-timeseries_id below.-->\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_profile_variables\">null</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute,Cast_Tow_number,Temperature_WODprofileFlag,Temperature_Scale,Temperature_instrument</att>\n"
+            + //
+            "        <att name=\"creator_url\">https://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"subsetVariables\">wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute,Cast_Tow_number,Temperature_WODprofileFlag,Temperature_Scale,Temperature_instrument</att>\n"
+            + //
+            "        <att name=\"Conventions\">CF-1.6, ACDD-1.3, COARDS</att>\n" + //
+            "        <att name=\"infoUrl\">https://www.nodc.noaa.gov/OC5/WOD/pr_wod.html</att>\n" + //
+            "        <att name=\"keywords\">temperature</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"publisher_url\">https://www.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n"
+            + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">Test WOD .ncCF file</att>\n" + //
+            "        <att name=\"title\">Test WOD .ncCF file</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>wod_unique_cast</sourceName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att> <!-- see comment about this above -->\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Access_no</sourceName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Project</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Platform</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Institute</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Cast_Tow_number</sourceName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_WODprofileFlag</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_Scale</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_instrument</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_sigfigs</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_WODflag</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Temperature_origflag</sourceName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>crs</sourceName>\n" + //
+            "        <destinationName>crs</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epsg_code\">EPSG:4326</att>\n" + //
+            "            <att name=\"grid_mapping_name\">latitude_longitude</att>\n" + //
+            "            <att name=\"inverse_flattening\" type=\"float\">298.25723</att>\n" + //
+            "            <att name=\"longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"semi_major_axis\" type=\"float\">6378137.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">CRS</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WODf</sourceName>\n" + //
+            "        <destinationName>WODf</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted range_out inversion gradient anomaly gradient+inversion range+in\n"
+            + //
+            "version range+gradient range+anomaly range+inversion+gradient</att>\n" + //
+            "            <att name=\"flag_values\" type=\"shortList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_observation_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WODfp</sourceName>\n" + //
+            "        <destinationName>WODfp</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_s\n"
+            + //
+            "d_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_s\n"
+            + //
+            "d_out</att>\n" + //
+            "            <att name=\"flag_values\" type=\"shortList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">WOD_profile_flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WODfd</sourceName>\n" + //
+            "        <destinationName>WODfd</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_meanings\">accepted duplicate_or_inversion density_inversion</att>\n" + //
+            "            <att name=\"flag_values\" type=\"shortList\">0 1 2</att>\n" + //
+            "            <att name=\"long_name\">WOD_depth_level_</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "  </dataset>");
+  }
+
+  public static EDD getArgoFloats() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"ArgoFloats\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/briand/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>.*_prof\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex>^</preExtractRegex>\n" + //
+            "    <postExtractRegex>_prof.nc$</postExtractRegex>\n" + //
+            "    <extractRegex>.*</extractRegex>\n" + //
+            "    <columnNameForExtract>fileNumber</columnNameForExtract>\n" + //
+            "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
+            "    <removeMVRows>true</removeMVRows>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
+            "        <att name=\"featureType\">trajectoryProfile</att>\n" + //
+            "        <att name=\"history\">2016-04-15T20:47:22Z creation</att>\n" + //
+            "        <att name=\"institution\">Coriolis GDAC</att>\n" + //
+            "        <att name=\"references\">http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"source\">Argo float</att>\n" + //
+            "        <att name=\"title\">Argo float vertical profile</att>\n" + //
+            "        <att name=\"user_manual_version\">3.1</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_altitude_proxy\">pres</att>\n" + //
+            "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">platform_number, project_name, pi_name, platform_type, float_serial_no</att>\n"
+            + //
+            "        <att name=\"cdm_profile_variables\">cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att>\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, dc_reference, data_state_indicator, firmware_version, wmo_inst_type, time, time_location, latitude, longitude, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, data_state_indicator, firmware_version, wmo_inst_type, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <att name=\"Conventions\">Argo-3.1, CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">support@argo.net</att>\n" + //
+            "        <att name=\"creator_name\">Argo</att>\n" + //
+            "        <att name=\"creator_url\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"history\"></att>\n" + //
+            "        <att name=\"infoUrl\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"institution\">Argo</att>\n" + //
+            "        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n"
+            + //
+            "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" + //
+            "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Salinity,\n" + //
+            "passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "Argo float vertical profiles from Coriolis Global Data Assembly Centres\n" + //
+            "(GDAC). Argo is an international collaboration that collects high-quality\n" + //
+            "temperature and salinity profiles from the upper 2000m of the ice-free\n" + //
+            "global ocean and currents from intermediate depths. The data come from\n" + //
+            "battery-powered autonomous floats that spend most of their life drifting\n" + //
+            "at depth where they are stabilised by being neutrally buoyant at the\n" + //
+            "\"parking depth\" pressure by having a density equal to the ambient pressure\n" + //
+            "and a compressibility that is less than that of sea water. At present there\n" + //
+            "are several models of profiling float used in Argo. All work in a similar\n" + //
+            "fashion but differ somewhat in their design characteristics. At typically\n" + //
+            "10-day intervals, the floats pump fluid into an external bladder and rise\n" + //
+            "to the surface over about 6 hours while measuring temperature and salinity.\n" + //
+            "Satellites or GPS determine the position of the floats when they surface,\n" + //
+            "and the floats transmit their data to the satellites. The bladder then\n" + //
+            "deflates and the float returns to its original density and sinks to drift\n" + //
+            "until the cycle is repeated. Floats are designed to make about 150 such\n" + //
+            "cycles.\n" + //
+            "Data Management URL: http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"title\">Argo Float Vertical Profiles</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>fileNumber</sourceName>\n" + //
+            "        <destinationName>fileNumber</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">File Number</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_TYPE</sourceName>\n" + //
+            "        <destinationName>data_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 1</att>\n" + //
+            "            <att name=\"long_name\">Data type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FORMAT_VERSION</sourceName>\n" + //
+            "        <destinationName>format_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">File format version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HANDBOOK_VERSION</sourceName>\n" + //
+            "        <destinationName>handbook_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Data handbook version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>REFERENCE_DATE_TIME</sourceName>\n" + //
+            "        <destinationName>reference_date_time</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of reference for Julian days</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_CREATION</sourceName>\n" + //
+            "        <destinationName>date_creation</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of file creation</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_UPDATE</sourceName>\n" + //
+            "        <destinationName>date_update</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of update of this file</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_NUMBER</sourceName>\n" + //
+            "        <destinationName>platform_number</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">WMO float identifier : A9IIIII</att>\n" + //
+            "            <att name=\"long_name\">Float unique identifier</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROJECT_NAME</sourceName>\n" + //
+            "        <destinationName>project_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the project</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PI_NAME</sourceName>\n" + //
+            "        <destinationName>pi_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the principal investigator</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CYCLE_NUMBER</sourceName>\n" + //
+            "        <destinationName>cycle_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">0...N, 0 : launch cycle (if exists), 1 : first complete cycle</att>\n"
+            + //
+            "            <att name=\"long_name\">Float cycle number</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">profile_id</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">200.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DIRECTION</sourceName>\n" + //
+            "        <destinationName>direction</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">A: ascending profiles, D: descending profiles</att>\n" + //
+            "            <att name=\"long_name\">Direction of the station profiles</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_CENTRE</sourceName>\n" + //
+            "        <destinationName>data_center</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 4</att>\n" + //
+            "            <att name=\"long_name\">Data centre in charge of float data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DC_REFERENCE</sourceName>\n" + //
+            "        <destinationName>dc_reference</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Data centre convention</att>\n" + //
+            "            <att name=\"long_name\">Station unique identifier in data centre</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_STATE_INDICATOR</sourceName>\n" + //
+            "        <destinationName>data_state_indicator</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 6</att>\n" + //
+            "            <att name=\"long_name\">Degree of processing the data have passed through</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_MODE</sourceName>\n" + //
+            "        <destinationName>data_mode</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">R : real time; D : delayed mode; A : real time with adjustment</att>\n"
+            + //
+            "            <att name=\"long_name\">Delayed mode or real time data</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_TYPE</sourceName>\n" + //
+            "        <destinationName>platform_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 23</att>\n" + //
+            "            <att name=\"long_name\">Type of float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FLOAT_SERIAL_NO</sourceName>\n" + //
+            "        <destinationName>float_serial_no</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Serial number of the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FIRMWARE_VERSION</sourceName>\n" + //
+            "        <destinationName>firmware_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Instrument firmware version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WMO_INST_TYPE</sourceName>\n" + //
+            "        <destinationName>wmo_inst_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 8</att>\n" + //
+            "            <att name=\"long_name\">Coded instrument type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the station relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_QC</sourceName>\n" + //
+            "        <destinationName>time_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on date and time</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_LOCATION</sourceName>\n" + //
+            "        <destinationName>time_location</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the location relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LATITUDE</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">Latitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LONGITUDE</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">Longitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITION_QC</sourceName>\n" + //
+            "        <destinationName>position_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on position (latitude and longitude)</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITIONING_SYSTEM</sourceName>\n" + //
+            "        <destinationName>positioning_system</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Positioning system</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PRES_QC</sourceName>\n" + //
+            "        <destinationName>profile_pres_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PRES profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_TEMP_QC</sourceName>\n" + //
+            "        <destinationName>profile_temp_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of TEMP profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PSAL_QC</sourceName>\n" + //
+            "        <destinationName>profile_psal_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PSAL profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>VERTICAL_SAMPLING_SCHEME</sourceName>\n" + //
+            "        <destinationName>vertical_sampling_scheme</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 16</att>\n" + //
+            "            <att name=\"long_name\">Vertical sampling scheme</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CONFIG_MISSION_NUMBER</sourceName>\n" + //
+            "        <destinationName>config_mission_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">1...N, 1 : first complete mission</att>\n" + //
+            "            <att name=\"long_name\">Unique number denoting the missions performed by the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES</sourceName>\n" + //
+            "        <destinationName>pres</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_QC</sourceName>\n" + //
+            "        <destinationName>pres_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>pres_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>pres_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>pres_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP</sourceName>\n" + //
+            "        <destinationName>temp</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_QC</sourceName>\n" + //
+            "        <destinationName>temp_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>temp_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL</sourceName>\n" + //
+            "        <destinationName>psal</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_QC</sourceName>\n" + //
+            "        <destinationName>psal_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>psal_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestTreatDimensionsAs() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"testTreatDimensionsAs\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nc/").toURI()).toString()
+            + "</fileDir>\n" +
+            "    <fileNameRegex>GL_.*44761\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <standardizeWhat>4355</standardizeWhat>  <!-- standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units) -->\n"
+            + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <removeMVRows>false</removeMVRows>\n" + //
+            "    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"area\">Global Ocean</att>\n" + //
+            "        <att name=\"author\">Coriolis and MyOcean data provider</att>\n" + //
+            "        <att name=\"cdm_data_type\">Time-series</att>\n" + //
+            "        <att name=\"citation\">These data were collected and made freely available by the MyOcean project and the\n"
+            + //
+            " programs that contribute to it</att>\n" + //
+            "        <att name=\"contact\">codac@ifremer.fr</att>\n" + //
+            "        <att name=\"conventions\">OceanSITES Manual 1.1, CF-1.1</att>\n" + //
+            "        <att name=\"data_assembly_center\">Coriolis</att>\n" + //
+            "        <att name=\"data_mode\">R</att>\n" + //
+            "        <att name=\"data_type\">OceanSITES time-series data</att>\n" + //
+            "        <att name=\"date_update\">2012-08-06T22:07:01Z</att>\n" + //
+            "        <att name=\"distribution_statement\">These data follow MyOcean standards; they are public and free of cha\n"
+            + //
+            "rge. User assumes all risk for use of data. User must display citation in any publication or product using data\n"
+            + //
+            ". User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n"
+            + //
+            "        <att name=\"format_version\">1.1</att>\n" + //
+            "        <att name=\"geospatial_lat_max\">51.078</att>\n" + //
+            "        <att name=\"geospatial_lat_min\">47.763</att>\n" + //
+            "        <att name=\"geospatial_lon_max\">-39.878</att>\n" + //
+            "        <att name=\"geospatial_lon_min\">-44.112</att>\n" + //
+            "        <att name=\"history\">2012-08-06T22:07:01Z : Creation</att>\n" + //
+            "        <att name=\"id\">GL_201207_TS_DB_44761</att>\n" + //
+            "        <att name=\"institution\">Unknown institution</att>\n" + //
+            "        <att name=\"institution_references\">http://www.coriolis.eu.org</att>\n" + //
+            "        <att name=\"naming_authority\">OceanSITES</att>\n" + //
+            "        <att name=\"netcdf_version\">3.5</att>\n" + //
+            "        <att name=\"platform_code\">44761</att>\n" + //
+            "        <att name=\"qc_manual\">OceanSITES User&#39;s Manual v1.1</att>\n" + //
+            "        <att name=\"quality_control_indicator\">6</att>\n" + //
+            "        <att name=\"quality_index\">A</att>\n" + //
+            "        <att name=\"references\">http://www.myocean.eu.org,http://www.coriolis.eu.org</att>\n" + //
+            "        <att name=\"source\">BUOY/MOORING: SURFACE, DRIFTING : observation</att>\n" + //
+            "        <att name=\"time_coverage_end\">2012-07-31T23:00:00Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">2012-07-11T13:00:00Z</att>\n" + //
+            "        <att name=\"update_interval\">daily</att>\n" + //
+            "        <att name=\"wmo_platform_code\">44761</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+            "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+            "    -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Point</att>\n" + //
+            "        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"conventions\">null</att>\n" + //
+            "        <att name=\"creator_email\">codac@ifremer.fr</att>\n" + //
+            "        <att name=\"creator_name\">CODAC</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://wwz.ifremer.fr/</att>\n" + //
+            "        <att name=\"infoUrl\">http://www.myocean.eu.org</att>\n" + //
+            "        <att name=\"keywords\">air, air_pressure_at_sea_level, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, ATPT, ATPT_DM, ATPT_QC, data, depth, DEPTH_QC, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, flag, hour, hourly, institution, latitude, level, local, longitude, measurements, method, ocean, oceans, pressure, processing, quality, science, sea, sea_water_temperature, seawater, source, static, TEMP, TEMP_DM, TEMP_QC, temperature, tendency, tendency_of_air_pressure, time, TIME_QC, water</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n"
+            + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"subsetVariables\">TIME_QC, depth, DEPTH_QC, TEMP_QC, TEMP_DM, ATPT_QC, ATPT_DM, ATMS_QC, ATMS_DM</att>\n"
+            + //
+            "        <att name=\"summary\">Unknown institution data from a local source.</att>\n" + //
+            "        <att name=\"title\">The Title for testTreatDimensionsAs</att>\n" + //
+            "        <att name=\"treatDimensionsAs\">LATITUDE, TIME; LONGITUDE, TIME; ZZTOP, TIME</att> <!-- odd for test purposes -->\n"
+            + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TIME</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"long_name\">time</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">7.144848E9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-6.31152E8</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8.0E9</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-2.0E9</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TIME_QC</sourceName>\n" + //
+            "        <destinationName>TIME_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentiall\n"
+            + //
+            "y_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEPTH</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"coordinate_reference_frame\">urn:ogc:crs:EPSG::5113</att>\n" + //
+            "            <att name=\"long_name\">Depth of each measurement</att>\n" + //
+            "            <att name=\"positive\">down</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"reference\">sea_level</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" + //
+            "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">sea_level</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEPTH_QC</sourceName>\n" + //
+            "        <destinationName>DEPTH_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentiall\n"
+            + //
+            "y_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LATITUDE</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">Latitude of each location</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LONGITUDE</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">Longitude of each location</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP</sourceName>\n" + //
+            "        <destinationName>TEMP</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_QC</sourceName>\n" + //
+            "        <destinationName>TEMP_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentiall\n"
+            + //
+            "y_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_DM</sourceName>\n" + //
+            "        <destinationName>TEMP_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATPT</sourceName>\n" + //
+            "        <destinationName>ATPT</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Atmospheric pressure hourly tendency</att>\n" + //
+            "            <att name=\"standard_name\">tendency_of_air_pressure</att>\n" + //
+            "            <att name=\"units\">hPa hour-1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-3.0</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATPT_QC</sourceName>\n" + //
+            "        <destinationName>ATPT_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentiall\n"
+            + //
+            "y_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATPT_DM</sourceName>\n" + //
+            "        <destinationName>ATPT_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS</sourceName>\n" + //
+            "        <destinationName>ATMS</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Atmospheric pressure at sea level</att>\n" + //
+            "            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" + //
+            "            <att name=\"units\">hPa</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS_QC</sourceName>\n" + //
+            "        <destinationName>ATMS_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentiall\n"
+            + //
+            "y_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS_DM</sourceName>\n" + //
+            "        <destinationName>ATMS_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">realtime post-recovery delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n");
+  }
+
+  public static EDD gettestTreatDimensionsAs2() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"testTreatDimensionsAs2\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/marco/example2/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <fileNameRegex>BS_.*\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <standardizeWhat>4355</standardizeWhat>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <removeMVRows>false</removeMVRows>\n" + //
+            "    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"area\">Black Sea</att>\n" + //
+            "        <att name=\"cdm_data_type\">Time-series</att>\n" + //
+            "        <att name=\"citation\">These data were collected and made freely available by the Copernicus project and the programs that contribute to it</att>\n"
+            + //
+            "        <att name=\"contact\">cmems-service@io-bas.bg</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 Copernicus-InSituTAC-ParametersList-3.0.0</att>\n"
+            + //
+            "        <att name=\"data_assembly_center\">IOBAS</att>\n" + //
+            "        <att name=\"data_mode\">R</att>\n" + //
+            "        <att name=\"data_type\">OceanSITES time-series data</att>\n" + //
+            "        <att name=\"date_update\">2018-01-11T02:59:08Z</att>\n" + //
+            "        <att name=\"distribution_statement\">These data follow Copernicus standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data.</att>\n"
+            + //
+            "        <att name=\"format_version\">1.2</att>\n" + //
+            "        <att name=\"geospatial_lat_max\">42.5</att>\n" + //
+            "        <att name=\"geospatial_lat_min\">42.5</att>\n" + //
+            "        <att name=\"geospatial_lon_max\">27.4833</att>\n" + //
+            "        <att name=\"geospatial_lon_min\">27.4833</att>\n" + //
+            "        <att name=\"history\">2018-01-11T02:59:08Z : Creation</att>\n" + //
+            "        <att name=\"id\">BS_201711_TS_MO_LBBG</att>\n" + //
+            "        <att name=\"institution\">Unknown institution</att>\n" + //
+            "        <att name=\"institution_references\">http://www.io-bas.bg/</att>\n" + //
+            "        <att name=\"last_date_observation\">2017-11-29T23:30:00Z</att>\n" + //
+            "        <att name=\"last_latitude_observation\">42.5</att>\n" + //
+            "        <att name=\"last_longitude_observation\">27.4833</att>\n" + //
+            "        <att name=\"naming_authority\">OceanSITES</att>\n" + //
+            "        <att name=\"netcdf_version\">3.5</att>\n" + //
+            "        <att name=\"platform_code\">LBBG</att>\n" + //
+            "        <att name=\"qc_manual\">OceanSITES User\\&#39;s Manual v1.1</att>\n" + //
+            "        <att name=\"quality_control_indicator\">6</att>\n" + //
+            "        <att name=\"quality_index\">A</att>\n" + //
+            "        <att name=\"references\">http://www.oceansites.org, http://marine.copernicus.eu</att>\n" + //
+            "        <att name=\"source\">land/onshore structure</att>\n" + //
+            "        <att name=\"time_coverage_end\">2017-11-29T23:30:00Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">2017-11-01T00:00:00Z</att>\n" + //
+            "        <att name=\"update_interval\">daily</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+            "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+            "    -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.3 Copernicus-InSituTAC-ParametersList-3.0.0, COARDS, ACDD-1.3</att>\n"
+            + //
+            "        <att name=\"cdm_data_type\">Point</att>\n" + //
+            "        <att name=\"creator_email\">cmems-service@io-bas.bg</att>\n" + //
+            "        <att name=\"creator_name\">Unknown institution</att>\n" + //
+            "        <att name=\"creator_url\">http://www.oceansites.org</att>\n" + //
+            "        <att name=\"infoUrl\">http://www.oceansites.org</att>\n" + //
+            "        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, bulb, currents, data, DEPH_DM, DEPH_QC, depth, dew, dew point, dew_point_temperature, DEWT, DEWT_DM, DEWT_QC, direction, dry, DRYT, DRYT_DM, DRYT_QC, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, flag, GSPD, GSPD_DM, GSPD_QC, gust, horizontal, humidity, institution, latitude, level, local, longitude, measurements, meteorology, method, north, point, pressure, processing, quality, relative, relative_humidity, RELH, RELH_DM, RELH_QC, science, sea, seawater, source, speed, static, surface, temperature, time, TIME_QC, true, vapor, water, WDIR, WDIR_DM, WDIR_QC, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPD_DM, WSPD_QC</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">These data follow Copernicus standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data.</att>\n"
+            + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"subsetVariables\">latitude, longitude, depth</att>\n" + //
+            "        <att name=\"summary\">Unknown institution data from a local source.</att>\n" + //
+            "        <att name=\"title\">Unknown institution data from a local source.</att>\n" + //
+            "        <att name=\"treatDimensionsAs\">LATITUDE, LONGITUDE, TIME</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TIME</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">7.144848E9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-6.31152E8</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8.0E9</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-2.0E9</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TIME_QC</sourceName>\n" + //
+            "        <destinationName>TIME_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LATITUDE</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">Latitude of each location</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LONGITUDE</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">Longitude of each location</att>\n" + //
+            "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+            "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEPH</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"long_name\">Depth</att>\n" + //
+            "            <att name=\"positive\">down</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" + //
+            "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"source_name\">DEPH</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEPH_QC</sourceName>\n" + //
+            "        <destinationName>DEPH_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEPH_DM</sourceName>\n" + //
+            "        <destinationName>DEPH_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>RELH</sourceName>\n" + //
+            "        <destinationName>RELH</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Relative humidity</att>\n" + //
+            "            <att name=\"standard_name\">relative_humidity</att>\n" + //
+            "            <att name=\"units\">&#37;</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Meteorology</att>\n" + //
+            "            <att name=\"units\">percent</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>RELH_QC</sourceName>\n" + //
+            "        <destinationName>RELH_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>RELH_DM</sourceName>\n" + //
+            "        <destinationName>RELH_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS</sourceName>\n" + //
+            "        <destinationName>ATMS</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Atmospheric pressure at sea level</att>\n" + //
+            "            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" + //
+            "            <att name=\"units\">hPa</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" + //
+            "            <att name=\"ioos_category\">Pressure</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS_QC</sourceName>\n" + //
+            "        <destinationName>ATMS_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ATMS_DM</sourceName>\n" + //
+            "        <destinationName>ATMS_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DRYT</sourceName>\n" + //
+            "        <destinationName>DRYT</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Air temperature in dry bulb</att>\n" + //
+            "            <att name=\"standard_name\">air_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DRYT_QC</sourceName>\n" + //
+            "        <destinationName>DRYT_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DRYT_DM</sourceName>\n" + //
+            "        <destinationName>DRYT_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEWT</sourceName>\n" + //
+            "        <destinationName>DEWT</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Dew point temperature</att>\n" + //
+            "            <att name=\"standard_name\">dew_point_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEWT_QC</sourceName>\n" + //
+            "        <destinationName>DEWT_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DEWT_DM</sourceName>\n" + //
+            "        <destinationName>DEWT_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WSPD</sourceName>\n" + //
+            "        <destinationName>WSPD</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Horizontal wind speed</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WSPD_QC</sourceName>\n" + //
+            "        <destinationName>WSPD_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WSPD_DM</sourceName>\n" + //
+            "        <destinationName>WSPD_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WDIR</sourceName>\n" + //
+            "        <destinationName>WDIR</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Wind from direction relative true north</att>\n" + //
+            "            <att name=\"standard_name\">wind_from_direction</att>\n" + //
+            "            <att name=\"units\">degree</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WDIR_QC</sourceName>\n" + //
+            "        <destinationName>WDIR_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WDIR_DM</sourceName>\n" + //
+            "        <destinationName>WDIR_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>GSPD</sourceName>\n" + //
+            "        <destinationName>GSPD</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"long_name\">Gust wind speed</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed_of_gust</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>GSPD_QC</sourceName>\n" + //
+            "        <destinationName>GSPD_QC</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 2</att>\n" + //
+            "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+            + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7 8 9</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>GSPD_DM</sourceName>\n" + //
+            "        <destinationName>GSPD_DM</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">OceanSITES reference table 5</att>\n" + //
+            "            <att name=\"flag_meanings\">real-time provisional delayed-mode mixed</att>\n" + //
+            "            <att name=\"flag_values\">R, P, D, M</att>\n" + //
+            "            <att name=\"long_name\">method of data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestLong() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"testLong\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/nc/").toURI()).toString() + "</fileDir>\n"
+            + //
+            "    <fileNameRegex>testLong\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <removeMVRows>true</removeMVRows>\n" + //
+            "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"_NCProperties\">version=1|netcdflibversion=4.4.1.1|hdf5libversion=1.8.17</att>\n" + //
+            "        <att name=\"acknowledgement\">National Science Foundation</att>\n" + //
+            "        <att name=\"cdm_data_type\">Station</att>\n" + //
+            "        <att name=\"comment\">Mooring ID: CE02SHSM-00004</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6,ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">cwingard@coas.oregonstate.edu</att>\n" + //
+            "        <att name=\"creator_name\">Christopher Wingard</att>\n" + //
+            "        <att name=\"creator_url\">http://oceanobservatories.org</att>\n" + //
+            "        <att name=\"date_created\">2017-03-08T19:21:00Z</att>\n" + //
+            "        <att name=\"date_issued\">2017-03-08T19:21:00Z</att>\n" + //
+            "        <att name=\"date_metadata_modified\">2017-03-08T19:21:00Z</att>\n" + //
+            "        <att name=\"date_modified\">2017-03-08T19:21:00Z</att>\n" + //
+            "        <att name=\"featureType\">timeSeries</att>\n" + //
+            "        <att name=\"geospatial_bounds\">POINT(-124.30379 44.63893)</att>\n" + //
+            "        <att name=\"geospatial_bounds_crs\">4326</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"double\">44.63893</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"double\">44.63893</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\" type=\"long\">0</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">degrees_north</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"double\">-124.30379</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"double\">-124.30379</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\" type=\"long\">0</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" + //
+            "        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" + //
+            "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" + //
+            "        <att name=\"geospatial_vertical_positive\">down</att>\n" + //
+            "        <att name=\"geospatial_vertical_resolution\">0</att>\n" + //
+            "        <att name=\"geospatial_vertical_units\">meters</att>\n" + //
+            "        <att name=\"history\">2017-03-08T19:21:00Z - pyaxiom - File created using pyaxiom</att>\n" + //
+            "        <att name=\"institution\">Coastal and Global Scales Nodes, (CGSN)</att>\n" + //
+            "        <att name=\"ncei_template_version\">NCEI_NetCDF_TimeSeries_Orthogonal_Template_v2.0</att>\n" + //
+            "        <att name=\"project\">Ocean Observatories Initiative</att>\n" + //
+            "        <att name=\"references\">http://oceanobservatories.org</att>\n" + //
+            "        <att name=\"summary\">Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.</att>\n"
+            + //
+            "        <att name=\"time_coverage_duration\">PT86339S</att>\n" + //
+            "        <att name=\"time_coverage_end\">2016-09-28T23:59:19.296000</att>\n" + //
+            "        <att name=\"time_coverage_resolution\">PT60S</att>\n" + //
+            "        <att name=\"time_coverage_start\">2016-09-28T00:00:19.849000</att>\n" + //
+            "        <att name=\"title\">Mooring Power System Controller (PSC) Status Data</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+            "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+            "    -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+            "        <att name=\"cdm_timeseries_variables\">feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id</att>\n"
+            + //
+            "        <att name=\"Conventions\">CF-1.6,ACDD-1.3, COARDS</att>\n" + //
+            "        <att name=\"creator_type\">person</att>\n" + //
+            "        <att name=\"infoUrl\">http://oceanobservatories.org</att>\n" + //
+            "        <att name=\"institution\">CGSN</att>\n" + //
+            "        <att name=\"keywords\">bank, batteries, battery</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"subsetVariables\">feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id</att>\n"
+            + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>feature_type_instance</sourceName>\n" + //
+            "        <destinationName>feature_type_instance</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"cf_role\">timeseries_id</att>\n" + //
+            "            <att name=\"long_name\">Identifier for each feature type instance</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">sensor latitude</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">44.63893</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">44.63893</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">sensor longitude</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">-124.30379</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-124.30379</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>crs</sourceName>\n" + //
+            "        <destinationName>crs</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"epsg_code\">EPSG:4326</att>\n" + //
+            "            <att name=\"grid_mapping_name\">latitude_longitude</att>\n" + //
+            "            <att name=\"inverse_flattening\" type=\"double\">298.257223563</att>\n" + //
+            "            <att name=\"long_name\">http://www.opengis.net/def/crs/EPSG/0/4326</att>\n" + //
+            "            <att name=\"semi_major_axis\" type=\"double\">6378137.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>platform</sourceName>\n" + //
+            "        <destinationName>platform</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"definition\">http://mmisw.org/ont/ioos/definition/stationID</att>\n" + //
+            "            <att name=\"ioos_code\">ce02shsm</att>\n" + //
+            "            <att name=\"long_name\">Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.</att>\n"
+            + //
+            "            <att name=\"short_name\">Mooring Power System Controller (PSC) Status Data</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1000</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"calendar\">gregorian</att>\n" + //
+            "            <att name=\"long_name\">time of measurement</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>z</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">-9999.9</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">z of the sensor relative to the water surface</att>\n" + //
+            "            <att name=\"positive\">down</att>\n" + //
+            "            <att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"units\">m</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" + //
+            "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>battery_bank1_current</sourceName>\n" + //
+            "        <destinationName>battery_bank1_current</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1000</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">-9.99999999E8</att>\n" + //
+            "            <att name=\"ancillary_variables\">platform</att>\n" + //
+            "            <att name=\"coordinates\">time z latitude longitude</att>\n" + //
+            "            <att name=\"coverage_content_type\">physicalMeasurement</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">Battery Bank 1 Current</att>\n" + //
+            "            <att name=\"missing_value\" type=\"double\">-9.99999999E8</att>\n" + //
+            "            <att name=\"platform\">platform</att>\n" + //
+            "            <att name=\"standard_name\">battery_bank_1_current</att>\n" + //
+            "            <att name=\"units\">mA</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>battery_bank1_temperature</sourceName>\n" + //
+            "        <destinationName>battery_bank1_temperature</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1000</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">-9.99999999E8</att>\n" + //
+            "            <att name=\"ancillary_variables\">platform</att>\n" + //
+            "            <att name=\"coordinates\">time z latitude longitude</att>\n" + //
+            "            <att name=\"coverage_content_type\">physicalMeasurement</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">Battery Bank 1 Temperature</att>\n" + //
+            "            <att name=\"missing_value\" type=\"double\">-9.99999999E8</att>\n" + //
+            "            <att name=\"platform\">platform</att>\n" + //
+            "            <att name=\"standard_name\">battery_bank_1_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celcius</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dcl_date_time_string</sourceName>\n" + //
+            "        <destinationName>dcl_date_time_string</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"ancillary_variables\">platform</att>\n" + //
+            "            <att name=\"coordinates\">time z latitude longitude</att>\n" + //
+            "            <att name=\"coverage_content_type\">physicalMeasurement</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">DCL Date and Time Stamp</att>\n" + //
+            "            <att name=\"platform\">platform</att>\n" + //
+            "            <att name=\"standard_name\">dcl_date_time_string</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" + //
+            "            <att name=\"units\">yyyy/MM/dd HH:mm:ss.SSS</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>error_flag1</sourceName>\n" + //
+            "        <destinationName>error_flag1</destinationName>\n" + //
+            "        <dataType>long</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_masks\" type=\"longList\">0 1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912 1073741824 2147483648</att>\n"
+            + //
+            "            <att name=\"flag_meanings\">no_error battery1_of_string1_overtemp battery2_of_string1_overtemp battery1_of_string2_overtemp battery2_of_string2_overtemp battery1_of_string3_overtemp battery2_of_string3_overtemp battery1_of_string4_overtemp battery2_of_string4_overtemp battery_string_1_fuse_blown battery_string_2_fuse_blown battery_string_3_fuse_blown battery_string_4_fuse_blown battery_string_1_charging_sensor_fault battery_string_1_discharging_sensor_fault battery_string_2_charging_sensor_fault battery_string_2_discharging_sensor_fault battery_string_3_charging_sensor_fault battery_string_3_discharging_sensor_fault battery_string_4_charging_sensor_fault battery_string_4_discharging_sensor_fault pv1_sensor_fault pv2_sensor_fault pv3_sensor_fault pv4_sensor_fault wt1_sensor_fault wt2_sensor_fault eeprom_access_fault rtclk_access_fault external_power_sensor_fault psc_hotel_power_sensor_fault psc_internal_overtemp_fault 24v_300v_dc_dc_converter_fuse_blown</att>\n"
+            + //
+            "            <att name=\"long_name\">Error Flag 1</att>\n" + //
+            "            <att name=\"standard_name\">error_flag_1</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2.5E9</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>error_flag2</sourceName>\n" + //
+            "        <destinationName>error_flag2</destinationName>\n" + //
+            "        <dataType>long</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_masks\" type=\"longList\">0 1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304</att>\n"
+            + //
+            "            <att name=\"flag_meanings\">no_error 24v_buoy_power_sensor_fault 24v_buoy_power_over_voltage_fault 24v_buoy_power_under_voltage_fault 5v_fuse_blown_non_critical wt1_control_relay_fault wt2_control_relay_fault pv1_control_relay_fault pv2_control_relay_fault pv3_control_relay_fault pv4_control_relay_fault fc1_control_relay_fault fc2_control_relay_fault cvt_swg_fault cvt_general_fault psc_hard_reset_flag psc_power_on_reset_flag wt1_fuse_blown wt2_fuse_blown pv1_fuse_blown pv2_fuse_blown pv3_fuse_blown pv4_fuse_blown cvt_shut_down_due_to_low_input_voltage</att>\n"
+            + //
+            "            <att name=\"long_name\">Error Flag 2</att>\n" + //
+            "            <att name=\"standard_name\">error_flag_2</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>error_flag3</sourceName>\n" + //
+            "        <destinationName>error_flag3</destinationName>\n" + //
+            "        <dataType>long</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"flag_masks\" type=\"longList\">0 1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304 8388608 16777216 33554432 67108864 134217728 268435456 536870912 1073741824 2147483648</att>\n"
+            + //
+            "            <att name=\"flag_meanings\">no_error cvt_board_temp_over_100C interlock_output_supply_fuse_blown interlock_status_1_supply_fuse_blown interlock_status_2_supply_fuse_blown input_1_fuse_blown input_2_fuse_blown input_3_fuse_blown input_4_fuse_blown 5v_over_voltage 5v_under_voltage output_sensor_circuit_power_over_voltage output_sensor_circuit_power_under_voltage p_swgf_sensor_circuit_power_over_voltage p_swgf_sensor_circuit_power_under_voltage n_swgf_sensor_circuit_power_over_voltage n_swgf_sensor_circuit_power_under_voltage raw_24v_input_power_sensor_fault cvt_24v_hotel_power_sensor_fault interlock_supply_output_sensor_fault interlock_status_1_sensor_fault interlock_status_2_sensor_fault interlock_input_sensor_fault p_swgf_occured n_swgf_occured input_1_sensor_fault input_2_sensor_fault input_3_sensor_fault input_4_sensor_fault high_voltage_output_current_sensor_fault high_voltage_output_voltage_sensor_fault p_swgf_sensor_fault n_swgf_sensor_fault</att>\n"
+            + //
+            "            <att name=\"long_name\">Error Flag 3</att>\n" + //
+            "            <att name=\"standard_name\">error_flag_3</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2.5e9</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>deploy_id</sourceName>\n" + //
+            "        <destinationName>deploy_id</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"ancillary_variables\">platform</att>\n" + //
+            "            <att name=\"coordinates\">time z latitude longitude</att>\n" + //
+            "            <att name=\"coverage_content_type\">physicalMeasurement</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">Deployment ID</att>\n" + //
+            "            <att name=\"platform\">platform</att>\n" + //
+            "            <att name=\"standard_name\">deployment_id</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD getW1M3A() throws Throwable {
+    return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"W1M3A\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/briand/W1M3A/").toURI()).toString()
+        + "</fileDir>\n" + //
+        "    <fileNameRegex>.*\\.nc</fileNameRegex>\n" + //
+        "    <recursive>true</recursive>\n" + //
+        "    <pathRegex>.*</pathRegex>\n" + //
+        "    <metadataFrom>last</metadataFrom>\n" + //
+        "    <preExtractRegex></preExtractRegex>\n" + //
+        "    <postExtractRegex></postExtractRegex>\n" + //
+        "    <extractRegex></extractRegex>\n" + //
+        "    <columnNameForExtract></columnNameForExtract>\n" + //
+        "    <sortedColumnSourceName>TIME</sortedColumnSourceName>\n" + //
+        "    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n" + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+        "    <addAttributes>\n" + //
+        "\t<att name=\"cdm_data_type\">Profile</att>\n" + //
+        "<att name=\"cdm_profile_variables\">longitude, latitude, time</att>\n" + //
+        "    <!--att name=\"subsetVariables\">longitude, latitude, time</att -->\n" + //
+        "    <!-- sourceAttributes>\n" + //
+        "        <att name=\"area\">Mediterranean sea</att>\n" + //
+        "        <att name=\"author\">Roberto BOZZANO</att>\n" + //
+        "        <att name=\"citation\">These data were collected and made freely available by the OceanSITES project and the national programs that contribute to it</att>\n"
+        + //
+        "        <att name=\"contact\">boz@ge.issia.cnr.it</att>\n" + //
+        "        <att name=\"conventions\">OceanSITES Manual 1.1, CF-1.1</att>\n" + //
+        "        <att name=\"data_assembly_center\">EUROSITES</att>\n" + //
+        "        <att name=\"data_mode\">R</att>\n" + //
+        "        <att name=\"data_type\">OceanSITES vertical profile</att>\n" + //
+        "        <att name=\"date_update\">2010-03-06T11:19:25Z</att>\n" + //
+        "        <att name=\"distribution_statement\">Follows CLIVAR (Climate Varibility and Predictability)standards, cf.http://www.clivar.org/data/data_policy.php. Data available free of charge.User assumes ll risk foruse of data. User mustdisplay citation in anypublication or product usingdata. User must contact PIprior to any commercial useof data</att>\n"
+        + //
+        "        <att name=\"format_version\">1.1</att>\n" + //
+        "        <att name=\"geospatial_lat_max\">43.8035</att>\n" + //
+        "        <att name=\"geospatial_lat_min\">43.7823</att>\n" + //
+        "        <att name=\"geospatial_lon_max\">9.1775</att>\n" + //
+        "        <att name=\"geospatial_lon_min\">0.1525</att>\n" + //
+        "        <att name=\"geospatial_vertical_max\">36</att>\n" + //
+        "        <att name=\"geospatial_vertical_min\">0</att>\n" + //
+        "        <att name=\"history\">2010-03-06T11:19:25Z : Creation</att>\n" + //
+        "        <att name=\"id\">OS_2004_W1M3A</att>\n" + //
+        "        <att name=\"institution\">CNR  CONSIGLIO NAZIONALE DELLE RICERCHE</att>\n" + //
+        "        <att name=\"institution_references\">http://www.odas.ge.issia.cnr.it</att>\n" + //
+        "        <att name=\"naming_authority\">OceanSITES</att>\n" + //
+        "        <att name=\"netcdf_version\">3.5</att>\n" + //
+        "        <att name=\"pi_name\">Roberto BOZZANO</att>\n" + //
+        "        <att name=\"qc_manual\">OceanSITES User&#39;s Manual v1.1</att>\n" + //
+        "        <att name=\"quality_control_indicator\">6</att>\n" + //
+        "        <att name=\"quality_index\">A</att>\n" + //
+        "        <att name=\"references\">http://www.oceansites.org,http://www.noc.soton.ac.uk/animate/index.php</att>\n"
+        + //
+        "        <att name=\"source\">BUOY/MOORING: SURFACE, MOORED : observation</att>\n" + //
+        "        <att name=\"time_coverage_end\">2004-12-31T21:00:00Z</att>\n" + //
+        "        <att name=\"time_coverage_start\">2004-06-18T00:00:00Z</att>\n" + //
+        "        <att name=\"update_interval\">daily</att>\n" + //
+        "        <att name=\"wmo_platform_code\">61010</att>\n" + //
+        "    </sourceAttributes -->\n" + //
+        "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+        "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+        "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+        "    -->\n" + //
+        "        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+        "        <att name=\"creator_email\">boz@ge.issia.cnr.it</att>\n" + //
+        "        <att name=\"creator_name\">BOZ</att>\n" + //
+        "        <att name=\"creator_url\">http://wwz.ifremer.fr/</att>\n" + //
+        "        <att name=\"infoUrl\">http://www.oceansites.org/index.html</att>\n" + //
+        "        <att name=\"institution\">Oceansites project</att>\n" + //
+        "        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, assembly, atmosphere,\n" + //
+        "Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" + //
+        "Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,\n" + //
+        "Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,\n" + //
+        "Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" + //
+        "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" + //
+        "Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" + //
+        "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+        "Atmosphere &gt; Precipitation &gt; Liquid Water Equivalent,\n" + //
+        "Atmosphere &gt; Precipitation &gt; Precipitation Rate,\n" + //
+        "atmospheric, ATMS, ATMS_QC, bulb, centres, CNDC, CNDC_QC, cnr, conductivity, consiglio, council, data, delle, density, DEPH, DEPH_QC, depth, direction, dry, DRYT, DRYT_QC, each, electrical, equivalent, exploitation, flag, francais, gdac, GSPD, GSPD_QC, gust, HEAD, HEAD_QC, heading, horizontal, humidity, ifremer, in-situ, incident, incoming, institut, its, its-90, level, LINC, LINC_QC, liquid, long, long-wave, lwe, lwe_precipitation_rate, measurement, measurements, mer, national, nazionale, north, noth, ocean, oceans,\n"
+        + //
+        "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+        "Oceans &gt; Salinity/Density &gt; Conductivity,\n" + //
+        "oceansites, platform, pour, precipitation, pressure, PRRT, PRRT_QC, quality, radiation, rain, rainfall, rate, RDIN, RDIN_QC, recherche, regional, rel, relative, relative_humidity, RELH, RELH_QC, research, ricerche, salinity, scale, sea, sea_water_electrical_conductivity, sea_water_temperature, seawater, situ, speed, static, surface, tabledap, TEMP, TEMP_QC, temperature, time, true, vapor, water, wave, WDIR, WDIR_QC, wind, wind_speed, wind_speed_of_gust, wind_to_direction, winds, WSPD, WSPD_QC, xxx</att>\n"
+        + //
+        "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+        "        <att name=\"license\">Follows CLIVAR (Climate Varibility and Predictability)standards, cf.http://www.clivar.org/data/data_policy.php. Data available free of charge.User assumes ll risk foruse of data. User mustdisplay citation in anypublication or product usingdata. User must contact PIprior to any commercial useof data</att>\n"
+        + //
+        "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+        "        <att name=\"summary\">OceanSITES is a worldwide system of long-term, open-ocean reference stations measuring dozens of variables and monitoring the full depth of the ocean from air-sea interactions down to the seafloor. It is a network of stations or observatories measuring many aspects of the ocean&#39;s surface and water column using, where possible, automated systems with advanced sensors and telecommunications systems, yielding high time resolution, often in real-time, while building a long record. Observations cover meteorology, physical oceanography, transport of water, biogeochemistry, and parameters relevant to the carbon cycle, ocean acidification, the ecosystem, and geophysics.</att>\n"
+        + //
+        "        <att name=\"title\">Oceansites W1M3A tabledap</att>\n" + //
+        "    </addAttributes>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>TIME</sourceName>\n" + //
+        "        <destinationName>time</destinationName>\n" + //
+        "        <dataType>double</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">T</att>\n" + //
+        "            <att name=\"long_name\">time</att>\n" + //
+        "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+        "            <att name=\"standard_name\">time</att>\n" + //
+        "            <att name=\"units\">days since 1950-01-01T00:00:00Z</att>\n" + //
+        "            <att name=\"valid_max\" type=\"double\">90000.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"double\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"cf_role\">profile_id</att>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">100000.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>TIME_QC</sourceName>\n" + //
+        "        <destinationName>TIME_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DEPTH</sourceName>\n" + //
+        "        <destinationName>depth</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">Z</att>\n" + //
+        "            <att name=\"long_name\">Depth of each measurement</att>\n" + //
+        "            <att name=\"positive\">down</att>\n" + //
+        "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+        "            <att name=\"reference\">sea_level</att>\n" + //
+        "            <att name=\"standard_name\">depth</att>\n" + //
+        "            <att name=\"units\">meters</att>\n" + //
+        "            <att name=\"valid_max\" type=\"double\">12000.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"double\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"colorBarPalette\">Rainbow</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DEPTH_QC</sourceName>\n" + //
+        "        <destinationName>DEPTH_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>LATITUDE</sourceName>\n" + //
+        "        <destinationName>latitude</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"long_name\">Latitude of each location</att>\n" + //
+        "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+        "            <att name=\"standard_name\">latitude</att>\n" + //
+        "            <att name=\"units\">degrees_north</att>\n" + //
+        "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>LONGITUDE</sourceName>\n" + //
+        "        <destinationName>longitude</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"axis\">Y</att>\n" + //
+        "            <att name=\"long_name\">Longitude of each location</att>\n" + //
+        "            <att name=\"QC_indicator\" type=\"int\">1</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"int\">1</att>\n" + //
+        "            <att name=\"standard_name\">longitude</att>\n" + //
+        "            <att name=\"units\">degrees_east</att>\n" + //
+        "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>POSITION_QC</sourceName>\n" + //
+        "        <destinationName>POSITION_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DEPH</sourceName>\n" + //
+        "        <destinationName>DEPH</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">deph_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">sea water depth</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">depth</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">m</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"colorBarPalette\">Rainbow</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DEPH_QC</sourceName>\n" + //
+        "        <destinationName>DEPH_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>ATMS</sourceName>\n" + //
+        "        <destinationName>ATMS</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">atms_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">atmospheric pressure at sea level</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">hectoPascal</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>ATMS_QC</sourceName>\n" + //
+        "        <destinationName>ATMS_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>WSPD</sourceName>\n" + //
+        "        <destinationName>WSPD</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">WSPD_QC</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">HORIZONTAL WIND SPEED</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">wind_speed</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">meter/second</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>WSPD_QC</sourceName>\n" + //
+        "        <destinationName>WSPD_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>WDIR</sourceName>\n" + //
+        "        <destinationName>WDIR</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">WDIR_QC</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">WIND DIRECTION REL. TRUE NORTH</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">wind_to_direction</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">wdir</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>WDIR_QC</sourceName>\n" + //
+        "        <destinationName>WDIR_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>HEAD</sourceName>\n" + //
+        "        <destinationName>HEAD</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">head_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">PLATFORM HEADING REL. TRUE NOTH</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">xxx</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">degree</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>HEAD_QC</sourceName>\n" + //
+        "        <destinationName>HEAD_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>RELH</sourceName>\n" + //
+        "        <destinationName>RELH</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">relh_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">relative humidity</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">relative_humidity</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">1</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">100.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">20.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>RELH_QC</sourceName>\n" + //
+        "        <destinationName>RELH_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>GSPD</sourceName>\n" + //
+        "        <destinationName>GSPD</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">GSPD_QC</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">GUST WIND SPEED</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">wind_speed_of_gust</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">meter/second</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>GSPD_QC</sourceName>\n" + //
+        "        <destinationName>GSPD_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>RDIN</sourceName>\n" + //
+        "        <destinationName>RDIN</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">rdin_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">INCIDENT RADIATION</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">xxx</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">watt/m2</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>RDIN_QC</sourceName>\n" + //
+        "        <destinationName>RDIN_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>PRRT</sourceName>\n" + //
+        "        <destinationName>PRRT</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">prrt_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">PRECIPITATION RATE</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">lwe_precipitation_rate</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">millimeter/hour</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">1.0E-4</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>PRRT_QC</sourceName>\n" + //
+        "        <destinationName>PRRT_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DRYT</sourceName>\n" + //
+        "        <destinationName>DRYT</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">dryt_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">DRY BULB TEMPERATURE</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">air_temperature</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">Celsius degree</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>DRYT_QC</sourceName>\n" + //
+        "        <destinationName>DRYT_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>TEMP</sourceName>\n" + //
+        "        <destinationName>TEMP</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">temp_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">sea water temperature in-situ ITS-90 scale</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.01</att>\n" + //
+        "            <att name=\"units\">degree_Celsius</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">-2.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "            <att name=\"missingValue\" type=\"float\">-3.4E38</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>TEMP_QC</sourceName>\n" + //
+        "        <destinationName>TEMP_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>LINC</sourceName>\n" + //
+        "        <destinationName>LINC</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">linc_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">LONG-WAVE INCOMING RADIATION</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">xxx</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">watt/m2</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>LINC_QC</sourceName>\n" + //
+        "        <destinationName>LINC_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>CNDC</sourceName>\n" + //
+        "        <destinationName>CNDC</destinationName>\n" + //
+        "        <dataType>float</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"float\">-3.4E38</att>\n" + //
+        "            <att name=\"accuracy\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"ancillary_variables\">cndc_qc</att>\n" + //
+        "            <att name=\"DM_indicator\">R</att>\n" + //
+        "            <att name=\"long_name\">electrical conductivity</att>\n" + //
+        "            <att name=\"precision\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"QC_procedure\" type=\"byte\">1</att>\n" + //
+        "            <att name=\"resolution\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"sensor_depth\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"standard_name\">sea_water_electrical_conductivity</att>\n" + //
+        "            <att name=\"uncertainty\" type=\"float\">0.0</att>\n" + //
+        "            <att name=\"units\">mhos/m</att>\n" + //
+        "            <att name=\"valid_max\" type=\"float\">60.0</att>\n" + //
+        "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">30.0</att>\n" + //
+        "            <att name=\"resolution\">null</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "    <dataVariable>\n" + //
+        "        <sourceName>CNDC_QC</sourceName>\n" + //
+        "        <destinationName>CNDC_QC</destinationName>\n" + //
+        "        <dataType>byte</dataType>\n" + //
+        "        <!-- sourceAttributes>\n" + //
+        "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+        "            <att name=\"conventions\">OceanSites reference table 2</att>\n" + //
+        "            <att name=\"flag_meanings\">no_qc_performed good_data probably_good_data bad_data_that_are_potentially_correctable bad_data value_changed not_used nominal_value interpolated_value missing_value</att>\n"
+        + //
+        "            <att name=\"flag_values\">0, 1, 2, 3, 4, 5, 7, 8, 9</att>\n" + //
+        "            <att name=\"long_name\">quality flag</att>\n" + //
+        "            <att name=\"valid_max\" type=\"byte\">9</att>\n" + //
+        "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+        "        </sourceAttributes -->\n" + //
+        "        <addAttributes>\n" + //
+        "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+        "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+        "            <att name=\"ioos_category\">Unknown</att>\n" + //
+        "        </addAttributes>\n" + //
+        "    </dataVariable>\n" + //
+        "</dataset>");
+  }
+
+  public static EDD gettestCharAsString() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset datasetID=\"testCharAsString\" type=\"EDDTableFromMultidimNcFiles\" active=\"true\">\n" + //
+            "\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nccf/testCharAsString/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <fileNameRegex>.*_prof\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex>^</preExtractRegex>\n" + //
+            "    <postExtractRegex>_prof.nc$</postExtractRegex>\n" + //
+            "    <extractRegex>.*</extractRegex>\n" + //
+            "    <columnNameForExtract>fileNumber</columnNameForExtract>\n" + //
+            "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
+            "    <removeMVRows>true</removeMVRows>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
+            "        <att name=\"featureType\">trajectoryProfile</att>\n" + //
+            "        <att name=\"history\">2016-04-15T20:47:22Z creation</att>\n" + //
+            "        <att name=\"institution\">Coriolis GDAC</att>\n" + //
+            "        <att name=\"references\">http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"source\">Argo float</att>\n" + //
+            "        <att name=\"title\">Argo float vertical profile</att>\n" + //
+            "        <att name=\"user_manual_version\">3.1</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_altitude_proxy\">pres</att>\n" + //
+            "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">platform_number, project_name, pi_name, platform_type, float_serial_no</att>\n"
+            + //
+            "        <att name=\"cdm_profile_variables\">cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att>\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, dc_reference, data_state_indicator, firmware_version, wmo_inst_type, time, time_location, latitude, longitude, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, data_state_indicator, firmware_version, wmo_inst_type, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <att name=\"Conventions\">Argo-3.1, CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">support@argo.net</att>\n" + //
+            "        <att name=\"creator_name\">Argo</att>\n" + //
+            "        <att name=\"creator_url\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"history\"></att>\n" + //
+            "        <att name=\"infoUrl\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"institution\">Argo</att>\n" + //
+            "        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n"
+            + //
+            "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" + //
+            "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Salinity,\n" + //
+            "passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "Argo float vertical profiles from Coriolis Global Data Assembly Centres\n" + //
+            "(GDAC). Argo is an international collaboration that collects high-quality\n" + //
+            "temperature and salinity profiles from the upper 2000m of the ice-free\n" + //
+            "global ocean and currents from intermediate depths. The data come from\n" + //
+            "battery-powered autonomous floats that spend most of their life drifting\n" + //
+            "at depth where they are stabilised by being neutrally buoyant at the\n" + //
+            "\"parking depth\" pressure by having a density equal to the ambient pressure\n" + //
+            "and a compressibility that is less than that of sea water. At present there\n" + //
+            "are several models of profiling float used in Argo. All work in a similar\n" + //
+            "fashion but differ somewhat in their design characteristics. At typically\n" + //
+            "10-day intervals, the floats pump fluid into an external bladder and rise\n" + //
+            "to the surface over about 6 hours while measuring temperature and salinity.\n" + //
+            "Satellites or GPS determine the position of the floats when they surface,\n" + //
+            "and the floats transmit their data to the satellites. The bladder then\n" + //
+            "deflates and the float returns to its original density and sinks to drift\n" + //
+            "until the cycle is repeated. Floats are designed to make about 150 such\n" + //
+            "cycles.\n" + //
+            "Data Management URL: http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"title\">Argo Float Vertical Profiles</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>fileNumber</sourceName>\n" + //
+            "        <destinationName>fileNumber</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">File Number</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_TYPE</sourceName>\n" + //
+            "        <destinationName>data_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 1</att>\n" + //
+            "            <att name=\"long_name\">Data type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FORMAT_VERSION</sourceName>\n" + //
+            "        <destinationName>format_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">File format version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HANDBOOK_VERSION</sourceName>\n" + //
+            "        <destinationName>handbook_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Data handbook version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>REFERENCE_DATE_TIME</sourceName>\n" + //
+            "        <destinationName>reference_date_time</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of reference for Julian days</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_CREATION</sourceName>\n" + //
+            "        <destinationName>date_creation</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of file creation</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_UPDATE</sourceName>\n" + //
+            "        <destinationName>date_update</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of update of this file</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_NUMBER</sourceName>\n" + //
+            "        <destinationName>platform_number</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">WMO float identifier : A9IIIII</att>\n" + //
+            "            <att name=\"long_name\">Float unique identifier</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROJECT_NAME</sourceName>\n" + //
+            "        <destinationName>project_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the project</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PI_NAME</sourceName>\n" + //
+            "        <destinationName>pi_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the principal investigator</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CYCLE_NUMBER</sourceName>\n" + //
+            "        <destinationName>cycle_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">0...N, 0 : launch cycle (if exists), 1 : first complete cycle</att>\n"
+            + //
+            "            <att name=\"long_name\">Float cycle number</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">profile_id</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">200.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DIRECTION</sourceName>\n" + //
+            "        <destinationName>direction</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">A: ascending profiles, D: descending profiles</att>\n" + //
+            "            <att name=\"long_name\">Direction of the station profiles</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_CENTRE</sourceName>\n" + //
+            "        <destinationName>data_center</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 4</att>\n" + //
+            "            <att name=\"long_name\">Data centre in charge of float data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DC_REFERENCE</sourceName>\n" + //
+            "        <destinationName>dc_reference</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Data centre convention</att>\n" + //
+            "            <att name=\"long_name\">Station unique identifier in data centre</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_STATE_INDICATOR</sourceName>\n" + //
+            "        <destinationName>data_state_indicator</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 6</att>\n" + //
+            "            <att name=\"long_name\">Degree of processing the data have passed through</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_MODE</sourceName>\n" + //
+            "        <destinationName>data_mode</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">R : real time; D : delayed mode; A : real time with adjustment</att>\n"
+            + //
+            "            <att name=\"long_name\">Delayed mode or real time data</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_TYPE</sourceName>\n" + //
+            "        <destinationName>platform_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 23</att>\n" + //
+            "            <att name=\"long_name\">Type of float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FLOAT_SERIAL_NO</sourceName>\n" + //
+            "        <destinationName>float_serial_no</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Serial number of the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FIRMWARE_VERSION</sourceName>\n" + //
+            "        <destinationName>firmware_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Instrument firmware version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WMO_INST_TYPE</sourceName>\n" + //
+            "        <destinationName>wmo_inst_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 8</att>\n" + //
+            "            <att name=\"long_name\">Coded instrument type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the station relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_QC</sourceName>\n" + //
+            "        <destinationName>time_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on date and time</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_LOCATION</sourceName>\n" + //
+            "        <destinationName>time_location</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the location relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LATITUDE</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">Latitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LONGITUDE</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">Longitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITION_QC</sourceName>\n" + //
+            "        <destinationName>position_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on position (latitude and longitude)</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITIONING_SYSTEM</sourceName>\n" + //
+            "        <destinationName>positioning_system</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Positioning system</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PRES_QC</sourceName>\n" + //
+            "        <destinationName>profile_pres_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PRES profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_TEMP_QC</sourceName>\n" + //
+            "        <destinationName>profile_temp_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of TEMP profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PSAL_QC</sourceName>\n" + //
+            "        <destinationName>profile_psal_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PSAL profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>VERTICAL_SAMPLING_SCHEME</sourceName>\n" + //
+            "        <destinationName>vertical_sampling_scheme</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 16</att>\n" + //
+            "            <att name=\"long_name\">Vertical sampling scheme</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CONFIG_MISSION_NUMBER</sourceName>\n" + //
+            "        <destinationName>config_mission_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">1...N, 1 : first complete mission</att>\n" + //
+            "            <att name=\"long_name\">Unique number denoting the missions performed by the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES</sourceName>\n" + //
+            "        <destinationName>pres</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_QC</sourceName>\n" + //
+            "        <destinationName>pres_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>pres_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>pres_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>pres_aqdjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP</sourceName>\n" + //
+            "        <destinationName>temp</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_QC</sourceName>\n" + //
+            "        <destinationName>temp_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>temp_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL</sourceName>\n" + //
+            "        <destinationName>psal</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_QC</sourceName>\n" + //
+            "        <destinationName>psal_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>psal_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_qc</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestCharAsChar() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset datasetID=\"testCharAsChar\" type=\"EDDTableFromMultidimNcFiles\" active=\"true\">\n" + //
+            "\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/data/nccf/testCharAsString/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <fileNameRegex>.*_prof\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex>^</preExtractRegex>\n" + //
+            "    <postExtractRegex>_prof.nc$</postExtractRegex>\n" + //
+            "    <extractRegex>.*</extractRegex>\n" + //
+            "    <columnNameForExtract>fileNumber</columnNameForExtract>\n" + //
+            "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
+            "    <removeMVRows>true</removeMVRows>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
+            "        <att name=\"featureType\">trajectoryProfile</att>\n" + //
+            "        <att name=\"history\">2016-04-15T20:47:22Z creation</att>\n" + //
+            "        <att name=\"institution\">Coriolis GDAC</att>\n" + //
+            "        <att name=\"references\">http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"source\">Argo float</att>\n" + //
+            "        <att name=\"title\">Argo float vertical profile</att>\n" + //
+            "        <att name=\"user_manual_version\">3.1</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_altitude_proxy\">pres</att>\n" + //
+            "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">platform_number, project_name, pi_name, platform_type, float_serial_no</att>\n"
+            + //
+            "        <att name=\"cdm_profile_variables\">cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att>\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, direction, data_center, dc_reference, data_state_indicator, data_mode, firmware_version, wmo_inst_type, time, time_qc, time_location, latitude, longitude, position_qc, positioning_system, profile_pres_qc, profile_temp_qc, profile_psal_qc, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, dc_reference, data_state_indicator, firmware_version, wmo_inst_type, time, time_location, latitude, longitude, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <!--att name=\"subsetVariables\">platform_number, project_name, pi_name, platform_type, float_serial_no, cycle_number, data_type, format_version, handbook_version, reference_date_time, date_creation, date_update, data_center, data_state_indicator, firmware_version, wmo_inst_type, positioning_system, vertical_sampling_scheme</att-->\n"
+            + //
+            "        <att name=\"Conventions\">Argo-3.1, CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">support@argo.net</att>\n" + //
+            "        <att name=\"creator_name\">Argo</att>\n" + //
+            "        <att name=\"creator_url\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"history\"></att>\n" + //
+            "        <att name=\"infoUrl\">http://www.argo.net/</att>\n" + //
+            "        <att name=\"institution\">Argo</att>\n" + //
+            "        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n"
+            + //
+            "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" + //
+            "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "Oceans &gt; Salinity/Density &gt; Salinity,\n" + //
+            "passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "Argo float vertical profiles from Coriolis Global Data Assembly Centres\n" + //
+            "(GDAC). Argo is an international collaboration that collects high-quality\n" + //
+            "temperature and salinity profiles from the upper 2000m of the ice-free\n" + //
+            "global ocean and currents from intermediate depths. The data come from\n" + //
+            "battery-powered autonomous floats that spend most of their life drifting\n" + //
+            "at depth where they are stabilised by being neutrally buoyant at the\n" + //
+            "\"parking depth\" pressure by having a density equal to the ambient pressure\n" + //
+            "and a compressibility that is less than that of sea water. At present there\n" + //
+            "are several models of profiling float used in Argo. All work in a similar\n" + //
+            "fashion but differ somewhat in their design characteristics. At typically\n" + //
+            "10-day intervals, the floats pump fluid into an external bladder and rise\n" + //
+            "to the surface over about 6 hours while measuring temperature and salinity.\n" + //
+            "Satellites or GPS determine the position of the floats when they surface,\n" + //
+            "and the floats transmit their data to the satellites. The bladder then\n" + //
+            "deflates and the float returns to its original density and sinks to drift\n" + //
+            "until the cycle is repeated. Floats are designed to make about 150 such\n" + //
+            "cycles.\n" + //
+            "Data Management URL: http://www.argodatamgt.org/Documentation</att>\n" + //
+            "        <att name=\"title\">Argo Float Vertical Profiles</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>fileNumber</sourceName>\n" + //
+            "        <destinationName>fileNumber</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">File Number</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_TYPE</sourceName>\n" + //
+            "        <destinationName>data_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 1</att>\n" + //
+            "            <att name=\"long_name\">Data type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FORMAT_VERSION</sourceName>\n" + //
+            "        <destinationName>format_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">File format version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HANDBOOK_VERSION</sourceName>\n" + //
+            "        <destinationName>handbook_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Data handbook version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>REFERENCE_DATE_TIME</sourceName>\n" + //
+            "        <destinationName>reference_date_time</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of reference for Julian days</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_CREATION</sourceName>\n" + //
+            "        <destinationName>date_creation</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of file creation</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATE_UPDATE</sourceName>\n" + //
+            "        <destinationName>date_update</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">YYYYMMDDHHMISS</att>\n" + //
+            "            <att name=\"long_name\">Date of update of this file</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"units\">yyyyMMddHHmmss</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_NUMBER</sourceName>\n" + //
+            "        <destinationName>platform_number</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">WMO float identifier : A9IIIII</att>\n" + //
+            "            <att name=\"long_name\">Float unique identifier</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROJECT_NAME</sourceName>\n" + //
+            "        <destinationName>project_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the project</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PI_NAME</sourceName>\n" + //
+            "        <destinationName>pi_name</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Name of the principal investigator</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CYCLE_NUMBER</sourceName>\n" + //
+            "        <destinationName>cycle_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">0...N, 0 : launch cycle (if exists), 1 : first complete cycle</att>\n"
+            + //
+            "            <att name=\"long_name\">Float cycle number</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"cf_role\">profile_id</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">200.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DIRECTION</sourceName>\n" + //
+            "        <destinationName>direction</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">A: ascending profiles, D: descending profiles</att>\n" + //
+            "            <att name=\"long_name\">Direction of the station profiles</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_CENTRE</sourceName>\n" + //
+            "        <destinationName>data_center</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 4</att>\n" + //
+            "            <att name=\"long_name\">Data centre in charge of float data processing</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DC_REFERENCE</sourceName>\n" + //
+            "        <destinationName>dc_reference</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Data centre convention</att>\n" + //
+            "            <att name=\"long_name\">Station unique identifier in data centre</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_STATE_INDICATOR</sourceName>\n" + //
+            "        <destinationName>data_state_indicator</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 6</att>\n" + //
+            "            <att name=\"long_name\">Degree of processing the data have passed through</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DATA_MODE</sourceName>\n" + //
+            "        <destinationName>data_mode</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">R : real time; D : delayed mode; A : real time with adjustment</att>\n"
+            + //
+            "            <att name=\"long_name\">Delayed mode or real time data</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PLATFORM_TYPE</sourceName>\n" + //
+            "        <destinationName>platform_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 23</att>\n" + //
+            "            <att name=\"long_name\">Type of float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FLOAT_SERIAL_NO</sourceName>\n" + //
+            "        <destinationName>float_serial_no</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Serial number of the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>FIRMWARE_VERSION</sourceName>\n" + //
+            "        <destinationName>firmware_version</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Instrument firmware version</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>WMO_INST_TYPE</sourceName>\n" + //
+            "        <destinationName>wmo_inst_type</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 8</att>\n" + //
+            "            <att name=\"long_name\">Coded instrument type</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the station relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_QC</sourceName>\n" + //
+            "        <destinationName>time_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on date and time</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>JULD_LOCATION</sourceName>\n" + //
+            "        <destinationName>time_location</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">999999.0</att>\n" + //
+            "            <att name=\"conventions\">Relative julian days with decimal part (as parts of day)</att>\n" + //
+            "            <att name=\"long_name\">Julian day (UTC) of the location relative to REFERENCE_DATE_TIME</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"units\">days since 1950-01-01 00:00:00 UTC</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"conventions\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LATITUDE</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">Latitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>LONGITUDE</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"double\">99999.0</att>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">Longitude of the station, best estimate</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITION_QC</sourceName>\n" + //
+            "        <destinationName>position_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">Quality on position (latitude and longitude)</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>POSITIONING_SYSTEM</sourceName>\n" + //
+            "        <destinationName>positioning_system</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Positioning system</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PRES_QC</sourceName>\n" + //
+            "        <destinationName>profile_pres_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PRES profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_TEMP_QC</sourceName>\n" + //
+            "        <destinationName>profile_temp_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of TEMP profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PROFILE_PSAL_QC</sourceName>\n" + //
+            "        <destinationName>profile_psal_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2a</att>\n" + //
+            "            <att name=\"long_name\">Global quality flag of PSAL profile</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>VERTICAL_SAMPLING_SCHEME</sourceName>\n" + //
+            "        <destinationName>vertical_sampling_scheme</destinationName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 16</att>\n" + //
+            "            <att name=\"long_name\">Vertical sampling scheme</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CONFIG_MISSION_NUMBER</sourceName>\n" + //
+            "        <destinationName>config_mission_number</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">99999</att>\n" + //
+            "            <att name=\"conventions\">1...N, 1 : first complete mission</att>\n" + //
+            "            <att name=\"long_name\">Unique number denoting the missions performed by the float</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES</sourceName>\n" + //
+            "        <destinationName>pres</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_QC</sourceName>\n" + //
+            "        <destinationName>pres_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>pres_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"axis\">Z</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Sea water pressure, equals 0 at sea-level</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_pressure</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">12000.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Sea Level</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>pres_adjusted_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PRES_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>pres_aqdjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;7.1f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F7.1</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"units\">decibar</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP</sourceName>\n" + //
+            "        <destinationName>temp</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_QC</sourceName>\n" + //
+            "        <destinationName>temp_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>temp_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Sea temperature in-situ ITS-90 scale</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">40.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-2.5</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TEMP_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>temp_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">degree_Celsius</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL</sourceName>\n" + //
+            "        <destinationName>psal</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_QC</sourceName>\n" + //
+            "        <destinationName>psal_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED</sourceName>\n" + //
+            "        <destinationName>psal_adjusted</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Practical salinity</att>\n" + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_salinity</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">41.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">2.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_QC</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_qc</destinationName>\n" + //
+            "        <dataType>char</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"conventions\">Argo reference table 2</att>\n" + //
+            "            <att name=\"long_name\">quality flag</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>PSAL_ADJUSTED_ERROR</sourceName>\n" + //
+            "        <destinationName>psal_adjusted_error</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">99999.0</att>\n" + //
+            "            <att name=\"C_format\">&#37;9.3f</att>\n" + //
+            "            <att name=\"FORTRAN_format\">F9.3</att>\n" + //
+            "            <att name=\"long_name\">Contains the error on the adjusted values as determined by the delayed mode QC process</att>\n"
+            + //
+            "            <att name=\"resolution\" type=\"float\">0.001</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"resolution\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestEDDTableFromHyraxFiles() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"testEDDTableFromHyraxFiles\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" + //
+            "    <fileDir></fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>pentad.*\\.nc\\.gz</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <preExtractRegex></preExtractRegex>\n" + //
+            "    <postExtractRegex></postExtractRegex>\n" + //
+            "    <extractRegex></extractRegex>\n" + //
+            "    <columnNameForExtract></columnNameForExtract>\n" + //
+            "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" + //
+            "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"base_date\" type=\"shortList\">1987 9 8</att>\n" + //
+            "        <att name=\"Conventions\">COARDS</att>\n" + //
+            "        <att name=\"description\">Time average of level3.0 products for the period: 1987-09-08 to 1987-09-12</att>\n"
+            + //
+            "        <att name=\"history\">Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean\n"
+            + //
+            "Surface Wind Velocity Product for Meteorological and Oceanographic Applications</att>\n" + //
+            "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5)</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" + //
+            "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" + //
+            "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" + //
+            "    -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"base_date\">null</att>\n" + //
+            "        <att name=\"cdm_data_type\">Point</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"description\">null</att>\n" + //
+            "        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html</att>\n"
+            + //
+            "        <att name=\"institution\">NASA JPL</att>\n" + //
+            "        <att name=\"keywords\">\n" + //
+            "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+            "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" + //
+            "atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"sourceUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/</att>\n"
+            + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">Time average of level3.0 products.</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">0.125 359.875</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-78.375 78.375</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">6000.0 6000.0</att>\n" + //
+            "            <att name=\"avg_period\">0000-00-05 00:00:00</att>\n" + //
+            "            <att name=\"delta_t\">0000-00-05 00:00:00</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">hours since 1987-01-01 00:00:0.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">6300.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">5700.0</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>uwnd</sourceName>\n" + //
+            "        <destinationName>uwnd</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-17.119131 23.734001</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"long_name\">u-wind at 10 meters</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.001525972</att>\n" + //
+            "            <att name=\"units\">m/s</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">-50.0 50.0</att> \n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"standard_name\">eastward_wind</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">-50.0 50.0</att> \n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>vwnd</sourceName>\n" + //
+            "        <destinationName>vwnd</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-17.053457 17.418158</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"long_name\">v-wind at 10 meters</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.001525972</att>\n" + //
+            "            <att name=\"units\">m/s</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">-50.0 50.0</att>   \n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"standard_name\">northward_wind</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">-50.0 50.0</att>   \n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>wspd</sourceName>\n" + //
+            "        <destinationName>wspd</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">0.015208766 26.59628</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">37.5</att>\n" + //
+            "            <att name=\"long_name\">wind speed at 10 meters</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.001144479</att>\n" + //
+            "            <att name=\"units\">m/s</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">0.0 75.0</att>   \n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">0.0 75.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>upstr</sourceName>\n" + //
+            "        <destinationName>upstr</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-313.95215 631.23615</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"long_name\">u-component of pseudostress at 10 meters</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.03051944</att>\n" + //
+            "            <att name=\"units\">m2/s2</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+            "            <att name=\"ioos_category\">Physical Oceanography</att>\n" + //
+            "            <att name=\"standard_name\">surface_downward_eastward_stress</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>vpstr</sourceName>\n" + //
+            "        <destinationName>vpstr</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">-303.41635 386.9137</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" + //
+            "            <att name=\"long_name\">v-component of pseudostress at 10 meters</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.03051944</att>\n" + //
+            "            <att name=\"units\">m2/s2</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+            "            <att name=\"ioos_category\">Physical Oceanography</att>\n" + //
+            "            <att name=\"standard_name\">surface_downward_northward_stress</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>nobs</sourceName>\n" + //
+            "        <destinationName>nobs</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" + //
+            "            <att name=\"add_offset\" type=\"float\">32766.0</att>\n" + //
+            "            <att name=\"long_name\">number of observations</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" + //
+            "            <att name=\"units\">count</att>\n" + //
+            "            <att name=\"valid_range\" type=\"floatList\">0.0 65532.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"unpacked_valid_range\" type=\"floatList\">0.0 65532.0</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestGridFromTable() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridFromEDDTable\" datasetID=\"testGridFromTable\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <gapThreshold>15</gapThreshold> <!-- 15 for testing purposes, default=2000 -->\n" + //
+            "\n" + //
+            "    <addAttributes>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <!-- only this range of time has regularly spaced time values. -->\n" + //
+            "            <att name=\"axisValuesStartStrideStop\" type=\"doubleList\">1101844360, 120, 1109788360</att>\n"
+            + //
+            "            <att name=\"cf_role\" />\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>latitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axisValues\" type=\"doubleList\">34.04017</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>longitude</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axisValues\" type=\"doubleList\">-120.31121</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>depth</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"axisValuesStartStrideStop\" type=\"doubleList\">-1.8, 1, 16.2</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DataQuality</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DataQuality_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Eastward</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Eastward_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ErrorVelocity</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ErrorVelocity_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Intensity</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Intensity_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Northward</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Northward_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Upwards</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Upwards_flag</sourceName>\n" + //
+            "        <addAttributes>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "\n" + //
+            "  \n" + //
+            "  <dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n" + //
+            "  <dataset type=\"EDDTableFromNcFiles\" datasetID=\"lowerTestGridFromTable\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+            + Path.of(EDDTestDataset.class.getResource("/erddapBPD/copy/nmspWcosAdcpD/BAY/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>BAYXXX_015ADCP.*\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <sortedColumnSourceName>Time</sortedColumnSourceName>\n" + //
+            "    <sortFilesBySourceNames>Time Depth</sortFilesBySourceNames>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Point</att>\n" + //
+            "        <att name=\"subsetVariables\">longitude, latitude</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"History\" />\n" + //
+            "        <att name=\"history\">Created by the NCDDC PISCO ADCP Profile to converter on 2009/00/11 15:00 CST.</att>\n"
+            + //
+            "        <att name=\"infoUrl\">ftp://ftp.nodc.noaa.gov/nodc/archive/arc0006/0002039/1.1/about/WCOS_project_document_phaseI_20060317.pdf</att>\n"
+            + //
+            "        <att name=\"institution\">NOAA NMSP</att>\n" + //
+            "        <att name=\"keywords\">\n" + //
+            "Oceans &gt; Ocean Circulation &gt; Ocean Currents,\n" + //
+            "adcp, atmosphere, circulation, coast, current, currents, data, depth, eastward, eastward_sea_water_velocity, eastward_sea_water_velocity status_flag, error, flag, height, identifier, intensity, nmsp, noaa, northward, northward_sea_water_velocity, northward_sea_water_velocity status_flag, observing, ocean, oceans, quality, sea, seawater, station, status, system, time, upward, upward_sea_water_velocity, upwards, velocity, water, wcos, west, west coast</att>\n"
+            + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"Mooring_ID\" />\n" + //
+            "        <att name=\"sourceUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n"
+            + //
+            "\n" + //
+            "The stations (and their code names) are San Miguel North (BAY), Santa Rosa North (BEA), Cuyler Harbor (CUY), Pelican/Prisoners Area (PEL), San Miguel South (SMS), Santa Rosa South (SRS), Valley Anch (VAL).</att>\n"
+            + //
+            "        <att name=\"title\">West Coast Observing System (WCOS) ADCP Currents Data</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Longitude</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"description\" />\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Latitude</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"description\" />\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"description\" />\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01 00:00:00</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Depth</sourceName>\n" + //
+            "        <destinationName>depth</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att> <!-- 2020-08-10 I added this so EDDGridFromEDDTable can make this into an axisVariable. -->\n"
+            + //
+            "            <att name=\"description\">Relative to Mean Sea Level (MSL)</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DataQuality</sourceName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Data Quality</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>DataQuality_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Data Quality Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Eastward</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Eastward Current</att>\n" + //
+            "            <att name=\"standard_name\">eastward_sea_water_velocity</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Eastward_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Eastward Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ErrorVelocity</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Error Velocity</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ErrorVelocity_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Error Velocity Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Intensity</sourceName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Intensity</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Intensity_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Intensity Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Northward</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Northward Current</att>\n" + //
+            "            <att name=\"standard_name\">northward_sea_water_velocity</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Northward_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Northward Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Upwards</sourceName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Currents</att>\n" + //
+            "            <att name=\"long_name\">Upward Current</att>\n" + //
+            "            <att name=\"standard_name\">upward_sea_water_velocity</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>Upwards_flag</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"long_name\">Upwards Flag</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "  </dataset>\n" + //
+            "</dataset>");
+  }
+
+  public static EDD gettestGridWav() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDDGridFromAudioFiles\" datasetID=\"testGridWav\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" + //
+            "    <defaultGraphQuery>channel_1[0][(0):(1)]&amp;.draw=lines&amp;.vars=elapsedTime|time</defaultGraphQuery>\n"
+            + //
+            "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largeFiles/audio/wav/").toURI()).toString()
+            + "</fileDir> <!-- also /erddapTest/audio/wav/ -->\n" + //
+            "    <fileNameRegex>aco_acoustic\\.[0-9]{8}_[0-9]{6}\\.wav</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>.*</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>20</matchAxisNDigits>\n" + //
+            "    <dimensionValuesInMemory>false</dimensionValuesInMemory>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"audioBigEndian\">false</att>\n" + //
+            "        <att name=\"audioChannels\" type=\"int\">1</att>\n" + //
+            "        <att name=\"audioEncoding\">PCM_SIGNED</att>\n" + //
+            "        <att name=\"audioFrameRate\" type=\"float\">96000.0</att>\n" + //
+            "        <att name=\"audioFrameSize\" type=\"int\">2</att>\n" + //
+            "        <att name=\"audioSampleRate\" type=\"float\">96000.0</att>\n" + //
+            "        <att name=\"audioSampleSizeInBits\" type=\"int\">16</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"infoUrl\">???</att>\n" + //
+            "        <att name=\"institution\">???</att>\n" + //
+            "        <att name=\"keywords\">channel_1, data, elapsedTime, local, source, time</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">Audio data from a local source.</att>\n" + //
+            "        <att name=\"title\">Audio data from a local source.</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>***fileName,\"timeFormat=yyyyMMdd'_'HHmmss\",\"aco_acoustic\\\\.([0-9]{8}_[0-9]{6})\\\\.wav\",1</sourceName>\n"
+            + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>elapsedTime</sourceName>\n" + //
+            "        <destinationName>elapsedTime</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Elapsed Time</att>\n" + //
+            "            <att name=\"units\">seconds</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>channel_1</sourceName>\n" + //
+            "        <destinationName>channel_1</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"long_name\">Channel 1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">33000.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-33000.0</att>\n" + //
+            "            <att name=\"ioos_category\">Other</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>");
+  }
+
+  /**
+   * public static EDD get() throws Throwable {
+   * return EDD.oneFromXmlFragment(null, "");
+   * }
+   */
 }

@@ -1,8 +1,10 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -12,6 +14,14 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagLocalERDDAP;
 
 class EDDGridFromEtopoTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
+  }
+  
   /**
    * This tests the methods in this class.
    *
@@ -278,48 +288,49 @@ class EDDGridFromEtopoTests {
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
     if (doGraphicsTests) {
+      String obsDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
       String baseName = data180.className() + "_Map180";
       tName = data180.makeNewFileForDapQuery(language, null, null,
           "altitude[(-90):(90)][(-180):(180)]" +
               "&.vars=longitude|latitude|altitude&.colorBar=Ocean|C|Linear|-8000|0&.drawLand=Over",
-          EDStatic.fullTestCacheDirectory, baseName, ".png");
+              obsDir, baseName, ".png");
       // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-      Image2.testImagesIdentical(
-          EDStatic.fullTestCacheDirectory + tName,
-          String2.unitTestImagesDir() + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          tName,
+          baseName + ".png",
+          baseName + "_diff.png");
 
       baseName = data360.className() + "_Map360";
       tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):(90)][(0):(360)]",
-          EDStatic.fullTestCacheDirectory, baseName, ".png");
+        obsDir, baseName, ".png");
       // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-      Image2.testImagesIdentical(
-          EDStatic.fullTestCacheDirectory + tName,
-          String2.unitTestImagesDir() + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          tName,
+          baseName + ".png",
+          baseName + "_diff.png");
 
       baseName = data360.className() + "_TopoUnder";
       tName = data360.makeNewFileForDapQuery(language, null, null,
           "altitude[][]" +
               "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=under",
-          EDStatic.fullTestCacheDirectory, baseName, ".png");
+              obsDir, baseName, ".png");
       // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-      Image2.testImagesIdentical(
-          EDStatic.fullTestCacheDirectory + tName,
-          String2.unitTestImagesDir() + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          tName,
+          baseName + ".png",
+          baseName + "_diff.png");
 
       // same data subset. Is cached file used?
       baseName = data360.className() + "_TopoOver";
       tName = data360.makeNewFileForDapQuery(language, null, null,
           "altitude[][]" +
               "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=over",
-          EDStatic.fullTestCacheDirectory, baseName, ".png");
+              obsDir, baseName, ".png");
       // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-      Image2.testImagesIdentical(
-          EDStatic.fullTestCacheDirectory + tName,
-          String2.unitTestImagesDir() + baseName + ".png",
-          File2.getSystemTempDirectory() + baseName + "_diff.png");
+      Image2Tests.testImagesIdentical(
+          tName,
+          baseName + ".png",
+          baseName + "_diff.png");
 
     }
 

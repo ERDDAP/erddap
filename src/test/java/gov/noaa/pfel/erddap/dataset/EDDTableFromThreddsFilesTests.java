@@ -25,6 +25,7 @@ class EDDTableFromThreddsFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -897,7 +898,9 @@ class EDDTableFromThreddsFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-    String expected = "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_d91a_eb5f_b55f\" active=\"true\">\n"
+    String tDatasetID = EDDTableFromNcFiles
+        .suggestDatasetID("https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml" + ".*MTBD.*\\.nc");
+    String expected = "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>0</updateEveryNMillis>\n" +

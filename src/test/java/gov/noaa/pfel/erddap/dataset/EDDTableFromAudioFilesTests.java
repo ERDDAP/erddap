@@ -24,12 +24,14 @@ class EDDTableFromAudioFilesTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
    * testGenerateDatasetsXml
    */
-  public static void testGenerateDatasetsXml() throws Throwable {
+  @org.junit.jupiter.api.Test
+   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     boolean oEDDDebugMode = EDD.debugMode;
     // EDD.debugMode = true;
@@ -61,14 +63,15 @@ class EDDTableFromAudioFilesTests {
         "-1", "" }, // defaultStandardizeWhat
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
-    String expected = "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"wav_56d5_230d_1887\" active=\"true\">\n" +
+    String suggDatasetID = EDDTableFromAudioFiles.suggestDatasetID(
+        dataDir + "\\.*\\.wav");
+    String expected = "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
         "    <defaultGraphQuery>elapsedTime,channel_1&amp;time=min(time)&amp;elapsedTime&gt;=0&amp;elapsedTime&lt;=1&amp;.draw=lines</defaultGraphQuery>\n"
         +
         "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" +
-        "    <fileDir>" + dataDir + "/</fileDir>\n" +
+        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
         "    <fileNameRegex>.*\\.wav</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
@@ -147,10 +150,9 @@ class EDDTableFromAudioFilesTests {
     // expected.length())),
     // expected, "");
 
-    String tDatasetID = "wav_56d5_230d_1887";
-    EDD.deleteCachedDatasetInfo(tDatasetID);
+    EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromAudioFiles.oneFromXmlFragment(null, results);
-    Test.ensureEqual(edd.datasetID(), "wav_56d5_230d_1887", "");
+    Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
     Test.ensureEqual(edd.title(), "Audio data from a local source.", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
         "time, elapsedTime, channel_1",

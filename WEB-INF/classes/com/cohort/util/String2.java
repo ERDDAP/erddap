@@ -202,13 +202,6 @@ public class String2 {
     public static String unitTestBigDataDir = "/erddapTestBig/";
 
     /**
-     * This returns the images dir in the unitTestDataDir.
-     */
-    public static String unitTestImagesDir() {
-        return unitTestDataDir + "images/";
-    }
-
-    /**
      * This returns the string which sorts higher.
      * null sorts low.
      *
@@ -5318,12 +5311,14 @@ and zoom and pan with controls in
     /** 
      * A variant of getStringFromSystemIn that adds "\nPress ^C to stop or Enter to continue..."
      * to the prompt.
+     * @throws Exception 
      *
      * @throws RuntimeException if trouble
      */
     public static String pressEnterToContinue(String prompt) {
         if (prompt == null)
             prompt = "";
+        // throw new Exception("Enter to Continue unsupported");
         return getStringFromSystemIn(prompt + 
                 (prompt.length() == 0 || prompt.endsWith("\n")? "" : "\n") +
                 "Press ^C to stop or Enter to continue...");

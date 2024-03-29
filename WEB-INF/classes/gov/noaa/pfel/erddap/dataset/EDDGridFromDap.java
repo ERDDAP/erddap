@@ -1857,24 +1857,6 @@ String expected2 =
     };
 
     /** 
-     * Bob uses this for testing in individual GEO IDE UAF Thredds catalog.
-     * See original catalog https://data.pmel.noaa.gov/thredds/geoideCatalog.html
-     * See the clean catalog at https://data.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
-     */
-    public static void testUAFSubThreddsCatalog(int which) throws Throwable {
-
-        String partName = which + "_" + Calendar2.getCompactCurrentISODateTimeStringLocal();
-
-        generateDatasetsXmlFromThreddsCatalog(
-            EDStatic.fullLogsDirectory + "UAFdatasets" + partName + ".xml", 
-            UAFSubThreddsCatalogs[which], 
-            ".*", ".*",  //pathRegex
-            ".*(oceanwatch\\.pfeg\\.noaa\\.gov|coastwatch/viirs-ocr/).*", //negativePathRegex
-            -1);  //-1 uses suggestReloadEveryNMinutes
-    }
-
-
-    /** 
      * This is for use by Bob at ERD -- others don't need it.
      * This generates a rough draft of the datasets.xml entry for an EDDGridFromDap
      * for the datasets served by ERD's Thredds server.

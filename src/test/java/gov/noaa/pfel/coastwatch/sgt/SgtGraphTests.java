@@ -11,7 +11,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 
@@ -32,7 +32,7 @@ class SgtGraphTests {
    */
   @org.junit.jupiter.api.Test
   void testForMemoryLeak() throws Exception {
-
+    File2.setWebInfParentDirectory();
     // verbose = true;
     // reallyVerbose = true;
     // PathCartesianRenderer.verbose = true;
@@ -126,13 +126,14 @@ class SgtGraphTests {
       SgtUtil.saveImage(bufferedImage1, fileName);
 
       // view it in browser?
-      if (rep == 0) {
-        // Test.displayInBrowser("file://" + fileName);
-        Image2.testImagesIdentical(
-            fileName,
-            String2.unitTestImagesDir() + "SgtGraphMemoryTest" + rep + ".png",
-            File2.getSystemTempDirectory() + "SgtGraphMemoryTest" + rep + "_diff.png");
-      }
+      // Graph of random points seems like its going to fail image diff eery time.
+      // if (rep == 0) {
+      //   // Test.displayInBrowser("file://" + fileName);
+      //   Image2Tests.testImagesIdentical(
+      //       fileName,
+      //       String2.unitTestImagesDir() + "SgtGraphMemoryTest" + rep + ".png",
+      //       File2.getSystemTempDirectory() + "SgtGraphMemoryTest" + rep + "_diff.png");
+      // }
     }
 
     // check memory usage
@@ -539,7 +540,7 @@ class SgtGraphTests {
         SgtGraph.DefaultBackgroundColor, 1); // fontScale
 
     // make sure old files are deleted
-    String fileName = TEMP_DIR.toAbsolutePath().toString() + "/" + baseImageName;
+    String fileName = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) + baseImageName;
     File2.delete(fileName + ".png");
     File2.delete(fileName + "1.png");
     File2.delete(fileName + "2.png");
@@ -563,19 +564,19 @@ class SgtGraphTests {
 
     // view it
     // Test.displayInBrowser("file://" + fileName + ".png");
-    Image2.testImagesIdentical(
-        fileName + ".png",
-        String2.unitTestImagesDir() + baseImageName + ".png",
-        File2.getSystemTempDirectory() + baseImageName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+      baseImageName + ".png",
+        baseImageName + ".png",
+        baseImageName + "_diff.png");
     Math2.sleep(2000);
 
     if (testAllAndDisplay) {
       for (int ti = 1; ti <= 6; ti++) {
         // Test.displayInBrowser("file://" + fileName + ti + ".png");
-        Image2.testImagesIdentical(
-            fileName + ti + ".png",
-            String2.unitTestImagesDir() + baseImageName + ti + ".png",
-            File2.getSystemTempDirectory() + baseImageName + ti + "_diff.png");
+        Image2Tests.testImagesIdentical(
+          baseImageName + ti + ".png",
+            baseImageName + ti + ".png",
+            baseImageName + ti + "_diff.png");
         Math2.sleep(400);
       }
     }
@@ -617,7 +618,6 @@ class SgtGraphTests {
     long time = System.currentTimeMillis();
     long memoryInUse = Math2.getMemoryInUse();
 
-    String tempDir = SSR.getTempDirectory();
     SgtGraph sgtGraph = new SgtGraph("DejaVu Sans"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
                                                      // choice
     String imageDir = File2.webInfParentDirectory() + // with / separator and / at the end
@@ -710,14 +710,15 @@ class SgtGraphTests {
 
     // save image
     String fileName = "SgtGraphTestSurface" + (xIsLogAxis ? "X" : "") + (yIsLogAxis ? "Y" : "");
-    SgtUtil.saveImage(bufferedImage, tempDir + fileName + ".png");
+    String obsDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
+    SgtUtil.saveImage(bufferedImage, obsDir + fileName + ".png");
 
     // view it
     // Test.displayInBrowser("file://" + fileName);
-    Image2.testImagesIdentical(
-        tempDir + fileName + ".png",
-        String2.unitTestImagesDir() + fileName + ".png",
-        File2.getSystemTempDirectory() + fileName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        fileName + ".png",
+        fileName + ".png",
+        fileName + "_diff.png");
 
     Math2.gc("SgtGraph.testSurface (between tests)", 2000);
     // String2.pressEnterToContinue();

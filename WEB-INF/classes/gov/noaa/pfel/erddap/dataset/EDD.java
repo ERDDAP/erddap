@@ -9736,6 +9736,9 @@ public abstract class EDD {
      * @return a suggested datasetID, e.g., noaa_pfeg#########
      */
     public static String suggestDatasetID(String tPublicSourceUrl) {
+        System.out.println("****************************************************");
+        System.out.println(tPublicSourceUrl);
+        System.out.println("****************************************************");
         //???alternative: use String2.modifyToBeFileNameSafe to convert end to, e.g.,
         //   satellite_MH_chla_5day.
         //But some datasetIDs would be very long and info is already in sourceUrl in original form.

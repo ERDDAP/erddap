@@ -14,7 +14,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -1488,60 +1487,6 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
     }
 
-
-    /**
-     * This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files" directory.
-     */
-    public static void testInteractiveErddapFilesWAF() throws Throwable {
-        String2.log("\n*** FileVisitorDNLS.testInteractiveErddapFilesWAF()\n");
-        //test with trailing /
-        //This also tests redirect to https!
-        String url = "https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/"; 
-        String tFileNameRegex = "194\\d\\.nc";
-        boolean tRecursive = true;
-        String tPathRegex = ".*/(3|4)/.*";   
-        boolean tDirsToo = true;
-        Table table = makeEmptyTable();
-        StringArray dirs        = (StringArray)table.getColumn(0);
-        StringArray names       = (StringArray)table.getColumn(1);
-        LongArray lastModifieds = (LongArray)table.getColumn(2);
-        LongArray sizes         = (LongArray)table.getColumn(3);
-        String results, expected;
-
-        //** Test InPort WAF        
-        table.removeAllRows();
-        try {
-            results = addToWAFUrlList(  //returns a list of errors or ""
-                "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
-                "22...\\.xml",   
-                //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
-                true, ".*/NMFS/(|NEFSC/(|inport-xml/(|xml/)))", //tricky! 
-                true, //tDirsToo, 
-                dirs, names, lastModifieds, sizes);
-            Test.ensureEqual(results, "", "results=\n" + results);
-            results = table.dataToString();
-            expected = 
-"directory,name,lastModified,size\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1580850460000,142029\n" + //added 2020-03-03
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22561.xml,1554803918000,214016\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22562.xml,1554803940000,211046\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22563.xml,1554803962000,213504\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22564.xml,1554803984000,213094\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22565.xml,1554804006000,214323\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/,22560.xml,1557568922000,213709\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + "\n" +
-              "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
-              "Was: This changes periodically. If reasonable, just continue.\n" +
-              "(there no more subtests in this test).");
-      }
-      }
-
     /**
      * This gets the file names from Hyrax catalog directory URL.
      * This only finds info for DAP URLs. 
@@ -2152,84 +2097,6 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
 
         return outTable;
     }
-        
-    /**
-     * This tests sync().
-     */
-    public static void testSync() throws Throwable {
-        String2.log("\n*** FileVisitorDNLS.testSync");
-        String rDir = "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/";
-        String lDir = String2.unitTestDataDir + "sync/NMFS";  //test without trailing slash 
-        String fileRegex = "22...\\.xml";
-        boolean recursive = true;
-        //first part of pathRegex must be the last part of the rDir and the lDir, e.g., NMFS
-        //pre 2016-03-04 I tested NWFSC/inport-xml/xml, but it has been empty for a month!
-        String pathRegex = ".*/NMFS/(|NEFSC/)(|inport-xml/)(|xml/)"; //tricky!            
-        boolean doIt = true;
-
-        //get original times
-        String name22560 = lDir + "/NEFSC/inport-xml/xml/22560.xml";
-        String name22565 = lDir + "/NEFSC/inport-xml/xml/22565.xml";
-
-        long time22560 = File2.getLastModified(name22560);
-        long time22565 = File2.getLastModified(name22565);
-
-        try {
-            //For testing purposes, I put one extra file in the dir: 22561.xml renamed as 22ext.xml
-
-            //do the sync
-            sync(rDir, lDir, fileRegex, recursive, pathRegex, true);
-
-            //current date on all these files
-            //Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1455948120),
-            //    "2016-02-20T06:02:00Z", ""); //what the website shows for many
-
-            //delete 1 local file
-            File2.delete(lDir + "/NEFSC/inport-xml/xml/22563.xml");
-
-            //make 1 local file older
-            File2.setLastModified(name22560, 100);
-
-            //make 1 local file newer
-            File2.setLastModified(name22565, System.currentTimeMillis() + 100);
-            Math2.sleep(500);
-
-            //test the sync 
-            Table table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
-            String2.pressEnterToContinue(
-                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
-                "Was: Check above to ensure these numbers:\n" +
-                "\"found nAlready=3 nAvailDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
-            String results = table.dataToString();
-            String expected = //the lastModified values change periodically
-//these are the files which were downloaded
-"remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/22560.xml,/erddapTest/sync/NMFS/NEFSC/inport-xml/xml/22560.xml,1580850460000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport-xml/xml/22563.xml,/erddapTest/sync/NMFS/NEFSC/inport-xml/xml/22563.xml,1580850480000\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //no changes, do the sync again
-            table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
-            String2.pressEnterToContinue(
-                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
-                "Check above to ensure these numbers:\n" +
-                "\"found nAlready=5 nToDownload=0 nTooRecent=1 nExtraLocal=1\"\n");
-            results = table.dataToString();
-            expected = 
-    "remote,local,lastModified\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "2020-10-22 This now fails because inport has web pages, not a directory system as before.\n" +
-                "Was: Often, there are minor differences."); 
-
-        } finally {
-            File2.setLastModified(name22560, time22560);
-            File2.setLastModified(name22565, time22565);
-        }
-
-    }
 
     /** 
      * This looks in all the specified files until a file with a line that
@@ -2351,24 +2218,6 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         } finally {
             tar.close();
         }
-    }
-
-    /** 
-     * This tests makeTgz.
-     */
-    public static void testMakeTgz() throws Exception {
-        String2.log("\n*** FileVisitorDNLS.testMakeTgz");
-        
-        String tgzName = String2.unitTestDataDir + "testMakeTgz.tar.gz";
-        try {
-            makeTgz(String2.unitTestDataDir + "fileNames/", ".*", true, ".*",
-                tgzName);
-            Test.displayInBrowser("file://" + tgzName);  //works with .tar.gz, not .tgz
-            String2.pressEnterToContinue("Are the contents of the .tar.gz file okay?");
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t));
-        }
-        File2.delete(tgzName);
     }
 
     /**
@@ -2586,53 +2435,4 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         }
         System.exit(0);
     }
-
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? 2 : 14;
-        String msg = "\n^^^ FileVisitorDNLS.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    if (test ==  0) testInteractiveErddapFilesWAF();  
-                    if (test ==  1) testSync();
-                    if (test ==  2) testMakeTgz();
-
-                } else {
-                   
-                    //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
-
-                    //FUTURE: FTP? ftp://ftp.unidata.ucar.edu/pub/
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
 }

@@ -1,5 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
@@ -11,6 +13,14 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagIncompleteTest;
 
 class EDDTableFromOBISTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
+  }
+  
   /**
    * This tests generateDatasetsXml.
    * 
@@ -37,7 +47,8 @@ class EDDTableFromOBISTests {
           false); // doIt loop?
       Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-      expected = "<dataset type=\"EDDTableFromOBIS\" datasetID=\"rutgers_marine_6cb4_a970_1d67\" active=\"true\">\n" +
+      String tDatasetID = EDDTableFromNcFiles.suggestDatasetID("http://iobis.marine.rutgers.edu/digir2/DiGIR.php");
+      expected = "<dataset type=\"EDDTableFromOBIS\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
           "    <sourceUrl>http://iobis.marine.rutgers.edu/digir2/DiGIR.php</sourceUrl>\n" +
           "    <sourceCode>OBIS-SEAMAP</sourceCode>\n" +
           "    <sourceNeedsExpandedFP_EQ>true</sourceNeedsExpandedFP_EQ>\n" +
@@ -70,7 +81,7 @@ class EDDTableFromOBISTests {
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // ensure it is ready-to-use by making a dataset from it
-      String tDatasetID = "rutgers_marine_6cb4_a970_1d67";
+    //   String tDatasetID = "rutgers_marine_6cb4_a970_1d67";
       EDD.deleteCachedDatasetInfo(tDatasetID);
       EDD edd = EDDTableFromOBIS.oneFromXmlFragment(null, results);
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");

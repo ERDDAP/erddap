@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
+import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -26,6 +26,7 @@ class EDDTableCopyTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   /**
@@ -459,11 +460,13 @@ class EDDTableCopyTests {
         "---------------------------------------------\n" +
         "s.longitude, s.NO3, s.time, s.ship\n" +
         "-124.4, 35.7, 1.02833814E9, \"New_Horizon\"\n";
-    expected2 = "-124.8, -9999.0, 1.02835902E9, \"New_Horizon\"\n"; // row with missing value has source missing value
+    expected2 = "-124.8, -9999.0, 1.02835902E9, \"New_Horizon\"\n"; // row with missing value has source missing
+                                                                    // value
     expected3 = "-124.1, 24.45, 1.02978828E9, \"New_Horizon\"\n"; // last row
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-    Test.ensureTrue(results.indexOf(expected3) > 0, "\nresults=\n" + results); // last row in erdGlobedBottle, not last
+    Test.ensureTrue(results.indexOf(expected3) > 0, "\nresults=\n" + results); // last row in erdGlobedBottle, not
+                                                                               // last
                                                                                // here
 
     // .csv
@@ -480,7 +483,8 @@ class EDDTableCopyTests {
     expected3 = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-    Test.ensureTrue(results.indexOf(expected3) > 0, "\nresults=\n" + results); // last row in erdGlobedBottle, not last
+    Test.ensureTrue(results.indexOf(expected3) > 0, "\nresults=\n" + results); // last row in erdGlobedBottle, not
+                                                                               // last
                                                                                // here
 
     // .dds
@@ -532,12 +536,12 @@ class EDDTableCopyTests {
     // test .png
     String baseName = edd.className() + "_GraphM";
     tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery,
-        tDir, baseName, ".png");
+        Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR), baseName, ".png");
     // Test.displayInBrowser("file://" + tDir + tName);
-    Image2.testImagesIdentical(
-        tDir + tName,
-        String2.unitTestImagesDir() + baseName + ".png",
-        File2.getSystemTempDirectory() + baseName + "_diff.png");
+    Image2Tests.testImagesIdentical(
+        tName,
+        baseName + ".png",
+        baseName + "_diff.png");
 
   } // end of testBasic
 

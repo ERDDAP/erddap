@@ -30,6 +30,7 @@ class EDDTableFromHttpGetTests {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
+    EDD.debugMode = true;
   }
 
   @org.junit.jupiter.api.Test
@@ -530,7 +531,7 @@ class EDDTableFromHttpGetTests {
         "My Great Title",
         null) + "\n";
 
-    String2.log(results);
+    // String2.log(results);
 
     // GenerateDatasetsXml
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
@@ -546,13 +547,13 @@ class EDDTableFromHttpGetTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
+    String tDatasetID = EDDTableFromHttpGet.suggestDatasetID(dataDir + ".*|.jsonl_EDDTableFromHttpGet");
     String expected = "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
         "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
-        "<dataset type=\"EDDTableFromHttpGet\" datasetID=\"testFromHttpGet_dc0c_4e18_f4ef\" active=\"true\">\n" +
+        "<dataset type=\"EDDTableFromHttpGet\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
-        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/points/testFromHttpGet/").toURI()).toString()
-        + "/</fileDir>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
         "    <fileNameRegex>.*\\.jsonl</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
@@ -692,7 +693,7 @@ class EDDTableFromHttpGetTests {
         "</dataset>\n\n\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-    String tDatasetID = "testFromHttpGet_dc0c_4e18_f4ef";
+    // String tDatasetID = "testFromHttpGet_dc0c_4e18_f4ef";
     EDD.deleteCachedDatasetInfo(tDatasetID);
     // delete the data files (but not the seed data file)
     File2.deleteAllFiles(dataDir + "station1", true, true);
