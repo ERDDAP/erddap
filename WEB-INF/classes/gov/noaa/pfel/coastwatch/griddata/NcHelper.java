@@ -1346,7 +1346,7 @@ public class NcHelper  {
         Iterator it = ncAtts.iterator();
         while (it.hasNext()) { //there is also a dods.dap.Attribute                        
             Attribute att = (Attribute)it.next();            
-            String name = att.getName();
+            String name = ncAtts.getName();
             attributes.add(name, getAttributePA(name, att));
         }
     }
