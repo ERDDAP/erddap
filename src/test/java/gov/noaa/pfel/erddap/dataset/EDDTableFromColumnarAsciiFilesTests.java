@@ -39,7 +39,7 @@ class EDDTableFromColumnarAsciiFilesTests {
 
     int which = 6;
     String emlDir = Path
-        .of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largeFiles/points/lterSbc/").toURI())
+        .of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largePoints/lterSbc/").toURI())
         .toString()
         + "/";
     String startUrl = "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc."
@@ -73,7 +73,7 @@ class EDDTableFromColumnarAsciiFilesTests {
         "    <defaultGraphQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)&amp;.marker=1|5</defaultGraphQuery>\n"
         +
         "    <fileDir>"
-        + Path.of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largeFiles/points/lterSbc/").toURI())
+        + Path.of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largePoints/lterSbc/").toURI())
             .toString()
         + "/" +
         "</fileDir>\n" +
@@ -508,7 +508,7 @@ class EDDTableFromColumnarAsciiFilesTests {
         "    <defaultGraphQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)&amp;.marker=1|5</defaultGraphQuery>\n"
         +
         "    <fileDir>"
-        + Path.of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largeFiles/points/lterSbc/").toURI())
+        + Path.of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/largePoints/lterSbc/").toURI())
             .toString()
         + "/" +
         "</fileDir>\n" +

@@ -1342,7 +1342,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nodcPH2sstd1day\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH2/sstd/1day/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH2/sstd/1day/").toURI()).toString()
             + "</fileDir>\n" +
             "    <fileNameRegex>\\d{14}-NODC.*\\.nc.ncml</fileNameRegex>\n" + //
             "    <accessibleViaFiles>false</accessibleViaFiles> <!-- because .ncml -->\n" + //
@@ -1974,7 +1974,7 @@ public class EDDTestDataset {
   public static EDD getcwwcNDBCMet() throws Throwable {
     return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"cwwcNDBCMet\">\n" + //
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
-        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/ndbcMet2/").toURI()).toString()
+        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/veryLarge/points/ndbcMet2/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>NDBC_.*\\.nc</fileNameRegex>\n" + //
@@ -2295,7 +2295,7 @@ public class EDDTestDataset {
     return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testNc2D\">\n" + //
         "    <nDimensions>2</nDimensions>\n" + //
         "    <reloadEveryNMinutes>10</reloadEveryNMinutes>\n" + //
-        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/nc2d/").toURI()).toString()
+        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largePoints/nc2d/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>false</recursive>\n" + //
         "    <fileNameRegex>NDBC_.*\\.nc</fileNameRegex>\n" + //
@@ -2536,7 +2536,7 @@ public class EDDTestDataset {
     return EDD.oneFromXmlFragment(null, "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testNc3D\">\n" + //
         "    <nDimensions>3</nDimensions>\n" + //
         "    <reloadEveryNMinutes>10</reloadEveryNMinutes>\n" + //
-        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/nc3d/").toURI()).toString()
+        "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/largePoints/nc3d/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>false</recursive>\n" + //
         "    <fileNameRegex>NDBC_.*\\.nc</fileNameRegex>\n" + //
@@ -5316,7 +5316,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"erdGtsppBest\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/gtsppNcCF/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/veryLarge/points/gtsppNcCf/").toURI()).toString()
             + "</fileDir>\n" +
             "    <recursive>false</recursive>\n" + //
             "    <fileNameRegex>.*\\.nc</fileNameRegex>\n" + //
@@ -5820,7 +5820,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"erdGtsppBestNc\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/gtspp/bestNcConsolidated/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/veryLarge/gtspp/bestNcConsolidated/").toURI()).toString()
             + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*\\.nc</fileNameRegex>\n" + //
@@ -10193,7 +10193,7 @@ public class EDDTestDataset {
             "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testEDDTableCacheFiles\" active=\"true\">\n" + //
                 "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" + //
                 "    <fileDir>"
-                + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/testEDDTableCacheFiles/").toURI())
+                + Path.of(EDDTestDataset.class.getResource("/largePoints/testEDDTableCacheFiles/").toURI())
                     .toString()
                 + "</fileDir>\n" +
                 "    <recursive>false</recursive>\n" + //
@@ -15901,7 +15901,7 @@ public class EDDTestDataset {
             "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/ndbcMet2Csv/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/ndbcMet2Csv/").toURI()).toString()
             + "</fileDir>\n" +
             "    <fileNameRegex>.*\\.csv</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -16316,7 +16316,7 @@ public class EDDTestDataset {
             "    <defaultGraphQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)&amp;.marker=10|5</defaultGraphQuery>\n"
             + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/lterSbc/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/lterSbc/").toURI()).toString()
             + "</fileDir>\n" +
             "    <fileNameRegex>Historical_Kelp_Data\\.csv</fileNameRegex>\n" + //
             "    <recursive>false</recursive>\n" + //
@@ -16610,7 +16610,7 @@ public class EDDTestDataset {
             "    <defaultGraphQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)&amp;.marker=10|5</defaultGraphQuery>\n"
             + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/lterSbc/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/lterSbc/").toURI()).toString()
             + "</fileDir>\n" +
             "    <fileNameRegex>cover_all_years_20160907\\.csv</fileNameRegex>\n" + //
             "    <recursive>false</recursive>\n" + //
@@ -17708,7 +17708,7 @@ public class EDDTestDataset {
     return EDD.oneFromXmlFragment(null,
         "<dataset type=\"EDDTableFromFileNames\" datasetID=\"awsS3NoaaGoes17partial\" active=\"true\">\n" + //
             "    <fileDir>***fromFiles, jsonlCSV, "
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/awsS3NoaaGoes17partial/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/awsS3NoaaGoes17partial/").toURI()).toString()
             + "/, awsS3NoaaGoes17_....\\.jsonlCSV(|.gz), https://noaa-goes17.s3.us-east-1.amazonaws.com/</fileDir>\n" + //
             "    <fileNameRegex>.*</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -17796,7 +17796,7 @@ public class EDDTestDataset {
     return EDD.oneFromXmlFragment(null,
         "<dataset type=\"EDDTableFromFileNames\" datasetID=\"awsS3NoaaGoes17all\" active=\"true\">\n" + //
             "    <fileDir>***fromFiles, jsonlCSV, "
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/awsS3NoaaGoes17all/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/awsS3NoaaGoes17all/").toURI()).toString()
             + "/, awsS3NoaaGoes17_....\\.jsonlCSV(|.gz), https://noaa-goes17.s3.us-east-1.amazonaws.com/</fileDir>\n" + //
             "    <fileNameRegex>.*</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -18612,7 +18612,7 @@ public class EDDTestDataset {
             "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" + //
             "    <cacheFromUrl>https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day</cacheFromUrl>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/testPrivateAwsS3/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/testPrivateAwsS3/").toURI()).toString()
             + "/</fileDir>\n" + //
             "    <fileNameRegex>erdQS.*\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -18836,7 +18836,7 @@ public class EDDTestDataset {
             "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
             "    <updateEveryNMillis>0</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/testAwsS3/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/veryLarge/points/testAwsS3/").toURI()).toString()
             + "/</fileDir>\n" + //
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_20.*\\.nc</fileNameRegex>\n" + //
@@ -21032,7 +21032,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/AT/ssta/3day/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/AT/ssta/3day/").toURI()).toString()
             + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*_ssta\\.nc(|.gz)</fileNameRegex>\n" + //
@@ -21497,7 +21497,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdSW1chlamday\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>11000</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/SW1/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/SW1/mday/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <fileNameRegex>S\\d{14}\\.L3m_MO_CHL_chlor_a_9km\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -21775,7 +21775,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/SW1/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/SW1/mday/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <fileNameRegex>S\\d{14}\\.L3m_MO_CHL_chlor_a_9km\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -22014,7 +22014,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/SW1/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/SW1/mday/").toURI()).toString()
             + "/</fileDir>\n" + //
             "    <fileNameRegex>S\\d{14}\\.L3m_MO_CHL_chlor_a_9km\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -22254,7 +22254,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/SW1/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/SW1/mday/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <fileNameRegex>S\\d{14}\\.L3m_MO_CHL_chlor_a_9km\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -22494,7 +22494,7 @@ public class EDDTestDataset {
             "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MH1/chla/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/MH1/chla/mday/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*_chlor_a_4km\\.nc</fileNameRegex>\n" + //
@@ -22750,12 +22750,12 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstd1day\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH53/1day/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <fileNameRegex>.*_day-v.*\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
             // " <pathRegex>" +
-            // Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH53/1day/").toURI()).toString().replace('\\',
+            // Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString().replace('\\',
             // '/') + "(|[0-9]{4}/(|data/))</pathRegex>\n" + //
             "    <metadataFrom>last</metadataFrom>\n" + //
             "    <matchAxisNDigits>6</matchAxisNDigits>\n" + //
@@ -23517,7 +23517,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/TestGridNThreads/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/TestGridNThreads/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*_taux\\.nc(|.gz)</fileNameRegex>\n" + //
@@ -24441,7 +24441,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"jplMURSST41\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/MUR41/ssta/1day/").toURI()).toString()
             + "</fileDir>\n" +
             "    <fileNameRegex>.*fv04\\.1\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -25143,7 +25143,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testMinimalReadSource\" active=\"true\">\n" + //
             "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH53/1day/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <fileNameRegex>.*_day-v.*\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
@@ -29910,7 +29910,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/ux10/8day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/ux10/8day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_ux10\\.nc</fileNameRegex>\n" + //
@@ -30127,7 +30127,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/uy10/8day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/uy10/8day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_uy10\\.nc</fileNameRegex>\n" + //
@@ -30350,7 +30350,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/taux/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/taux/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_taux\\.nc</fileNameRegex>\n" + //
@@ -30567,7 +30567,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/tauy/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/tauy/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_tauy\\.nc</fileNameRegex>\n" + //
@@ -30783,7 +30783,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/curl/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/curl/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_curl\\.nc</fileNameRegex>\n" + //
@@ -30999,7 +30999,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/tmod/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/tmod/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_tmod\\.nc</fileNameRegex>\n" + //
@@ -31216,7 +31216,7 @@ public class EDDTestDataset {
         "    <reloadEveryNMinutes>14000</reloadEveryNMinutes>\n" + //
         "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/QS/wekm/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/QS/wekm/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <recursive>true</recursive>\n" + //
         "    <fileNameRegex>QS.*_wekm\\.nc</fileNameRegex>\n" + //
@@ -31434,7 +31434,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"sideBySideA\" active=\"true\">\n" + //
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/MUR41/ssta/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <fileNameRegex>.*fv04\\.1\\.nc</fileNameRegex>\n" + //
         "    <recursive>true</recursive>\n" + //
@@ -31545,7 +31545,7 @@ public class EDDTestDataset {
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"sideBySideB\" active=\"true\">\n" + //
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
         "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/veryLarge/satellite/MUR41/ssta/1day/").toURI()).toString()
         + "</fileDir>\n" +
         "    <fileNameRegex>.*fv04\\.1\\.nc</fileNameRegex>\n" + //
         "    <recursive>true</recursive>\n" + //
@@ -31808,7 +31808,7 @@ public class EDDTestDataset {
             "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" + //
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/satellite/PH/ssta/mday/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH/ssta/mday/").toURI()).toString()
             + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*_ssta\\.nc(|.gz)</fileNameRegex>\n" + //

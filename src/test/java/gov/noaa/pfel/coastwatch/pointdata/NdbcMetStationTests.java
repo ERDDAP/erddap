@@ -7,6 +7,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import tags.TagLargeFiles;
 import testDataset.EDDTestDataset;
 
 class NdbcMetStationTests {
@@ -1278,8 +1279,9 @@ class NdbcMetStationTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testAddLastMode() throws Exception {
-    String observationDir = Path.of(NdbcMetStationTests.class.getResource("/largeFiles/points/").toURI()).toString();
+    String observationDir = Path.of(NdbcMetStationTests.class.getResource("/veryLarge/").toURI()).toString();
     // String ndbcHistoricalNcDir = observationDir + "ndbcMet2/historical/";
     String ndbcNrtNcDir = observationDir + "ndbcMet2/nrt/";
     String logDir = observationDir + "ndbcMet2Logs/";
@@ -1319,9 +1321,10 @@ class NdbcMetStationTests {
    * This is used for maintenance and testing of this class.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testHistorical() throws Exception {
 
-    String observationDir = Path.of(NdbcMetStationTests.class.getResource("/largeFiles/points/").toURI()).toString();
+    String observationDir = Path.of(NdbcMetStationTests.class.getResource("/veryLarge/").toURI()).toString();
     String ndbcHistoricalNcDir = observationDir + "/ndbcMet2/historical/";
     String ndbcNrtNcDir = observationDir + "/ndbcMet2/nrt/";
     String logDir = observationDir + "/ndbcMet2Logs/";

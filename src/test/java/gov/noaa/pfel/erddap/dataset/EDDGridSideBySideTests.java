@@ -13,6 +13,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 
@@ -34,6 +35,7 @@ class EDDGridSideBySideTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
+  @TagLargeFiles
   void testQSWind(boolean doGraphicsTests) throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
@@ -256,6 +258,7 @@ class EDDGridSideBySideTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testQSStress() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
@@ -453,6 +456,7 @@ class EDDGridSideBySideTests {
    * different datasets).
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testDuplicateSourceNames() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testDuplicateSourceNames");
     // testVerboseOn();
@@ -489,6 +493,7 @@ class EDDGridSideBySideTests {
    * This test making transparentPngs.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testTransparentPng");
     // testVerboseOn();

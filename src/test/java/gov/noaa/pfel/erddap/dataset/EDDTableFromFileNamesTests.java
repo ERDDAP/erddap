@@ -361,7 +361,7 @@ class EDDTableFromFileNamesTests {
 
     String tDir = // ***fromFiles,fromFilesFileType,fromFilesFileDir,fromFilesFileNameRegex,fromFilesRealDir
         "***fromFiles, jsonlCSV, "
-            + Path.of(EDDTestDataset.class.getResource("/largeFiles/points/awsS3NoaaGoes17partial/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largePoints/awsS3NoaaGoes17partial/").toURI()).toString()
             + "/, awsS3NoaaGoes17_....\\.jsonlCSV(|.gz), " +
             "https://noaa-goes17.s3.us-east-1.amazonaws.com/";
     String tRegex = ".*\\.nc"; // for testing. would be .*

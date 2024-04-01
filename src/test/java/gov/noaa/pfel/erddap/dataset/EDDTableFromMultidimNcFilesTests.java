@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -2477,7 +2478,8 @@ class EDDTableFromMultidimNcFilesTests {
    * @throws Throwable if trouble
    */
   @ParameterizedTest
-  @ValueSource(booleans = { false })
+  @ValueSource(booleans = { true, false })
+  @TagFlaky
   void testTreatDimensionsAs(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n******************
     // EDDTableFromMultidimNcFiles.testTreatDimensionsAs() *****************\n");

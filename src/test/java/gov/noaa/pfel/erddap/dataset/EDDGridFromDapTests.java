@@ -7932,7 +7932,7 @@ class EDDGridFromDapTests {
 
     // ncdump of source file
     String fiName = EDDGridFromDapTests.class.getResource(
-        "/largeFiles/satellite/PH2/sstd/1day/20121231152528-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA19_G_2012366_day-v02.0-fv01.0.nc")
+        "/largeSatellite/PH2/sstd/1day/20121231152528-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA19_G_2012366_day-v02.0-fv01.0.nc")
         .getPath();
     String2.log("ncdump of " + fiName + ":");
     String2.log(NcHelper.ncdump(fiName, "-h"));

@@ -43,6 +43,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import tags.TagExternalOther;
 import tags.TagIncompleteTest;
+import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagPassword;
@@ -2626,9 +2627,10 @@ class TableTests {
 
     /** Test the speed of readNDNc */
     @org.junit.jupiter.api.Test
+    @TagLargeFiles
     void testReadNDNcSpeed() throws Exception {
 
-        String fileName = TableTests.class.getResource("/largeFiles/points/ndbcMet2/historical/NDBC_41004_met.nc")
+        String fileName = TableTests.class.getResource("/veryLarge/points/ndbcMet2/historical/NDBC_41004_met.nc")
                 .getPath();
         Table table = new Table();
         long time = 0;
@@ -6362,12 +6364,14 @@ class TableTests {
      */
 
     @org.junit.jupiter.api.Test
+    @TagLargeFiles
     void testReadInvalidCRA() throws Exception {
         // String2.log("\n*** Table.testReadInvalidCRA()");
         StringArray colNames, conNames, conOps, conVals;
         Table table = new Table();
         table.debugMode = true;
-        String dir = TableTests.class.getResource("/largeFiles/nccf/wod/").getPath();
+        String dir = TableTests.class.getResource("/veryLarge/nccf/wod/").getPath();
+        String drbDir = TableTests.class.getResource("/largeFiles/nccf/wod/").getPath();
         String fullName, results, expected;
         // String doAllString = String2.getStringFromSystemIn(
         // "Do all the tests, including ones that are slow and take lots of memory
@@ -7269,7 +7273,7 @@ class TableTests {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         // *** read all drb
-        fullName = dir + "wod_drb_2005.nc";
+        fullName = drbDir + "wod_drb_2005.nc";
         if (doAll) {
             table.readInvalidCRA(fullName, null, 0, // standardizeWhat=0
                     null, null, null);
@@ -7489,7 +7493,7 @@ class TableTests {
         }
 
         // read outer and inner col with outer constraint
-        fullName = dir + "wod_drb_2005.nc";
+        fullName = drbDir + "wod_drb_2005.nc";
         table.readInvalidCRA(fullName,
                 new StringArray(new String[] { "wod_unique_cast", "time", "z", "Temperature", "Temperature_WODflag" }),
                 0, // standardizeWhat=0
@@ -18630,7 +18634,7 @@ class TableTests {
     @org.junit.jupiter.api.Test
     @TagIncompleteTest // wasn't run before, also: ClassNotFound sun.jdbc.odbc.JdbcOdbcDriver
     void testMdb() throws Exception {
-        String fileName = TableTests.class.getResource("/largeFiles/calcofi2012/calcofi8102012.accdb").getPath();
+        String fileName = TableTests.class.getResource("/notIncludedFiles/calcofi2012/calcofi8102012.accdb").getPath();
         // "c:/fishbase/COUNTRY.mdb";
         Connection con = Table.getConnectionToMdb(fileName, "", ""); // user, password
         // String2.log(getSqlSchemas(con).toString());

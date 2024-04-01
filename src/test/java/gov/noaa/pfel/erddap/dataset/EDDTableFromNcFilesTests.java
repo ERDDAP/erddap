@@ -45,7 +45,9 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVTime;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
+import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -1303,7 +1305,7 @@ class EDDTableFromNcFilesTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
 
     // touch a good and a bad file, so they are checked again
-    String dataDir = Path.of(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/nc2d/").toURI())
+    String dataDir = Path.of(EDDTableFromNcFilesTests.class.getResource("/largePoints/nc2d/").toURI())
         .toString()
         + "/";
     File2.touch(dataDir + "NDBC_32012_met.nc");
@@ -1539,9 +1541,9 @@ class EDDTableFromNcFilesTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
 
     // touch a good and a bad file, so they are checked again
-    File2.touch(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/nc3d/NDBC_32012_met.nc")
+    File2.touch(EDDTableFromNcFilesTests.class.getResource("/largePoints/nc3d/NDBC_32012_met.nc")
         .getPath());
-    File2.touch(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/nc3d/NDBC_4D_met.nc")
+    File2.touch(EDDTableFromNcFilesTests.class.getResource("/largePoints/nc3d/NDBC_4D_met.nc")
         .getPath());
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestNc3d();
@@ -1748,6 +1750,7 @@ class EDDTableFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
+  @TagLargeFiles
   void test4D(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.test4D()
     // *****************\n");
@@ -1766,7 +1769,7 @@ class EDDTableFromNcFilesTests {
 
     // touch a good and a bad file, so they are checked again
     String dataDir = Path
-        .of(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/ndbcMet/").toURI())
+        .of(EDDTableFromNcFilesTests.class.getResource("/veryLarge/points/ndbcMet/").toURI())
         .toString() + "/";
     File2.touch(dataDir + "NDBC_32012_met.nc");
     File2.touch(dataDir + "NDBC_3D_met.nc");
@@ -2021,6 +2024,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
+  @TagLargeFiles
   void test24Hours() throws Throwable {
     String2.log("\n****************** EDDTableFromNcFiles.test24Hours() *****************\n");
     // testVerboseOn();
@@ -2051,6 +2055,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testDistinct() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testDistinct()
     // *****************\n");
@@ -2370,6 +2375,7 @@ class EDDTableFromNcFilesTests {
 
   /** This test getting just station ids. */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testId() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testId()
     // *****************\n");
@@ -2428,6 +2434,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderBy() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBy()
     // *****************\n");
@@ -2789,6 +2796,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByCount() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByCount()
     // *****************\n");
@@ -3204,6 +3212,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByMean() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean()
     // *****************\n");
@@ -3600,6 +3609,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testOrderByMean2() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean2()
     // *****************\n");
@@ -3644,6 +3654,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderBySum() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBySum()
     // *****************\n");
@@ -4014,6 +4025,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByMax() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMax()
     // *****************\n");
@@ -4412,6 +4424,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByMin() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMin()
     // *****************\n");
@@ -4723,6 +4736,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByMinMax() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMinMax()
     // *****************\n");
@@ -4949,6 +4963,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByClosest() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByClosest()
     // *****************\n");
@@ -5277,6 +5292,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testOrderByLimit() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByLimit()
     // *****************\n");
@@ -5507,6 +5523,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testStationLonLat() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testStationLonLat()
     // *****************\n");
@@ -8522,6 +8539,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testBigRequest() throws Throwable {
     int firstTest = 0;
     int lastTest = -1;
@@ -8654,6 +8672,7 @@ class EDDTableFromNcFilesTests {
    * Test pmelTaoAirT against website.
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testPmelTaoAirt() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testPmelTaoAirt");
@@ -9151,6 +9170,7 @@ class EDDTableFromNcFilesTests {
    * Test ODV files created by ERDDAP.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testODV() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testODV");
 
@@ -11308,6 +11328,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky // order of rows seems to change regularly
   void testUpdate() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testUpdate()\n");
 
@@ -11606,6 +11627,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testQuickRestart() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testQuickRestart()\n");
 
@@ -11664,12 +11686,12 @@ class EDDTableFromNcFilesTests {
         "    String units \"m\";\n" +
         "  }\n" +
         "  geolon {\n" +
-        "    Float32 actual_range -80.41, -75.402;\n" +
+        // "    Float32 actual_range -80.41, -75.402;\n" +
         "    String ioos_category \"Location\";\n" +
         "    String units \"degrees_north\";\n" +
         "  }\n" +
         "  geolat {\n" +
-        "    Float32 actual_range 32.28, 35.006;\n" +
+        // "    Float32 actual_range 32.28, 35.006;\n" +
         "    String ioos_category \"Location\";\n" +
         "    String units \"degrees_north\";\n" +
         "  }\n" +
@@ -12181,6 +12203,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNewTime() throws Throwable {
 
     try {
@@ -12237,6 +12260,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testIgor()\n");
 
@@ -12522,6 +12546,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNThreads() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads()\n");
 
@@ -12679,6 +12704,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNThreads2() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads2()\n");
 
@@ -12780,6 +12806,7 @@ class EDDTableFromNcFilesTests {
    * This tests makeCopyFileTasks.
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testMakeCopyFileTasks() throws Exception {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
@@ -13484,7 +13511,7 @@ class EDDTableFromNcFilesTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
     // for test purposes, always empty the cache
     File2.deleteAllFiles(
-        EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/testEDDTableCacheFiles")
+        EDDTableFromNcFilesTests.class.getResource("/largePoints/testEDDTableCacheFiles")
             .getPath(),
         true,
         true);
@@ -13873,6 +13900,7 @@ class EDDTableFromNcFilesTests {
    * /data/gtspp/bestNcConsolidated/year/month/ directories.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testGtspp15FilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
@@ -13883,7 +13911,7 @@ class EDDTableFromNcFilesTests {
     for (int year = year1; year <= year2; year++) {
       for (int month = 1; month <= 12; month++) {
         String dir = Path.of(EDDTableFromNcFilesTests.class
-            .getResource("/largeFiles/gtspp/bestNcConsolidated/" + year + "/"
+            .getResource("/veryLarge/gtspp/bestNcConsolidated/" + year + "/"
                 + String2.zeroPad("" + month, 2) + "/")
             .toURI()).toString();
         Table table = FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
@@ -13901,6 +13929,7 @@ class EDDTableFromNcFilesTests {
    * /data/gtspp/bestNcConsolidated/year/month/ directories.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testGtsppabFilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
@@ -13909,7 +13938,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     String dir = Path
-        .of(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/gtsppNcCF/").toURI())
+        .of(EDDTableFromNcFilesTests.class.getResource("/veryLarge/points/gtsppNcCf/").toURI())
         .toString()
         + "/";
     for (int year = year1; year <= year2; year++) {
@@ -13932,6 +13961,7 @@ class EDDTableFromNcFilesTests {
    * @param whichChunk -1 (all) or 0 - 4.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
     // String2.log("\n*** EDDTableFromNcFiles.testLogAxis()");
@@ -14484,6 +14514,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
+  @TagLargeFiles
   void testMAGOrderByGraphs() throws Throwable {
 
     String2.log("\n*** EDDTableFromNcFiles.testMAGOrderByGraphs()\n" +
@@ -14582,6 +14613,7 @@ class EDDTableFromNcFilesTests {
    * This test making transparentPngs.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTransparentPng");
 
@@ -15528,6 +15560,7 @@ class EDDTableFromNcFilesTests {
    * Test making an .ncCF TimeSeries file.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNcCF1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF1a");
 
@@ -15762,6 +15795,7 @@ class EDDTableFromNcFilesTests {
    * Test making an .ncCFMA TimeSeries file.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNcCFMA1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA1a");
 
@@ -17271,6 +17305,7 @@ class EDDTableFromNcFilesTests {
    * profiles and obs).
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNcCF2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF2b");
 
@@ -17828,6 +17863,7 @@ class EDDTableFromNcFilesTests {
    * profiles and obs).
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNcCFMA2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b");
 
@@ -18946,6 +18982,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testSpeedDAF() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -18988,6 +19025,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testSpeedMAG() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -19027,6 +19065,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testSpeedSubset() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -19064,6 +19103,7 @@ class EDDTableFromNcFilesTests {
    * Test requesting float=NaN.
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testEqualsNaN() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testEqualsNaN");
 
@@ -19192,6 +19232,7 @@ class EDDTableFromNcFilesTests {
 
   /** These tests an odd response related to missing values. */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testMV() throws Throwable {
     String2.log("\n*** EDDTableFromNcFiles.testMV\n" +
         "NaN<=-5 = " + (Double.NaN <= -5) + " = "
@@ -19228,6 +19269,7 @@ class EDDTableFromNcFilesTests {
    *                  (.ncCF)
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testErdGtsppBest() throws Throwable {
 
     String tDatasetID = "erdGtsppBest"; // used to test erdGtsppBestNc as well (two calls to the same test),

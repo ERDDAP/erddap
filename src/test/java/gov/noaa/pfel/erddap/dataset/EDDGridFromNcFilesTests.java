@@ -29,6 +29,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
+import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import tags.TagThredds;
@@ -1074,6 +1075,7 @@ class EDDGridFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
   @TagAWS
+  @TagLargeFiles
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testAwsS3()
     // *****************\n");
@@ -1348,7 +1350,7 @@ class EDDGridFromNcFilesTests {
     EDVGridAxis edvga;
     String id = "testPrivateAwsS3";
     String cacheDir = Path
-        .of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/points/testPrivateAwsS3/").toURI())
+        .of(EDDGridFromNcFilesTests.class.getResource("/largePoints/testPrivateAwsS3/").toURI())
         .toString();
     if (deleteCachedFiles) {
       EDDGridFromNcFiles.deleteCachedDatasetInfo(id);
@@ -2311,7 +2313,7 @@ class EDDGridFromNcFilesTests {
     int language = 0;
 
     String sDir = Path.of(
-        EDDGridFromNcFilesTests.class.getResource("/largeFiles/satellite/PH2/sstd/1day/").toURI())
+        EDDGridFromNcFilesTests.class.getResource("/largeSatellite/PH2/sstd/1day/").toURI())
         .toString();
     sDir = sDir.replace('\\', '/');
     String sRegex = "[12].*\\.nc";
@@ -2842,6 +2844,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testGenerateDatasetsXml4() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml4");
@@ -2855,7 +2858,7 @@ class EDDGridFromNcFilesTests {
     // "to /u00/satellite/MUR41/ssta/1day on this computer.");
 
     String sDir = Path.of(
-        EDDGridFromNcFilesTests.class.getResource("/largeFiles/satellite/MUR41/ssta/1day/").toURI())
+        EDDGridFromNcFilesTests.class.getResource("/veryLarge/satellite/MUR41/ssta/1day/").toURI())
         .toString();
     sDir = sDir.replace('\\', '/');
 
@@ -3794,6 +3797,7 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagAWS
+  @TagLargeFiles
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
 
     String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
@@ -3806,7 +3810,7 @@ class EDDGridFromNcFilesTests {
                                                                                                                                 // /
     String regex = ".*_CESM1-CAM5_201.*\\.nc";
     String dir = Path.of(
-        EDDGridFromNcFilesTests.class.getResource("/largeFiles/points/testAwsS3NexDcp/").toURI())
+        EDDGridFromNcFilesTests.class.getResource("/veryLarge/points/testAwsS3NexDcp/").toURI())
         .toString();
     dir = dir.replace('\\', '/');
 
@@ -4040,7 +4044,7 @@ class EDDGridFromNcFilesTests {
                                                                                             // off trailing /
     String regex = "erdQS.*\\.nc";
     String dir = Path.of(
-        EDDGridFromNcFilesTests.class.getResource("/largeFiles/points/testPrivateAwsS3/").toURI())
+        EDDGridFromNcFilesTests.class.getResource("/largePoints/testPrivateAwsS3/").toURI())
         .toString();
     dir = dir.replace('\\', '/');
     String name = ""; // with cacheFromUrl, use nothing. Was: dir +
@@ -11240,7 +11244,7 @@ class EDDGridFromNcFilesTests {
 
     // ncdump a source .nc file
     tName = Path.of(EDDTestDataset.class
-        .getResource("/largeFiles/satellite/SW1/mday/S19980321998059.L3m_MO_CHL_chlor_a_9km.nc").toURI())
+        .getResource("/largeSatellite/SW1/mday/S19980321998059.L3m_MO_CHL_chlor_a_9km.nc").toURI())
         .toString();
     // String2.log("\n*** ncdump of " + tName);
     // String2.log(NcHelper.ncdump(tName, "-h"));
@@ -14399,6 +14403,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testIgor()\n");
     // testVerboseOn();
@@ -14920,7 +14925,7 @@ class EDDGridFromNcFilesTests {
     String tPathRegex = ".*/v4\\.1/(|2018/(|01[012]/))"; // for test, just get 01[012] dirs/files. Read regex:
                                                          // "(|2018/(|/[0-9]{3}/))";
     String tLocalDir = Path.of(
-        EDDGridFromNcFilesTests.class.getResource("/largeFiles/points/testEDDGridMakeCopyFileTasks/")
+        EDDGridFromNcFilesTests.class.getResource("/largePoints/testEDDGridMakeCopyFileTasks/")
             .toURI())
         .toString();
     String tDatasetID = "testEDDGridMakeCopyFileTasks";

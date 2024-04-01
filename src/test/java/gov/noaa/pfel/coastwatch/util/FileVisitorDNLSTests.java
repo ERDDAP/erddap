@@ -1373,7 +1373,7 @@ class FileVisitorDNLSTests {
     // debugMode = true;
 
     String results = FileVisitorDNLS.oneStepToString(
-        Path.of(FileVisitorDNLSTests.class.getResource("/largeFiles/satellite/MUR41/anom/1day/").toURI())
+        Path.of(FileVisitorDNLSTests.class.getResource("/veryLarge/satellite/MUR41/anom/1day/").toURI())
             .toString(),
         ".*", true,
         ".*");

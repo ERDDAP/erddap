@@ -20,6 +20,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagAWS;
+import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 
@@ -2511,12 +2512,12 @@ class EDDTableFromAsciiFilesTests {
     // EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2()\n");
     // testVerboseOn();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String dataDir = Path.of(EDDTestDataset.class.getResource("/largeFiles/points/inportData/").toURI())
+    String dataDir = Path.of(EDDTestDataset.class.getResource("/largePoints/inportData/").toURI())
         .toString() + "/";
     String xmlFile = Path.of(EDDTestDataset.class
-        .getResource("/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml")
+        .getResource("/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml")
         .toURI()).toString();
-    String xmlFolder = Path.of(EDDTestDataset.class.getResource("/largeFiles/points/inportXml/").toURI())
+    String xmlFolder = Path.of(EDDTestDataset.class.getResource("/largePoints/inportXml/").toURI())
         .toString() + "/";
 
     dataDir = dataDir.replace('\\', '/');
@@ -2593,9 +2594,9 @@ class EDDTableFromAsciiFilesTests {
                                                                                             // changes
                                                                                             // periodically
         today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion
-        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n"
+        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n"
         +
-        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
+        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
         +
         "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
         "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -2644,7 +2645,7 @@ class EDDTableFromAsciiFilesTests {
         "        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
         "        <att name=\"InPort_url_1_url\">https://academic.oup.com/icesjms/content/69/2/163.full</att>\n"
         +
-        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
+        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
         +
         "        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
         "        <att name=\"instrument\">CTD</att>\n" +
@@ -2756,9 +2757,9 @@ class EDDTableFromAsciiFilesTests {
                                                                                             // changes
                                                                                             // periodically
         today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion
-        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n"
+        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n"
         +
-        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
+        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
         +
         "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n"
         +
@@ -2797,7 +2798,7 @@ class EDDTableFromAsciiFilesTests {
         "        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
         "        <att name=\"InPort_url_1_url\">https://academic.oup.com/icesjms/content/69/2/163.full</att>\n"
         +
-        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
+        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n"
         +
         "        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
         "        <att name=\"instrument\">CTD</att>\n" +
@@ -3669,13 +3670,13 @@ class EDDTableFromAsciiFilesTests {
     // testVerboseOn();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-    String dataDir = Path.of(EDDTestDataset.class.getResource("/largeFiles/points/inportData/").toURI())
+    String dataDir = Path.of(EDDTestDataset.class.getResource("/largePoints/inportData/").toURI())
         .toString() + "/";
     String xmlDir = Path
         .of(EDDTestDataset.class.getResource(
-            "/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/").toURI())
+            "/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/").toURI())
         .toString() + "/";
-    String inportXml = Path.of(EDDTestDataset.class.getResource("/largeFiles/points/inportXml/").toURI())
+    String inportXml = Path.of(EDDTestDataset.class.getResource("/largePoints/inportXml/").toURI())
         .toString() + "/";
 
     dataDir = dataDir.replace('\\', '/');
@@ -3747,9 +3748,9 @@ class EDDTableFromAsciiFilesTests {
                                                                                             // next
                                                                                             // line
         today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion
-        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n"
+        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n"
         +
-        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
+        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
         +
         "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n"
         +
@@ -3845,7 +3846,7 @@ class EDDTableFromAsciiFilesTests {
         "        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
         "        <att name=\"InPort_url_1_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n"
         +
-        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
+        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
         +
         "        <att name=\"institution\">NOAA NMFS AKRO</att>\n" +
         "        <att name=\"instrument\">ArcGIS</att>\n" +
@@ -3960,9 +3961,9 @@ class EDDTableFromAsciiFilesTests {
                                                                                             // changes
                                                                                             // periodically
         today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion
-        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n"
+        + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n"
         +
-        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
+        "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
         +
         "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n"
         +
@@ -4044,7 +4045,7 @@ class EDDTableFromAsciiFilesTests {
         "        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
         "        <att name=\"InPort_url_1_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n"
         +
-        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largeFiles/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
+        "        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/t-classes/largePoints/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n"
         +
         "        <att name=\"institution\">NOAA NMFS AKRO</att>\n" +
         "        <att name=\"instrument\">ArcGIS</att>\n" +

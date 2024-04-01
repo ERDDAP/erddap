@@ -15,6 +15,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import tags.TagIncompleteTest;
+import tags.TagLargeFiles;
 import testDataset.EDDTestDataset;
 
 class PointDataSetFromStationVariablesTests {
@@ -359,6 +360,7 @@ class PointDataSetFromStationVariablesTests {
    * @throws Exception if trouble or no data
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNc4DMakeSubset() throws Exception {
     // String2.log("\n*** PointDataSetFromStationVariables.testNc4DMakeSubset");
     // DataHelper.verbose = true;
@@ -393,7 +395,7 @@ class PointDataSetFromStationVariablesTests {
 
     // option 2) test of NdbcMetStation.addPointDataSets
     list.clear();
-    String dir = Path.of(PointDataSetFromStationVariablesTests.class.getResource("/largeFiles/points/ndbcMet/").toURI()).toString();
+    String dir = Path.of(PointDataSetFromStationVariablesTests.class.getResource("/veryLarge/points/ndbcMet/").toURI()).toString();
     NdbcMetStation.addPointDataSets(list, dir, -180, 180, -90, 90);
     for (int i = 0; i < list.size(); i++) {
       pointDataSet = (PointDataSet) list.get(i);
@@ -526,6 +528,7 @@ class PointDataSetFromStationVariablesTests {
    * @throws Exception if trouble or no data
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testNc4DMakeAveragedTimeSeries() throws Exception {
     // String2.log("\n***
     // PointDataSetFromStationVariables.testNc4DmakeAveragedTimeSeries");
@@ -543,7 +546,7 @@ class PointDataSetFromStationVariablesTests {
 
     // *** test of NdbcMetStation.addPointDataSets WITH RANGE LIMITATION
     list.clear();
-    String dir = Path.of(PointDataSetFromStationVariablesTests.class.getResource("/largeFiles/points/ndbcMet/").toURI()).toString();
+    String dir = Path.of(PointDataSetFromStationVariablesTests.class.getResource("/veryLarge/points/ndbcMet/").toURI()).toString();
     NdbcMetStation.addPointDataSets(list, dir,
         -135 + 360, -105 + 360, 22, 50); // set range limitation to westus in 0..360
     pointDataSet = null;
