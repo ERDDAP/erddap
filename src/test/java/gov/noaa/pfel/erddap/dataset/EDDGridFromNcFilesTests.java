@@ -28,6 +28,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import tags.TagAWS;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
@@ -175,6 +176,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testNccsv() throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNccsv()
     // *****************\n");

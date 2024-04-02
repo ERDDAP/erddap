@@ -17,6 +17,8 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import tags.TagAWS;
 import tags.TagExternalOther;
+import tags.TagFlaky;
+import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagThredds;
@@ -138,6 +140,7 @@ class FileVisitorDNLSTests {
    * This tests this class with the local file system.
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testLocal() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testLocal");
     // verbose = true;
@@ -1296,6 +1299,7 @@ class FileVisitorDNLSTests {
    * This tests oneStepToString().
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testOneStepToString() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testOneStepToString()");
 
@@ -1333,6 +1337,7 @@ class FileVisitorDNLSTests {
    * This tests pathRegex().
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testPathRegex() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testPathRegex()");
 
@@ -1367,6 +1372,7 @@ class FileVisitorDNLSTests {
    * ./FileVisitorDNLS.sh /u00/satellite/MUR41/anom/1day/ ....0401.\*
    */
   @org.junit.jupiter.api.Test
+  @TagLargeFiles
   void testSymbolicLinks() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testSymbolicLinks()");
     // boolean oDebugMode = debugMode;

@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagAWS;
+import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 
@@ -513,6 +514,7 @@ class EDDTableFromFileNamesTests {
    * Do tests of local file system.
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testLocal() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testLocal\n");
     // boolean oDebugMode = debugMode;
