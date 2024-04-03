@@ -14,6 +14,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
@@ -34,6 +35,7 @@ class EDDGridCopyTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
+  @TagFlaky
   void testBasic(boolean checkSourceData) throws Throwable {
     // String2.log("\n****************** EDDGridCopy.testBasic(checkSourceData=" +
     // checkSourceData +

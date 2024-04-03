@@ -10,6 +10,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
@@ -29,6 +30,7 @@ class EDDGridLon0360Tests {
          * @throws Throwable if trouble
          */
         @org.junit.jupiter.api.Test
+        @TagFlaky // service unavailable
         void testGenerateDatasetsXmlFromErddapCatalog() throws Throwable {
 
                 // String2.log("\n*** EDDGridLon0360.testGenerateDatasetsXmlFromErddapCatalog()
@@ -546,6 +548,7 @@ class EDDGridLon0360Tests {
          * @throws Throwable if trouble
          */
         @org.junit.jupiter.api.Test
+        @TagFlaky // connection cannot be opened
         void testValidMinMax() throws Throwable {
                 // String2.log("\n****************** EDDGridLon0360.testValidMinMax()
                 // *****************\n");

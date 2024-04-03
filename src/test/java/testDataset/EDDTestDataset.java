@@ -9027,7 +9027,7 @@ public class EDDTestDataset {
             "    <defaultGraphQuery>longitude,latitude,seaTemperature&amp;time&gt;=now-1year&amp;.marker=10|5</defaultGraphQuery -->\n"
             + //
             "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/fsuNoaaShipWTEP/").toURI()).toString()
-            + "</fileDir>\n" + //
+            + "/</fileDir>\n" + //
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>WTEP_.*\\.nc</fileNameRegex>\n" + //
             "    <metadataFrom>last</metadataFrom>\n" + //

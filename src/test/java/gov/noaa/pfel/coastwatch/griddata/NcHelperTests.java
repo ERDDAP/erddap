@@ -541,8 +541,7 @@ class NcHelperTests {
    */
   @org.junit.jupiter.api.Test
   void testUnlimited() throws Exception {
-    // todo change this to use resources
-    String testUnlimitedFileName = "/temp/unlimited.nc";
+    String testUnlimitedFileName = Path.of(NcHelperTests.class.getResource("/data/unlimited.nc").toURI()).toString();
     String2.log("\n* Projects.testUnlimited() " + testUnlimitedFileName);
     int strlen = 6;
     int row = -1;

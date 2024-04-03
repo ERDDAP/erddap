@@ -1582,10 +1582,11 @@ class FileVisitorDNLSTests {
   void testMakeTgz() throws Exception {
     String2.log("\n*** FileVisitorDNLS.testMakeTgz");
 
-    String tgzName = String2.unitTestDataDir + "testMakeTgz.tar.gz";
+    String dataDir = Path.of(FileVisitorDNLSTests.class.getResource("/data/fileNames").toURI()).toString();
+
+    String tgzName = Path.of(FileVisitorDNLSTests.class.getResource("/data/").toURI()).toString() + "/testMakeTgz.tar.gz";
     // try {
-    FileVisitorDNLS.makeTgz(String2.unitTestDataDir + "fileNames/", ".*", true, ".*",
-        tgzName);
+    FileVisitorDNLS.makeTgz(dataDir, ".*", true, ".*", tgzName);
     // Test.displayInBrowser("file://" + tgzName); //works with .tar.gz, not .tgz
     // String2.pressEnterToContinue("Are the contents of the .tar.gz file okay?");
     // } catch (Throwable t) {

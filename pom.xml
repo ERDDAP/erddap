@@ -204,7 +204,7 @@
 
                     <execution>
                         <id>download-test-resources-data</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>
@@ -217,7 +217,7 @@
                     </execution>
                     <execution>
                         <id>download-test-resources-largeFiles</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>
@@ -230,7 +230,7 @@
                     </execution>
                     <execution>
                         <id>download-test-resources-largePoints</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>
@@ -243,7 +243,7 @@
                     </execution>
                     <execution>
                         <id>download-test-resources-largeSatellite</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>

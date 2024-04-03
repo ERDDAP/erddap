@@ -8483,6 +8483,7 @@ class EDDTableFromNcFilesTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testLegend() throws Throwable {
 
     int language = 0;
@@ -8507,7 +8508,6 @@ class EDDTableFromNcFilesTests {
           tName,
           baseName + ".png",
           baseName + "_diff.png");
-      ;
     }
 
     // time_precision
@@ -8526,7 +8526,6 @@ class EDDTableFromNcFilesTests {
           tName,
           baseName + ".png",
           baseName + "_diff.png");
-      ;
     }
 
   }

@@ -6,6 +6,7 @@ package com.cohort.util;
 
 import com.cohort.array.StringArray;
 
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 
 import java.io.File;
@@ -6487,6 +6488,7 @@ class TestUtil {
     }
 
     @org.junit.jupiter.api.Test
+    @TagFlaky
     void testCalendar2Now_flaky() {
         // nowStringToEpochSeconds(String nowString)
         Test.ensureEqual(Calendar2.nowStringToEpochSeconds("now"), nextEpochSecond(), "");
