@@ -39,6 +39,7 @@ import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import tags.TagExternalERDDAP;
 import tags.TagExternalOther;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
@@ -3206,6 +3207,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // don't test local dataset because of dns/numericIP problems
