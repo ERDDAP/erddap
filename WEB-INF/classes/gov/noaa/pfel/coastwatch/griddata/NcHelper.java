@@ -1343,11 +1343,12 @@ public class NcHelper  {
         //read the sourcglobalAttributes
         if (ncAtts == null)
             return;
+        String ncAttsName = ncAtts.getName();
         Iterator it = ncAtts.iterator();
         while (it.hasNext()) { //there is also a dods.dap.Attribute                        
             Attribute att = (Attribute)it.next();            
-            String name = ncAtts.getName();
-            attributes.add(name, getAttributePA(name, att));
+            String name = att.getName();
+            attributes.add(name, getAttributePA(ncAttsName, att));
         }
     }
 
