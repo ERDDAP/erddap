@@ -1173,10 +1173,9 @@ class EDDTableFromColumnarAsciiFilesTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // ensure it is ready-to-use by making a dataset from it
-    String tDatasetID = "data_0f1a_dfcc_97ed";
-    EDD.deleteCachedDatasetInfo(tDatasetID);
+    EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromColumnarAsciiFiles.oneFromXmlFragment(null, results);
-    Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+    Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
     Test.ensureEqual(edd.title(), "The Newer Title!", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
         "aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble",

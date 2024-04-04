@@ -106,7 +106,7 @@ class ScriptRowTests {
       Test.ensureEqual(o.toString(), "Windows 10", "(On Bob's computer)");
     } catch (Exception e) {
       String2.log(MustBe.throwableToString(e));
-      String2.pressEnterToContinue("This will give a different answer on different OS's.");
+      String2.log("This will give a different answer on different OS's.");
 
     }
 

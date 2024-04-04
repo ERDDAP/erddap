@@ -22163,7 +22163,7 @@ public class EDDTestDataset {
             "        <att name=\"westernmost_longitude\">null</att>\n" + //
             "    </addAttributes>\n" + //
             "    <axisVariable>\n" + //
-            "        <sourceName>***pathName,int,D:/ERDDATA/u00/satellite/SW1/mday/S\\d{4}(\\d{3})\\d{7}\\.L3m.*,1</sourceName>\n"
+            "        <sourceName>***pathName,int," + Path.of(EDDTestDataset.class.getResource("/largeSatellite/SW1/mday/").toURI()).toString().replace("\\", "/") + "/S\\d{4}(\\d{3})\\d{7}\\.L3m.*,1</sourceName>\n"
             + //
             "        <destinationName>myInt</destinationName>\n" + //
             "        <addAttributes>\n" + //

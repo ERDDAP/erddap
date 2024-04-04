@@ -7244,7 +7244,7 @@ class TestUtil {
     /** Test the speed of writing to hard drive. Does it block? No */
     @org.junit.jupiter.api.Test
     void testFileWriteSpeed() throws Exception {
-        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";
+        String fileName = TEMP_DIR.toAbsolutePath().toString() + "/TestUtilTestFileSpeed.txt";
         Writer writer = File2.getBufferedFileWriterUtf8(fileName); // 387 ~490 ms if not buffered
         try {
             long time = System.currentTimeMillis();
@@ -7263,7 +7263,7 @@ class TestUtil {
     /** Test the speed of writing to hard drive. Does it block? */
     @org.junit.jupiter.api.Test
     void testWriteToFileSpeed() throws Exception {
-        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";
+        String fileName = TEMP_DIR.toAbsolutePath().toString() + "/TestUtilTestFileSpeed.txt";
         StringBuilder sb = new StringBuilder(1000000 * 100);
         for (int i = 0; i < 1000000; i++)
             sb.append("This is a test of a pretty long string that changes on each line " + i + "\n");
@@ -7277,7 +7277,7 @@ class TestUtil {
     /** Test the speed of reading to hard drive. */
     @org.junit.jupiter.api.Test
     void testReadFromFileSpeed() throws Exception {
-        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";
+        String fileName = TEMP_DIR.toAbsolutePath().toString() + "/TestUtilTestFileSpeed.txt";
         long time = System.currentTimeMillis();
         String s[] = File2.readFromFile88591(fileName);
         if (s[0].length() > 0)

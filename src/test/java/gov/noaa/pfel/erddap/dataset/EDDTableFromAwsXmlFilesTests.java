@@ -706,10 +706,9 @@ class EDDTableFromAwsXmlFilesTests {
 
     // ensure it is ready-to-use by making a dataset from it
     // !!! actually this will fail with a specific error which is caught below
-    String tDatasetID = "_5396_7d8d_7402";
-    EDD.deleteCachedDatasetInfo(tDatasetID);
+    EDD.deleteCachedDatasetInfo(suggDatasetID);
     EDD edd = EDDTableFromAwsXmlFiles.oneFromXmlFragment(null, results);
-    Test.ensureEqual(edd.datasetID(), "_5396_7d8d_7402", "");
+    Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
     Test.ensureEqual(edd.title(), "The Newer Title!", "");
     Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
         "fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg",

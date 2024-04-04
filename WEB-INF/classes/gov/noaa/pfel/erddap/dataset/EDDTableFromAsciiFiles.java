@@ -8,17 +8,11 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
-import com.cohort.array.FloatArray;
-import com.cohort.array.IntArray;
-import com.cohort.array.LongArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
-import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
-import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -26,26 +20,15 @@ import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
-import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.coastwatch.util.Tally;
 
-import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.TimeZone;
-
-import java.time.ZoneId;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -677,8 +660,17 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         //attributes that InPort doesn't help with
         Attributes gAddAtts = new Attributes();
+
+        // This used to assume xml files were stored in "/u00/data/points/inportXml/"
+        // try to have this work if files are not in that directory.
+        String metadataPath;
+        if (xmlFileName.startsWith("/u00/data/points/inportXml/")) {
+            metadataPath = xmlFileName.substring("/u00/data/points/inportXml/".length());
+        } else {
+            metadataPath = xmlFileName.substring(tInputXmlDir.length());
+        }
         String inportXmlUrl = "https://inport.nmfs.noaa.gov/inport-metadata/" +
-            xmlFileName.substring("/u00/data/points/inportXml/".length()); 
+            metadataPath; 
         gAddAtts.add("cdm_data_type", "Other");
         gAddAtts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
         gAddAtts.add("infoUrl", inportXmlUrl); 

@@ -1,6 +1,9 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import java.io.DataOutputStream;
+import java.nio.file.Path;
+
+import org.junit.jupiter.api.io.TempDir;
 
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
@@ -14,13 +17,16 @@ import gov.noaa.pfel.coastwatch.util.DataStream;
 
 class MatlabTests {
 
+  @TempDir
+  private static Path TEMP_DIR;
+
   /**
    * This tests the methods in this class.
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
     Matlab.verbose = true;
-    String dir = "c:/temp/";
+    String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // write a double matlab file
     String tempFile = dir + "MatlabDouble.mat";

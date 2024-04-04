@@ -3448,8 +3448,9 @@ class EDDGridFromNcFilesTests {
         "", // group
         "lat, lon", -1, null, null) + "\n"; // dimensionsCSV, reloadMinutes, cacheFromUrl
 
+    String newID = EDDGridFromNcFiles.suggestDatasetID(fileDir + "/" + fileRegex + "lat,lon");
     // expected is unchanged except for datasetID (because dimensionsCSV changed)
-    expected = String2.replaceAll(expected, suggDatasetID, "nc_719e_b3de_ccb4");
+    expected = String2.replaceAll(expected, suggDatasetID, newID);
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *** dimensionsCSV="rgb,eightbitcolor"
@@ -11021,7 +11022,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // No valid files!
+  @TagIncompleteTest // Cannot load from object array because "this.sourceAxisValues" is null
   void testSpecialAxis0PathNameInt() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0PathNameInt()\n");
     // testVerboseOn();
