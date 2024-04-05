@@ -12,19 +12,15 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 RUN mkdir /app/
 WORKDIR /app/
 
-# Download netcdfAll jar dependency.
-RUN wget https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar
-
 # Temp dir required for a unit test.
 RUN mkdir /temp/
 
 # Copy in source files and build the war file.
+ADD development ./development
 ADD download ./download
 ADD images ./images
 ADD src ./src
 ADD WEB-INF ./WEB-INF
-RUN mkdir WEB-INF/lib
-RUN mv netcdfAll-5.5.3.jar WEB-INF/lib/netcdfAll-5.5.3.jar
 COPY pom.xml .
 RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository --mount=type=cache,id=download_cache,target=download_cache mvn -f pom.xml package
 
@@ -34,5 +30,5 @@ RUN mkdir /usr/local/tomcat/content/erddap/ -p
 RUN mkdir /usr/local/erddap_data/
 COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/erddap.war
 COPY --from=build /app/content/erddap/* /usr/local/tomcat/content/erddap/
-COPY ./development/config/localSetup.xml /usr/local/tomcat/content/erddap/setup.xml
+COPY ./development/docker/config/localSetup.xml /usr/local/tomcat/content/erddap/setup.xml
 CMD ["catalina.sh", "run"]
