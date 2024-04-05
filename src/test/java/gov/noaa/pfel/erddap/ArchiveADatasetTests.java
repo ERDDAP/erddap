@@ -11,17 +11,14 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagMissingDataset;
+import testDataset.Initialization;
 
 class ArchiveADatasetTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   @org.junit.jupiter.api.Test

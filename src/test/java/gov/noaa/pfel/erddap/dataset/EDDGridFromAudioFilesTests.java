@@ -21,15 +21,13 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 class EDDGridFromAudioFilesTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   /**

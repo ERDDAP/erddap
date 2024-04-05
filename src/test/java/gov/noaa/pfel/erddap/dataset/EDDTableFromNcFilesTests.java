@@ -51,6 +51,7 @@ import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
@@ -66,10 +67,7 @@ class EDDTableFromNcFilesTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.withSetFonts();
   }
 
   /**

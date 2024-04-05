@@ -16,22 +16,18 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.Grid;
-import gov.noaa.pfel.coastwatch.util.SSR;
-import tags.TagFontDependent;
+import testDataset.Initialization;
 
 class SgtMapTests {
   private final static String testImageExtension = ".png";
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
+    Initialization.withSetFonts();
   }
 
   /** This tests SgtMap making bathymetry maps. 0, 11 */
   @org.junit.jupiter.api.Test
-  @TagFontDependent
   void testBathymetry() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -60,7 +56,6 @@ class SgtMapTests {
 
   /** This tests SgtMap making topography maps. (0, 11) */
   @org.junit.jupiter.api.Test
-  @TagFontDependent
   void testTopography() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -90,7 +85,6 @@ class SgtMapTests {
 
   /** This tests SgtMap. */
   @org.junit.jupiter.api.Test
-  @TagFontDependent
   void basicTest() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -496,7 +490,6 @@ class SgtMapTests {
    * This tests bathymetry and the ocean palette in an area that was trouble.
    */
   @org.junit.jupiter.api.Test
-  @TagFontDependent
   void testOceanPalette() throws Exception {
     int first = 0;
     int last = 7;

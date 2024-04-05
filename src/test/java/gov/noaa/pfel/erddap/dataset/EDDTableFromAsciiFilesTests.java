@@ -20,18 +20,15 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagAWS;
-import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 class EDDTableFromAsciiFilesTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.withSetFonts();
   }
 
   /**

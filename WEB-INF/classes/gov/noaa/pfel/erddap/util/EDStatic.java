@@ -52,24 +52,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,17 +83,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 
-//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
-import ucar.ma2.Array;
-import ucar.ma2.DataType;
-import ucar.nc2.Dimension;
-import ucar.nc2.Group;
-import ucar.nc2.Variable;
-import ucar.nc2.write.NetcdfFormatWriter;
 
 /** 
  * This class holds a lot of static information set from the setup.xml and messages.xml
@@ -108,7 +92,14 @@ import ucar.nc2.write.NetcdfFormatWriter;
  */
 public class EDStatic {
 
+    /**
+     * These are options used to control behavior for testing.
+     * They should be their default values during normal operation.
+     * Better encapsulation of EDStatic initilization would mean we
+     * can get rid of these.
+     */
     public static boolean doSetupValidation = true;
+    public static boolean useSansSerifFont = false;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -1787,6 +1778,7 @@ public static boolean developmentMode = false;
     try {
 
         doSetupValidation = Boolean.parseBoolean(System.getProperty("doSetupValidation"));
+        useSansSerifFont = Boolean.parseBoolean(System.getProperty("useSansSerifFont"));
 
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);

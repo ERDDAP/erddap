@@ -42,7 +42,7 @@ class SgtGraphTests {
     // AttributedString2.verbose = true;
     long time = System.currentTimeMillis();
     String tempDir = SSR.getTempDirectory();
-    SgtGraph sgtGraph = new SgtGraph("DejaVu Sans"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
+    SgtGraph sgtGraph = new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
                                                      // choice
     String imageDir = File2.webInfParentDirectory() + // with / separator and / at the end
         "images/";
@@ -183,7 +183,7 @@ class SgtGraphTests {
     // PathCartesianRenderer.reallyVerbose = true;
     // AttributedString2.verbose = true;
     long time = System.currentTimeMillis();
-    SgtGraph sgtGraph = new SgtGraph("DejaVu Sans"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
+    SgtGraph sgtGraph = new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
                                                      // choice
     String imageDir = File2.webInfParentDirectory() + // with / separator and / at the end
         "images/";
@@ -618,7 +618,7 @@ class SgtGraphTests {
     long time = System.currentTimeMillis();
     long memoryInUse = Math2.getMemoryInUse();
 
-    SgtGraph sgtGraph = new SgtGraph("DejaVu Sans"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
+    SgtGraph sgtGraph = new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
                                                      // choice
     String imageDir = File2.webInfParentDirectory() + // with / separator and / at the end
         "images/";

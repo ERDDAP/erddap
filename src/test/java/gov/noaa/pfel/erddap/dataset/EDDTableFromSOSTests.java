@@ -20,6 +20,7 @@ import tags.TagExternalOther;
 import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 /**
  * Comments from the old test file:
@@ -33,10 +34,7 @@ import testDataset.EDDTestDataset;
 class EDDTableFromSOSTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   /**

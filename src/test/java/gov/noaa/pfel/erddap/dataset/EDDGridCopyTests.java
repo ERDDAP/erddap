@@ -18,15 +18,13 @@ import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 class EDDGridCopyTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   /**

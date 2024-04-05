@@ -9,14 +9,13 @@ import com.cohort.util.Test;
 
 import tags.TagAWS;
 import tags.TagExternalOther;
+import testDataset.Initialization;
 
 class FileVisitorSubdirTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
+    Initialization.edStatic();
   }
 
   /**

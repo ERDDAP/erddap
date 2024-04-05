@@ -35,6 +35,7 @@ import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
@@ -44,10 +45,7 @@ import ucar.nc2.dataset.NetcdfDatasets;
 class EDDGridFromNcFilesTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.withSetFonts();
   }
 
   /** This prints time, lat, and lon values from an .ncml dataset. */

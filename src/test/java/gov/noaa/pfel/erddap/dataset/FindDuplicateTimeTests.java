@@ -2,19 +2,16 @@ package gov.noaa.pfel.erddap.dataset;
 
 import org.junit.jupiter.api.BeforeAll;
 
-import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import testDataset.Initialization;
 
 class FindDuplicateTimeTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   @org.junit.jupiter.api.Test

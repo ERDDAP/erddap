@@ -47,6 +47,7 @@ import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagPassword;
+import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
@@ -57,9 +58,7 @@ class TableTests {
 
     @BeforeAll
     static void init() {
-        File2.setWebInfParentDirectory();
-        System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-        System.setProperty("doSetupValidation", String.valueOf(false));
+        Initialization.edStatic();
     }
 
     /**

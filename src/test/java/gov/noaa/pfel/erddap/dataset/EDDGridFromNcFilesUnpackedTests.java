@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
@@ -29,10 +30,7 @@ import ucar.nc2.Variable;
 class EDDGridFromNcFilesUnpackedTests {
     @BeforeAll
     static void init() {
-        File2.setWebInfParentDirectory();
-        System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-        System.setProperty("doSetupValidation", String.valueOf(false));
-
+        Initialization.withSetFonts();
     }
 
     /**

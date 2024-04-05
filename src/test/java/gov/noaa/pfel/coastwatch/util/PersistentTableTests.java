@@ -9,14 +9,13 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.PersistentTable;
+import testDataset.Initialization;
 
 class PersistentTableTests {
 
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
+    Initialization.edStatic();
   }
 
   /**

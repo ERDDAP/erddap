@@ -24,14 +24,12 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 class EDDTableFromHttpGetTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   @org.junit.jupiter.api.Test

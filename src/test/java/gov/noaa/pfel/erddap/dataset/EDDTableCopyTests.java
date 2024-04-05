@@ -19,14 +19,12 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 
 class EDDTableCopyTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.withSetFonts();
   }
 
   /**

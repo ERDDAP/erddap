@@ -7,18 +7,15 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
-import gov.noaa.pfel.erddap.dataset.EDD;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
+import testDataset.Initialization;
 
 class HtmlWidgetsTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.edStatic();
   }
 
   /**

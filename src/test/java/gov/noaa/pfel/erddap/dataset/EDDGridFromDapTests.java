@@ -45,6 +45,7 @@ import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
+import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -53,10 +54,7 @@ import ucar.nc2.dataset.NetcdfDatasets;
 class EDDGridFromDapTests {
   @BeforeAll
   static void init() {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    EDD.debugMode = true;
+    Initialization.withSetFonts();
   }
 
   @org.junit.jupiter.api.Test
