@@ -21,7 +21,6 @@ class SharedTests {
   @org.junit.jupiter.api.Test
   @TagRequiresContent // actually Browser properties, failing on bigParentDirectory
   void basicTest() throws Exception {
-    File2.setWebInfParentDirectory();
     long time = System.currentTimeMillis();
     OneOf oneOf = new OneOf("gov.noaa.pfel.coastwatch.CWBrowser");
     // oneOf suppresses output to screen; re start it

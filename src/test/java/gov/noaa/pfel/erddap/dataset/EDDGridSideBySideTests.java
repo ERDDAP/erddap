@@ -21,7 +21,7 @@ import testDataset.Initialization;
 class EDDGridSideBySideTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

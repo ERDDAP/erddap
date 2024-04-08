@@ -45,7 +45,7 @@ import ucar.nc2.dataset.NetcdfDatasets;
 class EDDGridFromNcFilesTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /** This prints time, lat, and lon values from an .ncml dataset. */

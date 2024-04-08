@@ -19,7 +19,7 @@ import testDataset.Initialization;
 class EDDGridLon0360Tests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

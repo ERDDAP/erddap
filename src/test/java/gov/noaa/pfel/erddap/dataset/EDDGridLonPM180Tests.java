@@ -22,7 +22,7 @@ import testDataset.Initialization;
 class EDDGridLonPM180Tests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

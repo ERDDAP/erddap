@@ -2175,6 +2175,9 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         
        
         errorInMethod = "ERROR while initializing SgtGraph: ";
+        if (useSansSerifFont) {
+            fontFamily = "SansSerif";
+        }
         sgtGraph = new SgtGraph(fontFamily);
 
         //ensure erddapVersion is okay

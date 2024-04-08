@@ -24,7 +24,7 @@ import testDataset.Initialization;
 class EDDTableFromErddapTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

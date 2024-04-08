@@ -28,7 +28,7 @@ class EDDTableFromAsciiFilesTests {
 
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

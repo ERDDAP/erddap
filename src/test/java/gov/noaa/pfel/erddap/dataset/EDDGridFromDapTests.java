@@ -54,7 +54,7 @@ import ucar.nc2.dataset.NetcdfDatasets;
 class EDDGridFromDapTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   @org.junit.jupiter.api.Test

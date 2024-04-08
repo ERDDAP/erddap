@@ -17,7 +17,7 @@ import testDataset.Initialization;
 class EDDGridFromEtopoTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
   
   /**

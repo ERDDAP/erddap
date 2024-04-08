@@ -67,7 +67,7 @@ class EDDTableFromNcFilesTests {
 
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

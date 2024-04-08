@@ -11,11 +11,6 @@ public class Initialization {
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
     EDD.debugMode = true;
-    
-  }
-
-  public static void withSetFonts() {
-    edStatic();
     System.setProperty("useSansSerifFont", String.valueOf(true));
     SgtMap.fontFamily = "SansSerif";
   }

@@ -23,7 +23,7 @@ class SgtMapTests {
 
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /** This tests SgtMap making bathymetry maps. 0, 11 */

@@ -24,7 +24,7 @@ import testDataset.Initialization;
 class EDDGridTests {
   @BeforeAll
   static void init() {
-    Initialization.withSetFonts();
+    Initialization.edStatic();
   }
 
   /**

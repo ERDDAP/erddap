@@ -30,7 +30,7 @@ import ucar.nc2.Variable;
 class EDDGridFromNcFilesUnpackedTests {
     @BeforeAll
     static void init() {
-        Initialization.withSetFonts();
+        Initialization.edStatic();
     }
 
     /**
