@@ -4159,7 +4159,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(기다려주세요. 데이터를 가져오는 데 시간이 걸릴 수 있습니다.)</patientData>
 <patientYourGraph>[지정한 그래프. 기다려주십시오.]</patientYourGraph>
 <!--  각 imageSize에 대해 pdfWidth 및 pdfHeight(1/144인치)가 있습니다.

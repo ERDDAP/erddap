@@ -3969,7 +3969,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Veuillez être patient. L&#39;obtention des données peut prendre un certain temps.)</patientData>
 <patientYourGraph>[Le graphique que vous avez spécifié. S&#39;il vous plaît soyez patient.]</patientYourGraph>
 <!--  Pour chaque taille d&#39;image, il y a un pdfWidth et un pdfHeight (en 1/144e de pouce).

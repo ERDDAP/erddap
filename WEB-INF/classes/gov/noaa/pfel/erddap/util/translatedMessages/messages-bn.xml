@@ -3645,7 +3645,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(দয়া করে ধৈর্য ধরুন। ডেটা পেতে কিছুটা সময় লাগতে পারে।)</patientData>
 <patientYourGraph>[আপনার নির্দিষ্ট করা গ্রাফ। দয়া করে ধৈর্য ধরুন.]</patientYourGraph>
 <!--  প্রতিটি চিত্রের আকারের জন্য, একটি পিডিএফ প্রস্থ এবং পিডিএফ উচ্চতা রয়েছে (1/144 ইঞ্চিতে)।

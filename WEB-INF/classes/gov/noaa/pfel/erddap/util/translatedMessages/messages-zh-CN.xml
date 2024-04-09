@@ -3333,7 +3333,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>（请耐心等待，获取数据可能需要一段时间。）</patientData>
 <patientYourGraph>[你指定的图表。请耐心等待。]</patientYourGraph>
 <!--  对于每个 imageSize，都有一个 pdfWidth 和 pdfHeight（以 1/144 英寸为单位）。
