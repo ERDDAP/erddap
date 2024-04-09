@@ -1254,6 +1254,7 @@ class FileVisitorDNLSTests {
         "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2021/,,,\n" +
         "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2022/,,,\n" +
         "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2023/,,,\n" +
+        "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2024/,,,\n" +
         "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/doc/,,,\n" +
         "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/src/,,,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
