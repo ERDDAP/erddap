@@ -151,6 +151,19 @@
                 <version>1.8.1</version>
                 <executions>
                     <execution>
+                        <id>download-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>download-etopo</id>
                         <phase>initialize</phase>
                         <goals>
