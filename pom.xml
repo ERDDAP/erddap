@@ -23,7 +23,6 @@
                               //    WARNINGS for postgresql.jar and Cassandra dependencies:
                               //      slf4j, guava, lz4, metrics, netty, snappy, aws-crt.
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
-      (then copy netcdfAll-x.x.x.jar into /lib)
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
 
@@ -46,6 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
+        <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
     </properties>
 
     <repositories>
@@ -161,19 +161,6 @@
                         <configuration>
                             <target>
                                 <mkdir dir="${project.basedir}/WEB-INF/lib"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration,onIncremental?>
-                        <id>download-netcdf</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <get src="https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar" dest="${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar" skipexisting="true" verbose="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -454,149 +441,90 @@
             <version>2.0.0</version>
         </dependency>
 
-        <!-- To use downloaded local netcdf-all:
-            download from https://downloads.unidata.ucar.edu/netcdf-java/
-            or e.g., repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar 
-            [This approach is based on second answer from 
-             https://stackoverflow.com/questions/3765903/how-to-include-local-jar-files-in-maven-project ]
-         -->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdfAll</artifactId>
-            <version>5.5.3</version>  <!-- version number duplicated several times below -->
-        </dependency>
-
-        <!-- These will be needed if I ever switch away from netcdfAll.
-          Published advice https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html 
-            and Jan 24, 2022 email from Jennifer Oxelson Ganter
-            and a set of runtime modules from https://docs.unidata.ucar.edu/netcdf-java/current/userguide/file_types.html 
-          To figure out which module has a given class, Google, e.g.: github netcdf-java ucar nc2 geotiff GeotiffWriter 
-
-          Browse repository (probably unidata-all): https://artifacts.unidata.ucar.edu/#browse/browse
-          -->
-
-        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fbufr - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>bufr</artifactId>
-            <version>5.5.3</version>  <!- - this number duplicated many times below - ->
-            <scope>runtime</scope>  
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-core  
-             Fundamental! 
-             Has ucar.nc2.Variable and Variable.Builder (and other builders).
-             Has ucar.nc2.ncml.NcmlReader, Aggregation, AggregationExisting, AggregationFmrc, AggregationOuterDimension, 
-               AggregationUnion, etc- ->
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-core</artifactId>
-            <version>5.5.3</version>
+            <version>${netcdfJavaVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-image  - ->
+
         <dependency>
             <groupId>edu.ucar</groupId>
-            <artifactId>cdm-image</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
+            <artifactId>cdm-misc</artifactId>
+            <version>${netcdfJavaVersion}</version>
         </dependency>
-       <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-mcidas  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-mcidas</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-misc  
-             Has ucar.nc2.geotiff. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-misc</artifactId> 
-            <version>5.5.3</version>
-            <scope>compile</scope>  
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-radial  
-             probably not needed- ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-radial</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-vis5d  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-vis5d</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-zarr  
-             zarr isn't included in netcdfAll 
-             BUG in 5.5.3 detected at EDDGridFromNcFiles.testNcml(EDDGridFromNcFiles.java:5529)
-               so I can't include zarr module v5.5.3 with distribution - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-zarr</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency> 
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fclcommon 
-             Referenced in Jennifer's email. Has ucar.nc2.dt.image... and some ucar.nc2.iosp... 
-             But I distrust artifacts with version=5.1.0. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>clcommon</artifactId>
-            <version>5.1.0</version>
-            <scope>compile</scope>
-        </dependency> - ->
-        <!- - d4* is probably dap4: not needed - ->        
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fgrib  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>grib</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fhttpservices  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>httpservices</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Flegacy  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>legacy</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf  doesn't have 5.x - ->
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf-java  doesn't have 5.5.3+ - ->
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf4 
-             This is for writing netcdf4 files with linked C library. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdf4</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency> 
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fopendap  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>opendap</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fudunits 
-             Marked as needed by dependency:analyze - ->
+
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>udunits</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope> 
+            <version>${netcdfJavaVersion}</version>
         </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
+
+        <!-- The following are from netcdf and add support for various file types. -->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdf4</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>grib</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>bufr</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>opendap</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-radial</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-image</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-mcidas</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-s3</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-zarr</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
              Marked as needed by dependency:analyze - ->
         <dependency>
             <groupId>edu.wisc.ssec</groupId>
