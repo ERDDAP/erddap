@@ -4124,7 +4124,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Kérjük, legyen türelemmel. Eltarthat egy ideig, mire megkapjuk az adatokat.)</patientData>
 <patientYourGraph>[Az Ön által megadott grafikon. Kérjük várjon.]</patientYourGraph>
 <!--  Minden imageSize-hez tartozik egy pdfWidth és pdfHeight (1/144 hüvelykben).
