@@ -4154,7 +4154,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Hãy kiên nhẫn. Có thể mất một lúc để lấy dữ liệu.)</patientData>
 <patientYourGraph>[Biểu đồ bạn đã chỉ định. Xin hãy kiên nhẫn.]</patientYourGraph>
 <!--  Đối với mỗi imageSize, có một pdfWidth và pdfHeight (trong 1/144 inch inch).
