@@ -142,7 +142,7 @@
                 <version>3.3.2</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>WEB-INF/lib/**, target/**, data/**, content/**, .settings/**, *.*</warSourceExcludes>
+                    <warSourceExcludes>src/**, WEB-INF/lib/**, target/**, download_cache/**, data/**, development/**, content/**, .settings/**, .github/**, .vscode/**, *.*</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
