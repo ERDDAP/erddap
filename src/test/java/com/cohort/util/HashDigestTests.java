@@ -7,7 +7,7 @@ class HashDigestTests {
    */
   void basicTest() throws Throwable {
     System.out.println("*** HashDigest.basicTest");
-    String tName = HashDigestTests.class.getResource("LICENSE.txt").getPath();
+    String tName = HashDigestTests.class.getResource("/data/LICENSE.txt").getPath();
     Test.ensureEqual(HashDigest.doIt(new String[] { "type:MD5" }),
         "Neither password or filename was specified.\n" + HashDigest.usage, "");
     Test.ensureEqual(HashDigest.doIt(new String[] { "password:myPassword", "type:MD-5" }),
