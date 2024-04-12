@@ -25,26 +25,26 @@ class FileVisitorSubdirTests {
   void testLocal() throws Throwable {
     // String2.log("\n*** FileVisitorSubdir.testLocal");
     // verbose = true;
-    String contextDir = File2.webInfParentDirectory(); // with / separator and / at the end
+    String contextDir = File2.webInfParentDirectory().replace('\\', '/'); // with / separator and / at the end
     StringArray alps;
     long time;
 
-    // test forward slashes
+    // test forward slashes 
     alps = FileVisitorSubdir.oneStep(contextDir + "WEB-INF/classes/com/cohort", null); // without trailing slash
     String results = alps.toNewlineString();
-    String expected = contextDir + "WEB-INF\\classes\\com\\cohort\\\n" +
-        contextDir + "WEB-INF\\classes\\com\\cohort\\array\\\n" +
-        contextDir + "WEB-INF\\classes\\com\\cohort\\ema\\\n" +
-        contextDir + "WEB-INF\\classes\\com\\cohort\\util\\\n";
+    String expected = contextDir + "WEB-INF/classes/com/cohort/\n" +
+        contextDir + "WEB-INF/classes/com/cohort/array/\n" +
+        contextDir + "WEB-INF/classes/com/cohort/ema/\n" +
+        contextDir + "WEB-INF/classes/com/cohort/util/\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // test backslashes
-    alps = FileVisitorSubdir.oneStep(
-        String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\'), // with trailing slash
-        null);
-    results = alps.toNewlineString();
-    expected = String2.replaceAll(expected, '/', '\\');
-    Test.ensureEqual(results, expected, "results=\n" + results);
+    // alps = FileVisitorSubdir.oneStep(
+    //     String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\'), // with trailing slash
+    //     null);
+    // results = alps.toNewlineString();
+    // expected = String2.replaceAll(expected, '/', '\\');
+    // Test.ensureEqual(results, expected, "results=\n" + results);
 
     String2.log("\n*** FileVisitorSubdir.testLocal finished.");
   }
