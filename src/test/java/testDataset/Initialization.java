@@ -8,7 +8,7 @@ import gov.noaa.pfel.erddap.dataset.EDD;
 public class Initialization {
   public static void edStatic() {
     File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "/content/erddap");
     System.setProperty("doSetupValidation", String.valueOf(false));
     EDD.debugMode = true;
     System.setProperty("useSansSerifFont", String.valueOf(true));

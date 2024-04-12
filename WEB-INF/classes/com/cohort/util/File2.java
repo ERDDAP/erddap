@@ -220,7 +220,7 @@ public class File2 {
      * THIS IS ONLY INTENDED FOR USE DURING TESTS.
      */
     public static void setWebInfParentDirectory() {
-        webInfParentDirectory =  System.getProperty("user.dir") + "\\";
+        webInfParentDirectory = System.getProperty("user.dir") + "/";
     }
 
     /**
