@@ -31,6 +31,7 @@ class FileVisitorSubdirTests {
 
     // test forward slashes 
     alps = FileVisitorSubdir.oneStep(contextDir + "WEB-INF/classes/com/cohort", null); // without trailing slash
+    alps.sort(); // sort is required before test comparison in Linux
     String results = alps.toNewlineString();
     String expected = contextDir + "WEB-INF/classes/com/cohort/\n" +
         contextDir + "WEB-INF/classes/com/cohort/array/\n" +

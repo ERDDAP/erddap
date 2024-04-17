@@ -22,12 +22,12 @@ class WatchDirectoryTests {
     // verbose = true;
     ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
     StringArray contexts = new StringArray();
-    String testDataDir = Path.of(WatchDirectoryTests.class.getResource("/data/").toURI()).toString();
+    String testDataDir = Path.of(WatchDirectoryTests.class.getResource("/data/").toURI()).toString().replace('\\', '/');
     String sourceDir = testDataDir;
-    String watchDir = testDataDir + "\\watchService";
-    String subDirNS = testDataDir + "\\watchService\\watchSub";
-    String file1 = "\\columnarAsciiWithComments.txt";
-    String file2 = "\\csvAscii.txt";
+    String watchDir = testDataDir + "/watchService";
+    String subDirNS = testDataDir + "/watchService/watchSub";
+    String file1 = "/columnarAsciiWithComments.txt";
+    String file2 = "/csvAscii.txt";
     String results;
     int n;
     // On Bob's M4700, even 2000 isn't sufficient to reliably catch all events
@@ -127,7 +127,12 @@ class WatchDirectoryTests {
               results.equals(WatchDirectory.MODIFY + " " + subDirNS),
           "");
     }
-    Test.ensureBetween(n, 3, 5, ""); // sometimes the dir event isn't caught
+    // on linux modify events are not created during this delete
+    // also a subdir deletion was previously checked for here,
+    // but RegexFilenameFilter.regexDelete explicitly excludes directories
+    // from matching (directoriesToo is false), so only two events are possible here
+    // (the two file DELETEs)
+    Test.ensureBetween(n, 2, 5, "");
 
     // *** test creating a huge number
     // This is allowed on Windows. It doesn't appear to have max number.

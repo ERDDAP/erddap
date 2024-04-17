@@ -34,12 +34,12 @@ class EDDTableFromAudioFilesTests {
     boolean oEDDDebugMode = EDD.debugMode;
     // EDD.debugMode = true;
 
-    String dataDir = Path.of(EDDTableFromAudioFilesTests.class.getResource("/largeFiles/audio/wav/").toURI())
-        .toString();
-
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromAudioFilesTests.class.getResource("/largeFiles/audio/wav/").toURI()).toString());
+    String fileNameRegex = ".*\\.wav";
     String results = EDDTableFromAudioFiles.generateDatasetsXml(
         dataDir, // test no trailing /
-        ".*\\.wav",
+        fileNameRegex,
         "",
         1440,
         "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
@@ -53,7 +53,7 @@ class EDDTableFromAudioFilesTests {
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromAudioFiles",
         dataDir,
-        ".*\\.wav",
+        fileNameRegex,
         "",
         "1440",
         "aco_acoustic\\.", "\\.wav", ".*", "time", "yyyyMMdd'_'HHmmss",
@@ -62,15 +62,15 @@ class EDDTableFromAudioFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
     String suggDatasetID = EDDTableFromAudioFiles.suggestDatasetID(
-        dataDir + "\\.*\\.wav");
+        dataDir + fileNameRegex);
     String expected = "<dataset type=\"EDDTableFromAudioFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
         "    <defaultGraphQuery>elapsedTime,channel_1&amp;time=min(time)&amp;elapsedTime&gt;=0&amp;elapsedTime&lt;=1&amp;.draw=lines</defaultGraphQuery>\n"
         +
         "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>.*\\.wav</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

@@ -1951,7 +1951,7 @@ public class File2 {
     public static String forwardSlashDir(String tDir) {
         StringBuilder sb = new StringBuilder(tDir);
         String2.replaceAll(sb, '\\', '/');
-        if (sb.length() == 0 || sb.charAt(0) != '/' )
+        if (sb.length() == 0 || sb.charAt(tDir.length() - 1) != '/' )
             sb.append('/');
         return sb.toString();
     }

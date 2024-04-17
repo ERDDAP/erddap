@@ -50,9 +50,12 @@ class EDDTableFromNcCFFilesTests {
     // String tSortFilesBySourceNames,
     // String tInfoUrl, String tInstitution, String tSummary, String tTitle,
     // Attributes externalAddGlobalAttributes) throws Throwable {
-    String dataDir = Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/").toURI()).toString());
+    String fileNameRegex = "ncCF1b\\.nc";
     String results = EDDTableFromNcCFFiles.generateDatasetsXml(
-        dataDir, "ncCF1b\\.nc",
+        dataDir,
+        fileNameRegex,
         dataDir + "/ncCF1b.nc",
         1440,
         "", "", "", "", // just for test purposes; station is already a column in the file
@@ -64,7 +67,8 @@ class EDDTableFromNcCFFilesTests {
     // GenerateDatasetsXml
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromNcCFFiles",
-        dataDir, "ncCF1b\\.nc",
+        dataDir,
+        fileNameRegex,
         dataDir + "/ncCF1b.nc",
         "1440",
         "", "", "", "", // just for test purposes; station is already a column in the file
@@ -73,13 +77,13 @@ class EDDTableFromNcCFFilesTests {
         "-1", "" }, // defaultStandardizeWhat
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-    String tDatasetID = EDDTableFromNcCFFiles.suggestDatasetID(dataDir + "\\ncCF1b\\.nc");
+    String tDatasetID = EDDTableFromNcCFFiles.suggestDatasetID(dataDir + fileNameRegex);
     String expected = "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>ncCF1b\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +
@@ -323,10 +327,14 @@ class EDDTableFromNcCFFilesTests {
     // From Ajay Krishnan, NCEI/NODC, from
     // https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
     // See low level reading test: Table.testReadNcCF7SampleDims()
-    String dir = Path.of(EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI()).toString();
-    String regex = "ind199105_ctd\\.nc";
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromNcCFFilesTests.class.getResource("/data/nccf/ncei/").toURI()).toString());
+    String fileNameRegex = "ind199105_ctd\\.nc";
 
-    String results = EDDTableFromNccsvFiles.generateDatasetsXml(dir, regex, "",
+    String results = EDDTableFromNccsvFiles.generateDatasetsXml(
+        dataDir,
+        fileNameRegex,
+        "",
         1440,
         "", "", "", "", // just for test purposes; station is already a column in the file
         "WOD_cruise_identifier, time",
@@ -336,7 +344,10 @@ class EDDTableFromNcCFFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
-        "EDDTableFromNcCFFiles", dir, regex, "",
+        "EDDTableFromNcCFFiles",
+        dataDir,
+        fileNameRegex,
+        "",
         "1440",
         "", "", "", "", // just for test purposes; station is already a column in the file
         "WOD_cruise_identifier, time",
@@ -344,13 +355,13 @@ class EDDTableFromNcCFFilesTests {
         "-1", "" }, // defaultStandardizeWhat
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-    String tDatasetID = EDDTableFromNcCFFiles.suggestDatasetID(dir + "\\" + regex);
+    String tDatasetID = EDDTableFromNcCFFiles.suggestDatasetID(dataDir + fileNameRegex);
     String expected = "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dir + "\\</fileDir>\n" +
-        "    <fileNameRegex>ind199105_ctd\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

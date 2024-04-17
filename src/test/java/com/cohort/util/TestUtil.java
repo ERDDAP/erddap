@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
 
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 
@@ -1250,11 +1251,6 @@ class TestUtil {
         int n, iar[];
         String s, results, expected;
         long time;
-        /* */
-        // clipboard
-        String2.log("Clipboard was: " + String2.getClipboardString());
-        String2.setClipboardString("Test String2.setClipboardString.");
-        Test.ensureEqual(String2.getClipboardString(), "Test String2.setClipboardString.", "");
 
         // md5Hex
         Test.ensureEqual(String2.md5Hex("This is a test01234.ÀÑ"), "b62023b8dffda52f4b1ea48f2cee739e", "");
@@ -3081,6 +3077,15 @@ class TestUtil {
         Test.ensureEqual(String2.addNewlineIfNone(sb).toString(), "a\n", "");
         Test.ensureEqual(String2.addNewlineIfNone(sb).toString(), "a\n", "");
 
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisabledIf(value = "java.awt.GraphicsEnvironment#isHeadless", disabledReason = "headless environment")
+    void testString2Clipboard() throws Throwable {
+        // clipboard
+        String2.log("Clipboard was: " + String2.getClipboardString());
+        String2.setClipboardString("Test String2.setClipboardString.");
+        Test.ensureEqual(String2.getClipboardString(), "Test String2.setClipboardString.", "");
     }
 
     private static double nextEpochSecond() {

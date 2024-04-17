@@ -36,10 +36,15 @@ class EDDTableFromMultidimNcFilesTests {
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
-    String dataDir = Path.of(EDDTableFromMultidimNcFilesTests.class.getResource("/data/nc/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromMultidimNcFilesTests.class.getResource("/data/nc/").toURI()).toString());
+    String fileNameRegex = ".*_prof\\.nc";
+    String useDimensionsCSV = "N_PROF, N_LEVELS";
     String results = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        dataDir, ".*_prof\\.nc", "",
-        "N_PROF, N_LEVELS",
+        dataDir,
+        fileNameRegex,
+        "",
+        useDimensionsCSV,
         1440,
         "^", "_prof.nc$", ".*", "fileNumber", // just for test purposes
         true, // removeMVRows
@@ -50,14 +55,14 @@ class EDDTableFromMultidimNcFilesTests {
         null, // cacheFromUrl
         null) + "\n";
 
-    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + "\\.*_prof\\.ncN_PROF, N_LEVELS");
+    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + fileNameRegex + useDimensionsCSV);
     String expected = "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"" + tDatasetID
         + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>.*_prof\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +
@@ -1580,11 +1585,15 @@ class EDDTableFromMultidimNcFilesTests {
   void testGenerateDatasetsXmlSeaDataNet() throws Throwable {
     // testVerboseOn();
     // debugMode = true;
-    String dataDir = Path.of(EDDTableFromMultidimNcFilesTests.class.getResource("/data/sdn/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+            EDDTableFromMultidimNcFilesTests.class.getResource("/data/sdn/").toURI()).toString());
+    String fileNameRegex = "netCDF_timeseries_tidegauge\\.nc";
+    String useDimensionsCSV = "INSTANCE, MAXT";
     String results = EDDTableFromMultidimNcFiles.generateDatasetsXml(
         dataDir,
-        "netCDF_timeseries_tidegauge\\.nc", "",
-        "INSTANCE, MAXT", // dimensions
+        fileNameRegex,
+        "",
+        useDimensionsCSV, // dimensions
         1440,
         "", "", "", "", // just for test purposes; station is already a column in the file
         true, // removeMVRows
@@ -1596,13 +1605,13 @@ class EDDTableFromMultidimNcFilesTests {
         null);
     String2.setClipboardString(results);
 
-    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + "\\netCDF_timeseries_tidegauge\\.ncINSTANCE, MAXT");
+    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + fileNameRegex + useDimensionsCSV);
     String expected = "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>netCDF_timeseries_tidegauge\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +
@@ -2044,10 +2053,16 @@ class EDDTableFromMultidimNcFilesTests {
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlDimensions() throws Throwable {
     // testVerboseOn();
-    String dataDir = Path.of(EDDTableFromMultidimNcFilesTests.class.getResource("/data/nc/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromMultidimNcFilesTests.class.getResource("/data/nc/").toURI()).toString());
+    String fileNameRegex = "GL_.*44761\\.nc";
+    String useDimensionsCSV = "TIME, DEPTH";
+
     String results = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        dataDir, "GL_.*44761\\.nc", "",
-        "TIME, DEPTH",
+        dataDir,
+        fileNameRegex,
+        "",
+        useDimensionsCSV,
         1440,
         "", "", "", "", // just for test purposes
         false, // removeMVRows
@@ -2058,13 +2073,13 @@ class EDDTableFromMultidimNcFilesTests {
         null, // cacheFromUrl
         null) + "\n";
 
-    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + "\\GL_.*44761\\.ncTIME, DEPTH");
+    String tDatasetID = EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + fileNameRegex + useDimensionsCSV);
     String expected = "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>GL_.*44761\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

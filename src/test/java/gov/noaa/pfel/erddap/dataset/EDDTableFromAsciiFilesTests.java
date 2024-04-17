@@ -2540,7 +2540,7 @@ class EDDTableFromAsciiFilesTests {
         + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
-        "    <fileDir>" + dataDir + "/26938/</fileDir>\n" +
+        "    <fileDir>" + File2.addSlash(dataDir) + "26938/</fileDir>\n" +
         "    <fileNameRegex>???</fileNameRegex>\n" +
         "    <charset>ISO-8859-1</charset>\n" +
         "    <columnNamesRow>1</columnNamesRow>\n" +
@@ -2702,7 +2702,7 @@ class EDDTableFromAsciiFilesTests {
     expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
-        "    <fileDir>" + dataDir + "/26938/</fileDir>\n" +
+        "    <fileDir>" + File2.addSlash(dataDir) + "26938/</fileDir>\n" +
         "    <fileNameRegex>AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions\\.csv</fileNameRegex>\n"
         +
         "    <charset>ISO-8859-1</charset>\n" +
@@ -3698,7 +3698,7 @@ class EDDTableFromAsciiFilesTests {
         + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
-        "    <fileDir>" + dataDir + "/27377/</fileDir>\n" +
+        "    <fileDir>" + File2.addSlash(dataDir) + "27377/</fileDir>\n" +
         "    <fileNameRegex>???</fileNameRegex>\n" +
         "    <charset>ISO-8859-1</charset>\n" +
         "    <columnNamesRow>1</columnNamesRow>\n" +
@@ -3910,7 +3910,7 @@ class EDDTableFromAsciiFilesTests {
     expected = "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n"
         +
         "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
-        "    <fileDir>" + dataDir + "/27377/</fileDir>\n" +
+        "    <fileDir>" + File2.addSlash(dataDir) + "27377/</fileDir>\n" +
         "    <fileNameRegex>dummy\\.csv</fileNameRegex>\n" +
         "    <charset>ISO-8859-1</charset>\n" +
         "    <columnNamesRow>1</columnNamesRow>\n" +

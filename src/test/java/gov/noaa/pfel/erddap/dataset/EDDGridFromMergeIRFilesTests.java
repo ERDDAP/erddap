@@ -43,7 +43,7 @@ class EDDGridFromMergeIRFilesTests {
     String expected = "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIR\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
+        "    <fileDir>" + File2.addSlash(dataDir) + "</fileDir>\n" +
         "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.gz</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
