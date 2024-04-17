@@ -15,3 +15,11 @@ Below you will find relevant links for asking questions and how to contribute.
 # Running JUnit tests
 
 Simply run `mvn test` in a terminal to run the JUnit tests.
+
+Note that by default tests that do an image comparison are enabled. To disable those tests add `ImageComparison` to the `excludedGroups` section of the surefire `configuration`. It is recommended you run the image tests before making changes to ERDDAP so you can generate a baseline set of images that will be later used for comparison.
+
+# Building a war
+
+`mvn package` will create a war file. 
+
+If you'd like to skip the tests while building use `mvn package -DskipTests`. You can use the skipTests flags with other maven commands.

@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -33,6 +34,7 @@ class EDDTableCopyTests {
    */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
+  @TagImageComparison
   void testBasic() throws Throwable {
     // testVerboseOn();
     int language = 0;

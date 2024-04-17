@@ -18,6 +18,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import tags.TagImageComparison;
 
 class SgtGraphTests {
 
@@ -161,16 +162,19 @@ class SgtGraphTests {
 
   /** This makes and displays lots of graph types. */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testDiverseGraphs_tff() throws Exception {
     testDiverseGraphs(true, false, false);
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testDiverseGraphs_tft() throws Exception {
     testDiverseGraphs(true, false, true);
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testDiverseGraphs_ttt() throws Exception {
     testDiverseGraphs(true, true, true);
   }
@@ -593,16 +597,19 @@ class SgtGraphTests {
   // if (test == 6) testSurface(true, true);
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSurface_ff() throws Exception {
     testSurface(false, false);
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSurface_ft() throws Exception {
     testSurface(false, true);
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSurface_tt() throws Exception {
     testSurface(true, true);
   }

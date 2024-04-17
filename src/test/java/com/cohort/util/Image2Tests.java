@@ -15,6 +15,8 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import tags.TagImageComparison;
+
 public class Image2Tests {
 
   public static URL TEST_DIR = Image2Tests.class.getResource("/data/images/");
@@ -27,10 +29,12 @@ public class Image2Tests {
     return Path.of(url.toURI()).toString() + "/";
   }
 
-  @org.junit.jupiter.api.Test
+  
   /**
    * This intentionally throws an Exception to test testImagesIdentical().
    */
+  @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testTestImagesIdentical() throws Exception {
     // String2.log("\n*** Image2.testTestImagesIdentical");
 

@@ -16,6 +16,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.Grid;
+import tags.TagImageComparison;
 import testDataset.Initialization;
 
 class SgtMapTests {
@@ -28,6 +29,7 @@ class SgtMapTests {
 
   /** This tests SgtMap making bathymetry maps. 0, 11 */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testBathymetry() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -56,6 +58,7 @@ class SgtMapTests {
 
   /** This tests SgtMap making topography maps. (0, 11) */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testTopography() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -85,6 +88,7 @@ class SgtMapTests {
 
   /** This tests SgtMap. */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void basicTest() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -231,6 +235,7 @@ class SgtMapTests {
 
   /** This tests makeCleanMap. (0, 5) */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testMakeCleanMap() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -288,11 +293,13 @@ class SgtMapTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testX0To360Regions() throws Exception {
     testRegionsMap(0, 360, -90, 90);
   }
 
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testX180To180Regions() throws Exception {
     testRegionsMap(-180, 180, -90, 90);
   }
@@ -490,6 +497,7 @@ class SgtMapTests {
    * This tests bathymetry and the ocean palette in an area that was trouble.
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testOceanPalette() throws Exception {
     int first = 0;
     int last = 7;

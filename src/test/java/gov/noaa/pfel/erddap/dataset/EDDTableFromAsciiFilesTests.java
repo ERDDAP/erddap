@@ -20,6 +20,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagAWS;
+import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -305,6 +306,7 @@ class EDDTableFromAsciiFilesTests {
    * (with and without subsetVariables).
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testFixedValueAndScripts() throws Throwable {
 
     // String2.log("\n******************

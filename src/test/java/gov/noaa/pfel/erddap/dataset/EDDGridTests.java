@@ -16,6 +16,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
@@ -34,6 +35,7 @@ class EDDGridTests {
    */
   @org.junit.jupiter.api.Test
   @TagThredds
+  @TagImageComparison
   void testSaveAsImage() throws Throwable {
     // String2.log("\n*** EDDGrid.testSaveAsImage()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdMHchla8day();

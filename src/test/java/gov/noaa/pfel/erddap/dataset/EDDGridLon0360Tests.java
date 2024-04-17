@@ -11,6 +11,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagFlaky;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
@@ -86,6 +87,7 @@ class EDDGridLon0360Tests {
    */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
+  @TagImageComparison
   void testLT0() throws Throwable {
     // String2.log("\n****************** EDDGridLon0360.testLT0()
     // *****************\n");
@@ -234,6 +236,7 @@ class EDDGridLon0360Tests {
    */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest // Flaky (wait then try again error)
+  @TagImageComparison
   void testPM181() throws Throwable {
     // String2.log("\n****************** EDDGridLon0360.testPM181()
     // *****************\n");
@@ -590,6 +593,7 @@ class EDDGridLon0360Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testPM180() throws Throwable {
     // String2.log("\n****************** EDDGridLon0360.testPM180()
     // *****************\n");
@@ -811,6 +815,7 @@ class EDDGridLon0360Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testInsert() throws Throwable {
     // String2.log("\n****************** EDDGridLon0360.testInsert()
     // *****************\n");

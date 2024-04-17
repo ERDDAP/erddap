@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -91,6 +92,7 @@ class EDDTableFromErddapTests {
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
   @TagLocalERDDAP
+  @TagImageComparison
   void testBasic(boolean tRedirect) throws Throwable {
     // String2.log("\n****************** EDDTableFromErddap.testBasic(" +
     // tRedirect + ")\n");

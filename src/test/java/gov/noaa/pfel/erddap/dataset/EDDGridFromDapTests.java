@@ -40,6 +40,7 @@ import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import tags.TagExternalERDDAP;
 import tags.TagExternalOther;
 import tags.TagFlaky;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
@@ -2570,6 +2571,7 @@ class EDDGridFromDapTests {
 
   @org.junit.jupiter.api.Test
   @TagThredds
+  @TagImageComparison
   void testGraphics() throws Throwable {
     // String2.log("*** EDDGridFromDap.testGraphics(" + testAll + ")\n" +
     // "!!! This requires erdMHchla8day in localhost erddap to display in Google
@@ -4615,6 +4617,7 @@ class EDDGridFromDapTests {
    */
   @org.junit.jupiter.api.Test
   @TagThredds
+  @TagImageComparison
   void testDescendingLat() throws Throwable {
     boolean doGraphicsTests = true;
     // String2.log("\n*** EDDGridFromDap.testDescendinglat");
@@ -6108,6 +6111,7 @@ class EDDGridFromDapTests {
    */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
+  @TagImageComparison
   void testGridWithDepth2_LonPM180() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testGridWithDepth2_LonPM180");
     String results, expected, tName;
@@ -7678,6 +7682,7 @@ class EDDGridFromDapTests {
    * I spent hours trying to characterize then fix this, but found no solution.
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testMapAntialiasing() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testMapAntialiasing\n");
     // testVerboseOn();
@@ -7799,6 +7804,7 @@ class EDDGridFromDapTests {
   /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
   @org.junit.jupiter.api.Test
   @TagThredds
+  @TagImageComparison
   void testSurfaceGraph() throws Throwable {
     // testVerboseOn();
     int language = 0;

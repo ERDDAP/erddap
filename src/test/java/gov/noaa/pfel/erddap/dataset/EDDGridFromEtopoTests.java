@@ -11,6 +11,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import testDataset.Initialization;
 
@@ -26,6 +27,7 @@ class EDDGridFromEtopoTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testBasic() throws Throwable {
     boolean doGraphicsTests = true;
     String2.log("\n****************** EDDGridFromEtopo.test() *****************\n");

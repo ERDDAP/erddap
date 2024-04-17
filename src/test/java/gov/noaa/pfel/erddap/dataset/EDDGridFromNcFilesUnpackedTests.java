@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -533,6 +534,7 @@ class EDDGridFromNcFilesUnpackedTests {
      * @throws Throwable if trouble
      */
     @org.junit.jupiter.api.Test
+    @TagImageComparison
     void testUInt16File() throws Throwable {
         // String2.log("\n*** EDDGridFromNcFilesUnpacked.testUInt16File()");
         // testVerboseOn();
@@ -1486,6 +1488,7 @@ class EDDGridFromNcFilesUnpackedTests {
      * @throws Throwable if trouble
      */
     @org.junit.jupiter.api.Test
+    @TagImageComparison
     void testMissingValue() throws Throwable {
         // String2.log("\n*** EDDGridFromNcFilesUnpacked.testMissingValue");
         // testVerboseOn();

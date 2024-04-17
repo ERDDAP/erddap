@@ -46,6 +46,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import tags.TagFlaky;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
@@ -7710,6 +7711,7 @@ class EDDTableFromNcFilesTests {
    * The basic graphics tests of this class (testGlobecBottle).
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testGraphics() throws Throwable {
     boolean doAll = true;
 
@@ -8482,6 +8484,7 @@ class EDDTableFromNcFilesTests {
 
   @org.junit.jupiter.api.Test
   @TagFlaky
+  @TagImageComparison
   void testLegend() throws Throwable {
 
     int language = 0;
@@ -8537,6 +8540,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagLargeFiles
+  @TagImageComparison
   void testBigRequest() throws Throwable {
     int firstTest = 0;
     int lastTest = -1;
@@ -13959,6 +13963,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagLargeFiles
+  @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
     // String2.log("\n*** EDDTableFromNcFiles.testLogAxis()");
@@ -14611,6 +14616,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagLargeFiles
+  @TagImageComparison
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTransparentPng");
 
@@ -14769,6 +14775,7 @@ class EDDTableFromNcFilesTests {
    * This tests a long time graph.
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testTimeAxis() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTimeAxis");
 
@@ -15064,6 +15071,7 @@ class EDDTableFromNcFilesTests {
    * @param whichTest -1 for all, or 0..
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testManyYears() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testManyYears\n");
 

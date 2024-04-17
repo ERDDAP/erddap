@@ -13,6 +13,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagImageComparison;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
@@ -34,6 +35,7 @@ class EDDGridSideBySideTests {
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
   @TagLargeFiles
+  @TagImageComparison
   void testQSWind(boolean doGraphicsTests) throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
@@ -492,6 +494,7 @@ class EDDGridSideBySideTests {
    */
   @org.junit.jupiter.api.Test
   @TagLargeFiles
+  @TagImageComparison
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testTransparentPng");
     // testVerboseOn();

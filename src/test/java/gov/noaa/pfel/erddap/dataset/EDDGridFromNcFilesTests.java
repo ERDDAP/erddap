@@ -29,6 +29,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import tags.TagAWS;
 import tags.TagFlaky;
+import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
@@ -1076,6 +1077,7 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = { true, false })
   @TagAWS
   @TagLargeFiles
+  @TagImageComparison
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testAwsS3()
     // *****************\n");
@@ -7779,6 +7781,7 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagThredds
+  @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
 
@@ -8535,6 +8538,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSimpleTestNc() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testSimpleTestNc()\n");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestSimpleTestNc();
@@ -9791,6 +9795,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testUInt16File() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testUInt16File");
     // testVerboseOn();
@@ -10567,6 +10572,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSpecialAxis0Time() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0Time()\n");
     // testVerboseOn();
@@ -10807,6 +10813,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSpecialAxis0FileNameInt() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0FileNameInt()\n");
     // testVerboseOn();
@@ -11021,6 +11028,7 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest // Cannot load from object array because "this.sourceAxisValues" is null
+  @TagImageComparison
   void testSpecialAxis0PathNameInt() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0PathNameInt()\n");
     // testVerboseOn();
@@ -11234,6 +11242,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void testSpecialAxis0GlobalDouble() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0GlobalDouble()\n");
     // testVerboseOn();

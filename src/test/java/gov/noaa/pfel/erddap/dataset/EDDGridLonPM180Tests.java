@@ -14,6 +14,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -104,6 +105,7 @@ class EDDGridLonPM180Tests {
    */
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
+  @TagImageComparison
   void testGT180() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.testGT180()
     // *****************\n");
@@ -266,6 +268,7 @@ class EDDGridLonPM180Tests {
    */
   @org.junit.jupiter.api.Test
   @TagMissingDataset // source 404
+  @TagImageComparison
   void test1to359() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test1to359()
     // *****************\n");
@@ -447,6 +450,7 @@ class EDDGridLonPM180Tests {
    */
   @org.junit.jupiter.api.Test
   @TagMissingDataset // Souce 404
+  @TagImageComparison
   void test0to360() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test0to360()
     // *****************\n");
@@ -660,6 +664,7 @@ class EDDGridLonPM180Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagImageComparison
   void test120to320() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test120to320()
     // *****************\n");
