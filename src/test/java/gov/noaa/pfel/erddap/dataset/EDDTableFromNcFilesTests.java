@@ -12390,13 +12390,13 @@ class EDDTableFromNcFilesTests {
     expected = "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n"
         +
         ",,degrees_east,degrees_north,UTC,m,degrees_north,,,,,degrees_true,\n" +
-        "41024,,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n"
+        "41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n"
         +
-        "41025,,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
+        "41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
         +
-        "41029,,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n"
+        "41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n"
         +
-        "41033,,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n";
+        "41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     userDapQuery = "&time>=2014-01-15T00&time<=2014-01-15T01";
@@ -12407,21 +12407,21 @@ class EDDTableFromNcFilesTests {
     expected = "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n"
         +
         ",,degrees_east,degrees_north,UTC,m,degrees_north,,,,,degrees_true,\n" +
-        "41024,,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n"
+        "41024,miniNdbc,-78.489,33.848,2014-01-15T00:00:00Z,7.0,33.848,NaN,33.848,down,,320,\"0.0, 27.0\"\n"
         +
-        "41024,,-78.489,33.848,2014-01-15T01:00:00Z,7.0,33.848,NaN,33.848,down,,330,\"0.0, 27.0\"\n"
+        "41024,miniNdbc,-78.489,33.848,2014-01-15T01:00:00Z,7.0,33.848,NaN,33.848,down,,330,\"0.0, 27.0\"\n"
         +
-        "41025,,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
+        "41025,miniNdbc,-75.402,35.006,2014-01-15T00:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
         +
-        "41025,,-75.402,35.006,2014-01-15T01:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
+        "41025,miniNdbc,-75.402,35.006,2014-01-15T01:00:00Z,7.0,35.006,NaN,35.006,down,,NaN,\"0.0, 27.7\"\n"
         +
-        "41029,,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n"
+        "41029,miniNdbc,-79.63,32.81,2014-01-15T00:00:00Z,7.0,32.81,NaN,32.81,down,,230,\"0.0, 19.0\"\n"
         +
-        "41029,,-79.63,32.81,2014-01-15T01:00:00Z,7.0,32.81,NaN,32.81,down,,310,\"0.0, 19.0\"\n"
+        "41029,miniNdbc,-79.63,32.81,2014-01-15T01:00:00Z,7.0,32.81,NaN,32.81,down,,310,\"0.0, 19.0\"\n"
         +
-        "41033,,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n"
+        "41033,miniNdbc,-80.41,32.28,2014-01-15T00:00:00Z,7.0,32.28,NaN,32.28,down,,220,\"0.0, 96.0\"\n"
         +
-        "41033,,-80.41,32.28,2014-01-15T01:00:00Z,7.0,32.28,NaN,32.28,down,,260,\"0.0, 96.0\"\n";
+        "41033,miniNdbc,-80.41,32.28,2014-01-15T01:00:00Z,7.0,32.28,NaN,32.28,down,,260,\"0.0, 96.0\"\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
 
@@ -12902,11 +12902,10 @@ class EDDTableFromNcFilesTests {
 
     // String2.log("\n*** EDDTableFromNcFiles.testCopyFilesGenerateDatasetsXml");
     int language = 0;
-    String dir = Path
-        .of(EDDTableFromNcFilesTests.class.getResource("/data/points/testEDDTableCopyFiles/")
-            .toURI())
-        .toString();
-    File2.deleteAllFiles(dir, true, true);
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromNcFilesTests.class.getResource("/data/points/testEDDTableCopyFiles/").toURI()).toString());
+    String fileNameRegex = "19\\d7\\.nc";
+    File2.deleteAllFiles(dataDir, true, true);
     // FileVisitorDNLS.verbose = true;
     // FileVisitorDNLS.reallyVerbose = true;
     // FileVisitorDNLS.debugMode = true;
@@ -12914,7 +12913,9 @@ class EDDTableFromNcFilesTests {
     try {
       // based on fedCalLandings
       String results = EDDTableFromNcFiles.generateDatasetsXml(
-          dir, "19\\d7\\.nc", "",
+          dataDir,
+          fileNameRegex,
+          "",
           "",
           -1,
           "", "", "", "",
@@ -12927,7 +12928,9 @@ class EDDTableFromNcFilesTests {
       // GenerateDatasetsXml
       String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
           "EDDTableFromNcFiles",
-          dir, "19\\d7\\.nc", "",
+          dataDir,
+          fileNameRegex,
+          "",
           "",
           "-1",
           "", "", "", "",
@@ -12938,14 +12941,14 @@ class EDDTableFromNcFilesTests {
           false); // doIt loop?
       Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-      String tDatasetID = EDDTableFromNcFiles.suggestDatasetID(dir + "\\19\\d7\\.nc");
+      String tDatasetID = EDDTableFromNcFiles.suggestDatasetID(dataDir + fileNameRegex);
       String expected = "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n"
           +
           "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
           "    <cacheFromUrl>https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/</cacheFromUrl>\n"
           +
-          "    <fileDir>" + dir + "\\</fileDir>\n" +
-          "    <fileNameRegex>19\\d7\\.nc</fileNameRegex>\n" +
+          "    <fileDir>" + dataDir + "</fileDir>\n" +
+          "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
           "    <recursive>true</recursive>\n" +
           "    <pathRegex>.*</pathRegex>\n" +
           "    <metadataFrom>last</metadataFrom>\n" +

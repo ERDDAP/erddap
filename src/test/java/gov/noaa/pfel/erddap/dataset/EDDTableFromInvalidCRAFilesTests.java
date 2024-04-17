@@ -595,12 +595,13 @@ class EDDTableFromInvalidCRAFilesTests {
     // String tInfoUrl, String tInstitution, String tSummary, String tTitle,
     // Attributes externalAddGlobalAttributes) throws Throwable {
 
-    String dataDir = Path.of(EDDTableFromInvalidCRAFilesTests.class.getResource("/largeFiles/nccf/wod/").toURI())
-        .toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromInvalidCRAFilesTests.class.getResource("/largeFiles/nccf/wod/").toURI()).toString());
+    String fileNameRegex = "wod_drb_.*\\.nc";
 
     String results = EDDTableFromInvalidCRAFiles.generateDatasetsXml(
         dataDir,
-        "wod_drb_.*\\.nc",
+        fileNameRegex,
         "",
         1440,
         "", "", "", "", // just for test purposes; station is already a column in the file
@@ -613,7 +614,7 @@ class EDDTableFromInvalidCRAFilesTests {
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromInvalidCRAFiles",
         dataDir,
-        "wod_drb_.*\\.nc",
+        fileNameRegex,
         "",
         "1440",
         "", "", "", "", // just for test purposes; station is already a column in the file
@@ -623,16 +624,14 @@ class EDDTableFromInvalidCRAFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-    String tDatasetID = EDDTableFromInvalidCRAFiles.suggestDatasetID(dataDir + "\\wod_drb_.*\\.nc");
+    String tDatasetID = EDDTableFromInvalidCRAFiles.suggestDatasetID(dataDir + fileNameRegex);
     String expected = "<dataset type=\"EDDTableFromInvalidCRAFiles\" datasetID=\"" + tDatasetID
         + "\" active=\"true\">\n"
         +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>"
-        + dataDir
-        + "\\</fileDir>\n" +
-        "    <fileNameRegex>wod_drb_.*\\.nc</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

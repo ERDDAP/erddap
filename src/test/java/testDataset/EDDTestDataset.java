@@ -8176,7 +8176,7 @@ public class EDDTestDataset {
             "        </addAttributes>\n" + //
             "    </dataVariable>\n" + //
             "    <dataVariable>\n" + //
-            "        <sourceName>***pathName,.*/([a-zA-Z]*)/NDBC_.*_met\\.nc,1</sourceName>\n" + //
+            "        <sourceName>***pathName,.*[/\\\\]([a-zA-Z]*)[/\\\\]NDBC_.*_met\\.nc,1</sourceName>\n" + //
             "        <destinationName>parentDir</destinationName>\n" + //
             "        <dataType>String</dataType>\n" + //
             "        <addAttributes>\n" + //
@@ -23517,7 +23517,7 @@ public class EDDTestDataset {
             "    <accessibleViaWMS>false</accessibleViaWMS>\n" + //
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
             "    <fileDir>"
-            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/TestGridNThreads/").toURI()).toString()
+            + Path.of(EDDTestDataset.class.getResource("/largeSatellite/testGridNThreads/").toURI()).toString()
             + "</fileDir>\n" + //
             "    <recursive>true</recursive>\n" + //
             "    <fileNameRegex>.*_taux\\.nc(|.gz)</fileNameRegex>\n" + //

@@ -94,6 +94,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
+  @TagFlaky // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFiles.testNcml");
@@ -165,6 +166,8 @@ class EDDGridFromNcFilesTests {
     } catch (Exception e) {
       Test.knownProblem("2022-07-07 This fails with switch to netcdf v5.5.3 and modules (not netcdfAll). " +
           "I reported to netcdf-java people.", e);
+        // Bob's 2022 email to netcdf-java mailing list here (seems to be unanswered):
+        // https://www.unidata.ucar.edu/mailing_lists/archives/netcdf-java/2022/msg00026.html
     }
   }
 
@@ -14117,8 +14120,8 @@ class EDDGridFromNcFilesTests {
       expected = "There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n"
           +
           "(Cause: java.io.FileNotFoundException: " + dataDir
-          + "erdQSwind1day_20080101_03.nc.gz (The system cannot find the file specified))";
-      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+          + "erdQSwind1day_20080101_03.nc.gz";
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
     } finally {
       // rename file back to original

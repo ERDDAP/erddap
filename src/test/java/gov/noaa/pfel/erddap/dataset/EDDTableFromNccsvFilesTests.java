@@ -35,11 +35,13 @@ class EDDTableFromNccsvFilesTests {
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
 
-    String dataDir = Path.of(EDDTableFromNccsvFilesTests.class.getResource("/data/nccsv/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromNccsvFilesTests.class.getResource("/data/nccsv/").toURI()).toString());
+    String fileNameRegex = "sampleScalar_1.2\\.csv";
     // testVerboseOn();
     String results = EDDTableFromNccsvFiles.generateDatasetsXml(
         dataDir,
-        "sampleScalar_1.2\\.csv",
+        fileNameRegex,
         "",
         1440,
         "", "", "", "",
@@ -54,7 +56,7 @@ class EDDTableFromNccsvFilesTests {
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromNccsvFiles",
         dataDir,
-        "sampleScalar_1.2\\.csv",
+        fileNameRegex,
         "",
         "1440",
         "", "", "", "",
@@ -64,12 +66,12 @@ class EDDTableFromNccsvFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-    String tDatasetID = EDDTableFromNccsvFiles.suggestDatasetID(dataDir + "\\sampleScalar_1.2\\.csv");
+    String tDatasetID = EDDTableFromNccsvFiles.suggestDatasetID(dataDir + fileNameRegex);
     String expected = "<dataset type=\"EDDTableFromNccsvFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>sampleScalar_1.2\\.csv</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

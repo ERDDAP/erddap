@@ -32,9 +32,11 @@ class EDDTableFromAwsXmlFilesTests {
     // testVerboseOn();
     Attributes externalAddAttributes = new Attributes();
     externalAddAttributes.add("title", "New Title!");
-    String dataDir = Path.of(EDDTableFromAwsXmlFilesTests.class.getResource("/data/aws/xml/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+        EDDTableFromAwsXmlFilesTests.class.getResource("/data/aws/xml/").toURI()).toString());
+    String fileNameRegex = ".*\\.xml";
     String results = EDDTableFromAwsXmlFiles.generateDatasetsXml(
-        dataDir, ".*\\.xml", "",
+        dataDir, fileNameRegex, "",
         1, 2, 1440,
         "", "-.*$", ".*", "fileName", // just for test purposes; station is already a column in the file
         "ob-date", "station-id ob-date",
@@ -45,7 +47,7 @@ class EDDTableFromAwsXmlFilesTests {
     // GenerateDatasetsXml
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromAwsXmlFiles",
-        dataDir, ".*\\.xml", "",
+        dataDir, fileNameRegex, "",
         "1", "2", "1440",
         "", "-.*$", ".*", "fileName", // just for test purposes; station is already a column in the file
         "ob-date", "station-id ob-date",
@@ -54,14 +56,14 @@ class EDDTableFromAwsXmlFilesTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
     String suggDatasetID = EDDTableFromAwsXmlFiles.suggestDatasetID(
-        dataDir + "\\.*\\.xml");
+        dataDir + fileNameRegex);
     String expected = "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
         "  below, notably 'units' for each of the dataVariables. -->\n" +
         "<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>.*\\.xml</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

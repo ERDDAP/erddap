@@ -34,10 +34,12 @@ class EDDTableFromJsonlCSVFilesTests {
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
 
-    String dataDir = Path.of(EDDTableFromJsonlCSVFilesTests.class.getResource("/data/jsonl/").toURI()).toString();
+    String dataDir = File2.addSlash(Path.of(
+            EDDTableFromJsonlCSVFilesTests.class.getResource("/data/jsonl/").toURI()).toString());
+    String fileNameRegex = "sampleCSV\\.jsonl";
     String results = EDDTableFromJsonlCSVFiles.generateDatasetsXml(
         dataDir,
-        "sampleCSV\\.jsonl",
+        fileNameRegex,
         "",
         1440,
         "", "", "", "",
@@ -52,7 +54,7 @@ class EDDTableFromJsonlCSVFilesTests {
     String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
         "EDDTableFromJsonlCSVFiles",
         dataDir,
-        "sampleCSV\\.jsonl",
+        fileNameRegex,
         "",
         "1440",
         "", "", "", "",
@@ -61,16 +63,15 @@ class EDDTableFromJsonlCSVFilesTests {
         "-1", "" }, // defaultStandardizeWhat
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
-    String tDatasetID = EDDTableFromJsonlCSVFiles
-        .suggestDatasetID(dataDir + "\\sampleCSV|.jsonlEDDTableFromJsonlCSVFiles");
+    String tDatasetID = EDDTableFromJsonlCSVFiles.suggestDatasetID(dataDir
+        + String2.replaceAll(fileNameRegex, '\\', '|') + "EDDTableFromJsonlCSVFiles");
     String expected = "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n" +
         "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n" +
         "<dataset type=\"EDDTableFromJsonlCSVFiles\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
         "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
         "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-        "    <fileDir>" + dataDir + "\\</fileDir>\n" +
-        "    <fileNameRegex>sampleCSV\\.jsonl</fileNameRegex>\n" +
+        "    <fileDir>" + dataDir + "</fileDir>\n" +
+        "    <fileNameRegex>" + fileNameRegex + "</fileNameRegex>\n" +
         "    <recursive>true</recursive>\n" +
         "    <pathRegex>.*</pathRegex>\n" +
         "    <metadataFrom>last</metadataFrom>\n" +

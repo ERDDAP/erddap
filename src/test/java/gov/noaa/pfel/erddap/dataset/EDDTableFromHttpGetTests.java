@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
@@ -27,6 +28,10 @@ import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class EDDTableFromHttpGetTests {
+
+  @TempDir
+  private static Path TEMP_DIR;
+  
   @BeforeAll
   static void init() {
     Initialization.edStatic();
@@ -82,7 +87,7 @@ class EDDTableFromHttpGetTests {
         "");
 
     // set up
-    String startDir = "/data/httpGet/";
+    String startDir = TEMP_DIR.toAbsolutePath().toString() + "/";
     if (hammer < 0)
       File2.deleteAllFiles(startDir, true, true); // recursive, deleteEmptySubdirectories
     EDDTableFromHttpGet.parseHttpGetDirectoryStructure("stationID/2months", dsColumnName, dsN, dsCalendar);
