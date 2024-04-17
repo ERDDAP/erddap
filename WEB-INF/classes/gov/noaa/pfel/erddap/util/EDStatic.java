@@ -566,8 +566,6 @@ public static boolean developmentMode = false;
         baseUrl,
         baseHttpsUrl, //won't be null, may be "(not specified)"
         bigParentDirectory,
-        unitTestDataDir,
-        unitTestBigDataDir,
          
         adminInstitution,
         adminInstitutionUrl,
@@ -1833,12 +1831,6 @@ public static boolean developmentMode = false;
             Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
                 "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
         }
-        unitTestDataDir    = getSetupEVString(setup, ev, "unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
-        unitTestBigDataDir = getSetupEVString(setup, ev, "unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
-        unitTestDataDir    = File2.addSlash(unitTestDataDir);
-        unitTestBigDataDir = File2.addSlash(unitTestBigDataDir);
-        String2.unitTestDataDir    = unitTestDataDir;
-        String2.unitTestBigDataDir = unitTestBigDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  (String)null);

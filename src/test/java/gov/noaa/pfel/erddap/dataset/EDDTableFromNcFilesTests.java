@@ -10759,7 +10759,7 @@ class EDDTableFromNcFilesTests {
     String tName, results, ts, expected;
     int po;
 
-    String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
+    // String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
 
     // .asc
     tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir,
@@ -15312,7 +15312,6 @@ class EDDTableFromNcFilesTests {
     int language = 0;
 
     EDDTable eddTable;
-    String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String tName, results;
     String query = "http://localhost:8080/cwexperimental/tabledap/allDatasets.csv?" +
         "datasetID,minTime,maxTime&datasetID=%22testTimeSince19000101%22";
@@ -15327,7 +15326,7 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // "touch" the file back
-    File2.touch(String2.unitTestDataDir + "time/since19000101.nc"); // one time
+    File2.touch("[putDirHere]/time/since19000101.nc"); // one time
 
     // wait a second (so update isn't skipped because time elapsed is too small)
     Math2.sleep(1000);

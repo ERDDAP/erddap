@@ -487,7 +487,7 @@ class EDDGridFromAudioFilesTests {
   @TagIncompleteTest // wasn't used before migration, more of a script than a test
   void oneTimeFixFiles() throws Exception {
     Table table = new Table();
-    String dir = EDStatic.unitTestDataDir + "audio/wav/";
+    String dir = "audio/wav/"; // probably needs to be a resource if we're doing anything with this.
     String name1 = "aco_acoustic.20141119_00";
     String name2 = "00.wav";
 

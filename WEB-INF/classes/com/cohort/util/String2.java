@@ -197,10 +197,6 @@ public class String2 {
     private static Map canonicalLockMap = new WeakHashMap();
     public static int longTimeoutSeconds = 300; //5 minutes. This is >= other timeouts in the system. This is used in places that previously waited forever.
 
-    //EDStatic may change this
-    public static String unitTestDataDir    = "/erddapTest/";
-    public static String unitTestBigDataDir = "/erddapTestBig/";
-
     /**
      * This returns the string which sorts higher.
      * null sorts low.

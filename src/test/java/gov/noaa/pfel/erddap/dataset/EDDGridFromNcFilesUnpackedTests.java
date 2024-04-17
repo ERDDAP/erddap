@@ -187,7 +187,7 @@ class EDDGridFromNcFilesUnpackedTests {
                 +
                 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
                 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-                "    <fileDir>" + EDStatic.unitTestDataDir + "nc/</fileDir>\n" +
+                "    <fileDir>" + sampleDir + "</fileDir>\n" +
                 "    <fileNameRegex>scale_factor\\.nc</fileNameRegex>\n" +
                 "    <recursive>true</recursive>\n" +
                 "    <pathRegex>.*</pathRegex>\n" +

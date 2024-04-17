@@ -18,6 +18,7 @@ import tags.TagPassword;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 
 /**
  * This is a Java program to test all of the methods in SSR.
@@ -612,7 +613,7 @@ public class TestSSR {
 
     // *** test a lot of AWS S3 actions on a private AWS bucket
     // delete a file on S3 to ensure it doesn't exist (ignore result)
-    String origLocal = String2.unitTestDataDir + "ascii/standardizeWhat1.csv";
+    String origLocal = Path.of(TestSSR.class.getResource("data/ascii/standardizeWhat1.csv").toURI()).toString();
     String tempLocal = File2.getSystemTempDirectory() + "testAwsS3.csv";
     String awsUrl = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/testAwsS3.csv";
     // bucket is publicly readible in a browser via http but not https

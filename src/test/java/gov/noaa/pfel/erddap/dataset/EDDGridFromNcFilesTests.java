@@ -8547,7 +8547,7 @@ class EDDGridFromNcFilesTests {
     int language = 0;
     int po;
 
-    String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
+    // String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
 
     // all
     tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir,
@@ -9028,7 +9028,7 @@ class EDDGridFromNcFilesTests {
     int language = 0;
     int po;
 
-    String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
+    // String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
 
     // .asc
     tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir,
