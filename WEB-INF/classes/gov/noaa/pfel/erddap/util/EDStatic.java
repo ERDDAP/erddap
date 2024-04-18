@@ -1858,11 +1858,18 @@ public static boolean developmentMode = false;
 
         tsar = String2.split(emailDailyReportToCsv, ',');
         if (doSetupValidation && emailDailyReportToCsv.length() > 0)
+        {
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
-                        " in <emailDailyReportTo>.");  
-        ensureEmailThreadIsRunningIfNeeded();
+                        " in <emailDailyReportTo>.");
+        }
+        
+        // This isn't validation, but doSetupValidation is effectively a check for
+        // production vs test runs. This should stop excessive log spam during testing.
+        if (doSetupValidation) {
+            ensureEmailThreadIsRunningIfNeeded();
+        }
         ensureTouchThreadIsRunningIfNeeded();
 
         //test of email
