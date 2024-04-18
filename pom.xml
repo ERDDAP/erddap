@@ -68,6 +68,9 @@
         <resources>
             <resource>
                 <directory>WEB-INF/classes</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -75,6 +78,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <?m2e execute onConfiguration?>
                         <phase>validate</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
@@ -142,7 +146,24 @@
                 <version>3.3.2</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>src/**, WEB-INF/lib/**, target/**, download_cache/**, data/**, development/**, content/**, .settings/**, .github/**, .vscode/**, *.*</warSourceExcludes>
+                    <warSourceExcludes>content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/lib/**, *.*, **/*.java, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                </configuration>
+            </plugin>
+
+            <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>12.0.8</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/erddap</contextPath>
+                        <descriptor>${project.basedir}/WEB-INF/web.xml</descriptor>
+                    </webApp>
+                    <!-- necessary to override the default classesDirectory ${project.basedir}/target/classes due to:
+                    https://github.com/ERDDAP/erddap/blob/33e6e531484b0cc6ed461f0640b1f0ad3b83e45b/WEB-INF/classes/com/cohort/util/File2.java#L216-->
+                    <classesDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
+                    <scan>0</scan>
                 </configuration>
             </plugin>
             <plugin>
@@ -481,6 +502,13 @@
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
             <version>2.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>2.0.13</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
