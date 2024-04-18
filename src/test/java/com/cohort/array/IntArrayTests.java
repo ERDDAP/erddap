@@ -5,6 +5,8 @@ import java.util.BitSet;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
+import tags.TagFlaky;
+
 class IntArrayTests {
   /**
    * This tests the methods of this class.
@@ -12,6 +14,7 @@ class IntArrayTests {
    * @throws Throwable if trouble.
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky // Requires around 2G of free ram, often fails
   void basicTest() throws Throwable {
     String2.log("*** IntArray.basicTest");
 

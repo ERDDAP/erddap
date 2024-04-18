@@ -11470,6 +11470,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
+  @TagFlaky // Different values on Windows and Linux
   void testFileName(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testFileName(" +
     // deleteCachedDatasetInfo + ")");
@@ -11676,6 +11677,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
+  @TagFlaky // Different values on Linux and Windows
   void testReplaceFromFileName(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName(" +
     // deleteCachedDatasetInfo + ")");
@@ -15789,6 +15791,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky // Different values on Windows and Linux
   void testMinimalReadSource() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testMinimalReadSource");
     // testVerboseOn();
