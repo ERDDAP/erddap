@@ -67,6 +67,9 @@
         <resources>
             <resource>
                 <directory>WEB-INF/classes</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -74,6 +77,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <?m2e execute onConfiguration?>
                         <phase>validate</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
@@ -141,7 +145,24 @@
                 <version>3.3.2</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>WEB-INF/lib/**, target/**, data/**, content/**, .settings/**, *.*</warSourceExcludes>
+                    <warSourceExcludes>content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, WEB-INF/lib/**, *.*, **/*.java</warSourceExcludes>
+                </configuration>
+            </plugin>
+
+            <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>12.0.8</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/erddap</contextPath>
+                        <descriptor>${project.basedir}/WEB-INF/web.xml</descriptor>
+                    </webApp>
+                    <!-- necessary to override the default classesDirectory ${project.basedir}/target/classes due to:
+                    https://github.com/ERDDAP/erddap/blob/33e6e531484b0cc6ed461f0640b1f0ad3b83e45b/WEB-INF/classes/com/cohort/util/File2.java#L216-->
+                    <classesDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
+                    <scan>0</scan>
                 </configuration>
             </plugin>
 
@@ -151,7 +172,7 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                <execution>
+                    <execution>
                         <?m2e execute onConfiguration?>
                         <id>make-lib</id>
                         <phase>validate</phase>
@@ -216,6 +237,19 @@
                             <target>
                             <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
                                 <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>make-data-dir</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/data"/>
                             </target>
                         </configuration>
                     </execution>
