@@ -627,9 +627,9 @@ class EDDTests {
         +
         "  </item-identification>\n" +
         "  <physical-location>\n" + //
-        "    <organization>Your Institution</organization>\n" + //
-        "    <city>Some Town</city>\n" + //
-        "    <state-province>CA</state-province>\n" + //
+        "    <organization>ERDDAP Jetty Install</organization>\n" + //
+        "    <city>Nowhere</city>\n" + //
+        "    <state-province>AK</state-province>\n" + //
         "    <country>USA</country>\n" + //
         "    <location-description></location-description>\n" + //
         "  </physical-location>\n" +
@@ -644,16 +644,16 @@ class EDDTests {
         "    <support-role>\n" + //
         "      <support-role-type>Metadata Contact</support-role-type>\n" + //
         "      <from-date>2024</from-date>\n" + //
-        "      <person-email>your.email@yourCompany.com</person-email>\n" + //
-        "      <organization>Your Institution</organization>\n" + //
-        "      <contact-instructions>email your.email@yourCompany.com</contact-instructions>\n" + //
+        "      <person-email>nobody@example.com</person-email>\n" + //
+        "      <organization>ERDDAP Jetty Install</organization>\n" + //
+        "      <contact-instructions>email nobody@example.com</contact-instructions>\n" + //
         "    </support-role>\n" + //
         "    <support-role>\n" + //
         "      <support-role-type>Distributor</support-role-type>\n" + //
         "      <from-date>2024</from-date>\n" + //
-        "      <person-email>your.email@yourCompany.com</person-email>\n" + //
-        "      <organization>Your Institution</organization>\n" + //
-        "      <contact-instructions>email your.email@yourCompany.com</contact-instructions>\n" + //
+        "      <person-email>nobody@example.com</person-email>\n" + //
+        "      <organization>ERDDAP Jetty Install</organization>\n" + //
+        "      <contact-instructions>email nobody@example.com</contact-instructions>\n" + //
         "    </support-role>\n" + //
         "    <support-role>\n" + //
         "      <support-role-type>Author</support-role-type>\n" + //
