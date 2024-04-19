@@ -10,6 +10,7 @@ public class Initialization {
     File2.setWebInfParentDirectory();
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "/development/jetty/config/");
     System.setProperty("skipEmailThread", String.valueOf(true));
+    System.setProperty("allowDeferedLoading", String.valueOf(false));
     EDD.debugMode = true;
     SgtMap.fontFamily = "SansSerif";
   }

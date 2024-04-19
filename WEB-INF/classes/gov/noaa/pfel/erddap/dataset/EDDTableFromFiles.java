@@ -1212,7 +1212,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
 
         //skip loading until after intial loadDatasets?
-        if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+        if (EDStatic.allowDeferedLoading && fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
             requestReloadASAP();
             throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
         } 

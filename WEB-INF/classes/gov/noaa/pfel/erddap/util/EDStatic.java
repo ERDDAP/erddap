@@ -99,6 +99,7 @@ public class EDStatic {
      * can get rid of these.
      */
     public static boolean skipEmailThread = false;
+    public static boolean allowDeferedLoading = true;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -1775,6 +1776,7 @@ public static boolean developmentMode = false;
     try {
 
         skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
+        allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
 
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
