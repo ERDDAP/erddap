@@ -10,19 +10,16 @@ import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import tags.TagAWS;
 import tags.TagExternalOther;
-import tags.TagFlaky;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagThredds;
-import testDataset.EDDTestDataset;
 
 class FileVisitorDNLSTests {
   /**
@@ -140,7 +137,6 @@ class FileVisitorDNLSTests {
    * This tests this class with the local file system.
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testLocal() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testLocal");
     // verbose = true;
@@ -150,9 +146,9 @@ class FileVisitorDNLSTests {
     long time;
     int n;
     String results, expected;
-    String testDir = Path.of(FileVisitorDNLSTests.class.getResource("/data/fileNames").toURI()).toString();
+    String testDir = Path.of(FileVisitorDNLSTests.class.getResource("/data/fileNames").toURI()).toString().replace('\\', '/');
 
-    String expectedDir = testDir.replace("\\", "\\\\") + "\\\\";
+    String expectedDir = testDir + "/";
 
     // recursive and dirToo and test \\ separator
     table = FileVisitorDNLS.oneStep(testDir, ".*\\.png", true, tPathRegex, true);
@@ -161,8 +157,8 @@ class FileVisitorDNLSTests {
     expected = "directory,name,size\n" +
         expectedDir + ",jplMURSST20150103090000.png,46482\n" +
         expectedDir + ",jplMURSST20150104090000.png,46586\n" +
-        expectedDir + "sub\\\\,,0\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549\n";
+        expectedDir + "sub/,,0\n" +
+        expectedDir + "sub/,jplMURSST20150105090000.png,46549\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // recursive and !dirToo and test // separator
@@ -172,7 +168,7 @@ class FileVisitorDNLSTests {
     expected = "directory,name,size\n" +
         expectedDir + ",jplMURSST20150103090000.png,46482\n" +
         expectedDir + ",jplMURSST20150104090000.png,46586\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549\n";
+        expectedDir + "sub/,jplMURSST20150105090000.png,46549\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // !recursive and dirToo
@@ -182,7 +178,7 @@ class FileVisitorDNLSTests {
     expected = "directory,name,size\n" +
         expectedDir + ",jplMURSST20150103090000.png,46482\n" +
         expectedDir + ",jplMURSST20150104090000.png,46586\n" +
-        expectedDir + "sub\\\\,,0\n";
+        expectedDir + "sub/,,0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // !recursive and !dirToo
@@ -202,7 +198,7 @@ class FileVisitorDNLSTests {
     expected = "{\n" +
         "dimensions:\n" +
         "\trow = 4 ;\n" +
-        "\tdirectory_strlen = " + (expectedDir.length() - 3) + " ;\n" +
+        "\tdirectory_strlen = " + (expectedDir.length() + 4) + " ;\n" +
         "\tname_strlen = 27 ;\n" +
         "variables:\n" +
         "\tchar directory(row, directory_strlen) ;\n" +
@@ -221,8 +217,8 @@ class FileVisitorDNLSTests {
         "directory,name,size\n" +
         expectedDir + ",jplMURSST20150103090000.png,46482.0\n" +
         expectedDir + ",jplMURSST20150104090000.png,46586.0\n" +
-        expectedDir + "sub\\\\,,0.0\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549.0\n";
+        expectedDir + "sub/,,0.0\n" +
+        expectedDir + "sub/,jplMURSST20150105090000.png,46549.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // ***
@@ -230,6 +226,7 @@ class FileVisitorDNLSTests {
     table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(testDir, ".*\\.png",
         true, tPathRegex,
         "http://localhost:8080/cwexperimental/files/testFileNames/");
+    table.removeColumn("lastModified");
     results = table.toString();
     expected = "{\n" +
         "dimensions:\n" +
@@ -243,10 +240,10 @@ class FileVisitorDNLSTests {
         "\tchar name(row, name_strlen) ;\n" +
         "\t\tname:ioos_category = \"Identifier\" ;\n" +
         "\t\tname:long_name = \"File Name\" ;\n" +
-        "\tdouble lastModified(row) ;\n" +
-        "\t\tlastModified:ioos_category = \"Time\" ;\n" +
-        "\t\tlastModified:long_name = \"Last Modified\" ;\n" +
-        "\t\tlastModified:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+        // "\tdouble lastModified(row) ;\n" +
+        // "\t\tlastModified:ioos_category = \"Time\" ;\n" +
+        // "\t\tlastModified:long_name = \"Last Modified\" ;\n" +
+        // "\t\tlastModified:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
         "\tdouble size(row) ;\n" +
         "\t\tsize:ioos_category = \"Other\" ;\n" +
         "\t\tsize:long_name = \"Size\" ;\n" +
@@ -254,12 +251,12 @@ class FileVisitorDNLSTests {
         "\n" +
         "// global attributes:\n" +
         "}\n" +
-        "url,name,lastModified,size\n" +
-        "http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421272444E9,46482.0\n"
+        "url,name,size\n" +
+        "http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,46482.0\n"
         +
-        "http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420665738E9,46586.0\n"
+        "http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,46586.0\n"
         +
-        "http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420665704E9,46549.0\n";
+        "http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,46549.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *** huge dir
@@ -267,7 +264,7 @@ class FileVisitorDNLSTests {
 
     if (doBigTest) {
       for (int attempt = 0; attempt < 2; attempt++) {
-        try {
+        // try {
           // forward slash in huge directory
           time = System.currentTimeMillis();
           table = FileVisitorDNLS.oneStep("/data/gtspp/temp", ".*\\.nc", false, tPathRegex, false);
@@ -285,14 +282,14 @@ class FileVisitorDNLSTests {
             Test.ensureTrue(dir0.indexOf('\\') < 0, "");
             Test.ensureTrue(dir0.endsWith("/"), "");
           }
-        } catch (Throwable t) {
-          String2.pressEnterToContinue(unexpected +
-              MustBe.throwableToString(t));
-        }
+        // } catch (Throwable t) {
+        //   String2.pressEnterToContinue(unexpected +
+        //       MustBe.throwableToString(t));
+        // }
       }
 
       for (int attempt = 0; attempt < 2; attempt++) {
-        try {
+        // try {
           // backward slash in huge directory
           time = System.currentTimeMillis();
           table = FileVisitorDNLS.oneStep("\\data\\gtspp\\temp", ".*\\.nc", false, tPathRegex, false);
@@ -310,10 +307,10 @@ class FileVisitorDNLSTests {
             Test.ensureTrue(dir0.indexOf('/') < 0, "");
             Test.ensureTrue(dir0.endsWith("\\"), "");
           }
-        } catch (Throwable t) {
-          String2.pressEnterToContinue(unexpected +
-              MustBe.throwableToString(t));
-        }
+        // } catch (Throwable t) {
+        //   String2.pressEnterToContinue(unexpected +
+        //       MustBe.throwableToString(t));
+        // }
       }
     }
     String2.log("\n*** FileVisitorDNLS.testLocal finished.");
@@ -1300,37 +1297,27 @@ class FileVisitorDNLSTests {
    * This tests oneStepToString().
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testOneStepToString() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testOneStepToString()");
 
     String results = FileVisitorDNLS.oneStepToString(
         Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/timeSeries").toURI())
-            .toString(),
-        ".*", true, ".*");
+            .toString().replace('\\', '/'),
+        ".*", true, ".*", false /* addLastModified */);
     String expected =
         // this tests that all files are before all dirs
-        "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb 2024-01-18T14:31:37Z          5173\n"
-            +
-            "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n"
-            +
-            "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2\\\n" +
-            "  README                                                         2024-01-18T14:31:37Z            87\n"
-            +
-            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.cdl 2024-01-18T14:31:37Z          1793\n"
-            +
-            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc 2024-01-18T14:31:37Z          4796\n"
-            +
-            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.ncml 2024-01-18T14:31:37Z          3026\n"
-            +
-            "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1\\\n" +
-            "  README                                                         2024-01-18T14:31:37Z           538\n"
-            +
-            "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl 2024-01-18T14:31:37Z          1515\n"
-            +
-            "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n"
-            +
-            "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml 2024-01-18T14:31:37Z          2625\n";
+        "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb         5173\n" +
+        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb         2979\n" +
+        "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/\n" +
+        "  README                                                                   87\n" +
+        "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.cdl         1793\n" +
+        "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc         4796\n" +
+        "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.ncml         3026\n" +
+        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/\n" +
+        "  README                                                                  538\n" +
+        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl         1515\n" +
+        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc        10436\n" +
+        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml         2625\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -1338,27 +1325,37 @@ class FileVisitorDNLSTests {
    * This tests pathRegex().
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testPathRegex() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testPathRegex()");
+    String dirPath = File2.addSlash(Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/timeSeries").toURI())
+    .toString().replace('\\', '/'));
 
-    String results = FileVisitorDNLS.oneStepToString(
-        Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/timeSeries").toURI())
-            .toString(),
+    Table table = FileVisitorDNLS.oneStep(
+        dirPath,
         ".*", true, // all files
-        ".*H\\.2\\.1.*"); // but only H.2.1 dirs
-    String expected = "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb 2024-01-18T14:31:37Z          5173\n"
-        +
-        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n"
-        +
-        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1\\\n" +
-        "  README                                                         2024-01-18T14:31:37Z           538\n"
-        +
-        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl 2024-01-18T14:31:37Z          1515\n"
-        +
-        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n"
-        +
-        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml 2024-01-18T14:31:37Z          2625\n";
+        ".*H\\.2\\.1.*", true /* directories */); // but only H.2.1 dirs
+    table.removeColumn("lastModified");
+    String results = table.toString();
+    String expected = "{\n" +
+        "dimensions:\n" +
+        "\trow = 7 ;\n" +
+        "\tdirectory_strlen = 140 ;\n" +
+        "\tname_strlen = 67 ;\n" +
+        "variables:\n" +
+        "\tchar directory(row, directory_strlen) ;\n" +
+        "\tchar name(row, name_strlen) ;\n" +
+        "\tlong size(row) ;\n" +
+        "\n" +
+        "// global attributes:\n" +
+        "}\n" +
+        "directory,name,size\n" +
+        dirPath + ",timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb,5173\n" +
+        dirPath + ",timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb,2979\n" +
+        dirPath + "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/,,0\n" +
+        dirPath + "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/,README,538\n" +
+        dirPath + "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/,timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl,1515\n" +
+        dirPath + "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/,timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc,10436\n" +
+        dirPath + "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/,timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml,2625\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -1383,15 +1380,15 @@ class FileVisitorDNLSTests {
         Path.of(FileVisitorDNLSTests.class.getResource("/veryLarge/satellite/MUR41/anom/1day/").toURI())
             .toString(),
         ".*", true,
-        ".*");
+        ".*", false /* addLastModified */);
     String expected =
         // 2002 are files. 2003 is a shortcut to files
-        "2003.lnk                                                         2024-03-02T22:15:27Z          1762\n"
+        "2003.lnk                                                         1762\n"
             + //
             "2002\\\n" + //
-            "  20020601090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 2016-06-01T22:38:34Z     913429216\n"
+            "  20020601090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 913429216\n"
             + //
-            "  20020602090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 2016-06-01T22:42:24Z     913067730\n";
+            "  20020602090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 913067730\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
     // debugMode = oDebugMode;
   }

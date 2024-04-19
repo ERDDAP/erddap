@@ -2230,7 +2230,7 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
      *   and lastModified times.  Most lines will have 99 characters.
      */
     public static String oneStepToString(String tDir, String tFileNameRegex, 
-        boolean tRecursive, String tPathRegex) throws IOException {
+        boolean tRecursive, String tPathRegex, boolean addLastModified) throws IOException {
 
         StringBuilder sb = new StringBuilder();
         tDir = File2.addSlash(tDir);
@@ -2263,12 +2263,14 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
                 sb.append(spaces.substring(0, Math.max(0, nSpaces-2)) + relDir + "\n");
             } else {
                 sb.append(String2.left(spaces + cName, 64)); //64
-                sb.append(' '); //1                   
-                sb.append(String2.left(
-                    cTime == Long.MAX_VALUE? "" :
-                        Calendar2.epochSecondsToIsoStringTZ(cTime / 1000), 
-                    21));  //21
-                sb.append(' ');  //1
+                sb.append(' '); //1
+                if (addLastModified) {
+                    sb.append(String2.left(
+                        cTime == Long.MAX_VALUE? "" :
+                            Calendar2.epochSecondsToIsoStringTZ(cTime / 1000), 
+                        21));  //21
+                    sb.append(' ');  //1
+                }
                 sb.append(String2.right(
                     cSize == Long.MAX_VALUE? "" : "" + cSize, 12)); //just <1TB //12
                 sb.append('\n');

@@ -725,7 +725,7 @@ public class ArchiveADataset {
             if (!bagitMode) {
                 String2.log("\n*** making " + tgzName + ".listOfFiles.txt");
                 error = File2.writeToFile(  tgzName + ".listOfFiles.txt", 
-                    FileVisitorDNLS.oneStepToString(archiveDir, ".*", true, ".*"),
+                    FileVisitorDNLS.oneStepToString(archiveDir, ".*", true, ".*", true /* addLastModified */),
                     textFileEncoding);
                 if (error.length() > 0)
                     throw new RuntimeException(error);
