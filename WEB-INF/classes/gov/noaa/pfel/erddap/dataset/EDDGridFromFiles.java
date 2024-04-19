@@ -694,7 +694,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }
 
         //skip loading until after intial loadDatasets?
-        if (EDStatic.doSetupValidation && fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+        if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
             requestReloadASAP();
             throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
         } 

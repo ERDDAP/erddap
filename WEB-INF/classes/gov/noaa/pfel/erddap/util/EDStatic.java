@@ -98,8 +98,7 @@ public class EDStatic {
      * Better encapsulation of EDStatic initilization would mean we
      * can get rid of these.
      */
-    public static boolean doSetupValidation = true;
-    public static boolean useSansSerifFont = false;
+    public static boolean skipEmailThread = false;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -1775,8 +1774,7 @@ public static boolean developmentMode = false;
     String errorInMethod = "";
     try {
 
-        doSetupValidation = Boolean.parseBoolean(System.getProperty("doSetupValidation"));
-        useSansSerifFont = Boolean.parseBoolean(System.getProperty("useSansSerifFont"));
+        skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
 
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
@@ -1827,10 +1825,8 @@ public static boolean developmentMode = false;
         setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
         bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", ""); 
         bigParentDirectory = File2.addSlash(bigParentDirectory);
-        if (doSetupValidation) {
-            Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
-                "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-        }
+        Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
+            "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  (String)null);
@@ -1849,7 +1845,7 @@ public static boolean developmentMode = false;
             String2.isEmailAddress(emailFromAddress);
 
         String tsar[] = String2.split(emailEverythingToCsv, ',');
-        if (doSetupValidation && emailEverythingToCsv.length() > 0)
+        if (emailEverythingToCsv.length() > 0)
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
@@ -1857,7 +1853,7 @@ public static boolean developmentMode = false;
         emailSubscriptionsFrom = tsar.length > 0? tsar[0] : ""; //won't be null
 
         tsar = String2.split(emailDailyReportToCsv, ',');
-        if (doSetupValidation && emailDailyReportToCsv.length() > 0)
+        if (emailDailyReportToCsv.length() > 0)
         {
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
@@ -1865,9 +1861,7 @@ public static boolean developmentMode = false;
                         " in <emailDailyReportTo>.");
         }
         
-        // This isn't validation, but doSetupValidation is effectively a check for
-        // production vs test runs. This should stop excessive log spam during testing.
-        if (doSetupValidation) {
+        if (!skipEmailThread) {
             ensureEmailThreadIsRunningIfNeeded();
         }
         ensureTouchThreadIsRunningIfNeeded();
@@ -2020,30 +2014,28 @@ public static boolean developmentMode = false;
         adminCountry               = getSetupEVNotNothingString(setup, ev, "adminCountry",               errorInMethod);
         adminEmail                 = getSetupEVNotNothingString(setup, ev, "adminEmail",                 errorInMethod);
 
-        if (doSetupValidation) {
-            if (adminInstitution.startsWith("Your"))
-                throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
-            if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
-                throw new RuntimeException("setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);  
-            if (adminIndividualName.startsWith("Your"))
-                throw new RuntimeException("setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);             
-            //if (adminPosition.length() == 0)
-            //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);             
-            if (adminPhone.indexOf("999-999") >= 0)
-                throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);              
-            if (adminAddress.equals("123 Main St."))
-                throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);  
-            if (adminCity.equals("Some Town"))
-                throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);  
-            //if (adminStateOrProvince.length() == 0)
-            //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" + adminStateOrProvince);  
-            if (adminPostalCode.equals("99999"))
-                throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
-            //if (adminCountry.length() == 0)
-            //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
-            if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
-                throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
-        }
+        if (adminInstitution.startsWith("Your"))
+            throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
+        if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
+            throw new RuntimeException("setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);  
+        if (adminIndividualName.startsWith("Your"))
+            throw new RuntimeException("setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);             
+        //if (adminPosition.length() == 0)
+        //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);             
+        if (adminPhone.indexOf("999-999") >= 0)
+            throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);              
+        if (adminAddress.equals("123 Main St."))
+            throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);  
+        if (adminCity.equals("Some Town"))
+            throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);  
+        //if (adminStateOrProvince.length() == 0)
+        //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" + adminStateOrProvince);  
+        if (adminPostalCode.equals("99999"))
+            throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
+        //if (adminCountry.length() == 0)
+        //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
+        if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
+            throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
 
         accessConstraints          = getSetupEVNotNothingString(setup, ev, "accessConstraints",          errorInMethod); 
         accessRequiresAuthorization= getSetupEVNotNothingString(setup, ev, "accessRequiresAuthorization",errorInMethod); 
@@ -2124,7 +2116,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         if (tdlm < 1)
             drawLandMask = DEFAULT_drawLandMask; //"under"
         flagKeyKey                 = getSetupEVNotNothingString(setup, ev, "flagKeyKey",                 errorInMethod);
-        if (doSetupValidation && flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
+        if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
               //really old default: "A stitch in time saves nine. CHANGE THIS!!!"  
               //current default:    "CHANGE THIS TO YOUR FAVORITE QUOTE"
             throw new RuntimeException(
@@ -2174,9 +2166,6 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         
        
         errorInMethod = "ERROR while initializing SgtGraph: ";
-        if (useSansSerifFont) {
-            fontFamily = "SansSerif";
-        }
         sgtGraph = new SgtGraph(fontFamily);
 
         //ensure erddapVersion is okay

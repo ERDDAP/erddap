@@ -8,10 +8,9 @@ import gov.noaa.pfel.erddap.dataset.EDD;
 public class Initialization {
   public static void edStatic() {
     File2.setWebInfParentDirectory();
-    System.setProperty("doSetupValidation", String.valueOf(false));
     System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "/development/jetty/config/");
+    System.setProperty("skipEmailThread", String.valueOf(true));
     EDD.debugMode = true;
-    System.setProperty("useSansSerifFont", String.valueOf(true));
     SgtMap.fontFamily = "SansSerif";
   }
 }
