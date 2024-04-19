@@ -1339,7 +1339,7 @@ class FileVisitorDNLSTests {
     String expected = "{\n" +
         "dimensions:\n" +
         "\trow = 7 ;\n" +
-        "\tdirectory_strlen = 140 ;\n" +
+        "\tdirectory_strlen = " + (dirPath.length() + 63) + " ;\n" +
         "\tname_strlen = 67 ;\n" +
         "variables:\n" +
         "\tchar directory(row, directory_strlen) ;\n" +
