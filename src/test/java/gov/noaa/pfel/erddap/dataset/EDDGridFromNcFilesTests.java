@@ -10644,14 +10644,14 @@ class EDDGridFromNcFilesTests {
         "    Float32 valid_min 0.001;\n" +
         "  }\n" +
         "  NC_GLOBAL {\n" +
-        "    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String _lastModified \"" + eddGrid.sourceGlobalAttributes.getString("_lastModified") + "\";\n" +
         "    String cdm_data_type \"Grid\";\n" +
         "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
         "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
         "    String creator_name \"NASA/GSFC/OBPG\";\n" +
         "    String creator_type \"group\";\n" +
         "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-        "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String date_created \"" + eddGrid.sourceGlobalAttributes.getString("date_created") + "\";\n" +
         "    Float64 Easternmost_Easting 179.9584;\n" +
         "    Float64 geospatial_lat_max 89.95834;\n" +
         "    Float64 geospatial_lat_min -89.95834;\n" +
@@ -10660,7 +10660,7 @@ class EDDGridFromNcFilesTests {
         "    Float64 geospatial_lon_min -179.9583;\n" +
         "    String geospatial_lon_units \"degrees_east\";\n" +
         "    String grid_mapping_name \"latitude_longitude\";\n" +
-        "    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+        "    String history \"" + eddGrid.sourceGlobalAttributes.getString("history") + "\n" +
         today; // (local files)
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -10701,7 +10701,7 @@ class EDDGridFromNcFilesTests {
             "    String platform \"Orbview-2\";\n" +
             "    String processing_level \"L3 Mapped\";\n" +
             "    String processing_version \"2014.0\";\n" +
-            "    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+            "    String product_name \"" + eddGrid.sourceGlobalAttributes.getString("product_name") + "\";\n" +
             "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
             "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
             "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
@@ -10880,14 +10880,14 @@ class EDDGridFromNcFilesTests {
         "    Float32 valid_min 0.001;\n" +
         "  }\n" +
         "  NC_GLOBAL {\n" +
-        "    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String _lastModified \"" + eddGrid.sourceGlobalAttributes.getString("_lastModified") + "\";\n" +
         "    String cdm_data_type \"Grid\";\n" +
         "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
         "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
         "    String creator_name \"NASA/GSFC/OBPG\";\n" +
         "    String creator_type \"group\";\n" +
         "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-        "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String date_created \"" + eddGrid.sourceGlobalAttributes.getString("date_created") + "\";\n" +
         "    Float64 Easternmost_Easting 179.9584;\n" +
         "    Float64 geospatial_lat_max 89.95834;\n" +
         "    Float64 geospatial_lat_min -89.95834;\n" +
@@ -10896,7 +10896,7 @@ class EDDGridFromNcFilesTests {
         "    Float64 geospatial_lon_min -179.9583;\n" +
         "    String geospatial_lon_units \"degrees_east\";\n" +
         "    String grid_mapping_name \"latitude_longitude\";\n" +
-        "    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+        "    String history \"" + eddGrid.sourceGlobalAttributes.getString("history") + "\n" +
         today; // (local files)
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -10932,7 +10932,7 @@ class EDDGridFromNcFilesTests {
             "    String platform \"Orbview-2\";\n" +
             "    String processing_level \"L3 Mapped\";\n" +
             "    String processing_version \"2014.0\";\n" +
-            "    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+            "    String product_name \"" + eddGrid.sourceGlobalAttributes.getString("product_name") + "\";\n" +
             "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
             "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
             "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
@@ -11318,14 +11318,14 @@ class EDDGridFromNcFilesTests {
         "    Float32 valid_min 0.001;\n" +
         "  }\n" +
         "  NC_GLOBAL {\n" +
-        "    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String _lastModified \"" + eddGrid.sourceGlobalAttributes.getString("_lastModified") + "\";\n" +
         "    String cdm_data_type \"Grid\";\n" +
         "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
         "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
         "    String creator_name \"NASA/GSFC/OBPG\";\n" +
         "    String creator_type \"group\";\n" +
         "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-        "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+        "    String date_created \"" + eddGrid.sourceGlobalAttributes.getString("date_created") + "\";\n" +
         "    Float64 Easternmost_Easting 179.9584;\n" +
         "    Float64 geospatial_lat_max 89.95834;\n" +
         "    Float64 geospatial_lat_min -89.95834;\n" +
@@ -11334,7 +11334,7 @@ class EDDGridFromNcFilesTests {
         "    Float64 geospatial_lon_min -179.9583;\n" +
         "    String geospatial_lon_units \"degrees_east\";\n" +
         "    String grid_mapping_name \"latitude_longitude\";\n" +
-        "    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+        "    String history \"" + eddGrid.sourceGlobalAttributes.getString("history") + "\n" +
         today; // (local files)
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -11370,7 +11370,7 @@ class EDDGridFromNcFilesTests {
             "    String platform \"Orbview-2\";\n" +
             "    String processing_level \"L3 Mapped\";\n" +
             "    String processing_version \"2014.0\";\n" +
-            "    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+            "    String product_name \"" + eddGrid.sourceGlobalAttributes.getString("product_name") + "\";\n" +
             "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
             "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
             "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
