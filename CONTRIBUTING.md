@@ -1,6 +1,6 @@
 # Contributing to ERDDAP
 ## Reporting an issue
-**Do not open up a GitHub issue if the bug is a security vulnerability**, and instead to refer to our [security policy](https://github.com/erddap/erddap/blob/main/SECURITY.md). Any sensitive issues will be removed from the public tracker.
+**Do not open up a GitHub issue if the bug is a security vulnerability**, and instead to refer to our [security policy](SECURITY.md). Any sensitive issues will be removed from the public tracker.
 
 Ensure the bug was not already reported by searching on GitHub under [Issues](https://github.com/ERDDAP/erddap/issues).
 

@@ -4,7 +4,7 @@
 ERDDAP can run on any server that supports Java and Tomcat (and other application servers like Jetty, but we don't support them). ERDDAP has been tested on Linux (including on Amazon's AWS), Mac, and Windows computers.
 
 *   **Amazon** -- If you are installing ERDDAP on an Amazon Web Services EC2 instance, see this [Amazon Web Services Overview](#amazon) (below) first.
-*   **Docker** -- Axiom now offers [ERDDAP in a Docker container(https://hub.docker.com/u/axiom/) and IOOS now offers a [Quick Start Guide for ERDDAP in a Docker Container(https://ioos.github.io/erddap-gold-standard/index.html).  
+*   **Docker** -- Axiom now offers [ERDDAP in a Docker container](https://hub.docker.com/u/axiom/) and IOOS now offers a [Quick Start Guide for ERDDAP in a Docker Container](https://ioos.github.io/erddap-gold-standard/index.html).  
     It's the standard ERDDAP installation, but Axiom has put it in a docker container.  
     If you already use Docker, you will probably prefer the Docker version.  
     If you don't already use Docker, we generally don't recommend this.  
@@ -18,7 +18,7 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
 1.  [For ERDDAP v2.19+, set up Java 17.](#java)  
     For security reasons, it is almost always best to use the latest version of Java 17.  
     Please download and install the latest version of  
-    [Adoptium's OpenJDK (Temurin) 17 (LTS)(https://adoptium.net/temurin/releases/?version=17). To verify the installation, type "/_javaJreBinDirectory_/java -version", for example  
+    [Adoptium's OpenJDK (Temurin) 17 (LTS)](https://adoptium.net/temurin/releases/?version=17). To verify the installation, type "/_javaJreBinDirectory_/java -version", for example  
     /usr/local/jdk-17.0.4+8/jre/bin/java -version
     
     \[For ERDDAP versions before v2.19, use Java 8.\]
@@ -28,7 +28,7 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
     ERDDAP has been tested and used extensively with Java 17, not other versions. For various reasons, we don't test with nor support other versions of Java.  
      
     
-2.  [Set up](#tomcat) [Tomcat(https://tomcat.apache.org).  
+2.  [Set up](#tomcat) [Tomcat](https://tomcat.apache.org).  
     Tomcat is the most widely used Java Application Server, which is Java software that stands between the operating system's network services and Java server software like ERDDAP. It is Free and Open Source Software (FOSS).
     
     You can use another Java Application Server (e.g., Jetty), but we only test with and support Tomcat.  
@@ -39,10 +39,10 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
         
         Warning! If you already have a Tomcat running some other web application (especially THREDDS), we recommend that you install ERDDAP in [a second Tomcat](#secondTomcat), because ERDDAP needs different Tomcat settings and shouldn't have to contend with other applications for memory.
         
-        *   On Linux, [download the "Core" "tar.gz" Tomcat distribution(https://tomcat.apache.org/download-10.cgi) and unpack it. We recommend unpacking it in /usr/local.
+        *   On Linux, [download the "Core" "tar.gz" Tomcat distribution](https://tomcat.apache.org/download-10.cgi) and unpack it. We recommend unpacking it in /usr/local.
         *   On a Mac, Tomcat is probably already installed in /Library/Tomcat, but should update it to the latest version of Tomcat 10.  
-            If you download it, [download the "Core" "tar.gz" Tomcat distribution(https://tomcat.apache.org/download-10.cgi) and unpack it in /Library/Tomcat.
-        *   On Windows, you can [download the "Core" "zip" Tomcat distribution(https://tomcat.apache.org/download-10.cgi) (which doesn't mess with the Windows registry and which you control from a DOS command line) and unpack it in an appropriate directory. (For development, we use the "Core" "zip" distribution. We make a /programs directory and unpack it there.) Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features. If the distribution is a Windows installer, it will probably put Tomcat in, for example, /Program Files/apache-tomcat-10.0.23 .  
+            If you download it, [download the "Core" "tar.gz" Tomcat distribution](https://tomcat.apache.org/download-10.cgi) and unpack it in /Library/Tomcat.
+        *   On Windows, you can [download the "Core" "zip" Tomcat distribution](https://tomcat.apache.org/download-10.cgi) (which doesn't mess with the Windows registry and which you control from a DOS command line) and unpack it in an appropriate directory. (For development, we use the "Core" "zip" distribution. We make a /programs directory and unpack it there.) Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features. If the distribution is a Windows installer, it will probably put Tomcat in, for example, /Program Files/apache-tomcat-10.0.23 .  
              
     *   [server.xml](#server.xml) - In _tomcat_/conf/server.xml file, there are two changes that you should make to each of the two <Connector> tags (one for '<Connector port="8080" ' and one for '<Connector port="8443" '):
         1.  (Recommended) Increase the connectionTimeout parameter value, perhaps to 300000 (milliseconds) (which is 5 minutes).
@@ -59,9 +59,9 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
             Change the existing <ProxyTimeout> setting (or add one at the end of the file) to 3600 (seconds), instead of the default 60 or 120 seconds.
         2.  Restart Apache: /usr/sbin/apachectl -k graceful (but sometimes it is in a different directory).  
              
-    *   Security recommendation: See [these instructions(https://tomcat.apache.org/tomcat-10.0-doc/security-howto.html) to increase the security of your Tomcat installation, especially for public servers.  
+    *   Security recommendation: See [these instructions](https://tomcat.apache.org/tomcat-10.0-doc/security-howto.html) to increase the security of your Tomcat installation, especially for public servers.  
          
-    *   For public ERDDAP installations on Linux and Macs, it is best to set up Tomcat (the program) as belonging to user "tomcat" (a separate user with limited permissions and which [has no password](https://unix.stackexchange.com/questions/56765/creating-an-user-without-a-password). Thus, only the super user can switch to acting as user tomcat. This makes it impossible for hackers to log in to your server as user tomcat. And in any case, you should make it so that the tomcat user has very limited permissions on the server's file system (read+write+execute privileges for the apache-tomcat directory tree and <bigParentDirectory> and read-only privileges for directories with data that ERDDAP needs access to).
+    *   For public ERDDAP installations on Linux and Macs, it is best to set up Tomcat (the program) as belonging to user "tomcat" (a separate user with limited permissions and which [has no password](https://unix.stackexchange.com/questions/56765/creating-an-user-without-a-password)). Thus, only the super user can switch to acting as user tomcat. This makes it impossible for hackers to log in to your server as user tomcat. And in any case, you should make it so that the tomcat user has very limited permissions on the server's file system (read+write+execute privileges for the apache-tomcat directory tree and <bigParentDirectory> and read-only privileges for directories with data that ERDDAP needs access to).
         *   You can create the tomcat user account (which has no password) by using the command  
             sudo useradd tomcat -s /bin/bash -p '\*'
         *   You can switch to working as user tomcat by using the command  
@@ -125,7 +125,7 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
     *   [On Linux and Macs, change the permissions](#permissions) of all \*.sh files in _tomcat_/bin/ to be executable by the owner, e.g., with  
         chmod +x \*.sh  
          
-    *   [Fonts for images:](#fonts) We strongly prefer the free [DejaVu fonts(https://dejavu-fonts.github.io/) to the other Java fonts. Using these fonts is strongly recommended but not required.
+    *   [Fonts for images:](#fonts) We strongly prefer the free [DejaVu fonts](https://dejavu-fonts.github.io/) to the other Java fonts. Using these fonts is strongly recommended but not required.
         
         If you choose not to use the DejaVu fonts, you need to change the fontFamily setting in setup.xml to <fontFamily>SansSerif</fontFamily>, which is available with all Java distributions. If you set fontFamily to the name of a font that isn't available, ERDDAP won't load and will print a list of available fonts in the log.txt file. You must use one of those fonts.
         
@@ -134,7 +134,7 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
         To install the DejaVu fonts, please download [DejaVuFonts.zip](https://erddap.github.io/DejaVuFonts.zip) (5,522,795 bytes, MD5=33E1E61FAB06A547851ED308B4FFEF42) and unzip the font files to a temporary directory.
         
         *   On Linux:
-            *   For Linux Adoptium Java distributions, see [these instructions(https://blog.adoptopenjdk.net/2021/01/prerequisites-for-font-support-in-adoptopenjdk/).
+            *   For Linux Adoptium Java distributions, see [these instructions](https://blog.adoptopenjdk.net/2021/01/prerequisites-for-font-support-in-adoptopenjdk/).
             *   With other Java distributions: As the Tomcat user, copy the font files into _JAVA\_HOME_/lib/fonts so Java can find the fonts. Remember: if/when you later upgrade to a newer version of Java, you need to reinstall these fonts.
         *   On Macs: for each font file, double click on it and then click Install Font.
         *   On Windows 7 and 10: in Windows Explorer, select all of the font files. Right click. Click on Install.  
@@ -310,4 +310,4 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
         \[tomcat\]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml file into datasets.xml and edit it.) For example, you could:
         *   Describe what your organization and/or group does.
         *   Describe what kind of data this ERDDAP has.
-    *   To change the icon that appears on browser tabs, put your organization's favicon.ico in _tomcat_/content/erddap/images/ . See [https://en.wikipedia.org/wiki/Favicon(https://en.wikipedia.org/wiki/Favicon).
+    *   To change the icon that appears on browser tabs, put your organization's favicon.ico in _tomcat_/content/erddap/images/ . See [https://en.wikipedia.org/wiki/Favicon](https://en.wikipedia.org/wiki/Favicon).
