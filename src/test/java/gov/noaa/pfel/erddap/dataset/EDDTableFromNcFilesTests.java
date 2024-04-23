@@ -1065,8 +1065,8 @@ class EDDTableFromNcFilesTests {
         "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
         "    String creator_type \"institution\";\n" +
         "    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
-        "    String date_created \"2008-06-11T21:43:28Z\";\n" +
-        "    String date_issued \"2008-06-11T21:43:28Z\";\n" +
+        "    String date_created \"" + eddTable.sourceGlobalAttributes.getString("date_created") + "\";\n" +
+        "    String date_issued \"" + eddTable.sourceGlobalAttributes.getString("date_issued") + "\";\n" +
         "    Float64 Easternmost_Easting -118.4;\n" +
         "    String featureType \"TimeSeries\";\n" +
         "    Float64 geospatial_lat_max 34.05;\n" +
@@ -1080,7 +1080,7 @@ class EDDTableFromNcFilesTests {
         "    String geospatial_vertical_positive \"down\";\n" +
         "    String geospatial_vertical_units \"m\";\n" +
         "    String history \"Channel Islands National Park, National Park Service\n" +
-        "2008-06-11T21:43:28Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" + // will
+        eddTable.sourceGlobalAttributes.getString("date_created") + " NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" + // will
                                                                                        // be
                                                                                        // SWFSC
                                                                                        // when
