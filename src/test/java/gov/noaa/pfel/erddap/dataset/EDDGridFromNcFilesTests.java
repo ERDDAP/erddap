@@ -95,7 +95,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
-  @TagFlaky // https://github.com/ERDDAP/erddap/issues/148
+  @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFiles.testNcml");

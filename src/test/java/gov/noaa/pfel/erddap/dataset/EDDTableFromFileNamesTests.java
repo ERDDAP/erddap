@@ -666,17 +666,19 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // get all as .csv
-    tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir,
+    tName = tedd.makeNewFileForDapQuery(language, null, null,
+    "five,url,name,time,day,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString",
+        dir,
         tedd.className() + "_all", ".csv");
     results = File2.directReadFrom88591File(dir + tName);
-    expected = "five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString,fromScript\n"
+    expected = "five,url,name,time,day,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString\n"
         +
-        "m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,,\n" +
-        "5.0,http://localhost:8080/erddap/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/erddap/files/testFileNames/jplMURSST20150103090000.png name=jplMURSST20150103090000.png time=20150103090000 day=3 lastMod=1.421272444E9 size=46482.0 fileType=.png\n"
+        "m,,,UTC,,bytes,,UTC,degrees_north,degrees_east,,\n" +
+        "5.0,http://localhost:8080/erddap/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n"
         +
-        "5.0,http://localhost:8080/erddap/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/erddap/files/testFileNames/jplMURSST20150104090000.png name=jplMURSST20150104090000.png time=20150104090000 day=4 lastMod=1.420665738E9 size=46586.0 fileType=.png\n"
+        "5.0,http://localhost:8080/erddap/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n"
         +
-        "5.0,http://localhost:8080/erddap/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/erddap/files/testFileNames/sub/jplMURSST20150105090000.png name=jplMURSST20150105090000.png time=20150105090000 day=5 lastMod=1.420665704E9 size=46549.0 fileType=.png\n";
+        "5.0,http://localhost:8080/erddap/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",\n";
     Test.ensureEqual(results, expected, "results=\n" + String2.annotatedString(results));
 
     // test that min and max are being set by the constructor
@@ -688,10 +690,11 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(edv.destinationMinDouble(), 3, "min");
     Test.ensureEqual(edv.destinationMaxDouble(), 5, "max");
 
-    edv = tedd.findVariableByDestinationName("lastModified");
-    Test.ensureEqual(edv.destinationMinString(), "2015-01-07T21:21:44Z", "min"); // 2018-08-09 these changed by 1 hr
-                                                                                 // with switch to lenovo
-    Test.ensureEqual(edv.destinationMaxString(), "2015-01-14T21:54:04Z", "max");
+    // Don't check lastModified, it has hard to control behavior - especially across computers.
+    // edv = tedd.findVariableByDestinationName("lastModified");
+    // Test.ensureEqual(edv.destinationMinString(), "2015-01-07T21:21:44Z", "min"); // 2018-08-09 these changed by 1 hr
+    //                                                                              // with switch to lenovo
+    // Test.ensureEqual(edv.destinationMaxString(), "2015-01-14T21:54:04Z", "max");
 
     edv = tedd.findVariableByDestinationName("size");
     Test.ensureEqual(edv.destinationMinDouble(), 46482, "min");

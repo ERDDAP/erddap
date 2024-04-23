@@ -11339,8 +11339,8 @@ class EDDTableFromNcFilesTests {
     EDV lonEdv = eddTable.dataVariables()[eddTable.lonIndex];
     String dataDir = eddTable.fileDir;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String subsetQuery = "station,longitude,latitude&distinct()";
-    String dataQuery = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp&time=\"2014-12-01T00:00:00\"";
+    String subsetQuery = "station,longitude,latitude&distinct()&orderBy(\"station\")";
+    String dataQuery = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp&time=\"2014-12-01T00:00:00\"&orderBy(\"station\")";
     String tName, results, expected;
 
     // fix trouble if left in bad state previously
@@ -11364,9 +11364,9 @@ class EDDTableFromNcFilesTests {
     String originalExpectedData = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp\n" +
         ",degrees_east,degrees_north,degrees_north,degrees_north,m,UTC,degree_C\n" +
         "41024,-78.489,33.848,-78.489,33.848,7.0,2014-12-01T00:00:00Z,14.2\n" +
+        "41025,-75.402,35.006,-75.402,35.006,7.0,2014-12-01T00:00:00Z,19.5\n" +
         "41029,-79.63,32.81,-79.63,32.81,7.0,2014-12-01T00:00:00Z,14.5\n" +
-        "41033,-80.41,32.28,-80.41,32.28,7.0,2014-12-01T00:00:00Z,NaN\n" +
-        "41025,-75.402,35.006,-75.402,35.006,7.0,2014-12-01T00:00:00Z,19.5\n";
+        "41033,-80.41,32.28,-80.41,32.28,7.0,2014-12-01T00:00:00Z,NaN\n";
 
     String oldMinTime = "2003-03-28T19:00:00Z";
     String oldMinMillis = "1.048878E9";
@@ -11636,8 +11636,8 @@ class EDDTableFromNcFilesTests {
     EDDTableFromNcFiles eddTable;
     EDV timeEdv, lonEdv;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String subsetQuery = "station,longitude,latitude&distinct()";
-    String dataQuery = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp&time=\"2014-12-01T00:00:00\"";
+    String subsetQuery = "station,longitude,latitude&distinct()&orderBy(\"station\")";
+    String dataQuery = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp&time=\"2014-12-01T00:00:00\"&orderBy(\"station\")";
     String tName, results, expected;
     int po;
 
@@ -11687,12 +11687,12 @@ class EDDTableFromNcFilesTests {
         "    String units \"m\";\n" +
         "  }\n" +
         "  geolon {\n" +
-        // "    Float32 actual_range -80.41, -75.402;\n" +
+        "    Float32 actual_range -80.41, -75.402;\n" +
         "    String ioos_category \"Location\";\n" +
         "    String units \"degrees_north\";\n" +
         "  }\n" +
         "  geolat {\n" +
-        // "    Float32 actual_range 32.28, 35.006;\n" +
+        "    Float32 actual_range 32.28, 35.006;\n" +
         "    String ioos_category \"Location\";\n" +
         "    String units \"degrees_north\";\n" +
         "  }\n" +
@@ -12000,9 +12000,9 @@ class EDDTableFromNcFilesTests {
     String originalExpectedData = "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp\n" +
         ",degrees_east,degrees_north,degrees_north,degrees_north,m,UTC,degree_C\n" +
         "41024,-78.489,33.848,-78.489,33.848,7.0,2014-12-01T00:00:00Z,14.2\n" +
+        "41025,-75.402,35.006,-75.402,35.006,7.0,2014-12-01T00:00:00Z,19.5\n" +
         "41029,-79.63,32.81,-79.63,32.81,7.0,2014-12-01T00:00:00Z,14.5\n" +
-        "41033,-80.41,32.28,-80.41,32.28,7.0,2014-12-01T00:00:00Z,NaN\n" +
-        "41025,-75.402,35.006,-75.402,35.006,7.0,2014-12-01T00:00:00Z,19.5\n";
+        "41033,-80.41,32.28,-80.41,32.28,7.0,2014-12-01T00:00:00Z,NaN\n";
 
     // *** Do tests of original data
     // delete bad files list to ensure all are read
@@ -12144,8 +12144,8 @@ class EDDTableFromNcFilesTests {
     eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
     timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
     lonEdv = eddTable.dataVariables()[eddTable.lonIndex];
+    // TODO either remove or re-enable this. Does the getOneFromXmlFragment not actually make a new dataset?
     // creationTime should have changed
-    // todo figure out why this was failing
     // Test.ensureNotEqual(eddTable.creationTimeMillis(), oCreationTimeMillis, "");
 
     // but everything else should be back to original
