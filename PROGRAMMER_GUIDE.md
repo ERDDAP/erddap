@@ -2,13 +2,14 @@
 
 These are things that only a programmer who intends to work with ERDDAP's Java classes needs to know.
 
-- **Getting the Source Code**\
+### **Getting the Source Code**\
    
 
   - Via Source Code on GitHub\
     The source code for recent public versions and in-development versions is also available via [GitHub](https://github.com/ERDDAP). Please read the [Wiki](https://github.com/ERDDAP/erddap/wiki) for that project. If you want to modify the source code (and possibly have the changes incorporated into the standard ERDDAP distribution), this is the recommended approach.
 
-- **ERDDAP dependencies** ERDDAP uses Maven to load code dependencies as well as some static reference files (WEB-INF/ref). This is done to avoid storing many large files in the repository.\
+### **ERDDAP dependencies**
+ERDDAP uses Maven to load code dependencies as well as some static reference files (WEB-INF/ref). This is done to avoid storing many large files in the repository.\
   You can use `mvn compile` and that will fetch the dependencies and ref files. You can also use `mvn package` to generate a war file.\
   You can manually download the ref files:
 
@@ -21,15 +22,20 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
 - ERDDAP and its subcomponents have very liberal, open-source [licenses](https://erddap.github.io/setup.html#license), so you can use and modify the source code for any purpose, for-profit or not-for-profit. Note that ERDDAP and many subcomponents have licenses that require that you acknowledge the source of the code that you are using. See [Credits](https://erddap.github.io/setup.html#credits). Whether required or not, it is just good form to acknowledge all of these contributors.\
    
 
-- **Use the Code for Other Projects** While you are welcome to use parts of the ERDDAP code for other projects, be warned that the code can and will change. We don't promise to support other uses of our code. Git and GitHub will be your main solutions for dealing with this -- Git allows you to merge our changes into your changes.\
+- **Use the Code for Other Projects**
+
+  While you are welcome to use parts of the ERDDAP code for other projects, be warned that the code can and will change. We don't promise to support other uses of our code. Git and GitHub will be your main solutions for dealing with this -- Git allows you to merge our changes into your changes.\
   **For many situations where you might be tempted to use parts of ERDDAP in your project, we think you will find it much easier to install and use ERDDAP as is,** and then write other services which use ERDDAP's services. You can set up your own ERDDAP installation crudely in an hour or two. You can set up your own ERDDAP installation in a polished way in a few days (depending on the number and complexity of your datasets). But hacking out parts of ERDDAP for your own project is likely to take weeks (and months to catch subtleties) and you will lose the ability to incorporate changes and bug fixes from subsequent ERDDAP releases. We (obviously) think there are many benefits to using ERDDAP as is and making your ERDDAP installation publicly accessible. However, in some circumstances, you might not want to make your ERDDAP installation publicly accessible. Then, your service can access and use your private ERDDAP and your clients needn't know about ERDDAP.\
-  **Halfway** Or, there is another approach which you may find useful which is halfway between delving into ERDDAP's code and using ERDDAP as a stand-alone web service: In the EDD class, there is a static method which lets you make an instance of a dataset (based on the specification in datasets.xml):\
+
+  #### **Halfway**
+
+  Or, there is another approach which you may find useful which is halfway between delving into ERDDAP's code and using ERDDAP as a stand-alone web service: In the EDD class, there is a static method which lets you make an instance of a dataset (based on the specification in datasets.xml):\
   `oneFromDatasetXml(String tDatasetID)
   `It returns an instance of an EDDTable or EDDGrid dataset. Given that instance, you can call\
   `makeNewFileForDapQuery(String userDapQuery, String dir, String fileName, String fileTypeName)
   `to tell the instance to make a data file, of a specific fileType, with the results from a user query. Thus, this is a simple way to use ERDDAP's methods to request data and get a file in response, just as a client would use the ERDDAP web application. But this approach works within your Java program and bypasses the need for an application server like Tomcat. We use this approach for many of the unit tests of EDDTable and EDDGrid subclasses, so you can see examples of this in the source code for all of those classes.
 
-- **Development Environment**
+### **Development Environment**
 
   - There are configurations for [Jetty ](/development/jetty)and [Docker ](/development/docker)in GitHub, though releases are expected to run in Tomcat.
 
@@ -61,7 +67,9 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   - Most classes have test methods in their associated src/test file. You can run the JUnit tests with the `mvn test` command. This will download several zip files of data that the tests rely on from the latest release of [ERDDAP/erddapTest](https://github.com/ERDDAP/erddapTest/releases/).\
      
 
-- [**Important Classes** If you want to look at the source code and try to figure out how ERDDAP works, please do.
+###  **Important Classes**
+
+If you want to look at the source code and try to figure out how ERDDAP works, please do.
 
   - The code has JavaDoc comments, but the JavaDocs haven't been generated. Feel free to generate them.
 
@@ -82,7 +90,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   - Other classes (e.g., low level classes) are also important, but it is less likely that you will be working to change them.\
      
 
-- **Code Contributions**
+### **Code Contributions**
 
 - GitHub Issues\
   If you would like to contribute but don't have a project, see the list of [GitHub Issues](https://github.com/ERDDAP/erddap/issues), many of which are projects you could take on. If you would like to work on an issue, please assign it to yourself to indicate to others you are working on it. The GitHub issue is the best place to discuss any questions for how to proceed with work on that issue.
@@ -97,7 +105,8 @@ Those situations have the advantage that the code you write is self-contained. Y
 
 - If you have a feature not covered above that you would like to add to ERDDAP, it is recommended to first create a discussion thread in the [GitHub Discussions](https://github.com/ERDDAP/erddap/discussions/categories/ideas). For significant features/changes the Technical Board will discuss them and decide on whether to approve adding it to ERDDAP.
 
-* **Judging Your Code Contributions** If you want to submit code or other changes to be included in ERDDAP, that is great. Your contribution needs to meet certain criteria in order to be accepted. If you follow the guidelines below, you greatly increase the chances of your contribution being accepted.\
+### **Judging Your Code Contributions**
+If you want to submit code or other changes to be included in ERDDAP, that is great. Your contribution needs to meet certain criteria in order to be accepted. If you follow the guidelines below, you greatly increase the chances of your contribution being accepted.\
    
 
   - The ERDDAP project is managed by a  NATD (NOAA Appointed Technical Director) with input from a Technical Board.\
