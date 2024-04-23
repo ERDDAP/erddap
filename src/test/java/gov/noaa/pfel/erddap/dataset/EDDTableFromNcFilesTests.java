@@ -3608,7 +3608,6 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testOrderByMean2() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean2()
     // *****************\n");
@@ -8483,7 +8482,6 @@ class EDDTableFromNcFilesTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagFlaky
   @TagImageComparison
   void testLegend() throws Throwable {
 
@@ -11329,7 +11327,6 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky // order of rows seems to change regularly
   void testUpdate() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testUpdate()\n");
 

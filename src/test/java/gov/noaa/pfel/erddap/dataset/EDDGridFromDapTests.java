@@ -39,7 +39,6 @@ import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import tags.TagExternalERDDAP;
 import tags.TagExternalOther;
-import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
@@ -3207,7 +3206,6 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // don't test local dataset because of dns/numericIP problems
@@ -3227,7 +3225,7 @@ class EDDGridFromDapTests {
         "        <att name=\"dataType\">Grid</att>\n" +
         "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
         +
-        "        <att name=\"history\">Tue Jan 09 10:10:25 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
+        "        <att name=\"history\">Mon Apr 01 16:38:42 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
         +
         "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
         "    </sourceAttributes -->\n" +
@@ -3478,7 +3476,7 @@ class EDDGridFromDapTests {
           "        <att name=\"dataType\">Grid</att>\n" +
           "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
           +
-          "        <att name=\"history\">Tue Jan 09 10:10:25 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
+          "        <att name=\"history\">Mon Apr 01 16:38:42 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
           +
           "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
           "    </sourceAttributes -->\n" +

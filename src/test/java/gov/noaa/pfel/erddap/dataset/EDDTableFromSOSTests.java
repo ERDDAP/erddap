@@ -17,7 +17,6 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagExternalOther;
-import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -223,7 +222,6 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testNosSosATempAllStations() throws Throwable {
     // testVerboseOn();
 
