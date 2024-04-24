@@ -44,7 +44,6 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import tags.TagExternalOther;
 import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagPassword;
 import testDataset.Initialization;
@@ -958,91 +957,6 @@ class TableTests {
                         +
                         "[\"\",\"\\u20ac\",null,null,null,null,null,null,null,null,null,null]\n",
                 "results=\n" + results);
-
-    }
-
-    /**
-     * Test saveAsJson and readJson.
-     *
-     * @throws Exception if trouble
-     */
-    @org.junit.jupiter.api.Test
-    @TagLocalERDDAP
-    void testJson() throws Exception {
-        // String2.log("\n***** Table.testJson");
-        // Table.verbose = true;
-        // Table.reallyVerbose = true;
-
-        // generate some data
-        Table table = getTestTable(true, true);
-
-        // write it to a file
-        String fileName = TEMP_DIR.toAbsolutePath().toString() + "/tempTable.json";
-        table.saveAsJson(fileName, 0, true);
-        // String2.log(fileName + "=\n" + File2.readFromFile(fileName)[1]);
-        // Test.displayInBrowser("file://" + fileName); //.json
-
-        // read it from the file
-        String results = File2.directReadFromUtf8File(fileName);
-        Test.ensureEqual(results,
-                "{\n" +
-                        "  \"table\": {\n" +
-                        "    \"columnNames\": [\"Time\", \"Longitude\", \"Latitude\", \"Double Data\", \"Long Data\", \"Int Data\", \"Short Data\", \"Byte Data\", \"Char Data\", \"String Data\"],\n"
-                        +
-                        "    \"columnTypes\": [\"String\", \"int\", \"float\", \"double\", \"long\", \"int\", \"short\", \"byte\", \"char\", \"String\"],\n"
-                        +
-                        "    \"columnUnits\": [\"UTC\", \"degrees_east\", \"degrees_north\", \"doubles\", \"longs\", \"ints\", \"shorts\", \"bytes\", \"chars\", \"Strings\"],\n"
-                        +
-                        "    \"rows\": [\n" +
-                        "      [\"1970-01-01T00:00:00Z\", -3, 1.0, -1.0E300, -2000000000000000, -2000000000, -32000, -120, \",\", \"a\"],\n"
-                        +
-                        "      [\"2005-08-31T16:01:02Z\", -2, 1.5, 3.123, 2, 2, 7, 8, \"\\\"\", \"bb\"],\n" +
-                        "      [\"2005-11-02T18:04:09Z\", -1, 2.0, 1.0E300, 2000000000000000, 2000000000, 32000, 120, \"\\u20ac\", \"ccc\"],\n"
-                        +
-                        "      [null, null, null, null, null, null, null, null, \"\", \"\"]\n" +
-                        "    ]\n" +
-                        "  }\n" +
-                        "}\n",
-                results);
-
-        // read it
-        Table table2 = new Table();
-        table2.readJson(fileName);
-        Test.ensureTrue(table.equals(table2), "");
-
-        // finally
-        File2.delete(fileName);
-
-        // ******************* test readErddapInfo
-        // String tUrl = "https://coastwatch.pfeg.noaa.gov/erddap2";
-        // http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json
-        String tUrl = "http://localhost:8080/cwexperimental";
-        table.readErddapInfo(tUrl + "/info/pmelTaoDySst/index.json");
-        String ncHeader = table.getNCHeader("row");
-        Test.ensureEqual(table.globalAttributes.getString("cdm_data_type"), "TimeSeries", ncHeader);
-        Test.ensureEqual(table.globalAttributes.getString("title"),
-                "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature",
-                ncHeader);
-        Test.ensureEqual(table.globalAttributes.get("history").size(), 3, ncHeader);
-        Test.ensureEqual(table.globalAttributes.get("history").getString(0),
-                "This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.",
-                ncHeader);
-        Test.ensureEqual(table.globalAttributes.get("history").getString(1),
-                "This dataset is a product of the TAO Project Office at NOAA/PMEL.",
-                ncHeader);
-        Test.ensureLinesMatch(table.globalAttributes.get("history").getString(2),
-                "20\\d{2}-\\d{2}-\\d{2} Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) " +
-                        "fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  "
-                        +
-                        "Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.",
-                ncHeader);
-        Test.ensureEqual(table.nColumns(), 10, ncHeader);
-        Test.ensureEqual(table.findColumnNumber("longitude"), 3, ncHeader);
-        Test.ensureEqual(table.columnAttributes(3).getString("units"), "degrees_east", ncHeader);
-        int t25Col = table.findColumnNumber("T_25");
-        Test.ensureTrue(t25Col > 0, ncHeader);
-        Test.ensureEqual(table.columnAttributes(t25Col).getString("ioos_category"), "Temperature", ncHeader);
-        Test.ensureEqual(table.columnAttributes(t25Col).getString("units"), "degree_C", ncHeader);
 
     }
 
@@ -17683,7 +17597,7 @@ class TableTests {
      * @param includeStrings set this to true if you want a column with Strings
      * @return Table
      */
-    private static Table getTestTable(boolean includeLongs, boolean includeStrings) {
+    public static Table getTestTable(boolean includeLongs, boolean includeStrings) {
 
         String testTimes[] = { "1970-01-01T00:00:00", "2005-08-31T16:01:02", "2005-11-02T18:04:09", "" };
         Table table = new Table();

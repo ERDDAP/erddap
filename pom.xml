@@ -47,6 +47,7 @@
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
         <test.resources.version>rc-test</test.resources.version>
+        <jettyVersion>12.0.8</jettyVersion>
     </properties>
 
     <repositories>
@@ -154,7 +155,7 @@
             <plugin>
                 <groupId>org.eclipse.jetty.ee10</groupId>
                 <artifactId>jetty-ee10-maven-plugin</artifactId>
-                <version>12.0.8</version>
+                <version>${jettyVersion}</version>
                 <configuration>
                     <webApp>
                         <contextPath>/erddap</contextPath>
@@ -382,6 +383,27 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jettyVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+            <version>${jettyVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-webapp</artifactId>
+            <version>${jettyVersion}</version>
             <scope>test</scope>
         </dependency>
 
