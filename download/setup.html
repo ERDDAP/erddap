@@ -3283,11 +3283,17 @@ So you are freed from that responsibility.
     please switch to ERDDAP v2.23+ to use the new "Sign In with Google"-based 
     authentication system.
 
-    <p>For ERDDAP v2.23+ instances with a Content-Security-Policy configured and 
+    <p>For ERDDAP v2.23 instances with a Content-Security-Policy configured and 
     using Google Authentication, you need to add <kbd>https://accounts.google.com</kbd> 
     to the list of allowed <kbd>script-src</kbd> (or <kbd>script-src-elem</kbd>). 
     ERDDAP no longer uses <kbd>https://apis.google.com</kbd>, so if you have that allowed, 
-    you may be able to remove it now. 
+    you may be able to remove it now.
+    <p>For ERDDAp v2.24+ you may also need to add <kbd>https://accounts.google.com/gsi/style</kbd>
+    to <kbd>stlye-src</kbd> and <kbd>https://accounts.google.com/gsi/</kbd> to <kbd>connect-src</kbd>.
+    For the <kbd>script-src</kbd> you can now use <kbd>https://accounts.google.com/gsi/client</kbd>.
+    <p>For more information you can go to the <a rel="help"
+    href="https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#content_security_policy">Google page</a>
+    about CSP configuration.
     If you have any questions, contact chris.john at noaa.gov.
     <br>&nbsp;
 
