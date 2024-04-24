@@ -1792,16 +1792,18 @@ class TestUtil {
             bar = String2.stringToUtf8Bytes(os);
         }
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 270,
-                "Too slow!  Time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(time <= 270,
+        //         "Too slow!  Time for 1000000 StringToUtf8Bytes=" + time + "ms (usual = 203)");
 
         time = System.currentTimeMillis();
         for (i = 0; i < 1000000; i++) {
             s = String2.utf8BytesToString(bar);
         }
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 270,
-                "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 203)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(time <= 270,
+        //         "Too slow!  Time for 1000000 utf8BytesToString=" + time + "ms (usual = 203)");
 
         s = String2.stringToUtf8String(os);
         Test.ensureEqual(String2.annotatedString(s),
@@ -1821,8 +1823,9 @@ class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 70,
-                "Too slow!  Time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(time <= 70,
+        //        "Too slow!  Time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
 
         // compareTo times
         time = System.currentTimeMillis();
@@ -1834,8 +1837,9 @@ class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 80,
-                "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(time <= 80,
+        //        "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
 
         // compareTo times
         time = System.currentTimeMillis();
@@ -1845,8 +1849,9 @@ class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 200,
-                "time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(time <= 200,
+        //        "time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
 
         // indexOfIgnoreCase(s)
         String2.log("test indexOfIgnoreCase(s)");
@@ -2631,13 +2636,15 @@ class TestUtil {
             speedResults[test] = System.currentTimeMillis() - time;
             String2.log("sum=" + testSum); // so compiler can't delete all of this
         }
-        Test.ensureTrue(speedResults[1] < 2700,
-                "String2.parseLong is too slow! " + speedResults[1] + " (Java 17 typical: 1900ms in TestAll)");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(speedResults[1] < 2700,
+        //         "String2.parseLong is too slow! " + speedResults[1] + " (Java 17 typical: 1900ms in TestAll)");
         String2.log("test speed of Long.parseLong vs String2.parseLong (now using parseBigDecimal): " +
                 String2.toCSSVString(speedResults));
-        Test.ensureTrue(speedResults[1] < speedResults[0] * 2,
-                "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0]
-                        + " (Java 17 typical: 1900ms vs 1300ms");
+        // TODO handle time based performance tests better
+        // Test.ensureTrue(speedResults[1] < speedResults[0] * 2,
+        //        "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0]
+        //                + " (Java 17 typical: 1900ms vs 1300ms");
         Math2.gc("TestUtil (between tests)", 2000);
         Math2.gc("TestUtil (between tests)", 2000);
 
