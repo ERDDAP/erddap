@@ -1,6 +1,7 @@
 WEB-INF/docs
 WEB-INF/lib/
 WEB-INF/ref/
+WEB-INF/temp/
 images/erddapTalk
 images/gadgets
 images/post
@@ -14,4 +15,5 @@ Thumbs.db
 .settings
 .classpath
 .project
+src/test/resources/
 .idea

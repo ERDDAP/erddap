@@ -4,8 +4,6 @@
  */
 package com.cohort.util;
 
-import java.io.StringReader;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +13,6 @@ import java.util.ResourceBundle;
 import javax.xml.xpath.XPath;   //requires java 1.5
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -306,82 +303,4 @@ public class ResourceBundle2 {
         Arrays.sort(sar, String2.STRING_COMPARATOR_IGNORE_CASE);
         return sar;
     }
-
-    /**
-     * Test the methods in this class.
-     *
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        String2.log("\n*** ResourceBundle2.basicTest");
-
-        ResourceBundle2 rb2 = fromXml(XML.parseXml(new StringReader(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<testr>\n" +
-            "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment < > -->text  \n" +
-            "  </level1>\n" +
-            "  <levela />\n" +   //"empty tag" appears as two tags, begin and end
-            "  <levelb> 16</levelb>\n" +
-            "  <bool> true</bool>\n" +
-            "  <dbl> 17.1</dbl>\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "</testr>"), 
-            false));
-        Test.ensureEqual(rb2.getString("level1", ""), "level 1 & text", "");
-        Test.ensureEqual(rb2.getString("levela", ""), "", "");
-        Test.ensureEqual(rb2.getBoolean("bool", false), true, "");
-        Test.ensureEqual(rb2.getInt(   "levelb", 5), 16, "");
-        Test.ensureEqual(rb2.getLong(  "levelb", 5), 16, "");
-        Test.ensureEqual(rb2.getDouble("dbl", 5.5), 17.1, "");
-        Test.ensureEqual(rb2.getString("testr", ""),  "", "");
-
-        Test.ensureEqual(rb2.getBoolean("Z", true), true, "");
-        Test.ensureEqual(rb2.getInt(    "Z", 5), 5, "");
-        Test.ensureEqual(rb2.getDouble( "Z", 5.5), 5.5, "");
-        Test.ensureEqual(rb2.getString( "Z", "word"), "word", "");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ ResourceBundle.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }

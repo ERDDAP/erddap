@@ -4,9 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -392,127 +390,6 @@ public class ParseJSON {
 
         }
     }
-
-    /**
-     * This test the methods of this class.
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        String error;
-        verbose = true;
-        reallyVerbose = true;
-
-        //ensure it reads correctly               don't test \\b
-        ParseJSON pj = new ParseJSON("\"a String \\u0050\\t\\r\\n\\\" \",-1.2e+3,true,false,null]");
-        ArrayList al = pj.readPrimitiveArray('[');
-        Test.ensureEqual((String)al.get(0),                 "a String P\t\r\n\" ", "");
-        Test.ensureEqual(((Double)al.get(1)).doubleValue(), -1.2e3,                  "");
-        Test.ensureEqual((Boolean)al.get(2),                Boolean.TRUE,            "");
-        Test.ensureEqual((Boolean)al.get(3),                Boolean.FALSE,           "");
-        Test.ensureEqual(al.get(4),                         null,                    "");
-
-        pj = new ParseJSON(" \"a String \\u0050\\t\\r\\n\\\" \" , -1.2e+3 , true , false , null ] ");
-        al = pj.readPrimitiveArray('[');
-        Test.ensureEqual((String)al.get(0),                 "a String P\t\r\n\" ", "");
-        Test.ensureEqual(((Double)al.get(1)).doubleValue(), -1.2e3,                  "");
-        Test.ensureEqual((Boolean)al.get(2),                Boolean.TRUE,            "");
-        Test.ensureEqual((Boolean)al.get(3),                Boolean.FALSE,           "");
-        Test.ensureEqual(al.get(4),                         null,                    "");
-
-        //test intentional failures
-        error = "";
-        try { 
-            pj =new ParseJSON("\"a\nb]\"]");
-            al = pj.readPrimitiveArray('['); //control chars in string must be escaped
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: Control character (#10) in String should have been " +
-            "escaped on line #2 at character #0.", "");
-
-        error = "";
-        try { 
-            pj = new ParseJSON("1.25.3");
-            al = pj.readPrimitiveArray('['); 
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: ',' or ']' expected on line #1 at character #5.", "");
-
-        error = "";
-        try { 
-            pj = new ParseJSON("truue]");
-            al = pj.readPrimitiveArray('['); 
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: \"true\" expected on line #1 at character #4.", "");
-
-        error = "";
-        try { 
-            pj = new ParseJSON("nulf]");
-            al = pj.readPrimitiveArray('['); 
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: \"null\" expected on line #1 at character #4.", "");
-
-        error = "";
-        try { 
-            pj = new ParseJSON("null");
-            al = pj.readPrimitiveArray('['); 
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: ',' or ']' expected on line #1 at character #5.", "");
-
-        error = "";
-        try { 
-            pj = new ParseJSON("bob");
-            String s = pj.readString('"'); 
-        } catch (Exception e) {error = e.toString() + pj.onLine();  }
-        Test.ensureEqual(error, 
-            "java.lang.Exception: ParseJSON: No closing '\"' found for String starting at " +
-            "line #1 character #0, and ending on line #1 at character #4.", "");
-
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ ParseJSON.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }
 
 

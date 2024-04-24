@@ -11,12 +11,14 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import tags.TagAWS;
+import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import tags.TagPassword;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 
 /**
  * This is a Java program to test all of the methods in SSR.
@@ -414,7 +416,9 @@ public class TestSSR {
    * Prevent mass mailing worms from sending mail" is un-checked.
    * 
    */
-  public static void testEmail(String emailUser, String password) throws Exception {
+  @org.junit.jupiter.api.Test
+  @TagIncompleteTest
+  void testEmail(String emailUser, String password) throws Exception {
 
     String title = "Email Test from TestSSR";
     String content = "This is an email test (local) from user=" + emailUser + " in TestSSR.";
@@ -609,7 +613,7 @@ public class TestSSR {
 
     // *** test a lot of AWS S3 actions on a private AWS bucket
     // delete a file on S3 to ensure it doesn't exist (ignore result)
-    String origLocal = String2.unitTestDataDir + "ascii/standardizeWhat1.csv";
+    String origLocal = Path.of(TestSSR.class.getResource("data/ascii/standardizeWhat1.csv").toURI()).toString();
     String tempLocal = File2.getSystemTempDirectory() + "testAwsS3.csv";
     String awsUrl = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/testAwsS3.csv";
     // bucket is publicly readible in a browser via http but not https

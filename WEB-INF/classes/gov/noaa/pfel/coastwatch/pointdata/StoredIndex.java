@@ -5,20 +5,13 @@
 package gov.noaa.pfel.coastwatch.pointdata;
 
 import com.cohort.array.*;
-import com.cohort.util.Math2;
 import com.cohort.util.File2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 /**
  * This class stores the values for an index (an ascending sorted array) 
@@ -130,83 +123,4 @@ public class StoredIndex  {
             " time=" + (System.currentTimeMillis() - time) + "ms");
         return results;
     }
-
-    /**
-     * This tests the methods in this class.
-     *
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        StoredIndex.verbose = true;
-
-        String dir = File2.getSystemTempDirectory();
-        String name = "StoredIndexTest";
-        int n = 1000000;
-        DoubleArray pa = new DoubleArray(n, false);
-        for (int i = 0; i < n; i++)
-            pa.add(i * 0.1);
-        StoredIndex index = new StoredIndex(dir + name, pa);
-        try {
-            //get all
-            Test.ensureEqual(String2.toCSSVString(index.subset(0, n/.1)), "0, 999999", "");
-
-            //get some
-            Test.ensureEqual(String2.toCSSVString(index.subset(1, 2)), "10, 20", "");
-
-            //between 2 indices
-            Test.ensureEqual(String2.toCSSVString(index.subset(1.55, 1.56)), "16, 15", "");
-
-            //get none
-            Test.ensureEqual(String2.toCSSVString(index.subset(-.1, -.1)), "-1, -1", "");
-            Test.ensureEqual(String2.toCSSVString(index.subset(100000, 100000)), "-1, -1", "");
-
-        } finally {
-            index.close();
-        }
-        String2.log("\n***** StoredIndex.basicTest finished successfully");
-
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ StoredIndex.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
 }
