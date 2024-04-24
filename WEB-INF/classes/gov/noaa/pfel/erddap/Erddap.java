@@ -1901,7 +1901,7 @@ public class Erddap extends HttpServlet {
                     "<ul>\n" +
                     (isGoogle || isOauth2?
                         "<li>" + EDStatic.loginGoogleSignInAr[language] + "\n" +
-                        "  <div id=\"g_id_onload\" data-client_id=\"" + EDStatic.googleClientID + "\"  data-callback=\"onSignIn\"></div>" +
+                        "  <div id=\"g_id_onload\" data-client_id=\"" + EDStatic.googleClientID + "\"  data-callback=\"onSignIn\" data-itp_support=\"true\" data-use_fedcm_for_prompt=\"true\" ></div>" +
                         "  <div class=\"g_id_signin\" data-type=\"standard\"></div>" +
                             "\n<br>&nbsp;\n" : "") + //don't say succeeded. It only succeeds if user successfully signed into Google.
                     (isOrcid || isOauth2?
