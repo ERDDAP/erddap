@@ -50,7 +50,7 @@ import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
-class TableTests {
+public class TableTests {
 
     @TempDir
     private static Path TEMP_DIR;

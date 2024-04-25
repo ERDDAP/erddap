@@ -2,15 +2,11 @@ package gov.noaa.pfel.erddap.util;
 
 import java.io.FileInputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 
-import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import tags.TagLocalERDDAP;
 import tags.TagPassword;
 
 class TranslateMessagesTests {
@@ -268,119 +264,4 @@ class TranslateMessagesTests {
         results.toString());
     // debugMode = oDebugMode;
   }
-
-  /**
-   * This checks lots of webpages on localhost ERDDAP for uncaught special text
-   * (&amp;term; or ZtermZ).
-   * This REQUIRES localhost ERDDAP be running with at least
-   * <datasetsRegex>(etopo.*|jplMURSST41|cwwcNDBCMet)</datasetsRegex>.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void checkForUncaughtSpecialText() throws Exception {
-    String2.log("\n*** TranslateMessages.checkForUncaughtSpecialText()\n" +
-        "THIS REQUIRES localhost ERDDAP with at least (etopo.*|jplMURSST41|cwwcNDBCMet)");
-    String tErddapUrl = "http://localhost:8080/cwexperimental/de/";
-    String pages[] = {
-        "index.html",
-        "categorize/cdm_data_type/grid/index.html?page=1&itemsPerPage=1000",
-        "convert/index.html",
-        "convert/oceanicAtmosphericAcronyms.html",
-        "convert/fipscounty.html",
-        "convert/keywords.html",
-        "convert/time.html",
-        "convert/units.html",
-        "convert/urls.html",
-        "convert/oceanicAtmosphericVariableNames.html",
-        "dataProviderForm.html",
-        "dataProviderForm1.html",
-        "dataProviderForm2.html",
-        "dataProviderForm3.html",
-        "dataProviderForm4.html",
-        // "download/AccessToPrivateDatasets.html",
-        // "download/changes.html",
-        // "download/EDDTableFromEML.html",
-        // "download/grids.html",
-        // "download/NCCSV.html",
-        // "download/NCCSV_1.00.html",
-        // "download/setup.html",
-        // "download/setupDatasetsXml.html",
-        "files/",
-        "files/cwwcNDBCMet/",
-        "files/documentation.html",
-        "griddap/documentation.html",
-        "griddap/jplMURSST41.graph",
-        "griddap/jplMURSST41.html",
-        "info/index.html?page=1&itemsPerPage=1000",
-        "info/cwwcNDBCMet/index.html",
-        "information.html",
-        "opensearch1.1/index.html",
-        "rest.html",
-        "search/index.html?page=1&itemsPerPage=1000&searchFor=sst",
-        "slidesorter.html",
-        "subscriptions/index.html",
-        "subscriptions/add.html",
-        "subscriptions/validate.html",
-        "subscriptions/list.html",
-        "subscriptions/remove.html",
-        "tabledap/documentation.html",
-        "tabledap/cwwcNDBCMet.graph",
-        "tabledap/cwwcNDBCMet.html",
-        "tabledap/cwwcNDBCMet.subset",
-        "wms/documentation.html",
-        "wms/jplMURSST41/index.html" };
-    StringBuilder results = new StringBuilder();
-    for (int i = 0; i < pages.length; i++) {
-      String content;
-      String sa[];
-      HashSet<String> hs;
-      try {
-        content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
-      } catch (Exception e) {
-        results.append("\n* Trouble: " + e.toString() + "\n");
-        continue;
-      }
-
-      // Look for ZsomethingZ
-      hs = new HashSet();
-      hs.addAll(Arrays.asList(
-          String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1).toArray(new String[0])));
-      sa = hs.toArray(new String[0]);
-      if (sa.length > 0) {
-        results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " ZtermsZ :\n");
-        Arrays.sort(sa, new StringComparatorIgnoreCase());
-        results.append(String2.toNewlineString(sa));
-      }
-
-      // Look for &something; that are placeholders that should have been replaced by
-      // replaceAll().
-      // There are some legit uses in changes.html, setup.html, and
-      // setupDatasetsXml.html.
-      hs = new HashSet();
-      hs.addAll(Arrays.asList(
-          String2.extractAllCaptureGroupsAsHashSet(content, "(&amp;[a-zA-Z]+?;)", 1).toArray(new String[0])));
-      sa = hs.toArray(new String[0]);
-      if (sa.length > 0) {
-        results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " &entities; :\n");
-        Arrays.sort(sa, new StringComparatorIgnoreCase());
-        results.append(String2.toNewlineString(sa));
-      }
-
-      // Look for {0}, {1}, etc that should have been replaced by replaceAll().
-      // There are some legit values on setupDatasetsXml.html in regexes ({nChar}:
-      // 12,14,4,6,7,8).
-      hs = new HashSet();
-      hs.addAll(Arrays.asList(
-          String2.extractAllCaptureGroupsAsHashSet(content, "(\\{\\d+\\})", 1).toArray(new String[0])));
-      sa = hs.toArray(new String[0]);
-      if (sa.length > 0) {
-        results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " {#} :\n");
-        Arrays.sort(sa, new StringComparatorIgnoreCase());
-        results.append(String2.toNewlineString(sa));
-      }
-    }
-    if (results.length() > 0)
-      throw new RuntimeException(results.toString());
-  }
-
 }

@@ -17,7 +17,6 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import tags.TagAWS;
 import tags.TagExternalOther;
 import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagThredds;
 
@@ -1136,57 +1135,6 @@ class FileVisitorDNLSTests {
     results = tTable.dataToString();
     Test.ensureEqual(results, expected, "results=\n" + results);
 
-  }
-
-  /**
-   * This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files"
-   * directory.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testErddap1FilesWAF2() throws Throwable {
-    // String2.log("\n*** FileVisitorDNLS.testErddapFilesWAF2()\n");
-
-    // *** test localhost
-    String2.log("\nThis test requires erdMWchla1day in localhost erddap.");
-    String url = "http://localhost:8080/cwexperimental/files/erdMWchla1day/";
-    String tFileNameRegex = "MW200219.*\\.nc(|\\.gz)";
-    boolean tRecursive = true;
-    String tPathRegex = ".*";
-    boolean tDirsToo = true;
-    Table table = FileVisitorDNLS.makeEmptyTable();
-    StringArray dirs = (StringArray) table.getColumn(0);
-    StringArray names = (StringArray) table.getColumn(1);
-    LongArray lastModifieds = (LongArray) table.getColumn(2);
-    LongArray sizes = (LongArray) table.getColumn(3);
-
-    // * test all features
-    String results = FileVisitorDNLS.addToWAFUrlList( // returns a list of errors or ""
-        url, tFileNameRegex, tRecursive, tPathRegex, tDirsToo,
-        dirs, names, lastModifieds, sizes);
-    Test.ensureEqual(results, "", "results=\n" + results);
-    results = table.dataToString();
-    String expected = "directory,name,lastModified,size\n" +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002190_2002190_chla.nc.gz,1535062380000,3541709\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002191_2002191_chla.nc.gz,1535062380000,2661568\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002192_2002192_chla.nc.gz,1535062380000,2680618\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002193_2002193_chla.nc.gz,1535062380000,2392851\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002194_2002194_chla.nc.gz,1535062380000,2209197\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002195_2002195_chla.nc.gz,1535062380000,2246841\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002196_2002196_chla.nc.gz,1535062380000,1543949\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002197_2002197_chla.nc.gz,1535062380000,1846579\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002198_2002198_chla.nc.gz,1535062380000,2252800\n"
-        +
-        "http://localhost:8080/cwexperimental/files/erdMWchla1day/,MW2002199_2002199_chla.nc.gz,1535062380000,2547736\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
   /**
