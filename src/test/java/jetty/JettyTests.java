@@ -35,6 +35,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
 import tags.TagJetty;
+import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class JettyTests {
@@ -48,6 +49,7 @@ class JettyTests {
   @BeforeAll
   public static void setUp() throws Throwable {
     Initialization.edStatic();
+    EDDTestDataset.generateDatasetsXml();
 
     server = new Server(PORT);
 
@@ -1377,7 +1379,7 @@ class JettyTests {
         "QT_5025,name,QT\n" +
         "ST_6025,*DATA_TYPE*,float\n" +
         "ST_6025,_FillValue,1.0E35f\n" +
-        "ST_6025,actual_range,0.0f,6.0f\n" +
+        "ST_6025,actual_range,0.0f,5.0f\n" +
         "ST_6025,colorBarContinuous,false\n" +
         "ST_6025,colorBarMaximum,8.0d\n" +
         "ST_6025,colorBarMinimum,0.0d\n" +
@@ -1442,8 +1444,7 @@ class JettyTests {
         // "dddd-dd-dd Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
     // "2017-05-26T18:30:46Z (local files)\\n" +
     // "2017-05-26T18:30:46Z
-    expected2 = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n"
-        +
+    expected2 = "http://localhost:" + PORT + "/erddap/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
         "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
         "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
         "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
