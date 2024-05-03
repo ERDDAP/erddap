@@ -148,6 +148,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testFromErddapFromErddap());
       datasetsXml.append(xmlFragment_testQuotes());
       datasetsXml.append(xmlFragment_ChukchiSea_454a_037a_fcf4());
+      datasetsXml.append(xmlFragment_erdGlobecBottle());
       datasetsXml.append(xmlFragment_testTableCopy());
       datasetsXml.append(xmlFragment_repPostDet());
       // datasetsXml.append(xmlFragment_jplMURSST41()); // very large files, not currently loaded
@@ -25275,6 +25276,392 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDTableFromErddap\" datasetID=\"ChukchiSea_454a_037a_fcf4\" active=\"true\">\n" + //
         "    <sourceUrl>https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4</sourceUrl>\n" + //
         "</dataset>\n";
+  }
+
+  public static EDD geterdGlobecBottle() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_erdGlobecBottle());
+  }
+
+  private static String xmlFragment_erdGlobecBottle() throws URISyntaxException {
+    return "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"erdGlobecBottle\">\n" + //
+            "    <fileDir>" + Path.of(EDDTestDataset.class.getResource("/data/points/globec/").toURI()).toString()
+            + "</fileDir>\n" + //
+            "    <fileNameRegex>Globec_bottle_data_2002\\.nc</fileNameRegex>\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"title\">GLOBEC NEP Rosette Bottle Data (2002)</att>\n" + //
+            "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" + //
+            "        <att name=\"cdm_altitude_proxy\">bottle_posn</att>\n" + //
+            "        <att name=\"cdm_trajectory_variables\">cruise_id, ship</att>\n" + //
+            "        <att name=\"cdm_profile_variables\">cast, longitude, latitude, time</att>\n" + //
+            "        <att name=\"subsetVariables\">cruise_id, ship, cast, longitude, latitude, time</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"infoUrl\">https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics</att>\n" + //
+            "        <att name=\"institution\">GLOBEC</att>\n" + //
+            "        <att name=\"keywords\">10um,\n" + //
+            "Earth Science &gt; Biosphere &gt; Vegetation &gt; Photosynthetically Active Radiation,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrite,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrogen,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Oxygen,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Pigments,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Silicate,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Optics &gt; Attenuation/Transmission,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" + //
+            "Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity,\n" + //
+            "active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+            "        <att name=\"observationDimension\">null</att>\n" + //
+            "        <att name=\"sourceUrl\">(local files; contact erd.data@noaa.gov)</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">\n" + //
+            "GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" + //
+            "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" + //
+            "Notes:\n" + //
+            "Physical data processed by Jane Fleischbein (OSU).\n" + //
+            "Chlorophyll readings done by Leah Feinberg (OSU).\n" + //
+            "Nutrient analysis done by Burke Hales (OSU).\n" + //
+            "Sal00 - salinity calculated from primary sensors (C0,T0).\n" + //
+            "Sal11 - salinity calculated from secondary sensors (C1,T1).\n" + //
+            "secondary sensor pair was used in final processing of CTD data for\n" + //
+            "most stations because the primary had more noise and spikes. The\n" + //
+            "primary pair were used for cast #9, 24, 48, 111 and 150 due to\n" + //
+            "multiple spikes or offsets in the secondary pair.\n" + //
+            "Nutrient samples were collected from most bottles; all nutrient data\n" + //
+            "developed from samples frozen during the cruise and analyzed ashore;\n" + //
+            "data developed by Burke Hales (OSU).\n" + //
+            "Operation Detection Limits for Nutrient Concentrations\n" + //
+            "Nutrient  Range         Mean    Variable         Units\n" + //
+            "PO4       0.003-0.004   0.004   Phosphate        micromoles per liter\n" + //
+            "N+N       0.04-0.08     0.06    Nitrate+Nitrite  micromoles per liter\n" + //
+            "Si        0.13-0.24     0.16    Silicate         micromoles per liter\n" + //
+            "NO2       0.003-0.004   0.003   Nitrite          micromoles per liter\n" + //
+            "Dates and Times are UTC.\n" + //
+            "\n" + //
+            "For more information, see https://www.bco-dmo.org/dataset/2452\n" + //
+            "\n" + //
+            "Inquiries about how to access this data should be directed to\n" + //
+            "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\n" + //
+            "</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>cruise_id</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"cf_role\">trajectory_id</att>\n" + //
+            "            <att name=\"long_name\">Cruise ID</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>ship</sourceName>\n" + //
+            "        <dataType>String</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Ship</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>cast_no</sourceName>\n" + //
+            "        <destinationName>cast</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">140</att>\n" + //
+            "            <att name=\"ioos_category\">Identifier</att>\n" + //
+            "            <att name=\"long_name\">Cast Number</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lon100</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.01</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>lat100</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"scale_factor\" type=\"float\">0.01</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>datetime_epoch</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"cf_role\">profile_id</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>bottle_posn</sourceName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">12</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Bottle Number</att>\n" + //
+            "            <att name=\"missing_value\" type=\"short\">-128</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>chl_a_total</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">.03</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Chlorophyll-a</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
+            "            <att name=\"units\">ug L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>chl_a_10um</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">.03</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Chlorophyll-a after passing 10um screen</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
+            "            <att name=\"units\">ug L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>phaeo_total</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">.03</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Total Phaeopigments</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"units\">ug L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>phaeo_10um</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">.03</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Phaeopigments 10um</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"units\">ug L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sal00</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"long_name\">Practical Salinity from T0 and C0 Sensors</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sal11</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"long_name\">Practical Salinity from T1 and C1 Sensors</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>t0</sourceName>\n" + //
+            "        <destinationName>temperature0</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Temperature from T0 Sensor</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>t1</sourceName>\n" + //
+            "        <destinationName>temperature1</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"long_name\">Sea Water Temperature from T1 Sensor</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>fluor_v</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Fluorescence Voltage</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <!-- att name=\"standard_name\"></att> //lots of radiance options; I don't know which -->\n" + //
+            "            <att name=\"units\">volts</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>xmiss_v</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5</att>\n" + //
+            "            <att name=\"ioos_category\">Optical Properties</att>\n" + //
+            "            <att name=\"long_name\">Transmissivity Voltage</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <!-- att name=\"standard_name\"></att> //lots of radiance options; I don't know which -->\n" + //
+            "            <att name=\"units\">volts</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>po4</sourceName>\n" + //
+            "        <destinationName>PO4</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">4</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"long_name\">Phosphate</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">mole_concentration_of_phosphate_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>n_n</sourceName>\n" + //
+            "        <destinationName>N_N</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"long_name\">Nitrate plus Nitrite</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-99.0</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>no3</sourceName>\n" + //
+            "        <destinationName>NO3</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-99.0</att>\n" + //
+            "            <att name=\"long_name\">Nitrate</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">mole_concentration_of_nitrate_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>si</sourceName>\n" + //
+            "        <destinationName>Si</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">50</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"long_name\">Silicate</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">mole_concentration_of_silicate_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>no2</sourceName>\n" + //
+            "        <destinationName>NO2</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"long_name\">Nitrite</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">mole_concentration_of_nitrite_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>nh4</sourceName>\n" + //
+            "        <destinationName>NH4</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" + //
+            "            <att name=\"long_name\">Ammonium</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">mole_concentration_of_ammonium_in_sea_water</att>\n" + //
+            "            <att name=\"units\">micromoles L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>oxygen</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10</att>\n" + //
+            "            <att name=\"ioos_category\">Dissolved O2</att>\n" + //
+            "            <att name=\"long_name\">Oxygen</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <att name=\"standard_name\">volume_fraction_of_oxygen_in_sea_water</att>\n" + //
+            "            <att name=\"units\">mL L-1</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>par</sourceName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">3</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Photosynthetically Active Radiation</att>\n" + //
+            "            <att name=\"missing_value\" type=\"float\">-9999.0</att>\n" + //
+            "            <!-- att name=\"standard_name\">lots of options, I don't know which</att -->\n" + //
+            "            <att name=\"units\">volts</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n";
   }
 
   public static EDD gettestTableCopy() throws Throwable {

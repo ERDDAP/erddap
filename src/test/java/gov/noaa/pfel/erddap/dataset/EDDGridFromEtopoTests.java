@@ -9,10 +9,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagImageComparison;
-import tags.TagLocalERDDAP;
 import testDataset.Initialization;
 
 class EDDGridFromEtopoTests {
@@ -336,101 +334,5 @@ class EDDGridFromEtopoTests {
 
     String2.log("\n*** EDDGridFromEtopo.test finished.");
 
-  }
-
-  /**
-   * This tests the /files/ "files" system.
-   * This requires etopo180 or etopo360 in the localhost ERDDAP.
-   *
-   * @param tDatasetID etopo180 or etopo360
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles(String tDatasetID) throws Throwable {
-
-    // testFiles("etopo180");
-    // testFiles("etopo360");
-
-    String2.log("\n*** EDDGridFromEtopo.testFiles(" + tDatasetID + ")\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
-
-    try {
-      // get /files/datasetID/.csv
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/.csv");
-      expected = "Name,Last modified,Size,Description\n" +
-          "etopo1_ice_g_i2.bin,1304621650000,466624802,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // get /files/datasetID/
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/");
-      Test.ensureTrue(results.indexOf("etopo1&#x5f;ice&#x5f;g&#x5f;i2&#x2e;bin") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">466624802<") > 0, "results=\n" + results);
-
-      // get /files/datasetID/subdir/.csv
-
-      // download a file in root
-      String2.log("This test takes ~30 seconds.");
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/etopo1_ice_g_i2.bin");
-      results = String2.annotatedString(results.substring(0, 50));
-      expected = "|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239]|[239][end]";
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-      // download a file in subdir
-
-      // try to download a non-existent dataset
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent directory
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/"
-          + tDatasetID + "/gibberish/\n" +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/" + tDatasetID + "/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/"
-          + tDatasetID + "/gibberish.csv\n" +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file in existant subdir
-
-    } catch (Throwable t) {
-      throw new RuntimeException("Unexpected error. This test requires etopo in the localhost ERDDAP.", t);
-    }
   }
 }

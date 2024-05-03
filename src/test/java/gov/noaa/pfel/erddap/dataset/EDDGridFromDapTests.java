@@ -3225,7 +3225,7 @@ class EDDGridFromDapTests {
         "        <att name=\"dataType\">Grid</att>\n" +
         "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
         +
-        "        <att name=\"history\">Mon Apr 01 16:38:42 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
+        "        <att name=\"history\">DDD MMM dd hh:mm:ss HST yyyy : imported by GrADS Data Server 2.0</att>\n"
         +
         "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
         "    </sourceAttributes -->\n" +
@@ -3436,7 +3436,7 @@ class EDDGridFromDapTests {
 
     String results = EDDGridFromDap.generateDatasetsXml(url,
         null, null, null, -1, null);
-
+    results = results.replaceAll("... ... .. ..:..:.. HST ....", "DDD MMM dd hh:mm:ss HST yyyy");
     Test.ensureEqual(results.substring(0, expected1.length()), expected1,
         "results=\n" + results);
 
@@ -3448,6 +3448,7 @@ class EDDGridFromDapTests {
         "-verbose", "-i#testGenerateDatasetsXml",
         "EDDGridFromDap", url, "-1" }, // defaultReloadEvery,
         false); // doIt loop?
+    gdxResults = gdxResults.replaceAll("... ... .. ..:..:.. HST ....", "DDD MMM dd hh:mm:ss HST yyyy");
     Test.ensureEqual(gdxResults.substring(0, expected1.length()), expected1,
         "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -3476,7 +3477,7 @@ class EDDGridFromDapTests {
           "        <att name=\"dataType\">Grid</att>\n" +
           "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
           +
-          "        <att name=\"history\">Mon Apr 01 16:38:42 HST 2024 : imported by GrADS Data Server 2.0</att>\n"
+          "        <att name=\"history\">DDD MMM DD hh:mm:ss HST YYYY : imported by GrADS Data Server 2.0</att>\n"
           +
           "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
           "    </sourceAttributes -->\n" +
@@ -3695,6 +3696,8 @@ class EDDGridFromDapTests {
       results = EDDGridFromDap.generateDatasetsXml(url,
           null, null, null, -1, null);
 
+      results = results.replaceAll("[a-zA-Z]+ [a-zA-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ HST [0-9]+",
+          "DDD MMM DD hh:mm:ss HST YYYY");
       Test.ensureEqual(results.substring(0, expected1.length()), expected1,
           "results=\n" + results);
 

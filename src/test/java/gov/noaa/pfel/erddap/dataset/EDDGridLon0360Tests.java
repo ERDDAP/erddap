@@ -7,12 +7,10 @@ import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -76,154 +74,6 @@ class EDDGridLon0360Tests {
     Test.ensureEqual(gdxResults, results,
         "Unexpected results from GenerateDatasetsXml.doIt. results=\n" + results);
 
-  }
-
-  /**
-   * This tests a dataset that is initially all LT0.
-   *
-   * @throws Throwable if trouble
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  @TagImageComparison
-  void testLT0() throws Throwable {
-    // String2.log("\n****************** EDDGridLon0360.testLT0()
-    // *****************\n");
-    // testVerboseOn();
-    int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
-    int po;
-    String dir = EDStatic.fullTestCacheDirectory;
-
-    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_erdVHNchlamday_Lon0360();
-
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir,
-        eddGrid.className() + "_LT0_Entire", ".dds");
-    results = File2.directReadFrom88591File(dir + tName);
-    results = results.replaceAll("time = \\d{2,3}", "time = ddd");
-    expected = "Dataset {\n" +
-        "  Float64 time[time = ddd];\n" +
-        "  Float64 altitude[altitude = 1];\n" +
-        "  Float64 latitude[latitude = 11985];\n" +
-        "  Float64 longitude[longitude = 9333];\n" +
-        "  GRID {\n" +
-        "    ARRAY:\n" +
-        "      Float32 chla[time = ddd][altitude = 1][latitude = 11985][longitude = 9333];\n" +
-        "    MAPS:\n" +
-        "      Float64 time[time = ddd];\n" +
-        "      Float64 altitude[altitude = 1];\n" +
-        "      Float64 latitude[latitude = 11985];\n" +
-        "      Float64 longitude[longitude = 9333];\n" +
-        "  } chla;\n" +
-        "} test_erdVHNchlamday_Lon0360;\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir,
-        eddGrid.className() + "_LT0_Entire", ".das");
-    results = File2.directReadFrom88591File(dir + tName);
-    expected = "longitude {\n" +
-        "    String _CoordinateAxisType \"Lon\";\n" +
-        "    Float64 actual_range 180.00375, 249.99375;\n" +
-        "    String axis \"X\";\n" +
-        "    String coordsys \"geographic\";\n" +
-        "    String ioos_category \"Location\";\n" +
-        "    String long_name \"Longitude\";\n" +
-        "    String point_spacing \"even\";\n" +
-        "    String standard_name \"longitude\";\n" +
-        "    String units \"degrees_east\";\n" +
-        "  }\n";
-    po = results.indexOf(expected.substring(0, 30));
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    expected = "    Float64 geospatial_lon_max 249.99375;\n" +
-        "    Float64 geospatial_lon_min 180.00375;\n" +
-        "    Float64 geospatial_lon_resolution 0.007500000000000001;\n" +
-        "    String geospatial_lon_units \"degrees_east\";\n";
-    po = results.indexOf(expected.substring(0, 30));
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    expected = "    Float64 Westernmost_Easting 180.00375;\n" +
-        "  }\n" +
-        "}\n";
-    po = results.indexOf(expected.substring(0, 30));
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // lon values
-    userDapQuery = "longitude[0:1000:9332]";
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
-        eddGrid.className() + "_LT0_lon", ".csv");
-    results = File2.directReadFrom88591File(dir + tName);
-    results = String2.replaceAll(results, "\n", ", ");
-    expected = "longitude, degrees_east, 180.00375, 187.50375, 195.00375, 202.50375, 210.00375, 217.50375, 225.00375, 232.50375, 240.00375, 247.50375, ";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // entire lon range
-    userDapQuery = "chla[(2015-03-16)][][(89.77152):5500:(-0.10875)][(180.00375):4500:(249.99375)]"; // [-179.99625:4500:-110.00625]
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
-        eddGrid.className() + "_LT0_1", ".csv");
-    results = File2.directReadFrom88591File(dir + tName);
-    // String2.log(results);
-    expected =
-        // from same request from cw erddap: erdVHNchlamday
-        // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday.htmlTable?chla%5B(2015-03-16):1:(2015-03-16)%5D%5B(0.0):1:(0.0)%5D%5B(89.77125):5500:(-0.10875)%5D%5B(-179.99625):4500:(-110.00625)%5D
-        // but add 360 to the lon values to get the values below
-        "time,altitude,latitude,longitude,chla\n" +
-            "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-            "2015-03-16T00:00:00Z,0.0,89.77125,180.00375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,89.77125,213.75375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,89.77125,247.50375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,48.52125,180.00375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,48.52125,213.75375,0.29340988\n" +
-            "2015-03-16T00:00:00Z,0.0,48.52125,247.50375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,7.27125,180.00375,NaN\n" +
-            "2015-03-16T00:00:00Z,0.0,7.27125,213.75375,0.08209898\n" +
-            "2015-03-16T00:00:00Z,0.0,7.27125,247.50375,0.12582141\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // lon subset
-    userDapQuery = "chla[(2015-03-16)][][(10):500:(0)][(200):2000:(240)]";
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
-        eddGrid.className() + "_LT0_2", ".csv");
-    results = File2.directReadFrom88591File(dir + tName);
-    // String2.log(results);
-    expected =
-        // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday.htmlTable?chla%5B(2015-03-16):1:(2015-03-16)%5D%5B(0.0):1:(0.0)%5D%5B(10):500:(0)%5D%5B(-160):2000:(-120)%5D
-        // but add 360 to get lon values below
-        "time,altitude,latitude,longitude,chla\n" +
-            "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-            "2015-03-16T00:00:00Z,0.0,10.00125,199.99875,0.03348998\n" +
-            "2015-03-16T00:00:00Z,0.0,10.00125,214.99875,0.06315609\n" +
-            "2015-03-16T00:00:00Z,0.0,10.00125,229.99875,0.06712352\n" +
-            "2015-03-16T00:00:00Z,0.0,6.25125,199.99875,0.089674756\n" +
-            "2015-03-16T00:00:00Z,0.0,6.25125,214.99875,0.12793668\n" +
-            "2015-03-16T00:00:00Z,0.0,6.25125,229.99875,0.15159287\n" +
-            "2015-03-16T00:00:00Z,0.0,2.50125,199.99875,0.16047283\n" +
-            "2015-03-16T00:00:00Z,0.0,2.50125,214.99875,0.15874723\n" +
-            "2015-03-16T00:00:00Z,0.0,2.50125,229.99875,0.12635218\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // test image
-    userDapQuery = "chla[(2015-03-16)][][][]&.land=under";
-    String baseName = eddGrid.className() + "_NEPacificNowLon0360";
-    tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery,
-        Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR), baseName, ".png");
-    // Test.displayInBrowser("file://" + dir + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-
-    // test of /files/ system for fromErddap in local host dataset
-    String2.log("\n*** The following test requires test_erdVHNchlamday_Lon0360 in the localhost ERDDAP.");
-    results = SSR.getUrlResponseStringUnchanged(
-        "http://localhost:8080/cwexperimental/files/test_erdVHNchlamday_Lon0360/");
-    expected = "VHN2015060&#x5f;2015090&#x5f;chla&#x2e;nc";
-    Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-    // String2.log("\n*** EDDGridLon0360.testLT0() finished.");
   }
 
   /**

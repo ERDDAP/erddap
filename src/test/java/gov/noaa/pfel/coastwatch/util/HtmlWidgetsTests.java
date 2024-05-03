@@ -389,7 +389,6 @@ class HtmlWidgetsTests {
 
   @org.junit.jupiter.api.Test
   @TagAWS
-  @TagLocalERDDAP
   @TagIncompleteTest
   void testPublicAwsS3MediaFiles() {
     // String2.log("\n*** HtmlWidgets.testPublicAwsS3MediaFiles()\n" +
@@ -403,7 +402,6 @@ class HtmlWidgetsTests {
 
   @org.junit.jupiter.api.Test
   @TagAWS
-  @TagLocalERDDAP
   @TagIncompleteTest
   void testPrivateAwsS3MediaFiles() {
     // String2.log("\n*** HtmlWidgets.testPrivateAwsS3MediaFiles()\n" +

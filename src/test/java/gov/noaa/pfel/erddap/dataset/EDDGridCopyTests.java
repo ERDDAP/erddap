@@ -11,11 +11,9 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagIncompleteTest;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -357,90 +355,5 @@ class EDDGridCopyTests {
             Calendar2.epochSecondsToIsoStringTZ(
                 Calendar2.nowStringToEpochSeconds("now-3days"))
             + " (with rounding)");
-  }
-
-  /**
-   * This tests the /files/ "files" system.
-   * This requires testGridCopy in the localhost ERDDAP.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles() throws Throwable {
-    // String2.log("\n*** EDDGridCopy.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
-
-    try {
-      // get /files/datasetID/.csv
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/testGridCopy/.csv");
-      expected = "Name,Last modified,Size,Description\n" +
-          "1.1991888E9.nc,1429801650000,12465108,\n" +
-          "1.1992752E9.nc,1429801652000,12465108,\n" +
-          "1.1993616E9.nc,1429801654000,12465108,\n";
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-      // get /files/datasetID/
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/testGridCopy/");
-      Test.ensureTrue(results.indexOf("1&#x2e;1992752E9&#x2e;nc") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">12465108<") > 0, "results=\n" + results);
-
-      // download a file in root
-      results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/testGridCopy/1.1992752E9.nc").substring(0, 50));
-      expected = "CDF[1][0][0][0][0][0][0][0][10]\n" +
-          "[0][0][0][4][0][0][0][4]time[0][0][0][1][0][0][0][8]altitude[0][0][0][1][0][0][0][8]la[end]";
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-
-      // try to download a non-existent dataset
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent directory
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/testGridCopy/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testGridCopy/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/testGridCopy/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testGridCopy/gibberish.csv\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-    } catch (Throwable t) {
-      throw new RuntimeException("Unexpected error. This test requires testGridCopy in the localhost ERDDAP.", t);
-    }
   }
 }
