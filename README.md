@@ -1,4 +1,4 @@
-# Welcome to the ERDDAP repo. 
+# Welcome to the ERDDAP :tm: repo. 
 
 ERDDAP is a scientific data server that gives users a simple, consistent way to download subsets of 
 gridded and tabular scientific datasets in common file formats and make graphs and maps.
