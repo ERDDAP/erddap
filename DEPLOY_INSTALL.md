@@ -209,7 +209,7 @@ ERDDAP can run on any server that supports Java and Tomcat (and other applicatio
      
 4.  [Install the erddap.war file.](#erddap.war)  
     On Linux, Mac, and Windows, download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddap.war) into _tomcat_/webapps .  
-    (version 2.23, 572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated 2023-02-27)  
+    (version 2.23, 572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated 2023-03-03)  
     The .war file is big because it contains high resolution coastline, boundary, and elevation data needed to create maps.
     
     \[Some previous versions are also available.  
