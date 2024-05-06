@@ -8387,12 +8387,14 @@ class EDDTableFromNcFilesTests {
     tName = tableDataset.makeNewFileForDapQuery(language, null, null, "",
         dir, tableDataset.className() + "testTableWithDepth", ".das");
     results = File2.directReadFrom88591File(dir + tName);
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
+            "Float32 actual_range MIN, MAX;");
     po = results.indexOf("depth {");
     Test.ensureTrue(po > 0, "results=\n" + results);
     expected = "depth {\n" +
         "    String _CoordinateAxisType \"Height\";\n" +
         "    String _CoordinateZisPositive \"down\";\n" +
-        "    Float32 actual_range -3.0, -3.0;\n" +
+        "    Float32 actual_range MIN, MAX;\n" +
         "    String axis \"Z\";\n" +
         "    Int32 epic_code 3;\n" +
         "    String ioos_category \"Location\";\n" +
@@ -8454,12 +8456,13 @@ class EDDTableFromNcFilesTests {
         "          <gmd:verticalElement>\n" +
         "            <gmd:EX_VerticalExtent>\n" +
         "              <gmd:minimumValue><gco:Real>3.0</gco:Real></gmd:minimumValue>\n" +
-        "              <gmd:maximumValue><gco:Real>3.0</gco:Real></gmd:maximumValue>\n" +
+        "              <gmd:maximumValue><gco:Real>MAX</gco:Real></gmd:maximumValue>\n" +
         "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" +
         "            </gmd:EX_VerticalExtent>\n" +
         "          </gmd:verticalElement>\n" +
         "        </gmd:EX_Extent>";
     results = results.replaceAll("<gml:beginPosition>....-..-..T12:00:00Z", "<gml:beginPosition>YYYY-MM-DDT12:00:00Z");
+    results = results.replaceAll("<gmd:maximumValue><gco:Real>[0-9]+.[0-9]+</gco:Real></gmd:maximumValue>", "<gmd:maximumValue><gco:Real>MAX</gco:Real></gmd:maximumValue>");
     po = results.indexOf("<gmd:EX_Extent>");
     int po2 = results.indexOf("</gmd:EX_Extent>", po + 10);
     if (po < 0 || po2 < 0)

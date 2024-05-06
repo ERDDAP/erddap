@@ -7,9 +7,17 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.awt.Color;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import gov.noaa.pfel.coastwatch.util.SSR;
+import testDataset.Initialization;
 
 class CompoundColorMapTests {
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /**
    * This tests the methods in this class.

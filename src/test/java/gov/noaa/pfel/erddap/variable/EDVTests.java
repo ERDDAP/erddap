@@ -1,9 +1,18 @@
 package gov.noaa.pfel.erddap.variable;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
+import testDataset.Initialization;
+
 class EDVTests {
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /**
    * This tests the methods of this class.

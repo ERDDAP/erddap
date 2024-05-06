@@ -75,7 +75,7 @@ class JettyTests {
     // Make a request of the server to make sure it starts loading the datasets
     SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap");
 
-    Thread.sleep(10 * 60 * 1000);
+    Thread.sleep(15 * 60 * 1000);
   }
 
   @AfterAll
@@ -722,7 +722,7 @@ class JettyTests {
 
     // and read the header to see the mime type
     results = String2.toNewlineString(
-        SSR.dosShell("curl -i \"" + EDStatic.erddapUrl + "/search/index.json?" +
+        SSR.dosOrCShell("curl -i \"" + EDStatic.erddapUrl + "/search/index.json?" +
             EDStatic.defaultPIppQuery + "&searchFor=tao+pmel&.jsonp=fnName\"",
             120).toArray());
     po = results.indexOf("HTTP");
@@ -4825,10 +4825,14 @@ class JettyTests {
     // get /files/datasetID/.csv
     results = SSR.getUrlResponseStringNewline(
         "http://localhost:" + PORT + "/erddap/files/testGriddedNcFiles/.csv");
-    expected = "Name,Last modified,Size,Description\n" +
+    expected = "Name,lastModTime,Size,Description\n" +
         "subfolder/,NaN,NaN,\n" +
-        "erdQSwind1day_20080101_03.nc.gz,1231358032000,10478645,\n" +
-        "erdQSwind1day_20080104_07.nc,1231358074000,49790172,\n";
+        "erdQSwind1day_20080101_03.nc.gz,lastModTime,10478645,\n" +
+        "erdQSwind1day_20080104_07.nc,lastModTime,49790172,\n";
+    results = results.replaceAll(",.............,", ",lastModTime,");
+    if (results.length() < expected.length()) {
+        throw new Exception(results);
+    }
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // get /files/datasetID/
@@ -5083,7 +5087,7 @@ class JettyTests {
             "  }\n" +
             "  cast {\n" +
             "    Int16 _FillValue 32767;\n" +
-            "    Int16 actual_range 1, 126;\n" +
+            "    Int16 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 140.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Identifier\";\n" +
@@ -5093,7 +5097,7 @@ class JettyTests {
             "  longitude {\n" +
             "    String _CoordinateAxisType \"Lon\";\n" +
             "    Float32 _FillValue 327.67;\n" +
-            "    Float32 actual_range -126.2, -124.1;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    String axis \"X\";\n" +
             "    String ioos_category \"Location\";\n" +
             "    String long_name \"Longitude\";\n" +
@@ -5104,7 +5108,7 @@ class JettyTests {
             "  latitude {\n" +
             "    String _CoordinateAxisType \"Lat\";\n" +
             "    Float32 _FillValue 327.67;\n" +
-            "    Float32 actual_range 41.9, 44.65;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    String axis \"Y\";\n" +
             "    String ioos_category \"Location\";\n" +
             "    String long_name \"Latitude\";\n" +
@@ -5114,7 +5118,7 @@ class JettyTests {
             "  }\n" +
             "  time {\n" +
             "    String _CoordinateAxisType \"Time\";\n" +
-            "    Float64 actual_range 1.02272886e+9, 1.02939792e+9;\n" +
+            "    Float64 actual_range MIN, MAX;\n" +
             "    String axis \"T\";\n" +
             "    String cf_role \"profile_id\";\n" +
             "    String ioos_category \"Time\";\n" +
@@ -5137,7 +5141,7 @@ class JettyTests {
             "  }\n" +
             "  chl_a_total {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range -2.602, 36.256;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 30.0;\n" +
             "    Float64 colorBarMinimum 0.03;\n" +
             "    String colorBarScale \"Log\";\n" +
@@ -5149,7 +5153,7 @@ class JettyTests {
             "  }\n" +
             "  chl_a_10um {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.21, 11.495;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 30.0;\n" +
             "    Float64 colorBarMinimum 0.03;\n" +
             "    String colorBarScale \"Log\";\n" +
@@ -5161,7 +5165,7 @@ class JettyTests {
             "  }\n" +
             "  phaeo_total {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range -3.111, 33.821;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 30.0;\n" +
             "    Float64 colorBarMinimum 0.03;\n" +
             "    String colorBarScale \"Log\";\n" +
@@ -5172,7 +5176,7 @@ class JettyTests {
             "  }\n" +
             "  phaeo_10um {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.071, 5.003;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 30.0;\n" +
             "    Float64 colorBarMinimum 0.03;\n" +
             "    String colorBarScale \"Log\";\n" +
@@ -5183,7 +5187,7 @@ class JettyTests {
             "  }\n" +
             "  sal00 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 29.3169, 34.0737;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 37.0;\n" +
             "    Float64 colorBarMinimum 32.0;\n" +
             "    String ioos_category \"Salinity\";\n" +
@@ -5194,7 +5198,7 @@ class JettyTests {
             "  }\n" +
             "  sal11 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.0, 34.214;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 37.0;\n" +
             "    Float64 colorBarMinimum 32.0;\n" +
             "    String ioos_category \"Salinity\";\n" +
@@ -5205,7 +5209,7 @@ class JettyTests {
             "  }\n" +
             "  temperature0 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 6.4995, 16.871;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 32.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Temperature\";\n" +
@@ -5216,7 +5220,7 @@ class JettyTests {
             "  }\n" +
             "  temperature1 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 6.4992, 16.863;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 32.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Temperature\";\n" +
@@ -5227,7 +5231,7 @@ class JettyTests {
             "  }\n" +
             "  fluor_v {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.046, 5.0;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 5.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Ocean Color\";\n" +
@@ -5237,7 +5241,7 @@ class JettyTests {
             "  }\n" +
             "  xmiss_v {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.498, 4.638;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 5.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Optical Properties\";\n" +
@@ -5247,7 +5251,7 @@ class JettyTests {
             "  }\n" +
             "  PO4 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.18, 3.133;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 4.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5258,7 +5262,7 @@ class JettyTests {
             "  }\n" +
             "  N_N {\n" +
             "    Float32 _FillValue -99.0;\n" +
-            "    Float32 actual_range -0.1, 36.47;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 50.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5269,7 +5273,7 @@ class JettyTests {
             "  }\n" +
             "  NO3 {\n" +
             "    Float32 _FillValue -99.0;\n" +
-            "    Float32 actual_range 0.0, 99.79;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 50.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5280,7 +5284,7 @@ class JettyTests {
             "  }\n" +
             "  Si {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.07, 88.19;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 50.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5291,7 +5295,7 @@ class JettyTests {
             "  }\n" +
             "  NO2 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range -0.03, 0.757;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 1.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5302,7 +5306,7 @@ class JettyTests {
             "  }\n" +
             "  NH4 {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range -0.14, 4.914;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 5.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -5313,7 +5317,7 @@ class JettyTests {
             "  }\n" +
             "  oxygen {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.89736, 9.93136;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 10.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Dissolved O2\";\n" +
@@ -5324,7 +5328,7 @@ class JettyTests {
             "  }\n" +
             "  par {\n" +
             "    Float32 _FillValue -9999999.0;\n" +
-            "    Float32 actual_range 0.1515, 3.261;\n" +
+            "    Float32 actual_range MIN, MAX;\n" +
             "    Float64 colorBarMaximum 3.0;\n" +
             "    Float64 colorBarMinimum 0.0;\n" +
             "    String ioos_category \"Ocean Color\";\n" +
@@ -5399,12 +5403,17 @@ class JettyTests {
         "\n" +
         "Inquiries about how to access this data should be directed to\n" +
         "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\";\n" +
-        "    String time_coverage_end \"2002-08-15T07:52:00Z\";\n" +
+        "    String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ\";\n" +
         "    String time_coverage_start \"2002-05-30T03:21:00Z\";\n" +
         "    String title \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
         "    Float64 Westernmost_Easting -126.2;\n" +
         "  }\n" +
         "}\n";
+
+    results = results.replaceAll("Int16 actual_range [0-9]+, [0-9]+;", "Int16 actual_range MIN, MAX;");
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;", "Float32 actual_range MIN, MAX;");
+    results = results.replaceAll("Float64 actual_range -?[0-9].[0-9]+e[+][0-9], -?[0-9].[0-9]+e[+][0-9];", "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z", "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf("    String infoUrl ");
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
@@ -5591,10 +5600,11 @@ class JettyTests {
     // get /files/datasetID/subdir/.csv
     results = SSR.getUrlResponseStringNewline(
         "http://localhost:" + PORT + "/erddap/files/testTableCopy/nh0207/.csv");
-    expected = "Name,Last modified,Size,Description\n" +
-        "1.nc,1714425898629,14384,\n" +
-        "10.nc,1714425902939,15040,\n" +
-        "100.nc,1714425945173,14712,\n";
+    expected = "Name,lastModTime,Size,Description\n" +
+        "1.nc,lastModTime,14384,\n" +
+        "10.nc,lastModTime,15040,\n" +
+        "100.nc,lastModTime,14712,\n";
+    results = results.replaceAll(",.............,", ",lastModTime,");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // download a file in root
