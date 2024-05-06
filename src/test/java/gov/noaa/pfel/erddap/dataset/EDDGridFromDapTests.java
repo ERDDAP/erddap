@@ -6107,321 +6107,6 @@ class EDDGridFromDapTests {
   }
 
   /**
-   * This tests a depth axis variable. This requires
-   * hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  @TagImageComparison
-  void testGridWithDepth2_LonPM180() throws Throwable {
-    String2.log("\n*** EDDGridFromDap.testGridWithDepth2_LonPM180");
-    String results, expected, tName;
-    int po;
-    int language = 0;
-
-    // test generateDatasetsXml -- It should catch z variable and convert to
-    // altitude.
-    // !!! I don't have a test dataset with real altitude data that isn't already
-    // called altitude!
-    /*
-     * String url =
-     * "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
-     * results = generateDatasetsXml(true, url,
-     * null, null, null, 10080, null);
-     * po = results.indexOf("<sourceName>z</sourceName>");
-     * Test.ensureTrue(po >= 0, "results=\n" + results);
-     * expected =
-     * "<sourceName>z</sourceName>\n" +
-     * "        <destinationName>depth</destinationName>\n" +
-     * "        <!-- sourceAttributes>\n" +
-     * "            <att name=\"cartesian_axis\">Z</att>\n" +
-     * "            <att name=\"long_name\">Depth</att>\n" +
-     * "            <att name=\"positive\">down</att>\n" +
-     * "            <att name=\"units\">m</att>\n" +
-     * "        </sourceAttributes -->\n" +
-     * "        <addAttributes>\n" +
-     * "            <att name=\"ioos_category\">Location</att>\n" +
-     * "            <att name=\"standard_name\">depth</att>\n" +
-     * "        </addAttributes>\n" +
-     * "    </axisVariable>";
-     * Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-     * "results=\n" + results);
-     */
-
-    // Test that constructor of EDVDepthGridAxis added proper metadata for depth
-    // variable.
-    // EDDGrid gridDataset = (EDDGrid) EDDGridFromDap.oneFromDatasetsXml(null,
-    // "hawaii_d90f_20ee_c4cb_LonPM180");
-    EDDGrid gridDataset = (EDDGrid) EDDTestDataset.gethawaii_d90f_20ee_c4cb_LonPM180();
-
-    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-        EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".das");
-    results = File2.directReadFrom88591File(
-        EDStatic.fullTestCacheDirectory + tName);
-    po = results.indexOf("depth {");
-    Test.ensureTrue(po >= 0, "results=\n" + results);
-    expected = "depth {\n" +
-        "    String _CoordinateAxisType \"Height\";\n" +
-        "    String _CoordinateZisPositive \"down\";\n" +
-        "    Float64 actual_range 5.01, 5375.0;\n" + // 2014-01-17 was 5.0, 5374.0
-        "    String axis \"Z\";\n" +
-        "    String ioos_category \"Location\";\n" +
-        "    String long_name \"Depth\";\n" +
-        "    String positive \"down\";\n" +
-        "    String standard_name \"depth\";\n" +
-        "    String units \"m\";\n" +
-        "  }";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // FGDC should deal with depth correctly
-    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-        EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".fgdc");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
-    po = results.indexOf("<vertdef>");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "<vertdef>\n" +
-        "      <depthsys>\n" +
-        "        <depthdn>Unknown</depthdn>\n" +
-        "        <depthres>Unknown</depthres>\n" +
-        "        <depthdu>meters</depthdu>\n" +
-        "        <depthem>Explicit depth coordinate included with horizontal coordinates</depthem>\n"
-        +
-        "      </depthsys>\n" +
-        "    </vertdef>\n" +
-        "  </spref>";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // ISO 19115 should deal with depth correctly
-    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-        EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".iso19115");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
-
-    po = results.indexOf(
-        "codeListValue=\"vertical\">");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
-        "          </gmd:dimensionName>\n" +
-        "          <gmd:dimensionSize>\n" +
-        "            <gco:Integer>40</gco:Integer>\n" +
-        "          </gmd:dimensionSize>\n" +
-        "          <gmd:resolution>\n" +
-        "            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n" + // 2014-01-17
-                                                                                  // was
-                                                                                  // 137.66666666666666
-        "          </gmd:resolution>\n" +
-        "        </gmd:MD_Dimension>\n" +
-        "      </gmd:axisDimensionProperties>\n";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    po = results.indexOf(
-        "<gmd:EX_VerticalExtent>");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "<gmd:EX_VerticalExtent>\n" +
-        "              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n" +
-        "              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n" +
-        "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" +
-        "            </gmd:EX_VerticalExtent>";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // test WMS 1.1.0 service getCapabilities from localhost erddap
-    String2.log("\nTest WMS 1.1.0 getCapabilities\n" +
-        "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
-    results = SSR.getUrlResponseStringUnchanged(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "service=WMS&request=GetCapabilities&version=1.1.0");
-    po = results.indexOf("</Layer>");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "</Layer>\n" +
-        "      <Layer>\n" +
-        "        <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180</Title>\n"
-        +
-        "        <SRS>EPSG:4326</SRS>\n" +
-        "        <LatLonBoundingBox minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" />\n"
-        +
-        "        <BoundingBox SRS=\"EPSG:4326\" minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n"
-        +
-        "        <Dimension name=\"time\" units=\"ISO8601\" />\n" +
-        "        <Dimension name=\"elevation\" units=\"EPSG:5030\" />\n" +
-        // 2014-01-24 default was 2008-12-15
-        "        <Extent name=\"time\" default=\"2010-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,1871-03-15T00:00:00Z,";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    po = results.indexOf("<Extent name=\"elevation\"");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "<Extent name=\"elevation\" default=\"-5375.0\" >-5.01,-15.07,-25.28,-35.76,-46.61,-57.98,-70.02,-82.92,-96.92,-112.32,-129.49,-148.96,-171.4,-197.79,-229.48,-268.46,-317.65,-381.39,-465.91,-579.31,-729.35,-918.37,-1139.15,-1378.57,-1625.7,-1875.11,-2125.01,-2375.0,-2625.0,-2875.0,-3125.0,-3375.0,-3625.0,-3875.0,-4125.0,-4375.0,-4625.0,-4875.0,-5125.0,-5375.0</Extent>\n"
-        +
-        "        <Attribution>\n" +
-        "          <Title>TAMU/UMD</Title>\n" +
-        "          <OnlineResource xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n" +
-        "            xlink:type=\"simple\"\n" +
-        "            xlink:href=\"https://www.atmos.umd.edu/~ocean/\" />\n" +
-        "        </Attribution>\n" +
-        "        <Layer opaque=\"1\" >\n" +
-        "          <Name>hawaii_d90f_20ee_c4cb_LonPM180:temp</Name>\n" +
-        "          <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180 - temp</Title>\n"
-        +
-        "        </Layer>";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // WMS 1.1.0 elevation=-5
-    String baseName = "EDDGridLonPM180_TestGridWithDepth2110e5";
-    String obsDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    tName = obsDir + baseName + ".png";
-    SSR.downloadFile(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp"
-            +
-            "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080"
-            +
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
-        tName, false);
-    // Test.displayInBrowser("file://" + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-
-    // WMS 1.1.0 default elevation
-    baseName = "EDDGridLonPM180_TestGridWithDepth2110edef";
-    tName = obsDir + baseName + ".png";
-    SSR.downloadFile(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp"
-            +
-            "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" +
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
-        tName, false);
-    // Test.displayInBrowser("file://" + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-
-    // test WMS 1.3.0 service getCapabilities from localhost erddap
-    String2.log("\nTest WMS 1.3.0 getCapabilities\n" +
-        "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
-    results = SSR.getUrlResponseStringUnchanged(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "service=WMS&request=GetCapabilities&version=1.3.0");
-
-    po = results.indexOf("</Layer>");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "</Layer>\n" +
-        "      <Layer>\n" +
-        "        <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180</Title>\n"
-        +
-        "        <CRS>CRS:84</CRS>\n" +
-        "        <CRS>EPSG:4326</CRS>\n" +
-        "        <EX_GeographicBoundingBox>\n" +
-        "          <westBoundLongitude>-179.75</westBoundLongitude>\n" +
-        "          <eastBoundLongitude>179.75</eastBoundLongitude>\n" +
-        "          <southBoundLatitude>-75.25</southBoundLatitude>\n" +
-        "          <northBoundLatitude>89.25</northBoundLatitude>\n" +
-        "        </EX_GeographicBoundingBox>\n" +
-        "        <BoundingBox CRS=\"EPSG:4326\" minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n"
-        +
-        "        <Dimension name=\"time\" units=\"ISO8601\" multipleValues=\"0\" nearestValue=\"1\" default=\"2010-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    po = results.indexOf("<Dimension name=\"elevation\"");
-    Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
-    expected = "<Dimension name=\"elevation\" units=\"CRS:88\" unitSymbol=\"m\" multipleValues=\"0\" nearestValue=\"1\" default=\"-5375.0\" >-5.01,-15.07,-25.28,-35.76,-46.61,-57.98,-70.02,-82.92,-96.92,-112.32,-129.49,-148.96,-171.4,-197.79,-229.48,-268.46,-317.65,-381.39,-465.91,-579.31,-729.35,-918.37,-1139.15,-1378.57,-1625.7,-1875.11,-2125.01,-2375.0,-2625.0,-2875.0,-3125.0,-3375.0,-3625.0,-3875.0,-4125.0,-4375.0,-4625.0,-4875.0,-5125.0,-5375.0</Dimension>";
-    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-        "results=\n" + results);
-
-    // WMS 1.3.0 elevation=-5
-    // 2022-07-07 trouble with wms png request, so test underlying data request
-    // first
-    tName = gridDataset.makeNewFileForDapQuery(language, null, null,
-        "temp%5B(2008-11-15)%5D%5B(5)%5D%5B(-75):100:(75)%5D%5B(-90):100:(63.6)%5D",
-        EDStatic.fullTestCacheDirectory,
-        "EDDGridLonPM180_testGridWithDepthPreWMS", ".csv");
-    results = File2.directReadFrom88591File(
-        EDStatic.fullTestCacheDirectory + tName);
-    expected = "time,depth,latitude,longitude,temp\n" +
-        "UTC,m,degrees_north,degrees_east,degree_C\n" +
-        "2008-11-15T00:00:00Z,5.01,-74.75,-89.75,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,-74.75,-39.75,-1.9969722\n" +
-        "2008-11-15T00:00:00Z,5.01,-74.75,10.25,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,-74.75,60.25,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,-24.75,-89.75,19.052225\n" +
-        "2008-11-15T00:00:00Z,5.01,-24.75,-39.75,22.358824\n" +
-        "2008-11-15T00:00:00Z,5.01,-24.75,10.25,17.43544\n" +
-        "2008-11-15T00:00:00Z,5.01,-24.75,60.25,23.83485\n" +
-        "2008-11-15T00:00:00Z,5.01,25.25,-89.75,26.235065\n" +
-        "2008-11-15T00:00:00Z,5.01,25.25,-39.75,25.840372\n" +
-        "2008-11-15T00:00:00Z,5.01,25.25,10.25,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,25.25,60.25,27.425127\n" +
-        "2008-11-15T00:00:00Z,5.01,75.25,-89.75,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,75.25,-39.75,NaN\n" +
-        "2008-11-15T00:00:00Z,5.01,75.25,10.25,4.0587144\n" +
-        "2008-11-15T00:00:00Z,5.01,75.25,60.25,-0.4989917\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // (see section above) now request troubling wms png
-    baseName = "EDDGridLonPM180_TestGridWithDepth2130e5";
-    tName = obsDir + baseName + ".png";
-    SSR.downloadFile(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp"
-            +
-            "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080"
-            +
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
-        tName, false);
-    // Test.displayInBrowser("file://" + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-
-    // WMS 1.1.0 default elevation
-    baseName = "EDDGridLonPM180_TestGridWithDepth2130edef";
-    tName = obsDir + baseName + ".png";
-    SSR.downloadFile(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp"
-            +
-            "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" +
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
-        tName, false);
-    // Test.displayInBrowser("file://" + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-
-    // test lat beyond dataset range (changed from -75:75 above to -80:80 here)
-    baseName = "EDDGridLonPM180_BeyondRange";
-    tName = obsDir + baseName + ".png";
-    SSR.downloadFile(
-        "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp"
-            +
-            "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080"
-            +
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
-        tName, false);
-    // Test.displayInBrowser("file://" + tName);
-    Image2Tests.testImagesIdentical(
-        tName,
-        baseName + ".png",
-        baseName + "_diff.png");
-  }
-
-  /**
    * 2013-10-24 INACTIVE. THE TEST DATASET IS NO LONGER AVAILABLE.
    * This tests a depth axis variable. This requires testGridWithDepth dataset in
    * localhost ERDDAP.
@@ -11559,7 +11244,6 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
   void testActualRange() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testActualRange");
     int language = 0;
@@ -11568,7 +11252,7 @@ class EDDGridFromDapTests {
     String name, tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
-    EDDGrid edd = (EDDGrid) EDDTestDataset.gettestActualRange2();
+    EDDGrid edd = (EDDGrid) EDDTestDataset.gettestActualRange();
 
     tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir,
         edd.className() + "_actual_range", ".dds");
@@ -11698,7 +11382,7 @@ class EDDGridFromDapTests {
             "  }\n" +
             "  SST {\n" +
             "    Float32 _FillValue NaN;\n" +
-            "    Float32 actual_range 27.72, 31.43;\n" + // source actual_range is
+            "    Float32 actual_range MIN, MAX;\n" + // source actual_range is
                                                          // Float64 values from 1
                                                          // file and so
                                                          // changes often! in real
@@ -11847,15 +11531,16 @@ class EDDGridFromDapTests {
             "    Float64 geospatial_lon_min -90.125;\n" +
             "    Float64 geospatial_lon_resolution 0.25;\n" +
             "    String geospatial_lon_units \"degrees_east\";\n";
-    try {
-      int po = results.indexOf(expected.substring(0, 30));
-      Test.ensureEqual(results.substring(po, po + expected.length()), expected,
-          "results=\n" + results);
-    } catch (Exception e) {
-      Test.knownProblem(
-          "2018-06-20 I think actual_ranges change with every new timepoint.",
-          "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?", e);
-    }
+    // try {
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;", "Float32 actual_range MIN, MAX;");
+    int po = results.indexOf(expected.substring(0, 30));
+    Test.ensureEqual(results.substring(po, po + expected.length()), expected,
+        "results=\n" + results);
+    // } catch (Exception e) {
+    //   Test.knownProblem(
+    //       "2018-06-20 I think actual_ranges change with every new timepoint.",
+    //       "Remove those atts in generateDatasetsXml esp from THREDDS or HYRAX?", e);
+    // }
   }
 
   /**

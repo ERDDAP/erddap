@@ -16,6 +16,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb_LonPM180());
       datasetsXml.append(xmlFragment_erdMHchla8day());
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb());
+      datasetsXml.append(xmlFragment_testActualRange());
       datasetsXml.append(xmlFragment_testActualRange2());
       datasetsXml.append(xmlFragment_hycom_GLBa008_tyx());
       datasetsXml.append(xmlFragment_erdBAssta5day());
@@ -1162,6 +1163,316 @@ public class EDDTestDataset {
         "        </addAttributes>\n" + //
         "    </dataVariable>\n" + //
         "</dataset>\n";
+  }
+
+  public static EDD gettestActualRange() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        xmlFragment_testActualRange());
+  }
+
+  private static String xmlFragment_testActualRange() {
+    return "<dataset type=\"EDDGridFromDap\" datasetID=\"testActualRange\" active=\"true\">\n" + //
+            "    <sourceUrl>https://cwcgom.aoml.noaa.gov/thredds/dodsC/OCEAN_ACIDIFICATION/ACIDIFICATION.nc</sourceUrl>\n" + //
+            "    <reloadEveryNMinutes>180</reloadEveryNMinutes>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"cols\" type=\"short\">122</att>\n" + //
+            "        <att name=\"comment\">This is the Coral Reef Watch Ocean Acidification Product Suite  produced monthly in conjunction with NOAA CoastWatch. CoastWatch Utilities, including CoastWatch Data Analysis  Tool (CDAT), v3.2.1 or higher (http://coastwatch.noaa.gov/cw_software.html) can be used for viewing, analyzing, and plotting the data.</att>\n" + //
+            "        <att name=\"composite\">false</att>\n" + //
+            "        <att name=\"contact\">NOAA Coral Reef Watch at coralreefwatch@noaa.gov</att>\n" + //
+            "        <att name=\"Conventions\">COARDS/CF-1.0</att>\n" + //
+            "        <att name=\"data_source\">NOAA OI AVHRR-AMSRE SST, NCEP Interp SLP, Forecast pCO2air Model, IASNFS SSS</att>\n" + //
+            "        <att name=\"easternmost_longitude\" type=\"float\">-60.0</att>\n" + //
+            "        <att name=\"NCO\">4.3.7</att>\n" + //
+            "        <att name=\"nco_openmp_thread_number\" type=\"int\">1</att>\n" + //
+            "        <att name=\"northernmost_latitude\" type=\"float\">30.0</att>\n" + //
+            "        <att name=\"origin\">USDOC/NOAA Coral Reef Watch</att>\n" + //
+            "        <att name=\"projection\">geographic</att>\n" + //
+            "        <att name=\"projection_type\">mapped</att>\n" + //
+            "        <att name=\"references\">U.S. NOAA Coral Reef Watch satellite monitoring website at http://coralreefwatch.noaa.gov/satellite</att>\n" + //
+            "        <att name=\"rows\" type=\"short\">62</att>\n" + //
+            "        <att name=\"southernmost_latitude\" type=\"float\">15.0</att>\n" + //
+            "        <att name=\"temporal_extent\" type=\"double\">86400.0</att>\n" + //
+            "        <att name=\"temporal_extent_unit\">seconds</att>\n" + //
+            "        <att name=\"title\">Archived NOAA Coral Reef Watch  25km Ocean Acidification Product Suite for the Greater Caribbean Region  Quality Flag = Preliminary</att>\n" + //
+            "        <att name=\"westernmost_longitude\" type=\"float\">-90.0</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"cols\">null</att>\n" + //
+            "        <att name=\"comment\">This is the Coral Reef Watch Ocean Acidification Product Suite  produced monthly in conjunction with NOAA CoastWatch. CoastWatch Utilities, including CoastWatch Data Analysis  Tool (CDAT), v3.2.1 or higher (https://coastwatch.noaa.gov/cw_software.html) can be used for viewing, analyzing, and plotting the data.</att>\n" + //
+            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">coralreefwatch@noaa.gov</att>\n" + //
+            "        <att name=\"creator_name\">CORALREEFWATCH</att>\n" + //
+            "        <att name=\"creator_type\">institution</att>\n" + //
+            "        <att name=\"creator_url\">https://www.noaa.gov/</att>\n" + //
+            "        <att name=\"easternmost_longitude\">null</att>\n" + //
+            "        <att name=\"infoUrl\">https://cwcgom.aoml.noaa.gov/thredds/dodsC/OCEAN_ACIDIFICATION/ACIDIFICATION.nc.html</att>\n" + //
+            "        <att name=\"institution\">USDOC/NOAA Coral Reef Watch</att>\n" + //
+            "        <att name=\"keywords\">25km, acidification, advanced, alkalinity, americas, amsre, archived, argonite, array, avhrr, avhrr-amsre, bicarbonate, carbon, carbon dioxide, carbonate, caribbean, characteristics, chemistry, co2, co3, co3--, coastwatch, color, commerce, concentration, coral, crw, data, density, department, dioxide, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; pH, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, eos, experimental, flag, forecast, greater, hco3, hco3-, high, iasnfs, inorganic, interpolated, intra, intra-americas, ion, latitude, longitude, microwave, noaa, nowcast, nowcast/forecast, ocean, ocean color, oceans, pco2sw, pixel, practical, preliminary, product, quality, radiometer, reef, region, reported, resolution, salinity, saturation, scale, scanning, science, sea, sea_surface_temperature, sea_water_ph_reported_on_total_scale, sea_water_practical_salinity, seawater, SSA, sss, sst, state, states, suite, surface, surface_flag, system, temperature, time, total, united, usdoc, very, watch, water</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">[standard]</att>\n" + //
+            "        <att name=\"northernmost_latitude\">null</att>\n" + //
+            "        <att name=\"rows\">null</att>\n" + //
+            "        <att name=\"southernmost_latitude\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"summary\">Archived NOAA Coral Reef Watch 25km Ocean Acidification Product Suite for the Greater Caribbean Region Quality Flag = Preliminary. This is the Coral Reef Watch Ocean Acidification Product Suite  produced monthly in conjunction with NOAA CoastWatch. CoastWatch Utilities, including CoastWatch Data Analysis  Tool (CDAT), v3.2.1 or higher (https://coastwatch.noaa.gov/cw_software.html) can be used for viewing, analyzing, and plotting the data.</att>\n" + //
+            "        <att name=\"testOutOfDate\">now-4days</att>\n" + //
+            "        <att name=\"title\">NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25&#xb0;, 2016-present</att>\n" + //
+            "        <att name=\"westernmost_longitude\">null</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>time</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Time</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>y</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">14.75 30.25</att>\n" + //
+            "            <att name=\"long_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"source_name\">y</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>x</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">-90.25 -59.75</att>\n" + //
+            "            <att name=\"long_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"source_name\">x</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SST</sourceName>\n" + //
+            "        <destinationName>SST</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">12.630000114440918 28.200000762939453</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - NOAA OI AVHRR-AMSRE SST 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">degree C</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x100 degrees Celsius. The data values should be multiplied by the value (=0.01) contained in thescale_factor attribute to obtain the actual values in the units of degrees Celsius.</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SSS</sourceName>\n" + //
+            "        <destinationName>SSS</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">33.541500091552734 36.897499084472656</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - IASNFS SSS interpolated to 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">psu</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x100 psu . The data values should be multiplied by the value (=0.01) contained in thescale_factor attribute to obtain the actual values in the units of .psu</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" + //
+            "            <att name=\"units\">PSU</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>pCO2sw</sourceName>\n" + //
+            "        <destinationName>pCO2sw</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">348.54998779296875 403.4079895019531</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - pCO2sw 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">uatm</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x10 uatm . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of uatm .  The values are modeled according to Gledhill et al., 2008</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">420.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">340.0</att>\n" + //
+            "            <att name=\"ioos_category\">CO2</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TA</sourceName>\n" + //
+            "        <destinationName>TA</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">2225.409912109375 2420.010009765625</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Total Alkalinity (TA) 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">umol/kg</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008 and depend on the tropical/subtropical algorthim offered by Lee et al. 2006</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2450.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">2200.0</att>\n" + //
+            "            <att name=\"ioos_category\">CO2</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"units\">&#xb5;mole/kg</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>TC</sourceName>\n" + //
+            "        <destinationName>TC</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">1959.0 2115.360107421875</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Total Inorganic Carbon (TC) 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">umol/kg</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA &amp; fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis &amp; Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson &amp; Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">2150.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">1950.0</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"units\">&#xb5;mole/kg</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>pH</sourceName>\n" + //
+            "        <destinationName>pH</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">8.042085647583008 8.105325698852539</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - pH 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">Total Scale</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x100Total Scale. The data values should be multiplied by the value (=0.01) contained in thescale_factor attribute to obtain the actual values in the units of .Total Scale.  The values are modeled according to Gledhill et al., 2008.  Fields of TA &amp; fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis &amp; Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson &amp; Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">9.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">7.0</att>\n" + //
+            "            <att name=\"ioos_category\">Salinity</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"standard_name\">sea_water_ph_reported_on_total_scale</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>SSA</sourceName>\n" + //
+            "        <destinationName>SSA</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">2.4314653873443604 3.8748393058776855</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Saturation State (argonite) 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">Omega</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x100Omega . The data values should be multiplied by the value (=0.01) contained in thescale_factor attribute to obtain the actual values in the units of .Omega .  The values are modeled according to Gledhill et al., 2008.  Fields of TA &amp; fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis &amp; Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson &amp; Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">4.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">2.0</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>HCO3</sourceName>\n" + //
+            "        <destinationName>HCO3</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">1756.8199462890625 1924.5</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Bicarbonate Ion Concentration (HCO3-) 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">umol/kg</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA &amp; fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis &amp; Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson &amp; Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1950.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">1750.0</att>\n" + //
+            "            <att name=\"ioos_category\">CO2</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"units\">&#xb5;mole/kg</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>CO3</sourceName>\n" + //
+            "        <destinationName>CO3</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">159.52099609375 245.20399475097656</att>\n" + //
+            "            <att name=\"coordsys\">geographic</att>\n" + //
+            "            <att name=\"long_name\">NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Carbonate Ion Concentration (CO3- - ) 25km</att>\n" + //
+            "            <att name=\"palette_info_variable\">Uncertain</att>\n" + //
+            "            <att name=\"units\">umol/kg</att>\n" + //
+            "            <att name=\"variable_info\">The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA &amp; fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis &amp; Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson &amp; Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">260.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">140.0</att>\n" + //
+            "            <att name=\"ioos_category\">CO2</att>\n" + //
+            "            <att name=\"palette_info_variable\">null</att>\n" + //
+            "            <att name=\"units\">&#xb5;mole/kg</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>surface_flag</sourceName>\n" + //
+            "        <destinationName>surface_flag</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" + //
+            "            <att name=\"actual_range\" type=\"doubleList\">0.0 1.0</att>\n" + //
+            "            <att name=\"coordinates\">x y</att>\n" + //
+            "            <att name=\"description\">An array in the same dimension as the data array(s) classifies valid, non-valid (includes land and areas of no model outpt) and missing pixels that are all flaged by the same missing_value in the da array(s).</att>\n" + //
+            "            <att name=\"flag_meanings\">valid, non-valid (includes land and areas of no model output)</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1</att>\n" + //
+            "            <att name=\"long_name\">Pixel characteristics flag array</att>\n" + //
+            "            <att name=\"units\">none</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"actual_range\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.5</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"coordinates\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"units\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n";
   }
 
   public static EDD gettestActualRange2() throws Throwable {
