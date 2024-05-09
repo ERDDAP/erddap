@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Server**
-- What ERDDAP server? If you're the admin, please provide what version of ERDDAP, Tomcat, and Java you are using.
+- What ERDDAP™ server? If you're the admin, please provide what version of ERDDAP™, Tomcat, and Java you are using.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]

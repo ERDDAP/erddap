@@ -1,4 +1,4 @@
-# ERDDAP Priority Projects
+# ERDDAP™ Priority Projects
 
 This is subject to change. Priorities will shift and new projects will be added over time. This is roughly in priority order, but not a strict ordering. Also some projects will take a very long time and so will likely be done slowly over time.* Changes to encourage more community contributions/improve the developer experience
 
@@ -14,11 +14,11 @@ This is subject to change. Priorities will shift and new projects will be added 
 
 * Detect problems
 
-  - Add a logging system like Sentry (opt-in for admins) that can report errors and usage information to detect problems early and help our understanding of ERDDAP usage.
+  - Add a logging system like Sentry (opt-in for admins) that can report errors and usage information to detect problems early and help our understanding of ERDDAP™ usage.
 
 * Improve the admin experience
 
-  - Make ERDDAP easier to run and configure, including but not limited to official support for containers/Kubernetes.
+  - Make ERDDAP™ easier to run and configure, including but not limited to official support for containers/Kubernetes.
 
   - Identify pain points in admin workflows (adding datasets) and improve them.
 
@@ -30,7 +30,7 @@ This is subject to change. Priorities will shift and new projects will be added 
 
 * Improve the User experience
 
-  - Define an ERDDAP API for protected datasets that can easily be used directly from code.[ https://github.com/ERDDAP/erddap/issues/92](https://github.com/ERDDAP/erddap/issues/92)
+  - Define an ERDDAP™ API for protected datasets that can easily be used directly from code.[ https://github.com/ERDDAP/erddap/issues/92](https://github.com/ERDDAP/erddap/issues/92)
 
 * Technical Debt
 

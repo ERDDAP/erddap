@@ -1,6 +1,6 @@
 [Credits](#credits)
 -------------------
-Contributions to ERDDAP code
+Contributions to ERDDAP™ code
 *   [MergeIR](#submittedCode)  
     [EDDGridFromMergeIRFiles.java](https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles) was written and contributed by Jonathan Lafite and Philippe Makowski of R.Tech Engineering (license: copyrighted open source). Thank you, Jonathan and Philippe!  
      
@@ -23,10 +23,10 @@ Contributions to ERDDAP code
     The code for the [orderBySum filter](https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum) in tabledap (based on Rob Fuller and Adam Leadbetter's orderByMean) and the Check All and Uncheck All buttons on the EDDGrid Data Access Form were written and contributed (license: copyrighted open source) by Marco Alba of ETT Solutions and EMODnet. Thank you, Marco!  
      
 *   Out-of-range .transparentPng Requests  
-    ERDDAP now accepts requests for .transparentPng's when the latitude and/or longitude values are partly or fully out-of-range. (This was ERDDAP GitHub Issues #19, posted by Rob Fuller -- thanks for posting that, Rob.) The code to fix this was written by Chris John. Thank you, Chris!  
+    ERDDAP™ now accepts requests for .transparentPng's when the latitude and/or longitude values are partly or fully out-of-range. (This was ERDDAP™ GitHub Issues #19, posted by Rob Fuller -- thanks for posting that, Rob.) The code to fix this was written by Chris John. Thank you, Chris!  
      
 *   Display base64 image data in .htmlTable responses  
     The code for displaying base64 image data in .htmlTable responses was contributed by Marco Alba of ETT / EMODnet Physics. Thank you, Marco Alba!  
      
 *   nThreads Improvement  
-    The nThreads system for EDDTableFromFiles was significantly improved. These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more) for the most challenging requests (when a large number of files must be processed to gather the results). These changes will also lead to a general speedup throughout ERDDAP. The code for these changes was contributed by Chris John. Thank you, Chris!  
+    The nThreads system for EDDTableFromFiles was significantly improved. These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more) for the most challenging requests (when a large number of files must be processed to gather the results). These changes will also lead to a general speedup throughout ERDDAP™. The code for these changes was contributed by Chris John. Thank you, Chris!  

@@ -1,9 +1,9 @@
-# Welcome to the ERDDAP :tm: repo. 
+# Welcome to the ERDDAP™ repo. 
 
-ERDDAP is a scientific data server that gives users a simple, consistent way to download subsets of 
+ERDDAP™ is a scientific data server that gives users a simple, consistent way to download subsets of 
 gridded and tabular scientific datasets in common file formats and make graphs and maps.
-ERDDAP is a Free and Open Source (Apache and Apache-like) Java Servlet from NOAA NMFS SWFSC Environmental Research Division (ERD).
-* To see/use an ERDDAP installation: (https://coastwatch.pfeg.noaa.gov/erddap/index.html)[https://coastwatch.pfeg.noaa.gov/erddap/index.html]
+ERDDAP™ is a Free and Open Source (Apache and Apache-like) Java Servlet from NOAA NMFS SWFSC Environmental Research Division (ERD).
+* To see/use an ERDDAP™ installation: (https://coastwatch.pfeg.noaa.gov/erddap/index.html)[https://coastwatch.pfeg.noaa.gov/erddap/index.html]
 
 ## Contributing
 * To contribute: [CONTRIBUTING](CONTRIBUTING.md)
