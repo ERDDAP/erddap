@@ -140,6 +140,8 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testSpecialAxis0FileNameInt());
       datasetsXml.append(xmlFragment_testSpecialAxis0PathNameInt());
       datasetsXml.append(xmlFragment_testSpecialAxis0GlobalDouble());
+      datasetsXml.append(xmlFragment_erdMH1chla1day());
+      datasetsXml.append(xmlFragment_erdMH1chla8day());
       datasetsXml.append(xmlFragment_erdMH1chlamday());
       datasetsXml.append(xmlFragment_nceiPH53sstd1day());
       datasetsXml.append(xmlFragment_testUnsignedGrid());
@@ -544,14 +546,14 @@ public class EDDTestDataset {
                 "    <!-- Fluorescense Line Height, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->\n" + //
                 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1cflhmday</sourceUrl>\n" + //
                 "</dataset>\n" + //
-                "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chla1day\" active=\"true\">\n" + //
-                "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->\n" + //
-                "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day</sourceUrl>\n" + //
-                "</dataset>\n" + //
-                "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chla8day\" active=\"true\">\n" + //
-                "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->\n" + //
-                "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
-                "</dataset>\n" + //
+                // "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chla1day\" active=\"true\">\n" + //
+                // "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->\n" + //
+                // "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day</sourceUrl>\n" + //
+                // "</dataset>\n" + //
+                // "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chla8day\" active=\"true\">\n" + //
+                // "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->\n" + //
+                // "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
+                // "</dataset>\n" + //
                 // "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chlamday\" active=\"true\">\n" + //
                 // "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->\n" + //
                 // "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday</sourceUrl>\n" + //
@@ -805,21 +807,23 @@ public class EDDTestDataset {
                 "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchla1day\" active=\"true\">\n" + //
                 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchla1day</sourceUrl>\n" + //
                 "</dataset>\n" + //
-                "\n" //
+                "\n"//
                 // "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdBAssta5day\">\n" + //
                 // "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day</sourceUrl>\n" + //
                 // "</dataset>\n"
                 );
 
-      datasetsXml.append("<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n" + //
+      datasetsXml.append("<dataset type=\"EDDGridFromErddap\" datasetID=\"rMH1chla8day\">\n" + //
+                "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
+                "</dataset>\n" +
+                "\n" +
+        "<dataset type=\"EDDTableFromErddap\" datasetID=\"rlPmelTaoDySst\" active=\"true\">\n" + //
                 "    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>\n" + //
                 "</dataset>\n" + //
                 "\n");
       datasetsXml.append("</erddapDatasets>\n");
       datasetsXml.close();
     }
-    
-
   }
 
   public static EDD gethawaii_d90f_20ee_c4cb_LonPM180() throws Throwable {
@@ -24116,6 +24120,487 @@ public class EDDTestDataset {
         "        </addAttributes>\n" + //
         "    </dataVariable>\n" + //
         "</dataset>\n";
+  }
+
+  public static EDD geterdMH1chla1day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_erdMH1chla1day());
+  }
+
+  private static String xmlFragment_erdMH1chla1day() throws URISyntaxException {
+    return "<!-- Unpacked because _FillValue for data is -999 or -32767\n" + //
+            "  Note that erdMH1 1day need 12 hour adjustmet to time units to make into centered time. -->\n" + //
+            "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"erdMH1chla1day\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeSatellite/MH1/chla/1day/").toURI()).toString()
+        + "</fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>.*_chlor_a_4km\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>5</matchAxisNDigits>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"_CoordSysBuilder\">ucar.nc2.dataset.conv.CF1Convention</att>\n" + //
+            "        <att name=\"_lastModified\">2015-06-23T03:44:10.000Z</att>\n" + //
+            "        <att name=\"cdm_data_type\">grid</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6</att>\n" + //
+            "        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"creator_name\">NASA/GSFC/OBPG</att>\n" + //
+            "        <att name=\"creator_url\">http://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"data_bins\" type=\"int\">1923166</att>\n" + //
+            "        <att name=\"data_maximum\" type=\"float\">99.96646</att>\n" + //
+            "        <att name=\"data_minimum\" type=\"float\">0.007124</att>\n" + //
+            "        <att name=\"date_created\">2015-06-23T03:44:10.000Z</att>\n" + //
+            "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"end_orbit_number\" type=\"int\">3537</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\" type=\"float\">4.6</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">km</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"float\">-180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\" type=\"float\">4.6</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">km</att>\n" + //
+            "        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" + //
+            "        <att name=\"history\">smigen par=A2003001.L3m_DAY_CHL_chlor_a_4km.nc.param</att>\n" + //
+            "        <att name=\"id\">A2003001.L3b_DAY_CHL.nc/L3/A2003001.L3b_DAY_CHL.nc</att>\n" + //
+            "        <att name=\"identifier_product_doi\">10.5067/AQUA/MODIS_OC.2014.0</att>\n" + //
+            "        <att name=\"identifier_product_doi_authority\">http://dx.doi.org</att>\n" + //
+            "        <att name=\"institution\">NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group</att>\n" + //
+            "        <att name=\"instrument\">MODIS</att>\n" + //
+            "        <att name=\"keywords\">Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" + //
+            "        <att name=\"l2_flag_names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n" + //
+            "        <att name=\"latitude_step\" type=\"float\">0.041666668</att>\n" + //
+            "        <att name=\"latitude_units\">degrees_north</att>\n" + //
+            "        <att name=\"license\">/earth-science/earth-science-data/data-information-policy/</att>\n" + //
+            "        <att name=\"longitude_step\" type=\"float\">0.041666668</att>\n" + //
+            "        <att name=\"longitude_units\">degrees_east</att>\n" + //
+            "        <att name=\"map_projection\">Equidistant Cylindrical</att>\n" + //
+            "        <att name=\"measure\">Mean</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">Unidata Dataset Discovery v1.0</att>\n" + //
+            "        <att name=\"naming_authority\">gov.nasa.gsfc.sci.oceandata</att>\n" + //
+            "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"number_of_columns\" type=\"int\">8640</att>\n" + //
+            "        <att name=\"number_of_lines\" type=\"int\">4320</att>\n" + //
+            "        <att name=\"platform\">Aqua</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_datamax\">20.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_datamin\">0.010000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_deflate\">4</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_gap_fill\">0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_ifile\">A2003001.L3b_DAY_CHL.nc</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_latnorth\">90.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_latsouth\">-90.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_loneast\">180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_lonwest\">-180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_meas\">1</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_minobs\">0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_ofile\">A2003001.L3m_DAY_CHL_chlor_a_4km.nc</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_oformat\">netCDF4</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_palfile\">/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_precision\">F</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_processing\">2014.0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_prod\">chlor_a</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_projection\">RECT</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_resolution\">4km</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_seam_lon\">-180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_stype\">2</att>\n" + //
+            "        <att name=\"processing_control_l2_flag_names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n" + //
+            "        <att name=\"processing_control_software_name\">smigen</att>\n" + //
+            "        <att name=\"processing_control_software_version\">5.03</att>\n" + //
+            "        <att name=\"processing_control_source\">A2003001.L3b_DAY_CHL.nc</att>\n" + //
+            "        <att name=\"processing_level\">L3 Mapped</att>\n" + //
+            "        <att name=\"processing_version\">2014.0</att>\n" + //
+            "        <att name=\"product_name\">A2003001.L3m_DAY_CHL_chlor_a_4km.nc</att>\n" + //
+            "        <att name=\"project\">Ocean Biology Processing Group (NASA/GSFC/OBPG)</att>\n" + //
+            "        <att name=\"publisher_email\">data@oceancolor.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">NASA/GSFC/OBPG</att>\n" + //
+            "        <att name=\"publisher_url\">http://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"spatialResolution\">4.60 km</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n" + //
+            "        <att name=\"start_orbit_number\" type=\"int\">3521</att>\n" + //
+            "        <att name=\"suggested_image_scaling_applied\">No</att>\n" + //
+            "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">20.0</att>\n" + //
+            "        <att name=\"suggested_image_scaling_minimum\" type=\"float\">0.01</att>\n" + //
+            "        <att name=\"suggested_image_scaling_type\">LOG</att>\n" + //
+            "        <att name=\"sw_point_latitude\" type=\"float\">-89.979164</att>\n" + //
+            "        <att name=\"sw_point_longitude\" type=\"float\">-179.97917</att>\n" + //
+            "        <att name=\"temporal_range\">day</att>\n" + //
+            "        <att name=\"time_coverage_end\">2003-01-02T02:10:04.000Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">2003-01-01T00:50:06.000Z</att>\n" + //
+            "        <att name=\"title\">MODIS Level-3 Standard Mapped Image</att>\n" + //
+            "        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_type\">group</att>\n" + //
+            "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"data_bins\">null</att>\n" + //
+            "        <att name=\"data_maximum\">null</att>\n" + //
+            "        <att name=\"data_minimum\">null</att>\n" + //
+            "        <att name=\"easternmost_longitude\">null</att>\n" + //
+            "        <att name=\"end_orbit_number\">null</att>\n" + //
+            "        <att name=\"history\">Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n" + //
+            "ERDDAP adds the time dimension.\n" + //
+            "Direct read of HDF4 file through CDM library</att>\n" + //
+            "        <att name=\"id\">null</att>\n" + //
+            "        <att name=\"identifier_product_doi_authority\">https://dx.doi.org</att>\n" + //
+            "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</att>\n" + //
+            "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"keywords\">algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, mass, mass_concentration_chlorophyll_concentration_in_sea_water, moderate, modis, nasa, ocean, ocean color, oceans,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color,\n" + //
+            "oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"latitude_step\">null</att>\n" + //
+            "        <att name=\"latitude_units\">null</att>\n" + //
+            "        <att name=\"license\">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"longitude_step\">null</att>\n" + //
+            "        <att name=\"longitude_units\">null</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+            "        <att name=\"northernmost_latitude\">null</att>\n" + //
+            "        <att name=\"number_of_columns\">null</att>\n" + //
+            "        <att name=\"number_of_lines\">null</att>\n" + //
+            "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"publisher_type\">institution</att>\n" + //
+            "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+            "        <att name=\"southernmost_latitude\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"start_orbit_number\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_applied\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_maximum\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_minimum\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_type\">null</att>\n" + //
+            "        <att name=\"sw_point_latitude\">null</att>\n" + //
+            "        <att name=\"sw_point_longitude\">null</att>\n" + //
+            "        <att name=\"summary\">This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</att>\n" + //
+            "        <att name=\"testOutOfDate\">now-3days</att>\n" + //
+            "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</att>\n" + //
+            "        <att name=\"westernmost_longitude\">null</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>***fileName,timeFormat=yyyyDDD,A(\\d{7})\\.L3m_DAY_CHL_chlor_a_4km\\.nc,1</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Centered Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T12:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>chlor_a</sourceName>\n" + //
+            "        <destinationName>chlorophyll</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSize\" type=\"intList\">64 64</att>\n" + //
+            "            <att name=\"display_max\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"display_min\" type=\"double\">0.01</att>\n" + //
+            "            <att name=\"display_scale\">log</att>\n" + //
+            "            <att name=\"long_name\">Chlorophyll Concentration, OCI Algorithm</att>\n" + //
+            "            <att name=\"reference\">Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.</att>\n" + //
+            "            <att name=\"standard_name\">mass_concentration_chlorophyll_concentration_in_sea_water</att>\n" + //
+            "            <att name=\"units\">mg m^-3</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSize\">null</att>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"display_max\">null</att>\n" + //
+            "            <att name=\"display_min\">null</att>\n" + //
+            "            <att name=\"display_scale\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Mean Chlorophyll a Concentration</att>\n" + //
+            "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>";
+  }
+
+  public static EDD geterdMH1chla8day() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_erdMH1chla8day());
+  }
+
+  private static String xmlFragment_erdMH1chla8day() throws URISyntaxException {
+    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"erdMH1chla8day\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <updateEveryNMillis>10000</updateEveryNMillis>\n" + //
+            "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeSatellite/MH1/chla/8day/").toURI()).toString()
+        + "</fileDir>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <fileNameRegex>.*_chlor_a_4km\\.nc</fileNameRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>5</matchAxisNDigits>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"_CoordSysBuilder\">ucar.nc2.dataset.conv.CF1Convention</att>\n" + //
+            "        <att name=\"_lastModified\">2015-06-26T02:43:22.000Z</att>\n" + //
+            "        <att name=\"cdm_data_type\">grid</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6</att>\n" + //
+            "        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"creator_name\">NASA/GSFC/OBPG</att>\n" + //
+            "        <att name=\"creator_url\">http://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"data_bins\" type=\"int\">9133667</att>\n" + //
+            "        <att name=\"data_maximum\" type=\"float\">99.96646</att>\n" + //
+            "        <att name=\"data_minimum\" type=\"float\">0.006365</att>\n" + //
+            "        <att name=\"date_created\">2015-06-26T02:43:22.000Z</att>\n" + //
+            "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"end_orbit_number\" type=\"int\">3639</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\" type=\"float\">4.6</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">km</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"float\">-180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\" type=\"float\">4.6</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">km</att>\n" + //
+            "        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" + //
+            "        <att name=\"history\">smigen par=A20030012003008.L3m_8D_CHL_chlor_a_4km.nc.param</att>\n" + //
+            "        <att name=\"id\">A20030012003008.L3b_8D_CHL.nc/L3/A20030012003008.L3b_8D_CHL.nc</att>\n" + //
+            "        <att name=\"identifier_product_doi\">10.5067/AQUA/MODIS_OC.2014.0</att>\n" + //
+            "        <att name=\"identifier_product_doi_authority\">http://dx.doi.org</att>\n" + //
+            "        <att name=\"institution\">NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group</att>\n" + //
+            "        <att name=\"instrument\">MODIS</att>\n" + //
+            "        <att name=\"keywords\">Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" + //
+            "        <att name=\"l2_flag_names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n" + //
+            "        <att name=\"latitude_step\" type=\"float\">0.041666668</att>\n" + //
+            "        <att name=\"latitude_units\">degrees_north</att>\n" + //
+            "        <att name=\"license\">http://science.nasa.gov/earth-science/earth-science-data/data-information-policy/</att>\n" + //
+            "        <att name=\"longitude_step\" type=\"float\">0.041666668</att>\n" + //
+            "        <att name=\"longitude_units\">degrees_east</att>\n" + //
+            "        <att name=\"map_projection\">Equidistant Cylindrical</att>\n" + //
+            "        <att name=\"measure\">Mean</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">Unidata Dataset Discovery v1.0</att>\n" + //
+            "        <att name=\"naming_authority\">gov.nasa.gsfc.sci.oceandata</att>\n" + //
+            "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"number_of_columns\" type=\"int\">8640</att>\n" + //
+            "        <att name=\"number_of_lines\" type=\"int\">4320</att>\n" + //
+            "        <att name=\"platform\">Aqua</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_datamax\">20.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_datamin\">0.010000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_deflate\">4</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_gap_fill\">0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_ifile\">A20030012003008.L3b_8D_CHL.nc</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_latnorth\">90.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_latsouth\">-90.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_loneast\">180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_lonwest\">-180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_meas\">1</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_minobs\">0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_ofile\">A20030012003008.L3m_8D_CHL_chlor_a_4km.nc</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_oformat\">netCDF4</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_palfile\">/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_precision\">F</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_processing\">2014.0</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_prod\">chlor_a</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_projection\">RECT</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_resolution\">4km</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_seam_lon\">-180.000000</att>\n" + //
+            "        <att name=\"processing_control_input_parameters_stype\">2</att>\n" + //
+            "        <att name=\"processing_control_l2_flag_names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n" + //
+            "        <att name=\"processing_control_software_name\">smigen</att>\n" + //
+            "        <att name=\"processing_control_software_version\">5.03</att>\n" + //
+            "        <att name=\"processing_control_source\">A20030012003008.L3b_8D_CHL.nc</att>\n" + //
+            "        <att name=\"processing_level\">L3 Mapped</att>\n" + //
+            "        <att name=\"processing_version\">2014.0</att>\n" + //
+            "        <att name=\"product_name\">A20030012003008.L3m_8D_CHL_chlor_a_4km.nc</att>\n" + //
+            "        <att name=\"project\">Ocean Biology Processing Group (NASA/GSFC/OBPG)</att>\n" + //
+            "        <att name=\"publisher_email\">data@oceancolor.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">NASA/GSFC/OBPG</att>\n" + //
+            "        <att name=\"publisher_url\">http://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"spatialResolution\">4.60 km</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n" + //
+            "        <att name=\"start_orbit_number\" type=\"int\">3521</att>\n" + //
+            "        <att name=\"suggested_image_scaling_applied\">No</att>\n" + //
+            "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">20.0</att>\n" + //
+            "        <att name=\"suggested_image_scaling_minimum\" type=\"float\">0.01</att>\n" + //
+            "        <att name=\"suggested_image_scaling_type\">LOG</att>\n" + //
+            "        <att name=\"sw_point_latitude\" type=\"float\">-89.979164</att>\n" + //
+            "        <att name=\"sw_point_longitude\" type=\"float\">-179.97917</att>\n" + //
+            "        <att name=\"temporal_range\">8-day</att>\n" + //
+            "        <att name=\"time_coverage_end\">2003-01-09T02:15:04.000Z</att>\n" + //
+            "        <att name=\"time_coverage_start\">2002-12-31T22:50:06.000Z</att>\n" + //
+            "        <att name=\"title\">MODIS Level-3 Standard Mapped Image</att>\n" + //
+            "        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_type\">group</att>\n" + //
+            "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+            "        <att name=\"data_bins\">null</att>\n" + //
+            "        <att name=\"data_maximum\">null</att>\n" + //
+            "        <att name=\"data_minimum\">null</att>\n" + //
+            "        <att name=\"easternmost_longitude\">null</att>\n" + //
+            "        <att name=\"end_orbit_number\">null</att>\n" + //
+            "        <att name=\"history\">Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n" + //
+            "ERDDAP adds the time dimension.\n" + //
+            "Direct read of HDF4 file through CDM library</att>\n" + //
+            "        <att name=\"id\">null</att>\n" + //
+            "        <att name=\"identifier_product_doi_authority\">https://dx.doi.org</att>\n" + //
+            "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</att>\n" + //
+            "        <att name=\"institution\">NASA/GSFC OBPG</att>\n" + //
+            "        <att name=\"keywords\">algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color,\n" + //
+            "oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"latitude_step\">null</att>\n" + //
+            "        <att name=\"latitude_units\">null</att>\n" + //
+            "        <att name=\"license\">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"longitude_step\">null</att>\n" + //
+            "        <att name=\"longitude_units\">null</att>\n" + //
+            "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+            "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+            "        <att name=\"northernmost_latitude\">null</att>\n" + //
+            "        <att name=\"number_of_columns\">null</att>\n" + //
+            "        <att name=\"number_of_lines\">null</att>\n" + //
+            "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+            "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+            "        <att name=\"publisher_type\">institution</att>\n" + //
+            "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+            "        <att name=\"southernmost_latitude\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"start_orbit_number\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_applied\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_maximum\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_minimum\">null</att>\n" + //
+            "        <att name=\"suggested_image_scaling_type\">null</att>\n" + //
+            "        <att name=\"sw_point_latitude\">null</att>\n" + //
+            "        <att name=\"sw_point_longitude\">null</att>\n" + //
+            "        <att name=\"summary\">This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</att>\n" + //
+            "        <att name=\"testOutOfDate\">now-30days</att>\n" + //
+            "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)</att>\n" + //
+            "        <att name=\"westernmost_longitude\">null</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>***fileName,timeFormat=yyyyDDD,A(\\d{7})\\d{7}\\.L3m_8D_CHL_chlor_a_4km\\.nc,1</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Centered Time</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-05T00:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "            <att name=\"units\">degree_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "            <att name=\"units\">degree_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"float\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>chlor_a</sourceName>\n" + //
+            "        <destinationName>chlorophyll</destinationName>\n" + //
+            "        <dataType>float</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSize\" type=\"intList\">64 64</att>\n" + //
+            "            <att name=\"display_max\" type=\"double\">20.0</att>\n" + //
+            "            <att name=\"display_min\" type=\"double\">0.01</att>\n" + //
+            "            <att name=\"display_scale\">log</att>\n" + //
+            "            <att name=\"long_name\">Chlorophyll Concentration, OCI Algorithm</att>\n" + //
+            "            <att name=\"reference\">Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.</att>\n" + //
+            "            <att name=\"standard_name\">mass_concentration_chlorophyll_concentration_in_sea_water</att>\n" + //
+            "            <att name=\"units\">mg m^-3</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSize\">null</att>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" + //
+            "            <att name=\"colorBarScale\">Log</att>\n" + //
+            "            <att name=\"display_max\">null</att>\n" + //
+            "            <att name=\"display_min\">null</att>\n" + //
+            "            <att name=\"display_scale\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+            "            <att name=\"long_name\">Mean Chlorophyll a Concentration</att>\n" + //
+            "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n";
   }
 
   public static EDD geterdMH1chlamday() throws Throwable {

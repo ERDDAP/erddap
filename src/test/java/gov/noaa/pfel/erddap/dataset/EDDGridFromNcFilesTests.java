@@ -7988,7 +7988,7 @@ class EDDGridFromNcFilesTests {
     }
 
     // test default=Log
-    eddGrid = (EDDGrid) EDDTestDataset.geterdMHchla8day();
+    eddGrid = (EDDGrid) EDDTestDataset.geterdMH1chla8day();
 
     if (whichChunk < 0 || whichChunk == 3) {
       start = "EDDGridFromNcFiles_gridTestLogAxis3_TimeChla_";

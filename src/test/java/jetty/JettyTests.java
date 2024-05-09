@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
@@ -17,26 +18,35 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.cohort.array.Attributes;
+import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableTests;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 
@@ -46,6 +56,9 @@ import tags.TagImageComparison;
 import tags.TagJetty;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 class JettyTests {
 
@@ -4285,6 +4298,2194 @@ class JettyTests {
 
   }
 
+  /* EDDTableFromNcFiles */
+
+  /**
+   * The basic tests of this class.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testGlobec() throws Throwable {
+    // testVerboseOn();
+    int language = 0;
+    String2.log("\n*** EDDTableFromNcFiles.testGlobec");
+    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
+    String error = "";
+    EDV edv;
+    int po, epo;
+    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
+                                                                                 // hour. Hard
+                                                                                 // to check min:sec.
+
+    // *** test things that should throw exceptions
+    StringArray rv = new StringArray();
+    StringArray cv = new StringArray();
+    StringArray co = new StringArray();
+    StringArray cv2 = new StringArray();
+
+    String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
+    userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
+    String encodedUserDapQuery = "longitude,NO3,time,ship&latitude%3E0&altitude%3E-5&time%3E=2002-08-03";
+    String regexDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03" +
+        "&longitude" + PrimitiveArray.REGEX_OP + "\".*11.*\"";
+
+    // testGlobecBottle is like erdGlobecBottle, but with the addition
+    // of a fixed value altitude=0 variable
+    EDDTable globecBottle = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
+
+    // getEmpiricalMinMax just do once
+    // globecBottle.getEmpiricalMinMax(language, "2002-07-01", "2002-09-01", false,
+    // true);
+    // if (true) System.exit(1);
+
+    // *** test valid queries
+    String2.log("\n*** EDDTableFromNcFiles.test valid queries \n");
+    globecBottle.parseUserDapQuery(language, "longitude,NO3", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), "longitude, NO3", "");
+    Test.ensureEqual(cv.toString(), "", "");
+    Test.ensureEqual(co.toString(), "", "");
+    Test.ensureEqual(cv2.toString(), "", "");
+
+    globecBottle.parseUserDapQuery(language, "longitude,NO3&altitude=0", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), "longitude, NO3", "");
+    Test.ensureEqual(cv.toString(), "altitude", "");
+    Test.ensureEqual(co.toString(), "=", "");
+    Test.ensureEqual(cv2.toString(), "0", "");
+
+    // test: no resultsVariables interpreted as all resultsVariables
+    String allVars = "cruise_id, ship, cast, longitude, latitude, altitude, time, bottle_posn, " +
+        "chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, " +
+        "temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par";
+
+    globecBottle.parseUserDapQuery(language, "", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), allVars, "");
+    Test.ensureEqual(cv.toString(), "", "");
+    Test.ensureEqual(co.toString(), "", "");
+    Test.ensureEqual(cv2.toString(), "", "");
+
+    globecBottle.parseUserDapQuery(language, "&altitude%3E=0", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), allVars, "");
+    Test.ensureEqual(cv.toString(), "altitude", "");
+    Test.ensureEqual(co.toString(), ">=", "");
+    Test.ensureEqual(cv2.toString(), "0", "");
+
+    globecBottle.parseUserDapQuery(language, "s", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), allVars, "");
+    Test.ensureEqual(cv.toString(), "", "");
+    Test.ensureEqual(co.toString(), "", "");
+    Test.ensureEqual(cv2.toString(), "", "");
+
+    globecBottle.parseUserDapQuery(language, "s&s.altitude=0", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), allVars, "");
+    Test.ensureEqual(cv.toString(), "altitude", "");
+    Test.ensureEqual(co.toString(), "=", "");
+    Test.ensureEqual(cv2.toString(), "0", "");
+
+    globecBottle.parseUserDapQuery(language, "s.longitude,s.altitude&s.altitude=0", rv, cv, co, cv2, false);
+    Test.ensureEqual(rv.toString(), "longitude, altitude", "");
+    Test.ensureEqual(cv.toString(), "altitude", "");
+    Test.ensureEqual(co.toString(), "=", "");
+    Test.ensureEqual(cv2.toString(), "0", "");
+
+    // Tests of time related to "now" -- Many fail because this dataset has no
+    // recent data.
+    GregorianCalendar gc;
+    String s;
+
+    gc = Calendar2.newGCalendarZulu();
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now", rv, cv, co, cv2, false); // non-regex
+                                                                                         // EDVTimeStamp
+                                                                                         // conValues
+                                                                                         // will be
+                                                                                         // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 14)
+              + ".{5}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.SECOND, -7);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-7seconds", rv, cv, co, cv2, false); // non-regex
+                                                                                                  // EDVTimeStamp
+                                                                                                  // conValues
+                                                                                                  // will
+                                                                                                  // be
+                                                                                                  // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 14)
+              + ".{5}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.MINUTE, -5);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-5minutes", rv, cv, co, cv2, false); // non-regex
+                                                                                                  // EDVTimeStamp
+                                                                                                  // conValues
+                                                                                                  // will
+                                                                                                  // be
+                                                                                                  // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 14)
+              + ".{5}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.HOUR_OF_DAY, -4);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-4hours", rv, cv, co, cv2, false); // non-regex
+                                                                                                // EDVTimeStamp
+                                                                                                // conValues
+                                                                                                // will
+                                                                                                // be
+                                                                                                // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results, // This fails rarely (at minute transitions). Just rerun it.
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 17)
+              + ".{2}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.DATE, -2);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-2days", rv, cv, co, cv2, false); // non-regex
+                                                                                               // EDVTimeStamp
+                                                                                               // conValues
+                                                                                               // will
+                                                                                               // be
+                                                                                               // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 17)
+              + ".{2}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.MONTH, -3);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-3months", rv, cv, co, cv2, false); // non-regex
+                                                                                                 // EDVTimeStamp
+                                                                                                 // conValues
+                                                                                                 // will
+                                                                                                 // be
+                                                                                                 // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 17)
+              + ".{2}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    gc = Calendar2.newGCalendarZulu();
+    gc.add(Calendar2.YEAR, -2);
+    s = Calendar2.formatAsISODateTimeT(gc);
+    try {
+      globecBottle.parseUserDapQuery(language, "time&time=now-2years", rv, cv, co, cv2, false); // non-regex
+                                                                                                // EDVTimeStamp
+                                                                                                // conValues
+                                                                                                // will
+                                                                                                // be
+                                                                                                // ""+epochSeconds
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      results = t.toString();
+      Test.ensureLinesMatch(results,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "\\(time=" + s.substring(0, 17)
+              + ".{2}Z is outside of the variable's actual_range: " +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)",
+          "results=\n" + results);
+    }
+
+    // longitude converted to lon
+    // altitude is fixed value, so test done by getSourceQueryFromDapQuery
+    // time test deferred till later, so 'datetime_epoch' included in sourceQuery
+    // also, lat is added to var list because it is used in constraints
+    globecBottle.getSourceQueryFromDapQuery(language, userDapQuery, rv, cv, co, cv2);
+    Test.ensureEqual(
+        EDDTableFromNcFiles.formatAsDapQuery(rv.toArray(), cv.toArray(), co.toArray(),
+            cv2.toArray()),
+        "lon100,no3,datetime_epoch,ship,lat100&lat100>0&datetime_epoch>=1.0283328E9",
+        "Unexpected sourceDapQuery from userDapQuery=" + userDapQuery);
+
+    // test invalid queries
+    try {
+      // lon is the source name
+      globecBottle.getSourceQueryFromDapQuery(language, "lon,cast", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Unrecognized variable=\"lon\".",
+        "error=" + error);
+
+    error = "";
+    try {
+      // a variable can't be listed twice
+      globecBottle.getSourceQueryFromDapQuery(language, "cast,longitude,cast,latitude", rv, cv, co,
+          cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: variable=cast is listed twice in the results variables list.",
+        "error=" + error);
+
+    error = "";
+    try {
+      // if s is used, it must be the only request var
+      globecBottle.getSourceQueryFromDapQuery(language, "s.latitude,s", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: If s is requested, it must be the only requested variable.",
+        "error=" + error);
+
+    error = "";
+    try {
+      // zztop isn't valid variable
+      globecBottle.getSourceQueryFromDapQuery(language, "cast,zztop", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Unrecognized variable=\"zztop\".", "error=" + error);
+
+    error = "";
+    try {
+      // alt is fixedValue=0 so will always return NO_DATA
+      globecBottle.getSourceQueryFromDapQuery(language, "cast&altitude<-1", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Your query produced no matching results. (altitude<-1 is outside of the variable's actual_range: 0 to 0)",
+        "error=" + error);
+
+    error = "";
+    try {
+      // lon isn't a valid var
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3, Si&lon=0", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Unrecognized constraint variable=\"lon\".",
+        "error=" + error);
+
+    error = "";
+    try {
+      // should be ==, not =
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3,Si&altitude==0", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Use '=' instead of '==' in constraints.",
+        "error=" + error);
+
+    error = "";
+    try {
+      // regex operator should be =~, not ~=
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3,Si&altitude~=(0|1.*)", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Use '=~' instead of '~=' in constraints.",
+        "error=" + error);
+
+    error = "";
+    try {
+      // string regex values must be in quotes
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3,Si&ship=New_Horizon", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: For constraints of String variables, the right-hand-side value must be surrounded by double quotes. Bad constraint: ship=New_Horizon",
+        "error=" + error);
+
+    error = "";
+    try {
+      // numeric variable regex values must be in quotes
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3,Si&altitude=~(0|1.*)", rv, cv, co, cv2);
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: For =~ constraints of numeric variables, " +
+            "the right-hand-side value must be surrounded by double quotes. Bad constraint: altitude=~(0|1.*)",
+        "error=" + error);
+
+    error = "";
+    try {
+      globecBottle.getSourceQueryFromDapQuery(language, "NO3,Si&altitude=0|longitude>-180",
+          rv, cv, co, cv2); // invalid query format caught as invalid NaN
+    } catch (Throwable t) {
+      error = MustBe.throwableToString(t);
+    }
+    Test.ensureEqual(String2.split(error, '\n')[0],
+        "SimpleException: Query error: Numeric tests of NaN must use \"NaN\", " +
+            "not value=\"0|longitude>-180\".",
+        "error=" + error);
+
+    results = Calendar2.epochSecondsToIsoStringTZ(Calendar2.nowStringToEpochSeconds("now-1 day"))
+        .substring(0, 16);
+    expected = Calendar2.epochSecondsToIsoStringTZ(Calendar2.nowStringToEpochSeconds("now-1day"))
+        .substring(0, 16);
+    Test.ensureEqual(results, expected, "");
+
+    error = "";
+    String nowQ[] = { "nowa", "now-", "now-5.5days", "now-5date", "now-9dayss" };
+    for (int i = 0; i < nowQ.length; i++) {
+      try {
+        globecBottle.getSourceQueryFromDapQuery(language, "time&time=" + nowQ[i],
+            rv, cv, co, cv2); // invalid query format caught as invalid NaN
+      } catch (Throwable t) {
+        error = MustBe.throwableToString(t);
+      }
+      Test.ensureEqual(String2.split(error, '\n')[0],
+          "SimpleException: Query error: Invalid \"now\" constraint: \"" + nowQ[i]
+              + "\". " +
+              "Timestamp constraints with \"now\" must be in " +
+              "the form \"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\""
+              +
+              " (or singular units).",
+          "error=" + error);
+    }
+
+    // time tests are perfectly precise: actual_range 1.02272886e+9, 1.02978828e+9;
+    // but now have 1 second fudge
+    try {
+      globecBottle.getSourceQueryFromDapQuery(language, "&time=1.022728858e9", rv, cv, co, cv2); // sec
+                                                                                                 // -2
+                                                                                                 // in
+                                                                                                 // last+1
+                                                                                                 // digit
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      error = t.toString();
+      Test.ensureEqual(error,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "(time=2002-05-30T03:20:58Z is outside of the variable's actual_range: "
+              +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z)",
+          "");
+    }
+
+    try {
+      globecBottle.getSourceQueryFromDapQuery(language, "&time=1.029788282e9", rv, cv, co, cv2); // max
+                                                                                                 // +2
+                                                                                                 // in
+                                                                                                 // last+1
+                                                                                                 // digit
+      throw new SimpleException("shouldn't get here");
+    } catch (Throwable t) {
+      error = t.toString();
+      Test.ensureEqual(error,
+          "com.cohort.util.SimpleException: Your query produced no matching results. " +
+              "(time=2002-08-19T20:18:02Z is outside of the variable's actual_range: "
+              +
+              "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z)",
+          "");
+    }
+
+    // impossible queries lon range is float -126.2, -124.1
+    String impossibleQuery[] = new String[] {
+        "&longitude!=NaN&longitude<=NaN",
+        "&longitude!=NaN&longitude>=NaN",
+        "&longitude!=NaN&longitude=NaN",
+        "&longitude=NaN&longitude!=NaN",
+        "&longitude=NaN&longitude<3.0",
+        "&longitude=NaN&longitude<=3.0",
+        "&longitude=NaN&longitude>-125.0",
+        "&longitude=NaN&longitude>=-125.0",
+        "&longitude=NaN&longitude=-125.0",
+        "&longitude<2.0&longitude=NaN",
+        "&longitude<=2.0&longitude=NaN",
+        "&longitude<=2.0&longitude<=NaN",
+        "&longitude<-126.0&longitude>-125.0",
+        "&longitude<=-126.0&longitude>=-125.0",
+        "&longitude<=-126.0&longitude=-125.0",
+        "&longitude>-125.0&longitude=NaN",
+        "&longitude>=-125.0&longitude=NaN",
+        "&longitude>=-125.0&longitude<=NaN",
+        "&longitude>-125.0&longitude=-126.0",
+        "&longitude>=-125.0&longitude=-126.0",
+        "&longitude>=-125.0&longitude<=-126.0",
+        "&longitude=-125.0&longitude<=NaN",
+        "&longitude=-125.0&longitude>=NaN",
+        "&longitude=-125.0&longitude=NaN",
+        "&longitude=-126.0&longitude>-125.0",
+        "&longitude=-126.0&longitude>=-125.0",
+        "&longitude=-125.0&longitude<-126.0",
+        "&longitude=-125.0&longitude<=-126.0",
+        "&longitude=-125.0&longitude=-126.0",
+        "&longitude=-126.0&longitude!=-126.0"
+    };
+    for (int i = 0; i < impossibleQuery.length; i++) {
+      error = "";
+      try {
+        globecBottle.getSourceQueryFromDapQuery(language, impossibleQuery[i], rv, cv, co, cv2);
+      } catch (Throwable t) {
+        error = MustBe.throwableToString(t);
+      }
+      Test.ensureEqual(String2.split(error, '\n')[0],
+          "SimpleException: Query error: " +
+              String2.replaceAll(impossibleQuery[i].substring(1), "&",
+                  " and ")
+              +
+              " will never both be true.",
+          "error=" + error);
+    }
+    // possible queries lon range is float -126.2, -124.1
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude=-126.2", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<=-126.2", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<-126.2", rv, cv, co, cv2); // good: fuzzy
+                                                                                             // test
+                                                                                             // allows it
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude=-124.1", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude>=-124.1", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude>-124.1", rv, cv, co, cv2); // good: fuzzy
+                                                                                             // test
+                                                                                             // allows it
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<-126.0&longitude<=-125.0", rv, cv, co,
+        cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude>=-126.0&longitude>-125.0", rv, cv, co,
+        cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude=-126.0&longitude<-125.0", rv, cv, co,
+        cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude>-126.0&longitude=-125.0", rv, cv, co,
+        cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude>=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude!=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<-126.0&longitude!=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude!=NaN&longitude=-125.0", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude=NaN&longitude<=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude<=NaN&longitude=NaN", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude=NaN&longitude!=-125.0", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&longitude!=-125.0&longitude=NaN", rv, cv, co, cv2);
+    // time tests are perfectly precise: actual_range 1.02272886e+9, 1.02978828e+9;
+    globecBottle.getSourceQueryFromDapQuery(language, "&time=1.02272886e9", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&time<1.02272886e9", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&time<=1.02272886e9", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&time=1.02978828e9", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&time>1.02978828e9", rv, cv, co, cv2);
+    globecBottle.getSourceQueryFromDapQuery(language, "&time>=1.02978828e9", rv, cv, co, cv2);
+
+    // *** test dapInstructions
+    // StringWriter sw = new StringWriter();
+    // writeGeneralDapHtmlDocument(language, EDStatic.erddapUrl, sw); //for testing,
+    // use the non-https url
+    // results = sw.toString();
+    // expected = "Requests for Tabular Data in ";
+    // Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    // expected = "In ERDDAP, time variables always have the name \"" +
+    // EDV.TIME_NAME + "\"";
+    // Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+    // test sliderCsvValues
+    edv = globecBottle.findDataVariableByDestinationName("longitude");
+    results = edv.sliderCsvValues();
+    expected = "-126.2, -126.19, -126.18, -126.17, -126.16,";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+    expected = ".13, -124.12, -124.11, -124.1";
+    Test.ensureEqual(results.substring(results.length() - expected.length()), expected,
+        "results=\n" + results);
+
+    edv = globecBottle.findDataVariableByDestinationName("latitude");
+    results = edv.sliderCsvValues();
+    expected = "41.9, 41.92, 41.94, 41.96, 41.98";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+    expected = "44.56, 44.58, 44.6, 44.62, 44.64, 44.65";
+    Test.ensureEqual(results.substring(results.length() - expected.length()), expected,
+        "results=\n" + results);
+
+    edv = globecBottle.findDataVariableByDestinationName("altitude");
+    results = edv.sliderCsvValues();
+    expected = "0"; // 0
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    edv = globecBottle.findDataVariableByDestinationName("time");
+    results = edv.sliderCsvValues();
+    // 2002-05-30T03:21:00Z 2002-08-19T20:18:00Z
+    expected = "\"2002-05-30T03:21:00Z\", \"2002-05-30T12:00:00Z\", \"2002-05-31\", \"2002-05-31T12:00:00Z\",";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+    expected = "\"2002-08-19\", \"2002-08-19T12:00:00Z\", \"2002-08-19T20:18:00Z\"";
+    Test.ensureEqual(results.substring(results.length() - expected.length()), expected,
+        "results=\n" + results);
+
+    edv = globecBottle.findDataVariableByDestinationName("phaeo_total");
+    results = edv.sliderCsvValues();
+    expected = "-3.111, -3, -2.8, -2.6, -2.4, -2.2,"; // -3.111
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+    expected = "32.8, 33, 33.2, 33.4, 33.6, 33.821"; // 33.821
+    Test.ensureEqual(results.substring(results.length() - expected.length()), expected,
+        "results=\n" + results);
+
+    edv = globecBottle.findDataVariableByDestinationName("cruise_id");
+    results = edv.sliderCsvValues();
+    expected = null;
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // *** print ncdump of file (useful for diagnosing problems in next section)
+    tName = "/u00/data/points/globec/Globec_bottle_data_2002.nc";
+    String2.log(tName + "\n" + NcHelper.ncdump(tName, "-h"));
+
+    // *** test getting das for entire dataset
+    String2.log("\n*** EDDTableFromNcFiles.test das dds for entire dataset\n");
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir,
+        globecBottle.className() + "_Entire", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    String expectedDas1 = // see OpendapHelper.EOL for comments
+        "Attributes {\n" +
+            " s {\n" +
+            "  cruise_id {\n" +
+            "    String cf_role \"trajectory_id\";\n" +
+            "    String ioos_category \"Identifier\";\n" +
+            "    String long_name \"Cruise ID\";\n" +
+            "  }\n" +
+            "  ship {\n" +
+            "    String ioos_category \"Identifier\";\n" +
+            "    String long_name \"Ship\";\n" +
+            "  }\n" +
+            "  cast {\n" +
+            "    Int16 _FillValue 32767;\n" +
+            "    Int16 actual_range 1, 127;\n" +
+            "    Float64 colorBarMaximum 140.0;\n" +
+            "    Float64 colorBarMinimum 0.0;\n" +
+            "    String ioos_category \"Identifier\";\n" +
+            "    String long_name \"Cast Number\";\n" +
+            "    Int16 missing_value 32767;\n" +
+            "  }\n" +
+            "  longitude {\n" +
+            "    String _CoordinateAxisType \"Lon\";\n" +
+            "    Float32 _FillValue 327.67;\n" +
+            "    Float32 actual_range -126.2, -124.1;\n" +
+            "    String axis \"X\";\n" +
+            "    String ioos_category \"Location\";\n" +
+            "    String long_name \"Longitude\";\n" +
+            "    Float32 missing_value 327.67;\n" +
+            "    String standard_name \"longitude\";\n" +
+            "    String units \"degrees_east\";\n" +
+            "  }\n" +
+            "  latitude {\n" +
+            "    String _CoordinateAxisType \"Lat\";\n" +
+            "    Float32 _FillValue 327.67;\n" +
+            "    Float32 actual_range 41.9, 44.65;\n" +
+            "    String axis \"Y\";\n" +
+            "    String ioos_category \"Location\";\n" +
+            "    String long_name \"Latitude\";\n" +
+            "    Float32 missing_value 327.67;\n" +
+            "    String standard_name \"latitude\";\n" +
+            "    String units \"degrees_north\";\n" +
+            "  }\n" +
+            "  altitude {\n" +
+            "    String _CoordinateAxisType \"Height\";\n" +
+            "    String _CoordinateZisPositive \"up\";\n" +
+            "    Int32 actual_range 0, 0;\n" +
+            "    String axis \"Z\";\n" +
+            "    String ioos_category \"Location\";\n" +
+            "    String long_name \"Altitude\";\n" +
+            "    String positive \"up\";\n" +
+            "    String standard_name \"altitude\";\n" +
+            "    String units \"m\";\n" +
+            "  }\n" +
+            "  time {\n" +
+            "    String _CoordinateAxisType \"Time\";\n" +
+            "    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
+            "    String axis \"T\";\n" +
+            "    String cf_role \"profile_id\";\n" +
+            "    String ioos_category \"Time\";\n" +
+            "    String long_name \"Time\";\n" +
+            "    String standard_name \"time\";\n" +
+            "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+            "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+            "  }\n" +
+            "  bottle_posn {\n" +
+            "    Byte _FillValue 127;\n" +
+            "    String _Unsigned \"false\";\n" + // ERDDAP adds
+            "    Byte actual_range 0, 12;\n" +
+            "    Float64 colorBarMaximum 12.0;\n" +
+            "    Float64 colorBarMinimum 0.0;\n" +
+            "    String ioos_category \"Location\";\n" +
+            "    String long_name \"Bottle Number\";\n" +
+            "    Byte missing_value -128;\n" +
+            "  }\n" +
+            "  chl_a_total {\n" +
+            "    Float32 _FillValue -9999999.0;\n" +
+            "    Float32 actual_range -2.602, 40.17;\n" +
+            "    Float64 colorBarMaximum 30.0;\n" +
+            "    Float64 colorBarMinimum 0.03;\n" +
+            "    String colorBarScale \"Log\";\n" +
+            "    String ioos_category \"Ocean Color\";\n" +
+            "    String long_name \"Chlorophyll-a\";\n" +
+            "    Float32 missing_value -9999.0;\n" +
+            "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n"
+            +
+            "    String units \"ug L-1\";\n" +
+            "  }\n";
+    Test.ensureEqual(results.substring(0, expectedDas1.length()), expectedDas1, "\nresults=\n" + results);
+
+    String expectedDas2 = "String id \"Globec_bottle_data_2002\";\n" +
+        "    String infoUrl \"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\";\n"
+        +
+        "    String institution \"GLOBEC\";\n" +
+        "    String keywords \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n"
+        +
+        "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+        "    String license \"The data may be used and redistributed for free but is not intended\n"
+        +
+        "for legal use, since it may contain inaccuracies. Neither the data\n" +
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+        "of their employees or contractors, makes any warranty, express or\n" +
+        "implied, including warranties of merchantability and fitness for a\n" +
+        "particular purpose, or assumes any legal liability for the accuracy,\n" +
+        "completeness, or usefulness, of this information.\";\n" +
+        "    Float64 Northernmost_Northing 44.65;\n" +
+        "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
+        "    Float64 Southernmost_Northing 41.9;\n" +
+        "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
+        "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
+        "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n"
+        +
+        "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
+        "Notes:\n" +
+        "Physical data processed by Jane Fleischbein (OSU).\n" +
+        "Chlorophyll readings done by Leah Feinberg (OSU).\n" +
+        "Nutrient analysis done by Burke Hales (OSU).\n" +
+        "Sal00 - salinity calculated from primary sensors (C0,T0).\n" +
+        "Sal11 - salinity calculated from secondary sensors (C1,T1).\n" +
+        "secondary sensor pair was used in final processing of CTD data for\n" +
+        "most stations because the primary had more noise and spikes. The\n" +
+        "primary pair were used for cast #9, 24, 48, 111 and 150 due to\n" +
+        "multiple spikes or offsets in the secondary pair.\n" +
+        "Nutrient samples were collected from most bottles; all nutrient data\n" +
+        "developed from samples frozen during the cruise and analyzed ashore;\n" +
+        "data developed by Burke Hales (OSU).\n" +
+        "Operation Detection Limits for Nutrient Concentrations\n" +
+        "Nutrient  Range         Mean    Variable         Units\n" +
+        "PO4       0.003-0.004   0.004   Phosphate        micromoles per liter\n" +
+        "N+N       0.04-0.08     0.06    Nitrate+Nitrite  micromoles per liter\n" +
+        "Si        0.13-0.24     0.16    Silicate         micromoles per liter\n" +
+        "NO2       0.003-0.004   0.003   Nitrite          micromoles per liter\n" +
+        "Dates and Times are UTC.\n" +
+        "\n" +
+        "For more information, see https://www.bco-dmo.org/dataset/2452\n" +
+        "\n" +
+        "Inquiries about how to access this data should be directed to\n" +
+        "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\";\n" +
+        "    String time_coverage_end \"2002-08-19T20:18:00Z\";\n" +
+        "    String time_coverage_start \"2002-05-30T03:21:00Z\";\n" +
+        "    String title \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
+        "    Float64 Westernmost_Easting -126.2;\n" +
+        "  }\n" +
+        "}\n";
+    po = results.indexOf(expectedDas2.substring(0, 17));
+    Test.ensureEqual(results.substring(Math.max(0, po)), expectedDas2, "\nresults=\n" + results);
+
+    // *** test getting dds for entire dataset
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir,
+        globecBottle.className() + "_Entire", ".dds");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "Dataset {\n" +
+        "  Sequence {\n" +
+        "    String cruise_id;\n" +
+        "    String ship;\n" +
+        "    Int16 cast;\n" +
+        "    Float32 longitude;\n" +
+        "    Float32 latitude;\n" +
+        "    Int32 altitude;\n" +
+        "    Float64 time;\n" +
+        "    Byte bottle_posn;\n" +
+        "    Float32 chl_a_total;\n" +
+        "    Float32 chl_a_10um;\n" +
+        "    Float32 phaeo_total;\n" +
+        "    Float32 phaeo_10um;\n" +
+        "    Float32 sal00;\n" +
+        "    Float32 sal11;\n" +
+        "    Float32 temperature0;\n" +
+        "    Float32 temperature1;\n" +
+        "    Float32 fluor_v;\n" +
+        "    Float32 xmiss_v;\n" +
+        "    Float32 PO4;\n" +
+        "    Float32 N_N;\n" +
+        "    Float32 NO3;\n" +
+        "    Float32 Si;\n" +
+        "    Float32 NO2;\n" +
+        "    Float32 NH4;\n" +
+        "    Float32 oxygen;\n" +
+        "    Float32 par;\n" +
+        "  } s;\n" +
+        "} s;\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // *** test DAP data access form
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir,
+        globecBottle.className() + "_Entire", ".html");
+    // Test.displayInBrowser("file://" + dir + tName);
+
+    // *** test make data files
+    String2.log("\n*** EDDTableFromNcFiles.test make DATA FILES\n");
+
+    // .asc
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".asc");
+    results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
+    // String2.log(results);
+    expected = "Dataset {[10]\n" +
+        "  Sequence {[10]\n" +
+        "    Float32 longitude;[10]\n" +
+        "    Float32 NO3;[10]\n" +
+        "    Float64 time;[10]\n" +
+        "    String ship;[10]\n" +
+        "  } s;[10]\n" +
+        "} s;[10]\n" +
+        "---------------------------------------------[10]\n" +
+        "s.longitude, s.NO3, s.time, s.ship[10]\n" +
+        "-124.4, 35.7, 1.02833814E9, \"New_Horizon\"[10]\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "-124.8, -9999.0, 1.02835902E9, \"New_Horizon\"[10]\n"; // row with missing value has source
+                                                                       // missing
+                                                                       // value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1, 24.45, 1.02978828E9, \"New_Horizon\"[10]\n[end]"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .csv
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery,
+        dir, globecBottle.className() + "_Data", ".csv");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,NO3,time,ship\n" +
+        "degrees_east,micromoles L-1,UTC,\n" +
+        "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN" missing
+                                                                 // value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .csvp and &units("UCUM")
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&units(\"UCUM\")",
+        dir,
+        globecBottle.className() + "_Data", ".csvp");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude (deg{east}),NO3 (umol.l-1),time (UTC),ship\n" +
+        "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN" missing
+                                                                 // value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .csv0
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery,
+        dir,
+        globecBottle.className() + "_Data", ".csv0");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN" missing
+                                                                 // value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .csv test of datasetName.dataVarName notation
+    String dotDapQuery = "s.longitude,altitude,NO3,s.time,ship" +
+        "&s.latitude>0&altitude>-5&s.time>=2002-08-03";
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, dotDapQuery, dir,
+        globecBottle.className() + "_DotNotation", ".csv");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,altitude,NO3,time,ship\n" +
+        "degrees_east,m,micromoles L-1,UTC,\n" +
+        "-124.4,0,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,0,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+        "-124.4,0,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "\nresults=\n" + results);
+    expected = "-124.1,0,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .csv test of regex on numeric variable
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, regexDapQuery, dir,
+        globecBottle.className() + "_NumRegex", ".csv");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,NO3,time,ship\n" +
+        "degrees_east,micromoles L-1,UTC,\n" +
+        "-125.11,33.91,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,26.61,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,10.8,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,8.42,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,6.34,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,1.29,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,0.02,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,0.0,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,10.81,2002-08-09T05:03:00Z,New_Horizon\n" +
+        "-125.11,42.39,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,33.84,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,27.67,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,15.93,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,8.69,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,4.6,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,2.17,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,8.61,2002-08-18T23:49:00Z,New_Horizon\n" +
+        "-125.11,0.64,2002-08-18T23:49:00Z,New_Horizon\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .csv test of String=
+    String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
+        "&time>=2002-08-07T00&time<=2002-08-07T06&ship=\"New_Horizon\"";
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir,
+        globecBottle.className() + "_StrEq", ".csv");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,NO3,time,ship\n" +
+        "degrees_east,micromoles L-1,UTC,\n" +
+        "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .csv test of String< >
+    tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
+        "&time>=2002-08-07T00&time<=2002-08-07T06&ship>\"Nev\"&ship<\"Nex\"";
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir,
+        globecBottle.className() + "_GTLT", ".csv");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,NO3,time,ship\n" +
+        "degrees_east,micromoles L-1,UTC,\n" +
+        "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .csv test of String regex
+    // !!! I also tested this with
+    // <sourceCanConstrainStringRegex>~=</sourceCanConstrainStringRegex>
+    // but it fails:
+    // Exception in thread "main" dods.dap.DODSException: "Your Query Produced No
+    // Matching Results."
+    // and it isn't an encoding problem, opera encodes unencoded request as
+    // https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.dods?lon,NO3,datetime_epoch,ship,lat&lat%3E0&datetime_epoch%3E=1.0286784E9&datetime_epoch%3C=1.0287E9&ship~=%22(zztop|.*Horiz.*)%22
+    // which fails the same way
+    // Other simpler regex tests succeed.
+    // It seems that the regex syntax is different for drds than erddap/java.
+    // So recommend that people not say that drds servers can constrain String regex
+    tDapQuery = "longitude,NO3,time,ship&latitude>0" +
+        "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; // source fails
+                                                                                // with this
+    // "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\""; //source
+    // works with this
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir,
+        globecBottle.className() + "_regex", ".csv");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,NO3,time,ship\n" +
+        "degrees_east,micromoles L-1,UTC,\n" +
+        "-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+        "-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+        "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .dataTable
+    tDapQuery = "longitude,NO3,time,ship&latitude>0" +
+        "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; // source fails
+                                                                                // with this
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir,
+        globecBottle.className() + "_regex_dataTable", ".dataTable");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = // note that month is 0-based
+        "{\"cols\":[{\"id\":\"longitude\",\"label\":\"longitude (degrees_east) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"NO3\",\"label\":\"NO3 (micromoles L-1) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"time\",\"label\":\"time\",\"pattern\":\"\",\"type\":\"datetime\"},{\"id\":\"ship\",\"label\":\"ship\",\"pattern\":\"\",\"type\":\"string\"}],\n"
+            +
+            "\"rows\": [\n" +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":34.54,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":29.98,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":17.24,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":12.74,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":11.43,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":null,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":9.74,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":5.62,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":4.4,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-124.8,\"f\":null},{\"v\":4.21,\"f\":null},{\"v\":\"Date(2002, 7, 7, 1, 52, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":35.28,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":30.87,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":25.2,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":20.66,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":null,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":null,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":10.85,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":5.44,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]},\n"
+            +
+            "{\"c\":[{\"v\":-125.0,\"f\":null},{\"v\":4.69,\"f\":null},{\"v\":\"Date(2002, 7, 7, 3, 43, 0, 0)\",\"f\":null},{\"v\":\"New_Horizon\",\"f\":null}]}\n"
+            +
+            "    ]\n" +
+            "  }\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .das das isn't affected by userDapQuery
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    Test.ensureEqual(
+        results.substring(0, expectedDas1.length()), expectedDas1, "results=\n" + results);
+
+    int tpo = results.indexOf(expectedDas2.substring(0, 17));
+    Test.ensureEqual(results.substring(Math.max(tpo, 0)), expectedDas2, "results=\n" + results);
+
+    // .dds
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".dds");
+    results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
+    // String2.log(results);
+    expected = "Dataset {[10]\n" +
+        "  Sequence {[10]\n" +
+        "    Float32 longitude;[10]\n" +
+        "    Float32 NO3;[10]\n" +
+        "    Float64 time;[10]\n" +
+        "    String ship;[10]\n" +
+        "  } s;[10]\n" +
+        "} s;[10]\n" +
+        "[end]";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    // .dods
+    // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+    // userDapQuery, dir,
+    // globecBottle.className() + "_Data", ".dods");
+    // Test.displayInBrowser("file://" + dir + tName);
+    try {
+      String2.log("\ndo .dods test");
+      String tUrl = EDStatic.erddapUrl + // in tests, always use non-https url
+          "/tabledap/" + globecBottle.datasetID();
+      // for diagnosing during development:
+      // String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(
+      // "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
+      // String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseStringUnchanged(tUrl +
+      // ".das?" + userDapQuery));
+      // String2.log("\nDODS RESPONSE=" +
+      // String2.annotatedString(SSR.getUrlResponseStringUnchanged(tUrl + ".dods?" +
+      // userDapQuery)));
+
+      // test if table.readOpendapSequence works with Erddap opendap server
+      // !!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in
+      // tests, always use non-https url
+      // !!!THIS IS NOT JUST A LOCAL TEST!!!
+      Table tTable = new Table();
+      tTable.readOpendapSequence(tUrl + "?" + encodedUserDapQuery, false); // 2016-12-07 non-encoded
+                                                                           // no longer
+                                                                           // works: http error 400:
+                                                                           // malformed
+                                                                           // request
+      Test.ensureEqual(tTable.globalAttributes().getString("title"),
+          "GLOBEC NEP Rosette Bottle Data (2002)", "");
+      Test.ensureEqual(tTable.columnAttributes(2).getString("units"), EDV.TIME_UNITS, "");
+      Test.ensureEqual(tTable.getColumnNames(), new String[] { "longitude", "NO3", "time", "ship" },
+          "");
+      Test.ensureEqual(tTable.getFloatData(0, 0), -124.4f, "");
+      Test.ensureEqual(tTable.getFloatData(1, 0), 35.7f, "");
+      Test.ensureEqual(tTable.getDoubleData(2, 0), 1.02833814E9, "");
+      Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
+      String2.log("  .dods test succeeded");
+    } catch (Throwable t) {
+      throw new RuntimeException("*** This test requires " + globecBottle.datasetID() +
+          " in localhost ERDDAP.", t);
+    }
+
+    // .esriCsv
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        "&time>=2002-08-03",
+        dir,
+        "testEsri5", ".esriCsv");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,5,4.182,-9999.0,2.363,-9999.0,33.2871,33.2863,8.157,8.141,1.458,0.518,2.202,26.15,25.73,40.25,0.424,1.204,-9999.0,0.7609\n"
+        +
+        "nh0207,New_Horizon,20,-124.4,44.0,0,2002-08-03,1:29:00 am,6,7.601,-9999.0,3.959,-9999.0,33.3753,33.3678,11.733,11.73,3.685,0.518,1.092,8.96,8.75,16.31,0.211,1.246,-9999.0,1.9563\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+    // .geoJson mapDapQuery so lon and lat are in query
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, dir,
+        globecBottle.className() + "_DataGJ", ".geoJson");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "{\n" +
+        "  \"type\": \"FeatureCollection\",\n" +
+        "  \"propertyNames\": [\"NO3\", \"time\"],\n" +
+        "  \"propertyUnits\": [\"micromoles L-1\", \"UTC\"],\n" +
+        "  \"features\": [\n" +
+        "{\"type\": \"Feature\",\n" +
+        "  \"geometry\": {\n" +
+        "    \"type\": \"Point\",\n" +
+        "    \"coordinates\": [-124.4, 44.0] },\n" +
+        "  \"properties\": {\n" +
+        "    \"NO3\": 35.7,\n" +
+        "    \"time\": \"2002-08-03T01:29:00Z\" }\n" +
+        "},\n" +
+        "{\"type\": \"Feature\",\n" +
+        "  \"geometry\": {\n" +
+        "    \"type\": \"Point\",\n" +
+        "    \"coordinates\": [-124.4, 44.0] },\n" +
+        "  \"properties\": {\n" +
+        "    \"NO3\": 35.48,\n" +
+        "    \"time\": \"2002-08-03T01:29:00Z\" }\n" +
+        "},\n";
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    expected = "{\"type\": \"Feature\",\n" +
+        "  \"geometry\": {\n" +
+        "    \"type\": \"Point\",\n" +
+        "    \"coordinates\": [-124.1, 44.65] },\n" +
+        "  \"properties\": {\n" +
+        "    \"NO3\": 24.45,\n" +
+        "    \"time\": \"2002-08-19T20:18:00Z\" }\n" +
+        "}\n" +
+        "  ],\n" +
+        "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
+        "}\n";
+    tResults = results.substring(results.length() - expected.length());
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    // .geoJson just lon and lat in response
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03",
+        dir, globecBottle.className() + "_DataGJLL", ".geoJson");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "{\n" +
+        "  \"type\": \"MultiPoint\",\n" +
+        "  \"coordinates\": [\n" +
+        "[-124.4, 44.0],\n" +
+        "[-124.4, 44.0],\n";
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    expected = "[-124.1, 44.65]\n" +
+        "  ],\n" +
+        "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
+        "}\n";
+    tResults = results.substring(results.length() - expected.length());
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    // .geoJson with jsonp
+    String jsonp = "myFunctionName";
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03" + "&.jsonp="
+            + SSR.percentEncode(jsonp),
+        dir, globecBottle.className() + "_DataGJLL", ".geoJson");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = jsonp + "(" +
+        "{\n" +
+        "  \"type\": \"MultiPoint\",\n" +
+        "  \"coordinates\": [\n" +
+        "[-124.4, 44.0],\n" +
+        "[-124.4, 44.0],\n";
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    expected = "[-124.1, 44.65]\n" +
+        "  ],\n" +
+        "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
+        "}\n" +
+        ")";
+    tResults = results.substring(results.length() - expected.length());
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    // .htmlTable
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".htmlTable");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String) null, language),
+        "EDDTableFromNcFiles_Data") + "\n" +
+        "</head>\n" +
+        EDStatic.startBodyHtml(language, null, "tabledap/testGlobecBottle.html", userDapQuery) + // 2022-11-22
+                                                                                                 // .htmlTable
+                                                                                                 // converted
+                                                                                                 // to
+                                                                                                 // .html
+                                                                                                 // to
+                                                                                                 // avoid
+                                                                                                 // user
+                                                                                                 // requesting
+                                                                                                 // all
+                                                                                                 // data
+                                                                                                 // in
+                                                                                                 // a
+                                                                                                 // dataset
+                                                                                                 // if
+                                                                                                 // they
+                                                                                                 // change
+                                                                                                 // language
+        "&nbsp;<br>\n" +
+        // HtmlWidgets.BACK_BUTTON +
+        "&nbsp;\n" +
+        "<table class=\"erd commonBGColor nowrap\">\n" +
+        "<tr>\n" +
+        "<th>longitude\n" +
+        "<th>NO3\n" +
+        "<th>time\n" +
+        "<th>ship\n" +
+        "</tr>\n" +
+        "<tr>\n" +
+        "<th>degrees_east\n" +
+        "<th>micromoles L-1\n" +
+        "<th>UTC\n" +
+        "<th>\n" +
+        "</tr>\n" +
+        "<tr>\n" +
+        "<td class=\"R\">-124.4\n" +
+        "<td class=\"R\">35.7\n" +
+        "<td>2002-08-03T01:29:00Z\n" +
+        "<td>New_Horizon\n" +
+        "</tr>\n";
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+    expected = // row with missing value has "&nbsp;" missing value
+        "<tr>\n" +
+            "<td class=\"R\">-124.1\n" +
+            "<td class=\"R\">24.45\n" +
+            "<td>2002-08-19T20:18:00Z\n" +
+            "<td>New_Horizon\n" +
+            "</tr>\n" +
+            "</table>\n" +
+            EDStatic.endBodyHtml(language,
+                EDStatic.erddapUrl((String) null, language),
+                (String) null)
+            + "\n" +
+            "</html>\n";
+    tResults = results.substring(results.length() - expected.length());
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    // .json
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".json");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "{\n" +
+        "  \"table\": {\n" +
+        "    \"columnNames\": [\"longitude\", \"NO3\", \"time\", \"ship\"],\n" +
+        "    \"columnTypes\": [\"float\", \"float\", \"String\", \"String\"],\n" +
+        "    \"columnUnits\": [\"degrees_east\", \"micromoles L-1\", \"UTC\", null],\n" +
+        "    \"rows\": [\n" +
+        "      [-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"],\n" +
+        "      [-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"],\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "      [-125, null, \"2002-08-18T13:03:00Z\", \"New_Horizon\"],\n"; // row with missing value
+                                                                                   // has
+                                                                                   // "null". Before
+                                                                                   // 2018-05-17 was
+                                                                                   // -125.0.
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "      [-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n" +
+        "    ]\n" +
+        "  }\n" +
+        "}\n"; // last rows
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+    // .json with jsonp query
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp),
+        dir,
+        globecBottle.className() + "_Data", ".json");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = jsonp + "(" +
+        "{\n" +
+        "  \"table\": {\n" +
+        "    \"columnNames\": [\"longitude\", \"NO3\", \"time\", \"ship\"],\n" +
+        "    \"columnTypes\": [\"float\", \"float\", \"String\", \"String\"],\n" +
+        "    \"columnUnits\": [\"degrees_east\", \"micromoles L-1\", \"UTC\", null],\n" +
+        "    \"rows\": [\n" +
+        "      [-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"],\n" +
+        "      [-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"],\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "      [-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n" +
+        "    ]\n" +
+        "  }\n" +
+        "}\n" +
+        ")"; // last rows
+    Test.ensureEqual(results.substring(results.length() - expected.length()),
+        expected, "\nresults=\n" + results);
+
+    // .jsonlCSV1
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".jsonlCSV1");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "[\"longitude\", \"NO3\", \"time\", \"ship\"]\n" +
+        "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
+        "[-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "[-125, null, \"2002-08-18T13:03:00Z\", \"New_Horizon\"]\n"; // row with missing value has
+                                                                            // "null"
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "[-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n";
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+    // .jsonlCSV
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".jsonlCSV");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
+        "[-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "[-125, null, \"2002-08-18T13:03:00Z\", \"New_Horizon\"]\n"; // row with missing value has
+                                                                            // "null"
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "[-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n";
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+    // .jsonlCSV with jsonp query
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp),
+        dir,
+        globecBottle.className() + "_Data", ".jsonlCSV");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = jsonp + "(\n" +
+        "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
+        "[-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "[-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n" +
+        ")";
+    Test.ensureEqual(results.substring(results.length() - expected.length()),
+        expected, "\nresults=\n" + results);
+
+    // .jsonlKVP
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".jsonlKVP");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n"
+        +
+        "{\"longitude\":-124.4, \"NO3\":35.48, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "{\"longitude\":-125, \"NO3\":null, \"time\":\"2002-08-18T13:03:00Z\", \"ship\":\"New_Horizon\"}\n"; // row
+                                                                                                                    // with
+                                                                                                                    // missing
+                                                                                                                    // value
+                                                                                                                    // has
+                                                                                                                    // "null"
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "{\"longitude\":-124.1, \"NO3\":24.45, \"time\":\"2002-08-19T20:18:00Z\", \"ship\":\"New_Horizon\"}\n";
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+    // .jsonlKVP with jsonp query
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp),
+        dir,
+        globecBottle.className() + "_Data", ".jsonlKVP");
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = jsonp + "(\n" +
+        "{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n"
+        +
+        "{\"longitude\":-124.4, \"NO3\":35.48, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = "{\"longitude\":-124.1, \"NO3\":24.45, \"time\":\"2002-08-19T20:18:00Z\", \"ship\":\"New_Horizon\"}\n"
+        +
+        ")";
+    Test.ensureEqual(results.substring(results.length() - expected.length()),
+        expected, "\nresults=\n" + results);
+
+    // .mat [I can't test that missing value is NaN.]
+    // octave> load('c:/temp/tabledap/EDDTableFromNcFiles_Data.mat');
+    // octave> testGlobecBottle
+    // 2010-07-14 Roy can read this file in Matlab, previously. text didn't show up.
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, regexDapQuery, dir,
+        globecBottle.className() + "_Data", ".mat");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.hexDump(dir + tName, 1000000);
+    // String2.log(results);
+    Test.ensureEqual(
+        results.substring(0, 71 * 4) + results.substring(71 * 7), // remove the creation
+                                                                  // dateTime
+        "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n" +
+            "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n"
+            +
+            "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n"
+            +
+            "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n"
+            +
+            // "2c 20 43 72 65 61 74 65 64 20 6f 6e 3a 20 4d 6f , Created on: Mo
+            // |\n" +
+            // "6e 20 44 65 63 20 38 20 31 32 3a 34 35 3a 34 36 n Dec 8 12:45:46
+            // |\n" +
+            // "20 32 30 30 38 20 20 20 20 20 20 20 20 20 20 20 2008 |\n" +
+            "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n"
+            +
+            "00 00 00 0e 00 00 04 58   00 00 00 06 00 00 00 08          X         |\n"
+            +
+            "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+            +
+            "00 00 00 01 00 00 00 01   00 00 00 01 00 00 00 10                    |\n"
+            +
+            "74 65 73 74 47 6c 6f 62   65 63 42 6f 74 74 6c 65   testGlobecBottle |\n"
+            +
+            "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 80                    |\n"
+            +
+            "6c 6f 6e 67 69 74 75 64   65 00 00 00 00 00 00 00   longitude        |\n"
+            +
+            "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+            +
+            "4e 4f 33 00 00 00 00 00   00 00 00 00 00 00 00 00   NO3              |\n"
+            +
+            "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+            +
+            "74 69 6d 65 00 00 00 00   00 00 00 00 00 00 00 00   time             |\n"
+            +
+            "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+            +
+            "73 68 69 70 00 00 00 00   00 00 00 00 00 00 00 00   ship             |\n"
+            +
+            "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+            +
+            "00 00 00 0e 00 00 00 78   00 00 00 06 00 00 00 08          x         |\n"
+            +
+            "00 00 00 07 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+            +
+            "00 00 00 12 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
+            +
+            "00 00 00 07 00 00 00 48   c2 fa 38 52 c2 fa 38 52          H  8R  8R |\n"
+            +
+            "c2 fa 38 52 c2 fa 38 52   c2 fa 38 52 c2 fa 38 52     8R  8R  8R  8R |\n"
+            +
+            "c2 fa 38 52 c2 fa 38 52   c2 fa 38 52 c2 fa 38 52     8R  8R  8R  8R |\n"
+            +
+            "c2 fa 38 52 c2 fa 38 52   c2 fa 38 52 c2 fa 38 52     8R  8R  8R  8R |\n"
+            +
+            "c2 fa 38 52 c2 fa 38 52   c2 fa 38 52 c2 fa 38 52     8R  8R  8R  8R |\n"
+            +
+            "00 00 00 0e 00 00 00 78   00 00 00 06 00 00 00 08          x         |\n"
+            +
+            "00 00 00 07 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+            +
+            "00 00 00 12 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
+            +
+            "00 00 00 07 00 00 00 48   42 07 a3 d7 41 d4 e1 48          HB   A  H |\n"
+            +
+            "41 2c cc cd 41 06 b8 52   40 ca e1 48 3f a5 1e b8   A,  A  R@  H?    |\n"
+            +
+            "3c a3 d7 0a 00 00 00 00   41 2c f5 c3 42 29 8f 5c   <       A,  B) \\ |\n"
+            +
+            "42 07 5c 29 41 dd 5c 29   41 7e e1 48 41 0b 0a 3d   B \\)A \\)A~ HA  = |\n"
+            +
+            "40 93 33 33 40 0a e1 48   41 09 c2 8f 3f 23 d7 0a   @ 33@  HA   ?#   |\n"
+            +
+            "00 00 00 0e 00 00 00 c0   00 00 00 06 00 00 00 08                    |\n"
+            +
+            "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+            +
+            "00 00 00 12 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
+            +
+            "00 00 00 09 00 00 00 90   41 ce a9 a6 82 00 00 00           A        |\n"
+            +
+            "41 ce a9 a6 82 00 00 00   41 ce a9 a6 82 00 00 00   A       A        |\n"
+            +
+            "41 ce a9 a6 82 00 00 00   41 ce a9 a6 82 00 00 00   A       A        |\n"
+            +
+            "41 ce a9 a6 82 00 00 00   41 ce a9 a6 82 00 00 00   A       A        |\n"
+            +
+            "41 ce a9 a6 82 00 00 00   41 ce a9 a6 82 00 00 00   A       A        |\n"
+            +
+            "41 ce b0 19 36 00 00 00   41 ce b0 19 36 00 00 00   A   6   A   6    |\n"
+            +
+            "41 ce b0 19 36 00 00 00   41 ce b0 19 36 00 00 00   A   6   A   6    |\n"
+            +
+            "41 ce b0 19 36 00 00 00   41 ce b0 19 36 00 00 00   A   6   A   6    |\n"
+            +
+            "41 ce b0 19 36 00 00 00   41 ce b0 19 36 00 00 00   A   6   A   6    |\n"
+            +
+            "41 ce b0 19 36 00 00 00   00 00 00 0e 00 00 01 c0   A   6            |\n"
+            +
+            "00 00 00 06 00 00 00 08   00 00 00 04 00 00 00 00                    |\n"
+            +
+            "00 00 00 05 00 00 00 08   00 00 00 12 00 00 00 0b                    |\n"
+            +
+            "00 00 00 01 00 00 00 00   00 00 00 04 00 00 01 8c                    |\n"
+            +
+            "00 4e 00 4e 00 4e 00 4e   00 4e 00 4e 00 4e 00 4e    N N N N N N N N |\n"
+            +
+            "00 4e 00 4e 00 4e 00 4e   00 4e 00 4e 00 4e 00 4e    N N N N N N N N |\n"
+            +
+            "00 4e 00 4e 00 65 00 65   00 65 00 65 00 65 00 65    N N e e e e e e |\n"
+            +
+            "00 65 00 65 00 65 00 65   00 65 00 65 00 65 00 65    e e e e e e e e |\n"
+            +
+            "00 65 00 65 00 65 00 65   00 77 00 77 00 77 00 77    e e e e w w w w |\n"
+            +
+            "00 77 00 77 00 77 00 77   00 77 00 77 00 77 00 77    w w w w w w w w |\n"
+            +
+            "00 77 00 77 00 77 00 77   00 77 00 77 00 5f 00 5f    w w w w w w _ _ |\n"
+            +
+            "00 5f 00 5f 00 5f 00 5f   00 5f 00 5f 00 5f 00 5f    _ _ _ _ _ _ _ _ |\n"
+            +
+            "00 5f 00 5f 00 5f 00 5f   00 5f 00 5f 00 5f 00 5f    _ _ _ _ _ _ _ _ |\n"
+            +
+            "00 48 00 48 00 48 00 48   00 48 00 48 00 48 00 48    H H H H H H H H |\n"
+            +
+            "00 48 00 48 00 48 00 48   00 48 00 48 00 48 00 48    H H H H H H H H |\n"
+            +
+            "00 48 00 48 00 6f 00 6f   00 6f 00 6f 00 6f 00 6f    H H o o o o o o |\n"
+            +
+            "00 6f 00 6f 00 6f 00 6f   00 6f 00 6f 00 6f 00 6f    o o o o o o o o |\n"
+            +
+            "00 6f 00 6f 00 6f 00 6f   00 72 00 72 00 72 00 72    o o o o r r r r |\n"
+            +
+            "00 72 00 72 00 72 00 72   00 72 00 72 00 72 00 72    r r r r r r r r |\n"
+            +
+            "00 72 00 72 00 72 00 72   00 72 00 72 00 69 00 69    r r r r r r i i |\n"
+            +
+            "00 69 00 69 00 69 00 69   00 69 00 69 00 69 00 69    i i i i i i i i |\n"
+            +
+            "00 69 00 69 00 69 00 69   00 69 00 69 00 69 00 69    i i i i i i i i |\n"
+            +
+            "00 7a 00 7a 00 7a 00 7a   00 7a 00 7a 00 7a 00 7a    z z z z z z z z |\n"
+            +
+            "00 7a 00 7a 00 7a 00 7a   00 7a 00 7a 00 7a 00 7a    z z z z z z z z |\n"
+            +
+            "00 7a 00 7a 00 6f 00 6f   00 6f 00 6f 00 6f 00 6f    z z o o o o o o |\n"
+            +
+            "00 6f 00 6f 00 6f 00 6f   00 6f 00 6f 00 6f 00 6f    o o o o o o o o |\n"
+            +
+            "00 6f 00 6f 00 6f 00 6f   00 6e 00 6e 00 6e 00 6e    o o o o n n n n |\n"
+            +
+            "00 6e 00 6e 00 6e 00 6e   00 6e 00 6e 00 6e 00 6e    n n n n n n n n |\n"
+            +
+            "00 6e 00 6e 00 6e 00 6e   00 6e 00 6e 00 00 00 00    n n n n n n     |\n",
+        "\nresults=\n" + results);
+
+    // .nc
+    // !!! This is also a test of missing_value and _FillValue both active
+    String tUserDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15";
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, tUserDapQuery,
+        dir, globecBottle.className() + "_Data", ".nc");
+    results = NcHelper.ncdump(dir + tName, "");
+    String tHeader1 = "netcdf EDDTableFromNcFiles_Data.nc {\n" +
+        "  dimensions:\n" +
+        "    row = 100;\n" +
+        "    ship_strlen = 11;\n" +
+        "  variables:\n" +
+        "    float longitude(row=100);\n" +
+        "      :_CoordinateAxisType = \"Lon\";\n" +
+        "      :_FillValue = 327.67f; // float\n" +
+        "      :actual_range = -125.67f, -124.8f; // float\n" +
+        "      :axis = \"X\";\n" +
+        "      :ioos_category = \"Location\";\n" +
+        "      :long_name = \"Longitude\";\n" +
+        "      :missing_value = 327.67f; // float\n" +
+        "      :standard_name = \"longitude\";\n" +
+        "      :units = \"degrees_east\";\n" +
+        "\n" +
+        "    float NO3(row=100);\n" +
+        "      :_FillValue = -99.0f; // float\n" +
+        "      :actual_range = 0.46f, 34.09f; // float\n" +
+        "      :colorBarMaximum = 50.0; // double\n" +
+        "      :colorBarMinimum = 0.0; // double\n" +
+        "      :ioos_category = \"Dissolved Nutrients\";\n" +
+        "      :long_name = \"Nitrate\";\n" +
+        "      :missing_value = -9999.0f; // float\n" +
+        "      :standard_name = \"mole_concentration_of_nitrate_in_sea_water\";\n" +
+        "      :units = \"micromoles L-1\";\n" +
+        "\n" +
+        "    double time(row=100);\n" +
+        "      :_CoordinateAxisType = \"Time\";\n" +
+        "      :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
+        "      :axis = \"T\";\n" +
+        "      :cf_role = \"profile_id\";\n" +
+        "      :ioos_category = \"Time\";\n" +
+        "      :long_name = \"Time\";\n" +
+        "      :standard_name = \"time\";\n" +
+        "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+        "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+        "\n" +
+        "    char ship(row=100, ship_strlen=11);\n" +
+        "      :_Encoding = \"ISO-8859-1\";\n" +
+        "      :ioos_category = \"Identifier\";\n" +
+        "      :long_name = \"Ship\";\n" +
+        "\n" +
+        "  // global attributes:\n" +
+        "  :cdm_data_type = \"TrajectoryProfile\";\n" +
+        "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
+        "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
+        "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+        "  :Easternmost_Easting = -124.8f; // float\n" +
+        "  :featureType = \"TrajectoryProfile\";\n" +
+        "  :geospatial_lat_units = \"degrees_north\";\n" +
+        "  :geospatial_lon_max = -124.8f; // float\n" +
+        "  :geospatial_lon_min = -125.67f; // float\n" +
+        "  :geospatial_lon_units = \"degrees_east\";\n" +
+        "  :geospatial_vertical_positive = \"up\";\n" +
+        "  :geospatial_vertical_units = \"m\";\n" +
+        "  :history = \"" + today;
+    tResults = results.substring(0, tHeader1.length());
+    Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
+
+    // + " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+    // today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+    String tHeader2 = "/tabledap/testGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15\";\n"
+        +
+        "  :id = \"Globec_bottle_data_2002\";\n" +
+        "  :infoUrl = \"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\";\n" +
+        "  :institution = \"GLOBEC\";\n" +
+        "  :keywords = \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n"
+        +
+        "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+        "  :license = \"The data may be used and redistributed for free but is not intended\n" +
+        "for legal use, since it may contain inaccuracies. Neither the data\n" +
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+        "of their employees or contractors, makes any warranty, express or\n" +
+        "implied, including warranties of merchantability and fitness for a\n" +
+        "particular purpose, or assumes any legal liability for the accuracy,\n" +
+        "completeness, or usefulness, of this information.\";\n" +
+        "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
+        "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" +
+        "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
+        "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
+        "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
+        "Notes:\n" +
+        "Physical data processed by Jane Fleischbein (OSU).\n" +
+        "Chlorophyll readings done by Leah Feinberg (OSU).\n" +
+        "Nutrient analysis done by Burke Hales (OSU).\n" +
+        "Sal00 - salinity calculated from primary sensors (C0,T0).\n" +
+        "Sal11 - salinity calculated from secondary sensors (C1,T1).\n" +
+        "secondary sensor pair was used in final processing of CTD data for\n" +
+        "most stations because the primary had more noise and spikes. The\n" +
+        "primary pair were used for cast #9, 24, 48, 111 and 150 due to\n" +
+        "multiple spikes or offsets in the secondary pair.\n" +
+        "Nutrient samples were collected from most bottles; all nutrient data\n" +
+        "developed from samples frozen during the cruise and analyzed ashore;\n" +
+        "data developed by Burke Hales (OSU).\n" +
+        "Operation Detection Limits for Nutrient Concentrations\n" +
+        "Nutrient  Range         Mean    Variable         Units\n" +
+        "PO4       0.003-0.004   0.004   Phosphate        micromoles per liter\n" +
+        "N+N       0.04-0.08     0.06    Nitrate+Nitrite  micromoles per liter\n" +
+        "Si        0.13-0.24     0.16    Silicate         micromoles per liter\n" +
+        "NO2       0.003-0.004   0.003   Nitrite          micromoles per liter\n" +
+        "Dates and Times are UTC.\n" +
+        "\n" +
+        "For more information, see https://www.bco-dmo.org/dataset/2452\n" +
+        "\n" +
+        "Inquiries about how to access this data should be directed to\n" +
+        "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\";\n" +
+        "  :time_coverage_end = \"2002-08-14T23:34:00Z\";\n" +
+        "  :time_coverage_start = \"2002-08-14T00:59:00Z\";\n" +
+        "  :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
+        "  :Westernmost_Easting = -125.67f; // float\n";
+    int tPo = results.indexOf(tHeader2.substring(0, 17));
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureEqual(results.substring(tPo, tPo + tHeader2.length()), tHeader2,
+        "results=\n" + results);
+
+    expected = " data:\n" +
+        "    longitude = \n" +
+        "      {-124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2}\n"
+        +
+        "    NO3 = \n" +
+        "      {33.66, 30.43, 28.22, 26.4, 25.63, 23.54, 22.38, 20.15, 33.55, 31.48, 24.93, -99.0, 21.21, 20.54, 17.87, -9999.0, 16.32, 33.61, 33.48, 30.7, 27.05, 25.13, 24.5, 23.95, 16.0, 14.42, 33.28, 28.3, 26.74, 24.96, 23.78, 20.76, 17.72, 16.01, 31.22, 27.47, 13.28, 10.66, 9.61, 8.36, 6.53, 2.86, 0.96, 34.05, 29.47, 18.87, 15.17, 13.84, 9.61, 4.95, 3.46, 34.09, 23.29, 16.01, 10.35, 7.72, 4.37, 2.97, 27.25, 29.98, 22.56, 9.82, 9.19, 6.57, 5.23, 3.81, 0.96, 30.08, 19.88, 8.44, 4.59, 2.67, 1.53, 0.94, 0.47, 30.73, 20.28, 10.61, 7.48, 6.53, 4.51, 3.04, 1.36, 0.89, 32.21, 23.75, 12.04, 7.67, 5.73, 1.14, 1.02, 0.46, 33.16, 27.33, 15.16, 9.7, 9.47, 8.66, 7.65, 4.84}\n"
+        +
+        "    time = \n" +
+        "      {1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9}\n"
+        +
+        "    ship =   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\"\n"
+        +
+        "}\n";
+    tPo = results.indexOf(expected.substring(0, 17));
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureEqual(
+        results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+        expected, "results=\n" + results);
+
+    // .ncHeader
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".ncHeader");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFromUtf8File(dir + tName);
+    String2.log(results);
+
+    tResults = results.substring(0, tHeader1.length());
+    Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
+
+    expected = tHeader2 + "}\n";
+    tPo = results.indexOf(expected.substring(0, 17));
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureEqual(
+        results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+        expected, "results=\n" + results);
+
+    // .odvTxt
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        "&latitude>0&time>=2002-08-03",
+        dir, globecBottle.className() + "_ODV", ".odvTxt");
+    String2.log("ODV fileName=" + dir + tName);
+    results = File2.directReadFromUtf8File(dir + tName);
+    results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+        "<CreateTime>9999-99-99T99:99:99");
+    expected = "//<Creator>https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics</Creator>\n" +
+        "//<CreateTime>9999-99-99T99:99:99</CreateTime>\n" +
+        "//<Encoding>UTF-8</Encoding>\n" +
+        "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>\n" +
+        "//<Source>http://localhost:8080/erddap/tabledap/testGlobecBottle.html</Source>\n" +
+        "//<Version>ODV Spreadsheet V4.6</Version>\n" +
+        "//<DataField>GeneralField</DataField>\n" +
+        "//<DataType>Profiles</DataType>\n" +
+        "//<MetaVariable>label=\"Cruise\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Cruise ID\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"Station\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"Type\" value_type=\"TEXT:2\" is_primary_variable=\"F\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"yyyy-mm-ddThh:mm:ss.sss\" value_type=\"DOUBLE\" is_primary_variable=\"F\" comment=\"Time\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"Longitude [degrees_east]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Longitude\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"Latitude [degrees_north]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Latitude\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"ship\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Ship\" </MetaVariable>\n"
+        +
+        "//<MetaVariable>label=\"cast\" value_type=\"SHORT\" is_primary_variable=\"F\" comment=\"Cast Number\" </MetaVariable>\n"
+        +
+        "//<DataVariable>label=\"altitude [m]\" value_type=\"INTEGER\" is_primary_variable=\"F\" comment=\"Altitude\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"bottle_posn\" value_type=\"SIGNED_BYTE\" is_primary_variable=\"F\" comment=\"Bottle Number\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"chl_a_total [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Chlorophyll-a\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"chl_a_10um [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Chlorophyll-a after passing 10um screen\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"phaeo_total [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Total Phaeopigments\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"phaeo_10um [ug L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Phaeopigments 10um\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"sal00 [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Practical Salinity from T0 and C0 Sensors\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"sal11 [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Practical Salinity from T1 and C1 Sensors\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"temperature0 [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature from T0 Sensor\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"temperature1 [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature from T1 Sensor\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"fluor_v [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Fluorescence Voltage\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"xmiss_v [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Transmissivity Voltage\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"PO4 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Phosphate\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"N_N [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrate plus Nitrite\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"NO3 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrate\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"Si [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Silicate\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"NO2 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Nitrite\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"NH4 [micromoles L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Ammonium\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"oxygen [mL L-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Oxygen\" </DataVariable>\n"
+        +
+        "//<DataVariable>label=\"par [volts]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Photosynthetically Active Radiation\" </DataVariable>\n"
+        +
+        "Cruise\tStation\tType\tyyyy-mm-ddThh:mm:ss.sss\tLongitude [degrees_east]\tLatitude [degrees_north]\tship\tcast\taltitude [m]\tbottle_posn\tchl_a_total [ug L-1]\tchl_a_10um [ug L-1]\tphaeo_total [ug L-1]\tphaeo_10um [ug L-1]\tsal00 [PSU]\tsal11 [PSU]\ttemperature0 [degree_C]\ttemperature1 [degree_C]\tfluor_v [volts]\txmiss_v [volts]\tPO4 [micromoles L-1]\tN_N [micromoles L-1]\tNO3 [micromoles L-1]\tSi [micromoles L-1]\tNO2 [micromoles L-1]\tNH4 [micromoles L-1]\toxygen [mL L-1]\tpar [volts]\n"
+        +
+        "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n"
+        +
+        "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n"
+        +
+        "nh0207\t\t*\t2002-08-03T01:29:00.000Z\t-124.4\t44.0\tNew_Horizon\t20\t0\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected,
+        "\nresults=\n" + results);
+
+    // .tsv
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".tsv");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude\tNO3\ttime\tship\n" +
+        "degrees_east\tmicromoles L-1\tUTC\t\n" +
+        "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "\nresults=\n" + results);
+    expected = "-124.8\tNaN\t2002-08-03T07:17:00Z\tNew_Horizon\n"; // row with missing value has "NaN"
+                                                                   // missing value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1\t24.45\t2002-08-19T20:18:00Z\tNew_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .tsvp
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".tsvp");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude (degrees_east)\tNO3 (micromoles L-1)\ttime (UTC)\tship\n" +
+        "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "\nresults=\n" + results);
+    expected = "-124.8\tNaN\t2002-08-03T07:17:00Z\tNew_Horizon\n"; // row with missing value has "NaN"
+                                                                   // missing value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1\t24.45\t2002-08-19T20:18:00Z\tNew_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .tsv0
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".tsv0");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "\nresults=\n" + results);
+    expected = "-124.8\tNaN\t2002-08-03T07:17:00Z\tNew_Horizon\n"; // row with missing value has "NaN"
+                                                                   // missing value
+    Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+    expected = "-124.1\t24.45\t2002-08-19T20:18:00Z\tNew_Horizon\n"; // last row
+    Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
+
+    // .xhtml
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+        globecBottle.className() + "_Data", ".xhtml");
+    // Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFromUtf8File(dir + tName);
+    // String2.log(results);
+    expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
+        "  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+        "<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" +
+        "<head>\n" +
+        "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
+        "  <title>EDDTableFromNcFiles_Data</title>\n" +
+        "  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/erddap/images/erddap2.css\" />\n"
+        +
+        "</head>\n" +
+        "<body>\n" +
+        "\n" +
+        "&nbsp;\n" +
+        "<table class=\"erd commonBGColor nowrap\">\n" +
+        "<tr>\n" +
+        "<th>longitude</th>\n" +
+        "<th>NO3</th>\n" +
+        "<th>time</th>\n" +
+        "<th>ship</th>\n" +
+        "</tr>\n" +
+        "<tr>\n" +
+        "<th>degrees_east</th>\n" +
+        "<th>micromoles L-1</th>\n" +
+        "<th>UTC</th>\n" +
+        "<th></th>\n" +
+        "</tr>\n" +
+        "<tr>\n" +
+        "<td class=\"R\">-124.4</td>\n" +
+        "<td class=\"R\">35.7</td>\n" +
+        "<td>2002-08-03T01:29:00Z</td>\n" +
+        "<td>New_Horizon</td>\n" +
+        "</tr>\n";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    expected = // row with missing value has "" missing value
+        "<tr>\n" +
+            "<td class=\"R\">-124.1</td>\n" +
+            "<td class=\"R\">24.45</td>\n" +
+            "<td>2002-08-19T20:18:00Z</td>\n" +
+            "<td>New_Horizon</td>\n" +
+            "</tr>\n" +
+            "</table>\n" +
+            "</body>\n" +
+            "</html>\n";
+    tResults = results.substring(results.length() - expected.length());
+    Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
+
+    // data for mapExample
+    tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+        "longitude,latitude&time>=2002-08-03&time<=2002-08-04",
+        dir,
+        globecBottle.className() + "Map", ".csv");
+    results = File2.directReadFrom88591File(dir + tName);
+    // String2.log(results);
+    expected = "longitude,latitude\n" +
+        "degrees_east,degrees_north\n" +
+        "-124.4,44.0\n" +
+        "-124.6,44.0\n" +
+        "-124.8,44.0\n" +
+        "-125.0,44.0\n" +
+        "-125.2,44.0\n" +
+        "-125.4,44.0\n" +
+        "-125.6,43.8\n" +
+        "-125.86,43.5\n" +
+        "-125.63,43.5\n" +
+        "-125.33,43.5\n";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    try {
+
+      // test treat itself as a dataset
+      EDDTable eddTable2 = new EDDTableFromDapSequence(
+          "erddapGlobecBottle", // String tDatasetID,
+          null, null, null, null, null, null, "", "", null, null,
+          new Object[][] { // dataVariables: sourceName, addAttributes
+              { "longitude", null, null },
+              { "latitude", null, null },
+              { "altitude", null, null },
+              { "time", null, null },
+              { "ship", null, null },
+              { "cruise_id", null, null },
+              { "cast", null, null },
+              { "bottle_posn", null, null },
+              { "chl_a_total", null, null },
+              { "chl_a_10um", null, null },
+              { "phaeo_total", null, null },
+              { "phaeo_10um", null, null },
+              { "sal00", null, null },
+              { "sal11", null, null },
+              { "temperature0", null, null },
+              { "temperature1", null, null },
+              { "fluor_v", null, null },
+              { "xmiss_v", null, null },
+              { "PO4", null, null },
+              { "N_N", null, null },
+              { "NO3", null, null },
+              { "Si", null, null },
+              { "NO2", null, null },
+              { "NH4", null, null },
+              { "oxygen", null, null },
+              { "par", null, null } },
+          60, // int tReloadEveryNMinutes,
+          EDStatic.erddapUrl + // in tests, always use non-https url
+              "/tabledap/testGlobecBottle", // sourceUrl);
+          "s", null, // outerSequenceName innerSequenceName
+          true, // NeedsExpandedFP_EQ
+          true, // sourceCanConstrainStringEQNE
+          true, // sourceCanConstrainStringGTLT
+          PrimitiveArray.REGEX_OP,
+          false);
+
+      // .xhtml from local dataset made from Erddap
+      tName = eddTable2.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
+          eddTable2.className() + "_Itself", ".xhtml");
+      // Test.displayInBrowser("file://" + dir + tName);
+      results = File2.directReadFromUtf8File(dir + tName);
+      // String2.log(results);
+      expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
+          "  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+          "<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" +
+          "<head>\n" +
+          "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n"
+          +
+          "  <title>EDDTableFromDapSequence_Itself</title>\n" +
+          "  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/erddap/images/erddap2.css\" />\n"
+          +
+          "</head>\n" +
+          "<body>\n" +
+          "\n" +
+          "&nbsp;\n" +
+          "<table class=\"erd commonBGColor nowrap\">\n" +
+          "<tr>\n" +
+          "<th>longitude</th>\n" +
+          "<th>NO3</th>\n" +
+          "<th>time</th>\n" +
+          "<th>ship</th>\n" +
+          "</tr>\n" +
+          "<tr>\n" +
+          "<th>degrees_east</th>\n" +
+          "<th>micromoles L-1</th>\n" +
+          "<th>UTC</th>\n" +
+          "<th></th>\n" +
+          "</tr>\n" +
+          "<tr>\n" +
+          "<td class=\"R\">-124.4</td>\n" +
+          "<td class=\"R\">35.7</td>\n" +
+          "<td>2002-08-03T01:29:00Z</td>\n" +
+          "<td>New_Horizon</td>\n" +
+          "</tr>\n";
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    } catch (Throwable t) {
+      throw new RuntimeException(
+          "*** This test requires erddapGlobecBottle in localhost ERDDAP.", t);
+    }
+    // */
+
+  } // end of testBasic
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testNetcdf() throws Throwable {
+
+    // use testGlobecBottle which has fixed altitude=0, not erdGlobecBottle
+    int language = 0;
+    EDDTable globecBottle = (EDDTableFromNcFiles) EDDTestDataset.gettestGlobecBottle(); // should work
+    String tUrl = EDStatic.erddapUrl + // in tests, always use non-https url
+        "/tabledap/" + globecBottle.datasetID();
+    String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
+    String results, expected;
+
+    // TEST READING AS OPENDAP SERVER -- how specify constraint expression?
+    // test reading via netcdf-java similar to .dods test
+    // tName = globecBottle.makeNewFileForDapQuery(language, null, null,
+    // userDapQuery,
+    // dir, globecBottle.className() + "_Data", ".dods");
+    // Test.displayInBrowser("file://" + dir + tName);
+    {
+      String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
+      // !!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!!
+      // //in tests, always use non-https url
+      // !!!THIS IS NOT JUST A READ-FROM-FILE TEST!!!
+      try (NetcdfFile nc = NetcdfDatasets.openFile(tUrl, null)) {
+        results = NcHelper.ncdump(nc, "-h");
+        // 2016-05-10 lots of little formatting changes
+        // including nc.toString now adds cr at end of line (at least on Windows):
+        results = String2.replaceAll(results, "\r", "");
+        expected = "netcdf testGlobecBottle {\n" +
+            "  variables:\n" +
+            "\n" + // 2009-02-26 this line was added with switch to netcdf-java 4.0
+            "    Structure {\n" +
+            "      String cruise_id;\n" +
+            "        :cf_role = \"trajectory_id\";\n" +
+            "        :ioos_category = \"Identifier\";\n" +
+            "        :long_name = \"Cruise ID\";\n" +
+            "      String ship;\n" +
+            "        :ioos_category = \"Identifier\";\n" +
+            "        :long_name = \"Ship\";\n" +
+            "      short cast;\n" +
+            "        :_FillValue = 32767S; // short\n" +
+            "        :actual_range = 1S, 127S; // short\n" +
+            "        :colorBarMaximum = 140.0; // double\n" +
+            "        :colorBarMinimum = 0.0; // double\n" +
+            "        :ioos_category = \"Identifier\";\n" +
+            "        :long_name = \"Cast Number\";\n" +
+            "        :missing_value = 32767S; // short\n" +
+            "      float longitude;\n" +
+            "        :_CoordinateAxisType = \"Lon\";\n" +
+            "        :_FillValue = 327.67f; // float\n" +
+            "        :actual_range = -126.2f, -124.1f; // float\n" +
+            "        :axis = \"X\";\n" +
+            "        :ioos_category = \"Location\";\n" +
+            "        :long_name = \"Longitude\";\n" +
+            "        :missing_value = 327.67f; // float\n" +
+            "        :standard_name = \"longitude\";\n" +
+            "        :units = \"degrees_east\";\n" +
+            "      float latitude;\n" +
+            "        :_CoordinateAxisType = \"Lat\";\n" +
+            "        :_FillValue = 327.67f; // float\n" +
+            "        :actual_range = 41.9f, 44.65f; // float\n" +
+            "        :axis = \"Y\";\n" +
+            "        :ioos_category = \"Location\";\n" +
+            "        :long_name = \"Latitude\";\n" +
+            "        :missing_value = 327.67f; // float\n" +
+            "        :standard_name = \"latitude\";\n" +
+            "        :units = \"degrees_north\";\n" +
+            "      int altitude;\n" +
+            "        :_CoordinateAxisType = \"Height\";\n" +
+            "        :_CoordinateZisPositive = \"up\";\n" +
+            "        :actual_range = 0, 0; // int\n" +
+            "        :axis = \"Z\";\n" +
+            "        :ioos_category = \"Location\";\n" +
+            "        :long_name = \"Altitude\";\n" +
+            "        :positive = \"up\";\n" +
+            "        :standard_name = \"altitude\";\n" +
+            "        :units = \"m\";\n" +
+            "      double time;\n" +
+            "        :_CoordinateAxisType = \"Time\";\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected,
+            "RESULTS=\n" + results);
+
+        expected = "  :time_coverage_start = \"2002-05-30T03:21:00Z\";\n" +
+            "  :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
+            "  :Westernmost_Easting = -126.2; // double\n" +
+            "}\n";
+        Test.ensureEqual(results.substring(results.indexOf("  :time_coverage_start")), expected,
+            "RESULTS=\n" + results);
+
+        Attributes attributes = new Attributes();
+        NcHelper.getGroupAttributes(nc.getRootGroup(), attributes);
+        Test.ensureEqual(attributes.getString("title"), "GLOBEC NEP Rosette Bottle Data (2002)",
+            "");
+
+        // get attributes for a dimension
+        Variable ncLat = nc.findVariable("s.latitude");
+        attributes.clear();
+        NcHelper.getVariableAttributes(ncLat, attributes);
+        Test.ensureEqual(attributes.getString("units"), EDV.LAT_UNITS, "");
+
+        // get attributes for grid variable
+        Variable ncChl = nc.findVariable("s.chl_a_total");
+        attributes.clear();
+        NcHelper.getVariableAttributes(ncChl, attributes);
+        Test.ensureEqual(attributes.getString("standard_name"),
+            "concentration_of_chlorophyll_in_sea_water",
+            "");
+
+        // get sequence data
+        // it's awkward. Do later if needed.
+        // ???How specify constraint expression?
+      }
+    }
+
+    // OTHER APPROACH: GET .NC FILE -- HOW SPECIFY CONSTRAINT EXPRESSION???
+    // Test.displayInBrowser("file://" + dir + tName);
+    if (false) {
+      try {
+        String2.log("\n*** do netcdf-java .nc test");
+        // !!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON COASTWATCH CWEXPERIMENTAL!!!
+        // !!!THIS IS NOT JUST A LOCAL TEST!!!
+        try (NetcdfFile nc = NetcdfDatasets.openFile(tUrl + ".nc?" + mapDapQuery, null)) {
+          results = nc.toString();
+          expected = "zz";
+          Test.ensureEqual(results.substring(0, expected.length()), expected,
+              "RESULTS=\n" + results);
+        }
+
+      } catch (Throwable t) {
+        throw new Exception(MustBe.throwableToString(t) +
+            "\nError accessing " + EDStatic.erddapUrl + // in tests, always use
+                                                        // non-https url
+            " via netcdf-java.");
+      }
+    }
+  }
+
   /* EDDTableFromNccsvFiles */
 
   /**
@@ -4966,6 +7167,724 @@ class JettyTests {
         tName,
         baseName + ".png",
         baseName + "_diff.png");
+  }
+
+  /** EDDGridFromErddap */
+
+  /**
+   * testGenerateDatasetsXml
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testEDDGridFromErddapGenerateDatasetsXml() throws Throwable {
+    // testVerboseOn();
+
+    // test local generateDatasetsXml
+    String results = EDDGridFromErddap.generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; // in tests, always
+                                                                                            // non-https url
+    String2.log("results=\n" + results);
+
+    // GenerateDatasetsXml
+    String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
+        "EDDGridFromErddap", EDStatic.erddapUrl, "false" },
+        false); // doIt loop?
+    Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+    String expected = "<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_e87c_42d8_b49d\" active=\"true\">\n" + //
+                "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite) -->\n" + //
+                "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
+                "</dataset>\n";
+    int po = results.indexOf(expected.substring(0, 80));
+    if (po < 0)
+        throw new RuntimeException(results);
+        // String2.log("results=" + results);
+    Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+    expected = "<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n";
+    po = results.indexOf(expected.substring(0, 20));
+    if (po < 0)
+    String2.log("results=" + results);
+    Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("rMH1chla8day", po) > 0,
+        "results=\n" + results +
+            "\nTHIS TEST REQUIRES rMH1chla8day TO BE ACTIVE ON THE localhost ERDDAP.");
+
+    // ensure it is ready-to-use by making a dataset from it
+    String tDatasetID = "localhost_04bf_84c9_022b";
+    EDD.deleteCachedDatasetInfo(tDatasetID);
+    EDD edd = EDDGridFromErddap.oneFromXmlFragment(null, results);
+    String2.log(
+        "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
+            "title=" + edd.title() + "\n" +
+            "datasetID=" + edd.datasetID() + "\n" +
+            "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
+    Test.ensureEqual(edd.title(),
+        "Audio data from a local source.", "");
+    Test.ensureEqual(edd.datasetID(), tDatasetID, "");
+    Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()),
+        "channel_1", "");
+  }
+
+  /** This does some basic tests. */
+  @ParameterizedTest
+  @ValueSource(booleans = { true })
+  @TagJetty
+  void testEDDGridFromErddapBasic(boolean testLocalErddapToo) throws Throwable {
+    // testVerboseOn();
+    int language = 0;
+    EDDGridFromErddap gridDataset;
+    String name, tName, axisDapQuery, query, results, expected, expected2, error;
+    int tPo;
+    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String userDapQuery = SSR.minimalPercentEncode("chlorophyll[(2003-01-17)][(29.020832)][(-147.97917):1:(-147.8)]");
+    String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
+    String mapDapQuery = SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride irrelevant
+    StringArray destinationNames = new StringArray();
+    IntArray constraints = new IntArray();
+    String localUrl = EDStatic.erddapUrl + "/griddap/rMH1chla8day"; // in tests, always non-https url
+
+    gridDataset = (EDDGridFromErddap) EDDGridFromErddap.oneFromDatasetsXml(null, "rMH1chla8day");
+
+    // *** test getting das for entire dataset
+    String2.log("\n****************** EDDGridFromErddap test entire dataset\n");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Entire", ".das");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected = "Attributes {\n" + //
+                "  time {\n" + //
+                "    String _CoordinateAxisType \"Time\";\n" + //
+                "    Float64 actual_range MIN, MAX;\n" +
+                "    String axis \"T\";\n" + //
+                "    String ioos_category \"Time\";\n" + //
+                "    String long_name \"Centered Time\";\n" + //
+                "    String standard_name \"time\";\n" + //
+                "    String time_origin \"01-JAN-1970 00:00:00\";\n" + //
+                "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" + //
+                "  }\n" + //
+                "  latitude {\n" + //
+                "    String _CoordinateAxisType \"Lat\";\n" + //
+                "    Float32 actual_range MIN, MAX;\n" + //
+                "    String axis \"Y\";\n" + //
+                "    String ioos_category \"Location\";\n" + //
+                "    String long_name \"Latitude\";\n" + //
+                "    String standard_name \"latitude\";\n" + //
+                "    String units \"degrees_north\";\n" + //
+                "    Float32 valid_max 90.0;\n" + //
+                "    Float32 valid_min -90.0;\n" + //
+                "  }\n" + //
+                "  longitude {\n" + //
+                "    String _CoordinateAxisType \"Lon\";\n" + //
+                "    Float32 actual_range MIN, MAX;\n" + //
+                "    String axis \"X\";\n" + //
+                "    String ioos_category \"Location\";\n" + //
+                "    String long_name \"Longitude\";\n" + //
+                "    String standard_name \"longitude\";\n" + //
+                "    String units \"degrees_east\";\n" + //
+                "    Float32 valid_max 180.0;\n" + //
+                "    Float32 valid_min -180.0;\n" + //
+                "  }\n" + //
+                "  chlorophyll {\n" + //
+                "    Float32 _FillValue NaN;\n" + //
+                "    Float64 colorBarMaximum 30.0;\n" + //
+                "    Float64 colorBarMinimum 0.03;\n" + //
+                "    String colorBarScale \"Log\";\n" + //
+                "    String ioos_category \"Ocean Color\";\n" + //
+                "    String long_name \"Mean Chlorophyll a Concentration\";\n" + //
+                "    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" + //
+                "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" + //
+                "    String units \"mg m-3\";\n" + //
+                "    Float32 valid_max 100.0;\n" + //
+                "    Float32 valid_min 0.001;\n" + //
+                "  }\n" + //
+                "  NC_GLOBAL {\n" + //
+                "    String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+                // "    String _NCProperties \"version=2,netcdf=4.7.3,hdf5=1.12.0,\";\n" + //
+                "    String cdm_data_type \"Grid\";\n" + //
+                "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
+                "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" + //
+                "    String creator_name \"NASA/GSFC/OBPG\";\n" + //
+                "    String creator_type \"group\";\n" + //
+                "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
+                "    String date_created \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+                "    Float64 Easternmost_Easting 179.9792;\n" + //
+                "    Float64 geospatial_lat_max 89.97916;\n" + //
+                "    Float64 geospatial_lat_min MIN;\n" + //
+                // "    Float64 geospatial_lat_resolution 0.04166666589488307;\n" + //
+                "    String geospatial_lat_units \"degrees_north\";\n" + //
+                "    Float64 geospatial_lon_max 179.9792;\n" + //
+                "    Float64 geospatial_lon_min -179.9792;\n" + //
+                // "    Float64 geospatial_lon_resolution 0.041666674383609215;\n" + //
+                "    String geospatial_lon_units \"degrees_east\";\n" + //
+                "    String grid_mapping_name \"latitude_longitude\";\n" +
+                "    String history \"Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n" + //
+                "ERDDAP adds the time dimension.\n" + //
+                "Direct read of HDF4 file through CDM library\n"; //
+                // "2024-05-07T19:17:02Z (local files)\n" + //
+                // "2024-05-07T19:17:02Z http://localhost:8080/erddap/griddap/rMH1chla8day.das\";\n" + //
+
+    expected2 = "    String identifier_product_doi \"10.5067/AQUA/MODIS_OC.2014.0\";\n" + //
+            "    String identifier_product_doi_authority \"https://dx.doi.org\";\n" + //
+            "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
+            "    String institution \"NASA/GSFC OBPG\";\n" + //
+            "    String instrument \"MODIS\";\n" + //
+            "    String keywords \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n"
+            + //
+            "    String keywords_vocabulary \"GCMD Science Keywords\";\n" + //
+            "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n"
+            + //
+            "    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+            + //
+            "The data may be used and redistributed for free but is not intended\n" + //
+            "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+            "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+            "of their employees or contractors, makes any warranty, express or\n" + //
+            "implied, including warranties of merchantability and fitness for a\n" + //
+            "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+            "completeness, or usefulness, of this information.\";\n" + //
+            "    String map_projection \"Equidistant Cylindrical\";\n" + //
+            "    String measure \"Mean\";\n" + //
+            "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" + //
+            "    Float64 Northernmost_Northing 89.97916;\n" + //
+            "    String platform \"Aqua\";\n" + //
+            "    String processing_level \"L3 Mapped\";\n" + //
+            "    String processing_version \"2014.0\";\n" + //
+            "    String product_name \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
+            "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
+            "    String publisher_email \"erd.data@noaa.gov\";\n" + //
+            "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" + //
+            "    String publisher_type \"institution\";\n" + //
+            "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" + //
+            "    String sourceUrl \"(local files)\";\n" + //
+            "    Float64 Southernmost_Northing -89.97918;\n" + //
+            "    String spatialResolution \"4.60 km\";\n" + //
+            "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" + //
+            "    String summary \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n"
+            + //
+            "    String temporal_range \"8-day\";\n" + //
+            "    String testOutOfDate \"now-30days\";\n" + //
+            "    String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ\";\n" + //
+            "    String time_coverage_start \"2003-01-05T00:00:00Z\";\n" + //
+            "    String title \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n"
+            + //
+            "    Float64 Westernmost_Easting -179.9792;\n" + //
+            "  }\n" + //
+            "}\n";
+    // tPo = results.indexOf("history \"NASA GSFC (OBPG)");
+    // Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, -?[0-9]+.[0-9]+e?.[0-9]?;", "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;", "Float32 actual_range MIN, MAX;");
+    results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z", "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
+    results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z", "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
+    results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+", "Float64 geospatial_lat_min MIN");
+    results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z",
+            "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
+    Test.ensureEqual(results.substring(0, expected.length()), expected,
+            "\nresults=\n" + results);
+    // Test.ensureLinesMatch(results.substring(0, tPo + 25), expected,
+    //     "\nresults=\n" + results);
+
+    tPo = results.indexOf("    String identifier_product_doi");
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+    Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
+      results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, -?[0-9]+.[0-9]+e?.[0-9]?;",
+              "Float64 actual_range MIN, MAX;");
+      results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
+              "Float32 actual_range MIN, MAX;");
+      results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z",
+              "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
+      results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z",
+              "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
+      results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+", "Float64 geospatial_lat_min MIN");
+      results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z",
+              "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
+    //   tPo = results.indexOf("history \"NASA GSFC (OBPG)");
+    //   Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+    //   Test.ensureLinesMatch(results.substring(0, tPo + 25), expected,
+    //       "\nresults=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected,
+        "\nresults=\n" + results);
+
+      tPo = results.indexOf("    String identifier_product_doi");
+      Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+      Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+    }
+
+    // *** test getting dds for entire dataset
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Entire", ".dds");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected = "Dataset {\n" + //
+        "  Float64 time[time = TIME];\n" + //
+        "  Float32 latitude[latitude = LATITUDE];\n" + //
+        "  Float32 longitude[longitude = LONGITUDE];\n" + //
+        "  GRID {\n" + //
+        "    ARRAY:\n" + //
+        "      Float32 chlorophyll[time = TIME][latitude = LATITUDE][longitude = LONGITUDE];\n" + //
+        "    MAPS:\n" + //
+        "      Float64 time[time = TIME];\n" + //
+        "      Float32 latitude[latitude = LATITUDE];\n" + //
+        "      Float32 longitude[longitude = LONGITUDE];\n" + //
+        "  } chlorophyll;\n" + //
+        "} rMH1chla8day;\n";
+    results = results.replaceAll("time = [0-9]+", "time = TIME");
+    results = results.replaceAll("latitude = [0-9]+", "latitude = LATITUDE");
+    results = results.replaceAll("longitude = [0-9]+", "longitude = LONGITUDE");
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".dds");
+      results = results.replaceAll("time = [0-9]+", "time = TIME");
+      results = results.replaceAll("latitude = [0-9]+", "latitude = LATITUDE");
+      results = results.replaceAll("longitude = [0-9]+", "longitude = LONGITUDE");
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    }
+
+    // ********************************************** test getting axis data
+
+    // .asc
+    String2.log("\n*** EDDGridFromErddap test get .ASC axis data\n");
+    query = "time%5B0:1:1%5D,longitude%5Blast%5D";
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Axis", ".asc");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected = "Dataset {\n" +
+        "  Float64 time[time = TIME];\n" +
+        "  Float32 longitude[longitude = LONGITUDE];\n" +
+        "} "; // r
+    expected2 = "MH1chla8day;\n" +
+        "---------------------------------------------\n" +
+        "Data:\n" +
+        "time[TIME]\n" +
+        "VAL1, VAL2\n" +
+        "longitude[LONGITUDE]\n" +
+        "179.97917\n";
+    results = results.replaceAll("time = [0-9]+", "time = TIME");
+    results = results.replaceAll("time.[0-9]+.", "time[TIME]");
+    results = results.replaceAll("longitude = [0-9]+", "longitude = LONGITUDE");
+    results = results.replaceAll("longitude.[0-9]+.", "longitude[LONGITUDE]");
+    results = results.replaceAll("-?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+\n", "VAL1, VAL2\n");
+    Test.ensureEqual(results, expected + "r" + expected2, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      // 2018-08-08 this is an important test of SSR.getUrlResponseStringUnchanged
+      // following a redirect from http to https,
+      // which was previously not supported in SSR
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".asc?" + query);
+      results = results.replaceAll("time = [0-9]+", "time = TIME");
+      results = results.replaceAll("time.[0-9]+.", "time[TIME]");
+      results = results.replaceAll("longitude = [0-9]+", "longitude = LONGITUDE");
+      results = results.replaceAll("longitude.[0-9]+.", "longitude[LONGITUDE]");
+      results = results.replaceAll("-?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+\n", "VAL1, VAL2\n");
+      Test.ensureEqual(results, expected + "erd" + expected2, "\nresults=\n" + results);
+    }
+
+    // .csv
+    String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
+    query = SSR.minimalPercentEncode("time[0:1:1],longitude[last]");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Axis", ".csv");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    expected = "time,longitude\n" +
+        "UTC,degrees_east\n" +
+        "2003-01-05T00:00:00Z,179.97917\n" + //
+        "2003-01-13T00:00:00Z,NaN\n";
+        // "2002-07-08T00:00:00Z,360.0\n" +
+        // "2004-09-25T00:00:00Z,NaN\n" +
+        // "2006-12-15T00:00:00Z,NaN\n";
+    Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    }
+
+    // .csv test of gridName.axisName notation
+    String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
+    query = SSR.minimalPercentEncode("chlorophyll.time[0:1:1],chlorophyll.longitude[last]");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_AxisG.A", ".csv");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    // expected = "time,longitude\n" +
+    //     "UTC,degrees_east\n" +
+    //     "2002-07-08T00:00:00Z,360.0\n" +
+    //     "2004-09-25T00:00:00Z,NaN\n" +
+    //     "2006-12-15T00:00:00Z,NaN\n";
+    Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
+      Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    }
+
+    // .dods
+    String2.log("\n*** EDDGridFromErddap test get .DODS axis data\n");
+    query = SSR.minimalPercentEncode("time[0:1:1],longitude[last]");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Axis", ".dods");
+    results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+    // String2.log(results);
+    expected = "Dataset {[10]\n" +
+        "  Float64 time[time = 2];[10]\n" +
+        "  Float32 longitude[longitude = 1];[10]\n" +
+        "} "; // r
+    expected2 = "MH1chla8day;[10]\n" +
+        "[10]\n" +
+        "Data:[10]\n" +
+        "[0][0][0][2][0][0][0][2]A[207][11][186][192][0][0][0]A[207][17][0][192][0][0][0][0][0][0][1][0][0][0][1]C3[250][171][end]";
+    Test.ensureEqual(results, expected + "r" + expected2, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(localUrl + ".dods?" + query));
+      Test.ensureEqual(results, expected + "erd" + expected2, "\nresults=\n" + results);
+    }
+
+    // .mat
+    // octave> load('c:/temp/griddap/EDDGridFromErddap_Axis.mat');
+    // octave> erdMHchla8day
+    String matlabAxisQuery = SSR.minimalPercentEncode("time[0:1:1],longitude[last]");
+    String2.log("\n*** EDDGridFromErddap test get .MAT axis data\n");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, matlabAxisQuery, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Axis", ".mat");
+    String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
+    results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
+    String2.log(results);
+    expected = "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n" + //
+                "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n" + //
+                "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n" + //
+                "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n" + //
+                // "2c 20 43 72 65 61 74 65   64 20 6f 6e 3a 20 57 65   , Created on: We |\n" + //
+                // "64 20 4d 61 79 20 38 20   32 30 3a 31 34 3a 31 34   d May 8 20:14:14 |\n" + //
+                // "20 32 30 32 34 20 20 20   20 20 20 20 20 20 20 20    2024            |\n" + //
+                "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n" + //
+                "00 00 00 0e 00 00 01 10   00 00 00 06 00 00 00 08                    |\n" + //
+                "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
+                "00 00 00 01 00 00 00 01   00 00 00 01 00 00 00 0c                    |\n" + //
+                "72 4d 48 31 63 68 6c 61   38 64 61 79 00 00 00 00   rMH1chla8day     |\n" + //
+                "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 40                  @ |\n" + //
+                "74 69 6d 65 00 00 00 00   00 00 00 00 00 00 00 00   time             |\n" + //
+                "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
+                "6c 6f 6e 67 69 74 75 64   65 00 00 00 00 00 00 00   longitude        |\n" + //
+                "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
+                "00 00 00 0e 00 00 00 40   00 00 00 06 00 00 00 08          @         |\n" + //
+                "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
+                "00 00 00 02 00 00 00 01   00 00 00 01 00 00 00 00                    |\n" + //
+                "00 00 00 09 00 00 00 10   41 cf 0b ba c0 00 00 00           A        |\n" + //
+                "41 cf 11 00 c0 00 00 00   00 00 00 0e 00 00 00 38   A              8 |\n" + //
+                "00 00 00 06 00 00 00 08   00 00 00 07 00 00 00 00                    |\n" + //
+                "00 00 00 05 00 00 00 08   00 00 00 01 00 00 00 01                    |\n" + //
+                "00 00 00 01 00 00 00 00   00 00 00 07 00 00 00 04                    |\n" + //
+                "43 33 fa ab 00 00 00 00   C3                                         |\n";
+    Test.ensureEqual(
+        results.substring(0, 71 * 4) + results.substring(71 * 7), // remove the creation dateTime
+        expected, "RESULTS(" + EDStatic.fullTestCacheDirectory + tName + ")=\n" + results);
+
+    // .ncHeader
+    String2.log("\n*** EDDGridFromErddap test get .NCHEADER axis data\n");
+    query = SSR.minimalPercentEncode("time[0:1:1],longitude[last]");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Axis", ".ncHeader");
+    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected =
+        // "netcdf EDDGridFromErddap_Axis.nc {\n" +
+        // " dimensions:\n" +
+        // " time = 3;\n" + // (has coord.var)\n" + //changed when switched to
+        // netcdf-java 4.0, 2009-02-23
+        // " longitude = 1;\n" + // (has coord.var)\n" + //but won't change for
+        // testLocalErddapToo until next release
+        "  variables:\n" +
+            "    double time(time=2);\n" +
+            "      :_CoordinateAxisType = \"Time\";\n" +
+            "      :actual_range = MIN, MAX; // double\n" + // up-to-date
+            "      :axis = \"T\";\n" +
+            // "      :fraction_digits = 0; // int\n" +
+            "      :ioos_category = \"Time\";\n" +
+            "      :long_name = \"Centered Time\";\n" +
+            "      :standard_name = \"time\";\n" +
+            "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+            "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+            "\n" +
+            "    float longitude(longitude=1);\n" +
+            "      :_CoordinateAxisType = \"Lon\";\n" +
+            "      :actual_range = MIN, MAX; // float\n" +
+            "      :axis = \"X\";\n" +
+            // "      :coordsys = \"geographic\";\n" +
+            // "      :fraction_digits = 4; // int\n" +
+            "      :ioos_category = \"Location\";\n" +
+            "      :long_name = \"Longitude\";\n" +
+            // "      :point_spacing = \"even\";\n" +
+            "      :standard_name = \"longitude\";\n" +
+            "      :units = \"degrees_east\";\n" +
+            "      :valid_max = 180.0f; // float\n" + //
+            "      :valid_min = -180.0f; // float\n" +
+            "\n" +
+            "  // global attributes:\n";
+            // "  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
+    results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+", ":actual_range = MIN, MAX");
+    results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f",
+            ":actual_range = MIN, MAX");
+    tPo = results.indexOf("  variables:\n");
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
+    expected2 = "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n"
+        +
+        "  :Westernmost_Easting = 179.9792f; // float\n" +
+        "}\n";
+    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".ncHeader?" + query);
+      results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+",
+              ":actual_range = MIN, MAX");
+      results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f",
+              ":actual_range = MIN, MAX");
+      tPo = results.indexOf("  variables:\n");
+      Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+      Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected,
+          "\nresults=\n" + results);
+      Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+    }
+
+    // ********************************************** test getting grid data
+    // .csv
+    String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Data", ".csv");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    expected = // missing values are "NaN"
+        // pre 2010-10-26 was
+        "time,latitude,longitude,chlorophyll\n" + //
+        "UTC,degrees_north,degrees_east,mg m-3\n" + //
+        "2003-01-13T00:00:00Z,29.02083,-147.97917,NaN\n" + //
+        "2003-01-13T00:00:00Z,29.02083,-147.9375,NaN\n" + //
+        "2003-01-13T00:00:00Z,29.02083,-147.89583,NaN\n" + //
+        "2003-01-13T00:00:00Z,29.02083,-147.85417,NaN\n" + //
+        "2003-01-13T00:00:00Z,29.02083,-147.8125,NaN\n";
+        // "time, altitude, latitude, longitude, chlorophyll\n" +
+        // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n"
+        // +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n"
+        // +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
+        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
+        // "time,altitude,latitude,longitude,chlorophyll\n" +
+        //     "UTC,m,degrees_north,degrees_east,mg m-3\n" +
+        //     "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+        //     "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+            // pre 2012-08-17 was
+            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
+    // expected2 =
+        // pre 2010-10-26 was
+        // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+        // pre 2012-08-17 was
+        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
+    // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + userDapQuery);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    //   Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+    }
+
+    // .csv test gridName.gridName notation
+    String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll." + userDapQuery,
+        EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    // expected =
+    //     // pre 2010-10-26 was
+    //     // "time, altitude, latitude, longitude, chlorophyll\n" +
+    //     // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n"
+    //     // +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n"
+    //     // +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
+    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
+    //     "time,altitude,latitude,longitude,chlorophyll\n" +
+    //         "UTC,m,degrees_north,degrees_east,mg m-3\n" +
+    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+    //         // pre 2012-08-17 was
+    //         // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+    //         // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
+    Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
+    // expected2 =
+        // pre 2010-10-26 was
+        // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+        // pre 2012-08-17 was
+        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
+    // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+
+    if (testLocalErddapToo) {
+      results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+    //   Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+    }
+
+    // .nc
+    String2.log("\n*** EDDGridFromErddap test get .NC data\n");
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory,
+        gridDataset.className() + "_Data", ".nc");
+    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    expected = "netcdf EDDGridFromErddap_Data.nc {\n" + //
+                "  dimensions:\n" + //
+                "    time = 1;\n" + //
+                "    latitude = 1;\n" + //
+                "    longitude = 5;\n" + //
+                "  variables:\n" + //
+                "    double time(time=1);\n" + //
+                "      :_CoordinateAxisType = \"Time\";\n" + //
+                "      :actual_range = 1.042416E9, 1.042416E9; // double\n" + //
+                "      :axis = \"T\";\n" + //
+                "      :ioos_category = \"Time\";\n" + //
+                "      :long_name = \"Centered Time\";\n" + //
+                "      :standard_name = \"time\";\n" + //
+                "      :time_origin = \"01-JAN-1970 00:00:00\";\n" + //
+                "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" + //
+                "\n" + //
+                "    float latitude(latitude=1);\n" + //
+                "      :_CoordinateAxisType = \"Lat\";\n" + //
+                "      :actual_range = 29.02083f, 29.02083f; // float\n" + //
+                "      :axis = \"Y\";\n" + //
+                "      :ioos_category = \"Location\";\n" + //
+                "      :long_name = \"Latitude\";\n" + //
+                "      :standard_name = \"latitude\";\n" + //
+                "      :units = \"degrees_north\";\n" + //
+                "      :valid_max = 90.0f; // float\n" + //
+                "      :valid_min = -90.0f; // float\n" + //
+                "\n" + //
+                "    float longitude(longitude=5);\n" + //
+                "      :_CoordinateAxisType = \"Lon\";\n" + //
+                "      :actual_range = -147.97917f, -147.8125f; // float\n" + //
+                "      :axis = \"X\";\n" + //
+                "      :ioos_category = \"Location\";\n" + //
+                "      :long_name = \"Longitude\";\n" + //
+                "      :standard_name = \"longitude\";\n" + //
+                "      :units = \"degrees_east\";\n" + //
+                "      :valid_max = 180.0f; // float\n" + //
+                "      :valid_min = -180.0f; // float\n" + //
+                "\n" + //
+                "    float chlorophyll(time=1, latitude=1, longitude=5);\n" + //
+                "      :_FillValue = NaNf; // float\n" + //
+                "      :colorBarMaximum = 30.0; // double\n" + //
+                "      :colorBarMinimum = 0.03; // double\n" + //
+                "      :colorBarScale = \"Log\";\n" + //
+                "      :ioos_category = \"Ocean Color\";\n" + //
+                "      :long_name = \"Mean Chlorophyll a Concentration\";\n" + //
+                "      :references = \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" + //
+                "      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" + //
+                "      :units = \"mg m-3\";\n" + //
+                "      :valid_max = 100.0f; // float\n" + //
+                "      :valid_min = 0.001f; // float\n" + //
+                "\n" + //
+                "  // global attributes:\n" + //
+                "  :_lastModified = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+                "  :cdm_data_type = \"Grid\";\n" + //
+                "  :Conventions = \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
+                "  :creator_email = \"data@oceancolor.gsfc.nasa.gov\";\n" + //
+                "  :creator_name = \"NASA/GSFC/OBPG\";\n" + //
+                "  :creator_type = \"group\";\n" + //
+                "  :creator_url = \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
+                "  :date_created = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+                "  :Easternmost_Easting = -147.8125f; // float\n" + //
+                "  :geospatial_lat_max = 29.02083f; // float\n" + //
+                "  :geospatial_lat_min = 29.02083f; // float\n" + //
+                "  :geospatial_lat_units = \"degrees_north\";\n" + //
+                "  :geospatial_lon_max = -147.8125f; // float\n" + //
+                "  :geospatial_lon_min = -147.97917f; // float\n" + //
+                "  :geospatial_lon_units = \"degrees_east\";\n" + //
+                "  :grid_mapping_name = \"latitude_longitude\";\n";
+    // tPo = results.indexOf(":history = \"NASA GSFC (OBPG)");
+    // Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    results = results.replaceAll("\\\"....-..-..T..:..:...000Z\\\"", "\"YYYY-MM-DDTHH:mm:ss.000Z\"");
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+
+    expected = // note original missing values
+    "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
+        "  :institution = \"NASA/GSFC OBPG\";\n" + //
+        "  :instrument = \"MODIS\";\n" + //
+        "  :keywords = \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n" + //
+        "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" + //
+        "  :l2_flag_names = \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" + //
+        "  :license = \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" + //
+        "The data may be used and redistributed for free but is not intended\n" + //
+        "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+        "of their employees or contractors, makes any warranty, express or\n" + //
+        "implied, including warranties of merchantability and fitness for a\n" + //
+        "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+        "completeness, or usefulness, of this information.\";\n" + //
+        "  :map_projection = \"Equidistant Cylindrical\";\n" + //
+        "  :measure = \"Mean\";\n" + //
+        "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" + //
+        "  :Northernmost_Northing = 29.02083f; // float\n" + //
+        "  :platform = \"Aqua\";\n" + //
+        "  :processing_level = \"L3 Mapped\";\n" + //
+        "  :processing_version = \"2014.0\";\n" + //
+        "  :product_name = \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
+        "  :project = \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
+        "  :publisher_email = \"erd.data@noaa.gov\";\n" + //
+        "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" + //
+        "  :publisher_type = \"institution\";\n" + //
+        "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" + //
+        "  :sourceUrl = \"(local files)\";\n" + //
+        "  :Southernmost_Northing = 29.02083f; // float\n" + //
+        "  :spatialResolution = \"4.60 km\";\n" + //
+        "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" + //
+        "  :summary = \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n" + //
+        "  :temporal_range = \"8-day\";\n" + //
+        "  :testOutOfDate = \"now-30days\";\n" + //
+        "  :time_coverage_end = \"2003-01-13T00:00:00Z\";\n" + //
+        "  :time_coverage_start = \"2003-01-13T00:00:00Z\";\n" + //
+        "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n" + //
+        "  :Westernmost_Easting = -147.97917f; // float\n" + //
+        "\n" + //
+        "  data:\n" + //
+        "    time = \n" + //
+        "      {1.042416E9}\n" + //
+        "    latitude = \n" + //
+        "      {29.02083}\n" + //
+        "    longitude = \n" + //
+        "      {-147.97917, -147.9375, -147.89583, -147.85417, -147.8125}\n" + //
+        "    chlorophyll = \n" + //
+        "      {\n" + //
+        "        {\n" + //
+        "          {NaN, NaN, NaN, NaN, NaN}\n" + //
+        "        }\n" + //
+        "      }\n" + //
+        "}\n";
+        
+    tPo = results.indexOf("  :infoUrl");
+    // int tPo2 = results.indexOf("1.20716},", tPo + 1);
+    // if (tPo < 0 || tPo2 < 0)
+    //   String2.log("tPo=" + tPo + " tPo2=" + tPo2 + " results=\n" + results);
+
+    Test.ensureEqual(results.substring(tPo), expected, "RESULTS=\n" + results);
+    /* */
   }
 
   /** EDDGridFromEtopo */

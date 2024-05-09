@@ -9,12 +9,14 @@ import java.util.HashMap;
 
 import org.junit.jupiter.api.BeforeAll;
 
+import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -34,11 +36,10 @@ class EDDGridTests {
    * the part that is within range.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
   @TagImageComparison
   void testSaveAsImage() throws Throwable {
     // String2.log("\n*** EDDGrid.testSaveAsImage()");
-    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdMHchla8day();
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdMH1chlamday();
     // EDDGrid eddGrid = (EDDGrid) EDDGrid.oneFromDatasetsXml(null,
     // "erdMHchla8day");
     int language = 0;
@@ -46,8 +47,6 @@ class EDDGridTests {
     // String requestUrl = "/erddap/griddap/erdMHchla8day.transparentPng";
     String userDapQueryTemplate = "MWchla%5B(2022-01-16T12:00:00Z):1:(2022-01-16T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
     String baseName, tName;
-
-    String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
 
     // Make fully valid image
     baseName = "EDDGrid_testSaveAsImage_fullyValid";
@@ -191,6 +190,306 @@ class EDDGridTests {
   }
 
   /**
+   * Test getting geotiffs.
+   */
+  @org.junit.jupiter.api.Test
+  // was an interactive test, likely needs additional changes
+  void testGeotif() throws Throwable {
+      // String2.log("\n*** EDDGridFromDap.testGeotif");
+      // EDD.testVerbose(false);
+      int language = 0;
+      EDDGrid gridDataset = (EDDGrid) EDDTestDataset.getetopo180();
+      String mapDapQuery = "altitude%5B(-90.0):(-88.0)%5D%5B(-180.0):(-178.0)%5D";
+      String tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+              EDStatic.fullTestCacheDirectory, "testGeotif", ".geotif");
+      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagIncompleteTest // Need more local datasets that are evenly spaced
+  void testGeotif2() throws Throwable {
+    String2.log("*** EDDGridFromDap.testGeotif2()\n" +
+        "!!! This requires erdMHchla8day in localhost erddap to display in Google Earth.");
+    // testVerboseOn();
+    String tDir = EDStatic.fullTestCacheDirectory;
+    EDDGrid gridDataset = (EDDGrid) EDDTestDataset.geterdMH1chla1day();
+    String graphDapQuery = SSR.percentEncode("chlorophyll%5B(2022-07-26T12:00:00Z)%5D%5B(-0.1041694):(-2.895836)%5D%5B(-12.35416):(-9.562495)%5D");
+    String mapDapQuery = SSR.percentEncode("chlorophyll%5B(2022-07-26T12:00:00Z)%5D%5B(-0.1041694):(-2.895836)%5D%5B(-12.35416):(-9.562495)%5D");
+
+    String tName, results;
+    int language = 0;
+
+    // test .geotif
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+        tDir, gridDataset.className() + "_Map", ".geotif");
+    // Test.displayInBrowser("file://" + tDir + tName); // geotiff, so don't use testImagesIdentical
+
+    String testMsg = "If .geotif looks okay, close the IrfanView Window and press Enter to test deleting the file.";
+    String failMsg = "ERROR: The .geotif file couldn't be deleted!\n";
+    // String2.pressEnterToContinue("\nFaint coast of California.\n" + testMsg);
+    if (!File2.simpleDelete(tDir + tName))
+        throw new RuntimeException(failMsg + tDir + tName);
+    //   String2.pressEnterToContinue(failMsg + tDir + tName);
+
+    EDDGrid mur = (EDDGrid) EDDTestDataset.getnodcPH2sstd1day();
+
+    // this is cool looking (but you have to double click on file in windows
+    // explorer to see it)
+    tName = mur.makeNewFileForDapQuery(language, null, null,
+        // EDDGridMapExample, but stride->100
+        "analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):100:(89.99)][(-179.99):100:(180.0)]&.draw=surface&.vars=longitude|latitude|analysed_sst&.colorBar=Rainbow|C|Linear|0|32|",
+        tDir, mur.className() + "_ExampleMap", ".geotif");
+    // Test.displayInBrowser("file://" + tDir + tName); // doesn't display it or show error message. //geotiff,
+                                                     // so
+                                                     // don't
+                                                     // use testImagesIdentical
+
+    // String2.pressEnterToContinue(testMsg);
+    if (!File2.simpleDelete(tDir + tName))
+        throw new RuntimeException(failMsg + tDir + tName);
+    //   String2.pressEnterToContinue(failMsg + tDir + tName);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagImageComparison
+  void testGraphics() throws Throwable {
+    // String2.log("*** EDDGrid.testGraphics(" + testAll + ")\n" +
+    // "!!! This requires erdMHchla8day in localhost erddap to display in Google
+    // Earth.");
+    // testVerboseOn();
+    boolean testAll = true;
+    String tDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
+    EDDGrid gridDataset = (EDDGrid) EDDTestDataset.geterdMH1chla8day();
+    String graphDapQuery = SSR.percentEncode("chlorophyll[0:.1:1][][(29)][(225)]");
+    String mapDapQuery = SSR.percentEncode("chlorophyll[1][][(29):(45)][(225):(247)]"); // stride
+                                                                                          // irrelevant
+    String kmlQuery = SSR.percentEncode("chlorophyll[1][][(29):(45)]");
+    String tName, results;
+    int language = 0;
+
+    // *** test getting graphs
+    String2.log("\n****************** EDDGrid test get graphs\n");
+
+    // test graph .png
+    if (testAll || false) {
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.size=128|240&.font=0.75",
+          tDir, gridDataset.className() + "_GraphTiny",
+          ".largePng"); // to show it's irrelevant
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_GraphTiny" + ".png",
+          "EDDGridTestGraphics_GraphTiny" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_GraphS", ".smallPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_GraphSmall" + ".png",
+          "EDDGridTestGraphics_GraphSmall" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_Graph", ".png");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_GraphPng" + ".png",
+          "EDDGridTestGraphics_GraphPng" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_GraphL", ".largePng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_GraphL" + ".png",
+          "EDDGridTestGraphics_GraphL" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.size=1700|1800&.font=3",
+          tDir, gridDataset.className() + "_GraphHuge",
+          ".smallPng"); // to show it's irrelevant
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(tName,
+          "EDDGridTestGraphics_GraphHuge" + ".png",
+          "EDDGridTestGraphics_GraphHuge" + "_diff.png");
+    }
+
+    // test graph .pdf
+    if (testAll || false) {
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_GraphS", ".smallPdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_Graph", ".pdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery,
+          tDir, gridDataset.className() + "_GraphL", ".largePdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+    }
+
+    // test legend= options
+    if (testAll || false) {
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.legend=Off&.trim=10",
+          tDir, gridDataset.className() + "_GraphLegendOff", ".png");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_LegendOff" + ".png",
+          "EDDGridTestGraphics_LegendOff" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.legend=Only",
+          tDir, gridDataset.className() + "_GraphLegendOnlySmall", ".smallPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_LegendOnly" + ".png",
+          "EDDGridTestGraphics_LegendOnly" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.legend=Only",
+          tDir, gridDataset.className() + "_GraphLegendOnlyMed", ".png");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_LegendOnlyMed"
+              + ".png",
+          "EDDGridTestGraphics_LegendOnlyMed"
+              + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.legend=Only",
+          tDir, gridDataset.className() + "_GraphLegendOnlyLarge", ".largePng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_LegendOnlyLarge" + ".png",
+          "EDDGridTestGraphics_LegendOnlyLarge" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          graphDapQuery + "&.legend=Only",
+          tDir, gridDataset.className() + "_GraphTransparentLegendOnly",
+          ".transparentPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_LegendOnlyTransparent" + ".png",
+          "EDDGridTestGraphics_LegendOnlyTransparent" + "_diff.png");
+    }
+
+    // *** test getting colored surface graph
+    // String2.log("\n****************** EDDGrid test get colored surface
+    // graph\n");
+    // not working yet time axis is hard to work with
+    // String tempDapQuery = "chlorophyll[0:10:20][][(29):1:(50)][(225):1:(225)]";
+    // tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+    // tempDapQuery,
+    // tDir, gridDataset.className() + "_CSGraph", ".png");
+    // Test.displayInBrowser("file://" + tDir + tName);
+
+    // *** test getting map .png
+    if (testAll || false) {
+    //   String2.log("\n****************** EDDGrid test get maps\n");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          mapDapQuery + "&.size=120|280&.font=0.75",
+          tDir, gridDataset.className() + "_MapTiny",
+          ".largePng"); // to show it's irrelevant
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapTiny" + ".png",
+          "EDDGridTestGraphics_MapTiny" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_MapS", ".smallPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapSmall" + ".png",
+          "EDDGridTestGraphics_MapSmall" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_Map", ".png");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_Map" + ".png",
+          "EDDGridTestGraphics_Map" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_MapL", ".largePng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapLarge" + ".png",
+          "EDDGridTestGraphics_MapLarge" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+          mapDapQuery + "&.size=1700|1800&.font=3",
+          tDir, gridDataset.className() + "_MapHuge",
+          ".smallPng"); // to show it's irrelevant
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapHuge" + ".png",
+          "EDDGridTestGraphics_MapHuge" + "_diff.png");
+    }
+
+    // test getting map transparentPng
+    if (testAll || false) {
+
+      // yes, stretched. that's what query is asking for
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery + "&.size=300|400",
+          tDir, gridDataset.className() + "_MapTPSmall", ".transparentPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapTPSmall" + ".png",
+          "EDDGridTestGraphics_Map" + "_diff.png");
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_MapTP", ".transparentPng");
+      // Test.displayInBrowser("file://" + tDir + tName);
+      Image2Tests.testImagesIdentical(
+          tName,
+          "EDDGridTestGraphics_MapTP" + ".png",
+          "EDDGridTestGraphics_MapTP" + "_diff.png");
+    }
+
+    // test map pdf
+    if (testAll || false) {
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_MapS", ".smallPdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_Map", ".pdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery,
+          tDir, gridDataset.className() + "_MapL", ".largePdf");
+    //   Test.displayInBrowser("file://" + tDir + tName);
+    }
+
+    // test map kml
+    // !!! This requires erdMHchla8day in localhost erddap to display in Google
+    // Earth
+    if (testAll || false) {
+      tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
+              kmlQuery, tDir, gridDataset.className() + "_Map", ".kml");
+      results = File2.directReadFromUtf8File(tDir + tName);
+    //   String2.log("results=\n" + results);
+    //   Test.displayInBrowser("file://" + tDir + tName);
+    }
+  }
+
+  /**
    * Tests input for saveAsImage against the provided output. Specifically the
    * output is provided as a hash (sha-256) of the output bytes.
    * 
@@ -242,7 +541,7 @@ class EDDGridTests {
       fos.write(baos.toByteArray());
       fos.flush();
       fos.close();
-      Test.displayInBrowser("file://" + filename);
+    //   Test.displayInBrowser("file://" + filename);
       throw new RuntimeException(ex);
     }
   }
@@ -332,7 +631,7 @@ class EDDGridTests {
     fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
     eddGrid.wcsGetCoverage(0, "someIPAddress", loggedInAs, endOfRequest, wcsQuery3,
         new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-    Test.displayInBrowser("file://" + fileName);
+    // Test.displayInBrowser("file://" + fileName);
 
     /*
      * //*** observations for all stations and with BBOX (but just same 1 station)
