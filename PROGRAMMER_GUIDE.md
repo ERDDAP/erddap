@@ -2,15 +2,15 @@
 
 These are things that only a programmer who intends to work with ERDDAP's Java classes needs to know.
 
-### **Getting the Source Code**\
+### **Getting the Source Code**
    
 
-  - Via Source Code on GitHub\
+  - Via Source Code on GitHub
     The source code for recent public versions and in-development versions is also available via [GitHub](https://github.com/ERDDAP). Please read the [Wiki](https://github.com/ERDDAP/erddap/wiki) for that project. If you want to modify the source code (and possibly have the changes incorporated into the standard ERDDAP™ distribution), this is the recommended approach.
 
 ### **ERDDAP™ dependencies**
-ERDDAP™ uses Maven to load code dependencies as well as some static reference files (WEB-INF/ref). This is done to avoid storing many large files in the repository.\
-  You can use `mvn compile` and that will fetch the dependencies and ref files. You can also use `mvn package` to generate a war file.\
+ERDDAP™ uses Maven to load code dependencies as well as some static reference files (WEB-INF/ref). This is done to avoid storing many large files in the repository.
+  You can use `mvn compile` and that will fetch the dependencies and ref files. You can also use `mvn package` to generate a war file.
   You can manually download the ref files:
 
   - [etopo1\_ice\_g\_i2.zip](https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/1.0.0/etopo1_ice_g_i2.zip) and unzip it into /WEB-INF/ref/ .
@@ -19,7 +19,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - [erddapContent.zip](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddapContent.zip) (version 2.23, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
 
-- ERDDAP™ and its subcomponents have very liberal, open-source [licenses](https://erddap.github.io/setup.html#license), so you can use and modify the source code for any purpose, for-profit or not-for-profit. Note that ERDDAP™ and many subcomponents have licenses that require that you acknowledge the source of the code that you are using. See [Credits](https://erddap.github.io/setup.html#credits). Whether required or not, it is just good form to acknowledge all of these contributors.\
+- ERDDAP™ and its subcomponents have very liberal, open-source [licenses](https://erddap.github.io/setup.html#license), so you can use and modify the source code for any purpose, for-profit or not-for-profit. Note that ERDDAP™ and many subcomponents have licenses that require that you acknowledge the source of the code that you are using. See [Credits](https://erddap.github.io/setup.html#credits). Whether required or not, it is just good form to acknowledge all of these contributors.
    
 
 - **Use the Code for Other Projects**
@@ -29,7 +29,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   #### **Halfway**
 
-  Or, there is another approach which you may find useful which is halfway between delving into ERDDAP's code and using ERDDAP™ as a stand-alone web service: In the EDD class, there is a static method which lets you make an instance of a dataset (based on the specification in datasets.xml):\
+  Or, there is another approach which you may find useful which is halfway between delving into ERDDAP's code and using ERDDAP™ as a stand-alone web service: In the EDD class, there is a static method which lets you make an instance of a dataset (based on the specification in datasets.xml):
   `oneFromDatasetXml(String tDatasetID)
   `It returns an instance of an EDDTable or EDDGrid dataset. Given that instance, you can call\
   `makeNewFileForDapQuery(String userDapQuery, String dir, String fileName, String fileTypeName)
@@ -50,7 +50,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
     - When we run javac or java, the current directory is _tomcat_/webapps/erddap/WEB-INF .
 
-    - Our javac and java classpath is\
+    - Our javac and java classpath is
       `classes;../../../lib/servlet-api.jar;lib/*`
 
     - So your javac command line will be something like\
@@ -87,12 +87,12 @@ If you want to look at the source code and try to figure out how ERDDAP™ works
 
   - EDDTable subclasses push data into TableWriter subclasses, which write data to a specific file type on-the-fly.
 
-  - Other classes (e.g., low level classes) are also important, but it is less likely that you will be working to change them.\
+  - Other classes (e.g., low level classes) are also important, but it is less likely that you will be working to change them.
      
 
 ### **Code Contributions**
 
-- GitHub Issues\
+- GitHub Issues
   If you would like to contribute but don't have a project, see the list of [GitHub Issues](https://github.com/ERDDAP/erddap/issues), many of which are projects you could take on. If you would like to work on an issue, please assign it to yourself to indicate to others you are working on it. The GitHub issue is the best place to discuss any questions for how to proceed with work on that issue.
 
 - If the change you’d like to make is one of the below common cases, please create a [GitHub Issue ](https://github.com/ERDDAP/erddap/issues)indicating the change you intend to make. Then once the change is complete, make a pull request to request the merge. The common changes include:
@@ -106,56 +106,56 @@ Those situations have the advantage that the code you write is self-contained. Y
 - If you have a feature not covered above that you would like to add to ERDDAP, it is recommended to first create a discussion thread in the [GitHub Discussions](https://github.com/ERDDAP/erddap/discussions/categories/ideas). For significant features/changes the Technical Board will discuss them and decide on whether to approve adding it to ERDDAP™.
 
 ### **Judging Your Code Contributions**
-If you want to submit code or other changes to be included in ERDDAP, that is great. Your contribution needs to meet certain criteria in order to be accepted. If you follow the guidelines below, you greatly increase the chances of your contribution being accepted.\
+If you want to submit code or other changes to be included in ERDDAP, that is great. Your contribution needs to meet certain criteria in order to be accepted. If you follow the guidelines below, you greatly increase the chances of your contribution being accepted.
    
 
-  - The ERDDAP™ project is managed by a  NATD (NOAA Appointed Technical Director) with input from a Technical Board.\
-    From 2007 (the beginning of ERDDAP) through 2022, that was Bob Simons (also the Founder-Leader). Starting in January 2023, that is Chris John. Basically, the NATD is responsible for ERDDAP, so s/he has the final word on decisions about ERDDAP™ code, notably about the design and whether a given pull request will be accepted or not. It needs to be this way partly for efficiency reasons (it works great for Linus Torvalds and Linux) and partly for security reasons: Someone has to tell the IT security people that s/he takes responsibility for the security and integrity of the code.\
+  - The ERDDAP™ project is managed by a  NATD (NOAA Appointed Technical Director) with input from a Technical Board.
+    From 2007 (the beginning of ERDDAP) through 2022, that was Bob Simons (also the Founder-Leader). Starting in January 2023, that is Chris John. Basically, the NATD is responsible for ERDDAP, so s/he has the final word on decisions about ERDDAP™ code, notably about the design and whether a given pull request will be accepted or not. It needs to be this way partly for efficiency reasons (it works great for Linus Torvalds and Linux) and partly for security reasons: Someone has to tell the IT security people that s/he takes responsibility for the security and integrity of the code.
      
 
-  - The NATD doesn't guarantee that s/he will accept your code.\
-    If a project just doesn't work out as well as we had hoped and if it can't be salvaged, the NATD won't include the project in the ERDDAP™ distribution. Please don't feel bad. Sometimes projects don't work out as well as hoped. It happens to all software developers. If you follow the guidelines below, you greatly increase your chances of success.\
+  - The NATD doesn't guarantee that s/he will accept your code.
+    If a project just doesn't work out as well as we had hoped and if it can't be salvaged, the NATD won't include the project in the ERDDAP™ distribution. Please don't feel bad. Sometimes projects don't work out as well as hoped. It happens to all software developers. If you follow the guidelines below, you greatly increase your chances of success.
      
 
-  - It's best if the changes are of general interest and usefulness.\
-    If the code is specific to your organization, it is probably best to maintain a separate branch of ERDDAP™ for your use. Axiom does this. Fortunately, Git makes this easy to do. The NATD wants to maintain a consistent vision for ERDDAP, not allow it to become a kitchen sink project where everyone adds a custom feature for their project.\
+  - It's best if the changes are of general interest and usefulness.
+    If the code is specific to your organization, it is probably best to maintain a separate branch of ERDDAP™ for your use. Axiom does this. Fortunately, Git makes this easy to do. The NATD wants to maintain a consistent vision for ERDDAP, not allow it to become a kitchen sink project where everyone adds a custom feature for their project.
      
 
-  - Follow the Java Code Conventions.\
+  - Follow the Java Code Conventions.
     In general, your code should be good quality and should follow the original [Java Code Conventions](https://www.oracle.com/technetwork/java/codeconventions-150003.pdf): put .class files in the proper place in the directory structure, give .class files an appropriate name, include proper JavaDoc comments, include //comments at the start of each paragraph of code, indent with 4 spaces (not tab), avoid lines >80 characters, etc. Conventions change and the source code isn’t always fully up to date. When in doubt, match code to the conventions and not existing code.
 
-- Use descriptive class, method and variable names.\
-  That makes the code easier for others to read.\
+- Use descriptive class, method and variable names.
+  That makes the code easier for others to read.
    
 
-- Avoid fancy code.\
-  In the long run, you or other people will have to figure out the code in order to maintain it. So please use simple coding methods that are thus easier for others (including you in the future) to figure out. Obviously, if there is a real advantage to using some fancy Java programming feature, use it, but extensively document what you did, why, and how it works.\
+- Avoid fancy code.
+  In the long run, you or other people will have to figure out the code in order to maintain it. So please use simple coding methods that are thus easier for others (including you in the future) to figure out. Obviously, if there is a real advantage to using some fancy Java programming feature, use it, but extensively document what you did, why, and how it works.
    
 
-- Work with the Technical Board before you start.\
-  If you hope to get your code changes pulled into ERDDAP, The Technical Board will definitely want to talk about what you're going to do and how you're going to do it before you make any changes to the code. That way, we can avoid you making changes that the NATD, in the end, doesn't accept. When you're doing the work, the NATD and Technical Board is willing to answer questions to help you figure out the existing code and (overall) how to tackle your project.\
+- Work with the Technical Board before you start.
+  If you hope to get your code changes pulled into ERDDAP™, The Technical Board will definitely want to talk about what you're going to do and how you're going to do it before you make any changes to the code. That way, we can avoid you making changes that the NATD, in the end, doesn't accept. When you're doing the work, the NATD and Technical Board is willing to answer questions to help you figure out the existing code and (overall) how to tackle your project.
    
 
-- Work independently (as much as possible) after you start.\
-  In contrast to the above "Work with the Technical Board", after you get started on the project, the NATD encourages you to work as independently as possible. If the NATD has to tell you almost everything and answer lots of questions (especially ones that you could have answered by reading the documentation or the code), then your efforts aren't a time savings for the NATD and s/he might as well do the work themself. It's the [Mythical Man Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month) problem. Of course, we should still communicate. It would be great to periodically see your work in progress to make sure the project is on track. But the more you can work independently (after the Technical Board agrees on the task at hand and the general approach), the better.\
+- Work independently (as much as possible) after you start.
+  In contrast to the above "Work with the Technical Board", after you get started on the project, the NATD encourages you to work as independently as possible. If the NATD has to tell you almost everything and answer lots of questions (especially ones that you could have answered by reading the documentation or the code), then your efforts aren't a time savings for the NATD and s/he might as well do the work themself. It's the [Mythical Man Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month) problem. Of course, we should still communicate. It would be great to periodically see your work in progress to make sure the project is on track. But the more you can work independently (after the Technical Board agrees on the task at hand and the general approach), the better.
    
 
-- Avoid bugs.\
-  If a bug isn't caught before a release, it causes problems for users (at best), returns the wrong information (at worst), is a blot on ERDDAP's reputation, and will persist on out-of-date ERDDAP™ installations for years. Work very hard to avoid bugs. Part of this is writing clean code (so it is easier to see problems). Part of this is writing unit tests. Part of this is a constant attitude of bug avoidance when you write code. Don't make the NATD regret adding your code to ERDDAP™.\
+- Avoid bugs.
+  If a bug isn't caught before a release, it causes problems for users (at best), returns the wrong information (at worst), is a blot on ERDDAP's reputation, and will persist on out-of-date ERDDAP™ installations for years. Work very hard to avoid bugs. Part of this is writing clean code (so it is easier to see problems). Part of this is writing unit tests. Part of this is a constant attitude of bug avoidance when you write code. Don't make the NATD regret adding your code to ERDDAP™.
    
 
-- Write a unit test or tests.\
-  For new code, you should write JUnit tests in a test file.\
-  Please write at least one individual test method that **thoroughly** tests the code you write and add it to the class' JUnit test file so that it is run automatically. Unit (and related) tests are one of the best ways to catch bugs, initially, and in the long run (as other things change in ERDDAP). As Bob said, "Unit tests are what lets me sleep at night."\
+- Write a unit test or tests.
+  For new code, you should write JUnit tests in a test file.
+  Please write at least one individual test method that **thoroughly** tests the code you write and add it to the class' JUnit test file so that it is run automatically. Unit (and related) tests are one of the best ways to catch bugs, initially, and in the long run (as other things change in ERDDAP™). As Bob said, "Unit tests are what lets me sleep at night."
    
 
-- Make it easy for the NATD to understand and accept the changes in your pull request.\
-  Part of that is writing a unit test method(s). Part of that is limiting your changes to one section of code (or one class) if possible. The NATD won't accept any pull request with hundreds of changes throughout the code. The NATD tells the IT security people that s/he takes responsibility for the security and integrity of the code. If there are too many changes or they are too hard to figure out, then it's just too hard to verify the changes are correct and don't introduce bugs or security issues.\
+- Make it easy for the NATD to understand and accept the changes in your pull request.
+  Part of that is writing a unit test method(s). Part of that is limiting your changes to one section of code (or one class) if possible. The NATD won't accept any pull request with hundreds of changes throughout the code. The NATD tells the IT security people that s/he takes responsibility for the security and integrity of the code. If there are too many changes or they are too hard to figure out, then it's just too hard to verify the changes are correct and don't introduce bugs or security issues.
    
 
-- Keep it simple.\
-  A good overall theme for your code is: Keep it simple. Simple code is easy for others (including you in the future) to read and maintain. It's easy for the NATD to understand and thus accept.\
+- Keep it simple.
+  A good overall theme for your code is: Keep it simple. Simple code is easy for others (including you in the future) to read and maintain. It's easy for the NATD to understand and thus accept.
    
 
-- Assume long term responsibility for your code.\
+- Assume long term responsibility for your code.
   In the long run, it is best if you assume ongoing responsibility for maintaining your code and answering questions about it (e.g., in the ERDDAP™ Google Group). As some authors note, code is a liability as well as an asset. If a bug is discovered in the future, it's best if you fix it because no one knows your code better than you (also so that there is an incentive to avoid bugs in the first place). The NATD isn't asking for a firm commitment to provide ongoing maintenance. The NATD is just saying that doing the maintenance will be greatly appreciated.
