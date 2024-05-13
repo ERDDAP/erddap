@@ -96,6 +96,1788 @@ class JettyTests {
     server.stop();
   }
 
+  /** Test the metadata */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testMetadataIso19115() throws Exception {
+    String results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/iso19115/xml/erdMWchla1day_iso19115.xml");
+    String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+        "<gmi:MI_Metadata  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" + //
+        "  xsi:schemaLocation=\"https://www.isotc211.org/2005/gmi https://data.noaa.gov/resources/iso19139/schema.xsd\"\n"
+        + //
+        "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" + //
+        "  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" + //
+        "  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" + //
+        "  xmlns:gmx=\"http://www.isotc211.org/2005/gmx\"\n" + //
+        "  xmlns:gml=\"http://www.opengis.net/gml/3.2\"\n" + //
+        "  xmlns:gss=\"http://www.isotc211.org/2005/gss\"\n" + //
+        "  xmlns:gts=\"http://www.isotc211.org/2005/gts\"\n" + //
+        "  xmlns:gsr=\"http://www.isotc211.org/2005/gsr\"\n" + //
+        "  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" + //
+        "  xmlns:srv=\"http://www.isotc211.org/2005/srv\">\n" + //
+        "  <gmd:fileIdentifier>\n" + //
+        "    <gco:CharacterString>erdMWchla1day</gco:CharacterString>\n" + //
+        "  </gmd:fileIdentifier>\n" + //
+        "  <gmd:language>\n" + //
+        "    <gmd:LanguageCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" codeListValue=\"eng\">eng</gmd:LanguageCode>\n"
+        + //
+        "  </gmd:language>\n" + //
+        "  <gmd:characterSet>\n" + //
+        "    <gmd:MD_CharacterSetCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n"
+        + //
+        "  </gmd:characterSet>\n" + //
+        "  <gmd:hierarchyLevel>\n" + //
+        "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n"
+        + //
+        "  </gmd:hierarchyLevel>\n" + //
+        "  <gmd:hierarchyLevel>\n" + //
+        "    <gmd:MD_ScopeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" codeListValue=\"service\">service</gmd:MD_ScopeCode>\n"
+        + //
+        "  </gmd:hierarchyLevel>\n" + //
+        "  <gmd:contact>\n" + //
+        "    <gmd:CI_ResponsibleParty>\n" + //
+        "      <gmd:individualName>\n" + //
+        "        <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n" + //
+        "      </gmd:individualName>\n" + //
+        "      <gmd:organisationName>\n" + //
+        "        <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n" + //
+        "      </gmd:organisationName>\n" + //
+        "      <gmd:contactInfo>\n" + //
+        "        <gmd:CI_Contact>\n" + //
+        "          <gmd:phone>\n" + //
+        "            <gmd:CI_Telephone>\n" + //
+        "              <gmd:voice>\n" + //
+        "                <gco:CharacterString>555-555-5555</gco:CharacterString>\n" + //
+        "              </gmd:voice>\n" + //
+        "            </gmd:CI_Telephone>\n" + //
+        "          </gmd:phone>\n" + //
+        "          <gmd:address>\n" + //
+        "            <gmd:CI_Address>\n" + //
+        "              <gmd:deliveryPoint>\n" + //
+        "                <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n" + //
+        "              </gmd:deliveryPoint>\n" + //
+        "              <gmd:city>\n" + //
+        "                <gco:CharacterString>Nowhere</gco:CharacterString>\n" + //
+        "              </gmd:city>\n" + //
+        "              <gmd:administrativeArea>\n" + //
+        "                <gco:CharacterString>AK</gco:CharacterString>\n" + //
+        "              </gmd:administrativeArea>\n" + //
+        "              <gmd:postalCode>\n" + //
+        "                <gco:CharacterString>99504</gco:CharacterString>\n" + //
+        "              </gmd:postalCode>\n" + //
+        "              <gmd:country>\n" + //
+        "                <gco:CharacterString>USA</gco:CharacterString>\n" + //
+        "              </gmd:country>\n" + //
+        "              <gmd:electronicMailAddress>\n" + //
+        "                <gco:CharacterString>nobody@example.com</gco:CharacterString>\n" + //
+        "              </gmd:electronicMailAddress>\n" + //
+        "            </gmd:CI_Address>\n" + //
+        "          </gmd:address>\n" + //
+        "        </gmd:CI_Contact>\n" + //
+        "      </gmd:contactInfo>\n" + //
+        "      <gmd:role>\n" + //
+        "        <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
+        + //
+        "      </gmd:role>\n" + //
+        "    </gmd:CI_ResponsibleParty>\n" + //
+        "  </gmd:contact>\n" + //
+        "  <gmd:dateStamp>\n" + //
+        "    <gco:Date>2024-05-07</gco:Date>\n" + //
+        "  </gmd:dateStamp>\n" + //
+        "  <gmd:metadataStandardName>\n" + //
+        "    <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for Imagery and Gridded Data</gco:CharacterString>\n"
+        + //
+        "  </gmd:metadataStandardName>\n" + //
+        "  <gmd:metadataStandardVersion>\n" + //
+        "    <gco:CharacterString>ISO 19115-2:2009(E)</gco:CharacterString>\n" + //
+        "  </gmd:metadataStandardVersion>\n" + //
+        "  <gmd:spatialRepresentationInfo>\n" + //
+        "    <gmd:MD_GridSpatialRepresentation>\n" + //
+        "      <gmd:numberOfDimensions>\n" + //
+        "        <gco:Integer>4</gco:Integer>\n" + //
+        "      </gmd:numberOfDimensions>\n" + //
+        "      <gmd:axisDimensionProperties>\n" + //
+        "        <gmd:MD_Dimension>\n" + //
+        "          <gmd:dimensionName>\n" + //
+        "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n"
+        + //
+        "          </gmd:dimensionName>\n" + //
+        "          <gmd:dimensionSize>\n" + //
+        "            <gco:Integer>4001</gco:Integer>\n" + //
+        "          </gmd:dimensionSize>\n" + //
+        "          <gmd:resolution>\n" + //
+        "            <gco:Measure uom=\"deg&#x7b;east&#x7d;\">0.0125</gco:Measure>\n" + //
+        "          </gmd:resolution>\n" + //
+        "        </gmd:MD_Dimension>\n" + //
+        "      </gmd:axisDimensionProperties>\n" + //
+        "      <gmd:axisDimensionProperties>\n" + //
+        "        <gmd:MD_Dimension>\n" + //
+        "          <gmd:dimensionName>\n" + //
+        "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n"
+        + //
+        "          </gmd:dimensionName>\n" + //
+        "          <gmd:dimensionSize>\n" + //
+        "            <gco:Integer>2321</gco:Integer>\n" + //
+        "          </gmd:dimensionSize>\n" + //
+        "          <gmd:resolution>\n" + //
+        "            <gco:Measure uom=\"deg&#x7b;north&#x7d;\">0.0125</gco:Measure>\n" + //
+        "          </gmd:resolution>\n" + //
+        "        </gmd:MD_Dimension>\n" + //
+        "      </gmd:axisDimensionProperties>\n" + //
+        "      <gmd:axisDimensionProperties>\n" + //
+        "        <gmd:MD_Dimension>\n" + //
+        "          <gmd:dimensionName>\n" + //
+        "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
+        + //
+        "          </gmd:dimensionName>\n" + //
+        "          <gmd:dimensionSize>\n" + //
+        "            <gco:Integer>1</gco:Integer>\n" + //
+        "          </gmd:dimensionSize>\n" + //
+        "          <gmd:resolution gco:nilReason=\"inapplicable\"/>\n" + //
+        "        </gmd:MD_Dimension>\n" + //
+        "      </gmd:axisDimensionProperties>\n" + //
+        "      <gmd:axisDimensionProperties>\n" + //
+        "        <gmd:MD_Dimension>\n" + //
+        "          <gmd:dimensionName>\n" + //
+        "            <gmd:MD_DimensionNameTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n"
+        + //
+        "          </gmd:dimensionName>\n" + //
+        "          <gmd:dimensionSize>\n" + //
+        "            <gco:Integer>7860</gco:Integer>\n" + //
+        "          </gmd:dimensionSize>\n" + //
+        "          <gmd:resolution>\n" + //
+        "            <gco:Measure uom=\"s\">87697.26428298766</gco:Measure>\n" + //
+        "          </gmd:resolution>\n" + //
+        "        </gmd:MD_Dimension>\n" + //
+        "      </gmd:axisDimensionProperties>\n" + //
+        "      <gmd:cellGeometry>\n" + //
+        "        <gmd:MD_CellGeometryCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n"
+        + //
+        "      </gmd:cellGeometry>\n" + //
+        "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n" + //
+        "    </gmd:MD_GridSpatialRepresentation>\n" + //
+        "  </gmd:spatialRepresentationInfo>\n" + //
+        "  <gmd:identificationInfo>\n" + //
+        "    <gmd:MD_DataIdentification id=\"DataIdentification\">\n" + //
+        "      <gmd:citation>\n" + //
+        "        <gmd:CI_Citation>\n" + //
+        "          <gmd:title>\n" + //
+        "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</gco:CharacterString>\n"
+        + //
+        "          </gmd:title>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:identifier>\n" + //
+        "            <gmd:MD_Identifier>\n" + //
+        "              <gmd:authority>\n" + //
+        "                <gmd:CI_Citation>\n" + //
+        "                  <gmd:title>\n" + //
+        "                    <gco:CharacterString>localhost:8080</gco:CharacterString>\n" + //
+        "                  </gmd:title>\n" + //
+        "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n" + //
+        "                </gmd:CI_Citation>\n" + //
+        "              </gmd:authority>\n" + //
+        "              <gmd:code>\n" + //
+        "                <gco:CharacterString>erdMWchla1day</gco:CharacterString>\n" + //
+        "              </gmd:code>\n" + //
+        "            </gmd:MD_Identifier>\n" + //
+        "          </gmd:identifier>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NOAA NMFS SWFSC ERD</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo>\n" + //
+        "                <gmd:CI_Contact>\n" + //
+        "                  <gmd:address>\n" + //
+        "                    <gmd:CI_Address>\n" + //
+        "                      <gmd:electronicMailAddress>\n" + //
+        "                        <gco:CharacterString>erd.data@noaa.gov</gco:CharacterString>\n" + //
+        "                      </gmd:electronicMailAddress>\n" + //
+        "                    </gmd:CI_Address>\n" + //
+        "                  </gmd:address>\n" + //
+        "                  <gmd:onlineResource>\n" + //
+        "                    <gmd:CI_OnlineResource>\n" + //
+        "                      <gmd:linkage>\n" + //
+        "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</gmd:URL>\n" + //
+        "                      </gmd:linkage>\n" + //
+        "                      <gmd:protocol>\n" + //
+        "                        <gco:CharacterString>information</gco:CharacterString>\n" + //
+        "                      </gmd:protocol>\n" + //
+        "                      <gmd:applicationProfile>\n" + //
+        "                        <gco:CharacterString>web browser</gco:CharacterString>\n" + //
+        "                      </gmd:applicationProfile>\n" + //
+        "                      <gmd:name>\n" + //
+        "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" + //
+        "                      </gmd:name>\n" + //
+        "                      <gmd:description>\n" + //
+        "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+        + //
+        "                      </gmd:description>\n" + //
+        "                      <gmd:function>\n" + //
+        "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                      </gmd:function>\n" + //
+        "                    </gmd:CI_OnlineResource>\n" + //
+        "                  </gmd:onlineResource>\n" + //
+        "                </gmd:CI_Contact>\n" + //
+        "              </gmd:contactInfo>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NASA GSFC (OBPG)</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "        </gmd:CI_Citation>\n" + //
+        "      </gmd:citation>\n" + //
+        "      <gmd:abstract>\n" + //
+        "        <gco:CharacterString>NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  The algorithm currently used in processing the water leaving radiance to chlorophyll concentration has not yet been accepted as science quality.  In addition, assumptions are made in the atmospheric correction in order to provide the data in a timely manner.</gco:CharacterString>\n"
+        + //
+        "      </gmd:abstract>\n" + //
+        "      <gmd:credit>\n" + //
+        "        <gco:CharacterString>NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</gco:CharacterString>\n" + //
+        "      </gmd:credit>\n" + //
+        "      <gmd:pointOfContact>\n" + //
+        "        <gmd:CI_ResponsibleParty>\n" + //
+        "          <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "          <gmd:organisationName>\n" + //
+        "            <gco:CharacterString>NOAA NMFS SWFSC ERD</gco:CharacterString>\n" + //
+        "          </gmd:organisationName>\n" + //
+        "          <gmd:contactInfo>\n" + //
+        "            <gmd:CI_Contact>\n" + //
+        "              <gmd:address>\n" + //
+        "                <gmd:CI_Address>\n" + //
+        "                  <gmd:electronicMailAddress>\n" + //
+        "                    <gco:CharacterString>erd.data@noaa.gov</gco:CharacterString>\n" + //
+        "                  </gmd:electronicMailAddress>\n" + //
+        "                </gmd:CI_Address>\n" + //
+        "              </gmd:address>\n" + //
+        "              <gmd:onlineResource>\n" + //
+        "                <gmd:CI_OnlineResource>\n" + //
+        "                  <gmd:linkage>\n" + //
+        "                    <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</gmd:URL>\n" + //
+        "                  </gmd:linkage>\n" + //
+        "                  <gmd:protocol>\n" + //
+        "                    <gco:CharacterString>information</gco:CharacterString>\n" + //
+        "                  </gmd:protocol>\n" + //
+        "                  <gmd:applicationProfile>\n" + //
+        "                    <gco:CharacterString>web browser</gco:CharacterString>\n" + //
+        "                  </gmd:applicationProfile>\n" + //
+        "                  <gmd:name>\n" + //
+        "                    <gco:CharacterString>Background Information</gco:CharacterString>\n" + //
+        "                  </gmd:name>\n" + //
+        "                  <gmd:description>\n" + //
+        "                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+        + //
+        "                  </gmd:description>\n" + //
+        "                  <gmd:function>\n" + //
+        "                    <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                  </gmd:function>\n" + //
+        "                </gmd:CI_OnlineResource>\n" + //
+        "              </gmd:onlineResource>\n" + //
+        "            </gmd:CI_Contact>\n" + //
+        "          </gmd:contactInfo>\n" + //
+        "          <gmd:role>\n" + //
+        "            <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n"
+        + //
+        "          </gmd:role>\n" + //
+        "        </gmd:CI_ResponsibleParty>\n" + //
+        "      </gmd:pointOfContact>\n" + //
+        "      <gmd:descriptiveKeywords>\n" + //
+        "        <gmd:MD_Keywords>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>aqua</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>chemistry</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>chla</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>chlorophyll</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>chlorophyll-a</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>coast</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>coastwatch</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>color</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>concentration</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>data</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>degrees</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>experimental</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>imaging</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>moderate</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>modis</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>MWchla</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>national</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>noaa</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>node</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>npp</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>ocean</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>ocean color</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>oceans</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>orbiting</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>partnership</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>polar</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>polar-orbiting</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>resolution</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>sea</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>seawater</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>spectroradiometer</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>US</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>water</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>wcn</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>west</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:type>\n" + //
+        "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+        + //
+        "          </gmd:type>\n" + //
+        "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" + //
+        "        </gmd:MD_Keywords>\n" + //
+        "      </gmd:descriptiveKeywords>\n" + //
+        "      <gmd:descriptiveKeywords>\n" + //
+        "        <gmd:MD_Keywords>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</gco:CharacterString>\n"
+        + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:type>\n" + //
+        "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+        + //
+        "          </gmd:type>\n" + //
+        "          <gmd:thesaurusName>\n" + //
+        "            <gmd:CI_Citation>\n" + //
+        "              <gmd:title>\n" + //
+        "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n" + //
+        "              </gmd:title>\n" + //
+        "              <gmd:date gco:nilReason=\"unknown\"/>\n" + //
+        "            </gmd:CI_Citation>\n" + //
+        "          </gmd:thesaurusName>\n" + //
+        "        </gmd:MD_Keywords>\n" + //
+        "      </gmd:descriptiveKeywords>\n" + //
+        "      <gmd:descriptiveKeywords>\n" + //
+        "        <gmd:MD_Keywords>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>CoastWatch (https://coastwatch.noaa.gov/)</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:type>\n" + //
+        "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n"
+        + //
+        "          </gmd:type>\n" + //
+        "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" + //
+        "        </gmd:MD_Keywords>\n" + //
+        "      </gmd:descriptiveKeywords>\n" + //
+        "      <gmd:descriptiveKeywords>\n" + //
+        "        <gmd:MD_Keywords>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>time</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>altitude</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>latitude</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>longitude</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:keyword>\n" + //
+        "            <gco:CharacterString>concentration_of_chlorophyll_in_sea_water</gco:CharacterString>\n" + //
+        "          </gmd:keyword>\n" + //
+        "          <gmd:type>\n" + //
+        "            <gmd:MD_KeywordTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
+        + //
+        "          </gmd:type>\n" + //
+        "          <gmd:thesaurusName>\n" + //
+        "            <gmd:CI_Citation>\n" + //
+        "              <gmd:title>\n" + //
+        "                <gco:CharacterString>CF Standard Name Table v70</gco:CharacterString>\n" + //
+        "              </gmd:title>\n" + //
+        "              <gmd:date gco:nilReason=\"unknown\"/>\n" + //
+        "            </gmd:CI_Citation>\n" + //
+        "          </gmd:thesaurusName>\n" + //
+        "        </gmd:MD_Keywords>\n" + //
+        "      </gmd:descriptiveKeywords>\n" + //
+        "      <gmd:resourceConstraints>\n" + //
+        "        <gmd:MD_LegalConstraints>\n" + //
+        "          <gmd:useLimitation>\n" + //
+        "            <gco:CharacterString>The data may be used and redistributed for free but is not intended\n"
+        + //
+        "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+        "of their employees or contractors, makes any warranty, express or\n" + //
+        "implied, including warranties of merchantability and fitness for a\n" + //
+        "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+        "completeness, or usefulness, of this information.</gco:CharacterString>\n" + //
+        "          </gmd:useLimitation>\n" + //
+        "        </gmd:MD_LegalConstraints>\n" + //
+        "      </gmd:resourceConstraints>\n" + //
+        "      <gmd:aggregationInfo>\n" + //
+        "        <gmd:MD_AggregateInformation>\n" + //
+        "          <gmd:aggregateDataSetName>\n" + //
+        "            <gmd:CI_Citation>\n" + //
+        "              <gmd:title>\n" + //
+        "                <gco:CharacterString>CoastWatch (https://coastwatch.noaa.gov/)</gco:CharacterString>\n"
+        + //
+        "              </gmd:title>\n" + //
+        "              <gmd:date gco:nilReason=\"inapplicable\"/>\n" + //
+        "            </gmd:CI_Citation>\n" + //
+        "          </gmd:aggregateDataSetName>\n" + //
+        "          <gmd:associationType>\n" + //
+        "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
+        + //
+        "          </gmd:associationType>\n" + //
+        "          <gmd:initiativeType>\n" + //
+        "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
+        + //
+        "          </gmd:initiativeType>\n" + //
+        "        </gmd:MD_AggregateInformation>\n" + //
+        "      </gmd:aggregationInfo>\n" + //
+        "      <gmd:aggregationInfo>\n" + //
+        "        <gmd:MD_AggregateInformation>\n" + //
+        "          <gmd:aggregateDataSetIdentifier>\n" + //
+        "            <gmd:MD_Identifier>\n" + //
+        "              <gmd:authority>\n" + //
+        "                <gmd:CI_Citation>\n" + //
+        "                  <gmd:title>\n" + //
+        "                    <gco:CharacterString>Unidata Common Data Model</gco:CharacterString>\n" + //
+        "                  </gmd:title>\n" + //
+        "                  <gmd:date gco:nilReason=\"inapplicable\"/>\n" + //
+        "                </gmd:CI_Citation>\n" + //
+        "              </gmd:authority>\n" + //
+        "              <gmd:code>\n" + //
+        "                <gco:CharacterString>Grid</gco:CharacterString>\n" + //
+        "              </gmd:code>\n" + //
+        "            </gmd:MD_Identifier>\n" + //
+        "          </gmd:aggregateDataSetIdentifier>\n" + //
+        "          <gmd:associationType>\n" + //
+        "            <gmd:DS_AssociationTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n"
+        + //
+        "          </gmd:associationType>\n" + //
+        "          <gmd:initiativeType>\n" + //
+        "            <gmd:DS_InitiativeTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n"
+        + //
+        "          </gmd:initiativeType>\n" + //
+        "        </gmd:MD_AggregateInformation>\n" + //
+        "      </gmd:aggregationInfo>\n" + //
+        "      <gmd:language>\n" + //
+        "        <gco:CharacterString>eng</gco:CharacterString>\n" + //
+        "      </gmd:language>\n" + //
+        "      <gmd:topicCategory>\n" + //
+        "        <gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>\n" + //
+        "      </gmd:topicCategory>\n" + //
+        "      <gmd:extent>\n" + //
+        "        <gmd:EX_Extent id=\"boundingExtent\">\n" + //
+        "          <gmd:geographicElement>\n" + //
+        "            <gmd:EX_GeographicBoundingBox id=\"boundingGeographicBoundingBox\">\n" + //
+        "              <gmd:extentTypeCode>\n" + //
+        "                <gco:Boolean>1</gco:Boolean>\n" + //
+        "              </gmd:extentTypeCode>\n" + //
+        "              <gmd:westBoundLongitude>\n" + //
+        "                <gco:Decimal>-155.0</gco:Decimal>\n" + //
+        "              </gmd:westBoundLongitude>\n" + //
+        "              <gmd:eastBoundLongitude>\n" + //
+        "                <gco:Decimal>-105.0</gco:Decimal>\n" + //
+        "              </gmd:eastBoundLongitude>\n" + //
+        "              <gmd:southBoundLatitude>\n" + //
+        "                <gco:Decimal>22.0</gco:Decimal>\n" + //
+        "              </gmd:southBoundLatitude>\n" + //
+        "              <gmd:northBoundLatitude>\n" + //
+        "                <gco:Decimal>51.0</gco:Decimal>\n" + //
+        "              </gmd:northBoundLatitude>\n" + //
+        "            </gmd:EX_GeographicBoundingBox>\n" + //
+        "          </gmd:geographicElement>\n" + //
+        "          <gmd:temporalElement>\n" + //
+        "            <gmd:EX_TemporalExtent id=\"boundingTemporalExtent\">\n" + //
+        "              <gmd:extent>\n" + //
+        "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n" + //
+        "                  <gml:description>seconds</gml:description>\n" + //
+        "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
+        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                </gml:TimePeriod>\n" + //
+        "              </gmd:extent>\n" + //
+        "            </gmd:EX_TemporalExtent>\n" + //
+        "          </gmd:temporalElement>\n" + //
+        "          <gmd:verticalElement>\n" + //
+        "            <gmd:EX_VerticalExtent>\n" + //
+        "              <gmd:minimumValue><gco:Real>0.0</gco:Real></gmd:minimumValue>\n" + //
+        "              <gmd:maximumValue><gco:Real>0.0</gco:Real></gmd:maximumValue>\n" + //
+        "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" + //
+        "            </gmd:EX_VerticalExtent>\n" + //
+        "          </gmd:verticalElement>\n" + //
+        "        </gmd:EX_Extent>\n" + //
+        "      </gmd:extent>\n" + //
+        "    </gmd:MD_DataIdentification>\n" + //
+        "  </gmd:identificationInfo>\n" + //
+        "  <gmd:identificationInfo>\n" + //
+        "    <srv:SV_ServiceIdentification id=\"ERDDAP-griddap\">\n" + //
+        "      <gmd:citation>\n" + //
+        "        <gmd:CI_Citation>\n" + //
+        "          <gmd:title>\n" + //
+        "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</gco:CharacterString>\n"
+        + //
+        "          </gmd:title>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NOAA NMFS SWFSC ERD</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo>\n" + //
+        "                <gmd:CI_Contact>\n" + //
+        "                  <gmd:address>\n" + //
+        "                    <gmd:CI_Address>\n" + //
+        "                      <gmd:electronicMailAddress>\n" + //
+        "                        <gco:CharacterString>erd.data@noaa.gov</gco:CharacterString>\n" + //
+        "                      </gmd:electronicMailAddress>\n" + //
+        "                    </gmd:CI_Address>\n" + //
+        "                  </gmd:address>\n" + //
+        "                  <gmd:onlineResource>\n" + //
+        "                    <gmd:CI_OnlineResource>\n" + //
+        "                      <gmd:linkage>\n" + //
+        "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</gmd:URL>\n" + //
+        "                      </gmd:linkage>\n" + //
+        "                      <gmd:protocol>\n" + //
+        "                        <gco:CharacterString>information</gco:CharacterString>\n" + //
+        "                      </gmd:protocol>\n" + //
+        "                      <gmd:applicationProfile>\n" + //
+        "                        <gco:CharacterString>web browser</gco:CharacterString>\n" + //
+        "                      </gmd:applicationProfile>\n" + //
+        "                      <gmd:name>\n" + //
+        "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" + //
+        "                      </gmd:name>\n" + //
+        "                      <gmd:description>\n" + //
+        "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+        + //
+        "                      </gmd:description>\n" + //
+        "                      <gmd:function>\n" + //
+        "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                      </gmd:function>\n" + //
+        "                    </gmd:CI_OnlineResource>\n" + //
+        "                  </gmd:onlineResource>\n" + //
+        "                </gmd:CI_Contact>\n" + //
+        "              </gmd:contactInfo>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NASA GSFC (OBPG)</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "        </gmd:CI_Citation>\n" + //
+        "      </gmd:citation>\n" + //
+        "      <gmd:abstract>\n" + //
+        "        <gco:CharacterString>NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  The algorithm currently used in processing the water leaving radiance to chlorophyll concentration has not yet been accepted as science quality.  In addition, assumptions are made in the atmospheric correction in order to provide the data in a timely manner.</gco:CharacterString>\n"
+        + //
+        "      </gmd:abstract>\n" + //
+        "      <srv:serviceType>\n" + //
+        "        <gco:LocalName>ERDDAP griddap</gco:LocalName>\n" + //
+        "      </srv:serviceType>\n" + //
+        "      <srv:extent>\n" + //
+        "        <gmd:EX_Extent>\n" + //
+        "          <gmd:geographicElement>\n" + //
+        "            <gmd:EX_GeographicBoundingBox>\n" + //
+        "              <gmd:extentTypeCode>\n" + //
+        "                <gco:Boolean>1</gco:Boolean>\n" + //
+        "              </gmd:extentTypeCode>\n" + //
+        "              <gmd:westBoundLongitude>\n" + //
+        "                <gco:Decimal>-155.0</gco:Decimal>\n" + //
+        "              </gmd:westBoundLongitude>\n" + //
+        "              <gmd:eastBoundLongitude>\n" + //
+        "                <gco:Decimal>-105.0</gco:Decimal>\n" + //
+        "              </gmd:eastBoundLongitude>\n" + //
+        "              <gmd:southBoundLatitude>\n" + //
+        "                <gco:Decimal>22.0</gco:Decimal>\n" + //
+        "              </gmd:southBoundLatitude>\n" + //
+        "              <gmd:northBoundLatitude>\n" + //
+        "                <gco:Decimal>51.0</gco:Decimal>\n" + //
+        "              </gmd:northBoundLatitude>\n" + //
+        "            </gmd:EX_GeographicBoundingBox>\n" + //
+        "          </gmd:geographicElement>\n" + //
+        "          <gmd:temporalElement>\n" + //
+        "            <gmd:EX_TemporalExtent>\n" + //
+        "              <gmd:extent>\n" + //
+        "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n" + //
+        "                  <gml:description>seconds</gml:description>\n" + //
+        "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
+        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                </gml:TimePeriod>\n" + //
+        "              </gmd:extent>\n" + //
+        "            </gmd:EX_TemporalExtent>\n" + //
+        "          </gmd:temporalElement>\n" + //
+        "          <gmd:verticalElement>\n" + //
+        "            <gmd:EX_VerticalExtent>\n" + //
+        "              <gmd:minimumValue><gco:Real>0.0</gco:Real></gmd:minimumValue>\n" + //
+        "              <gmd:maximumValue><gco:Real>0.0</gco:Real></gmd:maximumValue>\n" + //
+        "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" + //
+        "            </gmd:EX_VerticalExtent>\n" + //
+        "          </gmd:verticalElement>\n" + //
+        "        </gmd:EX_Extent>\n" + //
+        "      </srv:extent>\n" + //
+        "      <srv:couplingType>\n" + //
+        "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+        + //
+        "      </srv:couplingType>\n" + //
+        "      <srv:containsOperations>\n" + //
+        "        <srv:SV_OperationMetadata>\n" + //
+        "          <srv:operationName>\n" + //
+        "            <gco:CharacterString>ERDDAPgriddapDatasetQueryAndAccess</gco:CharacterString>\n" + //
+        "          </srv:operationName>\n" + //
+        "          <srv:DCP gco:nilReason=\"unknown\"/>\n" + //
+        "          <srv:connectPoint>\n" + //
+        "            <gmd:CI_OnlineResource>\n" + //
+        "              <gmd:linkage>\n" + //
+        "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMWchla1day</gmd:URL>\n" + //
+        "              </gmd:linkage>\n" + //
+        "              <gmd:protocol>\n" + //
+        "                <gco:CharacterString>ERDDAP:griddap</gco:CharacterString>\n" + //
+        "              </gmd:protocol>\n" + //
+        "              <gmd:name>\n" + //
+        "                <gco:CharacterString>ERDDAP-griddap</gco:CharacterString>\n" + //
+        "              </gmd:name>\n" + //
+        "              <gmd:description>\n" + //
+        "                <gco:CharacterString>ERDDAP's griddap service (a flavor of OPeNDAP) for gridded data. Add different extensions (e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+        + //
+        "              </gmd:description>\n" + //
+        "              <gmd:function>\n" + //
+        "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "              </gmd:function>\n" + //
+        "            </gmd:CI_OnlineResource>\n" + //
+        "          </srv:connectPoint>\n" + //
+        "        </srv:SV_OperationMetadata>\n" + //
+        "      </srv:containsOperations>\n" + //
+        "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" + //
+        "    </srv:SV_ServiceIdentification>\n" + //
+        "  </gmd:identificationInfo>\n" + //
+        "  <gmd:identificationInfo>\n" + //
+        "    <srv:SV_ServiceIdentification id=\"OPeNDAP\">\n" + //
+        "      <gmd:citation>\n" + //
+        "        <gmd:CI_Citation>\n" + //
+        "          <gmd:title>\n" + //
+        "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</gco:CharacterString>\n"
+        + //
+        "          </gmd:title>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NOAA NMFS SWFSC ERD</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo>\n" + //
+        "                <gmd:CI_Contact>\n" + //
+        "                  <gmd:address>\n" + //
+        "                    <gmd:CI_Address>\n" + //
+        "                      <gmd:electronicMailAddress>\n" + //
+        "                        <gco:CharacterString>erd.data@noaa.gov</gco:CharacterString>\n" + //
+        "                      </gmd:electronicMailAddress>\n" + //
+        "                    </gmd:CI_Address>\n" + //
+        "                  </gmd:address>\n" + //
+        "                  <gmd:onlineResource>\n" + //
+        "                    <gmd:CI_OnlineResource>\n" + //
+        "                      <gmd:linkage>\n" + //
+        "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</gmd:URL>\n" + //
+        "                      </gmd:linkage>\n" + //
+        "                      <gmd:protocol>\n" + //
+        "                        <gco:CharacterString>information</gco:CharacterString>\n" + //
+        "                      </gmd:protocol>\n" + //
+        "                      <gmd:applicationProfile>\n" + //
+        "                        <gco:CharacterString>web browser</gco:CharacterString>\n" + //
+        "                      </gmd:applicationProfile>\n" + //
+        "                      <gmd:name>\n" + //
+        "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" + //
+        "                      </gmd:name>\n" + //
+        "                      <gmd:description>\n" + //
+        "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+        + //
+        "                      </gmd:description>\n" + //
+        "                      <gmd:function>\n" + //
+        "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                      </gmd:function>\n" + //
+        "                    </gmd:CI_OnlineResource>\n" + //
+        "                  </gmd:onlineResource>\n" + //
+        "                </gmd:CI_Contact>\n" + //
+        "              </gmd:contactInfo>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NASA GSFC (OBPG)</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "        </gmd:CI_Citation>\n" + //
+        "      </gmd:citation>\n" + //
+        "      <gmd:abstract>\n" + //
+        "        <gco:CharacterString>NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  The algorithm currently used in processing the water leaving radiance to chlorophyll concentration has not yet been accepted as science quality.  In addition, assumptions are made in the atmospheric correction in order to provide the data in a timely manner.</gco:CharacterString>\n"
+        + //
+        "      </gmd:abstract>\n" + //
+        "      <srv:serviceType>\n" + //
+        "        <gco:LocalName>OPeNDAP</gco:LocalName>\n" + //
+        "      </srv:serviceType>\n" + //
+        "      <srv:extent>\n" + //
+        "        <gmd:EX_Extent>\n" + //
+        "          <gmd:geographicElement>\n" + //
+        "            <gmd:EX_GeographicBoundingBox>\n" + //
+        "              <gmd:extentTypeCode>\n" + //
+        "                <gco:Boolean>1</gco:Boolean>\n" + //
+        "              </gmd:extentTypeCode>\n" + //
+        "              <gmd:westBoundLongitude>\n" + //
+        "                <gco:Decimal>-155.0</gco:Decimal>\n" + //
+        "              </gmd:westBoundLongitude>\n" + //
+        "              <gmd:eastBoundLongitude>\n" + //
+        "                <gco:Decimal>-105.0</gco:Decimal>\n" + //
+        "              </gmd:eastBoundLongitude>\n" + //
+        "              <gmd:southBoundLatitude>\n" + //
+        "                <gco:Decimal>22.0</gco:Decimal>\n" + //
+        "              </gmd:southBoundLatitude>\n" + //
+        "              <gmd:northBoundLatitude>\n" + //
+        "                <gco:Decimal>51.0</gco:Decimal>\n" + //
+        "              </gmd:northBoundLatitude>\n" + //
+        "            </gmd:EX_GeographicBoundingBox>\n" + //
+        "          </gmd:geographicElement>\n" + //
+        "          <gmd:temporalElement>\n" + //
+        "            <gmd:EX_TemporalExtent>\n" + //
+        "              <gmd:extent>\n" + //
+        "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n" + //
+        "                  <gml:description>seconds</gml:description>\n" + //
+        "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
+        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                </gml:TimePeriod>\n" + //
+        "              </gmd:extent>\n" + //
+        "            </gmd:EX_TemporalExtent>\n" + //
+        "          </gmd:temporalElement>\n" + //
+        "          <gmd:verticalElement>\n" + //
+        "            <gmd:EX_VerticalExtent>\n" + //
+        "              <gmd:minimumValue><gco:Real>0.0</gco:Real></gmd:minimumValue>\n" + //
+        "              <gmd:maximumValue><gco:Real>0.0</gco:Real></gmd:maximumValue>\n" + //
+        "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" + //
+        "            </gmd:EX_VerticalExtent>\n" + //
+        "          </gmd:verticalElement>\n" + //
+        "        </gmd:EX_Extent>\n" + //
+        "      </srv:extent>\n" + //
+        "      <srv:couplingType>\n" + //
+        "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+        + //
+        "      </srv:couplingType>\n" + //
+        "      <srv:containsOperations>\n" + //
+        "        <srv:SV_OperationMetadata>\n" + //
+        "          <srv:operationName>\n" + //
+        "            <gco:CharacterString>OPeNDAPDatasetQueryAndAccess</gco:CharacterString>\n" + //
+        "          </srv:operationName>\n" + //
+        "          <srv:DCP gco:nilReason=\"unknown\"/>\n" + //
+        "          <srv:connectPoint>\n" + //
+        "            <gmd:CI_OnlineResource>\n" + //
+        "              <gmd:linkage>\n" + //
+        "                <gmd:URL>http://localhost:8080/erddap/griddap/erdMWchla1day</gmd:URL>\n" + //
+        "              </gmd:linkage>\n" + //
+        "              <gmd:protocol>\n" + //
+        "                <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n" + //
+        "              </gmd:protocol>\n" + //
+        "              <gmd:name>\n" + //
+        "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" + //
+        "              </gmd:name>\n" + //
+        "              <gmd:description>\n" + //
+        "                <gco:CharacterString>An OPeNDAP service for gridded data. Add different extensions (e.g., .html, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n"
+        + //
+        "              </gmd:description>\n" + //
+        "              <gmd:function>\n" + //
+        "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "              </gmd:function>\n" + //
+        "            </gmd:CI_OnlineResource>\n" + //
+        "          </srv:connectPoint>\n" + //
+        "        </srv:SV_OperationMetadata>\n" + //
+        "      </srv:containsOperations>\n" + //
+        "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" + //
+        "    </srv:SV_ServiceIdentification>\n" + //
+        "  </gmd:identificationInfo>\n" + //
+        "  <gmd:identificationInfo>\n" + //
+        "    <srv:SV_ServiceIdentification id=\"OGC-WMS\">\n" + //
+        "      <gmd:citation>\n" + //
+        "        <gmd:CI_Citation>\n" + //
+        "          <gmd:title>\n" + //
+        "            <gco:CharacterString>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</gco:CharacterString>\n"
+        + //
+        "          </gmd:title>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:date>\n" + //
+        "            <gmd:CI_Date>\n" + //
+        "              <gmd:date>\n" + //
+        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "              </gmd:date>\n" + //
+        "              <gmd:dateType>\n" + //
+        "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
+        + //
+        "              </gmd:dateType>\n" + //
+        "            </gmd:CI_Date>\n" + //
+        "          </gmd:date>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NOAA NMFS SWFSC ERD</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo>\n" + //
+        "                <gmd:CI_Contact>\n" + //
+        "                  <gmd:address>\n" + //
+        "                    <gmd:CI_Address>\n" + //
+        "                      <gmd:electronicMailAddress>\n" + //
+        "                        <gco:CharacterString>erd.data@noaa.gov</gco:CharacterString>\n" + //
+        "                      </gmd:electronicMailAddress>\n" + //
+        "                    </gmd:CI_Address>\n" + //
+        "                  </gmd:address>\n" + //
+        "                  <gmd:onlineResource>\n" + //
+        "                    <gmd:CI_OnlineResource>\n" + //
+        "                      <gmd:linkage>\n" + //
+        "                        <gmd:URL>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</gmd:URL>\n" + //
+        "                      </gmd:linkage>\n" + //
+        "                      <gmd:protocol>\n" + //
+        "                        <gco:CharacterString>information</gco:CharacterString>\n" + //
+        "                      </gmd:protocol>\n" + //
+        "                      <gmd:applicationProfile>\n" + //
+        "                        <gco:CharacterString>web browser</gco:CharacterString>\n" + //
+        "                      </gmd:applicationProfile>\n" + //
+        "                      <gmd:name>\n" + //
+        "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" + //
+        "                      </gmd:name>\n" + //
+        "                      <gmd:description>\n" + //
+        "                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n"
+        + //
+        "                      </gmd:description>\n" + //
+        "                      <gmd:function>\n" + //
+        "                        <gmd:CI_OnLineFunctionCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                      </gmd:function>\n" + //
+        "                    </gmd:CI_OnlineResource>\n" + //
+        "                  </gmd:onlineResource>\n" + //
+        "                </gmd:CI_Contact>\n" + //
+        "              </gmd:contactInfo>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "          <gmd:citedResponsibleParty>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>NASA GSFC (OBPG)</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:citedResponsibleParty>\n" + //
+        "        </gmd:CI_Citation>\n" + //
+        "      </gmd:citation>\n" + //
+        "      <gmd:abstract>\n" + //
+        "        <gco:CharacterString>NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  The algorithm currently used in processing the water leaving radiance to chlorophyll concentration has not yet been accepted as science quality.  In addition, assumptions are made in the atmospheric correction in order to provide the data in a timely manner.</gco:CharacterString>\n"
+        + //
+        "      </gmd:abstract>\n" + //
+        "      <srv:serviceType>\n" + //
+        "        <gco:LocalName>Open Geospatial Consortium Web Map Service (WMS)</gco:LocalName>\n" + //
+        "      </srv:serviceType>\n" + //
+        "      <srv:extent>\n" + //
+        "        <gmd:EX_Extent>\n" + //
+        "          <gmd:geographicElement>\n" + //
+        "            <gmd:EX_GeographicBoundingBox>\n" + //
+        "              <gmd:extentTypeCode>\n" + //
+        "                <gco:Boolean>1</gco:Boolean>\n" + //
+        "              </gmd:extentTypeCode>\n" + //
+        "              <gmd:westBoundLongitude>\n" + //
+        "                <gco:Decimal>-155.0</gco:Decimal>\n" + //
+        "              </gmd:westBoundLongitude>\n" + //
+        "              <gmd:eastBoundLongitude>\n" + //
+        "                <gco:Decimal>-105.0</gco:Decimal>\n" + //
+        "              </gmd:eastBoundLongitude>\n" + //
+        "              <gmd:southBoundLatitude>\n" + //
+        "                <gco:Decimal>22.0</gco:Decimal>\n" + //
+        "              </gmd:southBoundLatitude>\n" + //
+        "              <gmd:northBoundLatitude>\n" + //
+        "                <gco:Decimal>51.0</gco:Decimal>\n" + //
+        "              </gmd:northBoundLatitude>\n" + //
+        "            </gmd:EX_GeographicBoundingBox>\n" + //
+        "          </gmd:geographicElement>\n" + //
+        "          <gmd:temporalElement>\n" + //
+        "            <gmd:EX_TemporalExtent>\n" + //
+        "              <gmd:extent>\n" + //
+        "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n" + //
+        "                  <gml:description>seconds</gml:description>\n" + //
+        "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
+        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                </gml:TimePeriod>\n" + //
+        "              </gmd:extent>\n" + //
+        "            </gmd:EX_TemporalExtent>\n" + //
+        "          </gmd:temporalElement>\n" + //
+        "          <gmd:verticalElement>\n" + //
+        "            <gmd:EX_VerticalExtent>\n" + //
+        "              <gmd:minimumValue><gco:Real>0.0</gco:Real></gmd:minimumValue>\n" + //
+        "              <gmd:maximumValue><gco:Real>0.0</gco:Real></gmd:maximumValue>\n" + //
+        "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" + //
+        "            </gmd:EX_VerticalExtent>\n" + //
+        "          </gmd:verticalElement>\n" + //
+        "        </gmd:EX_Extent>\n" + //
+        "      </srv:extent>\n" + //
+        "      <srv:couplingType>\n" + //
+        "        <srv:SV_CouplingType codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" codeListValue=\"tight\">tight</srv:SV_CouplingType>\n"
+        + //
+        "      </srv:couplingType>\n" + //
+        "      <srv:containsOperations>\n" + //
+        "        <srv:SV_OperationMetadata>\n" + //
+        "          <srv:operationName>\n" + //
+        "            <gco:CharacterString>GetCapabilities</gco:CharacterString>\n" + //
+        "          </srv:operationName>\n" + //
+        "          <srv:DCP gco:nilReason=\"unknown\"/>\n" + //
+        "          <srv:connectPoint>\n" + //
+        "            <gmd:CI_OnlineResource>\n" + //
+        "              <gmd:linkage>\n" + //
+        "                <gmd:URL>http://localhost:8080/erddap/wms/erdMWchla1day/request?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities</gmd:URL>\n"
+        + //
+        "              </gmd:linkage>\n" + //
+        "              <gmd:protocol>\n" + //
+        "                <gco:CharacterString>OGC:WMS</gco:CharacterString>\n" + //
+        "              </gmd:protocol>\n" + //
+        "              <gmd:name>\n" + //
+        "                <gco:CharacterString>OGC-WMS</gco:CharacterString>\n" + //
+        "              </gmd:name>\n" + //
+        "              <gmd:description>\n" + //
+        "                <gco:CharacterString>Open Geospatial Consortium Web Map Service (WMS)</gco:CharacterString>\n"
+        + //
+        "              </gmd:description>\n" + //
+        "              <gmd:function>\n" + //
+        "                <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "              </gmd:function>\n" + //
+        "            </gmd:CI_OnlineResource>\n" + //
+        "          </srv:connectPoint>\n" + //
+        "        </srv:SV_OperationMetadata>\n" + //
+        "      </srv:containsOperations>\n" + //
+        "      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" + //
+        "    </srv:SV_ServiceIdentification>\n" + //
+        "  </gmd:identificationInfo>\n" + //
+        "  <gmd:contentInfo>\n" + //
+        "    <gmi:MI_CoverageDescription>\n" + //
+        "      <gmd:attributeDescription gco:nilReason=\"unknown\"/>\n" + //
+        "      <gmd:contentType>\n" + //
+        "        <gmd:MD_CoverageContentTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n"
+        + //
+        "      </gmd:contentType>\n" + //
+        "      <gmd:dimension>\n" + //
+        "        <gmd:MD_Band>\n" + //
+        "          <gmd:sequenceIdentifier>\n" + //
+        "            <gco:MemberName>\n" + //
+        "              <gco:aName>\n" + //
+        "                <gco:CharacterString>chlorophyll</gco:CharacterString>\n" + //
+        "              </gco:aName>\n" + //
+        "              <gco:attributeType>\n" + //
+        "                <gco:TypeName>\n" + //
+        "                  <gco:aName>\n" + //
+        "                    <gco:CharacterString>float</gco:CharacterString>\n" + //
+        "                  </gco:aName>\n" + //
+        "                </gco:TypeName>\n" + //
+        "              </gco:attributeType>\n" + //
+        "            </gco:MemberName>\n" + //
+        "          </gmd:sequenceIdentifier>\n" + //
+        "          <gmd:descriptor>\n" + //
+        "            <gco:CharacterString>Concentration Of Chlorophyll In Sea Water</gco:CharacterString>\n" + //
+        "          </gmd:descriptor>\n" + //
+        "          <gmd:units xlink:href=\"https://unitsofmeasure.org/ucum.html#mg&#x2e;m&#x2d;3\"/>\n" + //
+        "        </gmd:MD_Band>\n" + //
+        "      </gmd:dimension>\n" + //
+        "    </gmi:MI_CoverageDescription>\n" + //
+        "  </gmd:contentInfo>\n" + //
+        "  <gmd:distributionInfo>\n" + //
+        "    <gmd:MD_Distribution>\n" + //
+        "      <gmd:distributor>\n" + //
+        "        <gmd:MD_Distributor>\n" + //
+        "          <gmd:distributorContact>\n" + //
+        "            <gmd:CI_ResponsibleParty>\n" + //
+        "              <gmd:individualName>\n" + //
+        "                <gco:CharacterString>ERDDAP Jetty Developer</gco:CharacterString>\n" + //
+        "              </gmd:individualName>\n" + //
+        "              <gmd:organisationName>\n" + //
+        "                <gco:CharacterString>ERDDAP Jetty Install</gco:CharacterString>\n" + //
+        "              </gmd:organisationName>\n" + //
+        "              <gmd:contactInfo>\n" + //
+        "                <gmd:CI_Contact>\n" + //
+        "                  <gmd:phone>\n" + //
+        "                    <gmd:CI_Telephone>\n" + //
+        "                      <gmd:voice>\n" + //
+        "                        <gco:CharacterString>555-555-5555</gco:CharacterString>\n" + //
+        "                      </gmd:voice>\n" + //
+        "                    </gmd:CI_Telephone>\n" + //
+        "                  </gmd:phone>\n" + //
+        "                  <gmd:address>\n" + //
+        "                    <gmd:CI_Address>\n" + //
+        "                      <gmd:deliveryPoint>\n" + //
+        "                        <gco:CharacterString>123 Irrelevant St.</gco:CharacterString>\n" + //
+        "                      </gmd:deliveryPoint>\n" + //
+        "                      <gmd:city>\n" + //
+        "                        <gco:CharacterString>Nowhere</gco:CharacterString>\n" + //
+        "                      </gmd:city>\n" + //
+        "                      <gmd:administrativeArea>\n" + //
+        "                        <gco:CharacterString>AK</gco:CharacterString>\n" + //
+        "                      </gmd:administrativeArea>\n" + //
+        "                      <gmd:postalCode>\n" + //
+        "                        <gco:CharacterString>99504</gco:CharacterString>\n" + //
+        "                      </gmd:postalCode>\n" + //
+        "                      <gmd:country>\n" + //
+        "                        <gco:CharacterString>USA</gco:CharacterString>\n" + //
+        "                      </gmd:country>\n" + //
+        "                      <gmd:electronicMailAddress>\n" + //
+        "                        <gco:CharacterString>nobody@example.com</gco:CharacterString>\n" + //
+        "                      </gmd:electronicMailAddress>\n" + //
+        "                    </gmd:CI_Address>\n" + //
+        "                  </gmd:address>\n" + //
+        "                </gmd:CI_Contact>\n" + //
+        "              </gmd:contactInfo>\n" + //
+        "              <gmd:role>\n" + //
+        "                <gmd:CI_RoleCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n"
+        + //
+        "              </gmd:role>\n" + //
+        "            </gmd:CI_ResponsibleParty>\n" + //
+        "          </gmd:distributorContact>\n" + //
+        "          <gmd:distributorFormat>\n" + //
+        "            <gmd:MD_Format>\n" + //
+        "              <gmd:name>\n" + //
+        "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" + //
+        "              </gmd:name>\n" + //
+        "              <gmd:version>\n" + //
+        "                <gco:CharacterString>DAP/2.0</gco:CharacterString>\n" + //
+        "              </gmd:version>\n" + //
+        "            </gmd:MD_Format>\n" + //
+        "          </gmd:distributorFormat>\n" + //
+        "          <gmd:distributorTransferOptions>\n" + //
+        "            <gmd:MD_DigitalTransferOptions>\n" + //
+        "              <gmd:onLine>\n" + //
+        "                <gmd:CI_OnlineResource>\n" + //
+        "                  <gmd:linkage>\n" + //
+        "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMWchla1day.html</gmd:URL>\n" + //
+        "                  </gmd:linkage>\n" + //
+        "                  <gmd:protocol>\n" + //
+        "                    <gco:CharacterString>order</gco:CharacterString>\n" + //
+        "                  </gmd:protocol>\n" + //
+        "                  <gmd:name>\n" + //
+        "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n" + //
+        "                  </gmd:name>\n" + //
+        "                  <gmd:description>\n" + //
+        "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. Specify a subset of the dataset and download the data via OPeNDAP or in many different file types.</gco:CharacterString>\n"
+        + //
+        "                  </gmd:description>\n" + //
+        "                  <gmd:function>\n" + //
+        "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                  </gmd:function>\n" + //
+        "                </gmd:CI_OnlineResource>\n" + //
+        "              </gmd:onLine>\n" + //
+        "            </gmd:MD_DigitalTransferOptions>\n" + //
+        "          </gmd:distributorTransferOptions>\n" + //
+        "          <gmd:distributorTransferOptions>\n" + //
+        "            <gmd:MD_DigitalTransferOptions>\n" + //
+        "              <gmd:onLine>\n" + //
+        "                <gmd:CI_OnlineResource>\n" + //
+        "                  <gmd:linkage>\n" + //
+        "                    <gmd:URL>http://localhost:8080/erddap/griddap/erdMWchla1day.graph</gmd:URL>\n" + //
+        "                  </gmd:linkage>\n" + //
+        "                  <gmd:protocol>\n" + //
+        "                    <gco:CharacterString>order</gco:CharacterString>\n" + //
+        "                  </gmd:protocol>\n" + //
+        "                  <gmd:name>\n" + //
+        "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n" + //
+        "                  </gmd:name>\n" + //
+        "                  <gmd:description>\n" + //
+        "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. Create an image with a map or graph of a subset of the data.</gco:CharacterString>\n"
+        + //
+        "                  </gmd:description>\n" + //
+        "                  <gmd:function>\n" + //
+        "                    <gmd:CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"mapDigital\">mapDigital</gmd:CI_OnLineFunctionCode>\n"
+        + //
+        "                  </gmd:function>\n" + //
+        "                </gmd:CI_OnlineResource>\n" + //
+        "              </gmd:onLine>\n" + //
+        "            </gmd:MD_DigitalTransferOptions>\n" + //
+        "          </gmd:distributorTransferOptions>\n" + //
+        "        </gmd:MD_Distributor>\n" + //
+        "      </gmd:distributor>\n" + //
+        "    </gmd:MD_Distribution>\n" + //
+        "  </gmd:distributionInfo>\n" + //
+        "  <gmd:metadataMaintenance>\n" + //
+        "    <gmd:MD_MaintenanceInformation>\n" + //
+        "      <gmd:maintenanceAndUpdateFrequency gco:nilReason=\"unknown\"/>\n" + //
+        "      <gmd:maintenanceNote>\n" + //
+        "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.23</gco:CharacterString>\n"
+        + //
+        "      </gmd:maintenanceNote>\n" + //
+        "    </gmd:MD_MaintenanceInformation>\n" + //
+        "  </gmd:metadataMaintenance>\n" + //
+        "</gmi:MI_Metadata>\n";
+    Test.ensureEqual(results, expected, "results=" + results);
+
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/");
+    expected = "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" + //
+            "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n" + //
+            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
+            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"fgdc&#x2f;\">fgdc/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
+            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"iso19115&#x2f;\">iso19115/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
+            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+            "</table>\n" + //
+            "3 directories, 0 files";
+    Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
+
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/iso19115/");
+    expected = "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" + //
+        "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "</table>\n";
+    Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
+
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/iso19115/xml/");
+    expected = "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;iso19115&#x2e;xml\">erdMH1chlamday&#x5f;iso19115&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">53721</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>";
+    results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
+  }
+
+  /** Test the metadata */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testMetadataFgdc() throws Exception {
+    String results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/fgdc/xml/erdMWchla1day_fgdc.xml");
+    String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+        "<metadata xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" >\n"
+        + //
+        "  <idinfo>\n" + //
+        "    <datsetid>localhost:8080:erdMWchla1day</datsetid>\n" + //
+        "    <citation>\n" + //
+        "      <citeinfo>\n" + //
+        "        <origin>\n" + //
+        "Project: CoastWatch (https://coastwatch.noaa.gov/)\n" + //
+        "Name: NOAA NMFS SWFSC ERD\n" + //
+        "Email: erd.data@noaa.gov\n" + //
+        "Institution: NOAA NMFS SWFSC ERD\n" + //
+        "InfoURL: https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html\n" + //
+        "Source URL: (local files)\n" + //
+        "        </origin>\n" + //
+        "        <origin_cntinfo>\n" + //
+        "          <cntinfo>\n" + //
+        "            <cntorgp>\n" + //
+        "              <cntorg>NOAA NMFS SWFSC ERD</cntorg>\n" + //
+        "              <cntper>NOAA NMFS SWFSC ERD</cntper>\n" + //
+        "            </cntorgp>\n" + //
+        "            <cntemail>erd.data@noaa.gov</cntemail>\n" + //
+        "          </cntinfo>\n" + //
+        "        </origin_cntinfo>\n" + //
+        "        <pubdate>20240506</pubdate>\n" + //
+        "        <title>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</title>\n"
+        + //
+        "        <edition>Unknown</edition>\n" + //
+        "        <geoform>raster digital data</geoform>\n" + //
+        "        <pubinfo>\n" + //
+        "          <pubplace>Nowhere, AK, USA</pubplace>\n" + //
+        "          <publish>ERDDAP, version 2.23, at ERDDAP Jetty Install</publish>\n" + //
+        "          <publish_cntinfo>\n" + //
+        "            <cntinfo>\n" + //
+        "              <cntorgp>\n" + //
+        "                <cntorg>ERDDAP Jetty Install</cntorg>\n" + //
+        "                <cntper>ERDDAP Jetty Developer</cntper>\n" + //
+        "              </cntorgp>\n" + //
+        "              <cntpos>Software Engineer</cntpos>\n" + //
+        "              <cntaddr>\n" + //
+        "                <addrtype>Mailing and Physical Address</addrtype>\n" + //
+        "                <address>123 Irrelevant St.</address>\n" + //
+        "                <city>Nowhere</city>\n" + //
+        "                <state>AK</state>\n" + //
+        "                <postal>99504</postal>\n" + //
+        "                <country>USA</country>\n" + //
+        "              </cntaddr>\n" + //
+        "              <cntvoice>555-555-5555</cntvoice>\n" + //
+        "              <cntemail>nobody@example.com</cntemail>\n" + //
+        "            </cntinfo>\n" + //
+        "          </publish_cntinfo>\n" + //
+        "        </pubinfo>\n" + //
+        "        <onlink>http://localhost:8080/erddap/griddap/erdMWchla1day.html</onlink>\n" + //
+        "        <onlink>http://localhost:8080/erddap/griddap/erdMWchla1day.graph</onlink>\n" + //
+        "        <onlink>http://localhost:8080/erddap/wms/erdMWchla1day/request</onlink>\n" + //
+        "        <CI_OnlineResource>\n" + //
+        "          <linkage>http://localhost:8080/erddap/griddap/erdMWchla1day.html</linkage>\n" + //
+        "          <name>Download data: Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</name>\n"
+        + //
+        "          <description>A web page for specifying a subset of the dataset and downloading data in any of several file formats.</description>\n"
+        + //
+        "          <function>download data</function>\n" + //
+        "        </CI_OnlineResource>\n" + //
+        "        <CI_OnlineResource>\n" + //
+        "          <linkage>http://localhost:8080/erddap/griddap/erdMWchla1day.graph</linkage>\n" + //
+        "          <name>Make a graph or map: Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</name>\n"
+        + //
+        "          <description>A web page for creating a graph or map of the data.</description>\n" + //
+        "          <function>download graph or map</function>\n" + //
+        "        </CI_OnlineResource>\n" + //
+        "        <CI_OnlineResource>\n" + //
+        "          <linkage>http://localhost:8080/erddap/griddap/erdMWchla1day</linkage>\n" + //
+        "          <name>OPeNDAP service: Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</name>\n"
+        + //
+        "          <description>The base URL for the OPeNDAP service.  Add .html to get a web page with a form to download data. Add .dds to get the dataset's structure. Add .das to get the dataset's metadata. Add .dods to download data via the OPeNDAP protocol.</description>\n"
+        + //
+        "          <function>OPeNDAP</function>\n" + //
+        "        </CI_OnlineResource>\n" + //
+        "        <CI_OnlineResource>\n" + //
+        "          <linkage>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</linkage>\n" + //
+        "          <name>Background information: Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</name>\n"
+        + //
+        "          <description>Background information for the dataset.</description>\n" + //
+        "          <function>background information</function>\n" + //
+        "        </CI_OnlineResource>\n" + //
+        "        <CI_OnlineResource>\n" + //
+        "          <linkage>http://localhost:8080/erddap/wms/erdMWchla1day/request</linkage>\n" + //
+        "          <name>WMS service: Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</name>\n"
+        + //
+        "          <description>The base URL for the WMS service for this dataset.</description>\n" + //
+        "          <function>WMS</function>\n" + //
+        "        </CI_OnlineResource>\n" + //
+        "        <lworkcit>\n" + //
+        "          <citeinfo>\n" + //
+        "            <origin>CoastWatch (https://coastwatch.noaa.gov/)</origin>\n" + //
+        "          </citeinfo>\n" + //
+        "        </lworkcit>\n" + //
+        "      </citeinfo>\n" + //
+        "    </citation>\n" + //
+        "    <descript>\n" + //
+        "      <abstract>NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  The algorithm currently used in processing the water leaving radiance to chlorophyll concentration has not yet been accepted as science quality.  In addition, assumptions are made in the atmospheric correction in order to provide the data in a timely manner.</abstract>\n"
+        + //
+        "      <purpose>Unknown</purpose>\n" + //
+        "      <supplinf>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</supplinf>\n" + //
+        "    </descript>\n"; //
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/fgdc");
+    expected = "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" + //
+            "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n" + //
+            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
+            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
+            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+            "</table>\n" + //
+            "2 directories, 0 files";
+    Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
+
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT + "/erddap/metadata/fgdc/xml/");
+    expected = "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";;
+    results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testSitemap() throws Exception {
+    String results = SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap/sitemap.xml");
+    String expected = "<?xml version='1.0' encoding='UTF-8'?>\n" + //
+        "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/categorize/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/oceanicAtmosphericAcronyms.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/oceanicAtmosphericVariableNames.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/fipscounty.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/keywords.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/time.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/units.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/convert/urls.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/griddap/documentation.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/griddap/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/images/embed.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/info/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/information.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/metadata/fgdc/xml/</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.3</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/metadata/iso19115/xml/</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.3</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/legal.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/rest.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/search/advanced.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/search/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/slidesorter.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/subscriptions/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/subscriptions/add.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/subscriptions/validate.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/subscriptions/list.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/subscriptions/remove.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/tabledap/documentation.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/tabledap/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/wms/documentation.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/wms/index.html?page=1&#x26;itemsPerPage=1000000000</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.7</priority>\n" + //
+        "</url>\n";
+
+    results = results.replaceAll("<lastmod>....-..-..</lastmod>", "<lastmod>YYYY-MM-DD</lastmod>");
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+
+    String expected2 = "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/griddap/erdMWchla1day.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/info/erdMWchla1day/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/griddap/erdMWchla1day.graph</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.5</priority>\n" + //
+        "</url>\n" + //
+        "\n" + //
+        "<url>\n" + //
+        "<loc>http://localhost:8080/erddap/wms/erdMWchla1day/index.html</loc>\n" + //
+        "<lastmod>YYYY-MM-DD</lastmod>\n" + //
+        "<changefreq>monthly</changefreq>\n" + //
+        "<priority>0.3</priority>\n" + //
+        "</url>\n";
+    int startIndex = results.indexOf(expected2.substring(0, 72));
+    Test.ensureEqual(results.substring(startIndex, startIndex + expected2.length()), expected2,
+        "results=" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testInterpolate() throws Exception {
+    // TODO get a request that has actual interpolation in it
+    String results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT
+            + "/erddap/convert/interpolate.json?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
+    String expected = "{\n" + //
+            "  \"table\": {\n" + //
+            "    \"columnNames\": [\"time\", \"latitude\", \"longitude\", \"erdMH1chla8day_chlorophyll_Bilinear_4\"],\n" + //
+            "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\"],\n" + //
+            "    \"rows\": [\n" + //
+            "      [\"2006-04-17T06:00:00Z\", 35.58, -122.55, null],\n" + //
+            "      [\"2006-04-17T12:00:00Z\", 35.576, -122.553, null],\n" + //
+            "      [\"2006-04-17T18:00:00Z\", 35.572, -122.568, null],\n" + //
+            "      [\"2007-01-02T00:00:00Z\", 35.569, -122.571, null]\n" + //
+            "    ]\n" + //
+            "  }\n" + //
+            "}\n";
+    Test.ensureEqual(results, expected, "results=" + results);
+
+    // Request an html page, to test the html generation
+    results = SSR.getUrlResponseStringUnchanged(
+        "http://localhost:" + PORT
+            + "/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
+    expected = "<table class=\"erd commonBGColor nowrap\">\n" + //
+            "<tr>\n" + //
+            "<th>time\n" + //
+            "<th>latitude\n" + //
+            "<th>longitude\n" + //
+            "<th>erdMH1chla8day_chlorophyll_Bilinear_4\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>2006-04-17T06:00:00Z\n" + //
+            "<td class=\"R\">35.58\n" + //
+            "<td class=\"R\">-122.55\n" + //
+            "<td>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>2006-04-17T12:00:00Z\n" + //
+            "<td class=\"R\">35.576\n" + //
+            "<td class=\"R\">-122.553\n" + //
+            "<td>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>2006-04-17T18:00:00Z\n" + //
+            "<td class=\"R\">35.572\n" + //
+            "<td class=\"R\">-122.568\n" + //
+            "<td>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>2007-01-02T00:00:00Z\n" + //
+            "<td class=\"R\">35.569\n" + //
+            "<td class=\"R\">-122.571\n" + //
+            "<td>\n" + //
+            "</tr>\n" + //
+            "</table>\n";
+    Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
+  }
+
   /* TableTests */
 
   /**
@@ -261,7 +2043,8 @@ class JettyTests {
     // requests),
     // * and it is labelled as a POST request.
     s = SSR.postFormGetResponseString(
-        "http://localhost:" + PORT + "/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
+        "http://localhost:" + PORT
+            + "/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
     String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
     Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
     Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0,
@@ -291,7 +2074,8 @@ class JettyTests {
         "convert/fipscounty.html",
         "convert/keywords.html",
         "convert/time.html",
-        // "convert/units.html", // Disable this check because &C is in translations wrong (this is a minor mistake not an incorrect translation)
+        // "convert/units.html", // Disable this check because &C is in translations
+        // wrong (this is a minor mistake not an incorrect translation)
         "convert/urls.html",
         "convert/oceanicAtmosphericVariableNames.html",
         "dataProviderForm.html",
@@ -313,7 +2097,8 @@ class JettyTests {
         "griddap/documentation.html",
         "griddap/jplMURSST41.graph",
         "griddap/jplMURSST41.html",
-        // "info/index.html?page=1&itemsPerPage=1000", // Descriptions of datasets may contain char patterns
+        // "info/index.html?page=1&itemsPerPage=1000", // Descriptions of datasets may
+        // contain char patterns
         "info/cwwcNDBCMet/index.html",
         "information.html",
         "opensearch1.1/index.html",
@@ -533,7 +2318,8 @@ class JettyTests {
         EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n") > 0,
+        results.indexOf(
+            ">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n") > 0,
         "results=\n" + results);
 
     // .json
@@ -547,88 +2333,99 @@ class JettyTests {
         +
         "    \"rows\": [\n" +
         "" +
-        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n"
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n"
         +
         "    ]\n" +
         "  }\n" +
@@ -645,88 +2442,100 @@ class JettyTests {
         "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\"],\n"
         +
         "    \"rows\": [\n" +
-        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"],\n" + //
-                        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n" + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"],\n"
+        + //
+        "      [\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.json\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n"
+        + //
         "    ]\n" +
         "  }\n" +
         "}\n" +
@@ -756,1963 +2565,2246 @@ class JettyTests {
         EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
     expected = "[\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"]\n"
         +
-        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
-                        "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
-                        "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
-                        "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAdcp\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"This dataset has daily Currents data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
-                        "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
-                        "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
-                        "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
-                        "QCS_5300 (Current Speed Quality)\\n" + //
-                        "QCD_5310 (Current Direction Quality)\\n" + //
-                        "SCS_6300 (Current Speed Source)\\n" + //
-                        "CIC_7300 (Current Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyCur\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"This dataset has daily Temperature data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_20 (Sea Water Temperature, degree_C)\\n" + //
-                        "QT_5020 (Temperature Quality)\\n" + //
-                        "ST_6020 (Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyT\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"This dataset has daily Wind data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "WU_422 (Zonal Wind, m s-1)\\n" + //
-                        "WV_423 (Meridional Wind, m s-1)\\n" + //
-                        "WS_401 (Wind Speed, m s-1)\\n" + //
-                        "QWS_5401 (Wind Speed Quality)\\n" + //
-                        "SWS_6401 (Wind Speed Source)\\n" + //
-                        "WD_410 (Wind Direction, degrees_true)\\n" + //
-                        "QWD_5410 (Wind Direction Quality)\\n" + //
-                        "SWD_6410 (Wind Direction Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyW\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"This dataset has daily Position data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "LON_502 (Precise Longitude, degree_east)\\n" + //
-                        "QX_5502 (Longitude Quality)\\n" + //
-                        "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                        "QY_5500 (Latitude Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyPos\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"This dataset has daily Salinity data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                        "QS_5041 (Salinity Quality)\\n" + //
-                        "SS_6041 (Salinity Source)\\n" + //
-                        "SIC_8041 (Salinity Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyS\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"This dataset has daily Evaporation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "E_250 (Evaporation, MM/HR)\\n" + //
-                        "QE_5250 (Evaporation Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEvap\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"This dataset has daily Wind Stress data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
-                        "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
-                        "TAU_440 (Wind Stress, N/m2)\\n" + //
-                        "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
-                        "QTAU_5440 (Wind Stress Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyTau\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "LON_502 (Precise Longitude, degree_east)\\n" + //
-                        "QX_5502 (Longitude Quality)\\n" + //
-                        "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                        "QY_5500 (Latitude Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoMonPos\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "ISO_6 (20C Isotherm Depth, m)\\n" + //
-                        "QI_5006 (20C Depth Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyIso\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"This dataset has daily Air Temperature data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "AT_21 (Air Temperature, degree_C)\\n" + //
-                        "QAT_5021 (Air Temperature Quality)\\n" + //
-                        "SAT_6021 (Air Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAirt\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
-                        "QD_5013 (Dynamic Height Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyDyn\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"This dataset has daily Heat Content data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
-                        "HTC_5130 (Heat Content Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyHeat\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"This dataset has daily Latent Heat Flux data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "QL_137 (Latent Heat Flux, W m-2)\\n" + //
-                        "QQL_5137 (Latent Heat Flux Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQlat\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"This dataset has daily Relative Humidity data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "RH_910 (Relative Humidity, percent)\\n" + //
-                        "QRH_5910 (Relative Humidity Quality)\\n" + //
-                        "SRH_6910 (Relative Humidity Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRh\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"This dataset has daily Sensible Heat Flux data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
-                        "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQsen\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"This dataset has daily Sea Surface Salinity data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                        "QS_5041 (Salinity Quality)\\n" + //
-                        "SS_6041 (Salinity Source)\\n" + //
-                        "SIC_7041 (Salinity Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySss\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"This dataset has daily Heat Flux Due To Rain data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
-                        "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRf\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"This dataset has daily Precipitation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "RN_485 (Precipitation, MM/HR)\\n" + //
-                        "QRN_5485 (Precipitation Quality)\\n" + //
-                        "SRN_6485 (Precipitation Source)\\n" + //
-                        "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
-                        "RNP_487 (Percent Time Raining, percent)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRain\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"This dataset has daily Buoyancy Flux data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
-                        "QBF_5191 (Buoyancy Flux Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBf\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"This dataset has daily Incoming Longwave Radiation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
-                        "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                        "SLW_6136 (Longwave Radiation Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLw\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"This dataset has daily Total Heat Flux data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "QT_210 (Total Heat Flux, W/M**2)\\n" + //
-                        "QQ0_5210 (Total Heat Flux Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQnet\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                        "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                        "QST_5071 (Sigma-Theta Quality)\\n" + //
-                        "SST_6071 (Sigma-Theta Source)\\n" + //
-                        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"This dataset has daily Downgoing Shortwave Radiation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
-                        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                        "SSW_6495 (Shortwave Radiation Source)\\n" + //
-                        "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
-                        "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRad\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"This dataset has daily Net Shortwave Radiation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
-                        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySwnet\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"This dataset has daily Evaporation Minus Precipitation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
-                        "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEmp\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"This dataset has daily Barometric (Air) Pressure data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
-                        "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
-                        "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBp\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"This dataset has daily Net Longwave Radiation data from the\\n" + //
-                        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
-                        "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                        "SLW_6136 (Longwave Radiation Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLwnet\"]\n" + //
-                        "[\"\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"\", \"http://localhost:8080/erddap/files/testTableWithDepth/\", \"This is EDDTableWithDepth\", \"This is the summary\\n" + //
-                        "\\n" + //
-                        "cdm_data_type = TimeSeries\\n" + //
-                        "VARIABLES:\\n" + //
-                        "array\\n" + //
-                        "station\\n" + //
-                        "wmo_platform_code\\n" + //
-                        "longitude (Nominal Longitude, degrees_east)\\n" + //
-                        "latitude (Nominal Latitude, degrees_north)\\n" + //
-                        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                        "depth (m)\\n" + //
-                        "AT_21 (Air Temperature, degree_C)\\n" + //
-                        "QAT_5021 (Air Temperature Quality)\\n" + //
-                        "SAT_6021 (Air Temperature Source)\\n" + //
-                        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"testTableWithDepth\"]\n";
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
+        "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
+        "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
+        "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAdcp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"This dataset has daily Currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
+        "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
+        "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
+        "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
+        "QCS_5300 (Current Speed Quality)\\n" + //
+        "QCD_5310 (Current Direction Quality)\\n" + //
+        "SCS_6300 (Current Speed Source)\\n" + //
+        "CIC_7300 (Current Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyCur\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"This dataset has daily Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_20 (Sea Water Temperature, degree_C)\\n" + //
+        "QT_5020 (Temperature Quality)\\n" + //
+        "ST_6020 (Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyT\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"This dataset has daily Wind data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "WU_422 (Zonal Wind, m s-1)\\n" + //
+        "WV_423 (Meridional Wind, m s-1)\\n" + //
+        "WS_401 (Wind Speed, m s-1)\\n" + //
+        "QWS_5401 (Wind Speed Quality)\\n" + //
+        "SWS_6401 (Wind Speed Source)\\n" + //
+        "WD_410 (Wind Direction, degrees_true)\\n" + //
+        "QWD_5410 (Wind Direction Quality)\\n" + //
+        "SWD_6410 (Wind Direction Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyW\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"This dataset has daily Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyPos\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"This dataset has daily Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_8041 (Salinity Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyS\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"This dataset has daily Evaporation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "E_250 (Evaporation, MM/HR)\\n" + //
+        "QE_5250 (Evaporation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEvap\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"This dataset has daily Wind Stress data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
+        "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
+        "TAU_440 (Wind Stress, N/m2)\\n" + //
+        "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
+        "QTAU_5440 (Wind Stress Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyTau\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoMonPos\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "ISO_6 (20C Isotherm Depth, m)\\n" + //
+        "QI_5006 (20C Depth Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyIso\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"This dataset has daily Air Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAirt\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
+        "QD_5013 (Dynamic Height Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyDyn\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"This dataset has daily Heat Content data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
+        "HTC_5130 (Heat Content Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyHeat\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"This dataset has daily Latent Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QL_137 (Latent Heat Flux, W m-2)\\n" + //
+        "QQL_5137 (Latent Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQlat\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"This dataset has daily Relative Humidity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RH_910 (Relative Humidity, percent)\\n" + //
+        "QRH_5910 (Relative Humidity Quality)\\n" + //
+        "SRH_6910 (Relative Humidity Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRh\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"This dataset has daily Sensible Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
+        "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQsen\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"This dataset has daily Sea Surface Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_7041 (Salinity Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySss\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"This dataset has daily Heat Flux Due To Rain data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
+        "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRf\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"This dataset has daily Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RN_485 (Precipitation, MM/HR)\\n" + //
+        "QRN_5485 (Precipitation Quality)\\n" + //
+        "SRN_6485 (Precipitation Source)\\n" + //
+        "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
+        "RNP_487 (Percent Time Raining, percent)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRain\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"This dataset has daily Buoyancy Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
+        "QBF_5191 (Buoyancy Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBf\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"This dataset has daily Incoming Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLw\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"This dataset has daily Total Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QT_210 (Total Heat Flux, W/M**2)\\n" + //
+        "QQ0_5210 (Total Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"This dataset has daily Downgoing Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "SSW_6495 (Shortwave Radiation Source)\\n" + //
+        "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
+        "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRad\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"This dataset has daily Net Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySwnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"This dataset has daily Evaporation Minus Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
+        "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEmp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"This dataset has daily Barometric (Air) Pressure data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
+        "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
+        "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"This dataset has daily Net Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLwnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"\", \"http://localhost:8080/erddap/files/testTableWithDepth/\", \"This is EDDTableWithDepth\", \"This is the summary\\n"
+        + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlCSV1\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"testTableWithDepth\"]\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // .jsonlCSV
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlCSV?" +
         EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-    expected = "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
-                "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
-                "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
-                "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAdcp\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"This dataset has daily Currents data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
-                "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
-                "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
-                "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
-                "QCS_5300 (Current Speed Quality)\\n" + //
-                "QCD_5310 (Current Direction Quality)\\n" + //
-                "SCS_6300 (Current Speed Source)\\n" + //
-                "CIC_7300 (Current Instrument Code)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyCur\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"This dataset has daily Temperature data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_20 (Sea Water Temperature, degree_C)\\n" + //
-                "QT_5020 (Temperature Quality)\\n" + //
-                "ST_6020 (Temperature Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyT\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"This dataset has daily Wind data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "WU_422 (Zonal Wind, m s-1)\\n" + //
-                "WV_423 (Meridional Wind, m s-1)\\n" + //
-                "WS_401 (Wind Speed, m s-1)\\n" + //
-                "QWS_5401 (Wind Speed Quality)\\n" + //
-                "SWS_6401 (Wind Speed Source)\\n" + //
-                "WD_410 (Wind Direction, degrees_true)\\n" + //
-                "QWD_5410 (Wind Direction Quality)\\n" + //
-                "SWD_6410 (Wind Direction Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyW\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"This dataset has daily Position data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LON_502 (Precise Longitude, degree_east)\\n" + //
-                "QX_5502 (Longitude Quality)\\n" + //
-                "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                "QY_5500 (Latitude Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyPos\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"This dataset has daily Salinity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                "QS_5041 (Salinity Quality)\\n" + //
-                "SS_6041 (Salinity Source)\\n" + //
-                "SIC_8041 (Salinity Instrument Code)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyS\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"This dataset has daily Evaporation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "E_250 (Evaporation, MM/HR)\\n" + //
-                "QE_5250 (Evaporation Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEvap\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"This dataset has daily Wind Stress data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
-                "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
-                "TAU_440 (Wind Stress, N/m2)\\n" + //
-                "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
-                "QTAU_5440 (Wind Stress Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyTau\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                "QST_5071 (Sigma-Theta Quality)\\n" + //
-                "SST_6071 (Sigma-Theta Source)\\n" + //
-                "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LON_502 (Precise Longitude, degree_east)\\n" + //
-                "QX_5502 (Longitude Quality)\\n" + //
-                "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                "QY_5500 (Latitude Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoMonPos\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "ISO_6 (20C Isotherm Depth, m)\\n" + //
-                "QI_5006 (20C Depth Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyIso\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"This dataset has daily Air Temperature data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "AT_21 (Air Temperature, degree_C)\\n" + //
-                "QAT_5021 (Air Temperature Quality)\\n" + //
-                "SAT_6021 (Air Temperature Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAirt\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
-                "QD_5013 (Dynamic Height Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyDyn\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"This dataset has daily Heat Content data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
-                "HTC_5130 (Heat Content Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyHeat\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"This dataset has daily Latent Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QL_137 (Latent Heat Flux, W m-2)\\n" + //
-                "QQL_5137 (Latent Heat Flux Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQlat\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"This dataset has daily Relative Humidity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RH_910 (Relative Humidity, percent)\\n" + //
-                "QRH_5910 (Relative Humidity Quality)\\n" + //
-                "SRH_6910 (Relative Humidity Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRh\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"This dataset has daily Sensible Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
-                "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQsen\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"This dataset has daily Sea Surface Salinity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                "QS_5041 (Salinity Quality)\\n" + //
-                "SS_6041 (Salinity Source)\\n" + //
-                "SIC_7041 (Salinity Instrument Code)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySss\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"This dataset has daily Heat Flux Due To Rain data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
-                "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRf\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"This dataset has daily Precipitation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RN_485 (Precipitation, MM/HR)\\n" + //
-                "QRN_5485 (Precipitation Quality)\\n" + //
-                "SRN_6485 (Precipitation Source)\\n" + //
-                "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
-                "RNP_487 (Percent Time Raining, percent)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRain\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"This dataset has daily Buoyancy Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
-                "QBF_5191 (Buoyancy Flux Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBf\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"This dataset has daily Incoming Longwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
-                "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                "SLW_6136 (Longwave Radiation Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLw\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"This dataset has daily Total Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QT_210 (Total Heat Flux, W/M**2)\\n" + //
-                "QQ0_5210 (Total Heat Flux Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQnet\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                "QST_5071 (Sigma-Theta Quality)\\n" + //
-                "SST_6071 (Sigma-Theta Source)\\n" + //
-                "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"This dataset has daily Downgoing Shortwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
-                "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                "SSW_6495 (Shortwave Radiation Source)\\n" + //
-                "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
-                "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRad\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"This dataset has daily Net Shortwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
-                "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySwnet\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"This dataset has daily Evaporation Minus Precipitation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
-                "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEmp\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"This dataset has daily Barometric (Air) Pressure data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
-                "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
-                "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBp\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"This dataset has daily Net Longwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
-                "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                "SLW_6136 (Longwave Radiation Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLwnet\"]\n" + //
-                "[\"\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"\", \"http://localhost:8080/erddap/files/testTableWithDepth/\", \"This is EDDTableWithDepth\", \"This is the summary\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "AT_21 (Air Temperature, degree_C)\\n" + //
-                "QAT_5021 (Air Temperature Quality)\\n" + //
-                "SAT_6021 (Air Temperature Source)\\n" + //
-                "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"testTableWithDepth\"]\n";
+    expected = "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
+        "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
+        "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
+        "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAdcp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"This dataset has daily Currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
+        "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
+        "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
+        "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
+        "QCS_5300 (Current Speed Quality)\\n" + //
+        "QCD_5310 (Current Direction Quality)\\n" + //
+        "SCS_6300 (Current Speed Source)\\n" + //
+        "CIC_7300 (Current Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyCur\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"This dataset has daily Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_20 (Sea Water Temperature, degree_C)\\n" + //
+        "QT_5020 (Temperature Quality)\\n" + //
+        "ST_6020 (Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyT\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"This dataset has daily Wind data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "WU_422 (Zonal Wind, m s-1)\\n" + //
+        "WV_423 (Meridional Wind, m s-1)\\n" + //
+        "WS_401 (Wind Speed, m s-1)\\n" + //
+        "QWS_5401 (Wind Speed Quality)\\n" + //
+        "SWS_6401 (Wind Speed Source)\\n" + //
+        "WD_410 (Wind Direction, degrees_true)\\n" + //
+        "QWD_5410 (Wind Direction Quality)\\n" + //
+        "SWD_6410 (Wind Direction Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyW\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"This dataset has daily Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyPos\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"This dataset has daily Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_8041 (Salinity Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyS\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"This dataset has daily Evaporation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "E_250 (Evaporation, MM/HR)\\n" + //
+        "QE_5250 (Evaporation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEvap\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"This dataset has daily Wind Stress data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
+        "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
+        "TAU_440 (Wind Stress, N/m2)\\n" + //
+        "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
+        "QTAU_5440 (Wind Stress Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyTau\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySsd\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoMonPos\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "ISO_6 (20C Isotherm Depth, m)\\n" + //
+        "QI_5006 (20C Depth Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyIso\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"This dataset has daily Air Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyAirt\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
+        "QD_5013 (Dynamic Height Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyDyn\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"This dataset has daily Heat Content data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
+        "HTC_5130 (Heat Content Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyHeat\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"This dataset has daily Latent Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QL_137 (Latent Heat Flux, W m-2)\\n" + //
+        "QQL_5137 (Latent Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQlat\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"This dataset has daily Relative Humidity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RH_910 (Relative Humidity, percent)\\n" + //
+        "QRH_5910 (Relative Humidity Quality)\\n" + //
+        "SRH_6910 (Relative Humidity Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRh\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"This dataset has daily Sensible Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
+        "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQsen\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"This dataset has daily Sea Surface Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_7041 (Salinity Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySss\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"This dataset has daily Heat Flux Due To Rain data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
+        "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRf\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"This dataset has daily Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RN_485 (Precipitation, MM/HR)\\n" + //
+        "QRN_5485 (Precipitation Quality)\\n" + //
+        "SRN_6485 (Precipitation Source)\\n" + //
+        "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
+        "RNP_487 (Percent Time Raining, percent)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRain\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"This dataset has daily Buoyancy Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
+        "QBF_5191 (Buoyancy Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBf\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"This dataset has daily Incoming Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLw\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"This dataset has daily Total Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QT_210 (Total Heat Flux, W/M**2)\\n" + //
+        "QQ0_5210 (Total Heat Flux Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyQnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySst\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"\", \"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"rlPmelTaoDySst\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyD\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"This dataset has daily Downgoing Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "SSW_6495 (Shortwave Radiation Source)\\n" + //
+        "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
+        "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyRad\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"This dataset has daily Net Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDySwnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"This dataset has daily Evaporation Minus Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
+        "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyEmp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"This dataset has daily Barometric (Air) Pressure data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
+        "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
+        "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyBp\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"This dataset has daily Net Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"pmelTaoDyLwnet\"]\n"
+        + //
+        "[\"\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"\", \"http://localhost:8080/erddap/files/testTableWithDepth/\", \"This is EDDTableWithDepth\", \"This is the summary\\n"
+        + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlCSV\", \"https://www.pmel.noaa.gov/gtmba/mission\", \"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"testTableWithDepth\"]\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // .jsonlKVP
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.jsonlKVP?" +
         EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-    expected = "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"Summary\":\"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
-                "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
-                "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
-                "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyAdcp\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"Summary\":\"This dataset has daily Currents data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
-                "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
-                "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
-                "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
-                "QCS_5300 (Current Speed Quality)\\n" + //
-                "QCD_5310 (Current Direction Quality)\\n" + //
-                "SCS_6300 (Current Speed Source)\\n" + //
-                "CIC_7300 (Current Instrument Code)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyCur\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"Summary\":\"This dataset has daily Temperature data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_20 (Sea Water Temperature, degree_C)\\n" + //
-                "QT_5020 (Temperature Quality)\\n" + //
-                "ST_6020 (Temperature Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyT\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"Summary\":\"This dataset has daily Wind data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "WU_422 (Zonal Wind, m s-1)\\n" + //
-                "WV_423 (Meridional Wind, m s-1)\\n" + //
-                "WS_401 (Wind Speed, m s-1)\\n" + //
-                "QWS_5401 (Wind Speed Quality)\\n" + //
-                "SWS_6401 (Wind Speed Source)\\n" + //
-                "WD_410 (Wind Direction, degrees_true)\\n" + //
-                "QWD_5410 (Wind Direction Quality)\\n" + //
-                "SWD_6410 (Wind Direction Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyW\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"Summary\":\"This dataset has daily Position data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LON_502 (Precise Longitude, degree_east)\\n" + //
-                "QX_5502 (Longitude Quality)\\n" + //
-                "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                "QY_5500 (Latitude Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyPos\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"Summary\":\"This dataset has daily Salinity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                "QS_5041 (Salinity Quality)\\n" + //
-                "SS_6041 (Salinity Source)\\n" + //
-                "SIC_8041 (Salinity Instrument Code)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyS\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"Summary\":\"This dataset has daily Evaporation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "E_250 (Evaporation, MM/HR)\\n" + //
-                "QE_5250 (Evaporation Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyEvap\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"Summary\":\"This dataset has daily Wind Stress data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
-                "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
-                "TAU_440 (Wind Stress, N/m2)\\n" + //
-                "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
-                "QTAU_5440 (Wind Stress Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyTau\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"Summary\":\"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                "QST_5071 (Sigma-Theta Quality)\\n" + //
-                "SST_6071 (Sigma-Theta Source)\\n" + //
-                "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySsd\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"Summary\":\"This dataset has monthly Position data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LON_502 (Precise Longitude, degree_east)\\n" + //
-                "QX_5502 (Longitude Quality)\\n" + //
-                "LAT_500 (Precise Latitude, degree_north)\\n" + //
-                "QY_5500 (Latitude Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoMonPos\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"Summary\":\"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "ISO_6 (20C Isotherm Depth, m)\\n" + //
-                "QI_5006 (20C Depth Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyIso\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"Summary\":\"This dataset has daily Air Temperature data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "AT_21 (Air Temperature, degree_C)\\n" + //
-                "QAT_5021 (Air Temperature Quality)\\n" + //
-                "SAT_6021 (Air Temperature Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyAirt\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"Summary\":\"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
-                "QD_5013 (Dynamic Height Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyDyn\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"Summary\":\"This dataset has daily Heat Content data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
-                "HTC_5130 (Heat Content Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyHeat\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"Summary\":\"This dataset has daily Latent Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QL_137 (Latent Heat Flux, W m-2)\\n" + //
-                "QQL_5137 (Latent Heat Flux Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQlat\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"Summary\":\"This dataset has daily Relative Humidity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RH_910 (Relative Humidity, percent)\\n" + //
-                "QRH_5910 (Relative Humidity Quality)\\n" + //
-                "SRH_6910 (Relative Humidity Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRh\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"Summary\":\"This dataset has daily Sensible Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
-                "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQsen\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"Summary\":\"This dataset has daily Sea Surface Salinity data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
-                "QS_5041 (Salinity Quality)\\n" + //
-                "SS_6041 (Salinity Source)\\n" + //
-                "SIC_7041 (Salinity Instrument Code)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySss\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"Summary\":\"This dataset has daily Heat Flux Due To Rain data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
-                "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRf\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"Summary\":\"This dataset has daily Precipitation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RN_485 (Precipitation, MM/HR)\\n" + //
-                "QRN_5485 (Precipitation Quality)\\n" + //
-                "SRN_6485 (Precipitation Source)\\n" + //
-                "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
-                "RNP_487 (Percent Time Raining, percent)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRain\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"Summary\":\"This dataset has daily Buoyancy Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
-                "QBF_5191 (Buoyancy Flux Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyBf\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"Summary\":\"This dataset has daily Incoming Longwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
-                "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                "SLW_6136 (Longwave Radiation Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyLw\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"Summary\":\"This dataset has daily Total Heat Flux data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "QT_210 (Total Heat Flux, W/M**2)\\n" + //
-                "QQ0_5210 (Total Heat Flux Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQnet\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySst\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "T_25 (Sea Surface Temperature, degree_C)\\n" + //
-                "QT_5025 (Sea Surface Temperature Quality)\\n" + //
-                "ST_6025 (Sea Surface Temperature Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rlPmelTaoDySst\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"Summary\":\"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "STH_71 (Sigma-Theta, kg m-3)\\n" + //
-                "QST_5071 (Sigma-Theta Quality)\\n" + //
-                "SST_6071 (Sigma-Theta Source)\\n" + //
-                "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyD\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"Summary\":\"This dataset has daily Downgoing Shortwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
-                "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                "SSW_6495 (Shortwave Radiation Source)\\n" + //
-                "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
-                "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRad\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"Summary\":\"This dataset has daily Net Shortwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
-                "QSW_5495 (Shortwave Radiation Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySwnet\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"Summary\":\"This dataset has daily Evaporation Minus Precipitation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
-                "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyEmp\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"Summary\":\"This dataset has daily Barometric (Air) Pressure data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
-                "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
-                "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyBp\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"Summary\":\"This dataset has daily Net Longwave Radiation data from the\\n" + //
-                "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
-                "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
-                "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
-                "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n" + //
-                "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
-                "QLW_5136 (Longwave Radiation Quality)\\n" + //
-                "SLW_6136 (Longwave Radiation Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyLwnet\"}\n" + //
-                "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/testTableWithDepth/\", \"Title\":\"This is EDDTableWithDepth\", \"Summary\":\"This is the summary\\n" + //
-                "\\n" + //
-                "cdm_data_type = TimeSeries\\n" + //
-                "VARIABLES:\\n" + //
-                "array\\n" + //
-                "station\\n" + //
-                "wmo_platform_code\\n" + //
-                "longitude (Nominal Longitude, degrees_east)\\n" + //
-                "latitude (Nominal Latitude, degrees_north)\\n" + //
-                "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
-                "depth (m)\\n" + //
-                "AT_21 (Air Temperature, degree_C)\\n" + //
-                "QAT_5021 (Air Temperature Quality)\\n" + //
-                "SAT_6021 (Air Temperature Source)\\n" + //
-                "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"testTableWithDepth\"}\n";
+    expected = "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAdcp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyAdcp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1988-2020, ADCP\", \"Summary\":\"This dataset has daily Acoustic Doppler Current Profiler (ADCP) water currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  ADCP data are available only after mooring recoveries, which are scheduled on an annual basis.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "u_1205 (Eastward Sea Water Velocity, cm/s)\\n" + //
+        "QU_5205 (Eastward Sea Water Velocity Quality)\\n" + //
+        "v_1206 (Northward Sea Water Velocity, cm/s)\\n" + //
+        "QV_5206 (Northward Sea Water Velocity Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAdcp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAdcp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyAdcp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyAdcp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAdcp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyAdcp\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyCur.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyCur/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Currents\", \"Summary\":\"This dataset has daily Currents data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "U_320 (Eastward Sea Water Velocity, cm s-1)\\n" + //
+        "V_321 (Northward Sea Water Velocity, cm s-1)\\n" + //
+        "CS_300 (Sea Water Velocity, cm s-1)\\n" + //
+        "CD_310 (Direction of Sea Water Velocity, degrees_true)\\n" + //
+        "QCS_5300 (Current Speed Quality)\\n" + //
+        "QCD_5310 (Current Direction Quality)\\n" + //
+        "SCS_6300 (Current Speed Source)\\n" + //
+        "CIC_7300 (Current Instrument Code)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyCur_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyCur_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyCur/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyCur.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyCur&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyCur\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyT.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyT/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Temperature\", \"Summary\":\"This dataset has daily Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_20 (Sea Water Temperature, degree_C)\\n" + //
+        "QT_5020 (Temperature Quality)\\n" + //
+        "ST_6020 (Temperature Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyT_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyT_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyT/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyT.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyT&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyT\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyW.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyW/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Wind\", \"Summary\":\"This dataset has daily Wind data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "WU_422 (Zonal Wind, m s-1)\\n" + //
+        "WV_423 (Meridional Wind, m s-1)\\n" + //
+        "WS_401 (Wind Speed, m s-1)\\n" + //
+        "QWS_5401 (Wind Speed Quality)\\n" + //
+        "SWS_6401 (Wind Speed Source)\\n" + //
+        "WD_410 (Wind Direction, degrees_true)\\n" + //
+        "QWD_5410 (Wind Direction Quality)\\n" + //
+        "SWD_6410 (Wind Direction Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyW_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyW_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyW/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyW.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyW&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyW\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyPos.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyPos/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Position\", \"Summary\":\"This dataset has daily Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyPos_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyPos_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyPos/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyPos.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyPos&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyPos\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyS.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyS/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Salinity\", \"Summary\":\"This dataset has daily Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_8041 (Salinity Instrument Code)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyS_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyS_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyS/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyS.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyS&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyS\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEvap.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyEvap/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Evaporation\", \"Summary\":\"This dataset has daily Evaporation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "E_250 (Evaporation, MM/HR)\\n" + //
+        "QE_5250 (Evaporation Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEvap_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEvap_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyEvap/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyEvap.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEvap&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyEvap\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyTau.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyTau/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Wind Stress\", \"Summary\":\"This dataset has daily Wind Stress data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "TX_442 (Zonal Wind Stress, N/m2)\\n" + //
+        "TY_443 (Meridional Wind Stress, N/m2)\\n" + //
+        "TAU_440 (Wind Stress, N/m2)\\n" + //
+        "TD_445 (Wind Stress Direction, degrees_true)\\n" + //
+        "QTAU_5440 (Wind Stress Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyTau_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyTau_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyTau/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyTau.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyTau&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyTau\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySsd.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySsd/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sigma-Theta\", \"Summary\":\"This dataset has daily Sigma-Theta (Potential Density Anomaly) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySsd_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySsd_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySsd/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySsd.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySsd&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySsd\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"Summary\":\"This dataset has monthly Position data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Monthly data is an average of daily values collected during a month.  A minimum of 15 daily values are required to compute a monthly average.  This dataset contains realtime and delayed mode data (see the 'source' variable).  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LON_502 (Precise Longitude, degree_east)\\n" + //
+        "QX_5502 (Longitude Quality)\\n" + //
+        "LAT_500 (Precise Latitude, degree_north)\\n" + //
+        "QY_5500 (Latitude Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoMonPos_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoMonPos_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoMonPos/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoMonPos.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoMonPos&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoMonPos\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyIso.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyIso/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, 20C Isotherm Depth\", \"Summary\":\"This dataset has daily 20C Isotherm Depth data (the depth at which the ocean temperature is 20C) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "ISO_6 (20C Isotherm Depth, m)\\n" + //
+        "QI_5006 (20C Depth Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyIso_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyIso_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyIso/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyIso.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyIso&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyIso\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyAirt.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyAirt/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\", \"Summary\":\"This dataset has daily Air Temperature data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyAirt_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyAirt_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyAirt.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyAirt&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyAirt\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyDyn.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyDyn/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Dynamic Height\", \"Summary\":\"This dataset has daily Dynamic Height data (a measure of the elevation of the sea level, calculated by integrating the specific volume anomaly of the sea water between the sea surface and 500 m depth) from the \\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "DYN_13 (Dynamic Height, dyn-cm)\\n" + //
+        "QD_5013 (Dynamic Height Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyDyn_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyDyn_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyDyn/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyDyn.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyDyn&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyDyn\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyHeat.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyHeat/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1980-present, Heat Content\", \"Summary\":\"This dataset has daily Heat Content data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "HTC_130 (Heat Content, 10**10 J m-2)\\n" + //
+        "HTC_5130 (Heat Content Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyHeat_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyHeat_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyHeat/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyHeat.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyHeat&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyHeat\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQlat.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQlat/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Latent Heat Flux\", \"Summary\":\"This dataset has daily Latent Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QL_137 (Latent Heat Flux, W m-2)\\n" + //
+        "QQL_5137 (Latent Heat Flux Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQlat_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQlat_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQlat/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQlat.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQlat&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQlat\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRh.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRh/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Relative Humidity\", \"Summary\":\"This dataset has daily Relative Humidity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RH_910 (Relative Humidity, percent)\\n" + //
+        "QRH_5910 (Relative Humidity Quality)\\n" + //
+        "SRH_6910 (Relative Humidity Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRh_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRh_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRh/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRh.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRh&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRh\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQsen.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQsen/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1989-present, Sensible Heat Flux\", \"Summary\":\"This dataset has daily Sensible Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QS_138 (Sensible Heat Flux, W m-2)\\n" + //
+        "QQS_5138 (Sensible Heat Flux Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQsen_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQsen_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQsen/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQsen.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQsen&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQsen\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySss.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySss/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1992-present, Sea Surface Salinity\", \"Summary\":\"This dataset has daily Sea Surface Salinity data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "S_41 (Sea Water Practical Salinity, PSU)\\n" + //
+        "QS_5041 (Salinity Quality)\\n" + //
+        "SS_6041 (Salinity Source)\\n" + //
+        "SIC_7041 (Salinity Instrument Code)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySss_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySss_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySss/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySss.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySss&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySss\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRf.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRf/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Heat Flux Due To Rain\", \"Summary\":\"This dataset has daily Heat Flux Due To Rain data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QR_139 (Heat Flux Due To Rain, W m-2)\\n" + //
+        "QQR_5139 (Heat Flux Due To Rain Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRf_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRf_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRf/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRf.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRf&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRf\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRain.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRain/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Precipitation\", \"Summary\":\"This dataset has daily Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RN_485 (Precipitation, MM/HR)\\n" + //
+        "QRN_5485 (Precipitation Quality)\\n" + //
+        "SRN_6485 (Precipitation Source)\\n" + //
+        "RNS_486 (Precipitation Standard Deviation, MM/HR)\\n" + //
+        "RNP_487 (Percent Time Raining, percent)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRain_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRain_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRain/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRain.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRain&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRain\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBf.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyBf/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Buoyancy Flux\", \"Summary\":\"This dataset has daily Buoyancy Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BF_191 (Buoyancy Flux, 10**6 kg m-2 s-1)\\n" + //
+        "QBF_5191 (Buoyancy Flux Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBf_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBf_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyBf/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyBf.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBf&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyBf\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLw.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyLw/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Longwave Radiation\", \"Summary\":\"This dataset has daily Incoming Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "Ql_136 (Incoming Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLw_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLw_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyLw/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyLw.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLw&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyLw\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyQnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyQnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Total Heat Flux\", \"Summary\":\"This dataset has daily Total Heat Flux data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "QT_210 (Total Heat Flux, W/M**2)\\n" + //
+        "QQ0_5210 (Total Heat Flux Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyQnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyQnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyQnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyQnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyQnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyQnet\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySst/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySst\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/rlPmelTaoDySst.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/rlPmelTaoDySst/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\", \"Summary\":\"This dataset has daily Sea Surface Temperature (SST) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "T_25 (Sea Surface Temperature, degree_C)\\n" + //
+        "QT_5025 (Sea Surface Temperature Quality)\\n" + //
+        "ST_6025 (Sea Surface Temperature Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/rlPmelTaoDySst_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/rlPmelTaoDySst_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/rlPmelTaoDySst.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=rlPmelTaoDySst&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"rlPmelTaoDySst\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyD.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyD/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1987-present, Potential Density Anomaly\", \"Summary\":\"This dataset has daily Potential Density Anomaly (sigma-theta) data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "STH_71 (Sigma-Theta, kg m-3)\\n" + //
+        "QST_5071 (Sigma-Theta Quality)\\n" + //
+        "SST_6071 (Sigma-Theta Source)\\n" + //
+        "DIC_7071 (Sigma-Theta Instrument Code)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyD_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyD_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyD/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyD.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyD&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyD\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyRad.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyRad/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Downgoing Shortwave Radiation\", \"Summary\":\"This dataset has daily Downgoing Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "RD_495 (Downgoing Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "SSW_6495 (Shortwave Radiation Source)\\n" + //
+        "RDS_496 (Shortwave Radiation Standard Deviation, W/M**2)\\n" + //
+        "RDP_497 (Shortwave Radiation Peak, W/M**2)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyRad_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyRad_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyRad/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyRad.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyRad&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyRad\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDySwnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDySwnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1991-present, Net Shortwave Radiation\", \"Summary\":\"This dataset has daily Net Shortwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "SWN_1495 (Net Shortwave Radiation, W/M**2)\\n" + //
+        "QSW_5495 (Shortwave Radiation Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDySwnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDySwnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDySwnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDySwnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDySwnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDySwnet\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyEmp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyEmp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1997-present, Evaporation Minus Precipitation\", \"Summary\":\"This dataset has daily Evaporation Minus Precipitation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "EMP_251 (Evaporation Minus Precipitation, mm/hr)\\n" + //
+        "QEMP_5251 (Evaporation Minus Precipitation Quality)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyEmp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyEmp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyEmp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyEmp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyEmp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyEmp\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyBp.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyBp/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1998-present, Barometric (Air) Pressure\", \"Summary\":\"This dataset has daily Barometric (Air) Pressure data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "BP_915 (Barometric (Air) Pressure, hPa)\\n" + //
+        "QBP_5915 (Barometric (Air) Pressure Quality)\\n" + //
+        "SBP_6915 (Barometric (Air) Pressure Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyBp_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyBp_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyBp/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyBp.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyBp&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyBp\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoDyLwnet.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoDyLwnet/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 2000-present, Net Longwave Radiation\", \"Summary\":\"This dataset has daily Net Longwave Radiation data from the\\n"
+        + //
+        "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n" + //
+        "RAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\n" + //
+        "PIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\n" + //
+        "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\n"
+        + //
+        "https://www.pmel.noaa.gov/gtmba/mission .\\n" + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "LWN_1136 (Net Longwave Radiation, W m-2)\\n" + //
+        "QLW_5136 (Longwave Radiation Quality)\\n" + //
+        "SLW_6136 (Longwave Radiation Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/pmelTaoDyLwnet_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/pmelTaoDyLwnet_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/pmelTaoDyLwnet/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/pmelTaoDyLwnet.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=pmelTaoDyLwnet&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"pmelTaoDyLwnet\"}\n"
+        + //
+        "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/testTableWithDepth.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/testTableWithDepth/\", \"Title\":\"This is EDDTableWithDepth\", \"Summary\":\"This is the summary\\n"
+        + //
+        "\\n" + //
+        "cdm_data_type = TimeSeries\\n" + //
+        "VARIABLES:\\n" + //
+        "array\\n" + //
+        "station\\n" + //
+        "wmo_platform_code\\n" + //
+        "longitude (Nominal Longitude, degrees_east)\\n" + //
+        "latitude (Nominal Latitude, degrees_north)\\n" + //
+        "time (Centered Time, seconds since 1970-01-01T00:00:00Z)\\n" + //
+        "depth (m)\\n" + //
+        "AT_21 (Air Temperature, degree_C)\\n" + //
+        "QAT_5021 (Air Temperature Quality)\\n" + //
+        "SAT_6021 (Air Temperature Source)\\n" + //
+        "\", \"FGDC\":\"http://localhost:8080/erddap/metadata/fgdc/xml/testTableWithDepth_fgdc.xml\", \"ISO 19115\":\"http://localhost:8080/erddap/metadata/iso19115/xml/testTableWithDepth_iso19115.xml\", \"Info\":\"http://localhost:8080/erddap/info/testTableWithDepth/index.jsonlKVP\", \"Background Info\":\"https://www.pmel.noaa.gov/gtmba/mission\", \"RSS\":\"http://localhost:8080/erddap/rss/testTableWithDepth.rss\", \"Email\":\"http://localhost:8080/erddap/subscriptions/add.html?datasetID=testTableWithDepth&showErrors=false&email=\", \"Institution\":\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\", \"Dataset ID\":\"testTableWithDepth\"}\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.tsv?" +
         EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
     Test.ensureTrue(
-        results.indexOf("\t\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\t") > 0,
+        results.indexOf(
+            "\t\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\t") > 0,
         "results=\n" + results);
 
     // categorize
@@ -2731,19 +4823,26 @@ class JettyTests {
             "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
             "    \"columnTypes\": [\"String\", \"String\"],\n" +
             "    \"rows\": [\n" +
-            "      [\"cdm_data_type\", \"http://localhost:" + PORT + "/erddap/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"cdm_data_type\", \"http://localhost:" + PORT
+            + "/erddap/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"institution\", \"http://localhost:" + PORT + "/erddap/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"institution\", \"http://localhost:" + PORT
+            + "/erddap/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"ioos_category\", \"http://localhost:" + PORT + "/erddap/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"ioos_category\", \"http://localhost:" + PORT
+            + "/erddap/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"keywords\", \"http://localhost:" + PORT + "/erddap/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"keywords\", \"http://localhost:" + PORT
+            + "/erddap/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"long_name\", \"http://localhost:" + PORT + "/erddap/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"long_name\", \"http://localhost:" + PORT
+            + "/erddap/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"standard_name\", \"http://localhost:" + PORT + "/erddap/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"standard_name\", \"http://localhost:" + PORT
+            + "/erddap/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"variableName\", \"http://localhost:" + PORT + "/erddap/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n"
+            "      [\"variableName\", \"http://localhost:" + PORT
+            + "/erddap/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n"
             +
             "    ]\n" +
             "  }\n" +
@@ -2761,19 +4860,26 @@ class JettyTests {
             "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
             "    \"columnTypes\": [\"String\", \"String\"],\n" +
             "    \"rows\": [\n" +
-            "      [\"cdm_data_type\", \"http://localhost:" + PORT + "/erddap/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"cdm_data_type\", \"http://localhost:" + PORT
+            + "/erddap/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"institution\", \"http://localhost:" + PORT + "/erddap/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"institution\", \"http://localhost:" + PORT
+            + "/erddap/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"ioos_category\", \"http://localhost:" + PORT + "/erddap/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"ioos_category\", \"http://localhost:" + PORT
+            + "/erddap/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"keywords\", \"http://localhost:" + PORT + "/erddap/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"keywords\", \"http://localhost:" + PORT
+            + "/erddap/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"long_name\", \"http://localhost:" + PORT + "/erddap/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"long_name\", \"http://localhost:" + PORT
+            + "/erddap/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"standard_name\", \"http://localhost:" + PORT + "/erddap/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n"
+            "      [\"standard_name\", \"http://localhost:" + PORT
+            + "/erddap/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n"
             +
-            "      [\"variableName\", \"http://localhost:" + PORT + "/erddap/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n"
+            "      [\"variableName\", \"http://localhost:" + PORT
+            + "/erddap/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n"
             +
             "    ]\n" +
             "  }\n" +
@@ -2802,7 +4908,8 @@ class JettyTests {
         "/categorize/institution/index.tsv"));
     Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf(
-        "noaa_coastwatch_west_coast_node[9]http://localhost:" + PORT + "/erddap/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0,
+        "noaa_coastwatch_west_coast_node[9]http://localhost:" + PORT
+            + "/erddap/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0,
         "results=\n" + results);
 
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
@@ -2876,10 +4983,13 @@ class JettyTests {
         "\"http://localhost:" + PORT + "/erddap/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " +
         "\"http://localhost:" + PORT + "/erddap/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
         "\"http://localhost:" + PORT + "/erddap/info/erdGlobecBottle/index.json\", " +
-        "\"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\", " + // was "\"http://www.globec.org/\", " +
+        "\"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\", " + // was
+                                                                                // "\"http://www.globec.org/\",
+                                                                                // " +
         "\"http://localhost:" + PORT + "/erddap/rss/erdGlobecBottle.rss\", " +
         (EDStatic.subscriptionSystemActive
-            ? "\"http://localhost:" + PORT + "/erddap/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", "
+            ? "\"http://localhost:" + PORT
+                + "/erddap/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", "
             : "")
         +
         "\"GLOBEC\", \"erdGlobecBottle\"],";
@@ -3034,7 +5144,8 @@ class JettyTests {
       } catch (Throwable t) {
         results = MustBe.throwableToString(t);
       }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/sos/index.html?page=1&itemsPerPage=1000\n"
+      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:"
+          + PORT + "/erddap/sos/index.html?page=1&itemsPerPage=1000\n"
           +
           "(Error {\n" +
           "    code=404;\n" +
@@ -3053,7 +5164,8 @@ class JettyTests {
       Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf(">RSS</th>") >= 0, "results=\n" + results);
       Test.ensureTrue(
-          results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>") >= 0,
+          results.indexOf(
+              ">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>") >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
 
@@ -3063,7 +5175,8 @@ class JettyTests {
       Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
       Test.ensureTrue(
-          results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
+          results.indexOf(
+              "\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
 
@@ -3088,7 +5201,8 @@ class JettyTests {
         results = MustBe.throwableToString(t);
       }
       Test.ensureTrue(results.indexOf(
-          "java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/wcs/index.html?page=1&itemsPerPage=1000") >= 0,
+          "java.io.FileNotFoundException: http://localhost:" + PORT
+              + "/erddap/wcs/index.html?page=1&itemsPerPage=1000") >= 0,
           "results=\n" + results);
     }
 
@@ -3102,7 +5216,8 @@ class JettyTests {
       Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results
-              .indexOf(">Chlorophyll-a, Aqua MODIS, NPP, 0.0125&deg;, West US, EXPERIMENTAL, 2002-present (1 Day Composite)\n") >= 0,
+              .indexOf(
+                  ">Chlorophyll-a, Aqua MODIS, NPP, 0.0125&deg;, West US, EXPERIMENTAL, 2002-present (1 Day Composite)\n") >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf(">erdMH1chla1day\n") >= 0, "results=\n" + results);
 
@@ -3126,7 +5241,8 @@ class JettyTests {
       results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/erdMH1chla1day/index.html");
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(
-          results.indexOf("ERDDAP - Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite) - WMS") >= 0,
+          results.indexOf(
+              "ERDDAP - Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite) - WMS") >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
@@ -3141,7 +5257,8 @@ class JettyTests {
       } catch (Throwable t) {
         results = MustBe.throwableToString(t);
       }
-      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0,
+          "results=\n" + results);
     }
 
     // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
@@ -3206,7 +5323,8 @@ class JettyTests {
       } catch (Throwable t) {
         results = MustBe.throwableToString(t);
       }
-      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0,
+          "results=\n" + results);
     }
 
     // slideSorter
@@ -3224,7 +5342,8 @@ class JettyTests {
       } catch (Throwable t) {
         results = MustBe.throwableToString(t);
       }
-      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0,
+          "results=\n" + results);
     }
 
     // embed a graph (always at coastwatch)
@@ -3245,8 +5364,10 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.csv");
     expected = "Resource,URL\n" +
         "info,http://localhost:" + PORT + "/erddap/info/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
-        "search,http://localhost:" + PORT + "/erddap/search/index.csv?" + EDStatic.defaultPIppQuery + "&searchFor=\n" +
-        "categorize,http://localhost:" + PORT + "/erddap/categorize/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+        "search,http://localhost:" + PORT + "/erddap/search/index.csv?" + EDStatic.defaultPIppQuery
+        + "&searchFor=\n" +
+        "categorize,http://localhost:" + PORT + "/erddap/categorize/index.csv?" + EDStatic.defaultPIppQuery
+        + "\n" +
         "griddap,http://localhost:" + PORT + "/erddap/griddap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
         "tabledap,http://localhost:" + PORT + "/erddap/tabledap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
         (EDStatic.sosActive
@@ -3268,9 +5389,12 @@ class JettyTests {
         EDStatic.defaultPIppQuery);
     expected = EDStatic.startHeadHtml(0, EDStatic.erddapUrl((String) null, language), "Resources") + "\n" +
         "</head>\n" +
-        EDStatic.startBodyHtml(0, null, "index.html", EDStatic.defaultPIppQuery) + // 2022-11-22 .htmlTable converted to
-                                                                                   // .html to avoid user requesting all
-                                                                                   // data in a dataset if they change
+        EDStatic.startBodyHtml(0, null, "index.html", EDStatic.defaultPIppQuery) + // 2022-11-22 .htmlTable
+                                                                                   // converted to
+                                                                                   // .html to avoid user
+                                                                                   // requesting all
+                                                                                   // data in a dataset if they
+                                                                                   // change
                                                                                    // language
         "&nbsp;<br>\n" +
         "&nbsp;\n" +
@@ -3281,38 +5405,45 @@ class JettyTests {
         "</tr>\n" +
         "<tr>\n" +
         "<td>info\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/info/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+        + PORT + "/erddap/info/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
         +
         "</tr>\n" +
         "<tr>\n" +
         "<td>search\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;\">http://localhost:" + PORT + "/erddap/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;\">http://localhost:"
+        + PORT + "/erddap/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=</a>\n"
         +
         "</tr>\n" +
         "<tr>\n" +
         "<td>categorize\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+        + PORT + "/erddap/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
         +
         "</tr>\n" +
         "<tr>\n" +
         "<td>griddap\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+        + PORT + "/erddap/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
         +
         "</tr>\n" +
         "<tr>\n" +
         "<td>tabledap\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+        + PORT + "/erddap/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
         +
         "</tr>\n" +
         (EDStatic.sosActive ? "<tr>\n" +
             "<td>sos\n" +
-            "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/sos/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+            "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+            + PORT + "/erddap/sos/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
             +
             "</tr>\n" : "")
         +
         "<tr>\n" +
         "<td>wms\n" +
-        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:" + PORT + "/erddap/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
+        "<td><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;erddap&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http://localhost:"
+        + PORT + "/erddap/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n"
         +
         "</tr>\n" +
         "</table>\n" +
@@ -3326,26 +5457,34 @@ class JettyTests {
         "    \"columnNames\": [\"Resource\", \"URL\"],\n" +
         "    \"columnTypes\": [\"String\", \"String\"],\n" +
         "    \"rows\": [\n" +
-        "      [\"info\", \"http://localhost:" + PORT + "/erddap/info/index.json?page=1&itemsPerPage=1000\"],\n" +
-        "      [\"search\", \"http://localhost:" + PORT + "/erddap/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n"
+        "      [\"info\", \"http://localhost:" + PORT + "/erddap/info/index.json?page=1&itemsPerPage=1000\"],\n"
         +
-        "      [\"categorize\", \"http://localhost:" + PORT + "/erddap/categorize/index.json?page=1&itemsPerPage=1000\"],\n"
+        "      [\"search\", \"http://localhost:" + PORT
+        + "/erddap/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n"
         +
-        "      [\"griddap\", \"http://localhost:" + PORT + "/erddap/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
-        "      [\"tabledap\", \"http://localhost:" + PORT + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"]"
+        "      [\"categorize\", \"http://localhost:" + PORT
+        + "/erddap/categorize/index.json?page=1&itemsPerPage=1000\"],\n"
+        +
+        "      [\"griddap\", \"http://localhost:" + PORT
+        + "/erddap/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
+        "      [\"tabledap\", \"http://localhost:" + PORT
+        + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"]"
         + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive ? "," : "") + "\n" +
         (EDStatic.sosActive
-            ? "      [\"sos\", \"http://localhost:" + PORT + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"]"
+            ? "      [\"sos\", \"http://localhost:" + PORT
+                + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"]"
                 + (EDStatic.wcsActive || EDStatic.wmsActive ? "," : "") + "\n"
             : "")
         +
         (EDStatic.wcsActive
-            ? "      [\"wcs\", \"http://localhost:" + PORT + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"]"
+            ? "      [\"wcs\", \"http://localhost:" + PORT
+                + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"]"
                 + (EDStatic.wmsActive ? "," : "") + "\n"
             : "")
         +
         (EDStatic.wmsActive
-            ? "      [\"wms\", \"http://localhost:" + PORT + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
+            ? "      [\"wms\", \"http://localhost:" + PORT
+                + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
             : "")
         +
         // subscriptions?
@@ -3357,17 +5496,22 @@ class JettyTests {
     results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/index.tsv"));
     expected = "Resource[9]URL[10]\n" +
         "info[9]http://localhost:" + PORT + "/erddap/info/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-        "search[9]http://localhost:" + PORT + "/erddap/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
-        "categorize[9]http://localhost:" + PORT + "/erddap/categorize/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+        "search[9]http://localhost:" + PORT
+        + "/erddap/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
+        "categorize[9]http://localhost:" + PORT + "/erddap/categorize/index.tsv?page=1&itemsPerPage=1000[10]\n"
+        +
         "griddap[9]http://localhost:" + PORT + "/erddap/griddap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
         "tabledap[9]http://localhost:" + PORT + "/erddap/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-        (EDStatic.sosActive ? "sos[9]http://localhost:" + PORT + "/erddap/sos/index.tsv?page=1&itemsPerPage=1000[10]\n"
+        (EDStatic.sosActive
+            ? "sos[9]http://localhost:" + PORT + "/erddap/sos/index.tsv?page=1&itemsPerPage=1000[10]\n"
             : "")
         +
-        (EDStatic.wcsActive ? "wcs[9]http://localhost:" + PORT + "/erddap/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n"
+        (EDStatic.wcsActive
+            ? "wcs[9]http://localhost:" + PORT + "/erddap/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n"
             : "")
         +
-        (EDStatic.wmsActive ? "wms[9]http://localhost:" + PORT + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
+        (EDStatic.wmsActive
+            ? "wms[9]http://localhost:" + PORT + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
             : "")
         +
         "[end]";
@@ -3381,7 +5525,8 @@ class JettyTests {
         "<head>\n" +
         "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
         "  <title>Resources</title>\n" +
-        "  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:" + PORT + "/erddap/images/erddap2.css\" />\n"
+        "  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:" + PORT
+        + "/erddap/images/erddap2.css\" />\n"
         +
         "</head>\n" +
         "<body>\n" +
@@ -3398,7 +5543,8 @@ class JettyTests {
         "</tr>\n" +
         "<tr>\n" +
         "<td>search</td>\n" +
-        "<td>http://localhost:" + PORT + "/erddap/search/index.xhtml?page=1&amp;itemsPerPage=1000&amp;searchFor=</td>\n"
+        "<td>http://localhost:" + PORT
+        + "/erddap/search/index.xhtml?page=1&amp;itemsPerPage=1000&amp;searchFor=</td>\n"
         +
         "</tr>\n" +
         "<tr>\n" +
@@ -3453,15 +5599,19 @@ class JettyTests {
         "http://",
         "http://127.0.0.1:8080/manager/html/", // will always fail this test
         "http://127.0.0.1:8080/erddap/status.html", // will always fail this test
-        "https://127.0.0.1:8443/cwexperimental/login.html", // the links to log in (upper right of most web pages) will
+        "https://127.0.0.1:8443/cwexperimental/login.html", // the links to log in (upper right of most web
+                                                            // pages) will
                                                             // fail on my test computer
         "https://192.168.31.18/",
-        "https://basin.ceoe.udel.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path building
+        "https://basin.ceoe.udel.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path
+                                                         // building
                                                          // failed:
                                                          // sun.security.provider.certpath.SunCertPathBuilderException:
-                                                         // unable to find valid certification path to requested target
+                                                         // unable to find valid certification path to requested
+                                                         // target
         "http://coastwatch.pfeg.noaa.gov:8080/", // java.net.SocketTimeoutException: Connect timed out
-        "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc", // intended for
+        "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc", // intended
+                                                                                                         // for
                                                                                                          // curl
                                                                                                          // (globbing)
         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst.csv?longitude,latitude,time,station,wmo_platform_code,T_25&time>=2015-05-23T12:00:00Z&time<=2015-05-31T12:00:00Z", // always
@@ -3473,16 +5623,21 @@ class JettyTests {
         "https://dev.mysql.com", // fails here, but works in browser
         "https://myhsts.org", // javax.net.ssl.SSLHandshakeException: No subject alternative DNS name matching
                               // myhsts.org found.
-        "https://gcoos5.geos.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path building
+        "https://gcoos5.geos.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path
+                                                          // building
                                                           // failed:
                                                           // sun.security.provider.certpath.SunCertPathBuilderException:
-                                                          // unable to find valid certification path to requested target
-        "https://gcoos4.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path building failed:
+                                                          // unable to find valid certification path to
+                                                          // requested target
+        "https://gcoos4.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX path building
+                                                     // failed:
                                                      // sun.security.provider.certpath.SunCertPathBuilderException:
-                                                     // unable to find valid certification path to requested target
+                                                     // unable to find valid certification path to requested
+                                                     // target
         "https://github.com/ERDDAP/", // fails here, but works in browser
         "http://localhost:8080/manager/html/", // will always fail this test
-        "https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core", // it's clever: no follow
+        "https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core", // it's clever: no
+                                                                                           // follow
         "https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2", // it's clever: no follow
         "https://mvnrepository.com/artifact/org.postgresql/postgresql", // it's clever: no follow
         "https://mvnrepository.com/", // it's clever: no follow
@@ -3492,7 +5647,9 @@ class JettyTests {
                                                                                                                                                                 // fails
         "https://whatismyipaddress.com/ip-lookup", // it's clever: no follow
         "https://www.adobe.com", // fails here, but works in browser
-        "https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html#time-zone-leap-seconds", // failes in test, works in brownser
+        "https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html#time-zone-leap-seconds", // failes in
+                                                                                                 // test, works
+                                                                                                 // in brownser
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day.timeGaps", // dataset not found
     };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
@@ -3549,22 +5706,39 @@ class JettyTests {
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericVariableNames.html");
 
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/AccessToPrivateDatasets.html");
-    //this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/changes.html"); // todo re-enable, a couple links seem to be broken, needs more investigation
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/download/changes.html"); // todo re-enable, a couple links seem to
+    // be broken, needs more investigation
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/EDDTableFromEML.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV_1.00.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/setup.html"); // todo re-enable, a number of links are broken
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/setupDatasetsXml.html"); // todo re-enable, a number of links are broken
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/download/setup.html"); // todo re-enable, a number of links are
+    // broken
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/download/setupDatasetsXml.html"); // todo re-enable, a number of
+    // links are broken
 
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/information.html"); // todo  rtech link breaks, but its already commented out, remove fully?
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/information.html"); // todo rtech link breaks, but its already
+    // commented out, remove fully?
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/rest.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/griddap/documentation.html"); // todo re-enable multiple links error
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/tabledap/documentation.html"); // todo re-enable, several broken links
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/files/documentation.html"); // todo re-enable, adobe link failes to load
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/wms/documentation.html"); // todo re-enable esri link is broken (and others)
-    //this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/images/erddapTalk/TablesAndGrids.html"); // doesn't exist?
-    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/images/erddapTalk/erdData.html"); // doesn't exist
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/griddap/documentation.html"); // todo re-enable multiple links error
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/tabledap/documentation.html"); // todo re-enable, several broken
+    // links
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/files/documentation.html"); // todo re-enable, adobe link failes to
+    // load
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/wms/documentation.html"); // todo re-enable esri link is broken (and
+    // others)
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/images/erddapTalk/TablesAndGrids.html"); // doesn't exist?
+    // this.testForBrokenLinks("http://localhost:" + PORT +
+    // "/erddap/images/erddapTalk/erdData.html"); // doesn't exist
   }
 
   /**
@@ -3623,7 +5797,8 @@ class JettyTests {
 
     expected = "    {\n" +
         "      \"@type\": \"Dataset\",\n" +
-        "      \"name\": \"Fluorescence Line Height, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n" +
+        "      \"name\": \"Fluorescence Line Height, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
+        +
         "      \"sameAs\": \"http://localhost:" + PORT + "/erddap/info/erdMH1cflh1day/index.html\"\n" +
         "    }";
     po = results.indexOf(expected.substring(0, 80));
@@ -3638,7 +5813,8 @@ class JettyTests {
         "  \"name\": \"Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01°, 2002-present, Daily\",\n"
         +
         "  \"headline\": \"jplMURSST41\",\n" +
-        "  \"description\": \"This is a merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL). This daily, global, Multi-scale, Ultra-high Resolution (MUR) Sea Surface Temperature (SST) 1-km data set, Version 4.1, is produced at JPL under the NASA MEaSUREs program. For details, see https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1 . This dataset is part of the Group for High-Resolution Sea Surface Temperature (GHRSST) project. The data for the most recent 7 days is usually revised everyday.  The data for other days is sometimes revised.\\n" +
+        "  \"description\": \"This is a merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL). This daily, global, Multi-scale, Ultra-high Resolution (MUR) Sea Surface Temperature (SST) 1-km data set, Version 4.1, is produced at JPL under the NASA MEaSUREs program. For details, see https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1 . This dataset is part of the Group for High-Resolution Sea Surface Temperature (GHRSST) project. The data for the most recent 7 days is usually revised everyday.  The data for other days is sometimes revised.\\n"
+        +
         "_NCProperties=version=2,netcdf=4.7.4,hdf5=1.8.12\\n" +
         "acknowledgement=Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.\\n"
         +
@@ -3670,7 +5846,8 @@ class JettyTests {
         "Northernmost_Northing=89.99\\n" +
         "platform=Terra, Aqua, GCOM-W, MetOp-B, Buoys/Ships\\n" +
         "processing_level=L4\\n" +
-        "project=NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program\\n" +
+        "project=NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program\\n"
+        +
         "references=https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1\\n" +
         "sensor=MODIS, AMSR2, AVHRR, in-situ\\n" +
         "source=MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF\\n" +
@@ -4059,11 +6236,11 @@ class JettyTests {
         "          \"value\": \"open_sea land open_lake open_sea_with_ice_in_the_grid open_lake_with_ice_in_the_grid\"\n"
         +
         "        },\n" +
-        // "        {\n" +
-        // "          \"@type\": \"PropertyValue\",\n" +
-        // "          \"name\": \"flag_values\",\n" +
-        // "          \"value\": 1\n" +
-        // "        },\n" +
+        // " {\n" +
+        // " \"@type\": \"PropertyValue\",\n" +
+        // " \"name\": \"flag_values\",\n" +
+        // " \"value\": 1\n" +
+        // " },\n" +
         "        {\n" +
         "          \"@type\": \"PropertyValue\",\n" +
         "          \"name\": \"ioos_category\",\n" +
@@ -4126,7 +6303,8 @@ class JettyTests {
         "        {\n" +
         "          \"@type\": \"PropertyValue\",\n" +
         "          \"name\": \"comment\",\n" +
-        "          \"value\": \"ice fraction is a dimensionless quantity between 0 and 1; it has been interpolated by a nearest neighbor approach; EUMETSAT OSI-SAF files used: ice_conc_nh_polstere-100_multi_yyyymmdd1200.nc, ice_conc_sh_polstere-100_multi_yyyymmdd1200.nc.\"\n" +
+        "          \"value\": \"ice fraction is a dimensionless quantity between 0 and 1; it has been interpolated by a nearest neighbor approach; EUMETSAT OSI-SAF files used: ice_conc_nh_polstere-100_multi_yyyymmdd1200.nc, ice_conc_sh_polstere-100_multi_yyyymmdd1200.nc.\"\n"
+        +
         "        },\n" +
         "        {\n" +
         "          \"@type\": \"PropertyValue\",\n" +
@@ -4193,7 +6371,8 @@ class JettyTests {
         "time_coverage_end=....-..-..T09:00:00Z",
         "time_coverage_end=yyyy-mm-ddT09:00:00Z");
     results = results.replaceAll("....-..-..T09:00:00Z", "yyyy-mm-ddT09:00:00Z");
-        results = results.replaceAll("dateCreated\\\": \\\"....-..-..T..:..:..Z", "dateCreated\\\": \\\"yyyy-mm-ddThh:mm:ssZ");
+    results = results.replaceAll("dateCreated\\\": \\\"....-..-..T..:..:..Z",
+        "dateCreated\\\": \\\"yyyy-mm-ddThh:mm:ssZ");
     results = results.replaceAll("100_multi_........1200", "100_multi_yyyymmdd1200");
     po = Math.max(0, results.indexOf(expected.substring(0, 80)));
     Test.ensureEqual(results.substring(po, Math.min(results.length(), po + expected.length())),
@@ -6510,7 +8689,8 @@ class JettyTests {
     tQuery = ".nccsvMetadata";
     expected = "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
         "*GLOBAL*,cdm_data_type,TimeSeries\n" +
-        "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
+        "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
+        +
         "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +
         "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n" +
         "*GLOBAL*,creator_type,group\n" +
@@ -6554,7 +8734,8 @@ class JettyTests {
         "*GLOBAL*,testOutOfDate,now-3days\n" +
         "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n" +
         "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
-        "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
+        "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n"
+        +
         "*GLOBAL*,Westernmost_Easting,0.0d\n" +
         "array,*DATA_TYPE*,String\n" +
         "array,ioos_category,Identifier\n" +
@@ -6683,7 +8864,8 @@ class JettyTests {
     tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
     expected = "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
         "*GLOBAL*,cdm_data_type,TimeSeries\n" +
-        "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
+        "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
+        +
         "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +
         "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n" +
         "*GLOBAL*,creator_type,group\n" +
@@ -6704,11 +8886,17 @@ class JettyTests {
         "*GLOBAL*,geospatial_vertical_positive,down\n" +
         "*GLOBAL*,geospatial_vertical_units,m\n" +
         "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n";
-        // +
-        // "dddd-dd-dd Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+    // +
+    // "dddd-dd-dd Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully
+    // refreshed ERD's copy of this dataset by downloading all of the .cdf files
+    // from the PMEL TAO FTP site. Since then, the dataset has been partially
+    // refreshed everyday by downloading and merging the latest version of the last
+    // 25 days worth of data.\\n";
     // "2017-05-26T18:30:46Z (local files)\\n" +
     // "2017-05-26T18:30:46Z
-    expected2 = "http://localhost:" + PORT + "/erddap/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
+    expected2 = "http://localhost:" + PORT
+        + "/erddap/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n"
+        +
         "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
         "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
         "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
@@ -6729,7 +8917,8 @@ class JettyTests {
         "*GLOBAL*,testOutOfDate,now-3days\n" +
         "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n" +
         "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
-        "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
+        "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n"
+        +
         "*GLOBAL*,Westernmost_Easting,0.0d\n" +
         "array,*DATA_TYPE*,String\n" +
         "array,ioos_category,Identifier\n" +
@@ -7181,7 +9370,7 @@ class JettyTests {
 
     // test local generateDatasetsXml
     String results = EDDGridFromErddap.generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; // in tests, always
-                                                                                            // non-https url
+                                                                                              // non-https url
     String2.log("results=\n" + results);
 
     // GenerateDatasetsXml
@@ -7190,20 +9379,22 @@ class JettyTests {
         false); // doIt loop?
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-    String expected = "<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_e87c_42d8_b49d\" active=\"true\">\n" + //
-                "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite) -->\n" + //
-                "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
-                "</dataset>\n";
+    String expected = "<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_e87c_42d8_b49d\" active=\"true\">\n"
+        + //
+        "    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite) -->\n"
+        + //
+        "    <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1chla8day</sourceUrl>\n" + //
+        "</dataset>\n";
     int po = results.indexOf(expected.substring(0, 80));
     if (po < 0)
-        throw new RuntimeException(results);
-        // String2.log("results=" + results);
+      throw new RuntimeException(results);
+    // String2.log("results=" + results);
     Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
     expected = "<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n";
     po = results.indexOf(expected.substring(0, 20));
     if (po < 0)
-    String2.log("results=" + results);
+      String2.log("results=" + results);
     Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
     Test.ensureTrue(results.indexOf("rMH1chla8day", po) > 0,
         "results=\n" + results +
@@ -7236,9 +9427,11 @@ class JettyTests {
     String name, tName, axisDapQuery, query, results, expected, expected2, error;
     int tPo;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String userDapQuery = SSR.minimalPercentEncode("chlorophyll[(2003-01-17)][(29.020832)][(-147.97917):1:(-147.8)]");
+    String userDapQuery = SSR
+        .minimalPercentEncode("chlorophyll[(2003-01-17)][(29.020832)][(-147.97917):1:(-147.8)]");
     String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
-    String mapDapQuery = SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride irrelevant
+    String mapDapQuery = SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride
+                                                                                                 // irrelevant
     StringArray destinationNames = new StringArray();
     IntArray constraints = new IntArray();
     String localUrl = EDStatic.erddapUrl + "/griddap/rMH1chla8day"; // in tests, always non-https url
@@ -7252,137 +9445,144 @@ class JettyTests {
     results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "Attributes {\n" + //
-                "  time {\n" + //
-                "    String _CoordinateAxisType \"Time\";\n" + //
-                "    Float64 actual_range MIN, MAX;\n" +
-                "    String axis \"T\";\n" + //
-                "    String ioos_category \"Time\";\n" + //
-                "    String long_name \"Centered Time\";\n" + //
-                "    String standard_name \"time\";\n" + //
-                "    String time_origin \"01-JAN-1970 00:00:00\";\n" + //
-                "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" + //
-                "  }\n" + //
-                "  latitude {\n" + //
-                "    String _CoordinateAxisType \"Lat\";\n" + //
-                "    Float32 actual_range MIN, MAX;\n" + //
-                "    String axis \"Y\";\n" + //
-                "    String ioos_category \"Location\";\n" + //
-                "    String long_name \"Latitude\";\n" + //
-                "    String standard_name \"latitude\";\n" + //
-                "    String units \"degrees_north\";\n" + //
-                "    Float32 valid_max 90.0;\n" + //
-                "    Float32 valid_min -90.0;\n" + //
-                "  }\n" + //
-                "  longitude {\n" + //
-                "    String _CoordinateAxisType \"Lon\";\n" + //
-                "    Float32 actual_range MIN, MAX;\n" + //
-                "    String axis \"X\";\n" + //
-                "    String ioos_category \"Location\";\n" + //
-                "    String long_name \"Longitude\";\n" + //
-                "    String standard_name \"longitude\";\n" + //
-                "    String units \"degrees_east\";\n" + //
-                "    Float32 valid_max 180.0;\n" + //
-                "    Float32 valid_min -180.0;\n" + //
-                "  }\n" + //
-                "  chlorophyll {\n" + //
-                "    Float32 _FillValue NaN;\n" + //
-                "    Float64 colorBarMaximum 30.0;\n" + //
-                "    Float64 colorBarMinimum 0.03;\n" + //
-                "    String colorBarScale \"Log\";\n" + //
-                "    String ioos_category \"Ocean Color\";\n" + //
-                "    String long_name \"Mean Chlorophyll a Concentration\";\n" + //
-                "    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" + //
-                "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" + //
-                "    String units \"mg m-3\";\n" + //
-                "    Float32 valid_max 100.0;\n" + //
-                "    Float32 valid_min 0.001;\n" + //
-                "  }\n" + //
-                "  NC_GLOBAL {\n" + //
-                "    String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
-                // "    String _NCProperties \"version=2,netcdf=4.7.3,hdf5=1.12.0,\";\n" + //
-                "    String cdm_data_type \"Grid\";\n" + //
-                "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
-                "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" + //
-                "    String creator_name \"NASA/GSFC/OBPG\";\n" + //
-                "    String creator_type \"group\";\n" + //
-                "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
-                "    String date_created \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
-                "    Float64 Easternmost_Easting 179.9792;\n" + //
-                "    Float64 geospatial_lat_max 89.97916;\n" + //
-                "    Float64 geospatial_lat_min MIN;\n" + //
-                // "    Float64 geospatial_lat_resolution 0.04166666589488307;\n" + //
-                "    String geospatial_lat_units \"degrees_north\";\n" + //
-                "    Float64 geospatial_lon_max 179.9792;\n" + //
-                "    Float64 geospatial_lon_min -179.9792;\n" + //
-                // "    Float64 geospatial_lon_resolution 0.041666674383609215;\n" + //
-                "    String geospatial_lon_units \"degrees_east\";\n" + //
-                "    String grid_mapping_name \"latitude_longitude\";\n" +
-                "    String history \"Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n" + //
-                "ERDDAP adds the time dimension.\n" + //
-                "Direct read of HDF4 file through CDM library\n"; //
-                // "2024-05-07T19:17:02Z (local files)\n" + //
-                // "2024-05-07T19:17:02Z http://localhost:8080/erddap/griddap/rMH1chla8day.das\";\n" + //
+        "  time {\n" + //
+        "    String _CoordinateAxisType \"Time\";\n" + //
+        "    Float64 actual_range MIN, MAX;\n" +
+        "    String axis \"T\";\n" + //
+        "    String ioos_category \"Time\";\n" + //
+        "    String long_name \"Centered Time\";\n" + //
+        "    String standard_name \"time\";\n" + //
+        "    String time_origin \"01-JAN-1970 00:00:00\";\n" + //
+        "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" + //
+        "  }\n" + //
+        "  latitude {\n" + //
+        "    String _CoordinateAxisType \"Lat\";\n" + //
+        "    Float32 actual_range MIN, MAX;\n" + //
+        "    String axis \"Y\";\n" + //
+        "    String ioos_category \"Location\";\n" + //
+        "    String long_name \"Latitude\";\n" + //
+        "    String standard_name \"latitude\";\n" + //
+        "    String units \"degrees_north\";\n" + //
+        "    Float32 valid_max 90.0;\n" + //
+        "    Float32 valid_min -90.0;\n" + //
+        "  }\n" + //
+        "  longitude {\n" + //
+        "    String _CoordinateAxisType \"Lon\";\n" + //
+        "    Float32 actual_range MIN, MAX;\n" + //
+        "    String axis \"X\";\n" + //
+        "    String ioos_category \"Location\";\n" + //
+        "    String long_name \"Longitude\";\n" + //
+        "    String standard_name \"longitude\";\n" + //
+        "    String units \"degrees_east\";\n" + //
+        "    Float32 valid_max 180.0;\n" + //
+        "    Float32 valid_min -180.0;\n" + //
+        "  }\n" + //
+        "  chlorophyll {\n" + //
+        "    Float32 _FillValue NaN;\n" + //
+        "    Float64 colorBarMaximum 30.0;\n" + //
+        "    Float64 colorBarMinimum 0.03;\n" + //
+        "    String colorBarScale \"Log\";\n" + //
+        "    String ioos_category \"Ocean Color\";\n" + //
+        "    String long_name \"Mean Chlorophyll a Concentration\";\n" + //
+        "    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n"
+        + //
+        "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" + //
+        "    String units \"mg m-3\";\n" + //
+        "    Float32 valid_max 100.0;\n" + //
+        "    Float32 valid_min 0.001;\n" + //
+        "  }\n" + //
+        "  NC_GLOBAL {\n" + //
+        "    String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+        // " String _NCProperties \"version=2,netcdf=4.7.3,hdf5=1.12.0,\";\n" + //
+        "    String cdm_data_type \"Grid\";\n" + //
+        "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
+        "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" + //
+        "    String creator_name \"NASA/GSFC/OBPG\";\n" + //
+        "    String creator_type \"group\";\n" + //
+        "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
+        "    String date_created \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+        "    Float64 Easternmost_Easting 179.9792;\n" + //
+        "    Float64 geospatial_lat_max 89.97916;\n" + //
+        "    Float64 geospatial_lat_min MIN;\n" + //
+        // " Float64 geospatial_lat_resolution 0.04166666589488307;\n" + //
+        "    String geospatial_lat_units \"degrees_north\";\n" + //
+        "    Float64 geospatial_lon_max 179.9792;\n" + //
+        "    Float64 geospatial_lon_min -179.9792;\n" + //
+        // " Float64 geospatial_lon_resolution 0.041666674383609215;\n" + //
+        "    String geospatial_lon_units \"degrees_east\";\n" + //
+        "    String grid_mapping_name \"latitude_longitude\";\n" +
+        "    String history \"Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n"
+        + //
+        "ERDDAP adds the time dimension.\n" + //
+        "Direct read of HDF4 file through CDM library\n"; //
+    // "2024-05-07T19:17:02Z (local files)\n" + //
+    // "2024-05-07T19:17:02Z
+    // http://localhost:8080/erddap/griddap/rMH1chla8day.das\";\n" + //
 
     expected2 = "    String identifier_product_doi \"10.5067/AQUA/MODIS_OC.2014.0\";\n" + //
-            "    String identifier_product_doi_authority \"https://dx.doi.org\";\n" + //
-            "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
-            "    String institution \"NASA/GSFC OBPG\";\n" + //
-            "    String instrument \"MODIS\";\n" + //
-            "    String keywords \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n"
-            + //
-            "    String keywords_vocabulary \"GCMD Science Keywords\";\n" + //
-            "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n"
-            + //
-            "    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
-            + //
-            "The data may be used and redistributed for free but is not intended\n" + //
-            "for legal use, since it may contain inaccuracies. Neither the data\n" + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
-            "of their employees or contractors, makes any warranty, express or\n" + //
-            "implied, including warranties of merchantability and fitness for a\n" + //
-            "particular purpose, or assumes any legal liability for the accuracy,\n" + //
-            "completeness, or usefulness, of this information.\";\n" + //
-            "    String map_projection \"Equidistant Cylindrical\";\n" + //
-            "    String measure \"Mean\";\n" + //
-            "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" + //
-            "    Float64 Northernmost_Northing 89.97916;\n" + //
-            "    String platform \"Aqua\";\n" + //
-            "    String processing_level \"L3 Mapped\";\n" + //
-            "    String processing_version \"2014.0\";\n" + //
-            "    String product_name \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
-            "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
-            "    String publisher_email \"erd.data@noaa.gov\";\n" + //
-            "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" + //
-            "    String publisher_type \"institution\";\n" + //
-            "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" + //
-            "    String sourceUrl \"(local files)\";\n" + //
-            "    Float64 Southernmost_Northing -89.97918;\n" + //
-            "    String spatialResolution \"4.60 km\";\n" + //
-            "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" + //
-            "    String summary \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n"
-            + //
-            "    String temporal_range \"8-day\";\n" + //
-            "    String testOutOfDate \"now-30days\";\n" + //
-            "    String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ\";\n" + //
-            "    String time_coverage_start \"2003-01-05T00:00:00Z\";\n" + //
-            "    String title \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n"
-            + //
-            "    Float64 Westernmost_Easting -179.9792;\n" + //
-            "  }\n" + //
-            "}\n";
+        "    String identifier_product_doi_authority \"https://dx.doi.org\";\n" + //
+        "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
+        "    String institution \"NASA/GSFC OBPG\";\n" + //
+        "    String instrument \"MODIS\";\n" + //
+        "    String keywords \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n"
+        + //
+        "    String keywords_vocabulary \"GCMD Science Keywords\";\n" + //
+        "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n"
+        + //
+        "    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+        + //
+        "The data may be used and redistributed for free but is not intended\n" + //
+        "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+        "of their employees or contractors, makes any warranty, express or\n" + //
+        "implied, including warranties of merchantability and fitness for a\n" + //
+        "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+        "completeness, or usefulness, of this information.\";\n" + //
+        "    String map_projection \"Equidistant Cylindrical\";\n" + //
+        "    String measure \"Mean\";\n" + //
+        "    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" + //
+        "    Float64 Northernmost_Northing 89.97916;\n" + //
+        "    String platform \"Aqua\";\n" + //
+        "    String processing_level \"L3 Mapped\";\n" + //
+        "    String processing_version \"2014.0\";\n" + //
+        "    String product_name \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
+        "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
+        "    String publisher_email \"erd.data@noaa.gov\";\n" + //
+        "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" + //
+        "    String publisher_type \"institution\";\n" + //
+        "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" + //
+        "    String sourceUrl \"(local files)\";\n" + //
+        "    Float64 Southernmost_Northing -89.97918;\n" + //
+        "    String spatialResolution \"4.60 km\";\n" + //
+        "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" + //
+        "    String summary \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n"
+        + //
+        "    String temporal_range \"8-day\";\n" + //
+        "    String testOutOfDate \"now-30days\";\n" + //
+        "    String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ\";\n" + //
+        "    String time_coverage_start \"2003-01-05T00:00:00Z\";\n" + //
+        "    String title \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n"
+        + //
+        "    Float64 Westernmost_Easting -179.9792;\n" + //
+        "  }\n" + //
+        "}\n";
     // tPo = results.indexOf("history \"NASA GSFC (OBPG)");
     // Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, -?[0-9]+.[0-9]+e?.[0-9]?;", "Float64 actual_range MIN, MAX;");
-    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;", "Float32 actual_range MIN, MAX;");
-    results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z", "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
-    results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z", "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, -?[0-9]+.[0-9]+e?.[0-9]?;",
+        "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
+        "Float32 actual_range MIN, MAX;");
+    results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z",
+        "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
+    results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z",
+        "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
     results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+", "Float64 geospatial_lat_min MIN");
     results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z",
-            "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
+        "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
     Test.ensureEqual(results.substring(0, expected.length()), expected,
-            "\nresults=\n" + results);
+        "\nresults=\n" + results);
     // Test.ensureLinesMatch(results.substring(0, tPo + 25), expected,
-    //     "\nresults=\n" + results);
+    // "\nresults=\n" + results);
 
     tPo = results.indexOf("    String identifier_product_doi");
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
@@ -7391,22 +9591,23 @@ class JettyTests {
     if (testLocalErddapToo) {
       results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
       results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, -?[0-9]+.[0-9]+e?.[0-9]?;",
-              "Float64 actual_range MIN, MAX;");
+          "Float64 actual_range MIN, MAX;");
       results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
-              "Float32 actual_range MIN, MAX;");
+          "Float32 actual_range MIN, MAX;");
       results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z",
-              "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
+          "String _lastModified \"YYYY-MM-DDTHH:mm:ss.000Z");
       results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z",
-              "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
-      results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+", "Float64 geospatial_lat_min MIN");
+          "String date_created \"YYYY-MM-DDTHH:mm:ss.000Z");
+      results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+",
+          "Float64 geospatial_lat_min MIN");
       results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z",
-              "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
-    //   tPo = results.indexOf("history \"NASA GSFC (OBPG)");
-    //   Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
-    //   Test.ensureLinesMatch(results.substring(0, tPo + 25), expected,
-    //       "\nresults=\n" + results);
+          "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
+      // tPo = results.indexOf("history \"NASA GSFC (OBPG)");
+      // Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
+      // Test.ensureLinesMatch(results.substring(0, tPo + 25), expected,
+      // "\nresults=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected,
-        "\nresults=\n" + results);
+          "\nresults=\n" + results);
 
       tPo = results.indexOf("    String identifier_product_doi");
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
@@ -7496,9 +9697,9 @@ class JettyTests {
         "UTC,degrees_east\n" +
         "2003-01-05T00:00:00Z,179.97917\n" + //
         "2003-01-13T00:00:00Z,NaN\n";
-        // "2002-07-08T00:00:00Z,360.0\n" +
-        // "2004-09-25T00:00:00Z,NaN\n" +
-        // "2006-12-15T00:00:00Z,NaN\n";
+    // "2002-07-08T00:00:00Z,360.0\n" +
+    // "2004-09-25T00:00:00Z,NaN\n" +
+    // "2006-12-15T00:00:00Z,NaN\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
     if (testLocalErddapToo) {
@@ -7515,10 +9716,10 @@ class JettyTests {
     // String2.log(results);
     // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     // expected = "time,longitude\n" +
-    //     "UTC,degrees_east\n" +
-    //     "2002-07-08T00:00:00Z,360.0\n" +
-    //     "2004-09-25T00:00:00Z,NaN\n" +
-    //     "2006-12-15T00:00:00Z,NaN\n";
+    // "UTC,degrees_east\n" +
+    // "2002-07-08T00:00:00Z,360.0\n" +
+    // "2004-09-25T00:00:00Z,NaN\n" +
+    // "2006-12-15T00:00:00Z,NaN\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
     if (testLocalErddapToo) {
@@ -7553,37 +9754,38 @@ class JettyTests {
     // octave> erdMHchla8day
     String matlabAxisQuery = SSR.minimalPercentEncode("time[0:1:1],longitude[last]");
     String2.log("\n*** EDDGridFromErddap test get .MAT axis data\n");
-    tName = gridDataset.makeNewFileForDapQuery(language, null, null, matlabAxisQuery, EDStatic.fullTestCacheDirectory,
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null, matlabAxisQuery,
+        EDStatic.fullTestCacheDirectory,
         gridDataset.className() + "_Axis", ".mat");
     String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
     results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
     String2.log(results);
     expected = "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n" + //
-                "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n" + //
-                "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n" + //
-                "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n" + //
-                // "2c 20 43 72 65 61 74 65   64 20 6f 6e 3a 20 57 65   , Created on: We |\n" + //
-                // "64 20 4d 61 79 20 38 20   32 30 3a 31 34 3a 31 34   d May 8 20:14:14 |\n" + //
-                // "20 32 30 32 34 20 20 20   20 20 20 20 20 20 20 20    2024            |\n" + //
-                "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n" + //
-                "00 00 00 0e 00 00 01 10   00 00 00 06 00 00 00 08                    |\n" + //
-                "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
-                "00 00 00 01 00 00 00 01   00 00 00 01 00 00 00 0c                    |\n" + //
-                "72 4d 48 31 63 68 6c 61   38 64 61 79 00 00 00 00   rMH1chla8day     |\n" + //
-                "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 40                  @ |\n" + //
-                "74 69 6d 65 00 00 00 00   00 00 00 00 00 00 00 00   time             |\n" + //
-                "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
-                "6c 6f 6e 67 69 74 75 64   65 00 00 00 00 00 00 00   longitude        |\n" + //
-                "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
-                "00 00 00 0e 00 00 00 40   00 00 00 06 00 00 00 08          @         |\n" + //
-                "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
-                "00 00 00 02 00 00 00 01   00 00 00 01 00 00 00 00                    |\n" + //
-                "00 00 00 09 00 00 00 10   41 cf 0b ba c0 00 00 00           A        |\n" + //
-                "41 cf 11 00 c0 00 00 00   00 00 00 0e 00 00 00 38   A              8 |\n" + //
-                "00 00 00 06 00 00 00 08   00 00 00 07 00 00 00 00                    |\n" + //
-                "00 00 00 05 00 00 00 08   00 00 00 01 00 00 00 01                    |\n" + //
-                "00 00 00 01 00 00 00 00   00 00 00 07 00 00 00 04                    |\n" + //
-                "43 33 fa ab 00 00 00 00   C3                                         |\n";
+        "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n" + //
+        "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n" + //
+        "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n" + //
+        // "2c 20 43 72 65 61 74 65 64 20 6f 6e 3a 20 57 65 , Created on: We |\n" + //
+        // "64 20 4d 61 79 20 38 20 32 30 3a 31 34 3a 31 34 d May 8 20:14:14 |\n" + //
+        // "20 32 30 32 34 20 20 20 20 20 20 20 20 20 20 20 2024 |\n" + //
+        "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n" + //
+        "00 00 00 0e 00 00 01 10   00 00 00 06 00 00 00 08                    |\n" + //
+        "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
+        "00 00 00 01 00 00 00 01   00 00 00 01 00 00 00 0c                    |\n" + //
+        "72 4d 48 31 63 68 6c 61   38 64 61 79 00 00 00 00   rMH1chla8day     |\n" + //
+        "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 40                  @ |\n" + //
+        "74 69 6d 65 00 00 00 00   00 00 00 00 00 00 00 00   time             |\n" + //
+        "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
+        "6c 6f 6e 67 69 74 75 64   65 00 00 00 00 00 00 00   longitude        |\n" + //
+        "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n" + //
+        "00 00 00 0e 00 00 00 40   00 00 00 06 00 00 00 08          @         |\n" + //
+        "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" + //
+        "00 00 00 02 00 00 00 01   00 00 00 01 00 00 00 00                    |\n" + //
+        "00 00 00 09 00 00 00 10   41 cf 0b ba c0 00 00 00           A        |\n" + //
+        "41 cf 11 00 c0 00 00 00   00 00 00 0e 00 00 00 38   A              8 |\n" + //
+        "00 00 00 06 00 00 00 08   00 00 00 07 00 00 00 00                    |\n" + //
+        "00 00 00 05 00 00 00 08   00 00 00 01 00 00 00 01                    |\n" + //
+        "00 00 00 01 00 00 00 00   00 00 00 07 00 00 00 04                    |\n" + //
+        "43 33 fa ab 00 00 00 00   C3                                         |\n";
     Test.ensureEqual(
         results.substring(0, 71 * 4) + results.substring(71 * 7), // remove the creation dateTime
         expected, "RESULTS(" + EDStatic.fullTestCacheDirectory + tName + ")=\n" + results);
@@ -7607,7 +9809,7 @@ class JettyTests {
             "      :_CoordinateAxisType = \"Time\";\n" +
             "      :actual_range = MIN, MAX; // double\n" + // up-to-date
             "      :axis = \"T\";\n" +
-            // "      :fraction_digits = 0; // int\n" +
+            // " :fraction_digits = 0; // int\n" +
             "      :ioos_category = \"Time\";\n" +
             "      :long_name = \"Centered Time\";\n" +
             "      :standard_name = \"time\";\n" +
@@ -7618,21 +9820,22 @@ class JettyTests {
             "      :_CoordinateAxisType = \"Lon\";\n" +
             "      :actual_range = MIN, MAX; // float\n" +
             "      :axis = \"X\";\n" +
-            // "      :coordsys = \"geographic\";\n" +
-            // "      :fraction_digits = 4; // int\n" +
+            // " :coordsys = \"geographic\";\n" +
+            // " :fraction_digits = 4; // int\n" +
             "      :ioos_category = \"Location\";\n" +
             "      :long_name = \"Longitude\";\n" +
-            // "      :point_spacing = \"even\";\n" +
+            // " :point_spacing = \"even\";\n" +
             "      :standard_name = \"longitude\";\n" +
             "      :units = \"degrees_east\";\n" +
             "      :valid_max = 180.0f; // float\n" + //
             "      :valid_min = -180.0f; // float\n" +
             "\n" +
             "  // global attributes:\n";
-            // "  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
-    results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+", ":actual_range = MIN, MAX");
+    // " :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
+    results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+",
+        ":actual_range = MIN, MAX");
     results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f",
-            ":actual_range = MIN, MAX");
+        ":actual_range = MIN, MAX");
     tPo = results.indexOf("  variables:\n");
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
@@ -7645,9 +9848,9 @@ class JettyTests {
     if (testLocalErddapToo) {
       results = SSR.getUrlResponseStringUnchanged(localUrl + ".ncHeader?" + query);
       results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+E[0-9]+, -?[0-9]+.[0-9]+E[0-9]+",
-              ":actual_range = MIN, MAX");
+          ":actual_range = MIN, MAX");
       results = results.replaceAll(":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f",
-              ":actual_range = MIN, MAX");
+          ":actual_range = MIN, MAX");
       tPo = results.indexOf("  variables:\n");
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
       Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected,
@@ -7662,46 +9865,46 @@ class JettyTests {
         gridDataset.className() + "_Data", ".csv");
     results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
     expected = // missing values are "NaN"
-        // pre 2010-10-26 was
+               // pre 2010-10-26 was
         "time,latitude,longitude,chlorophyll\n" + //
-        "UTC,degrees_north,degrees_east,mg m-3\n" + //
-        "2003-01-13T00:00:00Z,29.02083,-147.97917,NaN\n" + //
-        "2003-01-13T00:00:00Z,29.02083,-147.9375,NaN\n" + //
-        "2003-01-13T00:00:00Z,29.02083,-147.89583,NaN\n" + //
-        "2003-01-13T00:00:00Z,29.02083,-147.85417,NaN\n" + //
-        "2003-01-13T00:00:00Z,29.02083,-147.8125,NaN\n";
-        // "time, altitude, latitude, longitude, chlorophyll\n" +
-        // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n"
-        // +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n"
-        // +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-        // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
-        // "time,altitude,latitude,longitude,chlorophyll\n" +
-        //     "UTC,m,degrees_north,degrees_east,mg m-3\n" +
-        //     "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
-        //     "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
-            // pre 2012-08-17 was
-            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
-            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
-            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
-            // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
+            "UTC,degrees_north,degrees_east,mg m-3\n" + //
+            "2003-01-13T00:00:00Z,29.02083,-147.97917,NaN\n" + //
+            "2003-01-13T00:00:00Z,29.02083,-147.9375,NaN\n" + //
+            "2003-01-13T00:00:00Z,29.02083,-147.89583,NaN\n" + //
+            "2003-01-13T00:00:00Z,29.02083,-147.85417,NaN\n" + //
+            "2003-01-13T00:00:00Z,29.02083,-147.8125,NaN\n";
+    // "time, altitude, latitude, longitude, chlorophyll\n" +
+    // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n"
+    // +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n"
+    // +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
+    // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
+    // "time,altitude,latitude,longitude,chlorophyll\n" +
+    // "UTC,m,degrees_north,degrees_east,mg m-3\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+    // pre 2012-08-17 was
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
     Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
     // expected2 =
-        // pre 2010-10-26 was
-        // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-        // pre 2012-08-17 was
-        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
-        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
+    // pre 2010-10-26 was
+    // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+    // pre 2012-08-17 was
+    // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+    // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
     // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
     if (testLocalErddapToo) {
       results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + userDapQuery);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-    //   Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+      // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
     }
 
     // .csv test gridName.gridName notation
@@ -7710,39 +9913,47 @@ class JettyTests {
         EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv");
     results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
     // expected =
-    //     // pre 2010-10-26 was
-    //     // "time, altitude, latitude, longitude, chlorophyll\n" +
-    //     // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n"
-    //     // +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n"
-    //     // +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-    //     // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
-    //     "time,altitude,latitude,longitude,chlorophyll\n" +
-    //         "UTC,m,degrees_north,degrees_east,mg m-3\n" +
-    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
-    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
-    //         // pre 2012-08-17 was
-    //         // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
-    //         // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
-    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
-    //         "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
+    // // pre 2010-10-26 was
+    // // "time, altitude, latitude, longitude, chlorophyll\n" +
+    // // "UTC, m, degrees_north, degrees_east, mg m-3\n" +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n"
+    // +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n"
+    // +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677,
+    // 0.099\n"
+    // // +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434,
+    // 0.118\n"
+    // // +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n"
+    // +
+    // // "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953,
+    // 0.091\n";
+    // "time,altitude,latitude,longitude,chlorophyll\n" +
+    // "UTC,m,degrees_north,degrees_east,mg m-3\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+    // // pre 2012-08-17 was
+    // // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n"
+    // +
+    // //
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+    // "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
     Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
     // expected2 =
-        // pre 2010-10-26 was
-        // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-        // pre 2012-08-17 was
-        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
-        // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
+    // pre 2010-10-26 was
+    // "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+    // pre 2012-08-17 was
+    // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+    // "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
     // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
     if (testLocalErddapToo) {
       results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-    //   Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+      // Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
     }
 
     // .nc
@@ -7751,137 +9962,143 @@ class JettyTests {
         gridDataset.className() + "_Data", ".nc");
     results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
     expected = "netcdf EDDGridFromErddap_Data.nc {\n" + //
-                "  dimensions:\n" + //
-                "    time = 1;\n" + //
-                "    latitude = 1;\n" + //
-                "    longitude = 5;\n" + //
-                "  variables:\n" + //
-                "    double time(time=1);\n" + //
-                "      :_CoordinateAxisType = \"Time\";\n" + //
-                "      :actual_range = 1.042416E9, 1.042416E9; // double\n" + //
-                "      :axis = \"T\";\n" + //
-                "      :ioos_category = \"Time\";\n" + //
-                "      :long_name = \"Centered Time\";\n" + //
-                "      :standard_name = \"time\";\n" + //
-                "      :time_origin = \"01-JAN-1970 00:00:00\";\n" + //
-                "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" + //
-                "\n" + //
-                "    float latitude(latitude=1);\n" + //
-                "      :_CoordinateAxisType = \"Lat\";\n" + //
-                "      :actual_range = 29.02083f, 29.02083f; // float\n" + //
-                "      :axis = \"Y\";\n" + //
-                "      :ioos_category = \"Location\";\n" + //
-                "      :long_name = \"Latitude\";\n" + //
-                "      :standard_name = \"latitude\";\n" + //
-                "      :units = \"degrees_north\";\n" + //
-                "      :valid_max = 90.0f; // float\n" + //
-                "      :valid_min = -90.0f; // float\n" + //
-                "\n" + //
-                "    float longitude(longitude=5);\n" + //
-                "      :_CoordinateAxisType = \"Lon\";\n" + //
-                "      :actual_range = -147.97917f, -147.8125f; // float\n" + //
-                "      :axis = \"X\";\n" + //
-                "      :ioos_category = \"Location\";\n" + //
-                "      :long_name = \"Longitude\";\n" + //
-                "      :standard_name = \"longitude\";\n" + //
-                "      :units = \"degrees_east\";\n" + //
-                "      :valid_max = 180.0f; // float\n" + //
-                "      :valid_min = -180.0f; // float\n" + //
-                "\n" + //
-                "    float chlorophyll(time=1, latitude=1, longitude=5);\n" + //
-                "      :_FillValue = NaNf; // float\n" + //
-                "      :colorBarMaximum = 30.0; // double\n" + //
-                "      :colorBarMinimum = 0.03; // double\n" + //
-                "      :colorBarScale = \"Log\";\n" + //
-                "      :ioos_category = \"Ocean Color\";\n" + //
-                "      :long_name = \"Mean Chlorophyll a Concentration\";\n" + //
-                "      :references = \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" + //
-                "      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" + //
-                "      :units = \"mg m-3\";\n" + //
-                "      :valid_max = 100.0f; // float\n" + //
-                "      :valid_min = 0.001f; // float\n" + //
-                "\n" + //
-                "  // global attributes:\n" + //
-                "  :_lastModified = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
-                "  :cdm_data_type = \"Grid\";\n" + //
-                "  :Conventions = \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
-                "  :creator_email = \"data@oceancolor.gsfc.nasa.gov\";\n" + //
-                "  :creator_name = \"NASA/GSFC/OBPG\";\n" + //
-                "  :creator_type = \"group\";\n" + //
-                "  :creator_url = \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
-                "  :date_created = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
-                "  :Easternmost_Easting = -147.8125f; // float\n" + //
-                "  :geospatial_lat_max = 29.02083f; // float\n" + //
-                "  :geospatial_lat_min = 29.02083f; // float\n" + //
-                "  :geospatial_lat_units = \"degrees_north\";\n" + //
-                "  :geospatial_lon_max = -147.8125f; // float\n" + //
-                "  :geospatial_lon_min = -147.97917f; // float\n" + //
-                "  :geospatial_lon_units = \"degrees_east\";\n" + //
-                "  :grid_mapping_name = \"latitude_longitude\";\n";
+        "  dimensions:\n" + //
+        "    time = 1;\n" + //
+        "    latitude = 1;\n" + //
+        "    longitude = 5;\n" + //
+        "  variables:\n" + //
+        "    double time(time=1);\n" + //
+        "      :_CoordinateAxisType = \"Time\";\n" + //
+        "      :actual_range = 1.042416E9, 1.042416E9; // double\n" + //
+        "      :axis = \"T\";\n" + //
+        "      :ioos_category = \"Time\";\n" + //
+        "      :long_name = \"Centered Time\";\n" + //
+        "      :standard_name = \"time\";\n" + //
+        "      :time_origin = \"01-JAN-1970 00:00:00\";\n" + //
+        "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" + //
+        "\n" + //
+        "    float latitude(latitude=1);\n" + //
+        "      :_CoordinateAxisType = \"Lat\";\n" + //
+        "      :actual_range = 29.02083f, 29.02083f; // float\n" + //
+        "      :axis = \"Y\";\n" + //
+        "      :ioos_category = \"Location\";\n" + //
+        "      :long_name = \"Latitude\";\n" + //
+        "      :standard_name = \"latitude\";\n" + //
+        "      :units = \"degrees_north\";\n" + //
+        "      :valid_max = 90.0f; // float\n" + //
+        "      :valid_min = -90.0f; // float\n" + //
+        "\n" + //
+        "    float longitude(longitude=5);\n" + //
+        "      :_CoordinateAxisType = \"Lon\";\n" + //
+        "      :actual_range = -147.97917f, -147.8125f; // float\n" + //
+        "      :axis = \"X\";\n" + //
+        "      :ioos_category = \"Location\";\n" + //
+        "      :long_name = \"Longitude\";\n" + //
+        "      :standard_name = \"longitude\";\n" + //
+        "      :units = \"degrees_east\";\n" + //
+        "      :valid_max = 180.0f; // float\n" + //
+        "      :valid_min = -180.0f; // float\n" + //
+        "\n" + //
+        "    float chlorophyll(time=1, latitude=1, longitude=5);\n" + //
+        "      :_FillValue = NaNf; // float\n" + //
+        "      :colorBarMaximum = 30.0; // double\n" + //
+        "      :colorBarMinimum = 0.03; // double\n" + //
+        "      :colorBarScale = \"Log\";\n" + //
+        "      :ioos_category = \"Ocean Color\";\n" + //
+        "      :long_name = \"Mean Chlorophyll a Concentration\";\n" + //
+        "      :references = \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n"
+        + //
+        "      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" + //
+        "      :units = \"mg m-3\";\n" + //
+        "      :valid_max = 100.0f; // float\n" + //
+        "      :valid_min = 0.001f; // float\n" + //
+        "\n" + //
+        "  // global attributes:\n" + //
+        "  :_lastModified = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+        "  :cdm_data_type = \"Grid\";\n" + //
+        "  :Conventions = \"CF-1.6, COARDS, ACDD-1.3\";\n" + //
+        "  :creator_email = \"data@oceancolor.gsfc.nasa.gov\";\n" + //
+        "  :creator_name = \"NASA/GSFC/OBPG\";\n" + //
+        "  :creator_type = \"group\";\n" + //
+        "  :creator_url = \"https://oceandata.sci.gsfc.nasa.gov\";\n" + //
+        "  :date_created = \"YYYY-MM-DDTHH:mm:ss.000Z\";\n" + //
+        "  :Easternmost_Easting = -147.8125f; // float\n" + //
+        "  :geospatial_lat_max = 29.02083f; // float\n" + //
+        "  :geospatial_lat_min = 29.02083f; // float\n" + //
+        "  :geospatial_lat_units = \"degrees_north\";\n" + //
+        "  :geospatial_lon_max = -147.8125f; // float\n" + //
+        "  :geospatial_lon_min = -147.97917f; // float\n" + //
+        "  :geospatial_lon_units = \"degrees_east\";\n" + //
+        "  :grid_mapping_name = \"latitude_longitude\";\n";
     // tPo = results.indexOf(":history = \"NASA GSFC (OBPG)");
     // Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     results = results.replaceAll("\\\"....-..-..T..:..:...000Z\\\"", "\"YYYY-MM-DDTHH:mm:ss.000Z\"");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
     expected = // note original missing values
-    "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
-        "  :institution = \"NASA/GSFC OBPG\";\n" + //
-        "  :instrument = \"MODIS\";\n" + //
-        "  :keywords = \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n" + //
-        "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" + //
-        "  :l2_flag_names = \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" + //
-        "  :license = \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" + //
-        "The data may be used and redistributed for free but is not intended\n" + //
-        "for legal use, since it may contain inaccuracies. Neither the data\n" + //
-        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
-        "of their employees or contractors, makes any warranty, express or\n" + //
-        "implied, including warranties of merchantability and fitness for a\n" + //
-        "particular purpose, or assumes any legal liability for the accuracy,\n" + //
-        "completeness, or usefulness, of this information.\";\n" + //
-        "  :map_projection = \"Equidistant Cylindrical\";\n" + //
-        "  :measure = \"Mean\";\n" + //
-        "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" + //
-        "  :Northernmost_Northing = 29.02083f; // float\n" + //
-        "  :platform = \"Aqua\";\n" + //
-        "  :processing_level = \"L3 Mapped\";\n" + //
-        "  :processing_version = \"2014.0\";\n" + //
-        "  :product_name = \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
-        "  :project = \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
-        "  :publisher_email = \"erd.data@noaa.gov\";\n" + //
-        "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" + //
-        "  :publisher_type = \"institution\";\n" + //
-        "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" + //
-        "  :sourceUrl = \"(local files)\";\n" + //
-        "  :Southernmost_Northing = 29.02083f; // float\n" + //
-        "  :spatialResolution = \"4.60 km\";\n" + //
-        "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" + //
-        "  :summary = \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n" + //
-        "  :temporal_range = \"8-day\";\n" + //
-        "  :testOutOfDate = \"now-30days\";\n" + //
-        "  :time_coverage_end = \"2003-01-13T00:00:00Z\";\n" + //
-        "  :time_coverage_start = \"2003-01-13T00:00:00Z\";\n" + //
-        "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n" + //
-        "  :Westernmost_Easting = -147.97917f; // float\n" + //
-        "\n" + //
-        "  data:\n" + //
-        "    time = \n" + //
-        "      {1.042416E9}\n" + //
-        "    latitude = \n" + //
-        "      {29.02083}\n" + //
-        "    longitude = \n" + //
-        "      {-147.97917, -147.9375, -147.89583, -147.85417, -147.8125}\n" + //
-        "    chlorophyll = \n" + //
-        "      {\n" + //
-        "        {\n" + //
-        "          {NaN, NaN, NaN, NaN, NaN}\n" + //
-        "        }\n" + //
-        "      }\n" + //
-        "}\n";
-        
+        "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\";\n" + //
+            "  :institution = \"NASA/GSFC OBPG\";\n" + //
+            "  :instrument = \"MODIS\";\n" + //
+            "  :keywords = \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, flight, goddard, group, gsfc, image, imaging, L3, level, level-3, mapped, moderate, modis, nasa, obpg, ocean, ocean color, oceans, oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water\";\n"
+            + //
+            "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" + //
+            "  :l2_flag_names = \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n"
+            + //
+            "  :license = \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+            + //
+            "The data may be used and redistributed for free but is not intended\n" + //
+            "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+            "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+            "of their employees or contractors, makes any warranty, express or\n" + //
+            "implied, including warranties of merchantability and fitness for a\n" + //
+            "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+            "completeness, or usefulness, of this information.\";\n" + //
+            "  :map_projection = \"Equidistant Cylindrical\";\n" + //
+            "  :measure = \"Mean\";\n" + //
+            "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" + //
+            "  :Northernmost_Northing = 29.02083f; // float\n" + //
+            "  :platform = \"Aqua\";\n" + //
+            "  :processing_level = \"L3 Mapped\";\n" + //
+            "  :processing_version = \"2014.0\";\n" + //
+            "  :product_name = \"A20030092003016.L3m_8D_CHL_chlor_a_4km.nc\";\n" + //
+            "  :project = \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" + //
+            "  :publisher_email = \"erd.data@noaa.gov\";\n" + //
+            "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" + //
+            "  :publisher_type = \"institution\";\n" + //
+            "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" + //
+            "  :sourceUrl = \"(local files)\";\n" + //
+            "  :Southernmost_Northing = 29.02083f; // float\n" + //
+            "  :spatialResolution = \"4.60 km\";\n" + //
+            "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" + //
+            "  :summary = \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n"
+            + //
+            "  :temporal_range = \"8-day\";\n" + //
+            "  :testOutOfDate = \"now-30days\";\n" + //
+            "  :time_coverage_end = \"2003-01-13T00:00:00Z\";\n" + //
+            "  :time_coverage_start = \"2003-01-13T00:00:00Z\";\n" + //
+            "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\";\n"
+            + //
+            "  :Westernmost_Easting = -147.97917f; // float\n" + //
+            "\n" + //
+            "  data:\n" + //
+            "    time = \n" + //
+            "      {1.042416E9}\n" + //
+            "    latitude = \n" + //
+            "      {29.02083}\n" + //
+            "    longitude = \n" + //
+            "      {-147.97917, -147.9375, -147.89583, -147.85417, -147.8125}\n" + //
+            "    chlorophyll = \n" + //
+            "      {\n" + //
+            "        {\n" + //
+            "          {NaN, NaN, NaN, NaN, NaN}\n" + //
+            "        }\n" + //
+            "      }\n" + //
+            "}\n";
+
     tPo = results.indexOf("  :infoUrl");
     // int tPo2 = results.indexOf("1.20716},", tPo + 1);
     // if (tPo < 0 || tPo2 < 0)
-    //   String2.log("tPo=" + tPo + " tPo2=" + tPo2 + " results=\n" + results);
+    // String2.log("tPo=" + tPo + " tPo2=" + tPo2 + " results=\n" + results);
 
     Test.ensureEqual(results.substring(tPo), expected, "RESULTS=\n" + results);
     /* */
@@ -7937,7 +10154,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/gibberish/\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -7952,7 +10170,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/"
         + tDatasetID + "/gibberish/\n" +
         "(Error {\n" +
         "    code=404;\n" +
@@ -7967,7 +10186,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/"
         + tDatasetID + "/gibberish.csv\n" +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8011,7 +10231,7 @@ class JettyTests {
         "&searchFor=pmelTaoDySst", // lucene fail?
         "&searchFor=DySst", // lucene fail?
         // "&searchFor=" + SSR.minimalPercentEncode(
-        //     "\"sourceUrl=https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\n\"")
+        // "\"sourceUrl=https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\n\"")
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
@@ -8067,7 +10287,7 @@ class JettyTests {
         "erdQSwind1day_20080104_07.nc,lastModTime,49790172,\n";
     results = results.replaceAll(",.............,", ",lastModTime,");
     if (results.length() < expected.length()) {
-        throw new Exception(results);
+      throw new Exception(results);
     }
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
@@ -8079,7 +10299,8 @@ class JettyTests {
 
     // download a file in root
     results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-        "http://localhost:" + PORT + "/erddap/files/testGriddedNcFiles/erdQSwind1day_20080104_07.nc").substring(0, 50));
+        "http://localhost:" + PORT + "/erddap/files/testGriddedNcFiles/erdQSwind1day_20080104_07.nc")
+        .substring(0, 50));
     expected = "CDF[1][0][0][0][0][0][0][0][10]\n" +
         "[0][0][0][4][0][0][0][4]time[0][0][0][4][0][0][0][8]altitude[0][0][0][1][0][0][0][8]la[end]";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -8091,7 +10312,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/gibberish/\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8106,7 +10328,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/testGriddedNcFiles/gibberish/\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/testGriddedNcFiles/gibberish/\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8121,7 +10344,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/testGriddedNcFiles/gibberish.csv\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/testGriddedNcFiles/gibberish.csv\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8647,9 +10871,12 @@ class JettyTests {
         "}\n";
 
     results = results.replaceAll("Int16 actual_range [0-9]+, [0-9]+;", "Int16 actual_range MIN, MAX;");
-    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;", "Float32 actual_range MIN, MAX;");
-    results = results.replaceAll("Float64 actual_range -?[0-9].[0-9]+e[+][0-9], -?[0-9].[0-9]+e[+][0-9];", "Float64 actual_range MIN, MAX;");
-    results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z", "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
+    results = results.replaceAll("Float32 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
+        "Float32 actual_range MIN, MAX;");
+    results = results.replaceAll("Float64 actual_range -?[0-9].[0-9]+e[+][0-9], -?[0-9].[0-9]+e[+][0-9];",
+        "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("String time_coverage_end \\\"....-..-..T..:..:..Z",
+        "String time_coverage_end \"yyyy-MM-ddThh:mm:ssZ");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf("    String infoUrl ");
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
@@ -8859,7 +11086,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/gibberish/\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8874,7 +11102,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/testTableCopy/gibberish/\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/testTableCopy/gibberish/\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8889,7 +11118,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/testTableCopy/gibberish.csv\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/testTableCopy/gibberish.csv\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
@@ -8904,7 +11134,8 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/testTableCopy/nh0207/gibberish.csv\n"
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
+        + "/erddap/files/testTableCopy/nh0207/gibberish.csv\n"
         +
         "(Error {\n" +
         "    code=404;\n" +
