@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 import java.util.ArrayList;
 
+import com.cohort.array.PrimitiveArray;
 
 /** 
  * This class creates an EDDTable by aggregating a list of EDDTables
@@ -330,6 +331,14 @@ public class EDDTableAggregateRows extends EDDTable{
                     tMax = tMax.max(cEdv.destinationMax()); 
                 }
             }
+            
+            ///override actual_range with min/max calculated on all chidren
+            if (!tMin.isMissingValue() && !tMax.isMissingValue()) {
+                PrimitiveArray pa = PrimitiveArray.factory(childVar.destinationDataPAType(), 2, false);
+                pa.addPAOne(tMin);
+                pa.addPAOne(tMax);
+                tSourceAtts.set("actual_range", pa);
+            }
 
             //make the variable
             EDV newVar = null;
@@ -346,14 +355,10 @@ public class EDDTableAggregateRows extends EDDTable{
                 newVar = new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 depthIndex = dv;
             } else if (tSourceName.equals(EDV.TIME_NAME)) { //do time before timeStamp
-                tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
-                tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
                 newVar = new EDVTime(datasetID, tSourceName, tSourceAtts, tAddAtts, 
                     tDataType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtts, tAddAtts)) {
-                tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
-                tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
                 newVar = new EDVTimeStamp(datasetID, tSourceName, "", tSourceAtts, tAddAtts,
                     tDataType); //this constructor gets source / sets destination actual_range
             } else newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
