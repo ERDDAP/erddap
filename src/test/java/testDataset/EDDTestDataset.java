@@ -225,6 +225,7 @@ public class EDDTestDataset {
       // datasetsXml.append(xmlFragment_testGridFromTable()); // todo missing dataset
       // get the data
       datasetsXml.append(xmlFragment_testGridWav());
+      datasetsXml.append(xmlFragment_TS_SLEV_TAD());
 
       datasetsXml.append(
           "<dataset type=\"EDDGridFromDap\" datasetID=\"erdMH1chla1dayTDS\" active=\"true\">\n" + //
@@ -42720,6 +42721,25 @@ public class EDDTestDataset {
         "            <att name=\"ioos_category\">Other</att>\n" + //
         "        </addAttributes>\n" + //
         "    </dataVariable>\n" + //
+        "</dataset>\n";
+  }
+
+  public static EDD getTS_SLEV_TAD() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        xmlFragment_TS_SLEV_TAD());
+  }
+
+  private static String xmlFragment_TS_SLEV_TAD() {
+    return "<dataset type=\"EDDTableAggregateRows\" datasetID=\"TS_SLEV_TAD\" active=\"true\">\n" + //
+        "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+        "    <dataset type=\"EDDTableFromErddap\" datasetID=\"TS_SLEV_TAD_19_composite\" active=\"true\" >\n" + //
+        "        <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+        "        <sourceUrl>https://er1webapps.emodnet-physics.eu/erddap/tabledap/TS_SLEV_TAD_19</sourceUrl>\n" + //
+        "    </dataset>\n" + //
+        "    <dataset type=\"EDDTableFromErddap\" datasetID=\"TS_SLEV_TAD_1888_composite\" active=\"true\" >\n" + //
+        "        <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+        "        <sourceUrl>https://er1webapps.emodnet-physics.eu/erddap/tabledap/TS_SLEV_TAD_1888</sourceUrl>\n" + //
+        "    </dataset>\n" + //
         "</dataset>\n";
   }
 }
