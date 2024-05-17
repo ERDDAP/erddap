@@ -5,31 +5,18 @@
 package gov.noaa.pfel.coastwatch.pointdata;
 
 import com.cohort.array.*;
-import com.cohort.ema.EmaColor;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.TimePeriods;
-import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Vector;
 
 // from netcdfAll-x.jar
 import ucar.nc2.*;
-import ucar.nc2.dataset.NetcdfDataset;
-//import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
 import ucar.ma2.*;
 
 /** 
@@ -434,91 +421,6 @@ public class TableDataSet4DNc extends TableDataSet {
             " done. nRows=" + table.nRows() + 
             " TIME=" + (System.currentTimeMillis() - time));
         return table;
-    }
-
-    /**
-     * This tests the methods of this class.
-     *
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        verbose = true;
-        TableDataSet4DNc dataset = new TableDataSet4DNc(
-            "4NBmeto", "NDBC Meteorological",
-            "c:/u00/data/points/ndbcMet2/historical/", 
-            //".+\\.nc");
-            "NDBC_41..._met.nc");
-
-        //this mimics NdbcMetStation.test41015
-        Table table = dataset.makeSubset("1993-05-23 18:00:00", "1993-05-23 18:00:00", 
-            new String[]{"NDBC 41015 met"}, 
-            new String[]{
-                "WD", "WSPD", "GST", "WVHT", "DPD",     //5...
-                "APD", "MWD", "BAR", "ATMP", "WTMP",    //10...
-                "DEWP", "VIS", "PTDY", "TIDE", "WSPU",  //15...
-                "WSPV"});                               //20...
-        //row of data from 41015h1993.txt
-        //YY MM DD hh WD   WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS
-        //93 05 23 18 303 00.1 00.6 99.00 99.00 99.00 999 1021.1  19.9  18.4 999.0 99.0  //first available
-        double seconds = Calendar2.isoStringToEpochSeconds("1993-05-23T18");
-        int row = table.getColumn(3).indexOf("" + seconds, 0); //should find exact match
-        Test.ensureEqual(table.getFloatData(0, row), -75.3f, "");
-        Test.ensureEqual(table.getFloatData(1, row), 35.4f, "");
-        Test.ensureEqual(table.getDoubleData(2, row), 0, "");
-        Test.ensureEqual(table.getStringData(4, row), "NDBC 41015 met", "");
-        Test.ensureEqual(table.getDoubleData(5, row), 303, "");
-        Test.ensureEqual(table.getFloatData(6, row), .1f, "");
-        Test.ensureEqual(table.getFloatData(7, row), .6f, "");
-        Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
-        Test.ensureEqual(table.getDoubleData(9, row), Double.NaN, "");
-        Test.ensureEqual(table.getDoubleData(10, row), Double.NaN, "");
-        Test.ensureEqual(table.getIntData(11, row), 32767, "");  
-        Test.ensureEqual(table.getFloatData(12, row), 1021.1f, "");
-        Test.ensureEqual(table.getFloatData(13, row), 19.9f, "");
-        Test.ensureEqual(table.getFloatData(14, row), 18.4f, "");
-        Test.ensureEqual(table.getFloatData(15, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(16, row), Float.NaN, "");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ TableDataSet4DNc.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
     }
 
 }

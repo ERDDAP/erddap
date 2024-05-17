@@ -28,7 +28,6 @@ import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.sgt.Boundaries;
 import gov.noaa.pfel.coastwatch.sgt.FilledMarkerRenderer;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
@@ -53,24 +52,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,23 +83,23 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 
-//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
-import ucar.ma2.Array;
-import ucar.ma2.DataType;
-import ucar.nc2.Dimension;
-import ucar.nc2.Group;
-import ucar.nc2.Variable;
-import ucar.nc2.write.NetcdfFormatWriter;
 
 /** 
  * This class holds a lot of static information set from the setup.xml and messages.xml
  * files and used by all the other ERDDAP classes. 
  */
-public class EDStatic { 
+public class EDStatic {
+
+    /**
+     * These are options used to control behavior for testing.
+     * They should be their default values during normal operation.
+     * Better encapsulation of EDStatic initilization would mean we
+     * can get rid of these.
+     */
+    public static boolean skipEmailThread = false;
+    public static boolean allowDeferedLoading = true;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -574,8 +566,6 @@ public static boolean developmentMode = false;
         baseUrl,
         baseHttpsUrl, //won't be null, may be "(not specified)"
         bigParentDirectory,
-        unitTestDataDir,
-        unitTestBigDataDir,
          
         adminInstitution,
         adminInstitutionUrl,
@@ -1785,6 +1775,9 @@ public static boolean developmentMode = false;
     String errorInMethod = "";
     try {
 
+        skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
+        allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
+
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
         SSR.erddapVersion = erddapVersion;
@@ -1836,12 +1829,6 @@ public static boolean developmentMode = false;
         bigParentDirectory = File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-        unitTestDataDir    = getSetupEVString(setup, ev, "unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
-        unitTestBigDataDir = getSetupEVString(setup, ev, "unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
-        unitTestDataDir    = File2.addSlash(unitTestDataDir);
-        unitTestBigDataDir = File2.addSlash(unitTestBigDataDir);
-        String2.unitTestDataDir    = unitTestDataDir;
-        String2.unitTestBigDataDir = unitTestBigDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  (String)null);
@@ -1869,11 +1856,16 @@ public static boolean developmentMode = false;
 
         tsar = String2.split(emailDailyReportToCsv, ',');
         if (emailDailyReportToCsv.length() > 0)
+        {
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
-                        " in <emailDailyReportTo>.");  
-        ensureEmailThreadIsRunningIfNeeded();
+                        " in <emailDailyReportTo>.");
+        }
+        
+        if (!skipEmailThread) {
+            ensureEmailThreadIsRunningIfNeeded();
+        }
         ensureTouchThreadIsRunningIfNeeded();
 
         //test of email
@@ -3916,7 +3908,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         OutputStreamFromHttpResponse.verbose = verbose;
         PathCartesianRenderer.verbose = verbose;
         PrimitiveArray.verbose = verbose;
-        Projects.verbose = verbose;
         //ResourceBundle2.verbose = verbose;
         RunLoadDatasets.verbose = verbose;
         SgtGraph.verbose = verbose;
@@ -6550,7 +6541,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static String getIPAddress(HttpServletRequest request) {
 
         //getRemoteHost(); always returns our proxy server (never changes)
-        String ipAddress = request.getHeader("x-forwarded-for");  
+        String ipAddress = request.getHeader("True-Client-IP");  
+        if (ipAddress == null) {
+            ipAddress = request.getHeader("x-forwarded-for");  
+        }
         if (ipAddress == null) {
             ipAddress = "";
         } else {
@@ -6767,83 +6761,4 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             } catch (Exception e2) {}
         }
     }
-
-
-    public static void testUpdateUrls() throws Exception {
-        String2.log("\n***** EDStatic.testUpdateUrls");
-        Attributes source = new Attributes();
-        Attributes add    = new Attributes();
-        source.set("a", "http://coastwatch.pfel.noaa.gov");  //purposely out-of-date
-        source.set("nine", 9.0);
-        add.set(   "b", "http://www.whoi.edu"); //purposely out-of-date
-        add.set(   "ten", 10.0);
-        add.set(   "sourceUrl", "http://coastwatch.pfel.noaa.gov"); //purposely out-of-date
-        updateUrls(source, add);
-        String results = add.toString();
-        String expected = 
-"    a=https://coastwatch.pfeg.noaa.gov\n" +
-"    b=https://www.whoi.edu\n" +
-"    sourceUrl=http://coastwatch.pfel.noaa.gov\n" + //unchanged
-"    ten=10.0d\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        source = new Attributes();
-        add    = new Attributes();
-        add.set("a", "http://coastwatch.pfel.noaa.gov");
-        add.set("b", "http://www.whoi.edu");
-        add.set("nine", 9.0);
-        add.set("sourceUrl", "http://coastwatch.pfel.noaa.gov");
-        updateUrls(null, add);
-        results = add.toString();
-        expected = 
-"    a=https://coastwatch.pfeg.noaa.gov\n" +
-"    b=https://www.whoi.edu\n" +
-"    nine=9.0d\n" +
-"    sourceUrl=http://coastwatch.pfel.noaa.gov\n"; //unchanged
-        Test.ensureEqual(results, expected, "results=\n" + results);
-    }
-
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ EDStatic.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) testUpdateUrls();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
 }

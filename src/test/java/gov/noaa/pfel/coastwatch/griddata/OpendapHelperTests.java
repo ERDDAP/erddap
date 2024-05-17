@@ -914,6 +914,7 @@ class OpendapHelperTests {
 
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -959,6 +960,7 @@ class OpendapHelperTests {
 
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
@@ -1042,7 +1044,7 @@ class OpendapHelperTests {
   void testAllDapToNc() throws Throwable {
     // tests from nodc template examples https://www.ncei.noaa.gov/netcdf-templates
     String2.log("\n*** OpendapHelper.testAllDapToNc()");
-    String dir = OpendapHelperTests.class.getResource("/nodcTemplates/").getPath();
+    String dir = OpendapHelperTests.class.getResource("/data/nodcTemplates/").getPath();
     // 2023-02-15 This method hadn't been run since 2020 because tdsUrl often
     // stalled, so I had commented it out.
     // tdsUrl was

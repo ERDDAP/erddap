@@ -9,25 +9,18 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
@@ -37,9 +30,6 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
-import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
-import org.apache.commons.compress.archivers.sevenz.SevenZFile;
-import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
@@ -50,7 +40,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -223,6 +212,15 @@ public class File2 {
         }
 
         return webInfParentDirectory;
+    }
+
+    /**
+     * This sets the temp directory instead of looking for one based on where the WEB-INF directory is.
+     * 
+     * THIS IS ONLY INTENDED FOR USE DURING TESTS.
+     */
+    public static void setWebInfParentDirectory() {
+        webInfParentDirectory = System.getProperty("user.dir") + "/";
     }
 
     /**
@@ -1953,7 +1951,7 @@ public class File2 {
     public static String forwardSlashDir(String tDir) {
         StringBuilder sb = new StringBuilder(tDir);
         String2.replaceAll(sb, '\\', '/');
-        if (sb.length() == 0 || sb.charAt(0) != '/' )
+        if (sb.length() == 0 || sb.charAt(tDir.length() - 1) != '/' )
             sb.append('/');
         return sb.toString();
     }

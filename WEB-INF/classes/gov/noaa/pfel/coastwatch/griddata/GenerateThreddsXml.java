@@ -9,21 +9,15 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.TimePeriods;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
-import gov.noaa.pfel.coastwatch.util.SSR;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 
 /**
  * This class is designed to be a stand-alone program to generate
@@ -723,7 +717,6 @@ String2.log("***end catalog.xml");
         return allXmlFiles;
     }
 
-
     /**
      * This shortens a boldTitle.
      *
@@ -757,79 +750,6 @@ String2.log("***end catalog.xml");
         
         return shortTitle;
     }
-
-    /**
-     * This tests shortening all the boldTitles in DataSet.properties,
-     * which is only useful while testing shortenBoldTitles.
-     */
-    public static void testShortenBoldTitles() {
-        String2.log("\n*** GenerateThreddsXml.testShortenBoldTitles");
-        ResourceBundle2 dataSetRB2 = new ResourceBundle2("gov.noaa.pfel.coastwatch.DataSet");
-        String validDataSets[] = String2.split(
-            dataSetRB2.getString("validDataSets", null), '`');
-        String2.log("validDataSets n=" + validDataSets.length);
-        for (int i = 0; i < validDataSets.length; i++) 
-            String2.log(shortenBoldTitle(dataSetRB2.getString(
-                validDataSets[i].substring(1) + "BoldTitle", null)));
-    }
-
-    /**
-     * This does a little test of this class -- specific to Bob's computer.
-     */
-    public static void basicTest() throws Exception {
-        verbose = true;
-        StringArray sa = generateThreddsXml(
-            "c:/u00/", "satellite/", 
-            "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml", 
-            "c:/u00/xml/");
-        String2.log("first catalog.xml=" + sa.get(0));
-//        Test.displayInBrowser("file://" + sa.get(0));  //.xml
-//        Test.displayInBrowser("file://f:/u00/xml/catalog.xml");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 1;
-        String msg = "\n^^^ GenerateThreddsXml.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                    if (test ==  1) testShortenBoldTitles();
-
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 
     /**
      * This class generates the xml files for all two-letter satellite 

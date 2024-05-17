@@ -2354,42 +2354,6 @@ public class NcHelper  {
         return atts;
     }
 
-    /** Diagnose a problem */
-    public static void testJplG1SST() throws Exception {
-        String dir = "c:/data/jplG1SST/";
-        String request[] = new String[]{"SST"};
-        StringArray varNames = new StringArray();
-        NetcdfFile fi;
-        Variable var;    //read    start:stop:stride
-
-        fi = openFile(dir + "sst_20120214.nc");
-        var = fi.findVariable("SST");  
-        PrimitiveArray pas14 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true, isUnsigned(var));
-        fi.close();
-String2.log(pas14.toString());     
-
-        fi = openFile(dir + "sst_20120212.nc");
-        var = fi.findVariable("SST");  
-        PrimitiveArray pas13 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true, isUnsigned(var));
-        fi.close();
-String2.log(pas13.toString());     
-
-        String2.log("diffString=\n" + pas14.diffString(pas13));
-    }
-
-    /**
-     * An experiment with NetcdfDataset accessing a DAP sequence dataset.
-     */
-    public static void testSequence() throws Throwable {
-        NetcdfDataset ncd = NetcdfDatasets.openDataset(   //2021: 's' is new API
-            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
-        try {
-            String2.log(ncd.toString());
-        } finally {
-            ncd.close();
-        }
-    }
-
     /**
      * This reads the specified data from a multidimensional structure.
      *

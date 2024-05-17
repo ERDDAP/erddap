@@ -10,7 +10,6 @@ import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
-import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -186,8 +185,6 @@ class GridDataSetOpenDataTests {
     String internalName, sixName;
     GridDataSetOpendap.verbose = true;
     Opendap.verbose = true;
-    String dir = File2.getClassPath() + // with / separator and / at the end
-        "gov/noaa/pfel/coastwatch/griddata/";
 
     // *********************************************************************
     internalName = "OQSux10";

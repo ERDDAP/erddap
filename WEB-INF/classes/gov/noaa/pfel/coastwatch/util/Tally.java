@@ -8,9 +8,7 @@ import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -203,74 +201,4 @@ public class Tally  {
         results.append("\n");
         return results.toString();
     }
-
-    /**
-     * This tests Tally.
-     * @throws Exception if trouble
-     */
-    public static void basicTest() {
-        Tally tally = new Tally();
-        tally.add("cat a", "att 2");
-        tally.add("cat a", "att 2");
-        tally.add("cat b", "att 2");
-        tally.add("cat a", "att 2");
-        tally.add("cat a", "att 1");
-        tally.add("cat b", "att 1");
-        tally.add("cat c", "att 3");
-        String s = tally.toString();
-        Test.ensureEqual(s,
-            "cat a\n" +         
-            "    att 2: 3  (75%)\n" +   //sorted by count
-            "    att 1: 1  (25%)\n" +
-            "\n" +
-            "cat b\n" +
-            "    att 1: 1  (50%)\n" +   //tied count; sort by attName
-            "    att 2: 1  (50%)\n" +
-            "\n" +
-            "cat c\n" +
-            "    att 3: 1  (100%)\n" +
-            "\n", "");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ Tally.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }

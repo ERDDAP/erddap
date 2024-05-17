@@ -7,9 +7,7 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 
@@ -20,17 +18,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -151,139 +140,4 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
             fv.results.size() + " time=" + (System.currentTimeMillis() - time) + "ms");
         return fv.results;
     }
-
-    /** 
-     * This tests a local file system. 
-     */
-    public static void testLocal() throws Throwable {
-        String2.log("\n*** FileVisitorSubdir.testLocal");
-        verbose = true;
-        String contextDir = File2.webInfParentDirectory(); //with / separator and / at the end
-        StringArray alps;
-        long time;
-
-        //test forward slashes
-        alps = oneStep(contextDir + "WEB-INF/classes/com/cohort", null);   //without trailing slash
-        String results = alps.toNewlineString();
-        String expected = 
-"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/\n" +
-"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/array/\n" +
-"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/ema/\n" +
-"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/util/\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //test backslashes 
-        alps = oneStep(
-            String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\'), //with trailing slash
-            null); 
-        results = alps.toNewlineString();
-        expected = String2.replaceAll(expected, '/', '\\');
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        String2.log("\n*** FileVisitorSubdir.testLocal finished.");
-    }
-
-    /** 
-     * This tests an Amazon AWS S3 file system.
-     * Your S3 credentials must be in 
-     * <br> ~/.aws/credentials on Linux, OS X, or Unix
-     * <br> C:\Users\USERNAME\.aws\credentials on Windows
-     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
-     */
-    public static void testAWSS3() throws Throwable {
-        String2.log("\n*** FileVisitorSubdir.testAWSS3");
-
-        verbose = true;
-        StringArray alps;
-        long time;
-
-        alps = oneStep(
-            "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
-            ""); 
-        String results = alps.toNewlineString();
-        String expected = 
-"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/\n" +
-"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        String2.log("\n*** FileVisitorSubdir.testAWSS3 finished.");
-
-    }
-
-    /** 
-     * This tests a WAF and pathRegex.
-     */
-    public static void testWAF() throws Throwable {
-        String2.log("\n*** FileVisitorSubdir.testWAF");
-
-        verbose = true;
-        StringArray alps;
-        long time;
-        try {
-
-        alps = oneStep("https://www.fisheries.noaa.gov/inportserve/waf/", //after 2020-08-03
-            //"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/", //pre 2020-08-03
-            ".*/NMFS/(|SWFSC/|NWFSC/)(|inport-xml/)(|xml/)"); //tricky!
-        String results = alps.toNewlineString();
-        String expected = 
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport-xml/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport-xml/xml/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport-xml/\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport-xml/xml/\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        String2.log("\n*** FileVisitorSubdir.testWAF finished.");
-        } catch (Exception e) {
-            Test.knownProblem("2020-08-03 New 'directory' in new InPort system isn't a directory but a web page with other info.", e);
-        }
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 2;
-        String msg = "\n^^^ FileVisitorSubdir.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) testLocal();
-                    if (test ==  1) testAWSS3();
-                    if (test ==  2) testWAF();
-
-                    //FUTURE: FTP?
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
 }

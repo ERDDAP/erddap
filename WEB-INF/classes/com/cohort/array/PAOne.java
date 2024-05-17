@@ -5,13 +5,8 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.File2;
 import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
-import com.cohort.util.String2;
-import com.cohort.util.Test;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
@@ -609,122 +604,5 @@ public class PAOne {
             dar[i] = paOneAr[i].getDouble();
         return dar;
     }
-
-
-    /** This tests the methods in this class.
-     */
-    public static void basicTest() throws Exception {
-        String2.log("\n*** PAOne.basicTest()");
-
-        ByteArray  ba = new ByteArray( new byte[]{-128, 0, 127});
-        ShortArray sa = new ShortArray(new short[]{-32768, 0, 32767});
-        PAOne bo = new PAOne(sa, 0);   
-        Test.ensureEqual(bo.toString(), "-32768", "");
-        Test.ensureEqual(bo.compareTo(ba, 0), -1, "");
-        bo.readFrom(sa, 1);              
-        Test.ensureEqual(bo.toString(), "0", "");
-        Test.ensureEqual(bo.compareTo(ba, 0), 1, "");
-        Test.ensureEqual(bo.compareTo(sa, 0), 1, "");
-        Test.ensureEqual(bo.compareTo(sa, 1), 0, "");
-        Test.ensureEqual(bo.compareTo(sa, 2), -1, "");
-
-        Test.ensureEqual(ba.missingValue().getString(), "127", "");
-        Test.ensureEqual(ba.missingValue().toString(), "127", "");
-
-        bo.addTo(sa);
-        Test.ensureEqual(sa.toString(), "-32768, 0, 32767, 0", "");
-
-        //constructors
-        PAOne paOne = new PAOne(PAType.BYTE, "-128");
-        Test.ensureEqual(paOne.paType(), PAType.BYTE, "");
-        Test.ensureEqual(paOne.getInt(), -128, "");
-
-
-        //raf test
-        String raf2Name = File2.getSystemTempDirectory() + "PAOneTest.bin";
-        String2.log("rafName=" + raf2Name);
-        File2.delete(raf2Name);
-        Test.ensureEqual(File2.isFile(raf2Name), false, "");
-
-        RandomAccessFile raf2 = new RandomAccessFile(raf2Name, "rw");
-        paOne = new PAOne(ba);
-        long bStart = raf2.getFilePointer();
-        for (int i = 0; i < 3; i++) {
-            paOne.readFrom(ba, i);
-            paOne.writeToRAF(raf2); //at current position
-        }
-
-        paOne = new PAOne(sa);
-        long sStart = raf2.getFilePointer();
-        for (int i = 0; i < 4; i++) {
-            paOne.readFrom(sa, i);
-            paOne.writeToRAF(raf2, sStart, i); //at specified position
-        }
-
-        paOne = new PAOne(sa);
-        raf2.seek(sStart);
-        for (int i = 0; i < 4; i++) {
-            paOne.readFromRAF(raf2);  //at current position
-            Test.ensureEqual(paOne, "" + sa.get(i), "i=" + i);
-        }
-
-        paOne = new PAOne(ba);
-        raf2.seek(bStart);
-        for (int i = 0; i < 3; i++) {
-            paOne.readFromRAF(raf2);  //at current position
-            Test.ensureEqual(paOne, "" + ba.get(i), "i=" + i);
-        }
-
-        paOne = new PAOne(ba);
-        for (int i = 0; i < 3; i++) {
-            paOne.readFromRAF(raf2, bStart, i);  //at specified position
-            Test.ensureEqual(paOne, "" + ba.get(i), "i=" + i);
-        }
-
-        //test almostEqual
-        
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ PAOne.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }
 

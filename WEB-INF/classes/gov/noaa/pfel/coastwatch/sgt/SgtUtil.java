@@ -18,38 +18,25 @@ import com.cohort.util.XML;
 
 //from itext-1.3.1.jar:
 import com.lowagie.text.Document;
-//import com.lowagie.text.DocumentException;
-//import com.lowagie.text.FontFactory;
 import com.lowagie.text.PageSize;
-//import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
-import gov.noaa.pfel.coastwatch.griddata.DataHelper;
-import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
 import gov.noaa.pfel.coastwatch.util.SSR;
-
-import gov.noaa.pmel.sgt.*;
-import gov.noaa.pmel.sgt.demo.*;
-import gov.noaa.pmel.sgt.dm.*;
-import gov.noaa.pmel.util.*;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.awt.geom.GeneralPath;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.image.BufferedImage;
 import java.awt.RenderingHints; 
 import java.io.File;
 import java.io.*;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 
@@ -213,7 +200,8 @@ public class SgtUtil  {
      * @param s the string to be split (if needed)  
      *    (if s == null or "", stringArray is unchanged).
      */
-    private static void splitLine(int limit, StringArray stringArray, 
+    // Protected to be accessed in tests.
+    protected static void splitLine(int limit, StringArray stringArray, 
         String s) {
 
         int limit10 = limit * 10;
@@ -1050,64 +1038,6 @@ public class SgtUtil  {
         return new double[]{newX, newY};
     }
 
-    /** This tests SgtUtil. */ 
-    public static void basicTest() throws Exception {
-        //test splitLine
-        String2.log("\n*** SgtUtil.basicTest");
-        StringArray sa = new StringArray();
-
-        //wide  
-        sa.clear();
-        splitLine(38, sa, "This is a test of splitline.");
-        Test.ensureEqual(sa.size(), 1, "");
-        Test.ensureEqual(sa.get(0), "This is a test of splitline.", "");
-
-        //narrow 
-        sa.clear();
-        splitLine(12, sa, "This is a test of splitline.");
-        Test.ensureEqual(sa.size(), 3, "");
-        Test.ensureEqual(sa.get(0), "This is a ", "");
-        Test.ensureEqual(sa.get(1), "test of ", "");
-        Test.ensureEqual(sa.get(2), "splitline.", "");
-
-        //narrow and can't split, so chop at limit
-        sa.clear();
-        splitLine(12, sa, "This1is2a3test4of5splitline.");
-        Test.ensureEqual(sa.size(), 3, "");
-        Test.ensureEqual(sa.get(0), "This1is2a3t", "");
-        Test.ensureEqual(sa.get(1), "est4of5split", "");
-        Test.ensureEqual(sa.get(2), "line.", "");
-
-        //caps
-        sa.clear();
-        splitLine(12, sa, "THESE ARE a a REALLY WIDE.");
-        Test.ensureEqual(sa.size(), 3, "");
-        Test.ensureEqual(sa.get(0), "THESE ARE ", "");
-        Test.ensureEqual(sa.get(1), "a a REALLY ", "");
-        Test.ensureEqual(sa.get(2), "WIDE.", "");
-
-        //test suggestPaletteRange
-        Test.ensureEqual(suggestPaletteRange(.3, 8.9), new double[]{0, 10}, ""); //typical Rainbow Linear
-        Test.ensureEqual(suggestPaletteRange(.11, 890), new double[]{.1, 1000}, ""); //typical Rainbow Log
-        Test.ensureEqual(suggestPaletteRange(-7, 8), new double[]{-10, 10}, ""); //typical BlueWhiteRed Linear symmetric
-
-        //test suggestPalette
-        Test.ensureEqual(suggestPalette(.3, 8.9), "WhiteRedBlack", ""); //small positive, large positive
-        Test.ensureEqual(suggestPalette(300, 890), "Rainbow", ""); //typical Rainbow Log
-        Test.ensureEqual(suggestPalette(-7, 8), "BlueWhiteRed", ""); //typical BlueWhiteRed Linear symmetric
-
-        //test suggestPaletteScale
-        Test.ensureEqual(suggestPaletteScale(.3, 8.9), "Linear", ""); //typical Rainbow Linear
-        Test.ensureEqual(suggestPaletteScale(.11, 890), "Log", ""); //typical Rainbow Log
-        Test.ensureEqual(suggestPaletteScale(-7, 8), "Linear", ""); //typical BlueWhiteRed Linear symmetric
-
-        BufferedImage bi = ImageIO.read(new File(String2.unitTestDataDir + "graphs/erdBAssta5day.png"));
-        long time = System.currentTimeMillis();
-        Test.ensureEqual(findGraph(bi), new int[]{24, 334, 150, 21}, "");
-        String2.log("findGraph time=" + (System.currentTimeMillis() - time) + "ms");
-    } 
-
-
 //*** Junk Yard *******
             //create the colorbar for the legend
             /*ColorKey colorKey = new ColorKey(new Point2D.Double(4.5, 3), //location 
@@ -1126,48 +1056,4 @@ public class SgtUtil  {
                 colorMap.getRange().end + " delta=" + colorMap.getRange().delta);
             layer.addChild(colorKey);
             */
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ SgtUtil.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
-
 }

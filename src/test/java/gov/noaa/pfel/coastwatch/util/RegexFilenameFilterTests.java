@@ -21,65 +21,68 @@ class RegexFilenameFilterTests {
         + "gov/noaa/pfel/coastwatch/";
 
     // test list
-    String[] sar = RegexFilenameFilter.list(coastwatchDir, "S.+\\.java");
+    String[] sar = RegexFilenameFilter.list(coastwatchDir, "S.+\\.class");
     String[] shouldBe = {
-        "Screen.java",
-        "Shared.java" };
+        "Screen.class",
+        "Shared.class" };
+        System.out.println(coastwatchDir);
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
 
     // test fullNameList
-    sar = RegexFilenameFilter.fullNameList(coastwatchDir, "S.+\\.java");
+    sar = RegexFilenameFilter.fullNameList(coastwatchDir, "S.+\\.class");
     shouldBe = new String[] {
-        coastwatchDir + "Screen.java",
-        coastwatchDir + "Shared.java"
+        coastwatchDir + "Screen.class",
+        coastwatchDir + "Shared.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.fullNameList");
 
     // test recursiveList
-    sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.java", true);
+    sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.class", true);
     shouldBe = new String[] {
-        coastwatchDir + "Screen.java",
-        coastwatchDir + "Shared.java",
+        coastwatchDir + "Screen.class",
+        coastwatchDir + "Shared.class",
         coastwatchDir + "griddata/",
-        coastwatchDir + "griddata/SaveOpendap.java",
+        coastwatchDir + "griddata/SaveOpendap.class",
         coastwatchDir + "hdf/",
-        coastwatchDir + "hdf/SdsReader.java",
-        coastwatchDir + "hdf/SdsWriter.java",
+        coastwatchDir + "hdf/SdsReader.class",
+        coastwatchDir + "hdf/SdsWriter.class",
         coastwatchDir + "netcheck/",
         coastwatchDir + "pointdata/",
-        coastwatchDir + "pointdata/ScriptRow.java",
-        coastwatchDir + "pointdata/StationVariableNc4D.java",
-        coastwatchDir + "pointdata/StoredIndex.java",
+        coastwatchDir + "pointdata/ScriptRow.class",
+        coastwatchDir + "pointdata/StationVariableNc4D.class",
+        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/",
-        coastwatchDir + "sgt/SGTPointsVector.java",
-        coastwatchDir + "sgt/SgtGraph.java",
-        coastwatchDir + "sgt/SgtMap.java",
-        coastwatchDir + "sgt/SgtUtil.java",
+        coastwatchDir + "sgt/SGTPointsVector.class",
+        coastwatchDir + "sgt/SgtGraph.class",
+        coastwatchDir + "sgt/SgtMap.class",
+        coastwatchDir + "sgt/SgtUtil.class",
         coastwatchDir + "util/",
-        coastwatchDir + "util/SSR.java",
-        coastwatchDir + "util/SimpleXMLReader.java",
-        coastwatchDir + "util/StringObject.java"
+        coastwatchDir + "util/SSR$1.class",
+        coastwatchDir + "util/SSR.class",
+        coastwatchDir + "util/SimpleXMLReader.class",
+        coastwatchDir + "util/StringObject.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
     // test recursiveList no directories
-    sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.java", false);
+    sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.class", false);
     shouldBe = new String[] {
-        coastwatchDir + "Screen.java",
-        coastwatchDir + "Shared.java",
-        coastwatchDir + "griddata/SaveOpendap.java",
-        coastwatchDir + "hdf/SdsReader.java",
-        coastwatchDir + "hdf/SdsWriter.java",
-        coastwatchDir + "pointdata/ScriptRow.java",
-        coastwatchDir + "pointdata/StationVariableNc4D.java",
-        coastwatchDir + "pointdata/StoredIndex.java",
-        coastwatchDir + "sgt/SGTPointsVector.java",
-        coastwatchDir + "sgt/SgtGraph.java",
-        coastwatchDir + "sgt/SgtMap.java",
-        coastwatchDir + "sgt/SgtUtil.java",
-        coastwatchDir + "util/SSR.java",
-        coastwatchDir + "util/SimpleXMLReader.java",
-        coastwatchDir + "util/StringObject.java"
+        coastwatchDir + "Screen.class",
+        coastwatchDir + "Shared.class",
+        coastwatchDir + "griddata/SaveOpendap.class",
+        coastwatchDir + "hdf/SdsReader.class",
+        coastwatchDir + "hdf/SdsWriter.class",
+        coastwatchDir + "pointdata/ScriptRow.class",
+        coastwatchDir + "pointdata/StationVariableNc4D.class",
+        coastwatchDir + "pointdata/StoredIndex.class",
+        coastwatchDir + "sgt/SGTPointsVector.class",
+        coastwatchDir + "sgt/SgtGraph.class",
+        coastwatchDir + "sgt/SgtMap.class",
+        coastwatchDir + "sgt/SgtUtil.class",
+        coastwatchDir + "util/SSR$1.class",
+        coastwatchDir + "util/SSR.class",
+        coastwatchDir + "util/SimpleXMLReader.class",
+        coastwatchDir + "util/StringObject.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
@@ -92,7 +95,7 @@ class RegexFilenameFilterTests {
     Test.ensureEqual(info[0].toString(),
         "griddata, hdf, netcheck, pointdata, sgt, util", "");
     Test.ensureEqual(info[1].toString(),
-        "Browser.class, Browser.java, BrowserDefault.properties", "");
+        "Browser.class, BrowserDefault.properties", "");
     // The below is flaky. Consider using a dedicated test resource directory instead of a code directory
     // and turn these back on.
     // Test.ensureEqual(lastMod.toString(), "2007-04-23T18:24:38Z,

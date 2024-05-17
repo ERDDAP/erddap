@@ -6,20 +6,14 @@ package gov.noaa.pfel.coastwatch.sgt;
 
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.DoubleArray;
-import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.util.SSR;
 
-import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.sgt.dm.*;
 
-import java.io.File;
 import java.io.*;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
@@ -634,99 +628,6 @@ public class Boundaries  {
     public static Boundaries getRivers() {
         return new Boundaries("Rivers", 
             REF_DIRECTORY, RIVER_FILE_NAMES, GMT_FORMAT);
-    }
-
-    /**
-     * This runs a unit test.
-     */
-    public static void basicTest() throws Exception {
-        verbose = true;
-
-        String2.log("\n*** Boundaries.basicTest");
-
-        Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
-        Boundaries stateBoundaries = Boundaries.getStateBoundaries();
-        SGTLine sgtLine;
-
-        //warmup
-        sgtLine = nationalBoundaries.getSgtLine(2, -134, -105, 22, 49);
-
-        //*** national
-        //force creation of new file
-        long time = System.currentTimeMillis();
-        sgtLine = nationalBoundaries.getSgtLine(2, -135, -105, 22, 50);
-        String2.log("create time=" + (System.currentTimeMillis() - time) + "ms (was 62)");
-
-        //read cached version
-        time = System.currentTimeMillis();
-        sgtLine = nationalBoundaries.getSgtLine(2, -135, -105, 22, 50);
-        time = System.currentTimeMillis() - time;
-        String2.log("cache time=" + time + "ms");
-
-        //is it the same  (is SGTLine.equals a deep test? probably not)
-
-        //test speed
-        Test.ensureTrue(time < 20, "time=" + time + "ms"); 
-
-
-        //*** state
-        //force creation of new file
-        sgtLine = stateBoundaries.getSgtLine(2, -135, -105, 22, 50);
-
-        //read cached version
-        time = System.currentTimeMillis();
-        sgtLine = stateBoundaries.getSgtLine(2, -135, -105, 22, 50);
-        time = System.currentTimeMillis() - time;
-
-        //is it the same  (is SGTLine.equals a deep test? probably not)
-
-        //test speed
-        Test.ensureTrue(time < 20, "time=" + time); 
-
-        String2.log(nationalBoundaries.statsString() + "\n" +
-            stateBoundaries.statsString());
-
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ Boundaries.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
     }
 
 }

@@ -46,6 +46,7 @@
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
+        <test.resources.version>rc-test</test.resources.version>
     </properties>
 
     <repositories>
@@ -145,7 +146,7 @@
                 <version>3.3.2</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, WEB-INF/lib/**, *.*, **/*.java</warSourceExcludes>
+                    <warSourceExcludes>content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/lib/**, *.*, **/*.java, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
 
@@ -165,81 +166,12 @@
                     <scan>0</scan>
                 </configuration>
             </plugin>
-
-            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>make-lib</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <mkdir dir="${project.basedir}/WEB-INF/lib"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>make-download-cache-dir</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <mkdir dir="${project.basedir}/download_cache"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-erddap-content</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <get src="https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-etopo</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-ref-files</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
-                            </target>
-                        </configuration>
-                    </execution>
+                    <!-- create data directory for testing -->
                     <execution>
                         <?m2e execute onConfiguration?>
                         <id>make-data-dir</id>
@@ -256,11 +188,129 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.8.1</version>
+                <executions>
+                    <execution>
+                        <id>download-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-etopo</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-ref</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>download-test-resources-data</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largeFiles</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largePoints</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largeSatellite</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
-                    <excludedGroups>AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, LargeFile, ExternalOther, IncompleteTest, WebInfStructureDependency</excludedGroups>
+                    <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-code-coverage-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
