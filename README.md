@@ -37,7 +37,7 @@ Note that by default tests that do an image comparison are enabled. To disable t
 If you'd like to skip the tests while building use `mvn package -DskipTests`. You can use the skipTests flags with other maven commands.
 
 
-## Contributing Code to ERDDAP
+## Contributing Code to ERDDAP&trade;
 
 Below are relevant links for getting involved with the ERDDAP&trade; community and contributing to ERDDAP:
 
