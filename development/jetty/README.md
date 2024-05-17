@@ -18,7 +18,7 @@ mvn validate
 ```
 
 
-### Build ERDDAP
+### Build ERDDAP&trade;
 
 These steps will download some additional files not included in the ERDDAP™ GitHub repository, create local directories for ERDDAP's "content" (`./content`) and "bigParentDirectory" (`./data`) directories, compile the ERDDAP™ code, and finally create an 'exploded' Java WAR directory to use to run ERDDAP™.  There is also a pre-configured version of ERDDAP's `setup.xml` file that will be copied to the `./content` directory to allow ERDDAP™ to start.
 

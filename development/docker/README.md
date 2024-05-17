@@ -1,4 +1,4 @@
-# ERDDAP Development with Docker/Tomcat
+# ERDDAP&trade; Development with Docker/Tomcat
 
 ## DockerFile
 For development purposes only, a DockerFile has been created in order to streamline the building and deploying of an ERDDAP™ instance locally. This DockerFile uses [Apache Maven](https://maven.apache.org/) to package the application into a WAR file, and then [Apache Tomcat](https://tomcat.apache.org/) to serve the application.
