@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -21,19 +22,25 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
+import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+import dods.dap.DAS;
+import dods.dap.DConnect;
+import dods.dap.DDS;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableTests;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -42,6 +49,7 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
 import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
@@ -54,6 +62,7 @@ import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
 import tags.TagImageComparison;
 import tags.TagJetty;
+import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -183,7 +192,7 @@ class JettyTests {
         "    </gmd:CI_ResponsibleParty>\n" + //
         "  </gmd:contact>\n" + //
         "  <gmd:dateStamp>\n" + //
-        "    <gco:Date>2024-05-07</gco:Date>\n" + //
+        "    <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "  </gmd:dateStamp>\n" + //
         "  <gmd:metadataStandardName>\n" + //
         "    <gco:CharacterString>ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for Imagery and Gridded Data</gco:CharacterString>\n"
@@ -195,7 +204,7 @@ class JettyTests {
         "  <gmd:spatialRepresentationInfo>\n" + //
         "    <gmd:MD_GridSpatialRepresentation>\n" + //
         "      <gmd:numberOfDimensions>\n" + //
-        "        <gco:Integer>4</gco:Integer>\n" + //
+        "        <gco:Integer>NUMBER</gco:Integer>\n" + //
         "      </gmd:numberOfDimensions>\n" + //
         "      <gmd:axisDimensionProperties>\n" + //
         "        <gmd:MD_Dimension>\n" + //
@@ -204,7 +213,7 @@ class JettyTests {
         + //
         "          </gmd:dimensionName>\n" + //
         "          <gmd:dimensionSize>\n" + //
-        "            <gco:Integer>4001</gco:Integer>\n" + //
+        "            <gco:Integer>NUMBER</gco:Integer>\n" + //
         "          </gmd:dimensionSize>\n" + //
         "          <gmd:resolution>\n" + //
         "            <gco:Measure uom=\"deg&#x7b;east&#x7d;\">0.0125</gco:Measure>\n" + //
@@ -218,7 +227,7 @@ class JettyTests {
         + //
         "          </gmd:dimensionName>\n" + //
         "          <gmd:dimensionSize>\n" + //
-        "            <gco:Integer>2321</gco:Integer>\n" + //
+        "            <gco:Integer>NUMBER</gco:Integer>\n" + //
         "          </gmd:dimensionSize>\n" + //
         "          <gmd:resolution>\n" + //
         "            <gco:Measure uom=\"deg&#x7b;north&#x7d;\">0.0125</gco:Measure>\n" + //
@@ -232,7 +241,7 @@ class JettyTests {
         + //
         "          </gmd:dimensionName>\n" + //
         "          <gmd:dimensionSize>\n" + //
-        "            <gco:Integer>1</gco:Integer>\n" + //
+        "            <gco:Integer>NUMBER</gco:Integer>\n" + //
         "          </gmd:dimensionSize>\n" + //
         "          <gmd:resolution gco:nilReason=\"inapplicable\"/>\n" + //
         "        </gmd:MD_Dimension>\n" + //
@@ -244,10 +253,10 @@ class JettyTests {
         + //
         "          </gmd:dimensionName>\n" + //
         "          <gmd:dimensionSize>\n" + //
-        "            <gco:Integer>7860</gco:Integer>\n" + //
+        "            <gco:Integer>NUMBER</gco:Integer>\n" + //
         "          </gmd:dimensionSize>\n" + //
         "          <gmd:resolution>\n" + //
-        "            <gco:Measure uom=\"s\">87697.26428298766</gco:Measure>\n" + //
+        "            <gco:Measure uom=\"s\">VALUE</gco:Measure>\n" + //
         "          </gmd:resolution>\n" + //
         "        </gmd:MD_Dimension>\n" + //
         "      </gmd:axisDimensionProperties>\n" + //
@@ -269,7 +278,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
@@ -280,7 +289,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
@@ -691,7 +700,7 @@ class JettyTests {
         "                <gml:TimePeriod gml:id=\"DI_gmdExtent_timePeriod_id\">\n" + //
         "                  <gml:description>seconds</gml:description>\n" + //
         "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
-        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n" + //
         "                </gml:TimePeriod>\n" + //
         "              </gmd:extent>\n" + //
         "            </gmd:EX_TemporalExtent>\n" + //
@@ -718,7 +727,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
@@ -729,7 +738,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
@@ -833,7 +842,7 @@ class JettyTests {
         "                <gml:TimePeriod gml:id=\"ED_gmdExtent_timePeriod_id\">\n" + //
         "                  <gml:description>seconds</gml:description>\n" + //
         "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
-        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n" + //
         "                </gml:TimePeriod>\n" + //
         "              </gmd:extent>\n" + //
         "            </gmd:EX_TemporalExtent>\n" + //
@@ -894,7 +903,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
@@ -905,7 +914,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
@@ -1009,7 +1018,7 @@ class JettyTests {
         "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n" + //
         "                  <gml:description>seconds</gml:description>\n" + //
         "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
-        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n" + //
         "                </gml:TimePeriod>\n" + //
         "              </gmd:extent>\n" + //
         "            </gmd:EX_TemporalExtent>\n" + //
@@ -1070,7 +1079,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n"
@@ -1081,7 +1090,7 @@ class JettyTests {
         "          <gmd:date>\n" + //
         "            <gmd:CI_Date>\n" + //
         "              <gmd:date>\n" + //
-        "                <gco:Date>2024-05-06</gco:Date>\n" + //
+        "                <gco:Date>YYYY-MM-DD</gco:Date>\n" + //
         "              </gmd:date>\n" + //
         "              <gmd:dateType>\n" + //
         "                <gmd:CI_DateTypeCode codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n"
@@ -1185,7 +1194,7 @@ class JettyTests {
         "                <gml:TimePeriod gml:id=\"WMS_gmdExtent_timePeriod_id\">\n" + //
         "                  <gml:description>seconds</gml:description>\n" + //
         "                  <gml:beginPosition>2002-07-04T12:00:00Z</gml:beginPosition>\n" + //
-        "                  <gml:endPosition>2024-05-06T12:00:00Z</gml:endPosition>\n" + //
+        "                  <gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>\n" + //
         "                </gml:TimePeriod>\n" + //
         "              </gmd:extent>\n" + //
         "            </gmd:EX_TemporalExtent>\n" + //
@@ -1392,19 +1401,27 @@ class JettyTests {
         "    </gmd:MD_MaintenanceInformation>\n" + //
         "  </gmd:metadataMaintenance>\n" + //
         "</gmi:MI_Metadata>\n";
+    results = results.replaceAll("<gco:Date>....-..-..</gco:Date>", "<gco:Date>YYYY-MM-DD</gco:Date>");
+    results = results.replaceAll("<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>", "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+    results = results.replaceAll("<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>", "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
+    results = results.replaceAll("<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
     Test.ensureEqual(results, expected, "results=" + results);
 
     results = SSR.getUrlResponseStringUnchanged(
         "http://localhost:" + PORT + "/erddap/metadata/");
     expected = "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" + //
-            "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n" + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"fgdc&#x2f;\">fgdc/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"iso19115&#x2f;\">iso19115/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
-            "</table>\n" + //
-            "3 directories, 0 files";
+        "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"fgdc&#x2f;\">fgdc/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"iso19115&#x2f;\">iso19115/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "</table>\n" + //
+        "3 directories, 0 files";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
 
     results = SSR.getUrlResponseStringUnchanged(
@@ -1458,7 +1475,7 @@ class JettyTests {
         "            <cntemail>erd.data@noaa.gov</cntemail>\n" + //
         "          </cntinfo>\n" + //
         "        </origin_cntinfo>\n" + //
-        "        <pubdate>20240506</pubdate>\n" + //
+        "        <pubdate>YYYYMMDD</pubdate>\n" + //
         "        <title>Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (1 Day Composite)</title>\n"
         + //
         "        <edition>Unknown</edition>\n" + //
@@ -1539,22 +1556,27 @@ class JettyTests {
         "      <purpose>Unknown</purpose>\n" + //
         "      <supplinf>https://coastwatch.pfeg.noaa.gov/infog/MW_chla_las.html</supplinf>\n" + //
         "    </descript>\n"; //
+        results = results.replaceAll("<pubdate>........</pubdate>", "<pubdate>YYYYMMDD</pubdate>");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
     results = SSR.getUrlResponseStringUnchanged(
         "http://localhost:" + PORT + "/erddap/metadata/fgdc");
     expected = "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" + //
-            "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n" + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
-            "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n" + //
-            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
-            "</table>\n" + //
-            "2 directories, 0 files";
+        "<tr><th><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/blank.gif\" alt=\"[ICO]\"></th><th><a href=\"?C=N;O=D\">Name</a></th><th><a href=\"?C=M;O=A\">Last modified</a></th><th><a href=\"?C=S;O=A\">Size</a></th><th><a href=\"?C=D;O=A\">Description</a></th></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/back.gif\" alt=\"[DIR]\"></td><td><a href=\"&#x2e;&#x2e;\">Parent Directory</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/dir.gif\" alt=\"[DIR]\"></td><td><a href=\"xml&#x2f;\">xml/</a></td><td class=\"R\">-</td><td class=\"R\">-</td><td></td></tr>\n"
+        + //
+        "<tr><th colspan=\"5\"><hr></th></tr>\n" + //
+        "</table>\n" + //
+        "2 directories, 0 files";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
 
     results = SSR.getUrlResponseStringUnchanged(
         "http://localhost:" + PORT + "/erddap/metadata/fgdc/xml/");
-    expected = "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";;
+    expected = "<tr><td><img class=\"B\" src=\"http://localhost:8080/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
+    ;
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
@@ -1826,17 +1848,17 @@ class JettyTests {
         "http://localhost:" + PORT
             + "/erddap/convert/interpolate.json?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
     String expected = "{\n" + //
-            "  \"table\": {\n" + //
-            "    \"columnNames\": [\"time\", \"latitude\", \"longitude\", \"erdMH1chla8day_chlorophyll_Bilinear_4\"],\n" + //
-            "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\"],\n" + //
-            "    \"rows\": [\n" + //
-            "      [\"2006-04-17T06:00:00Z\", 35.58, -122.55, null],\n" + //
-            "      [\"2006-04-17T12:00:00Z\", 35.576, -122.553, null],\n" + //
-            "      [\"2006-04-17T18:00:00Z\", 35.572, -122.568, null],\n" + //
-            "      [\"2007-01-02T00:00:00Z\", 35.569, -122.571, null]\n" + //
-            "    ]\n" + //
-            "  }\n" + //
-            "}\n";
+        "  \"table\": {\n" + //
+        "    \"columnNames\": [\"time\", \"latitude\", \"longitude\", \"erdMH1chla8day_chlorophyll_Bilinear_4\"],\n" + //
+        "    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\"],\n" + //
+        "    \"rows\": [\n" + //
+        "      [\"2006-04-17T06:00:00Z\", 35.58, -122.55, null],\n" + //
+        "      [\"2006-04-17T12:00:00Z\", 35.576, -122.553, null],\n" + //
+        "      [\"2006-04-17T18:00:00Z\", 35.572, -122.568, null],\n" + //
+        "      [\"2007-01-02T00:00:00Z\", 35.569, -122.571, null]\n" + //
+        "    ]\n" + //
+        "  }\n" + //
+        "}\n";
     Test.ensureEqual(results, expected, "results=" + results);
 
     // Request an html page, to test the html generation
@@ -1844,37 +1866,37 @@ class JettyTests {
         "http://localhost:" + PORT
             + "/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2006-04-17T06%3A00%3A00Z%2C35.580%2C-122.550%0A2006-04-17T12%3A00%3A00Z%2C35.576%2C-122.553%0A2006-04-17T18%3A00%3A00Z%2C35.572%2C-122.568%0A2007-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=erdMH1chla8day%2Fchlorophyll%2FBilinear%2F4");
     expected = "<table class=\"erd commonBGColor nowrap\">\n" + //
-            "<tr>\n" + //
-            "<th>time\n" + //
-            "<th>latitude\n" + //
-            "<th>longitude\n" + //
-            "<th>erdMH1chla8day_chlorophyll_Bilinear_4\n" + //
-            "</tr>\n" + //
-            "<tr>\n" + //
-            "<td>2006-04-17T06:00:00Z\n" + //
-            "<td class=\"R\">35.58\n" + //
-            "<td class=\"R\">-122.55\n" + //
-            "<td>\n" + //
-            "</tr>\n" + //
-            "<tr>\n" + //
-            "<td>2006-04-17T12:00:00Z\n" + //
-            "<td class=\"R\">35.576\n" + //
-            "<td class=\"R\">-122.553\n" + //
-            "<td>\n" + //
-            "</tr>\n" + //
-            "<tr>\n" + //
-            "<td>2006-04-17T18:00:00Z\n" + //
-            "<td class=\"R\">35.572\n" + //
-            "<td class=\"R\">-122.568\n" + //
-            "<td>\n" + //
-            "</tr>\n" + //
-            "<tr>\n" + //
-            "<td>2007-01-02T00:00:00Z\n" + //
-            "<td class=\"R\">35.569\n" + //
-            "<td class=\"R\">-122.571\n" + //
-            "<td>\n" + //
-            "</tr>\n" + //
-            "</table>\n";
+        "<tr>\n" + //
+        "<th>time\n" + //
+        "<th>latitude\n" + //
+        "<th>longitude\n" + //
+        "<th>erdMH1chla8day_chlorophyll_Bilinear_4\n" + //
+        "</tr>\n" + //
+        "<tr>\n" + //
+        "<td>2006-04-17T06:00:00Z\n" + //
+        "<td class=\"R\">35.58\n" + //
+        "<td class=\"R\">-122.55\n" + //
+        "<td>\n" + //
+        "</tr>\n" + //
+        "<tr>\n" + //
+        "<td>2006-04-17T12:00:00Z\n" + //
+        "<td class=\"R\">35.576\n" + //
+        "<td class=\"R\">-122.553\n" + //
+        "<td>\n" + //
+        "</tr>\n" + //
+        "<tr>\n" + //
+        "<td>2006-04-17T18:00:00Z\n" + //
+        "<td class=\"R\">35.572\n" + //
+        "<td class=\"R\">-122.568\n" + //
+        "<td>\n" + //
+        "</tr>\n" + //
+        "<tr>\n" + //
+        "<td>2007-01-02T00:00:00Z\n" + //
+        "<td class=\"R\">35.569\n" + //
+        "<td class=\"R\">-122.571\n" + //
+        "<td>\n" + //
+        "</tr>\n" + //
+        "</table>\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "No table found, results=" + results);
   }
 
@@ -5710,7 +5732,7 @@ class JettyTests {
     // "/erddap/download/changes.html"); // todo re-enable, a couple links seem to
     // be broken, needs more investigation
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/EDDTableFromEML.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html");
+    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html"); // todo re-enable, link to storage mojo about google might be gone
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV_1.00.html");
     // this.testForBrokenLinks("http://localhost:" + PORT +
@@ -5723,7 +5745,7 @@ class JettyTests {
     // this.testForBrokenLinks("http://localhost:" + PORT +
     // "/erddap/information.html"); // todo rtech link breaks, but its already
     // commented out, remove fully?
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/rest.html");
+    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/rest.html"); // todo re-enable, rganon broken
     // this.testForBrokenLinks("http://localhost:" + PORT +
     // "/erddap/griddap/documentation.html"); // todo re-enable multiple links error
     // this.testForBrokenLinks("http://localhost:" + PORT +
@@ -9038,7 +9060,6 @@ class JettyTests {
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf(expected2.substring(0, 100));
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
-
   }
 
   /** EDDGridFromDap */
@@ -9356,6 +9377,523 @@ class JettyTests {
         tName,
         baseName + ".png",
         baseName + "_diff.png");
+  }
+
+  /** This tests saveAsKml. */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testKml() throws Throwable {
+    // testVerboseOn();
+    int language = 0;
+
+    EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.gettestActualRange();
+    String name, tName, results, expected;
+    String dir = EDStatic.fullTestCacheDirectory;
+
+    // overall kml
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+        "SST[800][][]",
+        dir, gridDataset.className() + "_testKml", ".kml");
+    Test.displayInBrowser("file://" + dir + tName);
+    results = File2.directReadFromUtf8File(dir + tName);
+    expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" + //
+            "<Document>\n" + //
+            "  <name>NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present</name>\n" + //
+            "  <description><![CDATA[Time: 2018-03-13T00:00:00Z<br />\n" + //
+            "Data courtesy of USDOC/NOAA Coral Reef Watch<br />\n" + //
+            "<a href=\"http://localhost:8080/erddap/griddap/testActualRange.html?SST\">Download data from this dataset.</a><br />\n" + //
+            "    ]]></description>\n" + //
+            "  <Region>\n" + //
+            "    <Lod><minLodPixels>2</minLodPixels></Lod>\n" + //
+            "    <LatLonAltBox>\n" + //
+            "      <west>-90.125</west>\n" + //
+            "      <east>-59.875</east>\n" + //
+            "      <south>14.875</south>\n" + //
+            "      <north>30.125</north>\n" + //
+            "    </LatLonAltBox>\n" + //
+            "  </Region>\n" + //
+            "  <GroundOverlay>\n" + //
+            "    <drawOrder>1</drawOrder>\n" + //
+            "    <Icon>\n" + //
+            "      <href>http://localhost:8080/erddap/griddap/testActualRange.transparentPng?SST%5B(2018-03-13T00%3A00%3A00Z)%5D%5B(14.875)%3A1%3A(30.125)%5D%5B(-90.125)%3A1%3A(-59.875)%5D</href>\n" + //
+            "    </Icon>\n" + //
+            "    <LatLonBox>\n" + //
+            "      <west>-90.125</west>\n" + //
+            "      <east>-59.875</east>\n" + //
+            "      <south>14.875</south>\n" + //
+            "      <north>30.125</north>\n" + //
+            "    </LatLonBox>\n" + //
+            "  </GroundOverlay>\n" + //
+            "  <ScreenOverlay id=\"Logo\">\n" + //
+            "    <description>http://localhost:8080/erddap</description>\n" + //
+            "    <name>Logo</name>\n" + //
+            "    <Icon><href>http://localhost:8080/erddap/images/nlogo.gif</href></Icon>\n" + //
+            "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" + //
+            "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" + //
+            "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" + //
+            "  </ScreenOverlay>\n" + //
+            "</Document>\n" + //
+            "</kml>\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // a quadrant
+    tName = gridDataset.makeNewFileForDapQuery(language, null, null,
+        "SST[1500][(15.0):(30.0)][(-75.0):(-60.0)]",
+        dir, gridDataset.className() + "_testKml2", ".kml");
+    results = File2.directReadFromUtf8File(dir + tName);
+    expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" + //
+            "<Document>\n" + //
+            "  <name>NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present</name>\n" + //
+            "  <description><![CDATA[Time: 2020-04-23T00:00:00Z<br />\n" + //
+            "Data courtesy of USDOC/NOAA Coral Reef Watch<br />\n" + //
+            "<a href=\"http://localhost:8080/erddap/griddap/testActualRange.html?SST\">Download data from this dataset.</a><br />\n" + //
+            "    ]]></description>\n" + //
+            "  <Region>\n" + //
+            "    <Lod><minLodPixels>2</minLodPixels></Lod>\n" + //
+            "    <LatLonAltBox>\n" + //
+            "      <west>-74.875</west>\n" + //
+            "      <east>-59.875</east>\n" + //
+            "      <south>15.125</south>\n" + //
+            "      <north>30.125</north>\n" + //
+            "    </LatLonAltBox>\n" + //
+            "  </Region>\n" + //
+            "  <GroundOverlay>\n" + //
+            "    <drawOrder>1</drawOrder>\n" + //
+            "    <Icon>\n" + //
+            "      <href>http://localhost:8080/erddap/griddap/testActualRange.transparentPng?SST%5B(2020-04-23T00%3A00%3A00Z)%5D%5B(15.125)%3A1%3A(30.125)%5D%5B(-74.875)%3A1%3A(-59.875)%5D</href>\n" + //
+            "    </Icon>\n" + //
+            "    <LatLonBox>\n" + //
+            "      <west>-74.875</west>\n" + //
+            "      <east>-59.875</east>\n" + //
+            "      <south>15.125</south>\n" + //
+            "      <north>30.125</north>\n" + //
+            "    </LatLonBox>\n" + //
+            "  </GroundOverlay>\n" + //
+            "  <ScreenOverlay id=\"Logo\">\n" + //
+            "    <description>http://localhost:8080/erddap</description>\n" + //
+            "    <name>Logo</name>\n" + //
+            "    <Icon><href>http://localhost:8080/erddap/images/nlogo.gif</href></Icon>\n" + //
+            "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" + //
+            "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" + //
+            "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" + //
+            "  </ScreenOverlay>\n" + //
+            "</Document>\n" + //
+            "</kml>\n";;
+    Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testOpendap() throws Throwable {
+    String2.log("\n****************** EDDGridFromDap test opendap\n" +
+        "!!!THIS READS DATA FROM SERVER RUNNING ON COASTWATCH: erdMHchla8day on " +
+        EDStatic.erddapUrl + "!!!"); // in tests, always non-https url
+    // testVerboseOn();
+    String results, expected, tName;
+    int tPo;
+    String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
+    String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
+    String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
+    StringArray destinationNames = new StringArray();
+    IntArray constraints = new IntArray();
+    int language = 0;
+
+    // get das and dds
+    String threddsUrl = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
+    String erddapUrl = EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb"; // in tests, always non-https url
+    DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
+    DConnect erddapConnect = new DConnect(erddapUrl, true, 1, 1); // in tests, always non-https url
+    DAS das = erddapConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
+    DDS dds = erddapConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    PrimitiveArray tpas[], epas[];
+
+    // get global attributes
+    Attributes attributes = new Attributes();
+    OpendapHelper.getAttributes(das, "GLOBAL", attributes);
+    Test.ensureEqual(attributes.getString("contributor_name"), null, "");
+    Test.ensureEqual(attributes.getString("keywords"),
+          "circulation, currents, density, depths, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water",
+        "");
+
+    // get attributes for a dimension
+    attributes.clear();
+    OpendapHelper.getAttributes(das, "latitude", attributes);
+    Test.ensureEqual(attributes.getString("coordsys"), null, "");
+    Test.ensureEqual(attributes.get("fraction_digits"), null, ""); // test if
+                                                                                            // stored in
+                                                                                            // correct
+                                                                                            // form
+
+    // get attributes for grid variable
+    attributes.clear();
+    OpendapHelper.getAttributes(das, "salt", attributes);
+    Test.ensureEqual(attributes.getString("standard_name"), "sea_water_practical_salinity",
+        "");
+    Test.ensureEqual(attributes.getString("units"), "PSU", "");
+
+    // test get dimension data - all
+    String threddsQuery = "lat";
+    String erddapQuery = "latitude";
+    String2.log("\nFrom thredds:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
+    String2.log("\nFrom erddap:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(erddapUrl + ".asc?" + erddapQuery))); // in tests,
+                                                                                // always
+                                                                                // non-https
+                                                                                // url
+    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsQuery);
+    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + erddapQuery);
+    Test.ensureEqual(tpas[0].size(), 330, "");
+    Test.ensureEqual(epas[0].size(), 330, "");
+    Test.ensureEqual(tpas[0].getDouble(0), -75.25, "");
+    Test.ensureEqual(epas[0].getDouble(0), -75.25, "");
+    Test.ensureEqual(tpas[0].getDouble(300), 74.75, "");
+    Test.ensureEqual(epas[0].getDouble(300), 74.75, "");
+
+    // test get dimension data - part
+    threddsQuery = SSR.percentEncode("lat[10:2:20]");
+    erddapQuery = SSR.percentEncode("latitude[10:2:20]");
+    String2.log("\nFrom thredds:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
+    String2.log("\nFrom erddap:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(erddapUrl + ".asc?" + erddapQuery))); // in tests,
+                                                                                // always
+                                                                                // non-https
+                                                                                // url
+    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsQuery);
+    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + erddapQuery);
+    Test.ensureEqual(tpas[0].toString(),
+        "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25",
+        "");
+    Test.ensureEqual(epas[0].toString(),
+        "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25",
+        "");
+
+    // get grid data
+    // chlorophyll[177][0][2080:20:2500][4500:20:4940]
+    String threddsUserDapQuery = SSR.percentEncode("salt[177][0][8:2:10][350]");
+    String griddapUserDapQuery = SSR.percentEncode("salt[177][0][8:2:10][350]");
+    String2.log("\nFrom thredds:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsUserDapQuery)));
+    String2.log("\nFrom erddap:\n" + String2.annotatedString(
+        SSR.getUrlResponseStringUnchanged(erddapUrl + ".asc?" + griddapUserDapQuery))); // in
+                                                                                        // tests,
+                                                                                        // always
+                                                                                        // non-https
+                                                                                        // url
+
+    // corresponding time varies, so just make sure they match
+    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsUserDapQuery);
+    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + griddapUserDapQuery);
+    // Test.ensureEqual(epas[1], tpas[1], ""); // time
+    Test.ensureEqual(epas[2], tpas[2], ""); // alt
+    Test.ensureEqual(epas[3], tpas[3], ""); // lat
+    Test.ensureEqual(epas[4], tpas[4], ""); // lon
+    Test.ensureEqual(epas[0], tpas[0], ""); // data
+    String tTime = Calendar2.epochSecondsToIsoStringTZ(tpas[1].getDouble(0));
+    float tData1 = tpas[0].getFloat(0);
+    float tData2 = tpas[0].getFloat(1);
+
+    // *** test that EDDGridFromDAP works via netcdf-java library
+    String2.log("\n****************** EDDGridFromDap test netcdf-java\n");
+    NetcdfFile nc = NetcdfDatasets.openFile(EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb", null); // in
+                                                                                                  // tests,
+                                                                                                  // always
+                                                                                                  // non-https
+                                                                                                  // url
+    try {
+      results = nc.toString();
+      results = NcHelper.decodeNcDump(results); // added with switch to netcdf-java 4.0
+      String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); // in tests, always
+                                                                              // non-https url
+      expected = // these are regex lines
+          "netcdf hawaii_d90f_20ee_c4cb {\n" + //
+                        "  dimensions:\n" + //
+                        "    time = 1680;\n" + //
+                        "    depth = 40;\n" + //
+                        "    latitude = 330;\n" + //
+                        "    longitude = 720;\n" + //
+                        "  variables:\n" + //
+                        "    double time(time=1680);\n" + //
+                        "      :_CoordinateAxisType = \"Time\";\n" + //
+                        "      :actual_range = -3.122928E9, 1.2923712E9; // double\n" + //
+                        "      :axis = \"T\";\n" + //
+                        "      :ioos_category = \"Time\";\n" + //
+                        "      :long_name = \"Centered Time\";\n" + //
+                        "      :standard_name = \"time\";\n" + //
+                        "      :time_origin = \"01-JAN-1970 00:00:00\";\n" + //
+                        "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" + //
+                        "\n" + //
+                        "    double depth(depth=40);\n" + //
+                        "      :_CoordinateAxisType = \"Height\";\n" + //
+                        "      :_CoordinateZisPositive = \"down\";\n" + //
+                        "      :actual_range = 5.01, 5375.0; // double\n" + //
+                        "      :axis = \"Z\";\n" + //
+                        "      :ioos_category = \"Location\";\n" + //
+                        "      :long_name = \"Depth\";\n" + //
+                        "      :positive = \"down\";\n" + //
+                        "      :standard_name = \"depth\";\n" + //
+                        "      :units = \"m\";\n" + //
+                        "\n" + //
+                        "    double latitude(latitude=330);\n" + //
+                        "      :_CoordinateAxisType = \"Lat\";\n" + //
+                        "      :actual_range = -75.25, 89.25; // double\n" + //
+                        "      :axis = \"Y\";\n" + //
+                        "      :ioos_category = \"Location\";\n" + //
+                        "      :long_name = \"Latitude\";\n" + //
+                        "      :standard_name = \"latitude\";\n" + //
+                        "      :units = \"degrees_north\";\n" + //
+                        "\n" + //
+                        "    double longitude(longitude=720);\n" + //
+                        "      :_CoordinateAxisType = \"Lon\";\n" + //
+                        "      :actual_range = 0.25, 359.75; // double\n" + //
+                        "      :axis = \"X\";\n" + //
+                        "      :ioos_category = \"Location\";\n" + //
+                        "      :long_name = \"Longitude\";\n" + //
+                        "      :standard_name = \"longitude\";\n" + //
+                        "      :units = \"degrees_east\";\n" + //
+                        "\n" + //
+                        "    float temp(time=1680, depth=40, latitude=330, longitude=720);\n" + //
+                        "      :_CoordinateAxes = \"time depth latitude longitude \";\n" + //
+                        "      :_FillValue = -9.99E33f; // float\n" + //
+                        "      :colorBarMaximum = 32.0; // double\n" + //
+                        "      :colorBarMinimum = 0.0; // double\n" + //
+                        "      :ioos_category = \"Temperature\";\n" + //
+                        "      :long_name = \"Sea Water Temperature\";\n" + //
+                        "      :missing_value = -9.99E33f; // float\n" + //
+                        "      :standard_name = \"sea_water_temperature\";\n" + //
+                        "      :units = \"degree_C\";\n" + //
+                        "\n" + //
+                        "    float salt(time=1680, depth=40, latitude=330, longitude=720);\n" + //
+                        "      :_CoordinateAxes = \"time depth latitude longitude \";\n" + //
+                        "      :_FillValue = -9.99E33f; // float\n" + //
+                        "      :colorBarMaximum = 37.0; // double\n" + //
+                        "      :colorBarMinimum = 32.0; // double\n" + //
+                        "      :ioos_category = \"Salinity\";\n" + //
+                        "      :long_name = \"Sea Water Practical Salinity\";\n" + //
+                        "      :missing_value = -9.99E33f; // float\n" + //
+                        "      :standard_name = \"sea_water_practical_salinity\";\n" + //
+                        "      :units = \"PSU\";\n" + //
+                        "\n" + //
+                        "    float u(time=1680, depth=40, latitude=330, longitude=720);\n" + //
+                        "      :_CoordinateAxes = \"time depth latitude longitude \";\n" + //
+                        "      :_FillValue = -9.99E33f; // float\n" + //
+                        "      :colorBarMaximum = 0.5; // double\n" + //
+                        "      :colorBarMinimum = -0.5; // double\n" + //
+                        "      :ioos_category = \"Currents\";\n" + //
+                        "      :long_name = \"Eastward Sea Water Velocity\";\n" + //
+                        "      :missing_value = -9.99E33f; // float\n" + //
+                        "      :standard_name = \"eastward_sea_water_velocity\";\n" + //
+                        "      :units = \"m s-1\";\n" + //
+                        "\n" + //
+                        "    float v(time=1680, depth=40, latitude=330, longitude=720);\n" + //
+                        "      :_CoordinateAxes = \"time depth latitude longitude \";\n" + //
+                        "      :_FillValue = -9.99E33f; // float\n" + //
+                        "      :colorBarMaximum = 0.5; // double\n" + //
+                        "      :colorBarMinimum = -0.5; // double\n" + //
+                        "      :ioos_category = \"Currents\";\n" + //
+                        "      :long_name = \"Northward Sea Water Velocity\";\n" + //
+                        "      :missing_value = -9.99E33f; // float\n" + //
+                        "      :standard_name = \"northward_sea_water_velocity\";\n" + //
+                        "      :units = \"m s-1\";\n" + //
+                        "\n" + //
+                        "    float w(time=1680, depth=40, latitude=330, longitude=720);\n" + //
+                        "      :_CoordinateAxes = \"time depth latitude longitude \";\n" + //
+                        "      :_FillValue = -9.99E33f; // float\n" + //
+                        "      :colorBarMaximum = 1.0E-5; // double\n" + //
+                        "      :colorBarMinimum = -1.0E-5; // double\n" + //
+                        "      :comment = \"WARNING: Please use this variable's data with caution.\";\n" + //
+                        "      :ioos_category = \"Currents\";\n" + //
+                        "      :long_name = \"Upward Sea Water Velocity\";\n" + //
+                        "      :missing_value = -9.99E33f; // float\n" + //
+                        "      :standard_name = \"upward_sea_water_velocity\";\n" + //
+                        "      :units = \"m s-1\";\n" + //
+                        "\n" + //
+                        "  // global attributes:\n" + //
+                        "  :cdm_data_type = \"Grid\";\n" + //
+                        "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" + //
+                        "  :dataType = \"Grid\";\n" + //
+                        "  :defaultDataQuery = \"temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]\";\n" + //
+                        "  :defaultGraphQuery = \"temp[last][0][0:last][0:last]&.draw=surface&.vars=longitude|latitude|temp\";\n" + //
+                        "  :documentation = \"http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php\";\n" + //
+                        "  :Easternmost_Easting = 359.75; // double\n" + //
+                        "  :geospatial_lat_max = 89.25; // double\n" + //
+                        "  :geospatial_lat_min = -75.25; // double\n" + //
+                        "  :geospatial_lat_resolution = 0.5; // double\n" + //
+                        "  :geospatial_lat_units = \"degrees_north\";\n" + //
+                        "  :geospatial_lon_max = 359.75; // double\n" + //
+                        "  :geospatial_lon_min = 0.25; // double\n" + //
+                        "  :geospatial_lon_resolution = 0.5; // double\n" + //
+                        "  :geospatial_lon_units = \"degrees_east\";\n" + //
+                        "  :history = \"Tue Apr 30 05:42:52 HST 2024 : imported by GrADS Data Server 2.0\n";
+      // int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
+      // Test.ensureTrue(po > 0, "RESULTS=\n" + results);
+      // Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
+      Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+      expected =
+      "  :infoUrl = \"https://www.atmos.umd.edu/~ocean/\";\n" + //
+                "  :institution = \"TAMU/UMD\";\n" + //
+                "  :keywords = \"circulation, currents, density, depths, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water\";\n" + //
+                "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" + //
+                "  :license = \"The data may be used and redistributed for free but is not intended\n" + //
+                "for legal use, since it may contain inaccuracies. Neither the data\n" + //
+                "Contributor, ERD, NOAA, nor the United States Government, nor any\n" + //
+                "of their employees or contractors, makes any warranty, express or\n" + //
+                "implied, including warranties of merchantability and fitness for a\n" + //
+                "particular purpose, or assumes any legal liability for the accuracy,\n" + //
+                "completeness, or usefulness, of this information.\";\n" + //
+                "  :Northernmost_Northing = 89.25; // double\n" + //
+                "  :sourceUrl = \"http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4\";\n" + //
+                "  :Southernmost_Northing = -75.25; // double\n" + //
+                "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n" + //
+                "  :summary = \"Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean \n" + //
+                "climate. SODA uses the GFDL modular ocean model version 2.2. The model is \n" + //
+                "forced by observed surface wind stresses from the COADS data set (from 1958 \n" + //
+                "to 1992) and from NCEP (after 1992). Note that the wind stresses were \n" + //
+                "detrended before use due to inconsistencies with observed sea level pressure \n" + //
+                "trends. The model is also constrained by constant assimilation of observed \n" + //
+                "temperatures, salinities, and altimetry using an optimal data assimilation \n" + //
+                "technique. The observed data comes from: 1) The World Ocean Atlas 1994 which \n" + //
+                "contains ocean temperatures and salinities from mechanical \n" + //
+                "bathythermographs, expendable bathythermographs and conductivity-temperature-\n" + //
+                "depth probes. 2) The expendable bathythermograph archive 3) The TOGA-TAO \n" + //
+                "thermistor array 4) The Soviet SECTIONS tropical program 5) Satellite \n" + //
+                "altimetry from Geosat, ERS/1 and TOPEX/Poseidon. \n" + //
+                "We are now exploring an eddy-permitting reanalysis based on the Parallel \n" + //
+                "Ocean Program POP-1.4 model with 40 levels in the vertical and a 0.4x0.25 \n" + //
+                "degree displaced pole grid (25 km resolution in the western North \n" + //
+                "Atlantic).  The first version of this we will release is SODA1.2, a \n" + //
+                "reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended to \n" + //
+                "the current year using available altimetry).\";\n" + //
+                "  :time_coverage_end = \"2010-12-15T00:00:00Z\";\n" + //
+                "  :time_coverage_start = \"1871-01-15T00:00:00Z\";\n" + //
+                "  :title = \"SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)\";\n" + //
+                "  :Westernmost_Easting = 0.25; // double\n" + //
+                "}\n";
+      Test.ensureEqual(results.substring(results.indexOf("  :infoUrl =")), expected,
+          "RESULTS=\n" + results);
+
+      attributes.clear();
+      NcHelper.getGroupAttributes(nc.getRootGroup(), attributes);
+      Test.ensureEqual(attributes.getString("institution"), "TAMU/UMD", "");
+      Test.ensureEqual(attributes.getString("keywords"),
+          "circulation, currents, density, depths, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water",
+          "found=" + attributes.getString("keywords"));
+
+      // get attributes for a dimension
+      Variable ncLat = nc.findVariable("latitude");
+      attributes.clear();
+      NcHelper.getVariableAttributes(ncLat, attributes);
+      Test.ensureEqual(attributes.getString("coordsys"), null, "");
+      Test.ensureEqual(attributes.get("fraction_digits"), null, "");
+
+      // get attributes for grid variable
+      Variable ncSalt = nc.findVariable("salt");
+      attributes.clear();
+      NcHelper.getVariableAttributes(ncSalt, attributes);
+      Test.ensureEqual(attributes.getString("standard_name"),
+          "sea_water_practical_salinity", "");
+      Test.ensureEqual(attributes.getString("units"), "PSU", "");
+
+      // test get dimension data - all
+      PrimitiveArray pa = NcHelper.getPrimitiveArray(ncLat);
+      Test.ensureEqual(pa.elementType(), PAType.DOUBLE, "");
+      Test.ensureEqual(pa.size(), 330, "");
+      Test.ensureEqual(pa.getDouble(0), -75.25, "");
+      Test.ensureEqual(pa.getDouble(329), 89.25, "");
+
+      // test get dimension data - part
+      pa = NcHelper.getPrimitiveArray(ncLat, 10, 20);
+      Test.ensureEqual(pa.elementType(), PAType.DOUBLE, "");
+      Test.ensureEqual(pa.size(), 11, "");
+      Test.ensureEqual(pa.getDouble(0), -70.25, "");
+      Test.ensureEqual(pa.getDouble(10), -65.25, "");
+
+      // get grid data
+      pa = NcHelper.get4DValues(ncSalt, 600, 300, 0, 170, 190); // x,y,z,t1,t2
+      Test.ensureEqual(pa.elementType(), PAType.FLOAT, "");
+      String2.log("pa=" + pa);
+      Test.ensureEqual(pa.size(), 21, "");
+      // pre 2010-10-26 was 0.113f
+      // pre 2012-08-17 was 0.12906f
+      Test.ensureEqual(pa.getFloat(0), 32.992302f, "");
+      Test.ensureEqual(pa.getFloat(1), 33.015766f, "");
+
+    } finally {
+      nc.close();
+    }
+
+    // *** test that EDDGridFromDap can treat itself as a datasource
+    String2.log("\n*** EDDGridFromDap test can treat itself as a datasource\n");
+    ArrayList tDataVariables = new ArrayList();
+
+    EDDGrid eddGrid2 = new EDDGridFromDap(
+        "erddapChlorophyll", // String tDatasetID,
+        null, null, true,
+        null, null, null, null, null, null,
+        null,
+        new Object[][] {
+            { // dataVariables[dvIndex][0=sourceName, 1=destName, 2=addAttributes]
+                "salt", null, null } },
+        60, // int tReloadEveryNMinutes,
+        -1, // updateEveryNMillis,
+        erddapUrl, -1, true); // sourceUrl, nThreads, dimensionValuesInMemory); //in tests,
+                              // always non-https
+                              // url
+
+    // .xhtml
+    tName = eddGrid2.makeNewFileForDapQuery(language, null, null, griddapUserDapQuery,
+        EDStatic.fullTestCacheDirectory, eddGrid2.className() + "_Itself", ".xhtml");
+    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    // String2.log(results);
+    expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" + //
+            "  \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" + //
+            "<html xmlns=\"https://www.w3.org/1999/xhtml\">\n" + //
+            "<head>\n" + //
+            "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" + //
+            "  <title>EDDGridFromDap_Itself</title>\n" + //
+            "  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/erddap/images/erddap2.css\" />\n" + //
+            "</head>\n" + //
+            "<body>\n" + //
+            "\n" + //
+            "&nbsp;\n" + //
+            "<table class=\"erd commonBGColor nowrap\">\n" + //
+            "<tr>\n" + //
+            "<th>time</th>\n" + //
+            "<th>depth</th>\n" + //
+            "<th>latitude</th>\n" + //
+            "<th>longitude</th>\n" + //
+            "<th>salt</th>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<th>UTC</th>\n" + //
+            "<th>m</th>\n" + //
+            "<th>degrees_north</th>\n" + //
+            "<th>degrees_east</th>\n" + //
+            "<th>PSU</th>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>1885-10-15T00:00:00Z</td>\n" + //
+            "<td class=\"R\">5.01</td>\n" + //
+            "<td class=\"R\">-71.25</td>\n" + //
+            "<td class=\"R\">175.25</td>\n" + //
+            "<td class=\"R\">34.12381</td>\n" + //
+            "</tr>\n" + //
+            "<tr>\n" + //
+            "<td>1885-10-15T00:00:00Z</td>\n" + //
+            "<td class=\"R\">5.01</td>\n" + //
+            "<td class=\"R\">-70.25</td>\n" + //
+            "<td class=\"R\">175.25</td>\n" + //
+            "<td class=\"R\">34.12087</td>\n" + //
+            "</tr>\n" + //
+            "</table>\n" + //
+            "</body>\n" + //
+            "</html>\n";
+    Test.ensureEqual(results, expected, "RESULTS=\n" + results);
   }
 
   /** EDDGridFromErddap */
@@ -10104,6 +10642,217 @@ class JettyTests {
     /* */
   }
 
+  /**
+   * This tests the /files/ "files" system.
+   * This requires nceiPH53sstn1day and testGridFromErddap in the local ERDDAP.
+   *
+   * EDDGridFromNcFiles.testFiles() has more tests than any other testFiles().
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testGridFromErddapFiles() throws Throwable {
+
+    String2.log("\n*** EDDGridFromErddap.testFiles()\n");
+    String tDir = EDStatic.fullTestCacheDirectory;
+    String dapQuery, tName, start, query, results, expected;
+    int po;
+
+    // get /files/.csv
+    results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/.csv"));
+    Test.ensureTrue(results.indexOf("Name,Last modified,Size,Description[10]") == 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(
+        "nceiPH53sstd1day/,NaN,NaN,\"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417\\u00b0, 1981-present, Daytime (1 Day Composite)\"[10]") > 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf(
+        "rMH1chla8day/,NaN,NaN,\"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\"[10]") > 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("documentation.html,") > 0, "results=\n" + results);
+
+    // get /files/datasetID/.csv
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/.csv");
+    results = results.replaceAll(",.............,", ",lastMod,");
+    expected = "Name,lastMod,Size,Description\n" +
+        "A20030012003008.L3m_8D_CHL_chlor_a_4km.nc,lastMod,29437837,\n" + //
+        "A20030092003016.L3m_8D_CHL_chlor_a_4km.nc,lastMod,30795913,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/");
+    Test.ensureTrue(results.indexOf("A20030012003008&#x2e;L3m&#x5f;8D&#x5f;CHL&#x5f;chlor&#x5f;a&#x5f;4km&#x2e;nc") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Parent Directory") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("A20030092003016&#x2e;L3m&#x5f;8D&#x5f;CHL&#x5f;chlor&#x5f;a&#x5f;4km&#x2e;nc") > 0, "results=\n" + results);
+
+    // get /files/datasetID //missing trailing slash will be redirected
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/rMH1chla8day");
+    Test.ensureTrue(results.indexOf("A20030012003008&#x2e;L3m&#x5f;8D&#x5f;CHL&#x5f;chlor&#x5f;a&#x5f;4km&#x2e;nc") > 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Parent Directory") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("A20030092003016&#x2e;L3m&#x5f;8D&#x5f;CHL&#x5f;chlor&#x5f;a&#x5f;4km&#x2e;nc") > 0,
+        "results=\n" + results);
+
+    // Todo get a dataset here with a subdir
+    // get /files/datasetID/subdir/.csv
+    // results = SSR.getUrlResponseStringNewline(
+    //     "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/1994/.csv");
+    // expected = "Name,Last modified,Size,Description\n" +
+    //     "data/,NaN,NaN,\n";
+    // Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // // get /files/datasetID/subdir/subdir.csv
+    // results = SSR.getUrlResponseStringNewline(
+    //     "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/1994/data/.csv");
+    // expected = "Name,Last modified,Size,Description\n" +
+    //     "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,1471330800000,12484412,\n";
+    // Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // // download a file in root -- none available
+
+    // // download a file in subdir
+    // results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+    //     "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/1994/data/" +
+    //         "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc")
+    //     .substring(0, 50));
+    // expected = "[137]HDF[10]\n" +
+    //     "[26][10]\n" +
+    //     "[2][8][8][0][0][0][0][0][0][0][0][0][255][255][255][255][255][255][255][255]<[127][190][0][0][0][0][0]0[0][0][0][0][0][0][0][199](*yOHD[end]";
+    // Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // query with // at start fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files//.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "HTTP ERROR 400 Ambiguous URI empty segment";
+    Test.ensureTrue(results.indexOf(expected) > 0, "results=\n" + results);
+
+    // query with // later fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day//.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    Test.ensureTrue(results.indexOf(expected) > 0, "results=\n" + results);
+
+    // query with /../ fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/../");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files/rMH1chla8day/../\n"
+        +
+        "(Error {\n" +
+        "    code=400;\n" +
+        "    message=\"Bad Request: Query error: /../ is not allowed!\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent dataset
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent datasetID
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download an existent subdirectory but without trailing slash
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/GLsubdir");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: ERROR from url=http://localhost:" + PORT + "/erddap/files/rMH1chla8day/GLsubdir : "
+        +
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+        "http://localhost:" + PORT + "/erddap/files/erdMH1chla8day/GLsubdir\n" +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: GLsubdir .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent directory
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+        "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/gibberish/\n" +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in root
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: ERROR from url=http://localhost:" + PORT + "/erddap/files/rMH1chla8day/gibberish.csv : "
+        +
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+        "http://localhost:" + PORT + "/erddap/files/erdMH1chla8day/gibberish.csv\n" +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in existent subdir
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/rMH1chla8day/GLsubdir/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: ERROR from url=http://localhost:" + PORT + "/erddap/files/rMH1chla8day/GLsubdir/gibberish.csv : "
+        +
+        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: " +
+        "http://localhost:" + PORT + "/erddap/files/erdMH1chla8day/GLsubdir/gibberish.csv\n" +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+  }
+
   /** EDDGridFromEtopo */
 
   /**
@@ -10818,7 +11567,7 @@ class JettyTests {
     // +
     // today + " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
     // today + "
-    // http://localhost:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
+    // http://localhost:" + PORT + "/erddap/tabledap/rGlobecBottle.das\";\n" +
     expected2 = "    String infoUrl \"https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics\";\n" +
         "    String institution \"GLOBEC\";\n" +
         "    String keywords \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n"
@@ -11136,6 +11885,397 @@ class JettyTests {
     }
     expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT
         + "/erddap/files/testTableCopy/nh0207/gibberish.csv\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  /** EDDGridFromNcFiles */
+
+  /**
+   * This test the speed of all types of responses.
+   * This test is in this class because the source data is in a file,
+   * so it has reliable access speed.
+   * This gets a pretty big chunk of data.
+   *
+   * @param firstTest 0..
+   * @param lastTest  (inclusive) Any number greater than last available is
+   *                  interpreted as last available.
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testSpeed() throws Throwable {
+    int firstTest = 0;
+    int lastTest = 1000;
+    // String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
+    // "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n"
+    // +
+    // SgtUtil.isBufferedImageAccelerated() + "\n");
+    int language = 0;
+    // gc and sleep to give computer time to catch up from previous tests
+    for (int i = 0; i < 4; i++)
+      Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
+    // boolean oReallyVerbose = reallyVerbose;
+    // reallyVerbose = false;
+    String outName;
+    // 2017-10-13 I switched from getFile to curl
+    // The advantage is: curl will detect if outputstream isn't being closed.
+    // 2018-05-17 problems with curl, switched to SSR.downloadFile
+    String baseRequest = "http://localhost:" + PORT +"/erddap/griddap/testGriddedNcFiles";
+    String userDapQuery = "?" + SSR.minimalPercentEncode("y_wind[(2008-01-07T12:00:00Z)][0][][0:719]") + // 719
+                                                                                                         // avoids
+                                                                                                         // esriAsc
+                                                                                                         // cross
+                                                                                                         // lon=180
+        "&.vec="; // avoid get cached response
+    String baseName = "EDDGridFromNcFilesTestSpeed";
+    String baseOut = EDStatic.fullTestCacheDirectory + baseName;
+    ArrayList al;
+    int timeOutSeconds = 120;
+    String extensions[] = new String[] {
+        ".asc", ".csv", ".csvp", ".csv0",
+        ".das", ".dds", ".dods", ".esriAscii",
+        ".graph", ".html", ".htmlTable", // .help not available at this level
+        ".json", ".jsonlCSV", ".jsonlCSV1", ".jsonlKVP", ".mat",
+        ".nc", ".ncHeader",
+        ".nccsv", ".nccsvMetadata", ".ncoJson",
+        ".odvTxt", ".timeGaps",
+        ".tsv", ".tsvp", ".tsv0",
+        ".xhtml",
+        ".geotif", ".kml",
+        ".smallPdf", ".pdf", ".largePdf",
+        ".smallPng", ".png", ".largePng",
+        ".transparentPng" };
+    int expectedMs[] = new int[] {
+        // 2017-10-13 I added 200 ms with change from getFile to curl
+        // 2018-05-17 I adjusted (e.g., small files 200ms faster) with switch to
+        // SSR.downloadFile
+        // now Lenovo was Java 1.8/M4700 //was Java 1.6 times //was java 1.5 times
+        550, 1759, 1635, 1544, // 734, 6391, 6312, ? //1250, 9750, 9562, ?
+        // why is esriAscii so slow??? was ~9000 for a long time. Then jumped to 23330.
+        15, 15, 663, 12392, // 15, 15, 109/156, 16875 //15, 15, 547, 18859
+        40, 25, 477, // 63, 47, 2032, //93, 31, ...,
+        1843, 1568, 1568, 2203, 666, // 6422, ., ., 203, //9621, ., ., 625,
+        173, 117, // 234, 250, //500, 500,
+        3485, 16, 390,
+        2446, 13, // 9547, ? //13278, ?
+        1411, 1411, 1411, // 6297, 6281, ?, //8766, 8844, ?,
+        2204, // but really slow if hard drive is busy! //8625, //11469,
+        500, 20, // 656, 110, //687, 94, //Java 1.7 was 390r until change to new netcdf-Java
+        266, 976, 1178, // 860, 2859, 3438, //2188, 4063, 3797, //small varies greatly
+        131, 209, 459, // 438, 468, 1063, //438, 469, 1188, //small varies greatly
+        720 }; // 1703 //2359};
+    int bytes[] = new int[] {
+        5875592, 23734053, 23734063, 23733974,
+        6006, 303, 2085486, 4701074,
+        60787, 60196, 11980027,
+        31827797, 28198736, 28198830, 54118736, 2085800,
+        2090600, 5285,
+        25961828, 5244, 5877820,
+        26929890, 58,
+        23734053, 23734063, 23733974,
+        69372795,
+        523113, 3601,
+        478774, 2189656, 2904880,
+        33930, 76777, 277494, // small png flips between 26906 and 30764, updated to 33930
+        335307 };
+
+    // warm up
+    boolean tryToCompress = true;
+    outName = baseOut + "Warmup.csvp.csv";
+    SSR.downloadFile(baseRequest + ".csvp" + userDapQuery + Math2.random(1000), outName, tryToCompress);
+    // was al = SSR.dosShell(baseRequest + ".csvp" + userDapQuery +
+    // Math2.random(1000) +
+    // " -o " + outName, timeOutSeconds);
+    // String2.log(String2.toNewlineString(al.toArray()));
+
+    outName = baseOut + "Warmup.png.png";
+    SSR.downloadFile(baseRequest + ".png" + userDapQuery + Math2.random(1000), outName, tryToCompress);
+    // al = SSR.dosShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
+    // " -o " + outName, timeOutSeconds);
+
+    outName = baseOut + "Warmup.pdf.pdf";
+    SSR.downloadFile(baseRequest + ".pdf" + userDapQuery + Math2.random(1000), outName, tryToCompress);
+    // al = SSR.dosShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
+    // " -o " + outName, timeOutSeconds);
+
+    lastTest = Math.min(lastTest, extensions.length - 1);
+    for (int ext = firstTest; ext <= lastTest; ext++) {
+      // String2.pressEnterToContinue("");
+      // Math2.sleep(3000);
+      String dotExt = extensions[ext];
+      // try {
+      String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + ": " +
+          dotExt + " speed\n");
+      long time = 0, cLength = 0;
+      int chance = 0;
+      // for (int chance = 0; chance < 3; chance++) {
+        Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); // in a test
+        time = System.currentTimeMillis();
+        outName = baseOut + chance + dotExt;
+        SSR.downloadFile(baseRequest + dotExt + userDapQuery + Math2.random(1000), outName, tryToCompress);
+        // al = SSR.dosShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
+        // " -o " + outName, timeOutSeconds);
+
+        time = System.currentTimeMillis() - time;
+        cLength = File2.length(outName);
+        String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext +
+            " chance#" + chance + ": " + dotExt + " done.\n  " +
+            cLength + " bytes (" + bytes[ext] +
+            ").  time=" + time + "ms (expected=" + expectedMs[ext] + ")\n");
+        // Math2.sleep(3000);
+
+        // if not too slow or too fast, break
+        // if (time > 1.5 * Math.max(50, expectedMs[ext]) ||
+        //     time < (expectedMs[ext] <= 50 ? 0 : 0.5) * expectedMs[ext]) {
+        //   // give it another chance
+        // } else {
+          // break;
+        // }
+      // }
+
+      // size test
+      Test.ensureTrue(cLength > 0.9 * bytes[ext],
+          "File shorter than expected.  observed=" +
+              cLength + " expected=~" + bytes[ext] +
+              "\n" + outName);
+      Test.ensureTrue(cLength < 1.1 * bytes[ext],
+          "File longer than expected.  observed=" +
+              cLength + " expected=~" + bytes[ext] +
+              "\n" + outName);
+
+      // time test
+      // TODO check performance in a better way
+      // if (time > 1.5 * Math.max(50, expectedMs[ext]))
+      //   throw new SimpleException(
+      //       "Slower than expected. observed=" + time +
+      //           " expected=~" + expectedMs[ext] + " ms.");
+      // if (expectedMs[ext] >= 50 && time < 0.5 * expectedMs[ext])
+      //   throw new SimpleException(
+      //       "Faster than expected! observed=" + time +
+      //           " expected=~" + expectedMs[ext] + " ms.");
+
+      // display last image
+      if (ext == extensions.length - 1) {
+        File2.rename(outName, outName + ".png");
+        Test.displayInBrowser(outName + ".png"); // complicated to switch to testImagesIdentical
+      }
+
+      // } catch (Exception e) {
+      // String2.pressEnterToContinue(MustBe.throwableToString(e) +
+      // "Unexpected error for Test#" + ext + ": " + dotExt + ".");
+      // }
+    }
+    // reallyVerbose = oReallyVerbose;
+  }
+
+  /**
+   * This tests the /files/ "files" system.
+   * This requires nceiPH53sstn1day in the local ERDDAP.
+   *
+   * EDDGridFromNcFiles.testFiles() has more tests than any other testFiles().
+   */
+  @org.junit.jupiter.api.Test
+  @TagLocalERDDAP
+  void testFiles() throws Throwable {
+
+    String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
+    String tDir = EDStatic.fullTestCacheDirectory;
+    String dapQuery, tName, start, query, results, expected;
+    int language = 0;
+    int po;
+
+    // get /files/.csv
+    results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/.csv"));
+    Test.ensureTrue(results.indexOf("Name,Last modified,Size,Description[10]") == 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(
+        "nceiPH53sstn1day/,NaN,NaN,\"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417\\u00b0, 1981-present, Nighttime (1 Day Composite)\"[10]") > 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("testTableAscii/,NaN,NaN,The Title for testTableAscii[10]") > 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("documentation.html,") > 0, "results=\n" + results);
+
+    // get /files/datasetID/.csv
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/.csv");
+    expected = "Name,Last modified,Size,Description\n" +
+        "1981/,NaN,NaN,\n" +
+        "1994/,NaN,NaN,\n" +
+        "2020/,NaN,NaN,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/");
+    Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("1981/") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
+
+    // get /files/datasetID //missing trailing slash will be redirected
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day");
+    Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("1981/") > 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
+
+    // get /files/datasetID/subdir/.csv
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/1994/.csv");
+    expected = "Name,Last modified,Size,Description\n" +
+        "data/,NaN,NaN,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // get /files/datasetID/subdir/subdir.csv
+    results = SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/1994/data/.csv");
+    expected = "Name,Last modified,Size,Description\n" +
+        "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,1471330800000,12484412,\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // download a file in root -- none available
+
+    // download a file in subdir
+    results = String2.annotatedString(SSR.getUrlResponseStringNewline(
+        "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/1994/data/" +
+            "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc")
+        .substring(0, 50));
+    expected = "[137]HDF[10]\n" +
+        "[26][10]\n" +
+        "[2][8][8][0][0][0][0][0][0][0][0][0][255][255][255][255][255][255][255][255]<[127][190][0][0][0][0][0]0[0][0][0][0][0][0][0][199](*yOHD[end]";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // query with // at start fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files//.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files//.csv\n"
+        +
+        "(Error {\n" +
+        "    code=400;\n" +
+        "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // query with // later fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day//.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day//.csv\n"
+        +
+        "(Error {\n" +
+        "    code=400;\n" +
+        "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // query with /../ fails
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/../");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/../\n"
+        +
+        "(Error {\n" +
+        "    code=400;\n" +
+        "    message=\"Bad Request: Query error: /../ is not allowed!\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent dataset
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent datasetID
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/gibberish/\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a existent subdirectory but without trailing slash
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/GLsubdir");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/GLsubdir\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: GLsubdir .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent directory
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/gibberish/");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/gibberish/\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in root
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/gibberish.csv\n"
+        +
+        "(Error {\n" +
+        "    code=404;\n" +
+        "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
+        "})";
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    // try to download a non-existent file in existent subdir
+    try {
+      results = SSR.getUrlResponseStringNewline(
+          "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/GLsubdir/gibberish.csv");
+    } catch (Exception e) {
+      results = e.toString();
+    }
+    expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/GLsubdir/gibberish.csv\n"
         +
         "(Error {\n" +
         "    code=404;\n" +

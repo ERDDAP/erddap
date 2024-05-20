@@ -8,7 +8,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import tags.TagLargeFiles;
-import testDataset.EDDTestDataset;
+
 
 class NdbcMetStationTests {
   /**
@@ -971,7 +971,7 @@ class NdbcMetStationTests {
   /**
    * This reads the Historical RCPT2.nc file and makes sure it has the right info.
    */
-  public static void testHistoricalRCPT2Nc(String ndbcHistoricalNcDir) throws Exception {
+  static void testHistoricalRCPT2Nc(String ndbcHistoricalNcDir) throws Exception {
     String2.log("\n*** testHistoricalRCPT2Nc");
 
     Table table = new Table();

@@ -150,6 +150,8 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_erdMH1chla8day());
       datasetsXml.append(xmlFragment_erdMH1chlamday());
       datasetsXml.append(xmlFragment_nceiPH53sstd1day());
+      datasetsXml.append(xmlFragment_nceiPH53sstn1day());
+      datasetsXml.append(xmlFragment_testGridFromErddap());
       datasetsXml.append(xmlFragment_testUnsignedGrid());
       datasetsXml.append(xmlFragment_testGridNThreads());
       datasetsXml.append(xmlFragment_testStructure());
@@ -25556,6 +25558,535 @@ public class EDDTestDataset {
         "        </addAttributes>\n" + //
         "    </dataVariable>\n" + //
         "</dataset>\n";
+  }
+
+  public static EDD getnceiPH53sstn1day() throws Throwable {
+    return EDD.oneFromXmlFragment(null,
+        xmlFragment_nceiPH53sstn1day());
+  }
+
+  private static String xmlFragment_nceiPH53sstn1day() throws URISyntaxException {
+    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstn1day\" active=\"true\">\n" + //
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
+        + "</fileDir>\n" + //
+            "    <fileNameRegex>.*_night-v.*\\.nc</fileNameRegex>\n" + //
+            "    <recursive>true</recursive>\n" + //
+            "    <pathRegex>/u00/satellite/PH53/1day/(|[0-9]{4}/(|data/))</pathRegex>\n" + //
+            "    <metadataFrom>last</metadataFrom>\n" + //
+            "    <matchAxisNDigits>6</matchAxisNDigits>\n" + //
+            "    <fileTableInMemory>false</fileTableInMemory>\n" + //
+            "    <!-- sourceAttributes>\n" + //
+            "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the NOAA National Centers for Environmental Information (NCEI). This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.</att>\n" + //
+            "        <att name=\"cdm_data_type\">Grid</att>\n" + //
+            "        <att name=\"cdr_id\">gov.noaa.ncdc:C00983</att>\n" + //
+            "        <att name=\"cdr_program\">NOAA Climate Data Record Program for satellites</att>\n" + //
+            "        <att name=\"cdr_variable\">sea_surface_temperature</att>\n" + //
+            "        <att name=\"comment\">SST from AVHRR Pathfinder</att>\n" + //
+            "        <att name=\"contributor_name\">Robert Evans</att>\n" + //
+            "        <att name=\"contributor_role\">Principal Investigator</att>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, ACDD-1.3</att>\n" + //
+            "        <att name=\"creator_email\">Kenneth.Casey@noaa.gov</att>\n" + //
+            "        <att name=\"creator_institution\">US DOC; NOAA; National Environmental Satellite Data and Information Service; National Centers for Environmental Information</att>\n" + //
+            "        <att name=\"creator_name\">Kenneth S. Casey</att>\n" + //
+            "        <att name=\"creator_type\">person</att>\n" + //
+            "        <att name=\"creator_url\">http://pathfinder.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"date_created\">20160512T145140Z</att>\n" + //
+            "        <att name=\"date_issued\">20160301T000000Z</att>\n" + //
+            "        <att name=\"date_metadata_modified\">20160125T000000Z</att>\n" + //
+            "        <att name=\"date_modified\">20160512T145140Z</att>\n" + //
+            "        <att name=\"day_or_night\">Night</att>\n" + //
+            "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"file_quality_level\" type=\"int\">3</att>\n" + //
+            "        <att name=\"gds_version_id\">2.0</att>\n" + //
+            "        <att name=\"geospatial_bounds\">-180.0000 -90.0000, 180.0000 90.0000</att>\n" + //
+            "        <att name=\"geospatial_bounds_crs\">EPSG:4326</att>\n" + //
+            "        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_min\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"geospatial_lat_resolution\" type=\"float\">0.0416667</att>\n" + //
+            "        <att name=\"geospatial_lat_units\">degrees north</att>\n" + //
+            "        <att name=\"geospatial_lon_max\" type=\"float\">180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_min\" type=\"float\">-180.0</att>\n" + //
+            "        <att name=\"geospatial_lon_resolution\" type=\"float\">0.0416667</att>\n" + //
+            "        <att name=\"geospatial_lon_units\">degrees east</att>\n" + //
+            "        <att name=\"history\">smigen_both ifile=1981238.b4kd1-pf53ap-n07-sst.hdf ofile=1981238.i4kd1-pf53ap-n07-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; /srv/disk_v1t/PFV5.3CONV/bin/Converter/hdf2nc_PFV53_L3C.x -v /srv/disk_v1t/PFV5.3CONV/Data_PFV53/PFV53_HDF_L3C/1981/1981238.i4kd1-pf53ap-n07-sst.hdf</att>\n" + //
+            "        <att name=\"id\">AVHRR_Pathfinder-NCEI-L3C-v5.3</att>\n" + //
+            "        <att name=\"institution\">NCEI</att>\n" + //
+            "        <att name=\"instrument\">AVHRR-2</att>\n" + //
+            "        <att name=\"instrument_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords v8.4</att>\n" + //
+            "        <att name=\"keywords\">Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">NASA/Global Change Master Directory (GCMD) Science Keywords v8.4</att>\n" + //
+            "        <att name=\"license\">These data are available for use without restriction.</att>\n" + //
+            "        <att name=\"metadata_link\">http://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3</att>\n" + //
+            "        <att name=\"naming_authority\">org.ghrsst</att>\n" + //
+            "        <att name=\"ncei_template_version\">NCEI_NetCDF_Grid_Template_v2.0</att>\n" + //
+            "        <att name=\"netcdf_version_id\">4.1.2</att>\n" + //
+            "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" + //
+            "        <att name=\"orbit_node\">Descending</att>\n" + //
+            "        <att name=\"platform\">NOAA-7</att>\n" + //
+            "        <att name=\"platform_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords v8.4</att>\n" + //
+            "        <att name=\"principal_year_day_for_collated_orbits\">1981238</att>\n" + //
+            "        <att name=\"processing_level\">L3C</att>\n" + //
+            "        <att name=\"product_version\">PFV5.3</att>\n" + //
+            "        <att name=\"program\">NOAA Climate Data Record (CDR) Program for satellites</att>\n" + //
+            "        <att name=\"project\">Group for High Resolution Sea Surface Temperature</att>\n" + //
+            "        <att name=\"publisher_email\">ghrsst-po@nceo.ac.uk</att>\n" + //
+            "        <att name=\"publisher_name\">GHRSST Project Office</att>\n" + //
+            "        <att name=\"publisher_type\">group</att>\n" + //
+            "        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" + //
+            "        <att name=\"references\">http://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.</att>\n" + //
+            "        <att name=\"sea_name\">World-Wide Distribution</att>\n" + //
+            "        <att name=\"sensor\">AVHRR-2</att>\n" + //
+            "        <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" + //
+            "        <att name=\"spatial_resolution\">0.0416667 degree</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">Climate and Forecast (CF) Standard Name Table (Version 29, 08 July 2015)</att>\n" + //
+            "        <att name=\"start_time\">19810825T092713Z</att>\n" + //
+            "        <att name=\"stop_time\">19810826T194432Z</att>\n" + //
+            "        <att name=\"summary\">This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.3 of the Pathfinder algorithm and the file is nearly but not completely compliant with the GHRSST Data Specifications V2.0 (GDS2). The sses_bias and sses_standard_deviation variables are empty. Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created by the NOAA National Centers for Environmental Information (NCEI).</att>\n" + //
+            "        <att name=\"time_coverage_duration\">P1D</att>\n" + //
+            "        <att name=\"time_coverage_end\">19810826T194432Z</att>\n" + //
+            "        <att name=\"time_coverage_resolution\">P1D</att>\n" + //
+            "        <att name=\"time_coverage_start\">19810825T092713Z</att>\n" + //
+            "        <att name=\"title\">AVHRR Pathfinder Version 5.3 L3-Collated (L3C) sea surface temperature</att>\n" + //
+            "        <att name=\"uuid\">DC9A0670-5AD0-4B6D-9EDA-ECDE9BDDB517</att>\n" + //
+            "        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" + //
+            "    </sourceAttributes -->\n" + //
+            "    <addAttributes>\n" + //
+            "        <att name=\"Conventions\">CF-1.6, ACDD-1.3, COARDS</att>\n" + //
+            "        <att name=\"creator_url\">https://pathfinder.nodc.noaa.gov</att>\n" + //
+            "        <att name=\"easternmost_longitude\">null</att>\n" + //
+            "        <att name=\"file_quality_level\">null</att>\n" + //
+            "        <att name=\"infoUrl\">https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3</att>\n" + //
+            "        <att name=\"keywords\">10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere,\n" + //
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" + //
+            "atmospheric, avhrr, bias, centers, climate, collated, cryosphere,\n" + //
+            "Earth Science &gt; Cryosphere &gt; Sea Ice &gt; Ice Extent,\n" + //
+            "data, deviation, difference, distribution, dt_analysis, dynamic, environmental, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, information, l2p, l2p_flags, l3-collated, l3c, level, national, ncei, noaa, ocean, oceans,\n" + //
+            "Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" + //
+            "Earth Science &gt; Oceans &gt; Sea Ice &gt; Ice Extent,\n" + //
+            "optical, optical properties, pathfinder, pathfinder_quality_level, pixel, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds</att>\n" + //
+            "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+            "        <att name=\"license\">These data are available for use without restriction.\n" + //
+            "[standard]</att>\n" + //
+            "        <att name=\"netcdf_version_id\">null</att>\n" + //
+            "        <att name=\"northernmost_latitude\">null</att>\n" + //
+            "        <att name=\"references\">https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.</att>\n" + //
+            "        <att name=\"sourceUrl\">https://www.ncei.noaa.gov/thredds-ocean/catalog/pathfinder/Version5.3/L3C/catalog.html</att>\n" + //
+            "        <att name=\"southernmost_latitude\">null</att>\n" + //
+            "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" + //
+            "        <att name=\"start_time\">null</att>\n" + //
+            "        <att name=\"stop_time\">null</att>\n" + //
+            "        <att name=\"summary\">Advanced Very High Resolution Radiometer (AVHRR) Pathfinder Version 5.3 L3-Collated (L3C) sea surface temperature. This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.3 of the Pathfinder algorithm and the file is nearly but not completely compliant with the Global High-Resolution Sea Surface Temperature (GHRSST) Data Specifications V2.0 (GDS2). The sses_bias and sses_standard_deviation variables are empty. Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created by the NOAA National Centers for Environmental Information (NCEI).</att>\n" + //
+            "        <att name=\"title\">AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417&deg;, 1981-present, Nighttime (1 Day Composite)</att>\n" + //
+            "        <att name=\"uuid\">null</att>\n" + //
+            "        <att name=\"westernmost_longitude\">null</att>\n" + //
+            "    </addAttributes>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>***replaceFromFileName,timeFormat=yyyyDDD,.*_Pathfinder-PFV5\\.3_NOAA\\d\\d_G_(\\d{7})_night.*\\.nc,1</sourceName>\n" + //
+            "        <destinationName>time</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" + //
+            "            <att name=\"axis\">T</att>\n" + //
+            "            <att name=\"calendar\">gregorian</att>\n" + //
+            "            <att name=\"comment\">This is the reference time of the SST file. Add sst_dtime to this value to get pixel-by-pixel times.</att>\n" + //
+            "            <att name=\"long_name\">reference time of SST file</att>\n" + //
+            "            <att name=\"standard_name\">time</att>\n" + //
+            "            <att name=\"units\">seconds since 1981-01-01 00:00:00</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"comment\">This is the centered, reference time.</att>\n" + //
+            "            <att name=\"ioos_category\">Time</att>\n" + //
+            "            <att name=\"long_name\">Centered Time</att>\n" + //
+            "            <att name=\"units\">seconds since 1970-01-01T12:00:00Z</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lat</sourceName>\n" + //
+            "        <destinationName>latitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">Y</att>\n" + //
+            "            <att name=\"long_name\">latitude</att>\n" + //
+            "            <att name=\"reference_datum\">Geographical coordinates, WGS84 datum</att>\n" + //
+            "            <att name=\"standard_name\">latitude</att>\n" + //
+            "            <att name=\"units\">degrees_north</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">90.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Latitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <axisVariable>\n" + //
+            "        <sourceName>lon</sourceName>\n" + //
+            "        <destinationName>longitude</destinationName>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"axis\">X</att>\n" + //
+            "            <att name=\"long_name\">longitude</att>\n" + //
+            "            <att name=\"reference_datum\">Geographical coordinates, WGS84 datum</att>\n" + //
+            "            <att name=\"standard_name\">longitude</att>\n" + //
+            "            <att name=\"units\">degrees_east</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">180.0</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Location</att>\n" + //
+            "            <att name=\"long_name\">Longitude</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </axisVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sea_surface_temperature</sourceName>\n" + //
+            "        <destinationName>sea_surface_temperature</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">273.15</att>\n" + //
+            "            <att name=\"ancillary_variables\">quality_level pathfinder_quality_level l2p_flags</att>\n" + //
+            "            <att name=\"comment\">Skin temperature of the ocean</att>\n" + //
+            "            <att name=\"coverage_content_type\">physicalMeasurement</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">NOAA Climate Data Record of sea surface skin temperature</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"standard_name\">sea_surface_skin_temperature</att>\n" + //
+            "            <att name=\"units\">kelvin</att>\n" + //
+            "            <att name=\"valid_max\" type=\"short\">4500</att>\n" + //
+            "            <att name=\"valid_min\" type=\"short\">-180</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">-273.15</att>  <!-- source is wrong! -->\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "            <att name=\"valid_max\" type=\"double\">318.15</att>\n" + //
+            "            <att name=\"valid_min\" type=\"double\">271.35</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <!-- dataVariable>\n" + //
+            "        <sourceName>sst_dtime</sourceName>\n" + //
+            "        <destinationName>sst_dtime</destinationName>\n" + //
+            "        <dataType>int</dataType>\n" + //
+            "        <! - - sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"int\">-2147483648</att>\n" + //
+            "            <att name=\"add_offset\" type=\"int\">0</att>\n" + //
+            "            <att name=\"comment\">Time plus sst_dtime gives seconds after 1981-01-01 00:00:00. Note: in PFV5.3 this sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">time difference from reference time</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"int\">1</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">seconds</att>\n" + //
+            "            <att name=\"valid_max\" type=\"int\">2147483647</att>\n" + //
+            "            <att name=\"valid_min\" type=\"int\">-2147483647</att>\n" + //
+            "        </sourceAttributes - - >\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" + //
+            "            <att name=\"ioos_category\">Temperature</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sses_bias</sourceName>\n" + //
+            "        <destinationName>sses_bias</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <! - - sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">Bias estimate derived using the techniques described at https://www.ghrsst.org/ghrsst/tags-and-wgs/stval-wg/sses-description-of-schemes/. Note: in PFV5.3 this sses_bias is empty. PFV6 will contain the correct sses_bias values.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">SSES bias estimate</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">0.02</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">kelvin</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes - - >\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sses_standard_deviation</sourceName>\n" + //
+            "        <destinationName>sses_standard_deviation</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <! - - sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">2.54</att>\n" + //
+            "            <att name=\"comment\">Standard deviation estimate derived using the techniques described at https://www.ghrsst.org/ghrsst/tags-and-wgs/stval-wg/sses-description-of-schemes/. Note: in PFV5.3 this sses_standard_deviation is empty. PFV6 will contain the correct sses_standard_deviation values.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">SSES standard deviation</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">0.02</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">kelvin</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes - - >\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>dt_analysis</sourceName>\n" + //
+            "        <destinationName>dt_analysis</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">The difference between this SST and the previous day&#39;s SST.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">deviation from last SST analysis</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"reference\">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see http://accession.nodc.noaa.gov/0071180.</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" + //
+            "            <att name=\"source\">NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)</att>\n" + //
+            "            <att name=\"units\">kelvin</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Statistics</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.</att>\n" + //
+            "            <att name=\"units\">degree_C</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>wind_speed</sourceName>\n" + //
+            "        <destinationName>wind_speed</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"height\">10 m</att>\n" + //
+            "            <att name=\"long_name\">10m wind speed</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"source\">NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.1981.nc, v_wind.10m.gauss.1981.nc</att>\n" + //
+            "            <att name=\"standard_name\">wind_speed</att>\n" + //
+            "            <att name=\"time_offset\" type=\"double\">2.3552</att>\n" + //
+            "            <att name=\"units\">m s-1</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Wind</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>sea_ice_fraction</sourceName>\n" + //
+            "        <destinationName>sea_ice_fraction</destinationName>\n" + //
+            "        <dataType>double</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (http://accession.nodc.noaa.gov/0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.3 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.3 grid.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">sea ice fraction</att>\n" + //
+            "            <att name=\"reference\">Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" + //
+            "            <att name=\"source\">NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 19810901-NCDC-L4LRblend-GLOB-v01-fv02_0-AVHRR_OI.nc.gz</att>\n" + //
+            "            <att name=\"standard_name\">sea_ice_area_fraction</att>\n" + //
+            "            <att name=\"time_offset\" type=\"double\">10.0</att>\n" + //
+            "            <att name=\"units\">percent</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.3 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.3 grid.</att>\n" + //
+            "            <att name=\"ioos_category\">Ice Distribution</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <!-- half of files have add_offset 1.1, others 0.\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>aerosol_dynamic_indicator</sourceName>\n" + //
+            "        <destinationName>aerosol_dynamic_indicator</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">Aerosol optical thickness (AOT) data are taken from the CLASS Pathfinder (from AVHRR) (AVHRRPF). The aerosol optical thickness/depth (AOT/AOD) measurements are extracted from PATMOS-A2 monthly mean and reprojected and interpolated from their original 1 degree x 1 degree resolution to the 4km Pathfinder Version 5.3 grid.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">aerosol dynamic indicator</att>\n" + //
+            "            <att name=\"reference\">http://www.class.ncdc.noaa.gov/saa/products/search?sub_id=0&amp;datatype_family=AVHRRPF</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"source\">CLASS_AVHRRPF_AOT</att>\n" + //
+            "            <att name=\"time_offset\" type=\"double\">360.0</att>\n" + //
+            "            <att name=\"units\">percent</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">127</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">-127</att>\n" + //
+            "        </sourceAttributes -- >\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Optical Properties</att>\n" + //
+            "            <att name=\"reference\">null</att>\n" + //
+            "            <att name=\"references\">https://www.class.ncdc.noaa.gov/saa/products/search?sub_id=0&amp;datatype_family=AVHRRPF</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable> -->\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>quality_level</sourceName>\n" + //
+            "        <destinationName>quality_level</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">0</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ancillary_variables\">pathfinder_quality_level</att>\n" + //
+            "            <att name=\"comment\">These are the overall quality indicators and are used for all GHRSST SSTs. Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table: \n" + //
+            " GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality \n" + //
+            " GDS2 required quality_level 4  =  native Pathfinder quality level 4-6 == acceptable_quality \n" + //
+            " GDS2 required quality_level 3  =  native Pathfinder quality level 2-3 == low_quality \n" + //
+            " GDS2 required quality_level 2  =  native Pathfinder quality level 1 == worst_quality \n" + //
+            " GDS2 required quality_level 1  =  native Pathfinder quality level 0 = bad_data \n" + //
+            " GDS2 required quality_level 0  =  native Pathfinder quality level -1 = missing_data \n" + //
+            " The original Pathfinder quality level is recorded in the optional variable pathfinder_quality_level.</att>\n" + //
+            "            <att name=\"coverage_content_type\">qualityInformation</att>\n" + //
+            "            <att name=\"flag_meanings\">no_data bad_data worst_quality low_quality acceptable_quality best_quality</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">quality level of SST pixel</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">5</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">1</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">6.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarContinuous\">false</att>\n" + //
+            "            <att name=\"colorBarNSections\" type=\"int\">6</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>pathfinder_quality_level</sourceName>\n" + //
+            "        <destinationName>pathfinder_quality_level</destinationName>\n" + //
+            "        <dataType>byte</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"_FillValue\" type=\"byte\">-1</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.</att>\n" + //
+            "            <att name=\"coverage_content_type\">qualityInformation</att>\n" + //
+            "            <att name=\"flag_meanings\">bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality</att>\n" + //
+            "            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">Pathfinder SST quality flag</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "            <att name=\"valid_max\" type=\"byte\">7</att>\n" + //
+            "            <att name=\"valid_min\" type=\"byte\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">8.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"colorBarContinuous\">false</att>\n" + //
+            "            <att name=\"colorBarNSections\" type=\"int\">8</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "    <dataVariable>\n" + //
+            "        <sourceName>l2p_flags</sourceName>\n" + //
+            "        <destinationName>l2p_flags</destinationName>\n" + //
+            "        <dataType>short</dataType>\n" + //
+            "        <!-- sourceAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" + //
+            "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"comment\">Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund&#39;s Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by river has bit four (4) set to 1. Bits six (6) indicates the daytime unrealistic SST values (&gt;39.8&#xb0;C) that remain in pf_quality_level 4 to 7. Users are recommended to avoid these values.</att>\n" + //
+            "            <att name=\"coverage_content_type\">auxiliaryInformation</att>\n" + //
+            "            <att name=\"flag_masks\" type=\"shortList\">1 2 4 8 16 32 64 128 256</att>\n" + //
+            "            <att name=\"flag_meanings\">microwave land ice lake river reserved_for_future_use extreme_sst unused_currently unused_currently</att>\n" + //
+            "            <att name=\"grid_mapping\">crs</att>\n" + //
+            "            <att name=\"long_name\">L2P flags</att>\n" + //
+            "            <att name=\"platform\">NOAA-7</att>\n" + //
+            "            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" + //
+            "            <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_07-v1</att>\n" + //
+            "            <att name=\"units\">1</att>\n" + //
+            "            <att name=\"valid_max\" type=\"short\">256</att>\n" + //
+            "            <att name=\"valid_min\" type=\"short\">0</att>\n" + //
+            "        </sourceAttributes -->\n" + //
+            "        <addAttributes>\n" + //
+            "            <att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"_FillValue\">null</att>\n" + //
+            "            <att name=\"add_offset\">null</att>\n" + //
+            "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n" + //
+            "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" + //
+            "            <att name=\"ioos_category\">Quality</att>\n" + //
+            "            <att name=\"scale_factor\">null</att>\n" + //
+            "        </addAttributes>\n" + //
+            "    </dataVariable>\n" + //
+            "</dataset>\n";
+  }
+
+  public static EDD gettestGridFromErddap() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testGridFromErddap());
+  }
+
+  private static String xmlFragment_testGridFromErddap() throws URISyntaxException {
+    return "<dataset type=\"EDDGridFromErddap\" datasetID=\"testGridFromErddap\" active=\"true\">\n" + //
+            "        <sourceUrl>http://localhost:8080/erddap/griddap/nceiPH53sstn1day</sourceUrl>\n" + //
+            "</dataset>\n";
   }
 
   public static EDD gettestUnsignedGrid() throws Throwable {
