@@ -2396,12 +2396,16 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         if (nRows == 0)
             return;
         char separator = oneDir.indexOf('\\') >= 0? '\\' : '/';
+        char unusedSeparator = oneDir.indexOf('\\') >= 0? '/' : '\\';
+        oneDir = oneDir.replace(unusedSeparator, separator);
         StringArray dirSA  = (StringArray)dnlsTable.getColumn(0);
         StringArray nameSA = (StringArray)dnlsTable.getColumn(1);
         int oneDirLength = oneDir.length();
         BitSet keep = new BitSet(nRows);  //all false
         for (int row = 0; row < nRows; row++) {
             String tDir = dirSA.get(row);
+            // Make sure the separator in tDir matches the separator used in oneDir.
+            tDir = tDir.replace(unusedSeparator, separator);
             if (tDir.startsWith(oneDir)) {
                 if (tDir.length() == oneDirLength) {
                     if (nameSA.get(row).length() > 0) 

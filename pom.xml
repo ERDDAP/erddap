@@ -46,7 +46,7 @@
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
-        <test.resources.version>rc-test</test.resources.version>
+        <test.resources.version>test1.0</test.resources.version>
         <jettyVersion>12.0.8</jettyVersion>
     </properties>
 
@@ -103,11 +103,10 @@
                 </configuration>
             </plugin>
             <plugin>
-
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <source>17</source>   <!-- java version -->

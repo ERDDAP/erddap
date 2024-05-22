@@ -1375,6 +1375,39 @@ class FileVisitorDNLSTests {
   }
 
   /**
+   * This tests reduceDnlsTableToOneDir().
+   */
+  @org.junit.jupiter.api.Test
+  void testReduceDnlsTableToOneDirMisMatchedSeparator() throws Exception {
+      // String2.log("\n*** FileVisitorDNLS.testReduceDnlsTableToOneDir\n");
+      String tableString = "directory, name, lastModified, size\n" +
+              "\\\\u00\\\\, , , \n" +
+              "\\\\u00\\\\, nothing, 60, 1\n" +
+              "\\\\u00\\\\a\\\\, , , \n" +
+              "\\\\u00\\\\a\\\\, AA, 60, 2\n" +
+              "\\\\u00\\\\a\\\\, A, 60, 3\n" +
+              "\\\\u00\\\\a\\\\q\\\\,  ,   , \n" +
+              "\\\\u00\\\\a\\\\q\\\\, D, 60, 4\n" +
+              "\\\\u00\\\\a\\\\b\\\\, B, 60, 5\n" +
+              "\\\\u00\\\\a\\\\b\\\\c\\\\, C, 60, 6\n";
+      Table table = new Table();
+      table.readASCII("testReduceDnlsTableToOneDir",
+              new BufferedReader(new StringReader(tableString)),
+              "", "", 0, 1, ",", null, null, null, null, true);
+      String subDirs[] = FileVisitorDNLS.reduceDnlsTableToOneDir(table, "/u00/a/");
+
+      String results = table.dataToString();
+      String expected = "directory,name,lastModified,size\n" +
+              "\\\\u00\\\\a\\\\,A,60,3\n" + // files are sorted, dirs are removed
+              "\\\\u00\\\\a\\\\,AA,60,2\n";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+
+      results = String2.toCSSVString(subDirs);
+      expected = "b, q";
+      Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  /**
    * This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files"
    * directory.
    */
