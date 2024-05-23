@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -2419,6 +2420,25 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         dnlsTable.justKeep(keep);
         dnlsTable.sortIgnoreCase(new int[]{1}, new boolean[]{true});
         //String2.log(">> reduceDnlsTabletoOneDir nRows=" + dnlsTable.nRows() + " nSubdir=" + subdirHash.size());
+    }
+
+    public static int indexOfDirectory(PrimitiveArray directories, String toMatch) {
+        int dirIndex = directories.indexOf(toMatch);
+        if (dirIndex >= 0) {
+            return dirIndex;
+        }
+        char separator = toMatch.indexOf('\\') >= 0? '\\' : '/';
+        char unusedSeparator = toMatch.indexOf('\\') >= 0? '/' : '\\';
+        toMatch = toMatch.replace(unusedSeparator, separator);
+
+        for (int row = 0; row < directories.size(); row++) {
+            String dir = directories.getString(row);
+            dir = dir.replace(unusedSeparator, separator);
+            if (toMatch.equals(dir)) {
+                dirIndex = row;
+            }
+        }
+        return dirIndex;
     }
 
    /**

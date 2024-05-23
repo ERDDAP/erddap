@@ -25573,7 +25573,7 @@ public class EDDTestDataset {
         + "</fileDir>\n" + //
             "    <fileNameRegex>.*_night-v.*\\.nc</fileNameRegex>\n" + //
             "    <recursive>true</recursive>\n" + //
-            "    <pathRegex>/u00/satellite/PH53/1day/(|[0-9]{4}/(|data/))</pathRegex>\n" + //
+            // "    <pathRegex>/u00/satellite/PH53/1day/(|[0-9]{4}/(|data/))</pathRegex>\n" + //
             "    <metadataFrom>last</metadataFrom>\n" + //
             "    <matchAxisNDigits>6</matchAxisNDigits>\n" + //
             "    <fileTableInMemory>false</fileTableInMemory>\n" + //

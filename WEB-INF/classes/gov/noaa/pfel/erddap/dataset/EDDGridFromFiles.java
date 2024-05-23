@@ -1983,7 +1983,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             Table dirTable  = getDirTable();  //no need to get copy since not changing it
             Table fileTable = getFileTable(); //no need to get copy since not changing it 
             PrimitiveArray dirNames = dirTable.getColumn(0); //the only column
-            int dirIndex = dirNames.indexOf(localDir);
+            int dirIndex = FileVisitorDNLS.indexOfDirectory(dirNames, localDir);
             if (dirIndex < 0) {
                 String2.log(msg + "localDir=" + localDir + " not in dirTable.");
                 return null;

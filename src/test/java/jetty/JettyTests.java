@@ -62,7 +62,6 @@ import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
 import tags.TagImageComparison;
 import tags.TagJetty;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -9394,7 +9393,7 @@ class JettyTests {
     tName = gridDataset.makeNewFileForDapQuery(language, null, null,
         "SST[800][][]",
         dir, gridDataset.className() + "_testKml", ".kml");
-    Test.displayInBrowser("file://" + dir + tName);
+    // Test.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
     expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
             "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" + //
@@ -12061,7 +12060,7 @@ class JettyTests {
       // display last image
       if (ext == extensions.length - 1) {
         File2.rename(outName, outName + ".png");
-        Test.displayInBrowser(outName + ".png"); // complicated to switch to testImagesIdentical
+        // Test.displayInBrowser(outName + ".png"); // complicated to switch to testImagesIdentical
       }
 
       // } catch (Exception e) {
@@ -12079,8 +12078,8 @@ class JettyTests {
    * EDDGridFromNcFiles.testFiles() has more tests than any other testFiles().
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles() throws Throwable {
+  @TagJetty
+  void testGridFromNcFiles() throws Throwable {
 
     String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
     String tDir = EDStatic.fullTestCacheDirectory;
@@ -12155,12 +12154,23 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files//.csv\n"
-        +
-        "(Error {\n" +
-        "    code=400;\n" +
-        "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
-        "})";
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/erddap/files//.csv\n" + //
+                "(<html>\n" + //
+                "<head>\n" + //
+                "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=ISO-8859-1\"/>\n" + //
+                "<title>Error 400 Ambiguous URI empty segment</title>\n" + //
+                "</head>\n" + //
+                "<body>\n" + //
+                "<h2>HTTP ERROR 400 Ambiguous URI empty segment</h2>\n" + //
+                "<table>\n" + //
+                "<tr><th>URI:</th><td>/badURI</td></tr>\n" + //
+                "<tr><th>STATUS:</th><td>400</td></tr>\n" + //
+                "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n" + //
+                "</table>\n" + //
+                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.8</a><hr/>\n" + //
+                "\n" + //
+                "</body>\n" + //
+                "</html>)";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // query with // later fails
@@ -12170,12 +12180,23 @@ class JettyTests {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day//.csv\n"
-        +
-        "(Error {\n" +
-        "    code=400;\n" +
-        "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
-        "})";
+    expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/erddap/files/nceiPH53sstn1day//.csv\n" + //
+                "(<html>\n" + //
+                "<head>\n" + //
+                "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=ISO-8859-1\"/>\n" + //
+                "<title>Error 400 Ambiguous URI empty segment</title>\n" + //
+                "</head>\n" + //
+                "<body>\n" + //
+                "<h2>HTTP ERROR 400 Ambiguous URI empty segment</h2>\n" + //
+                "<table>\n" + //
+                "<tr><th>URI:</th><td>/badURI</td></tr>\n" + //
+                "<tr><th>STATUS:</th><td>400</td></tr>\n" + //
+                "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n" + //
+                "</table>\n" + //
+                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.8</a><hr/>\n" + //
+                "\n" + //
+                "</body>\n" + //
+                "</html>)";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // query with /../ fails
