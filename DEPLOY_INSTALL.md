@@ -15,6 +15,8 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
 
 **The standard ERDDAP™ installation instructions for Linux, Macs, and Windows computers are:**
 
+0. Make sure any dependencies are installed. On non-Windows machines (Linux and Mac), you need csh.
+
 1.  [For ERDDAP™ v2.19+, set up Java 17.](#java)  
     For security reasons, it is almost always best to use the latest version of Java 17.  
     Please download and install the latest version of  
