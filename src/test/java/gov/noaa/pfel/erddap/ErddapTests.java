@@ -4,8 +4,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.BeforeAll;
 
-import com.cohort.util.File2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -13,10 +11,8 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagIncompleteTest;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 

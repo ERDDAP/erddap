@@ -12131,8 +12131,9 @@ class JettyTests {
     // get /files/datasetID/subdir/subdir.csv
     results = SSR.getUrlResponseStringNewline(
         "http://localhost:" + PORT + "/erddap/files/nceiPH53sstn1day/1994/data/.csv");
-    expected = "Name,Last modified,Size,Description\n" +
-        "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,1471330800000,12484412,\n";
+    results = results.replaceAll(",.............,", ",lastMod,");
+    expected = "Name,lastMod,Size,Description\n" +
+        "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,lastMod,12484412,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // download a file in root -- none available
