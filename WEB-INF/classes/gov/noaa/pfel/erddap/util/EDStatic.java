@@ -1758,7 +1758,8 @@ public static boolean developmentMode = false;
      *  See the related methods below that create them.
      */
     private static Table gdxAcronymsTable; 
-    private static HashMap<String,String> gdxAcronymsHashMap, gdxVariableNamesHashMap; 
+    private static HashMap<String,String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
+    public static boolean useSharedWatchService = false;
 
     /** This static block reads this class's static String values from
      * contentDirectory, which must contain setup.xml and datasets.xml 
@@ -2156,6 +2157,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         slideSorterActive          = getSetupEVBoolean(setup, ev,          "slideSorterActive",              true);
         variablesMustHaveIoosCategory = getSetupEVBoolean(setup, ev,       "variablesMustHaveIoosCategory",  true);
         warName                    = getSetupEVString(setup, ev,           "warName",                        "erddap");
+        useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", false);
 
         //use Lucence?
         if (searchEngine.equals("lucene")) {
