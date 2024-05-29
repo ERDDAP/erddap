@@ -1,7 +1,6 @@
 package gov.noaa.pfel.coastwatch;
 
 import com.cohort.util.Calendar2;
-import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 

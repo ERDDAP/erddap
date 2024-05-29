@@ -564,7 +564,7 @@ public class GridTests {
 
     // ************* create the write-only file types
     // make a Dave-style .grd file from the cwName'd file
-    FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+    FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.TimePeriods");
     String daveName = fnu.convertCWBrowserNameToDaveName(cwName);
 
     // make sure the files don't exist
@@ -1232,7 +1232,7 @@ public class GridTests {
   @org.junit.jupiter.api.Test
   void testSaveAsGeotiff() throws Exception {
     String2.log("\n***** Grid.testSaveAsGeotiff");
-    FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+    FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.TimePeriods");
     Grid grid = new Grid();
     grid.readGrd(testDir + testName + ".grd",
         -180, 180, 22, 50,
@@ -1306,7 +1306,7 @@ public class GridTests {
   @org.junit.jupiter.api.Test
   void testNetCDF() throws Exception {
     String2.log("\n*** Grid.testNetCDF");
-    FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+    FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.TimePeriods");
     // ***** test composite *******************************************************
 
     Grid grid1 = new Grid();

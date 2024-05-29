@@ -179,7 +179,6 @@ public class MakeErdJavaZip  {
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "docs/ErdJavaDoc/",         ".+", false)); //javadocs
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "classes/dods/",            ".+", false));
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "classes/com/sshtools/",    ".+", false));
-        String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "classes/org/jdom/",        ".+", false));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         baseDir + "classes/com/cohort/array/",".+"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         baseDir + "classes/com/cohort/util/", ".+"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "CWBrowser.properties"));

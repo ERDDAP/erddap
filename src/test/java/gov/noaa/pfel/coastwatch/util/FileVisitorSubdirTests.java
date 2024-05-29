@@ -35,7 +35,6 @@ class FileVisitorSubdirTests {
     String results = alps.toNewlineString();
     String expected = contextDir + "WEB-INF/classes/com/cohort/\n" +
         contextDir + "WEB-INF/classes/com/cohort/array/\n" +
-        contextDir + "WEB-INF/classes/com/cohort/ema/\n" +
         contextDir + "WEB-INF/classes/com/cohort/util/\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 

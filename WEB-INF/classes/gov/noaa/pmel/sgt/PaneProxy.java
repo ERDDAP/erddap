@@ -20,8 +20,6 @@ import gov.noaa.pmel.sgt.beans.Panel;
 
 import gov.noaa.pmel.util.Debug;
 
-import java.awt.Graphics2D;
-import java.awt.Stroke;
 
 import java.awt.Dimension;
 import java.awt.Image;
@@ -38,7 +36,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.InputEvent;
 
 import java.util.Vector;
-import java.util.Properties;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

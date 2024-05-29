@@ -15,25 +15,20 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 
 import gov.noaa.pmel.util.Debug;
-import gov.noaa.pmel.sgt.beans.Panel;
 
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.AWTEvent;
 
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.SwingConstants;
 //import javax.swing.RepaintManager;
-import javax.swing.border.Border;
 import java.awt.print.*;
 import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.geom.AffineTransform;
 
 /**
  * The <code>JPane</code> class is extended from
