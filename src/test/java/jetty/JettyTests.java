@@ -6514,9 +6514,9 @@ class JettyTests {
     String error = "";
     EDV edv;
     int po, epo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-                                                                                 // hour. Hard
-                                                                                 // to check min:sec.
+    // 12 is enough to check day. Hard to check min:sec and hour is more likely to
+    // be different
+    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12);
 
     // *** test things that should throw exceptions
     StringArray rv = new StringArray();
@@ -8766,7 +8766,7 @@ class JettyTests {
         "station,ioos_category,Identifier\n" +
         "station,long_name,Station\n" +
         "wmo_platform_code,*DATA_TYPE*,int\n" +
-        "wmo_platform_code,actual_range,13001i,2147483647i\n" +
+        "wmo_platform_code,actual_range,13001i,CHANGESi\n" +
         "wmo_platform_code,ioos_category,Identifier\n" +
         "wmo_platform_code,long_name,WMO Platform Code\n" +
         "wmo_platform_code,missing_value,2147483647i\n" +
@@ -8869,6 +8869,8 @@ class JettyTests {
     results = results.replaceAll(
         "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
         "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
+    results = results.replaceAll("wmo_platform_code,actual_range,13001i,[0-9]+i",
+        "wmo_platform_code,actual_range,13001i,CHANGESi");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     results = SSR.getUrlResponseStringUnchanged(rbaseUrl + tQuery);
@@ -8879,6 +8881,8 @@ class JettyTests {
     results = results.replaceAll(
         "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
         "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
+    results = results.replaceAll("wmo_platform_code,actual_range,13001i,[0-9]+i",
+        "wmo_platform_code,actual_range,13001i,CHANGESi");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // *** test getting .nccsv

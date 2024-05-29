@@ -9,6 +9,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagExternalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -384,6 +385,7 @@ class EDDTableAggregateRowsTests {
   /**
    */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP // Dataset not available
   void testAllChildAggregation() throws Throwable {
     // String2.log("\nEDDTableAggregateRows.testBasic()");
     // testVerboseOn();
