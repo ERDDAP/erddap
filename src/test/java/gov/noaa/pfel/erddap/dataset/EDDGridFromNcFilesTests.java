@@ -11543,7 +11543,7 @@ class EDDGridFromNcFilesTests {
         "    Float32 valid_min 0.001;\n" +
         "  }\n" +
         "  NC_GLOBAL {\n" +
-        "    String _lastModified \"2015-06-26T11:26:12.000Z\";\n" +
+        "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n" +
         "    String cdm_data_type \"Grid\";\n" +
         "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
         "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
@@ -11560,6 +11560,7 @@ class EDDGridFromNcFilesTests {
         "    String geospatial_lon_units \"degrees_east\";\n" +
         "    String grid_mapping_name \"latitude_longitude\";\n" +
         "    String history \"Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)";
+    results = results.replaceAll("    String _lastModified \"....-..-..T..:..:...000Z\";\n", "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
