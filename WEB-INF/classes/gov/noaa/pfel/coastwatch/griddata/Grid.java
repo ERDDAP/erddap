@@ -57,12 +57,6 @@ import ucar.nc2.write.NetcdfFormatWriter;
  */
 public class Grid  {
 
-    //ensure org.jdom.Content is compiled -- 
-    //GeotiffWriter needs it, but it isn't called directly so
-    //it isn't automatically compiled.
-    private org.jdom.Content content;
-
-
     /** A 1D array, column by column, from the lower left (the way SGT wants it). 
         Missing values are stored as NaN's.        
         Note that this could/should be a PrimitiveArray (to conserve memory), but
