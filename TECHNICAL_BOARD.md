@@ -12,9 +12,13 @@ The Technical Board is responsible for the following documents and processes:
 
 * **ERDDAP™ Release Feature Goals**, which determine specific features which we aim to include in each release of ERDDAP™. These are documented in the GitHub project for each release.
 
-* **ERDDAP™ Style Guide** which specifies coding styles and practices to be followed in ERDDAP™ code.The ERDDAP™ Technical Board operates on the following basis:* Where possible communication of the Technical Board should be public and asynchronous. In many cases this means utilizing GitHub Discussions and Issues.
+* **ERDDAP™ Style Guide** which specifies coding styles and practices to be followed in ERDDAP™ code.
 
-When a meeting of the Technical Board is needed, notes should be published.
+The ERDDAP™ Technical Board operates on the following basis:
+
+* Where possible communication of the Technical Board should be public and asynchronous. In many cases this means utilizing GitHub Discussions and Issues.
+
+* When a meeting of the Technical Board is needed, notes should be published.
 
 * Technical Board meetings are open to all interested parties, but the Board seeks only to find consensus amongst Board members, and representatives from the team that submitted the proposal.
 
