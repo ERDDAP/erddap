@@ -24,7 +24,6 @@ class RegexFilenameFilterTests {
     String[] sar = RegexFilenameFilter.list(coastwatchDir, "T.+\\.class");
     String[] shouldBe = {
         "TestAll.class",
-        "TestListFiles.class",
         "TimePeriods.class" };
     System.out.println(coastwatchDir);
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
@@ -33,7 +32,6 @@ class RegexFilenameFilterTests {
     sar = RegexFilenameFilter.fullNameList(coastwatchDir, "T.+\\.class");
     shouldBe = new String[] {
         coastwatchDir + "TestAll.class",
-        coastwatchDir + "TestListFiles.class",
         coastwatchDir + "TimePeriods.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.fullNameList");
