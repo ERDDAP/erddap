@@ -47,7 +47,6 @@ class RegexFilenameFilterTests {
         coastwatchDir + "netcheck/",
         coastwatchDir + "pointdata/",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
@@ -56,8 +55,7 @@ class RegexFilenameFilterTests {
         coastwatchDir + "util/",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
@@ -68,15 +66,13 @@ class RegexFilenameFilterTests {
         coastwatchDir + "hdf/SdsReader.class",
         coastwatchDir + "hdf/SdsWriter.class",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
         coastwatchDir + "sgt/SgtMap.class",
         coastwatchDir + "sgt/SgtUtil.class",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
