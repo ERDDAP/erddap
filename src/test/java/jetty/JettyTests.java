@@ -96,7 +96,7 @@ class JettyTests {
     // Make a request of the server to make sure it starts loading the datasets
     SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap");
 
-    Thread.sleep(15 * 60 * 1000);
+    Thread.sleep(10 * 60 * 1000);
   }
 
   @AfterAll
