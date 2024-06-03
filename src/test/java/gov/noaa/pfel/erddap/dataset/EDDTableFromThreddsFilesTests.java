@@ -15,7 +15,6 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
-import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -871,7 +870,6 @@ class EDDTableFromThreddsFilesTests {
    * it doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     String results = EDDTableFromThreddsFiles.generateDatasetsXml(

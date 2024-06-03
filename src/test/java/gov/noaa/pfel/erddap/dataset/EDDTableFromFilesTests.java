@@ -1,11 +1,20 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
+import testDataset.Initialization;
+
 class EDDTableFromFilesTests {
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
+
   /** Test isOK() */
   @org.junit.jupiter.api.Test
   void testIsOK() {

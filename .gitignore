@@ -17,3 +17,6 @@ Thumbs.db
 .project
 src/test/resources/
 .idea
+development/test/datasets.xml
+development/test/datasets.xml*
+missingImage.txt

@@ -18,7 +18,6 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
-import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingFile;
 import testDataset.EDDTestDataset;
@@ -1224,7 +1223,6 @@ class EDDTableFromNcCFFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testKevin20160519() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcCFFiles.testKevin20160519()
     // *****************\n");

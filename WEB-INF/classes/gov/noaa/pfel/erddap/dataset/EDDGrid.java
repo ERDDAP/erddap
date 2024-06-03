@@ -323,11 +323,6 @@ public abstract class EDDGrid extends EDD {
 
     }
 
-    //ensure org.jdom.Content is compiled -- 
-    //GeotiffWriter needs it, but it isn't called directly so
-    //it isn't automatically compiled.
-    private static org.jdom.Content orgJdomContent;
-
     //the diagnostic tests change this just for testing
     static int tableWriterNBufferRows = 100000;
 

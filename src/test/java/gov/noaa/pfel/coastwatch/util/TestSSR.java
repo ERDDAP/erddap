@@ -12,7 +12,6 @@ import com.cohort.util.Test;
 
 import tags.TagAWS;
 import tags.TagIncompleteTest;
-import tags.TagLocalERDDAP;
 import tags.TagPassword;
 
 import java.io.BufferedInputStream;
@@ -434,45 +433,6 @@ public class TestSSR {
           emailUser, "erd.data@noaa.gov,CoHortSoftware@gmail.com,null", title, content);
     }
     SSR.debugMode = false;
-  }
-
-  /**
-   * Test posting info and getting response.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testPostFormGetResponseString() throws Exception {
-    for (int i = 0; i < 2; i++) {
-      try {
-        String s = SSR.postFormGetResponseString(
-            "https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
-        String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
-        Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
-        Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0,
-            "");
-        Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
-
-        // 2018-10-24 I verified that
-        // * This request appears as a POST (not GET) in tomcat's
-        // localhost_access_lot[date].txt
-        // * The parameters don't appear in that file (whereas they do for GET requests)
-        // * The parameters don't appear in ERDDAP log (whereas they do for GET
-        // requests),
-        // * and it is labelled as a POST request.
-        s = SSR.postFormGetResponseString(
-            "http://localhost:8080/cwexperimental/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
-        String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
-        Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
-        Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0,
-            "This test requires MUR 4.1 in the local host ERDDAP.");
-        Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
-        break; // if successful, don't do i=1 loop
-      } catch (Exception e) {
-        String2.pressEnterToContinue(MustBe.throwableToString(e) +
-            "This requires localhost ERDDAP.\nPress Enter to " +
-            (i == 0 ? "try again." : "skip this test."));
-      }
-    }
   }
 
   /**

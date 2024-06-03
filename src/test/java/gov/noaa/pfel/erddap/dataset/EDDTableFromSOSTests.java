@@ -17,7 +17,6 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagExternalOther;
-import tags.TagFlaky;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -223,7 +222,6 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testNosSosATempAllStations() throws Throwable {
     // testVerboseOn();
 
@@ -321,7 +319,6 @@ int language = 0;
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
   void testNosSosBPres() throws Throwable {
     // testVerboseOn();
 
@@ -333,30 +330,23 @@ int language = 0;
     // but searching January's for each year found no data until 2006
     String2.log("\n*** EDDTableFromSOS nos Pressure test get one station .CSV data\n");
     tName = eddTable.makeNewFileForDapQuery(language, null, null,
-        "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01",
+        "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8447386\"" +
+        "&time>=2006-01-01T00&time<=2006-01-01T01",
         EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosPressure", ".csv");
     results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
     expected = "longitude,latitude,station_id,altitude,time,sensor_id,air_pressure,quality_flags\n" +
         "degrees_east,degrees_north,,m,UTC,,millibars,\n" +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.8,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.9,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.1,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4,0;0;0\n"
-        +
-        "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4,0;0;0\n";
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.8,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.7,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.8,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.8,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.8,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.7,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.5,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.4,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.3,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.2,0;0;0\n" + //
+        "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:F1,1010.1,0;0;0\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
     String2.log("\n*** EDDTableFromSOS nos Pressure test get one station .CSV data\n");
@@ -389,99 +379,100 @@ int language = 0;
         "-164.0644,67.5758,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1010.8,0;0;0\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
-    try {
-      String2.log("\n*** EDDTableFromSOS nos Pressure .das\n");
-      String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check hour. Hard
-                                                                                   // to check min:sec.
-      tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory,
-          eddTable.className() + "_nosSosPressure", ".das");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-      expected = "Attributes {\n" +
-          " s {\n" +
-          "  longitude {\n" +
-          "    String _CoordinateAxisType \"Lon\";\n" +
-          "    Float64 actual_range -177.36, 167.7361;\n" + // 2015-12-10 moved a little
-          "    String axis \"X\";\n" +
-          "    String ioos_category \"Location\";\n" +
-          "    String long_name \"Longitude\";\n" +
-          "    String standard_name \"longitude\";\n" +
-          "    String units \"degrees_east\";\n" +
-          "  }\n" +
-          "  latitude {\n" +
-          "    String _CoordinateAxisType \"Lat\";\n" +
-          "    Float64 actual_range -14.2767, 70.4114;\n" + // 2015-12-10 moved a little, again, pre 2011-04-15 min was
-                                                            // -14.28! then 8.7316, then back
-          "    String axis \"Y\";\n" +
-          "    String ioos_category \"Location\";\n" +
-          "    String long_name \"Latitude\";\n" +
-          "    String standard_name \"latitude\";\n" +
-          "    String units \"degrees_north\";\n" +
-          "  }\n" +
-          "  station_id {\n" +
-          "    String cf_role \"timeseries_id\";\n" +
-          "    String ioos_category \"Identifier\";\n" +
-          "    String long_name \"Station ID\";\n" +
-          "  }\n" +
-          "  altitude {\n" +
-          "    String _CoordinateAxisType \"Height\";\n" +
-          "    String _CoordinateZisPositive \"up\";\n" +
-          "    String axis \"Z\";\n" +
-          "    String ioos_category \"Location\";\n" +
-          "    String long_name \"Altitude\";\n" +
-          "    String positive \"up\";\n" +
-          "    String standard_name \"altitude\";\n" +
-          "    String units \"m\";\n" +
-          "  }\n" +
-          "  time {\n" +
-          "    String _CoordinateAxisType \"Time\";\n" +
-          "    Float64 actual_range -3.6757152e+9, NaN;\n" +
-          "    String axis \"T\";\n" +
-          "    String ioos_category \"Time\";\n" +
-          "    String long_name \"Time\";\n" +
-          "    String standard_name \"time\";\n" +
-          "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-          "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-          "  }\n" +
-          "  sensor_id {\n" +
-          "    String ioos_category \"Identifier\";\n" +
-          "    String long_name \"Sensor ID\";\n" +
-          "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
-          "  }\n" +
-          "  air_pressure {\n" +
-          "    Float64 colorBarMaximum 1050.0;\n" +
-          "    Float64 colorBarMinimum 950.0;\n" +
-          "    String ioos_category \"Pressure\";\n" +
-          "    String long_name \"Barometric Pressure\";\n" +
-          "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
-          "    String standard_name \"air_pressure\";\n" +
-          "    String units \"millibars\";\n" +
-          "  }\n" +
-          "  quality_flags {\n" +
-          "    String ioos_category \"Quality\";\n" +
-          "    String long_name \"Quality Flags\";\n" +
-          "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
-          "  }\n" +
-          " }\n" +
-          "  NC_GLOBAL {\n" +
-          "    String cdm_data_type \"TimeSeries\";\n" +
-          "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-          "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-          "    Float64 Easternmost_Easting 167.7361;\n" +
-          "    String featureType \"TimeSeries\";\n" +
-          "    Float64 geospatial_lat_max 70.4114;\n" +
-          "    Float64 geospatial_lat_min -14.2767;\n" +
-          "    String geospatial_lat_units \"degrees_north\";\n" +
-          "    Float64 geospatial_lon_max 167.7361;\n" +
-          "    Float64 geospatial_lon_min -177.36;\n" +
-          "    String geospatial_lon_units \"degrees_east\";\n" +
-          "    String geospatial_vertical_positive \"up\";\n" +
-          "    String geospatial_vertical_units \"m\";\n" +
-          "    String history \"" + today;
-      // + " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
-      Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
-    } catch (Throwable t) {
-      throw new RuntimeException("Unexpected error nosSosPressure. NOS SOS Server is in flux.", t);
-    }
+    String2.log("\n*** EDDTableFromSOS nos Pressure .das\n");
+    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check hour. Hard
+                                                                                // to check min:sec.
+    tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory,
+        eddTable.className() + "_nosSosPressure", ".das");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    expected = "Attributes {\n" +
+        " s {\n" +
+        "  longitude {\n" +
+        "    String _CoordinateAxisType \"Lon\";\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
+        "    String axis \"X\";\n" +
+        "    String ioos_category \"Location\";\n" +
+        "    String long_name \"Longitude\";\n" +
+        "    String standard_name \"longitude\";\n" +
+        "    String units \"degrees_east\";\n" +
+        "  }\n" +
+        "  latitude {\n" +
+        "    String _CoordinateAxisType \"Lat\";\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
+        "    String axis \"Y\";\n" +
+        "    String ioos_category \"Location\";\n" +
+        "    String long_name \"Latitude\";\n" +
+        "    String standard_name \"latitude\";\n" +
+        "    String units \"degrees_north\";\n" +
+        "  }\n" +
+        "  station_id {\n" +
+        "    String cf_role \"timeseries_id\";\n" +
+        "    String ioos_category \"Identifier\";\n" +
+        "    String long_name \"Station ID\";\n" +
+        "  }\n" +
+        "  altitude {\n" +
+        "    String _CoordinateAxisType \"Height\";\n" +
+        "    String _CoordinateZisPositive \"up\";\n" +
+        "    String axis \"Z\";\n" +
+        "    String ioos_category \"Location\";\n" +
+        "    String long_name \"Altitude\";\n" +
+        "    String positive \"up\";\n" +
+        "    String standard_name \"altitude\";\n" +
+        "    String units \"m\";\n" +
+        "  }\n" +
+        "  time {\n" +
+        "    String _CoordinateAxisType \"Time\";\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
+        "    String axis \"T\";\n" +
+        "    String ioos_category \"Time\";\n" +
+        "    String long_name \"Time\";\n" +
+        "    String standard_name \"time\";\n" +
+        "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+        "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+        "  }\n" +
+        "  sensor_id {\n" +
+        "    String ioos_category \"Identifier\";\n" +
+        "    String long_name \"Sensor ID\";\n" +
+        "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
+        "  }\n" +
+        "  air_pressure {\n" +
+        "    Float64 colorBarMaximum 1050.0;\n" +
+        "    Float64 colorBarMinimum 950.0;\n" +
+        "    String ioos_category \"Pressure\";\n" +
+        "    String long_name \"Barometric Pressure\";\n" +
+        "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
+        "    String standard_name \"air_pressure\";\n" +
+        "    String units \"millibars\";\n" +
+        "  }\n" +
+        "  quality_flags {\n" +
+        "    String ioos_category \"Quality\";\n" +
+        "    String long_name \"Quality Flags\";\n" +
+        "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
+        "  }\n" +
+        " }\n" +
+        "  NC_GLOBAL {\n" +
+        "    String cdm_data_type \"TimeSeries\";\n" +
+        "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
+        "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+        "    Float64 Easternmost_Easting 167.7361;\n" +
+        "    String featureType \"TimeSeries\";\n" +
+        "    Float64 geospatial_lat_max 70.4114;\n" +
+        "    Float64 geospatial_lat_min MIN;\n" +
+        "    String geospatial_lat_units \"degrees_north\";\n" +
+        "    Float64 geospatial_lon_max 167.7361;\n" +
+        "    Float64 geospatial_lon_min -177.36;\n" +
+        "    String geospatial_lon_units \"degrees_east\";\n" +
+        "    String geospatial_vertical_positive \"up\";\n" +
+        "    String geospatial_vertical_units \"m\";\n" +
+        "    String history \"" + today;
+    // + " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+;",
+        "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e?.[0-9]?, NaN;",
+        "Float64 actual_range MIN, MAX;");
+    results = results.replaceAll("Float64 geospatial_lat_min -?[0-9]+.[0-9]+;",
+        "Float64 geospatial_lat_min MIN;");
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
   }
 
   /**

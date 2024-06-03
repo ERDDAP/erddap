@@ -254,7 +254,7 @@ public class SSR {
      */
     public static ArrayList dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
         if (String2.OSIsWindows) {
-            commandLine = String2.replaceAll(commandLine, "/", "\\");
+            // commandLine = String2.replaceAll(commandLine, "/", "\\");
             return dosShell(commandLine, timeOutSeconds);  
         } else {
             return cShell(  commandLine, timeOutSeconds);  

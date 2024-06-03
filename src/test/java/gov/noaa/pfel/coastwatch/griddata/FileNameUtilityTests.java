@@ -34,12 +34,13 @@ class FileNameUtilityTests {
 
     // validate all the dataset properties
     FileNameUtility fnu;
-    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserSA");
-    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserAK");
-    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserWW180");
-    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserWW360");
+    // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserSA");
+    // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserAK");
+    // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserWW180");
+    // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowserWW360");
     // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CCBrowser");
-    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+    // fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+    fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.TimePeriods");
 
     Test.ensureEqual(FileNameUtility.getTimePeriodNHours("LAHsstdSpass_20010331230000_x225_X255_y22_Y50"), 0, "");
     Test.ensureEqual(FileNameUtility.getTimePeriodNHours("LAHsstdS1day_20010331120000_x225_X255_y22_Y50"), 24, "");

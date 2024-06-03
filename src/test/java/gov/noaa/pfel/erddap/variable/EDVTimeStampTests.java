@@ -1,12 +1,21 @@
 package gov.noaa.pfel.erddap.variable;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
+import testDataset.Initialization;
+
 class EDVTimeStampTests {
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /**
    * This is a unit test.

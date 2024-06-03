@@ -29,7 +29,7 @@ public class GridSaveAs {
      */
     public static void main(String args[]) throws Exception {
         //Grid.verbose = true;
-        Grid.davesSaveAs(args, new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser"));
+        Grid.davesSaveAs(args, new FileNameUtility("gov.noaa.pfel.coastwatch.TimePeriods"));
 
     }
 

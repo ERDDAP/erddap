@@ -21,26 +21,24 @@ class RegexFilenameFilterTests {
         + "gov/noaa/pfel/coastwatch/";
 
     // test list
-    String[] sar = RegexFilenameFilter.list(coastwatchDir, "S.+\\.class");
+    String[] sar = RegexFilenameFilter.list(coastwatchDir, "T.+\\.class");
     String[] shouldBe = {
-        "Screen.class",
-        "Shared.class" };
-        System.out.println(coastwatchDir);
+        "TestAll.class",
+        "TimePeriods.class" };
+    System.out.println(coastwatchDir);
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
 
     // test fullNameList
-    sar = RegexFilenameFilter.fullNameList(coastwatchDir, "S.+\\.class");
+    sar = RegexFilenameFilter.fullNameList(coastwatchDir, "T.+\\.class");
     shouldBe = new String[] {
-        coastwatchDir + "Screen.class",
-        coastwatchDir + "Shared.class"
+        coastwatchDir + "TestAll.class",
+        coastwatchDir + "TimePeriods.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.fullNameList");
 
     // test recursiveList
     sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.class", true);
     shouldBe = new String[] {
-        coastwatchDir + "Screen.class",
-        coastwatchDir + "Shared.class",
         coastwatchDir + "griddata/",
         coastwatchDir + "griddata/SaveOpendap.class",
         coastwatchDir + "hdf/",
@@ -49,8 +47,6 @@ class RegexFilenameFilterTests {
         coastwatchDir + "netcheck/",
         coastwatchDir + "pointdata/",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StationVariableNc4D.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
@@ -59,30 +55,24 @@ class RegexFilenameFilterTests {
         coastwatchDir + "util/",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
     // test recursiveList no directories
     sar = RegexFilenameFilter.recursiveFullNameList(coastwatchDir, "S.+\\.class", false);
     shouldBe = new String[] {
-        coastwatchDir + "Screen.class",
-        coastwatchDir + "Shared.class",
         coastwatchDir + "griddata/SaveOpendap.class",
         coastwatchDir + "hdf/SdsReader.class",
         coastwatchDir + "hdf/SdsWriter.class",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StationVariableNc4D.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
         coastwatchDir + "sgt/SgtMap.class",
         coastwatchDir + "sgt/SgtUtil.class",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
@@ -95,13 +85,14 @@ class RegexFilenameFilterTests {
     Test.ensureEqual(info[0].toString(),
         "griddata, hdf, netcheck, pointdata, sgt, util", "");
     Test.ensureEqual(info[1].toString(),
-        "Browser.class, BrowserDefault.properties", "");
-    // The below is flaky. Consider using a dedicated test resource directory instead of a code directory
+        "BrowserDefault.properties", "");
+    // The below is flaky. Consider using a dedicated test resource directory
+    // instead of a code directory
     // and turn these back on.
     // Test.ensureEqual(lastMod.toString(), "2007-04-23T18:24:38Z,
     // 2007-05-02T19:18:32Z", "");
     // Test.ensureEqual(info[3].toString(),
-    //     "155937, 359559, 89254", "");
+    // "155937, 359559, 89254", "");
   }
 
 }

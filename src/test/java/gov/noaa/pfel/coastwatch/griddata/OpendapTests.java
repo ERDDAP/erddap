@@ -1,6 +1,5 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 

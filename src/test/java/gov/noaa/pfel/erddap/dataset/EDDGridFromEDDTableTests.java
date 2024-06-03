@@ -9,7 +9,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -23,7 +22,6 @@ class EDDGridFromEDDTableTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // This relies on having a datasets.xml already loaded.
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // String2.log("\n*** EDDGridFromEDDTable.testGenerateDatasetsXml");

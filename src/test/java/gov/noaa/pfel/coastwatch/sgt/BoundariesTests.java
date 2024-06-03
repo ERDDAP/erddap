@@ -1,11 +1,19 @@
 package gov.noaa.pfel.coastwatch.sgt;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pmel.sgt.dm.SGTLine;
+import testDataset.Initialization;
 
 class BoundariesTests {
+  @BeforeAll
+  static void init() {
+      Initialization.edStatic();
+  }
+
   /**
    * This runs a unit test.
    */

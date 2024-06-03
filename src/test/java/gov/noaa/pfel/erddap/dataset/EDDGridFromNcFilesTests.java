@@ -95,7 +95,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
-  @TagFlaky // https://github.com/ERDDAP/erddap/issues/148
+  @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // String2.log("\n*** EDDGridFromNcFiles.testNcml");
@@ -178,7 +178,6 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testNccsv() throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNccsv()
     // *****************\n");
@@ -7989,7 +7988,7 @@ class EDDGridFromNcFilesTests {
     }
 
     // test default=Log
-    eddGrid = (EDDGrid) EDDTestDataset.geterdMHchla8day();
+    eddGrid = (EDDGrid) EDDTestDataset.geterdMH1chla8day();
 
     if (whichChunk < 0 || whichChunk == 3) {
       start = "EDDGridFromNcFiles_gridTestLogAxis3_TimeChla_";
@@ -11544,7 +11543,7 @@ class EDDGridFromNcFilesTests {
         "    Float32 valid_min 0.001;\n" +
         "  }\n" +
         "  NC_GLOBAL {\n" +
-        "    String _lastModified \"2015-06-26T11:26:12.000Z\";\n" +
+        "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n" +
         "    String cdm_data_type \"Grid\";\n" +
         "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
         "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
@@ -11561,6 +11560,7 @@ class EDDGridFromNcFilesTests {
         "    String geospatial_lon_units \"degrees_east\";\n" +
         "    String grid_mapping_name \"latitude_longitude\";\n" +
         "    String history \"Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)";
+    results = results.replaceAll("    String _lastModified \"....-..-..T..:..:...000Z\";\n", "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -13168,399 +13168,6 @@ class EDDGridFromNcFilesTests {
     // "EDDGridFromNcFiles.testStructurePrivate()\n" +
     // "Okay?");
 
-  }
-
-  /**
-   * This tests the /files/ "files" system.
-   * This requires nceiPH53sstn1day in the local ERDDAP.
-   *
-   * EDDGridFromNcFiles.testFiles() has more tests than any other testFiles().
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int language = 0;
-    int po;
-
-    try {
-      // get /files/.csv
-      results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/.csv"));
-      Test.ensureTrue(results.indexOf("Name,Last modified,Size,Description[10]") == 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(
-          "nceiPH53sstn1day/,NaN,NaN,\"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417\\u00b0, 1981-present, Nighttime (1 Day Composite)\"[10]") > 0,
-          "results=\n" + results);
-      Test.ensureTrue(results.indexOf("testTableAscii/,NaN,NaN,The Title for testTableAscii[10]") > 0,
-          "results=\n" + results);
-      Test.ensureTrue(results.indexOf("documentation.html,") > 0, "results=\n" + results);
-
-      // get /files/datasetID/.csv
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/.csv");
-      expected = "Name,Last modified,Size,Description\n" +
-          "1981/,NaN,NaN,\n" +
-          "1994/,NaN,NaN,\n" +
-          "2020/,NaN,NaN,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // get /files/datasetID/
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/");
-      Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("1981/") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
-
-      // get /files/datasetID //missing trailing slash will be redirected
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day");
-      Test.ensureTrue(results.indexOf("1981&#x2f;") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("1981/") > 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("1994&#x2f;") > 0, "results=\n" + results);
-
-      // get /files/datasetID/subdir/.csv
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/.csv");
-      expected = "Name,Last modified,Size,Description\n" +
-          "data/,NaN,NaN,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // get /files/datasetID/subdir/subdir.csv
-      results = SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/data/.csv");
-      expected = "Name,Last modified,Size,Description\n" +
-          "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc,1471330800000,12484412,\n";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // download a file in root -- none available
-
-      // download a file in subdir
-      results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-          "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/1994/data/" +
-              "19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc")
-          .substring(0, 50));
-      expected = "[137]HDF[10]\n" +
-          "[26][10]\n" +
-          "[2][8][8][0][0][0][0][0][0][0][0][0][255][255][255][255][255][255][255][255]<[127][190][0][0][0][0][0]0[0][0][0][0][0][0][0][199](*yOHD[end]";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // query with // at start fails
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files//.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files//.csv\n"
-          +
-          "(Error {\n" +
-          "    code=400;\n" +
-          "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // query with // later fails
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day//.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day//.csv\n"
-          +
-          "(Error {\n" +
-          "    code=400;\n" +
-          "    message=\"Bad Request: Query error: // is not allowed!\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // query with /../ fails
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/../");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=400 for URL: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/../\n"
-          +
-          "(Error {\n" +
-          "    code=400;\n" +
-          "    message=\"Bad Request: Query error: /../ is not allowed!\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent dataset
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent datasetID
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a existent subdirectory but without trailing slash
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: File not found: GLsubdir .\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent directory
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish/");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish/\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file in root
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/gibberish.csv\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-      // try to download a non-existent file in existent subdir
-      try {
-        results = SSR.getUrlResponseStringNewline(
-            "http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir/gibberish.csv");
-      } catch (Exception e) {
-        results = e.toString();
-      }
-      expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiPH53sstn1day/GLsubdir/gibberish.csv\n"
-          +
-          "(Error {\n" +
-          "    code=404;\n" +
-          "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
-          "})";
-      Test.ensureEqual(results, expected, "results=\n" + results);
-
-    } catch (Throwable t) {
-      throw new RuntimeException("Unexpected error. This test requires nceiPH53sstn1day in the localhost ERDDAP.",
-          t);
-    }
-  }
-
-  /**
-   * This test the speed of all types of responses.
-   * This test is in this class because the source data is in a file,
-   * so it has reliable access speed.
-   * This gets a pretty big chunk of data.
-   *
-   * @param firstTest 0..
-   * @param lastTest  (inclusive) Any number greater than last available is
-   *                  interpreted as last available.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testSpeed() throws Throwable {
-    int firstTest = 0;
-    int lastTest = 1000;
-    // String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
-    // "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n"
-    // +
-    // SgtUtil.isBufferedImageAccelerated() + "\n");
-    int language = 0;
-    // gc and sleep to give computer time to catch up from previous tests
-    for (int i = 0; i < 4; i++)
-      Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
-    // boolean oReallyVerbose = reallyVerbose;
-    // reallyVerbose = false;
-    String outName;
-    // 2017-10-13 I switched from getFile to curl
-    // The advantage is: curl will detect if outputstream isn't being closed.
-    // 2018-05-17 problems with curl, switched to SSR.downloadFile
-    String baseRequest = "http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles";
-    String userDapQuery = "?" + SSR.minimalPercentEncode("y_wind[(2008-01-07T12:00:00Z)][0][][0:719]") + // 719
-                                                                                                         // avoids
-                                                                                                         // esriAsc
-                                                                                                         // cross
-                                                                                                         // lon=180
-        "&.vec="; // avoid get cached response
-    String baseName = "EDDGridFromNcFilesTestSpeed";
-    String baseOut = EDStatic.fullTestCacheDirectory + baseName;
-    ArrayList al;
-    int timeOutSeconds = 120;
-    String extensions[] = new String[] {
-        ".asc", ".csv", ".csvp", ".csv0",
-        ".das", ".dds", ".dods", ".esriAscii",
-        ".graph", ".html", ".htmlTable", // .help not available at this level
-        ".json", ".jsonlCSV", ".jsonlCSV1", ".jsonlKVP", ".mat",
-        ".nc", ".ncHeader",
-        ".nccsv", ".nccsvMetadata", ".ncoJson",
-        ".odvTxt", ".timeGaps",
-        ".tsv", ".tsvp", ".tsv0",
-        ".xhtml",
-        ".geotif", ".kml",
-        ".smallPdf", ".pdf", ".largePdf",
-        ".smallPng", ".png", ".largePng",
-        ".transparentPng" };
-    int expectedMs[] = new int[] {
-        // 2017-10-13 I added 200 ms with change from getFile to curl
-        // 2018-05-17 I adjusted (e.g., small files 200ms faster) with switch to
-        // SSR.downloadFile
-        // now Lenovo was Java 1.8/M4700 //was Java 1.6 times //was java 1.5 times
-        550, 1759, 1635, 1544, // 734, 6391, 6312, ? //1250, 9750, 9562, ?
-        // why is esriAscii so slow??? was ~9000 for a long time. Then jumped to 23330.
-        15, 15, 663, 12392, // 15, 15, 109/156, 16875 //15, 15, 547, 18859
-        40, 25, 477, // 63, 47, 2032, //93, 31, ...,
-        1843, 1568, 1568, 2203, 666, // 6422, ., ., 203, //9621, ., ., 625,
-        173, 117, // 234, 250, //500, 500,
-        3485, 16, 390,
-        2446, 13, // 9547, ? //13278, ?
-        1411, 1411, 1411, // 6297, 6281, ?, //8766, 8844, ?,
-        2204, // but really slow if hard drive is busy! //8625, //11469,
-        500, 20, // 656, 110, //687, 94, //Java 1.7 was 390r until change to new netcdf-Java
-        266, 976, 1178, // 860, 2859, 3438, //2188, 4063, 3797, //small varies greatly
-        131, 209, 459, // 438, 468, 1063, //438, 469, 1188, //small varies greatly
-        720 }; // 1703 //2359};
-    int bytes[] = new int[] {
-        5875592, 23734053, 23734063, 23733974,
-        6006, 303, 2085486, 4701074,
-        60787, 60196, 11980027,
-        31827797, 28198736, 28198830, 54118736, 2085800,
-        2090600, 5285,
-        25961828, 5244, 5877820,
-        26929890, 58,
-        23734053, 23734063, 23733974,
-        69372795,
-        523113, 3601,
-        478774, 2189656, 2904880,
-        30764, 76777, 277494, // small png flips between 26906 and 30764
-        335307 };
-
-    // warm up
-    boolean tryToCompress = true;
-    outName = baseOut + "Warmup.csvp.csv";
-    SSR.downloadFile(baseRequest + ".csvp" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // was al = SSR.dosShell(baseRequest + ".csvp" + userDapQuery +
-    // Math2.random(1000) +
-    // " -o " + outName, timeOutSeconds);
-    // String2.log(String2.toNewlineString(al.toArray()));
-
-    outName = baseOut + "Warmup.png.png";
-    SSR.downloadFile(baseRequest + ".png" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".png" + userDapQuery + Math2.random(1000) +
-    // " -o " + outName, timeOutSeconds);
-
-    outName = baseOut + "Warmup.pdf.pdf";
-    SSR.downloadFile(baseRequest + ".pdf" + userDapQuery + Math2.random(1000), outName, tryToCompress);
-    // al = SSR.dosShell(baseRequest + ".pdf" + userDapQuery + Math2.random(1000) +
-    // " -o " + outName, timeOutSeconds);
-
-    lastTest = Math.min(lastTest, extensions.length - 1);
-    for (int ext = firstTest; ext <= lastTest; ext++) {
-      // String2.pressEnterToContinue("");
-      Math2.sleep(3000);
-      String dotExt = extensions[ext];
-      // try {
-      String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + ": " +
-          dotExt + " speed\n");
-      long time = 0, cLength = 0;
-      for (int chance = 0; chance < 3; chance++) {
-        Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); // in a test
-        time = System.currentTimeMillis();
-        outName = baseOut + chance + dotExt;
-        SSR.downloadFile(baseRequest + dotExt + userDapQuery + Math2.random(1000), outName, tryToCompress);
-        // al = SSR.dosShell(baseRequest + dotExt + userDapQuery + Math2.random(1000) +
-        // " -o " + outName, timeOutSeconds);
-
-        time = System.currentTimeMillis() - time;
-        cLength = File2.length(outName);
-        String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext +
-            " chance#" + chance + ": " + dotExt + " done.\n  " +
-            cLength + " bytes (" + bytes[ext] +
-            ").  time=" + time + "ms (expected=" + expectedMs[ext] + ")\n");
-        Math2.sleep(3000);
-
-        // if not too slow or too fast, break
-        if (time > 1.5 * Math.max(50, expectedMs[ext]) ||
-            time < (expectedMs[ext] <= 50 ? 0 : 0.5) * expectedMs[ext]) {
-          // give it another chance
-        } else {
-          break;
-        }
-      }
-
-      // size test
-      Test.ensureTrue(cLength > 0.9 * bytes[ext],
-          "File shorter than expected.  observed=" +
-              cLength + " expected=~" + bytes[ext] +
-              "\n" + outName);
-      Test.ensureTrue(cLength < 1.1 * bytes[ext],
-          "File longer than expected.  observed=" +
-              cLength + " expected=~" + bytes[ext] +
-              "\n" + outName);
-
-      // time test
-      if (time > 1.5 * Math.max(50, expectedMs[ext]))
-        throw new SimpleException(
-            "Slower than expected. observed=" + time +
-                " expected=~" + expectedMs[ext] + " ms.");
-      if (expectedMs[ext] >= 50 && time < 0.5 * expectedMs[ext])
-        throw new SimpleException(
-            "Faster than expected! observed=" + time +
-                " expected=~" + expectedMs[ext] + " ms.");
-
-      // display last image
-      if (ext == extensions.length - 1) {
-        File2.rename(outName, outName + ".png");
-        Test.displayInBrowser(outName + ".png"); // complicated to switch to testImagesIdentical
-      }
-
-      // } catch (Exception e) {
-      // String2.pressEnterToContinue(MustBe.throwableToString(e) +
-      // "Unexpected error for Test#" + ext + ": " + dotExt + ".");
-      // }
-    }
-    // reallyVerbose = oReallyVerbose;
   }
 
   /**

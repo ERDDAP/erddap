@@ -104,7 +104,7 @@ class SgtMapTests {
     if (true) {
       // make a regionsMap
       ResourceBundle2 classRB2 = new ResourceBundle2(
-          "gov.noaa.pfel.coastwatch.CWBrowser", "gov.noaa.pfel.coastwatch.BrowserDefault");
+          "gov.noaa.pfel.coastwatch.TimePeriods", "gov.noaa.pfel.coastwatch.BrowserDefault");
       String tRegionInfo[] = String2.split(classRB2.getString("regionInfo", null), '\f');
       String regionInfo[][] = new String[tRegionInfo.length][];
       for (int region = 0; region < tRegionInfo.length; region++) {

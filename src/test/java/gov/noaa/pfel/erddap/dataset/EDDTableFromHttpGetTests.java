@@ -811,7 +811,7 @@ class EDDTableFromHttpGetTests {
         "    String units \"degree_C\";\n" +
         "  }\n" +
         "  timestamp {\n" +
-        "    Float64 actual_range 0.0, 1.531153327766e+9;\n" +
+        "    Float64 actual_range 0.0, 1.71387998582e+9;\n" +
         "    String ioos_category \"Time\";\n" +
         "    String long_name \"Timestamp\";\n" +
         "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
@@ -909,42 +909,43 @@ class EDDTableFromHttpGetTests {
     String2.log("\n*** EDDTableFromHttpGet.testBasic make DATA FILES\n");
 
     // .csv all data (just the seed data)
-    userDapQuery = "";
+    userDapQuery = "stationID,time,latitude,longitude,airTemp,waterTemp,author,command";
     tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir,
         eddTable.className() + "_all", ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     // String2.log(results);
-    expected = "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
-        ",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
-        "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,1970-01-01T00:00:00.000Z,me,0\n" +
-        "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,2018-07-09T16:22:05.073Z,JohnSmith,0\n" + //
-        "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,2018-07-09T16:22:06.823Z,JohnSmith,0\n" + //
-        "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,2018-07-09T16:21:58.778Z,JohnSmith,0\n" + //
-        "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,2018-07-09T16:22:01.841Z,JohnSmith,0\n" + //
-        "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,2018-07-09T16:22:05.979Z,JohnSmith,0\n" + //
-        "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,2018-07-09T16:22:07.766Z,JohnSmith,0\n" + //
-        "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,2018-07-09T16:22:00.277Z,JohnSmith,0\n" + //
-        "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,2018-07-09T16:22:03.307Z,JohnSmith,0\n" + //
-        "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,2018-07-09T16:21:59.480Z,JohnSmith,0\n" + //
-        "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,2018-07-09T16:22:02.590Z,JohnSmith,0\n" + //
-        "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,2018-07-09T16:22:01.058Z,JohnSmith,0\n" + //
-        "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,2018-07-09T16:22:04.151Z,JohnSmith,0\n";
+    expected = "stationID,time,latitude,longitude,airTemp,waterTemp,author,command\n" +
+        ",UTC,degrees_north,degrees_east,degree_C,degree_C,,\n" +
+        "myStation,2018-06-25T17:00:00Z,10.2,-150.3,14.2,12.2,me,0\n" +
+        "station1,2016-04-29T00:00:00Z,10.2,-150.3,20.0,21.0,JohnSmith,0\n" + //
+        "station1,2016-04-29T01:00:00Z,10.2,-150.3,20.1,21.1,JohnSmith,0\n" + //
+        "station1,2016-04-29T02:00:00Z,10.2,-150.3,10.2,11.2,JohnSmith,0\n" + //
+        "station1,2016-04-29T03:00:00Z,10.2,-150.3,10.3,11.3,JohnSmith,0\n" + //
+        "station1,2016-05-29T00:00:00Z,10.2,-150.3,22.0,23.0,JohnSmith,0\n" + //
+        "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,JohnSmith,0\n" + //
+        "station1,2016-05-29T02:00:00Z,10.2,-150.3,14.2,15.2,JohnSmith,0\n" + //
+        "station1,2016-05-29T03:00:00Z,10.2,-150.3,14.3,15.3,JohnSmith,0\n" + //
+        "station2,2016-04-29T02:00:00Z,10.2,-150.3,12.2,13.2,JohnSmith,0\n" + //
+        "station2,2016-04-29T03:00:00Z,10.2,-150.3,12.3,13.3,JohnSmith,0\n" + //
+        "station2,2016-05-29T02:00:00Z,10.2,-150.3,16.2,17.2,JohnSmith,0\n" + //
+        "station2,2016-05-29T03:00:00Z,10.2,-150.3,16.3,17.3,JohnSmith,0\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // initial file table
     Table tFileTable = eddTable
         .tryToLoadDirFileTable(EDDTableFromHttpGet.datasetDir(id) + EDDTableFromHttpGet.FILE_TABLE_FILENAME);
+    tFileTable.removeColumn("lastMod");
     results = tFileTable.dataToString();
     String2.log(results);
-    expected = "dirIndex,fileName,lastMod,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
-        + "0,testFromHttpGet.jsonl,1530629894067,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n"
-        + "1,station1_2016-03.jsonl,1531153326823,528,-1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.2,20.1,0,11.2,21.1,0,1.531153318778E9,1.531153326823E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
+    expected = "dirIndex,fileName,size,sortedSpacing,stationID_min_,stationID_max_,stationID_hasNaN_,time_min_,time_max_,time_hasNaN_,x3d10x2e2_min_,x3d10x2e2_max_,x3d10x2e2_hasNaN_,x3dx2d150x2e3_min_,x3dx2d150x2e3_max_,x3dx2d150x2e3_hasNaN_,airTemp_min_,airTemp_max_,airTemp_hasNaN_,waterTemp_min_,waterTemp_max_,waterTemp_hasNaN_,timestamp_min_,timestamp_max_,timestamp_hasNaN_,author_min_,author_max_,author_hasNaN_,command_min_,command_max_,command_hasNaN_\n"
+        + "0,testFromHttpGet.jsonl,144,-1.0,myStation,myStation,0,2018-06-25T17:00:00Z,2018-06-25T17:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,14.2,0,12.2,12.2,0,0.0,0.0,0,me,me,0,0,0,0\n"
+        + "1,station1_2016-03.jsonl,528,-1.0,station1,station1,0,2016-04-29T00:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,10.2,20.1,0,11.2,21.1,0,1.531153318778E9,1.531153326823E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
         + //
-        "1,station1_2016-05.jsonl,1531153327782,528,-1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,22.1,0,15.2,23.1,0,1.531153320277E9,1.531153327766E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
+        "1,station1_2016-05.jsonl,528,-1.0,station1,station1,0,2016-05-29T00:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,14.2,22.1,0,15.2,23.1,0,1.531153320277E9,1.531153327766E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
         + //
-        "2,station2_2016-03.jsonl,1531153327657,527,-1.0,station2,station2,0,2016-04-29T02:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.2,12.3,0,13.2,13.3,0,1.53115331948E9,1.53115332259E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
+        "2,station2_2016-03.jsonl,527,-1.0,station2,station2,0,2016-04-29T02:00:00Z,2016-04-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,12.2,12.3,0,13.2,13.3,0,1.53115331948E9,1.53115332259E9,0,JohnSmith,JohnSmith,0,0,0,0\n"
         + //
-        "2,station2_2016-05.jsonl,1531153328580,532,-1.0,station2,station2,0,2016-05-29T02:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.2,16.3,0,17.2,17.3,0,1.531153321058E9,1.531153324151E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
+        "2,station2_2016-05.jsonl,532,-1.0,station2,station2,0,2016-05-29T02:00:00Z,2016-05-29T03:00:00Z,0,10.2,10.2,0,-150.3,-150.3,0,16.2,16.3,0,17.2,17.3,0,1.531153321058E9,1.531153324151E9,0,JohnSmith,JohnSmith,0,0,0,0\n";
     Test.ensureLinesMatch(results, expected, "");
 
     EDStatic.developmentMode = true;

@@ -782,6 +782,17 @@ Because of the nature of SOS requests, requests for data MUST include constraint
     <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyW</sourceUrl>
 </dataset>
 
+<dataset type="EDDGridFromErddap" datasetID="erdMWchla1day" active="true">
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchla1day</sourceUrl>
+</dataset>
+
+<dataset type="EDDTableFromErddap" datasetID="rlPmelTaoDySst" active="true">
+    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>
+</dataset>
+
+<dataset type="EDDGridFromErddap" datasetID="erdBAssta5day">
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day</sourceUrl>
+</dataset>
 
 <!-- This is an example of EDDTableFromNcFiles, but commented out since you won't have these files.
 <dataset type="EDDTableFromNcFiles" datasetID="cwwcNDBCMetF">

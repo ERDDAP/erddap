@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -2396,12 +2397,16 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         if (nRows == 0)
             return;
         char separator = oneDir.indexOf('\\') >= 0? '\\' : '/';
+        char unusedSeparator = oneDir.indexOf('\\') >= 0? '/' : '\\';
+        oneDir = oneDir.replace(unusedSeparator, separator);
         StringArray dirSA  = (StringArray)dnlsTable.getColumn(0);
         StringArray nameSA = (StringArray)dnlsTable.getColumn(1);
         int oneDirLength = oneDir.length();
         BitSet keep = new BitSet(nRows);  //all false
         for (int row = 0; row < nRows; row++) {
             String tDir = dirSA.get(row);
+            // Make sure the separator in tDir matches the separator used in oneDir.
+            tDir = tDir.replace(unusedSeparator, separator);
             if (tDir.startsWith(oneDir)) {
                 if (tDir.length() == oneDirLength) {
                     if (nameSA.get(row).length() > 0) 
@@ -2415,6 +2420,25 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         dnlsTable.justKeep(keep);
         dnlsTable.sortIgnoreCase(new int[]{1}, new boolean[]{true});
         //String2.log(">> reduceDnlsTabletoOneDir nRows=" + dnlsTable.nRows() + " nSubdir=" + subdirHash.size());
+    }
+
+    public static int indexOfDirectory(PrimitiveArray directories, String toMatch) {
+        int dirIndex = directories.indexOf(toMatch);
+        if (dirIndex >= 0) {
+            return dirIndex;
+        }
+        char separator = toMatch.indexOf('\\') >= 0? '\\' : '/';
+        char unusedSeparator = toMatch.indexOf('\\') >= 0? '/' : '\\';
+        toMatch = toMatch.replace(unusedSeparator, separator);
+
+        for (int row = 0; row < directories.size(); row++) {
+            String dir = directories.getString(row);
+            dir = dir.replace(unusedSeparator, separator);
+            if (toMatch.equals(dir)) {
+                dirIndex = row;
+            }
+        }
+        return dirIndex;
     }
 
    /**

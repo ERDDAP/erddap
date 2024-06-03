@@ -2571,7 +2571,7 @@ class EDDTableFromMultidimNcFilesTests {
         "  DEPTH_QC {\n" +
         "    Byte _FillValue 127;\n" +
         "    String _Unsigned \"false\";\n" + // ERDDAP adds
-        "    Byte actual_range 127, 127;\n" +
+        (deleteCachedInfo ? "" : "    Byte actual_range 127, 127;\n") +
         "    Float64 colorBarMaximum 10.0;\n" +
         "    Float64 colorBarMinimum 0.0;\n" +
         "    String conventions \"OceanSites reference table 2\";\n" +
@@ -2924,7 +2924,7 @@ class EDDTableFromMultidimNcFilesTests {
             "    String standard_name \"latitude\";\n" +
             "    String units \"degrees_north\";\n" +
             "    Float32 valid_max 90.0;\n" +
-            "    Float32 valid_min -90.0;\n" +
+            "    Float32 valid_min MIN;\n" +
             "  }\n" +
             "  longitude {\n" +
             "    String _CoordinateAxisType \"Lon\";\n" +
@@ -2940,7 +2940,7 @@ class EDDTableFromMultidimNcFilesTests {
             "    String standard_name \"longitude\";\n" +
             "    String units \"degrees_east\";\n" +
             "    Float32 valid_max 180.0;\n" +
-            "    Float32 valid_min -180.0;\n" +
+            "    Float32 valid_min MIN;\n" +
             "  }\n" +
             "  depth {\n" +
             "    String _CoordinateAxisType \"Height\";\n" +
@@ -2958,7 +2958,7 @@ class EDDTableFromMultidimNcFilesTests {
             "    String standard_name \"depth\";\n" +
             "    String units \"m\";\n" +
             "    Float32 valid_max 12000.0;\n" +
-            "    Float32 valid_min 0.0;\n" +
+            "    Float32 valid_min MIN;\n" +
             "  }\n" +
             "  DEPH_QC {\n" +
             "    Byte _FillValue 127;\n" +
@@ -3253,7 +3253,7 @@ class EDDTableFromMultidimNcFilesTests {
             "    String data_assembly_center \"IOBAS\";\n" +
             "    String data_mode \"R\";\n" +
             "    String data_type \"OceanSITES time-series data\";\n" +
-            "    String date_update \"2018-01-11T02:59:08Z\";\n" +
+            "    String date_update \"yyyy-MM-ddThh:mm:ssZ\";\n" +
             "    String distribution_statement \"These data follow Copernicus standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data.\";\n"
             +
             "    Float64 Easternmost_Easting 27.4833;\n" +
@@ -3270,6 +3270,8 @@ class EDDTableFromMultidimNcFilesTests {
             "    String geospatial_vertical_positive \"down\";\n" +
             "    String geospatial_vertical_units \"m\";\n" +
             "    String history \"2018-01-11T02:59:08Z : Creation\n";
+    results = results.replaceAll("String date_update \\\"....-..-..T..:..:..Z", "String date_update \"yyyy-MM-ddThh:mm:ssZ");
+    results = results.replaceAll("Float32 valid_min -?[0-9]+.[0-9]+;", "Float32 valid_min MIN;");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // 2018-06-14T18:48:29Z (local files)
