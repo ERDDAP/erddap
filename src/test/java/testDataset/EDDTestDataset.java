@@ -18,14 +18,14 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb());
       datasetsXml.append(xmlFragment_testActualRange());
       datasetsXml.append(xmlFragment_testActualRange2());
-      datasetsXml.append(xmlFragment_hycom_GLBa008_tyx());
+      // datasetsXml.append(xmlFragment_hycom_GLBa008_tyx()); // thredds, fails
       datasetsXml.append(xmlFragment_erdBAssta5day());
-      datasetsXml.append(xmlFragment_NCOM_Region7_2D());
-      datasetsXml.append(xmlFragment_jplNesdisG17v271());
-      datasetsXml.append(xmlFragment_usgsCeCrm10());
-      datasetsXml.append(xmlFragment_mb7201adc());
+      // datasetsXml.append(xmlFragment_NCOM_Region7_2D()); // external server fails
+      // datasetsXml.append(xmlFragment_jplNesdisG17v271()); // thredds, fails
+      // datasetsXml.append(xmlFragment_usgsCeCrm10()); // thredds, fails
+      // datasetsXml.append(xmlFragment_mb7201adc()); // thredds, fails
       datasetsXml.append(xmlFragment_nodcPH2sstd1day());
-      datasetsXml.append(xmlFragment_testDataVarOrder());
+      // datasetsXml.append(xmlFragment_testDataVarOrder()); // external dataset no longer available?
       datasetsXml.append(xmlFragment_etopo180());
       datasetsXml.append(xmlFragment_etopo360());
       datasetsXml.append(xmlFragment_ndbcCWind41002());
@@ -61,7 +61,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_erdCinpKfmT());
       datasetsXml.append(xmlFragment_epaseamapTimeSeriesProfiles());
       datasetsXml.append(xmlFragment_testEDDTableCopyFiles());
-      datasetsXml.append(xmlFragment_ndbcSosWaves());
+      datasetsXml.append(xmlFragment_ndbcSosWaves()); 
       datasetsXml.append(xmlFragment_testTablePseudoSourceNames());
       datasetsXml.append(xmlFragment_fsuNoaaShipWTEP());
       datasetsXml.append(xmlFragment_fsuNoaaShipWTEPnrt());
@@ -83,19 +83,19 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_nosSosWind());
       datasetsXml.append(xmlFragment_nosSosWLevel());
       datasetsXml.append(xmlFragment_nosSosWTemp());
-      datasetsXml.append(xmlFragment_ndbcSosCurrents());
-      datasetsXml.append(xmlFragment_ndbcSosSalinity());
-      datasetsXml.append(xmlFragment_ndbcSosWTemp());
-      datasetsXml.append(xmlFragment_ndbcSosWLevel());
-      datasetsXml.append(xmlFragment_ndbcSosWind());
-      datasetsXml.append(xmlFragment_gomoosBuoy());
-      datasetsXml.append(xmlFragment_neracoosSos());
-      datasetsXml.append(xmlFragment_tamuSos());
-      datasetsXml.append(xmlFragment_tabletest2DVSameSource());
-      datasetsXml.append(xmlFragment_tabletest2DVSameDestination());
+      // datasetsXml.append(xmlFragment_ndbcSosCurrents()); // ndbcSos not available
+      // datasetsXml.append(xmlFragment_ndbcSosSalinity()); // ndbcSos not available
+      // datasetsXml.append(xmlFragment_ndbcSosWTemp()); // ndbcSos not available
+      // datasetsXml.append(xmlFragment_ndbcSosWLevel()); // ndbcSos not available
+      // datasetsXml.append(xmlFragment_ndbcSosWind()); // ndbcSos not available
+      // datasetsXml.append(xmlFragment_gomoosBuoy()); // external server not available
+      // datasetsXml.append(xmlFragment_neracoosSos()); // external server not available
+      // datasetsXml.append(xmlFragment_tamuSos()); // external server not available
+      // datasetsXml.append(xmlFragment_tabletest2DVSameSource()); // external server not available
+      // datasetsXml.append(xmlFragment_tabletest2DVSameDestination()); // external server not available
       // datasetsXml.append(xmlFragment_testErddapSos()); // very large files, not
       // currently loaded
-      datasetsXml.append(xmlFragment_kgsBoreTempWVTRUE());
+      // datasetsXml.append(xmlFragment_kgsBoreTempWVTRUE()); // dataset fails
       datasetsXml.append(xmlFragment_testFromHttpGet());
       datasetsXml.append(xmlFragment_testTableColumnarAscii());
       datasetsXml.append(xmlFragment_glerlAvgTemp());
@@ -113,38 +113,38 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testTimeZone2());
       datasetsXml.append(xmlFragment_testTimeMV());
       datasetsXml.append(xmlFragment_testFileNames());
-      datasetsXml.append(xmlFragment_testFileNamesAwsS3());
-      datasetsXml.append(xmlFragment_awsS3NoaaGoes17());
+      // datasetsXml.append(xmlFragment_testFileNamesAwsS3()); // aws credentials
+      // datasetsXml.append(xmlFragment_awsS3NoaaGoes17()); // aws credentials
       datasetsXml.append(xmlFragment_awsS3NoaaGoes17partial());
       datasetsXml.append(xmlFragment_awsS3NoaaGoes17all());
-      datasetsXml.append(xmlFragment_testBadNcFile());
+      // datasetsXml.append(xmlFragment_testBadNcFile()); // bad file for tests
       datasetsXml.append(xmlFragment_testGriddedNcFiles());
       datasetsXml.append(xmlFragment_testGribFiles_42());
       datasetsXml.append(xmlFragment_testGrib2_42());
       datasetsXml.append(xmlFragment_testGribFiles_43());
       datasetsXml.append(xmlFragment_testGrib2_43());
-      datasetsXml.append(xmlFragment_testPrivateAwsS3());
+      // datasetsXml.append(xmlFragment_testPrivateAwsS3()); // aws credentials
       // datasetsXml.append(xmlFragment_testAwsS3()); // very large files, not
       // currently loaded
       datasetsXml.append(xmlFragment_testCwHdf());
-      datasetsXml.append(xmlFragment_testGridGroups2a());
-      datasetsXml.append(xmlFragment_testGridGroups2());
-      datasetsXml.append(xmlFragment_testGridGroups());
-      datasetsXml.append(xmlFragment_testGridGroupsNavigation());
+      // datasetsXml.append(xmlFragment_testGridGroups2a()); // sourceAxis==null
+      // datasetsXml.append(xmlFragment_testGridGroups2()); // sourceAxis==null
+      // datasetsXml.append(xmlFragment_testGridGroups()); // sourceAxis==null
+      // datasetsXml.append(xmlFragment_testGridGroupsNavigation()); // sourceAxis==null
       datasetsXml.append(xmlFragment_testAwsXml());
       datasetsXml.append(xmlFragment_testTableWav());
-      datasetsXml.append(xmlFragment_testAVDVSameSource());
-      datasetsXml.append(xmlFragment_test2DVSameSource());
-      datasetsXml.append(xmlFragment_testAVDVSameDestination());
-      datasetsXml.append(xmlFragment_test2DVSameDestination());
+      // datasetsXml.append(xmlFragment_testAVDVSameSource()); // sameSource used in tests
+      // datasetsXml.append(xmlFragment_test2DVSameSource()); // sameSource used in tests
+      // datasetsXml.append(xmlFragment_testAVDVSameDestination()); // errors, used for testing
+      // datasetsXml.append(xmlFragment_test2DVSameDestination()); // throws error, used for testing
       datasetsXml.append(xmlFragment_testTimePrecisionMillis());
       datasetsXml.append(xmlFragment_testSimpleTestNc());
-      datasetsXml.append(xmlFragment_testRemoteThreddsFiles());
-      datasetsXml.append(xmlFragment_erdATssta3day());
+      // datasetsXml.append(xmlFragment_testRemoteThreddsFiles()); // source 404
+      // datasetsXml.append(xmlFragment_erdATssta3day()); // axisVariable time tied values
       datasetsXml.append(xmlFragment_testUInt16File());
       datasetsXml.append(xmlFragment_erdSW1chlamday());
       datasetsXml.append(xmlFragment_testSpecialAxis0FileNameInt());
-      datasetsXml.append(xmlFragment_testSpecialAxis0PathNameInt());
+      // datasetsXml.append(xmlFragment_testSpecialAxis0PathNameInt()); // sourceAxisValues null
       datasetsXml.append(xmlFragment_testSpecialAxis0GlobalDouble());
       datasetsXml.append(xmlFragment_erdMH1chla1day());
       datasetsXml.append(xmlFragment_erdMH1chla8day());
@@ -164,29 +164,29 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_repPostDet());
       // datasetsXml.append(xmlFragment_jplMURSST41()); // very large files, not
       // currently loaded
-      datasetsXml.append(xmlFragment_testGroups());
+      // datasetsXml.append(xmlFragment_testGroups());// sourceAxisValues null
       datasetsXml.append(xmlFragment_testIslandShift());
       datasetsXml.append(xmlFragment_testMinimalReadSource());
-      datasetsXml.append(xmlFragment_nosCoopsWLR6());
-      datasetsXml.append(xmlFragment_nosCoopsWLR1());
-      datasetsXml.append(xmlFragment_nosCoopsWLV6());
-      datasetsXml.append(xmlFragment_nosCoopsWLV60());
-      datasetsXml.append(xmlFragment_nosCoopsWLVHL());
-      datasetsXml.append(xmlFragment_nosCoopsWLTPHL());
-      datasetsXml.append(xmlFragment_nosCoopsWLTP6());
-      datasetsXml.append(xmlFragment_nosCoopsWLTP60());
-      datasetsXml.append(xmlFragment_nosCoopsMAT());
-      datasetsXml.append(xmlFragment_nosCoopsMBP());
-      datasetsXml.append(xmlFragment_nosCoopsMC());
-      datasetsXml.append(xmlFragment_nosCoopsMRF());
-      datasetsXml.append(xmlFragment_nosCoopsMRH());
-      datasetsXml.append(xmlFragment_nosCoopsMWT());
-      datasetsXml.append(xmlFragment_nosCoopsMW());
-      datasetsXml.append(xmlFragment_nosCoopsMV());
-      datasetsXml.append(xmlFragment_nosCoopsCA());
-      datasetsXml.append(xmlFragment_cimtPsdac());
+      // datasetsXml.append(xmlFragment_nosCoopsWLR6()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLR1()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLV6()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLV60()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLVHL()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLTPHL()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLTP6()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsWLTP60()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMAT()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMBP()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMC()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMRF()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMRH()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMWT()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMW()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsMV()); //stationTable=null
+      // datasetsXml.append(xmlFragment_nosCoopsCA()); //stationTable=null
+      // datasetsXml.append(xmlFragment_cimtPsdac()); // dods fails
       datasetsXml.append(xmlFragment_nwioosGroundfish());
-      datasetsXml.append(xmlFragment_nosCoopsRWL());
+      // datasetsXml.append(xmlFragment_nosCoopsRWL()); //stationTable=null
       // datasetsXml.append(xmlFragment_erdQSwind8day()); // very large files, not
       // currently loaded
       // datasetsXml.append(xmlFragment_erdQSstress1day()); // very large files, not
@@ -197,13 +197,14 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_test_nesdisVHNchlaWeekly_Lon0360());
       datasetsXml.append(xmlFragment_ecocast_Lon0360());
       datasetsXml.append(xmlFragment_test_etopo180_Lon0360());
-      datasetsXml.append(xmlFragment_notApplicable_Lon0360());
+      // datasetsXml.append(xmlFragment_notApplicable_Lon0360()); // source 404
       datasetsXml.append(xmlFragment_testLon0360Insert());
-      datasetsXml.append(xmlFragment_erdRWdhws1day_LonPM180());
-      datasetsXml.append(xmlFragment_test_erdMHsstnmday_LonPM180());
-      datasetsXml.append(xmlFragment_notApplicable_LonPM180());
+      // datasetsXml.append(xmlFragment_erdRWdhws1day_LonPM180()); // source 404
+      // datasetsXml.append(xmlFragment_test_erdMHsstnmday_LonPM180()); // source 404
+      // datasetsXml.append(xmlFragment_notApplicable_LonPM180()); longitude axis has
+      // no values >180
       datasetsXml.append(xmlFragment_erdMBsstdmday_LonPM180());
-      datasetsXml.append(xmlFragment_test_erdPHsstamday_LonPM180());
+      // datasetsXml.append(xmlFragment_test_erdPHsstamday_LonPM180()); //AxisVariable=time has tied values
       datasetsXml.append(xmlFragment_testPM180LonValidMinMax());
       datasetsXml.append(xmlFragment_testInvalidCRAFiles());
       datasetsXml.append(xmlFragment_testJsonlCSV());
@@ -213,158 +214,159 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testNcCF1b());
       datasetsXml.append(xmlFragment_testKevin20130109());
       datasetsXml.append(xmlFragment_pmelTaoMonPos());
-      datasetsXml.append(xmlFragment_testNoAttName1());
+      // datasetsXml.append(xmlFragment_testNoAttName1()); // error for testing
       datasetsXml.append(xmlFragment_UMaineAccB01());
       datasetsXml.append(xmlFragment_testNcCF7SampleDimensions());
       datasetsXml.append(xmlFragment_ArgoFloats());
       datasetsXml.append(xmlFragment_testTreatDimensionsAs());
       datasetsXml.append(xmlFragment_testTreatDimensionsAs2());
       datasetsXml.append(xmlFragment_testLong());
-      datasetsXml.append(xmlFragment_W1M3A());
+      // datasetsXml.append(xmlFragment_W1M3A()); // no valid files?
       datasetsXml.append(xmlFragment_testCharAsString());
       datasetsXml.append(xmlFragment_testCharAsChar());
-      datasetsXml.append(xmlFragment_testEDDTableFromHyraxFiles());
+      // datasetsXml.append(xmlFragment_testEDDTableFromHyraxFiles()); // dataset fails
       // datasetsXml.append(xmlFragment_testGridFromTable()); // todo missing dataset
       // get the data
       datasetsXml.append(xmlFragment_testGridWav());
-      datasetsXml.append(xmlFragment_TS_SLEV_TAD());
+      // datasetsXml.append(xmlFragment_TS_SLEV_TAD()); // dataset not available
 
       datasetsXml.append(
-          "<dataset type=\"EDDGridFromDap\" datasetID=\"erdMH1chla1dayTDS\" active=\"true\">\n" + //
-              "    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH1/chla/1day</sourceUrl>\n" + //
-              "    <reloadEveryNMinutes>240</reloadEveryNMinutes>\n" + //
-              "    <!-- sourceAttributes>\n" + //
-              "        <att name=\"_History\">Direct read of HDF4 file through CDM library</att>\n" + //
-              "        <att name=\"Conventions\">CF-1.6</att>\n" + //
-              "        <att name=\"infoUrl\">https://oceancolor.gsfc.nasa.gov/</att>\n" + //
-              "        <att name=\"institution\">NASA/GSFC OBPG</att>\n" + //
-              "        <att name=\"L2_Flag_Names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL, NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n"
-              + //
-              "        <att name=\"Map_Projection\">Equidistant Cylindrical</att>\n" + //
-              "        <att name=\"Processing_Version\">2013.1.1QL</att>\n" + //
-              "        <att name=\"Sensor_Name\">HMODISA</att>\n" + //
-              "        <att name=\"Software_Name\">smigen</att>\n" + //
-              "        <att name=\"Software_Version\">4.42</att>\n" + //
-              "        <att name=\"title\">MODISA Level-3 Standard Mapped Image, Chlorophyll a, Daily, 4km</att>\n" + //
-              "    </sourceAttributes -->\n" + //
-              "    <addAttributes>\n" + //
-              "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
-              "        <att name=\"creator_type\">group</att>\n" + //
-              "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" + //
-              "        <att name=\"data_bins\">null</att>\n" + //
-              "        <att name=\"data_maximum\">null</att>\n" + //
-              "        <att name=\"data_minimum\">null</att>\n" + //
-              "        <att name=\"easternmost_longitude\">null</att>\n" + //
-              "        <att name=\"end_orbit_number\">null</att>\n" + //
-              "        <att name=\"history\">Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n"
-              + //
-              "ERD uses .ncml to add a time dimension.\n" + //
-              "Direct read of HDF4 file through CDM library</att>\n" + //
-              "        <att name=\"id\">null</att>\n" + //
-              "        <att name=\"identifier_product_doi_authority\">https://dx.doi.org</att>\n" + //
-              "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</att>\n" + //
-              "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
-              "        <att name=\"keywords\">algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, mass, mass_concentration_chlorophyll_concentration_in_sea_water, moderate, modis, nasa, ocean, ocean color, oceans,\n"
-              + //
-              "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color,\n"
-              + //
-              "oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water</att>\n"
-              + //
-              "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
-              "        <att name=\"latitude_step\">null</att>\n" + //
-              "        <att name=\"latitude_units\">null</att>\n" + //
-              "        <att name=\"license\">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
-              + //
-              "[standard]</att>\n" + //
-              "        <att name=\"longitude_step\">null</att>\n" + //
-              "        <att name=\"longitude_units\">null</att>\n" + //
-              "        <att name=\"Metadata_Conventions\">null</att>\n" + //
-              "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
-              "        <att name=\"northernmost_latitude\">null</att>\n" + //
-              "        <att name=\"number_of_columns\">null</att>\n" + //
-              "        <att name=\"number_of_lines\">null</att>\n" + //
-              "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
-              "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
-              "        <att name=\"publisher_type\">institution</att>\n" + //
-              "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
-              "        <att name=\"southernmost_latitude\">null</att>\n" + //
-              "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" + //
-              "        <att name=\"start_orbit_number\">null</att>\n" + //
-              "        <att name=\"suggested_image_scaling_applied\">null</att>\n" + //
-              "        <att name=\"suggested_image_scaling_maximum\">null</att>\n" + //
-              "        <att name=\"suggested_image_scaling_minimum\">null</att>\n" + //
-              "        <att name=\"suggested_image_scaling_type\">null</att>\n" + //
-              "        <att name=\"sw_point_latitude\">null</att>\n" + //
-              "        <att name=\"sw_point_longitude\">null</att>\n" + //
-              "        <att name=\"summary\">This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</att>\n"
-              + //
-              "        <att name=\"testOutOfDate\">now-3days</att>\n" + //
-              "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</att>\n"
-              + //
-              "        <att name=\"westernmost_longitude\">null</att>\n" + //
-              "    </addAttributes>\n" + //
-              "    <axisVariable>\n" + //
-              "        <sourceName>time</sourceName>\n" + //
-              "        <destinationName>time</destinationName>\n" + //
-              "        <!-- sourceAttributes>\n" + //
-              "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
-              "            <att name=\"axis\">T</att>\n" + //
-              "            <att name=\"long_name\">Centered Time</att>\n" + //
-              "            <att name=\"standard_name\">time</att>\n" + //
-              "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
-              "        </sourceAttributes -->\n" + //
-              "        <addAttributes>\n" + //
-              "            <att name=\"ioos_category\">Time</att>\n" + //
-              "        </addAttributes>\n" + //
-              "    </axisVariable>\n" + //
-              "    <axisVariable>\n" + //
-              "        <sourceName>latitude</sourceName>\n" + //
-              "        <destinationName>latitude</destinationName>\n" + //
-              "        <!-- sourceAttributes>\n" + //
-              "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
-              "            <att name=\"axis\">Y</att>\n" + //
-              "            <att name=\"standard_name\">latitude</att>\n" + //
-              "            <att name=\"units\">degrees_north</att>\n" + //
-              "        </sourceAttributes -->\n" + //
-              "        <addAttributes>\n" + //
-              "            <att name=\"ioos_category\">Location</att>\n" + //
-              "            <att name=\"long_name\">Latitude</att>\n" + //
-              "        </addAttributes>\n" + //
-              "    </axisVariable>\n" + //
-              "    <axisVariable>\n" + //
-              "        <sourceName>longitude</sourceName>\n" + //
-              "        <destinationName>longitude</destinationName>\n" + //
-              "        <!-- sourceAttributes>\n" + //
-              "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
-              "            <att name=\"axis\">X</att>\n" + //
-              "            <att name=\"standard_name\">longitude</att>\n" + //
-              "            <att name=\"units\">degrees_east</att>\n" + //
-              "        </sourceAttributes -->\n" + //
-              "        <addAttributes>\n" + //
-              "            <att name=\"ioos_category\">Location</att>\n" + //
-              "            <att name=\"long_name\">Longitude</att>\n" + //
-              "        </addAttributes>\n" + //
-              "    </axisVariable>\n" + //
-              "    <dataVariable>\n" + //
-              "        <sourceName>MHchla</sourceName>\n" + //
-              "        <destinationName>chlorophyll</destinationName>\n" + //
-              "        <!-- sourceAttributes>\n" + //
-              "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
-              "            <att name=\"long_name\">Mean Chlorophyll a Concentration</att>\n" + //
-              "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
-              "            <att name=\"units\">mg m^-3</att>\n" + //
-              "        </sourceAttributes -->\n" + //
-              "        <addAttributes>\n" + //
-              "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
-              "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" + //
-              "            <att name=\"colorBarScale\">Log</att>\n" + //
-              "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
-              "            <att name=\"units\">mg m-3</att>\n" + //
-              "        </addAttributes>\n" + //
-              "    </dataVariable>\n" + //
-              "</dataset>\n" + //
-              "\n" + //
-              "\n" + //
+          // variable MHchla not found
+          // "<dataset type=\"EDDGridFromDap\" datasetID=\"erdMH1chla1dayTDS\" active=\"true\">\n" + //
+          //     "    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH1/chla/1day</sourceUrl>\n" + //
+          //     "    <reloadEveryNMinutes>240</reloadEveryNMinutes>\n" + //
+          //     "    <!-- sourceAttributes>\n" + //
+          //     "        <att name=\"_History\">Direct read of HDF4 file through CDM library</att>\n" + //
+          //     "        <att name=\"Conventions\">CF-1.6</att>\n" + //
+          //     "        <att name=\"infoUrl\">https://oceancolor.gsfc.nasa.gov/</att>\n" + //
+          //     "        <att name=\"institution\">NASA/GSFC OBPG</att>\n" + //
+          //     "        <att name=\"L2_Flag_Names\">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL, NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>\n"
+          //     + //
+          //     "        <att name=\"Map_Projection\">Equidistant Cylindrical</att>\n" + //
+          //     "        <att name=\"Processing_Version\">2013.1.1QL</att>\n" + //
+          //     "        <att name=\"Sensor_Name\">HMODISA</att>\n" + //
+          //     "        <att name=\"Software_Name\">smigen</att>\n" + //
+          //     "        <att name=\"Software_Version\">4.42</att>\n" + //
+          //     "        <att name=\"title\">MODISA Level-3 Standard Mapped Image, Chlorophyll a, Daily, 4km</att>\n" + //
+          //     "    </sourceAttributes -->\n" + //
+          //     "    <addAttributes>\n" + //
+          //     "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" + //
+          //     "        <att name=\"creator_type\">group</att>\n" + //
+          //     "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" + //
+          //     "        <att name=\"data_bins\">null</att>\n" + //
+          //     "        <att name=\"data_maximum\">null</att>\n" + //
+          //     "        <att name=\"data_minimum\">null</att>\n" + //
+          //     "        <att name=\"easternmost_longitude\">null</att>\n" + //
+          //     "        <att name=\"end_orbit_number\">null</att>\n" + //
+          //     "        <att name=\"history\">Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\n"
+          //     + //
+          //     "ERD uses .ncml to add a time dimension.\n" + //
+          //     "Direct read of HDF4 file through CDM library</att>\n" + //
+          //     "        <att name=\"id\">null</att>\n" + //
+          //     "        <att name=\"identifier_product_doi_authority\">https://dx.doi.org</att>\n" + //
+          //     "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</att>\n" + //
+          //     "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" + //
+          //     "        <att name=\"keywords\">algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, mass, mass_concentration_chlorophyll_concentration_in_sea_water, moderate, modis, nasa, ocean, ocean color, oceans,\n"
+          //     + //
+          //     "Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color,\n"
+          //     + //
+          //     "oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water</att>\n"
+          //     + //
+          //     "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" + //
+          //     "        <att name=\"latitude_step\">null</att>\n" + //
+          //     "        <att name=\"latitude_units\">null</att>\n" + //
+          //     "        <att name=\"license\">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n"
+          //     + //
+          //     "[standard]</att>\n" + //
+          //     "        <att name=\"longitude_step\">null</att>\n" + //
+          //     "        <att name=\"longitude_units\">null</att>\n" + //
+          //     "        <att name=\"Metadata_Conventions\">null</att>\n" + //
+          //     "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" + //
+          //     "        <att name=\"northernmost_latitude\">null</att>\n" + //
+          //     "        <att name=\"number_of_columns\">null</att>\n" + //
+          //     "        <att name=\"number_of_lines\">null</att>\n" + //
+          //     "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n" + //
+          //     "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n" + //
+          //     "        <att name=\"publisher_type\">institution</att>\n" + //
+          //     "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n" + //
+          //     "        <att name=\"southernmost_latitude\">null</att>\n" + //
+          //     "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" + //
+          //     "        <att name=\"start_orbit_number\">null</att>\n" + //
+          //     "        <att name=\"suggested_image_scaling_applied\">null</att>\n" + //
+          //     "        <att name=\"suggested_image_scaling_maximum\">null</att>\n" + //
+          //     "        <att name=\"suggested_image_scaling_minimum\">null</att>\n" + //
+          //     "        <att name=\"suggested_image_scaling_type\">null</att>\n" + //
+          //     "        <att name=\"sw_point_latitude\">null</att>\n" + //
+          //     "        <att name=\"sw_point_longitude\">null</att>\n" + //
+          //     "        <att name=\"summary\">This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</att>\n"
+          //     + //
+          //     "        <att name=\"testOutOfDate\">now-3days</att>\n" + //
+          //     "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</att>\n"
+          //     + //
+          //     "        <att name=\"westernmost_longitude\">null</att>\n" + //
+          //     "    </addAttributes>\n" + //
+          //     "    <axisVariable>\n" + //
+          //     "        <sourceName>time</sourceName>\n" + //
+          //     "        <destinationName>time</destinationName>\n" + //
+          //     "        <!-- sourceAttributes>\n" + //
+          //     "            <att name=\"_CoordinateAxisType\">Time</att>\n" + //
+          //     "            <att name=\"axis\">T</att>\n" + //
+          //     "            <att name=\"long_name\">Centered Time</att>\n" + //
+          //     "            <att name=\"standard_name\">time</att>\n" + //
+          //     "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" + //
+          //     "        </sourceAttributes -->\n" + //
+          //     "        <addAttributes>\n" + //
+          //     "            <att name=\"ioos_category\">Time</att>\n" + //
+          //     "        </addAttributes>\n" + //
+          //     "    </axisVariable>\n" + //
+          //     "    <axisVariable>\n" + //
+          //     "        <sourceName>latitude</sourceName>\n" + //
+          //     "        <destinationName>latitude</destinationName>\n" + //
+          //     "        <!-- sourceAttributes>\n" + //
+          //     "            <att name=\"_CoordinateAxisType\">Lat</att>\n" + //
+          //     "            <att name=\"axis\">Y</att>\n" + //
+          //     "            <att name=\"standard_name\">latitude</att>\n" + //
+          //     "            <att name=\"units\">degrees_north</att>\n" + //
+          //     "        </sourceAttributes -->\n" + //
+          //     "        <addAttributes>\n" + //
+          //     "            <att name=\"ioos_category\">Location</att>\n" + //
+          //     "            <att name=\"long_name\">Latitude</att>\n" + //
+          //     "        </addAttributes>\n" + //
+          //     "    </axisVariable>\n" + //
+          //     "    <axisVariable>\n" + //
+          //     "        <sourceName>longitude</sourceName>\n" + //
+          //     "        <destinationName>longitude</destinationName>\n" + //
+          //     "        <!-- sourceAttributes>\n" + //
+          //     "            <att name=\"_CoordinateAxisType\">Lon</att>\n" + //
+          //     "            <att name=\"axis\">X</att>\n" + //
+          //     "            <att name=\"standard_name\">longitude</att>\n" + //
+          //     "            <att name=\"units\">degrees_east</att>\n" + //
+          //     "        </sourceAttributes -->\n" + //
+          //     "        <addAttributes>\n" + //
+          //     "            <att name=\"ioos_category\">Location</att>\n" + //
+          //     "            <att name=\"long_name\">Longitude</att>\n" + //
+          //     "        </addAttributes>\n" + //
+          //     "    </axisVariable>\n" + //
+          //     "    <dataVariable>\n" + //
+          //     "        <sourceName>MHchla</sourceName>\n" + //
+          //     "        <destinationName>chlorophyll</destinationName>\n" + //
+          //     "        <!-- sourceAttributes>\n" + //
+          //     "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" + //
+          //     "            <att name=\"long_name\">Mean Chlorophyll a Concentration</att>\n" + //
+          //     "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" + //
+          //     "            <att name=\"units\">mg m^-3</att>\n" + //
+          //     "        </sourceAttributes -->\n" + //
+          //     "        <addAttributes>\n" + //
+          //     "            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" + //
+          //     "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" + //
+          //     "            <att name=\"colorBarScale\">Log</att>\n" + //
+          //     "            <att name=\"ioos_category\">Ocean Color</att>\n" + //
+          //     "            <att name=\"units\">mg m-3</att>\n" + //
+          //     "        </addAttributes>\n" + //
+          //     "    </dataVariable>\n" + //
+          //     "</dataset>\n" + //
+          //     "\n" + //
+          //     "\n" + //
               "<!-- For EDDGridSideBySide, the datasetID's for the parent and the children must be different. -->\n" + //
               "<dataset type=\"EDDGridSideBySide\" datasetID=\"erdTAssh1day\">\n" + //
               "<dataset type=\"EDDGridFromDap\"    datasetID=\"erdTAsshl1day\">\n" + //
@@ -500,10 +502,6 @@ public class EDDTestDataset {
               "     datasets get rerouted to the source server. -->\n" + //
               "\n" + //
               "<!-- JPL High Resolution SST -->\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplG1SST\" active=\"true\">\n" + //
-              "    <!-- GHRSST Global 1-km Sea Surface Temperature (G1SST), Global, 0.01 Degree, Daily -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplG1SST</sourceUrl>\n" + //
-              "</dataset>\n" + //
               "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplMURSST41\" active=\"true\">\n" + //
               "    <!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily -->\n"
               + //
@@ -529,32 +527,6 @@ public class EDDTestDataset {
               "<dataset type=\"EDDGridFromErddap\" datasetID=\"erdNavgem05DPres_LonPM180\" active=\"true\">\n" + //
               "    <!-- Navy Global Environmental Model (NAVGEM), 0.5 degree, Pressure MSL -->\n" + //
               "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdNavgem05DPres_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "\n" + //
-              "<!-- NCDC Ocean Winds -->\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOw6hr_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended 6-Hourly 0.25-degree Sea Surface Winds -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOw6hr_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOwClm9505_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended 0.25-degree Sea Winds, Climatological Monthly Means -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwClm9505_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOwDly_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended Daily 0.25-degree Sea Surface Winds -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwDly_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOwMon_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended Monthly 0.25-degree Sea Surface Winds -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwMon_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOwDlyStrs_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended Daily 0.25-degree Sea Surface Wind Stress -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwDlyStrs_LonPM180</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"ncdcOwMonStrs_LonPM180\" active=\"true\">\n" + //
-              "    <!-- NOAA/NCDC Blended Monthly 0.25-degree Sea Surface Wind Stress -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwMonStrs_LonPM180</sourceUrl>\n" + //
               "</dataset>\n" + //
               "\n" + //
               "<!-- Miami Currents -->\n" + //
@@ -710,25 +682,6 @@ public class EDDTestDataset {
               + //
               "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018r671mday</sourceUrl>\n" + //
               "</dataset>\n" + //
-              "\n" + //
-              "<!-- Aquarius -->\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplAquariusSSS3MonthV5\" active=\"true\">\n" + //
-              "    <!-- Aquarius Sea Surface Salinity, Version 5, Global, 3-Month -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSS3MonthV5</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplAquariusSSS7DayV5\" active=\"true\">\n" + //
-              "    <!-- Aquarius Sea Surface Salinity, Version 5, Global, 7-Day -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSS7DayV5</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplAquariusSSSDailyV5\" active=\"true\">\n" + //
-              "    <!-- Aquarius Sea Surface Salinity, Version 5, Global, Daily -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSSDailyV5</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "<dataset type=\"EDDGridFromErddap\" datasetID=\"jplAquariusSSSMonthlyV5\" active=\"true\">\n" + //
-              "    <!-- Aquarius Sea Surface Salinity, Version 5, Global, Monthly -->\n" + //
-              "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSSMonthlyV5</sourceUrl>\n" + //
-              "</dataset>\n" + //
-              "\n" + //
               "\n" + //
               "<!-- Here are some excellent tabular datasets that you can include in your ERDDAP\n" + //
               "     via EDDTableFromErddap links. All requests for actual data from these\n" + //

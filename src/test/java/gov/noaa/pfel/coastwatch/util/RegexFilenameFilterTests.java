@@ -24,7 +24,6 @@ class RegexFilenameFilterTests {
     String[] sar = RegexFilenameFilter.list(coastwatchDir, "T.+\\.class");
     String[] shouldBe = {
         "TestAll.class",
-        "TestListFiles.class",
         "TimePeriods.class" };
     System.out.println(coastwatchDir);
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
@@ -33,7 +32,6 @@ class RegexFilenameFilterTests {
     sar = RegexFilenameFilter.fullNameList(coastwatchDir, "T.+\\.class");
     shouldBe = new String[] {
         coastwatchDir + "TestAll.class",
-        coastwatchDir + "TestListFiles.class",
         coastwatchDir + "TimePeriods.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.fullNameList");
@@ -49,7 +47,6 @@ class RegexFilenameFilterTests {
         coastwatchDir + "netcheck/",
         coastwatchDir + "pointdata/",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
@@ -58,8 +55,7 @@ class RegexFilenameFilterTests {
         coastwatchDir + "util/",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
@@ -70,15 +66,13 @@ class RegexFilenameFilterTests {
         coastwatchDir + "hdf/SdsReader.class",
         coastwatchDir + "hdf/SdsWriter.class",
         coastwatchDir + "pointdata/ScriptRow.class",
-        coastwatchDir + "pointdata/StoredIndex.class",
         coastwatchDir + "sgt/SGTPointsVector.class",
         coastwatchDir + "sgt/SgtGraph.class",
         coastwatchDir + "sgt/SgtMap.class",
         coastwatchDir + "sgt/SgtUtil.class",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
-        coastwatchDir + "util/SimpleXMLReader.class",
-        coastwatchDir + "util/StringObject.class"
+        coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 

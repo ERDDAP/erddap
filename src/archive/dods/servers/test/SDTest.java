@@ -16,7 +16,6 @@
 
 package dods.servers.test;
 
-import dods.util.gui.*;
 
 /**
  * Test routine for the SD classes
