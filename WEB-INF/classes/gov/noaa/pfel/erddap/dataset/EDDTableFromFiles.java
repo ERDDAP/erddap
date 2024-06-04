@@ -29,8 +29,9 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.SharedWatchService;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
-
+import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
@@ -59,7 +60,7 @@ import java.util.regex.*;
  * 
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-04-12
  */
-public abstract class EDDTableFromFiles extends EDDTable{ 
+public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateHandler{ 
 
     public final static String MF_FIRST = "first", MF_LAST = "last";
     public static int suggestedUpdateEveryNMillis = 10000;
@@ -1229,8 +1230,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //set up WatchDirectory
         if (updateEveryNMillis > 0) {
             try {
-                watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
-                    recursive, pathRegex);
+                if (EDStatic.useSharedWatchService) {
+                    SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
+                } else {
+                    watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
+                        recursive, pathRegex);
+                }
             } catch (Throwable t) {
                 updateEveryNMillis = 0; //disable the inotify system for this instance
                 String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
@@ -2419,6 +2424,279 @@ public abstract class EDDTableFromFiles extends EDDTable{
         return minMaxTable;
     }
 
+    public void doReload() {
+        requestReloadASAP();
+    }
+
+    public void handleUpdates(StringArray contexts) throws Throwable {
+        handleEventContexts(contexts, "update(" + datasetID + "): ");
+    }
+
+    private boolean handleEventContexts(StringArray contexts, String msg) throws Throwable {
+        // Don't try to sort out multiple events or event order, just note which files
+        // changed.
+        long startLowUpdate = System.currentTimeMillis();
+        contexts.sort();
+        contexts.removeDuplicates();
+        int nEvents = contexts.size();
+
+        // remove events for files that don't match fileNameRegex
+        BitSet keep = new BitSet(nEvents); // initially all false
+        for (int evi = 0; evi < nEvents; evi++) {
+            String fullName = contexts.get(evi);
+            String dirName = File2.getDirectory(fullName);
+            String fileName = File2.getNameAndExtension(fullName);
+
+            // if not a directory and fileName matches fileNameRegex, keep it
+            if (fileName.length() > 0 && fileName.matches(fileNameRegex) &&
+                    (!recursive || dirName.matches(pathRegex)))
+                keep.set(evi);
+        }
+        contexts.justKeep(keep);
+        nEvents = contexts.size();
+        if (nEvents == 0) {
+            if (reallyVerbose)
+                String2.log(msg +
+                        "found 0 events related to files matching fileNameRegex+recursive+pathRegex.");
+            return false; // no changes
+        }
+
+        // If too many events, call for reload.
+        // This method isn't as nearly as efficient as full reload.
+        if (nEvents > EDStatic.updateMaxEvents) {
+            if (reallyVerbose)
+                String2.log(msg + nEvents +
+                        ">" + EDStatic.updateMaxEvents
+                        + " file events, so I called requestReloadASAP() instead of making changes here.");
+            requestReloadASAP();
+            return false;
+        }
+
+        // get BadFile and FileTable info and make local copies
+        ConcurrentHashMap badFileMap = readBadFileMap(); // already a copy of what's in file
+        Table tDirTable = getDirTableCopy(); // not null, throws Throwable
+        Table tFileTable = getFileTableCopy(); // not null, throws Throwable
+        if (debugMode)
+            String2.log(msg + "\n" +
+                    tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" +
+                    tDirTable.dataToString(5) +
+                    tFileTable.nRows() + " rows in old fileTable.  first 5 rows=\n" +
+                    tFileTable.dataToString(5));
+
+        StringArray dirList = (StringArray) tDirTable.getColumn(0);
+        ShortArray ftDirIndex = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL); // 0
+        StringArray ftFileList = (StringArray) tFileTable.getColumn(FT_FILE_LIST_COL); // 1
+        LongArray ftLastMod = (LongArray) tFileTable.getColumn(FT_LAST_MOD_COL); // 2
+        LongArray ftSize = (LongArray) tFileTable.getColumn(FT_SIZE_COL); // 3
+        DoubleArray ftSortedSpacing = (DoubleArray) tFileTable.getColumn(FT_SORTED_SPACING_COL); // 4
+
+        // for each changed file
+        int nChanges = 0; // BadFiles or FileTable
+        for (int evi = 0; evi < nEvents; evi++) {
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDTableFromFiles.lowUpdate" +
+                        EDStatic.caughtInterruptedAr[0]);
+
+            String fullName = contexts.get(evi);
+            String dirName = File2.getDirectory(fullName);
+            String fileName = File2.getNameAndExtension(fullName); // matched to fileNameRegex above
+
+            // dirIndex (dirName may not be in dirList!)
+            int dirIndex = dirList.indexOf(dirName); // linear search, but should be short list
+
+            // if it is an existing file, see if it is valid
+            if (File2.isFile(fullName)) {
+                // test that dataVariable units/etc are identical
+                Table tTable = null;
+                String reasonBad = null;
+                try {
+                    // check the columns for compatible metadata
+                    tTable = getSourceDataFromFile(dirName, fileName,
+                            sourceDataNames, sourceDataTypes,
+                            -1, Double.NaN, Double.NaN,
+                            null, null, null, true, true); // getMetadata, getData
+                    for (int dv = 0; dv < sourceDataNames.size(); dv++) {
+
+                        // skip this variable if not in this source file
+                        String dvName = sourceDataNames.get(dv);
+                        int c = tTable.findColumnNumber(dvName);
+                        if (c < 0) {
+                            // String2.log(" " + dvName + " not in source file");
+                            continue;
+                        }
+
+                        // attributes are as expected???
+                        testIfNewFileAttsAreCompatible( // throws exception if trouble
+                                dvName, dv, tTable.columnAttributes(c));
+                    }
+
+                } catch (Exception e) {
+                    reasonBad = e.getMessage();
+                }
+
+                if (reasonBad == null) {
+                    // File exists and is good/compatible.
+                    nChanges++;
+
+                    // ensure dirIndex is valid
+                    int fileListPo = -1;
+                    if (dirIndex < 0) {
+                        // dir isn't in dirList, so file can't be in BadFileMap or tFileTable.
+                        // But I do need to add dir to dirList.
+                        dirIndex = dirList.size();
+                        dirList.add(dirName);
+                        if (reallyVerbose)
+                            String2.log(msg +
+                                    "added a new dir to dirList (" + dirName + ") and ...");
+                        // another msg is always for this file printed below
+                    } else {
+                        // Remove from BadFileMap if it is present
+                        if (badFileMap.remove(dirIndex + "/" + fileName) != null) {
+                            // It was in badFileMap
+                            if (verbose)
+                                String2.log(msg +
+                                        "removed from badFileMap a file that now exists and is valid, and ...");
+                            // another msg is always for this file printed below
+                        }
+
+                        // If file name already in tFileTable, find it.
+                        // Don't take shortcut, e.g., binary search with tMin.
+                        // It is possible file had wrong name/wrong value before.
+                        fileListPo = findInFileTable(dirIndex, fileName,
+                                tFileTable, ftDirIndex, ftFileList);
+                    }
+
+                    // set info in tFileTable for this valid file
+                    // Searching for appropriate row is very hard here
+                    // (and keeping it up-to-date leads to lots of row movement)
+                    // so just reuse same row as before or add row at and of fileTable
+                    // and (if any changes) sort fileTable below.
+                    if (reallyVerbose)
+                        String2.log(msg +
+                                (fileListPo >= 0 ? "updated a file in" : "added a file to") +
+                                " fileTable:\n  " +
+                                fullName);
+                    if (fileListPo < 0) {
+                        // insert row at end of fileTable (sort below)
+                        fileListPo = ftFileList.size();
+                        tFileTable.insertBlankRow(fileListPo);
+                    } // else use same row it was on before (can be inappropriate, but will sort
+                      // below)
+                    setFileTableRow(tFileTable, fileListPo, dirIndex, fileName,
+                            File2.getLastModified(fullName), File2.length(fullName), tTable,
+                            debugMode ? evi : -1);
+
+                } else {
+
+                    if (reasonBad.indexOf(Math2.TooManyOpenFiles) >= 0)
+                        throw new RuntimeException(reasonBad);
+
+                    // File exists and is bad.
+                    // Remove from tFileTable if it is there.
+                    if (dirIndex >= 0) { // it might be in tFileTable
+                        if (removeFromFileTable(dirIndex, fileName,
+                                tFileTable, ftDirIndex, ftFileList)) {
+                            nChanges++;
+                            if (verbose)
+                                String2.log(msg +
+                                        "removed from fileTable a file that is now bad/incompatible:\n  " +
+                                        fullName + "\n  " + reasonBad);
+                        } else {
+                            if (verbose)
+                                String2.log(msg +
+                                        "found a bad file (but it wasn't in fileTable):\n  " +
+                                        fullName + "\n  " + reasonBad);
+                        }
+                    }
+
+                    // add to badFileMap
+                    // No don't. Perhaps file is half written.
+                    // Let main reload be the system to addBadFile
+                }
+            } else if (dirIndex >= 0) {
+                // File now doesn't exist, but it might be in badFile or tFileTable.
+
+                // Remove from badFileMap if it's there.
+                if (badFileMap.remove(dirIndex + "/" + fileName) != null) {
+                    // Yes, it was in badFileMap
+                    nChanges++;
+                    if (reallyVerbose)
+                        String2.log(msg + "removed from badFileMap a now non-existent file:\n  " +
+                                fullName);
+                } else {
+                    // If it wasn't in badFileMap, it might be in tFileTable.
+                    // Remove it from tFileTable if it's there.
+                    // Don't take shortcut, e.g., by searching with tMin.
+                    // It is possible file had wrong name/wrong value before.
+                    if (removeFromFileTable(dirIndex, fileName,
+                            tFileTable, ftDirIndex, ftFileList)) {
+                        nChanges++;
+                        if (verbose)
+                            String2.log(msg +
+                                    "removed from fileTable a file that now doesn't exist:\n  " +
+                                    fullName);
+                    } else {
+                        if (reallyVerbose)
+                            String2.log(msg +
+                                    "a file that now doesn't exist wasn't in badFileMap or fileTable(!):\n  " +
+                                    fullName);
+                    }
+                }
+
+            } // else file doesn't exist and dir is not in dirList
+              // so file can't be in badFileMap or tFileTable
+              // so nothing needs to be done.
+        }
+
+        // if changes observed, make the changes to the dataset (as fast/atomically as
+        // possible)
+        if (nChanges > 0) {
+
+            // first, change local info only
+            if (fileTableSortColumns != null) {
+                // sort the tFileTable
+                long sortTime = System.currentTimeMillis();
+                tFileTable.sort(fileTableSortColumns, fileTableSortAscending);
+                if (reallyVerbose)
+                    String2.log(msg + "sorted tFileTable, time=" +
+                            (System.currentTimeMillis() - sortTime) + "ms");
+            }
+            // make the new minMaxTable
+            Table tMinMaxTable = makeMinMaxTable(dirList, tFileTable);
+
+            // then, change secondary parts of instance variables
+            // e.g., update all variable destinationMinMax
+            updateDestinationMinMax(tMinMaxTable);
+
+            // finally: make the important instance changes that use the changes above
+            // as quickly/atomically as possible
+            saveDirTableFileTableBadFiles(standardizeWhat, tDirTable, tFileTable, badFileMap); // throws Throwable
+            minMaxTable = tMinMaxTable;
+            if (fileTableInMemory) {
+                // quickly swap into place
+                dirTable = tDirTable;
+                fileTable = tFileTable;
+            }
+
+            // after changes all in place
+            // Currently, update() doesn't trigger these changes.
+            // The problem is that some datasets might update every second, others every
+            // day.
+            // Even if they are done, perhaps do them in ERDDAP ((low)update return
+            // changes?)
+            // ?update rss?
+            // ?subscription and onchange actions?
+
+        }
+
+        if (verbose)
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
+                    " nFileEvents=" + nEvents +
+                    " nChangesMade=" + nChanges +
+                    " time=" + (System.currentTimeMillis() - startLowUpdate) + "ms");
+        return nChanges > 0;
+    }
+
     /**
      * This does the actual incremental update of this dataset 
      * (i.e., for real time datasets).
@@ -2443,6 +2721,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
      */
     public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
+        if (EDStatic.useSharedWatchService) {
+            SharedWatchService.processEvents();
+            return false;
+        }
+
         //Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
         if (watchDirectory == null)
             return false;  //no changes
@@ -2466,261 +2749,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 return false; 
             }
         }
-
-        //Don't try to sort out multiple events or event order, just note which files changed.
-        long startLowUpdate = System.currentTimeMillis();
-        eventKinds = null;
-        contexts.sort();
-        contexts.removeDuplicates();
-        nEvents = contexts.size();
-
-        //remove events for files that don't match fileNameRegex
-        BitSet keep = new BitSet(nEvents); //initially all false
-        for (int evi = 0; evi < nEvents; evi++) {
-            String fullName = contexts.get(evi);
-            String dirName = File2.getDirectory(fullName);
-            String fileName = File2.getNameAndExtension(fullName);
-
-            //if not a directory and fileName matches fileNameRegex, keep it
-            if (fileName.length() > 0 && fileName.matches(fileNameRegex) &&
-                (!recursive || dirName.matches(pathRegex)))
-                keep.set(evi);
-        }
-        contexts.justKeep(keep);        
-        nEvents = contexts.size();
-        if (nEvents == 0) {
-            if (reallyVerbose) String2.log(msg + 
-                "found 0 events related to files matching fileNameRegex+recursive+pathRegex.");
-            return false; //no changes
-        }
-
-        //If too many events, call for reload.
-        //This method isn't as nearly as efficient as full reload.
-        if (nEvents > EDStatic.updateMaxEvents) {
-            if (reallyVerbose) String2.log(msg + nEvents + 
-                ">" + EDStatic.updateMaxEvents + " file events, so I called requestReloadASAP() instead of making changes here."); 
-            requestReloadASAP();
-            return false;
-        }
-
-        //get BadFile and FileTable info and make local copies
-        ConcurrentHashMap badFileMap = readBadFileMap(); //already a copy of what's in file
-        Table tDirTable  = getDirTableCopy();   //not null, throws Throwable
-        Table tFileTable = getFileTableCopy();  //not null, throws Throwable
-        if (debugMode) String2.log(msg + "\n" +
-            tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" + 
-                tDirTable.dataToString(5) + 
-            tFileTable.nRows() + " rows in old fileTable.  first 5 rows=\n" + 
-                tFileTable.dataToString(5));
-
-        StringArray dirList = (StringArray)tDirTable.getColumn(0);
-        ShortArray  ftDirIndex      =  (ShortArray)tFileTable.getColumn(FT_DIR_INDEX_COL);      //0
-        StringArray ftFileList      = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);      //1
-        LongArray   ftLastMod       =   (LongArray)tFileTable.getColumn(FT_LAST_MOD_COL);       //2
-        LongArray   ftSize          =   (LongArray)tFileTable.getColumn(FT_SIZE_COL);           //3
-        DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(FT_SORTED_SPACING_COL); //4
-
-        //for each changed file
-        int nChanges = 0; //BadFiles or FileTable
-        for (int evi = 0; evi < nEvents; evi++) {
-            if (Thread.currentThread().isInterrupted())
-                throw new SimpleException("EDDTableFromFiles.lowUpdate" +
-                        EDStatic.caughtInterruptedAr[0]);
-
-            String fullName = contexts.get(evi);
-            String dirName = File2.getDirectory(fullName);
-            String fileName = File2.getNameAndExtension(fullName);  //matched to fileNameRegex above
-
-            //dirIndex   (dirName may not be in dirList!)
-            int dirIndex = dirList.indexOf(dirName); //linear search, but should be short list
-
-            //if it is an existing file, see if it is valid
-            if (File2.isFile(fullName)) {
-                //test that dataVariable units/etc are identical
-                Table tTable = null;
-                String reasonBad = null;                
-                try {
-                    //check the columns for compatible metadata
-                    tTable = getSourceDataFromFile(dirName, fileName, 
-                        sourceDataNames, sourceDataTypes, 
-                        -1, Double.NaN, Double.NaN, 
-                        null, null, null, true, true); //getMetadata, getData
-                    for (int dv = 0; dv < sourceDataNames.size(); dv++) {
-
-                        //skip this variable if not in this source file
-                        String dvName = sourceDataNames.get(dv);
-                        int c = tTable.findColumnNumber(dvName);
-                        if (c < 0) {
-                            //String2.log("  " + dvName + " not in source file");
-                            continue;
-                        }
-
-                        //attributes are as expected???
-                        testIfNewFileAttsAreCompatible( //throws exception if trouble
-                            dvName, dv, tTable.columnAttributes(c));
-                    }
-
-                } catch (Exception e) {
-                    reasonBad = e.getMessage(); 
-                }
-                
-                if (reasonBad == null) { 
-                    //File exists and is good/compatible.
-                    nChanges++;
-
-                    //ensure dirIndex is valid
-                    int fileListPo = -1;
-                    if (dirIndex < 0) {
-                        //dir isn't in dirList, so file can't be in BadFileMap or tFileTable.
-                        //But I do need to add dir to dirList.
-                        dirIndex = dirList.size();
-                        dirList.add(dirName);
-                        if (reallyVerbose)
-                            String2.log(msg + 
-                                "added a new dir to dirList (" + dirName + ") and ..."); 
-                                //another msg is always for this file printed below
-                    } else {
-                        //Remove from BadFileMap if it is present
-                        if (badFileMap.remove(dirIndex + "/" + fileName) != null) {
-                            //It was in badFileMap
-                            if (verbose)
-                                String2.log(msg + 
-                                    "removed from badFileMap a file that now exists and is valid, and ..."); 
-                                    //another msg is always for this file printed below
-                        }
-
-                        //If file name already in tFileTable, find it.
-                        //Don't take shortcut, e.g., binary search with tMin.
-                        //It is possible file had wrong name/wrong value before.
-                        fileListPo = findInFileTable(dirIndex, fileName, 
-                            tFileTable, ftDirIndex, ftFileList);
-                    }
-
-                    //set info in tFileTable for this valid file
-                    //Searching for appropriate row is very hard here 
-                    //(and keeping it up-to-date leads to lots of row movement)
-                    //so just reuse same row as before or add row at and of fileTable
-                    //and (if any changes) sort fileTable below.
-                    if (reallyVerbose)
-                        String2.log(msg + 
-                            (fileListPo >= 0? "updated a file in" : "added a file to") + 
-                            " fileTable:\n  " + 
-                            fullName);
-                    if (fileListPo < 0) {
-                        //insert row at end of fileTable  (sort below)
-                        fileListPo = ftFileList.size(); 
-                        tFileTable.insertBlankRow(fileListPo);
-                    } //else use same row it was on before (can be inappropriate, but will sort below)
-                    setFileTableRow(tFileTable, fileListPo, dirIndex, fileName,
-                        File2.getLastModified(fullName), File2.length(fullName), tTable, 
-                        debugMode? evi : -1);
-
-                } else {
-
-                    if (reasonBad.indexOf(Math2.TooManyOpenFiles) >= 0)
-                        throw new RuntimeException(reasonBad);
-
-                    //File exists and is bad.
-                    //Remove from tFileTable if it is there.
-                    if (dirIndex >= 0) { //it might be in tFileTable
-                        if (removeFromFileTable(dirIndex, fileName, 
-                                tFileTable, ftDirIndex, ftFileList)) {
-                            nChanges++;
-                            if (verbose)
-                                String2.log(msg + 
-                                    "removed from fileTable a file that is now bad/incompatible:\n  " + 
-                                    fullName + "\n  " + reasonBad);
-                        } else {
-                            if (verbose)
-                                String2.log(msg + 
-                                    "found a bad file (but it wasn't in fileTable):\n  " + 
-                                    fullName + "\n  " + reasonBad);
-                        }
-                    }
-
-                    //add to badFileMap 
-                    //No don't. Perhaps file is half written.
-                    //Let main reload be the system to addBadFile
-                }
-            } else if (dirIndex >= 0) { 
-                //File now doesn't exist, but it might be in badFile or tFileTable.
-
-                //Remove from badFileMap if it's there.
-                if (badFileMap.remove(dirIndex + "/" + fileName) != null) {
-                    //Yes, it was in badFileMap
-                    nChanges++;
-                    if (reallyVerbose)
-                        String2.log(msg + "removed from badFileMap a now non-existent file:\n  " + 
-                            fullName);
-                } else {
-                    //If it wasn't in badFileMap, it might be in tFileTable.
-                    //Remove it from tFileTable if it's there.
-                    //Don't take shortcut, e.g., by searching with tMin.
-                    //It is possible file had wrong name/wrong value before.
-                    if (removeFromFileTable(dirIndex, fileName, 
-                            tFileTable, ftDirIndex, ftFileList)) {
-                        nChanges++;
-                        if (verbose)
-                            String2.log(msg + 
-                                "removed from fileTable a file that now doesn't exist:\n  " + 
-                                fullName);
-                    } else {
-                        if (reallyVerbose)
-                            String2.log(msg + 
-                                "a file that now doesn't exist wasn't in badFileMap or fileTable(!):\n  " + 
-                                fullName);
-                    }
-                }
-
-            } //else file doesn't exist and dir is not in dirList
-              //so file can't be in badFileMap or tFileTable
-              //so nothing needs to be done.
-        }
-
-        //if changes observed, make the changes to the dataset (as fast/atomically as possible)
-        if (nChanges > 0) {
-
-            //first, change local info only
-            if (fileTableSortColumns != null) {
-                //sort the tFileTable
-                long sortTime = System.currentTimeMillis();
-                tFileTable.sort(fileTableSortColumns, fileTableSortAscending); 
-                if (reallyVerbose) 
-                    String2.log(msg + "sorted tFileTable, time=" + 
-                        (System.currentTimeMillis() - sortTime) + "ms");  
-            }
-            //make the new minMaxTable
-            Table tMinMaxTable = makeMinMaxTable(dirList, tFileTable);
-            
-            //then, change secondary parts of instance variables
-            //e.g., update all variable destinationMinMax
-            updateDestinationMinMax(tMinMaxTable);
-
-            //finally: make the important instance changes that use the changes above 
-            //as quickly/atomically as possible
-            saveDirTableFileTableBadFiles(standardizeWhat, tDirTable, tFileTable, badFileMap); //throws Throwable
-            minMaxTable = tMinMaxTable;
-            if (fileTableInMemory) {
-                //quickly swap into place
-                dirTable  = tDirTable;
-                fileTable = tFileTable; 
-            }
-
-            //after changes all in place
-//Currently, update() doesn't trigger these changes.
-//The problem is that some datasets might update every second, others every day.
-//Even if they are done, perhaps do them in ERDDAP ((low)update return changes?)
-//?update rss?
-//?subscription and onchange actions?
-
-        }      
-
-        if (verbose)
-            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
-                " nFileEvents=" + nEvents + 
-                " nChangesMade=" + nChanges + 
-                " time=" + (System.currentTimeMillis() - startLowUpdate) + "ms");
-        return nChanges > 0;
+        return handleEventContexts(contexts, msg);
+        
     }
 
     /**
