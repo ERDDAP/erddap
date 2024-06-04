@@ -4,15 +4,14 @@
  */
 package com.cohort.util;
 
-import com.cohort.util.String2;
 
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlSandbox;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 
 /**
@@ -23,6 +22,31 @@ public class Script2 {
 
     /** Use jexlEngine to instantiate and obtain this. */
     private static JexlEngine jexlEngine;
+
+    public static JexlPermissions permissions = JexlPermissions.parse(
+        "com.cohort.util.*\n" +
+        "gov.noaa.pfel.coastwatch.pointdata.*\n" +
+        "java.nio.*\n" + //
+        "java.io.*\n" + //
+        "java.lang.*\n" + //
+        "java.math.*\n" + //
+        "java.text.*\n" + //
+        "java.util.*\n" + //
+        "org.w3c.dom.*\n" + //
+        "org.apache.commons.jexl3.*\n" + //
+        "org.apache.commons.jexl3 { JexlBuilder {} }\n" + //
+        "org.apache.commons.jexl3.internal { Engine {} }\n" + //
+        "java.lang { Runtime {} System {} ProcessBuilder {} Class {} }\n" + //
+        "java.lang.annotation {}\n" + //
+        "java.lang.instrument {}\n" + //
+        "java.lang.invoke {}\n" + //
+        "java.lang.management {}\n" + //
+        "java.lang.ref {}\n" + //
+        "java.lang.reflect {}\n" + //
+        "java.net {}\n" + //
+        "java.io { File { } }\n" + //
+        "java.nio { Path { } Paths { } Files { } }\n" + //
+        "java.rmi {}\n");
 
     /** This returns a JexlEngine suitable for processing rows of a table.
      * It has a sandbox to ensure only safe, pre-approved classes and methods can be used.
@@ -40,13 +64,13 @@ public class Script2 {
             //Start with a blacklist that allows nothing
             JexlSandbox jsandbox = new JexlSandbox(false); 
             //then add classes to the whitelist  
-            jsandbox.white("com.cohort.util.ScriptCalendar2");
-            jsandbox.white("com.cohort.util.ScriptMath");
-            jsandbox.white("com.cohort.util.ScriptMath2");
-            jsandbox.white("gov.noaa.pfel.coastwatch.pointdata.ScriptRow");
-            jsandbox.white("java.lang.String"); 
-            jsandbox.white("com.cohort.util.ScriptString2");
-            jexlEngine = new JexlBuilder().sandbox(jsandbox).strict(true).silent(false).create();
+            jsandbox.allow("com.cohort.util.ScriptCalendar2");
+            jsandbox.allow("com.cohort.util.ScriptMath");
+            jsandbox.allow("com.cohort.util.ScriptMath2");
+            jsandbox.allow("gov.noaa.pfel.coastwatch.pointdata.ScriptRow");
+            jsandbox.allow("java.lang.String"); 
+            jsandbox.allow("com.cohort.util.ScriptString2");
+            jexlEngine = new JexlBuilder().permissions(Script2.permissions).sandbox(jsandbox).strict(true).silent(false).create();
         }
         return jexlEngine;
     }

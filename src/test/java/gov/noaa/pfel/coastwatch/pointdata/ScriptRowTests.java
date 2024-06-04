@@ -27,7 +27,7 @@ class ScriptRowTests {
     // if !silent, it throws exception if trouble
     // if strict, it requires variables, methods and functions to be defined
     // (instead of treating unknowns as null, like javascript)
-    JexlEngine jengine = new JexlBuilder().silent(false).strict(true).create(); // see better/safer constructor below
+    JexlEngine jengine = new JexlBuilder().permissions(Script2.permissions).silent(false).strict(true).create(); // see better/safer constructor below
     JexlScript jscript; // multiple statements. Has support for if/for/while/var/{} etc.
     JexlContext jcontext;
     Object o;
@@ -77,9 +77,15 @@ class ScriptRowTests {
     jcontext = new MapContext();
     jcontext.set("x", new String("George"));
     jcontext.set("y", new String("Washington"));
-    o = jscript.execute(jcontext);
-    Test.ensureEqual(o.getClass().getSimpleName(), "String", "");
-    Test.ensureEqual(o.toString(), "Geo String", "");
+    try {
+      results = jscript.execute(jcontext).toString();
+    } catch (Exception e) {
+      results = "Caught: " + e.toString();
+    }
+    expected = "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:75@1:24 JEXL error : + error caused by null operand";
+    Test.ensureEqual(results.substring(0, expected.length()),
+        expected,
+        "results=\n" + results);
 
     // ensure script can't easily access other classes unless explicitly added
     jscript = jengine.createScript("String2.zeroPad(\"a\", 3)");
@@ -96,19 +102,11 @@ class ScriptRowTests {
         // String2",
         "results=\n" + results);
 
-    // SECURITY ISSUE: A user can call a static method in a static class and
-    // instantiate any class!
+    // Verify Jexl permissions restrict sensitive access.
     jscript = jengine.createScript("\"\".class.forName(\"java.lang.System\").getProperty(\"os.name\")");
     jcontext = new MapContext();
     o = jscript.execute(jcontext);
-    Test.ensureEqual(o.getClass().getSimpleName(), "String", "");
-    try {
-      Test.ensureEqual(o.toString(), "Windows 10", "(On Bob's computer)");
-    } catch (Exception e) {
-      String2.log(MustBe.throwableToString(e));
-      String2.log("This will give a different answer on different OS's.");
-
-    }
+    Test.ensureEqual(o, null, "Jexl should return null due to permission restrictions");
 
     // a user can instantiate ANY class...
     jscript = jengine.createScript("new('" + StringBuilder.class.getName() + "', 'contents of sb')");
@@ -167,7 +165,7 @@ class ScriptRowTests {
     }
     Test.ensureEqual(results,
         "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:161 unsolvable function/method 'java.lang.StringBuilder(String)'",
+            "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:159@1:1 unsolvable function/method 'java.lang.StringBuilder(String)'",
         "");
 
     // work with static functions by making a shell class (ScriptMath) that can be
@@ -220,7 +218,7 @@ class ScriptRowTests {
       results = e.toString();
     }
     Test.ensureEqual(results,
-        "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:213 JEXL error : + error caused by null operand",
+        "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:211@1:34 JEXL error : + error caused by null operand",
         "");
 
     // String static methods are accessible if String in MapContext

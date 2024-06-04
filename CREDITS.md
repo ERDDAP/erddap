@@ -30,3 +30,9 @@ Contributions to ERDDAP™ code
      
 *   nThreads Improvement  
     The nThreads system for EDDTableFromFiles was significantly improved. These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more) for the most challenging requests (when a large number of files must be processed to gather the results). These changes will also lead to a general speedup throughout ERDDAP™. The code for these changes was contributed by Chris John. Thank you, Chris!  
+
+*   Color palette EK80 for acoustic datasets. Thank you Rob Cermak!
+
+*   EDDTableAggregateRows aggregation across all children fixed. Thank you Marco Alba!
+
+*   Fix for incorrect varNames in logs. Thank you Ayush Singh!

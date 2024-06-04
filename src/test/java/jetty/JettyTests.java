@@ -1394,7 +1394,7 @@ class JettyTests {
         "    <gmd:MD_MaintenanceInformation>\n" + //
         "      <gmd:maintenanceAndUpdateFrequency gco:nilReason=\"unknown\"/>\n" + //
         "      <gmd:maintenanceNote>\n" + //
-        "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.23</gco:CharacterString>\n"
+        "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.24</gco:CharacterString>\n"
         + //
         "      </gmd:maintenanceNote>\n" + //
         "    </gmd:MD_MaintenanceInformation>\n" + //
@@ -1481,7 +1481,7 @@ class JettyTests {
         "        <geoform>raster digital data</geoform>\n" + //
         "        <pubinfo>\n" + //
         "          <pubplace>Nowhere, AK, USA</pubplace>\n" + //
-        "          <publish>ERDDAP, version 2.23, at ERDDAP Jetty Install</publish>\n" + //
+        "          <publish>ERDDAP, version 2.24, at ERDDAP Jetty Install</publish>\n" + //
         "          <publish_cntinfo>\n" + //
         "            <cntinfo>\n" + //
         "              <cntorgp>\n" + //
@@ -2573,7 +2573,7 @@ class JettyTests {
     po = results.indexOf("chunked");
     results = results.substring(0, po + 7);
     expected = "HTTP/1.1 200 OK\n" +
-        "Server: Jetty(12.0.8)\n" +
+        "Server: Jetty(12.0.10)\n" +
         "Date: Today\n" +
         "Content-Type: application/javascript;charset=utf-8\n" +
         "Content-Encoding: identity\n" +
@@ -12172,7 +12172,7 @@ class JettyTests {
                 "<tr><th>STATUS:</th><td>400</td></tr>\n" + //
                 "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n" + //
                 "</table>\n" + //
-                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.8</a><hr/>\n" + //
+                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.10</a><hr/>\n" + //
                 "\n" + //
                 "</body>\n" + //
                 "</html>)";
@@ -12198,7 +12198,7 @@ class JettyTests {
                 "<tr><th>STATUS:</th><td>400</td></tr>\n" + //
                 "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n" + //
                 "</table>\n" + //
-                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.8</a><hr/>\n" + //
+                "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.10</a><hr/>\n" + //
                 "\n" + //
                 "</body>\n" + //
                 "</html>)";
