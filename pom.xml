@@ -166,7 +166,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.xml.log, WEB-INF/temp/**, *.*, **/*.java, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, *.*, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
 
@@ -805,6 +805,13 @@
             <artifactId>google-cloud-translate</artifactId>
             <version>2.44.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.3</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
         <!-- Added by Bob for translation project -->
