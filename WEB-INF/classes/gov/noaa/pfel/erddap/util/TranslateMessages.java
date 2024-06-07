@@ -896,11 +896,11 @@ public class TranslateMessages {
         if (translationClient != null) 
             return translationClient;
        
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialsFileName))
-            .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
+        // GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialsFileName))
+        //     .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
         TranslationServiceSettings translationServiceSettings =
             TranslationServiceSettings.newBuilder()
-                .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                // .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                 .build();
         translationClient = TranslationServiceClient.create(translationServiceSettings);
         return translationClient;
@@ -1723,35 +1723,22 @@ import org.xml.sax.SAXException;
     public static void main(String args[]) throws Throwable {
         String2.log("*** TranslateMessages.main()");
 
-        //ALWAYS call testDontTranslateOrdering()
+        // Run the TranslateMessagesTests before this which include:
         // testDontTranslateOrdering();
-
-        //ALWAYS call findTagsMissingCDATA()
         // findTagsMissingCDATA();
-        
-        //*** DEPRECATED: Uncomment this to ensure erddap-glossary.csv is syntactically correct (correct number of values on each row):
-        //THE GLOSSARY IS NO LONGER USED.
-        //Table table = new Table();
-        //table.readASCII(translatedMessagesDir + "erddap-glossary.csv", 0, 1); 
-        //String2.log("nCols=" + table.nColumns() + " nRows=" + table.nRows());
-
-        //*** DEPRECATED: Uncomment this to update the glossary after uploading the erddap-glossary.csv file to the bucket to tell Google about the change
-        //THE GLOSSARY IS NO LONGER USED.
-        //updateGlossary(); 
-
         //*** system unit tests
-        //testGoogleSampleCode();
-        //testTranslateHtml();
-        //testTranslateComment();
-        //testTranslatePlainText();
-        //checkForUncaughtSpecialText(); 
+        // testGoogleSampleCode();
+        // testTranslateHtml();
+        // testTranslateComment();
+        // testTranslatePlainText();
+        // And the JettyTest
+        // checkForUncaughtSpecialText(); 
 
         //*** Uncomment this to translate all of messages.xml.
         // To work with just one language (e.g., German), uncomment "use these mini lists" above
         // If you like the translation, rename new-messages-[langCode].xml to be messages-[langCode].xml   
         // If you like the translation for all languages, copy messages.xml to be messagesOld.xml.
         translate(-1, "all"); //params: justTranslateNTags (-1 for all), verboseLanguage (e.g., "" (none), "de" (German) or "all")
-
 
         String2.log("*** TranslateMessages.main() finished.");
     }
