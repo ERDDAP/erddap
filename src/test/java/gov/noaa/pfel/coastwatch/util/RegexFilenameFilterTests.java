@@ -55,6 +55,7 @@ class RegexFilenameFilterTests {
         coastwatchDir + "util/",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
+        coastwatchDir + "util/SharedWatchService.class",
         coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
@@ -72,6 +73,7 @@ class RegexFilenameFilterTests {
         coastwatchDir + "sgt/SgtUtil.class",
         coastwatchDir + "util/SSR$1.class",
         coastwatchDir + "util/SSR.class",
+        coastwatchDir + "util/SharedWatchService.class",
         coastwatchDir + "util/SimpleXMLReader.class"
     };
     Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
