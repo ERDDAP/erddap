@@ -109,8 +109,8 @@
                 <version>3.13.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
-                    <source>17</source>   <!-- java version -->
-                    <target>17</target>
+                    <source>21</source>   <!-- java version -->
+                    <target>21</target>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/MapGraph.javaINACTIVE</exclude>

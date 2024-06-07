@@ -46,7 +46,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - We use a batch file which deletes all of the .class files in the source tree to ensure that we have a clean compile (with javac).
 
-  - We currently use Adoptium's javac jdk-17.0.4+8 to compile gov.noaa.pfeg.coastwatch.TestAll (it has links to a few classes that wouldn't be compiled otherwise) and run the tests. For security reasons, it is almost always best to use the latest versions of Java 17 and Tomcat 10.
+  - We currently use Adoptium's javac jdk-21.0.3+9 to compile gov.noaa.pfeg.coastwatch.TestAll (it has links to a few classes that wouldn't be compiled otherwise) and run the tests. For security reasons, it is almost always best to use the latest versions of Java 21 and Tomcat 10.
 
     - When we run javac or java, the current directory is _tomcat_/webapps/erddap/WEB-INF .
 
@@ -62,7 +62,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
     - If TestAll compiles, everything ERDDAP™ needs has been compiled. A few classes are compiled that aren't needed for ERDDAP™. If compiling TestAll succeeds but doesn't compile some class, that class isn't needed. (There are some unfinished/unused classes.)
 
-  - In a few cases, we use 3rd party source code instead of .jar files (notably for DODS) and have modified them slightly to avoid problems compiling with Java 17. We have often made other slight modifications (notably to DODS) for other reasons.
+  - In a few cases, we use 3rd party source code instead of .jar files (notably for DODS) and have modified them slightly to avoid problems compiling with Java 21. We have often made other slight modifications (notably to DODS) for other reasons.
 
   - Most classes have test methods in their associated src/test file. You can run the JUnit tests with the `mvn test` command. This will download several zip files of data that the tests rely on from the latest release of [ERDDAP/erddapTest](https://github.com/ERDDAP/erddapTest/releases/).\
      
