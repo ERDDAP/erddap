@@ -17,17 +17,17 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
 
 0. Make sure any dependencies are installed. On non-Windows machines (Linux and Mac), you need csh.
 
-1.  [For ERDDAP™ v2.19+, set up Java 17.](#java)  
-    For security reasons, it is almost always best to use the latest version of Java 17.  
+1.  [For ERDDAP™ v2.19+, set up Java 21.](#java)  
+    For security reasons, it is almost always best to use the latest version of Java 21.  
     Please download and install the latest version of  
-    [Adoptium's OpenJDK (Temurin) 17 (LTS)](https://adoptium.net/temurin/releases/?version=17). To verify the installation, type "/_javaJreBinDirectory_/java -version", for example  
-    /usr/local/jdk-17.0.4+8/jre/bin/java -version
+    [Adoptium's OpenJDK (Temurin) 21 (LTS)](https://adoptium.net/temurin/releases/?version=21). To verify the installation, type "/_javaJreBinDirectory_/java -version", for example  
+    /usr/local/jdk-21.0.3+9/jre/bin/java -version
     
     \[For ERDDAP™ versions before v2.19, use Java 8.\]
     
-    ERDDAP™ works with Java from other sources, but we recommend Adoptium because it is the main, community-supported, free (as in beer and speech) version of Java 17 that offers Long Term Support (free upgrades for many years past the initial release). For security reasons, please update your ERDDAP's version of Java periodically as new versions of Java 17 become available from Adoptium.
+    ERDDAP™ works with Java from other sources, but we recommend Adoptium because it is the main, community-supported, free (as in beer and speech) version of Java 21 that offers Long Term Support (free upgrades for many years past the initial release). For security reasons, please update your ERDDAP's version of Java periodically as new versions of Java 21 become available from Adoptium.
     
-    ERDDAP™ has been tested and used extensively with Java 17, not other versions. For various reasons, we don't test with nor support other versions of Java.  
+    ERDDAP™ has been tested and used extensively with Java 17 and 21, not other versions. For various reasons, we don't test with nor support other versions of Java.  
      
     
 2.  [Set up](#tomcat) [Tomcat](https://tomcat.apache.org).  
@@ -37,7 +37,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
      
     
     *   Download Tomcat and unpack it on your server or PC.  
-        For security reasons, it is almost always best to use the latest version of Tomcat 10 (version 9 and below are not acceptable) which is designed to work with Java 17. Below, the Tomcat directory will be referred to as _tomcat_.
+        For security reasons, it is almost always best to use the latest version of Tomcat 10 (version 9 and below are not acceptable) which is designed to work with Java 17 or newer. Below, the Tomcat directory will be referred to as _tomcat_.
         
         Warning! If you already have a Tomcat running some other web application (especially THREDDS), we recommend that you install ERDDAP™ in [a second Tomcat](#secondTomcat), because ERDDAP™ needs different Tomcat settings and shouldn't have to contend with other applications for memory.
         
@@ -91,7 +91,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
         
         On Linux and Macs:  
         Create a file _tomcat_/bin/setenv.sh (or in Red Hat Enterprise Linux \[RHEL\], edit ~tomcat/conf/tomcat10.conf) to set Tomcat's environment variables. This file will be used by _tomcat_/bin/startup.sh and shutdown.sh. The file should contain something like:  
-        export JAVA\_HOME=/usr/local/jdk-17.0.4+8  
+        export JAVA\_HOME=/usr/local/jdk-21.0.3+9  
         export JAVA\_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'  
         export TOMCAT\_HOME=/usr/local/apache-tomcat-_10.0.23_  
         export CATALINA\_HOME=/usr/local/apache-tomcat-_10.0.23_  
@@ -101,7 +101,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
         
         On Windows:  
         Create a file _tomcat_\\bin\\setenv.bat to set Tomcat's environment variables. This file will be used by _tomcat_\\bin\\startup.bat and shutdown.bat. The file should contain something like:  
-        SET "JAVA\_HOME=\\_someDirectory_\\jdk-17.0.4+8"  
+        SET "JAVA\_HOME=\\_someDirectory_\\jdk-21.0.3+9"  
         SET "JAVA\_OPTS=-server -Xmx1500M -Xms1500M"  
         SET "TOMCAT\_HOME=\\Program Files\\apache-tomcat-_10.0.23_"  
         SET "CATALINA\_HOME=\\Program Files\\apache-tomcat-_10.0.23_"  
@@ -117,7 +117,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
             64 bit Java will only work on a 64 bit operating system.
             
             *   With Java 8, you need to add \-d64 to the Tomcat CATALINA\_OPTS parameter in setenv.bat
-            *   With Java 17, you choose 64 bit Java when you download a version of Java marked "64 bit".
+            *   With Java 21, you choose 64 bit Java when you download a version of Java marked "64 bit".
             
             With 64 bit Java, Tomcat and Java can use very high -Xmx and -Xms settings. The more physical memory in the server the better. As a simplistic suggestion: we recommend you set -Xmx and -Xms to (in 'M'egaBytes) to 1/2 (or less) of the computer's physical memory. You can see if Tomcat, Java, and ERDDAP™ are indeed running in 64 bit mode by searching for " bit," in ERDDAP's Daily Report email or in the _bigParentDirectory_/logs/[log.txt](#log) file (_bigParentDirectory_ is specified in [setup.xml](#setup.xml)).
         *   [In ERDDAP's](#GC) [log.txt](#log) file, you will see many "GC (Allocation Failure)" messages.  
