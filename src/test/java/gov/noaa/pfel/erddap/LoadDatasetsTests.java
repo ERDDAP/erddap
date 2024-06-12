@@ -39,8 +39,6 @@ public class LoadDatasetsTests {
         String pathToDatasetsXml = Objects.requireNonNull(LoadDatasets.class.getResource("/datasets/numberOfGridAndTableDatasetsTest.xml")).getPath();
         loadDatasets = new LoadDatasets(new Erddap(), EDStatic.datasetsRegex, File2.getBufferedInputStream(pathToDatasetsXml), true);
         loadDatasets.run();
-        System.out.println(EDStatic.nTableDatasets);
-        System.out.println(EDStatic.nGridDatasets);
         assertEquals(EDStatic.nTableDatasets - 1, 1); // -1 because Erddap makes a table listing all the datasets
         assertEquals(EDStatic.nGridDatasets, 3);
     }
