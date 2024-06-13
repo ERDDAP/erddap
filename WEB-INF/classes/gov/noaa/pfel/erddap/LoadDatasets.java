@@ -966,32 +966,7 @@ public class LoadDatasets extends Thread {
                 }
 
                 //get OpenFiles
-                String openFiles = "     ?";
-                try {
-                    OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-                    if (osBean instanceof UnixOperatingSystemMXBean uBean) {
-                        long nF = uBean.getOpenFileDescriptorCount();
-                        long maxF = uBean.getMaxFileDescriptorCount();
-                        int percent = Math2.narrowToInt((nF * 100) / maxF);
-                        openFiles = String2.right(percent + "%", 6);
-                        String msg ="openFileCount=" + nF + " of max=" + maxF + " %=" + percent;
-                        String2.log(msg); 
-                        if (percent > 50) 
-                            EDStatic.email(
-                                String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
-                                "Too many open files!!!",
-                                msg + "\n" +
-                                "Anything >50%, is risky.\n" +
-                                "Don't let this reach 100% or it will cause horrible problems.\n" +
-                                "A (basically) ever-increasing number indicates a file handle leak in ERDDAP.\n" +
-                                "In any case, you should increase the maximum number of open files allowed\n" +
-                                "and restart ERDDAP. See\n" +
-                                "https://erddap.github.io/setup.html#TooManyOpenFiles\n");
-
-                    }
-                } catch (Throwable t) {
-                    String2.log("Caught: " + MustBe.throwableToString(t));
-                }
+                String openFiles = getOpenFiles("     ?");
 
                 String2.log(
                     "  " + memoryString + " " + Math2.xmxMemoryString() +
@@ -1296,6 +1271,34 @@ public class LoadDatasets extends Thread {
                 try {xmlReader.close();} catch (Exception e) {}
             EDStatic.suggestAddFillValueCSV.setLength(0);
         }
+    }
+
+    public String getOpenFiles(String openFiles) {
+        try {
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            if (osBean instanceof UnixOperatingSystemMXBean uBean) {
+                long nF = uBean.getOpenFileDescriptorCount();
+                long maxF = uBean.getMaxFileDescriptorCount();
+                int percent = Math2.narrowToInt((nF * 100) / maxF);
+                openFiles = String2.right(percent + "%", 6);
+                String msg ="openFileCount=" + nF + " of max=" + maxF + " %=" + percent;
+                String2.log(msg);
+                if (percent > 50)
+                    EDStatic.email(
+                            String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv),
+                            "Too many open files!!!",
+                            msg + "\n" +
+                                    "Anything >50%, is risky.\n" +
+                                    "Don't let this reach 100% or it will cause horrible problems.\n" +
+                                    "A (basically) ever-increasing number indicates a file handle leak in ERDDAP.\n" +
+                                    "In any case, you should increase the maximum number of open files allowed\n" +
+                                    "and restart ERDDAP. See\n" +
+                                    "https://erddap.github.io/setup.html#TooManyOpenFiles\n");
+            }
+        } catch (Throwable t) {
+            String2.log("Caught: " + MustBe.throwableToString(t));
+        }
+        return openFiles;
     }
 
     /**
