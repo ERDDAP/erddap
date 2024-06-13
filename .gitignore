@@ -15,7 +15,8 @@ Thumbs.db
 .settings
 .classpath
 .project
-src/test/resources/
+src/test/resources/*
+!src/test/resources/datasets/
 .idea
 development/test/datasets.xml
 development/test/datasets.xml*
