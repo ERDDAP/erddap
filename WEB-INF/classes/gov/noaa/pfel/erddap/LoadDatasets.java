@@ -986,7 +986,7 @@ public class LoadDatasets extends Thread {
                 EDStatic.dangerousMemoryFailures = 0;
                 EDStatic.tooManyRequests = 0;
 
-                //email daily report?
+                //email daily report?, threadSummary-String,
                 GregorianCalendar reportCalendar = Calendar2.newGCalendarLocal();
                 String reportDate = Calendar2.formatAsISODate(reportCalendar);
                 int hour = reportCalendar.get(Calendar2.HOUR_OF_DAY);
@@ -994,118 +994,10 @@ public class LoadDatasets extends Thread {
 
                 if (!reportDate.equals(erddap.lastReportDate) && hour >= 7) {
                     //major reload after 7 of new day, so do daily report!  
-
-                    erddap.lastReportDate = reportDate;
-                    String stars = String2.makeString('*', 70);
-                    String subject = "Daily Report";
-                    StringBuilder contentSB = new StringBuilder(subject + "\n\n");
-                    EDStatic.addIntroStatistics(contentSB);
-
-                    //append number of active threads
-                    if (threadSummary != null)
-                        contentSB.append(threadSummary + "\n");
-
-                    contentSB.append(Math2.gcCallCount + " gc calls, " + 
-                        EDStatic.requestsShed + " requests shed, and " +  
-                        EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
-                    contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
-                    contentSB.append(stars + "\nTallied Usage Information\n\n");
-                    contentSB.append(EDStatic.tally.toString(50)); 
-                    EDStatic.addCommonStatistics(contentSB);
-
-                    contentSB.append("\n" + stars + 
-                        "\nWarnings from LoadDatasets\n\n");
-                    contentSB.append(warningsFromLoadDatasets);
-
-                    contentSB.append("\n" + stars + "\n");
-                    contentSB.append(threadList);
-
-                    //clear all the "since last daily report" tallies
-                    clearAllTallies();
-                    //reset these "since last daily report" time distributions
-                    resetTimeDistributions();
-
-                    String2.log("\n" + stars);
-                    String2.log(contentSB.toString());
-                    String2.log(
-                        "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
-                        "\n" + stars + 
-                        "\nEnd of Daily Report\n");
-
-                    //after write to log (before email), add URLs to setDatasetFlag (so only in email to admin)
-                    contentSB.append("\n" + stars + 
-                        "\nsetDatasetFlag URLs can be used to force a dataset to be reloaded (treat as confidential information)\n\n");
-                    StringArray datasetIDs = erddap.allDatasetIDs();
-                    datasetIDs.sortIgnoreCase();
-                    for (int ds = 0; ds < datasetIDs.size(); ds++) {
-                        contentSB.append(EDD.flagUrl(datasetIDs.get(ds)));
-                        contentSB.append('\n');
-                    }
-
-                    //after write to log (before email), add subscription info (so only in email to admin)
-                    if (EDStatic.subscriptionSystemActive) {
-                        try {
-                            contentSB.append("\n\n" + stars + 
-                                "\nTreat Subscription Information as Confidential:\n");
-                            contentSB.append(EDStatic.subscriptions.listSubscriptions());
-                        } catch (Throwable lst) {
-                            contentSB.append("LoadDatasets Error: " + MustBe.throwableToString(lst));
-                        }
-                    } else {
-                        contentSB.append("\n\n" + stars + 
-                            "\nThe email/URL subscription system is not active.\n");
-                    }
-
-                    //write to email
-                    contentSB.append(
-                        "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
-                        "\n" + stars + 
-                        "\nEnd of Daily Report\n");
-                    String content = contentSB.toString();
-                    String2.log(subject + ":");
-                    String2.log(content);
-                    EDStatic.email(
-                        String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
-                        subject, content);
-
-                    //once a day, at daily report, empty activeRequests in case some weren't properly removed
-                    EDStatic.activeRequests.clear(); 
-
+                    emailDailyReport(threadSummary, threadList, reportDate);
                 } else {
                     //major load, but not daily report
-                    StringBuilder sb = new StringBuilder();
-                    EDStatic.addIntroStatistics(sb);
-
-                    if (threadSummary != null)
-                        sb.append(threadSummary + "\n");
-
-                    sb.append(Math2.gcCallCount + " gc calls, " + 
-                        EDStatic.requestsShed + " requests shed, and " +  
-                        EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
-                    sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
-                    EDStatic.addCommonStatistics(sb);
-                    sb.append(EDStatic.tally.toString("Large Request, IP address (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("Request refused: not authorized (since last Major LoadDatasets)", 50)); //datasetID (not IP address)
-                    sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)", 50));
-
-                    sb.append(threadList);
-                    String2.log(sb.toString());
-
-                    //email if some threshold is surpassed???
-                    int nFailed    = String2.getTimeDistributionN(EDStatic.failureTimesDistributionLoadDatasets);
-                    int nSucceeded = String2.getTimeDistributionN(EDStatic.responseTimesDistributionLoadDatasets);
-                    if (nFailed + nSucceeded > EDStatic.unusualActivity) //high activity level
-                        EDStatic.email(EDStatic.emailEverythingToCsv, 
-                            "Unusual Activity: lots of requests", sb.toString());
-                    else if (nFailed > 10 && nFailed > nSucceeded / 4)    // >25% of requests fail
-                        EDStatic.email(EDStatic.emailEverythingToCsv, 
-                            "Unusual Activity: >25% of requests failed", sb.toString());
+                    emailUnusualActivity(threadSummary, threadList);
                 }
 
                 //after every major loadDatasets
@@ -1149,6 +1041,120 @@ public class LoadDatasets extends Thread {
                 try {xmlReader.close();} catch (Exception e) {}
             EDStatic.suggestAddFillValueCSV.setLength(0);
         }
+    }
+
+    public void emailUnusualActivity(String threadSummary, String threadList) {
+        StringBuilder sb = new StringBuilder();
+        EDStatic.addIntroStatistics(sb);
+
+        if (threadSummary != null)
+            sb.append(threadSummary + "\n");
+
+        sb.append(Math2.gcCallCount + " gc calls, " +
+                EDStatic.requestsShed + " requests shed, and " +
+                EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
+        sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
+        EDStatic.addCommonStatistics(sb);
+        sb.append(EDStatic.tally.toString("Large Request, IP address (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("Request refused: not authorized (since last Major LoadDatasets)", 50)); //datasetID (not IP address)
+        sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
+        sb.append(EDStatic.tally.toString("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)", 50));
+
+        sb.append(threadList);
+        String2.log(sb.toString());
+
+        //email if some threshold is surpassed???
+        int nFailed    = String2.getTimeDistributionN(EDStatic.failureTimesDistributionLoadDatasets);
+        int nSucceeded = String2.getTimeDistributionN(EDStatic.responseTimesDistributionLoadDatasets);
+        if (nFailed + nSucceeded > EDStatic.unusualActivity) //high activity level
+            EDStatic.email(EDStatic.emailEverythingToCsv,
+                    "Unusual Activity: lots of requests", sb.toString());
+        else if (nFailed > 10 && nFailed > nSucceeded / 4)    // >25% of requests fail
+            EDStatic.email(EDStatic.emailEverythingToCsv,
+                    "Unusual Activity: >25% of requests failed", sb.toString());
+    }
+
+    public void emailDailyReport(String threadSummary, String threadList, String reportDate) {
+        erddap.lastReportDate = reportDate;
+        String stars = String2.makeString('*', 70);
+        String subject = "Daily Report";
+        StringBuilder contentSB = new StringBuilder(subject + "\n\n");
+        EDStatic.addIntroStatistics(contentSB);
+
+        //append number of active threads
+        if (threadSummary != null)
+            contentSB.append(threadSummary + "\n");
+
+        contentSB.append(Math2.gcCallCount + " gc calls, " +
+                EDStatic.requestsShed + " requests shed, and " +
+                EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
+        contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
+        contentSB.append(stars + "\nTallied Usage Information\n\n");
+        contentSB.append(EDStatic.tally.toString(50));
+        EDStatic.addCommonStatistics(contentSB);
+
+        contentSB.append("\n" + stars +
+                "\nWarnings from LoadDatasets\n\n");
+        contentSB.append(warningsFromLoadDatasets);
+
+        contentSB.append("\n" + stars + "\n");
+        contentSB.append(threadList);
+
+        //clear all the "since last daily report" tallies
+        clearAllTallies();
+        //reset these "since last daily report" time distributions
+        resetTimeDistributions();
+
+        String2.log("\n" + stars);
+        String2.log(contentSB.toString());
+        String2.log(
+                "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
+                        "\n" + stars +
+                        "\nEnd of Daily Report\n");
+
+        //after write to log (before email), add URLs to setDatasetFlag (so only in email to admin)
+        contentSB.append("\n" + stars +
+                "\nsetDatasetFlag URLs can be used to force a dataset to be reloaded (treat as confidential information)\n\n");
+        StringArray datasetIDs = erddap.allDatasetIDs();
+        datasetIDs.sortIgnoreCase();
+        for (int ds = 0; ds < datasetIDs.size(); ds++) {
+            contentSB.append(EDD.flagUrl(datasetIDs.get(ds)));
+            contentSB.append('\n');
+        }
+
+        //after write to log (before email), add subscription info (so only in email to admin)
+        if (EDStatic.subscriptionSystemActive) {
+            try {
+                contentSB.append("\n\n" + stars +
+                        "\nTreat Subscription Information as Confidential:\n");
+                contentSB.append(EDStatic.subscriptions.listSubscriptions());
+            } catch (Throwable lst) {
+                contentSB.append("LoadDatasets Error: " + MustBe.throwableToString(lst));
+            }
+        } else {
+            contentSB.append("\n\n" + stars +
+                    "\nThe email/URL subscription system is not active.\n");
+        }
+
+        //write to email
+        contentSB.append(
+                "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
+                        "\n" + stars +
+                        "\nEnd of Daily Report\n");
+        String content = contentSB.toString();
+        String2.log(subject + ":");
+        String2.log(content);
+        EDStatic.email(
+                String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv),
+                subject, content);
+
+        //once a day, at daily report, empty activeRequests in case some weren't properly removed
+        EDStatic.activeRequests.clear();
     }
 
     public void handleAfva() {
