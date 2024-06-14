@@ -12,11 +12,9 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.XML;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 
-import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -25,25 +23,18 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
-import gov.noaa.pfel.erddap.variable.EDVGridAxis;
-//import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
