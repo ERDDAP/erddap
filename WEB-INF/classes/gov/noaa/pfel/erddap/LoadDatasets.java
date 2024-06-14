@@ -193,19 +193,7 @@ public class LoadDatasets extends Thread {
             //    Good: easy to catch/report mistyped tag Names
             //    Low memory use.
             //I went with SimpleXMLReader
-
-            if (inputStream == null) {
-                //make a copy of datasets.xml so administrator can change file whenever desired
-                //  and not affect simpleXMLReader
-                String oldFileName = EDStatic.contentDirectory + 
-                    "datasets" + (EDStatic.developmentMode? "2" : "") + ".xml";
-                String newFileName = EDStatic.bigParentDirectory + "currentDatasets.xml";
-                if (!File2.copy(oldFileName, newFileName)) 
-                    throw new RuntimeException("Unable to copy " + oldFileName + " to " + newFileName);                
-                inputStream = File2.getBufferedInputStream(newFileName);  //not File2.getDecompressedBufferedInputStream(). Read file as is.
-            } else {
-                inputStream = new BufferedInputStream(inputStream);
-            }
+            inputStream = getInputStream(inputStream);
 
             //read datasets.xml
             xmlReader = new SimpleXMLReader(inputStream, "erddapDatasets");
@@ -972,44 +960,9 @@ public class LoadDatasets extends Thread {
                     "  " + memoryString + " " + Math2.xmxMemoryString() +
                     "\n  change for this run of major Load Datasets (MB) = " + ((Math2.getMemoryInUse() - memoryInUse) / Math2.BytesPerMB) + "\n");
 
-                if (EDStatic.initialLoadDatasets()) {
-                    if (EDStatic.suggestAddFillValueCSV.length() > 0) {
-                        String tFileName = EDStatic.fullLogsDirectory + 
-                            "addFillValueAttributes" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".csv";
-                        String contents = 
-                            "datasetID,variableSourceName,attribute\n" + 
-                            EDStatic.suggestAddFillValueCSV.toString();
-                        File2.writeToFileUtf8(tFileName, contents);
-                        String afva =
-                            "ADD _FillValue ATTRIBUTES?\n" +
-                            "The datasets/variables in the table below have integer source data, but no\n" +
-                            "_FillValue or missing_value attribute. We recommend adding the suggested\n" +
-                            "attributes to the variable's <addAttributes> in datasets.xml to identify\n" +
-                            "the default _FillValue used by ERDDAP. You can do this by hand or with the\n" +
-                            "addFillValueAttributes option in GenerateDatasetsXml.\n" +
-                            "If you don't make these changes, ERDDAP will treat those values (e.g., 127\n" +
-                            "for byte variables), if any, as valid data values (for example, on graphs\n" +
-                            "and when calculating statistics).\n" +
-                            "Or, if you decide a variable should not have a _FillValue attribute, you can add\n" +
-                            "  <att name=\"_FillValue\">null</att>\n" +
-                            "instead, which will suppress this message for that datasetID+variable\n" +
-                            "combination in the future.\n" +
-                            "The list below is created each time you start up ERDDAP.\n" +
-                            "The list was just written to a UTF-8 CSV file\n" + 
-                            tFileName + "\n" +
-                            "and is shown here:\n" + 
-                            contents + "\n";
-                        String2.log("\n" + afva);
-                        EDStatic.email(
-                            String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
-                            "ADD _FillValue ATTRIBUTES?", //this exact string is in setupDatasetsXml.html
-                            afva);
+                if (EDStatic.initialLoadDatasets())
+                    handleAfva();
 
-                    } else {
-                        String2.log(
-                            "ADD _FillValue ATTRIBUTES?  There are none to report.\n");
-                    }
-                }
 
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
@@ -1077,75 +1030,9 @@ public class LoadDatasets extends Thread {
                     contentSB.append(threadList);
 
                     //clear all the "since last daily report" tallies
-                    EDStatic.tally.remove(".subset (since last daily report)");
-                    EDStatic.tally.remove(".subset DatasetID (since last daily report)");
-                    EDStatic.tally.remove("Advanced Search with Category Constraints (since last daily report)");
-                    EDStatic.tally.remove("Advanced Search with Lat Lon Constraints (since last daily report)");
-                    EDStatic.tally.remove("Advanced Search with Time Constraints (since last daily report)");
-                    EDStatic.tally.remove("Advanced Search, .fileType (since last daily report)");
-                    EDStatic.tally.remove("Advanced Search, Search For (since last daily report)");
-                    EDStatic.tally.remove("Categorize Attribute (since last daily report)");
-                    EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
-                    EDStatic.tally.remove("Categorize File Type (since last daily report)");
-                    EDStatic.tally.remove("Convert (since last daily report)");
-                    EDStatic.tally.remove("files browse DatasetID (since last daily report)");
-                    EDStatic.tally.remove("files download DatasetID (since last daily report)");
-                    EDStatic.tally.remove("griddap DatasetID (since last daily report)");
-                    EDStatic.tally.remove("griddap File Type (since last daily report)");
-                    EDStatic.tally.remove("Home Page (since last daily report)");
-                    EDStatic.tally.remove("Info (since last daily report)");
-                    EDStatic.tally.remove("Info File Type (since last daily report)");
-                    EDStatic.tally.remove("Language (since last daily report)");
-                    EDStatic.tally.remove("Large Request, IP address (since last daily report)");
-                    EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
-                    EDStatic.tally.remove("Log in failed (since last daily report)");
-                    EDStatic.tally.remove("Log in succeeded (since last daily report)");
-                    EDStatic.tally.remove("Log out (since last daily report)");
-                    EDStatic.tally.remove("Main Resources List (since last daily report)");
-                    EDStatic.tally.remove("Metadata requests (since last daily report)");
-                    EDStatic.tally.remove("OpenSearch For (since last daily report)");
-                    EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last daily report)");
-                    EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last daily report)");
-                    EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last daily report)");
-                    EDStatic.tally.remove("POST (since last daily report)");
-                    EDStatic.tally.remove("Protocol (since last daily report)");
-                    EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
-                    EDStatic.tally.remove("Request refused: not authorized (since last daily report)");
-                    EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
-                    EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
-                    EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
-                    EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last daily report)");
-                    EDStatic.tally.remove("RequestReloadASAP (since last daily report)");
-                    EDStatic.tally.remove("Response Failed    Time (since last daily report)");
-                    EDStatic.tally.remove("Response Succeeded Time (since last daily report)");
-                    EDStatic.tally.remove("RSS (since last daily report)");
-                    EDStatic.tally.remove("Search File Type (since last daily report)");
-                    EDStatic.tally.remove("Search For (since last daily report)");
-                    EDStatic.tally.remove("SetDatasetFlag (since last daily report)");
-                    EDStatic.tally.remove("SetDatasetFlag Failed, IP Address (since last daily report)");
-                    EDStatic.tally.remove("SetDatasetFlag Succeeded, IP Address (since last daily report)");
-                    EDStatic.tally.remove("SOS index.html (since last daily report)");
-                    EDStatic.tally.remove("Subscriptions (since last daily report)");
-                    EDStatic.tally.remove("tabledap DatasetID (since last daily report)");
-                    EDStatic.tally.remove("tabledap File Type (since last daily report)");
-                    EDStatic.tally.remove("WCS index.html (since last daily report)");
-                    EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
-                    EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
-                    EDStatic.tally.remove("WMS doWmsDemo (since last daily report)");
-                    EDStatic.tally.remove("WMS index.html (since last daily report)");
-
+                    clearAllTallies();
                     //reset these "since last daily report" time distributions
-                    EDStatic.emailThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
-                    EDStatic.emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
-                    EDStatic.emailThreadNEmailsDistribution24   = new int[String2.CountDistributionSize]; //count, not time
-                    EDStatic.failureTimesDistribution24         = new int[String2.TimeDistributionSize];
-                    EDStatic.majorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
-                    EDStatic.minorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
-                    EDStatic.responseTimesDistribution24        = new int[String2.TimeDistributionSize];
-                    EDStatic.taskThreadFailedDistribution24     = new int[String2.TimeDistributionSize];
-                    EDStatic.taskThreadSucceededDistribution24  = new int[String2.TimeDistributionSize];
-                    EDStatic.touchThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
-                    EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+                    resetTimeDistributions();
 
                     String2.log("\n" + stars);
                     String2.log(contentSB.toString());
@@ -1271,6 +1158,136 @@ public class LoadDatasets extends Thread {
                 try {xmlReader.close();} catch (Exception e) {}
             EDStatic.suggestAddFillValueCSV.setLength(0);
         }
+    }
+
+    public void handleAfva() {
+        if (EDStatic.suggestAddFillValueCSV.length() > 0) {
+            String tFileName = EDStatic.fullLogsDirectory +
+                    "addFillValueAttributes" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".csv";
+            String contents =
+                    "datasetID,variableSourceName,attribute\n" +
+                            EDStatic.suggestAddFillValueCSV.toString();
+            File2.writeToFileUtf8(tFileName, contents);
+            String afva = getAfva(tFileName, contents);
+            String2.log("\n" + afva);
+            EDStatic.email(
+                    String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv),
+                    "ADD _FillValue ATTRIBUTES?", //this exact string is in setupDatasetsXml.html
+                    afva);
+
+        } else {
+            String2.log(
+                    "ADD _FillValue ATTRIBUTES?  There are none to report.\n");
+        }
+    }
+
+    public InputStream getInputStream(InputStream inputStream) throws Exception {
+        if (inputStream == null) {
+            //make a copy of datasets.xml so administrator can change file whenever desired
+            //  and not affect simpleXMLReader
+            String oldFileName = EDStatic.contentDirectory +
+                    "datasets" + (EDStatic.developmentMode? "2" : "") + ".xml";
+            String newFileName = EDStatic.bigParentDirectory + "currentDatasets.xml";
+            if (!File2.copy(oldFileName, newFileName))
+                throw new RuntimeException("Unable to copy " + oldFileName + " to " + newFileName);
+            return File2.getBufferedInputStream(newFileName);  //not File2.getDecompressedBufferedInputStream(). Read file as is.
+        } else {
+            return new BufferedInputStream(inputStream);
+        }
+    }
+
+    public String getAfva(String tFileName, String contents) {
+        return "ADD _FillValue ATTRIBUTES?\n" +
+                "The datasets/variables in the table below have integer source data, but no\n" +
+                "_FillValue or missing_value attribute. We recommend adding the suggested\n" +
+                "attributes to the variable's <addAttributes> in datasets.xml to identify\n" +
+                "the default _FillValue used by ERDDAP. You can do this by hand or with the\n" +
+                "addFillValueAttributes option in GenerateDatasetsXml.\n" +
+                "If you don't make these changes, ERDDAP will treat those values (e.g., 127\n" +
+                "for byte variables), if any, as valid data values (for example, on graphs\n" +
+                "and when calculating statistics).\n" +
+                "Or, if you decide a variable should not have a _FillValue attribute, you can add\n" +
+                "  <att name=\"_FillValue\">null</att>\n" +
+                "instead, which will suppress this message for that datasetID+variable\n" +
+                "combination in the future.\n" +
+                "The list below is created each time you start up ERDDAP.\n" +
+                "The list was just written to a UTF-8 CSV file\n" +
+                tFileName + "\n" +
+                "and is shown here:\n" +
+                contents + "\n";
+    }
+
+    public void resetTimeDistributions() {
+        EDStatic.emailThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+        EDStatic.emailThreadNEmailsDistribution24   = new int[String2.CountDistributionSize]; //count, not time
+        EDStatic.failureTimesDistribution24         = new int[String2.TimeDistributionSize];
+        EDStatic.majorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.minorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.responseTimesDistribution24        = new int[String2.TimeDistributionSize];
+        EDStatic.taskThreadFailedDistribution24     = new int[String2.TimeDistributionSize];
+        EDStatic.taskThreadSucceededDistribution24  = new int[String2.TimeDistributionSize];
+        EDStatic.touchThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+    }
+
+    public void clearAllTallies() {
+        EDStatic.tally.remove(".subset (since last daily report)");
+        EDStatic.tally.remove(".subset DatasetID (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Category Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Lat Lon Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Time Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search, .fileType (since last daily report)");
+        EDStatic.tally.remove("Advanced Search, Search For (since last daily report)");
+        EDStatic.tally.remove("Categorize Attribute (since last daily report)");
+        EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
+        EDStatic.tally.remove("Categorize File Type (since last daily report)");
+        EDStatic.tally.remove("Convert (since last daily report)");
+        EDStatic.tally.remove("files browse DatasetID (since last daily report)");
+        EDStatic.tally.remove("files download DatasetID (since last daily report)");
+        EDStatic.tally.remove("griddap DatasetID (since last daily report)");
+        EDStatic.tally.remove("griddap File Type (since last daily report)");
+        EDStatic.tally.remove("Home Page (since last daily report)");
+        EDStatic.tally.remove("Info (since last daily report)");
+        EDStatic.tally.remove("Info File Type (since last daily report)");
+        EDStatic.tally.remove("Language (since last daily report)");
+        EDStatic.tally.remove("Large Request, IP address (since last daily report)");
+        EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
+        EDStatic.tally.remove("Log in failed (since last daily report)");
+        EDStatic.tally.remove("Log in succeeded (since last daily report)");
+        EDStatic.tally.remove("Log out (since last daily report)");
+        EDStatic.tally.remove("Main Resources List (since last daily report)");
+        EDStatic.tally.remove("Metadata requests (since last daily report)");
+        EDStatic.tally.remove("OpenSearch For (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last daily report)");
+        EDStatic.tally.remove("POST (since last daily report)");
+        EDStatic.tally.remove("Protocol (since last daily report)");
+        EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
+        EDStatic.tally.remove("Request refused: not authorized (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last daily report)");
+        EDStatic.tally.remove("RequestReloadASAP (since last daily report)");
+        EDStatic.tally.remove("Response Failed    Time (since last daily report)");
+        EDStatic.tally.remove("Response Succeeded Time (since last daily report)");
+        EDStatic.tally.remove("RSS (since last daily report)");
+        EDStatic.tally.remove("Search File Type (since last daily report)");
+        EDStatic.tally.remove("Search For (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag Failed, IP Address (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag Succeeded, IP Address (since last daily report)");
+        EDStatic.tally.remove("SOS index.html (since last daily report)");
+        EDStatic.tally.remove("Subscriptions (since last daily report)");
+        EDStatic.tally.remove("tabledap DatasetID (since last daily report)");
+        EDStatic.tally.remove("tabledap File Type (since last daily report)");
+        EDStatic.tally.remove("WCS index.html (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsDemo (since last daily report)");
+        EDStatic.tally.remove("WMS index.html (since last daily report)");
     }
 
     public String getOpenFiles(String openFiles) {
