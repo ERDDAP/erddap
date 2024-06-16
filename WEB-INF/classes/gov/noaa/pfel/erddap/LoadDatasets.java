@@ -123,7 +123,6 @@ public class LoadDatasets extends Thread {
      * placing results back in erddap as they become available.
      */
     public void run() {
-        SimpleXMLReader xmlReader = null;
         StringArray changedDatasetIDs = new StringArray();
         try {
             String2.log("\n" + String2.makeString('*', 80) +  
@@ -186,12 +185,10 @@ public class LoadDatasets extends Thread {
             //I went with SimpleXMLReader
             inputStream = getInputStream(inputStream);
 
-            //read datasets.xml
-            xmlReader = new SimpleXMLReader(inputStream, "erddapDatasets");
-            int nDatasets = 0;
-            int nTry = 0;
-            //there is an enclosing try/catch that handles with closing xmlReader
-            parseUsingSimpleXmlReader(xmlReader, nTry, nDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            int[] nTryAndDatasets = new int[2];
+            parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            int nTry = nTryAndDatasets[0];
+            int nDatasets = nTryAndDatasets[1];
 
             updateLucene(erddap, changedDatasetIDs);
             lastLuceneUpdate = System.currentTimeMillis();
@@ -347,687 +344,695 @@ public class LoadDatasets extends Thread {
                 String2.flushLog(); //useful to have this info ASAP and ensure log is flushed periodically
             }
 
-        } catch (Throwable t) {
-            String subject = String2.ERROR + " while processing " + 
-                (xmlReader == null? "" : "line #" + xmlReader.lineNumber() + " ") + 
-                "datasets.xml";
-            if (!isInterrupted()) {
-                EDStatic.errorsDuringMajorReload  = 
-                    subject + ": see log.txt for details.\n";  //swap into place
-                String content = MustBe.throwableToString(t); 
-                unexpectedError = subject + ": " + content;
-                String2.log(unexpectedError);
-                EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
-            }
-        } finally {
-            if (xmlReader != null) 
-                try {xmlReader.close();} catch (Exception e) {}
-            EDStatic.suggestAddFillValueCSV.setLength(0);
+        } catch (Exception e) {
+            String2.log(e.toString());
         }
     }
 
     private void parseUsingSimpleXmlReader(
-            SimpleXMLReader xmlReader,
-            int nTry, int nDatasets,
+            int[] nTryAndDatasets,
             StringArray changedDatasetIDs,
             HashSet<String> orphanIDSet,
             HashSet<String> datasetIDSet,
             StringArray duplicateDatasetIDs,
             StringBuilder datasetsThatFailedToLoadSB,
             HashMap tUserHashMap
-    ) throws Exception {
-        String startError = "datasets.xml error on line #";
-
-        while (true) {
-            //check for interruption
-            if (isInterrupted()) {
-                String2.log("*** The LoadDatasets thread was interrupted at " +
-                        Calendar2.getCurrentISODateTimeStringLocalTZ());
-                updateLucene(erddap, changedDatasetIDs);
-                return;
-            }
-
-            xmlReader.nextTag();
-            String tags = xmlReader.allTags();
-            if (tags.equals("</erddapDatasets>")) {
-                break;
-            } else if (tags.equals("<erddapDatasets><dataset>")) {
-                //just load minimal datasets?
-                nDatasets++;
-                String tId = xmlReader.attributeValue("datasetID");
-                if (!String2.isSomething(tId))  //"" is trouble. It leads to flagDir being deleted below.
-                    throw new RuntimeException(startError + xmlReader.lineNumber() + ": " +
-                            "This <dataset> doesn't have a datasetID!");
-                if (majorLoad)
-                    orphanIDSet.remove(tId);
-
-                //Looking for reasons to skip loading this dataset.
-                //Test first: skip dataset because it is a duplicate datasetID?
-                //  If isDuplicate, act as if this doesn't even occur in datasets.xml.
-                //  This is imperfect. It just tests top-level datasets,
-                //  not lower level, e.g., within EDDGridCopy.
-                boolean skip = false;
-                boolean isDuplicate = !datasetIDSet.add(tId);
-                if (isDuplicate) {
-                    skip = true;
-                    duplicateDatasetIDs.add(tId);
-                    if (reallyVerbose)
-                        String2.log("*** skipping datasetID=" + tId +
-                                " because it's a duplicate.");
+    ) {
+        SimpleXMLReader xmlReader = null;
+        int nTry = 0;
+        int nDatasets = 0;
+        try {
+            xmlReader = new SimpleXMLReader(inputStream, "erddapDatasets");
+            String startError = "datasets.xml error on line #";
+            while (true) {
+                //check for interruption
+                if (isInterrupted()) {
+                    String2.log("*** The LoadDatasets thread was interrupted at " +
+                            Calendar2.getCurrentISODateTimeStringLocalTZ());
+                    updateLucene(erddap, changedDatasetIDs);
+                    return;
                 }
 
-                //Test second: skip dataset because of datasetsRegex?
-                if (!skip && !tId.matches(datasetsRegex)) {
-                    skip = true;
-                    if (reallyVerbose)
-                        String2.log("*** skipping datasetID=" + tId +
-                                " because of datasetsRegex.");
-                }
+                xmlReader.nextTag();
+                String tags = xmlReader.allTags();
+                if (tags.equals("</erddapDatasets>")) {
+                    break;
+                } else if (tags.equals("<erddapDatasets><dataset>")) {
+                    //just load minimal datasets?
+                    nDatasets++;
+                    String tId = xmlReader.attributeValue("datasetID");
+                    if (!String2.isSomething(tId))  //"" is trouble. It leads to flagDir being deleted below.
+                        throw new RuntimeException(startError + xmlReader.lineNumber() + ": " +
+                                "This <dataset> doesn't have a datasetID!");
+                    if (majorLoad)
+                        orphanIDSet.remove(tId);
 
-                //Test third: look at flag/age  or active=false
-                if (!skip) {
-                    //always check both flag locations
-                    boolean isFlagged         = File2.delete(EDStatic.fullResetFlagDirectory    + tId);
-                    boolean isBadFilesFlagged = File2.delete(EDStatic.fullBadFilesFlagDirectory + tId);
-                    boolean isHardFlagged     = File2.delete(EDStatic.fullHardFlagDirectory     + tId);
-                    if (isFlagged) {
-                        String2.log("*** reloading datasetID=" + tId +
-                                " because it was in the flag directory.");
-
-                    } else if (isBadFilesFlagged) {
-                        String2.log("*** reloading datasetID=" + tId +
-                                " because it was in the badFilesFlag directory.");
-                        EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
-                        if (oldEdd == null)
-                            oldEdd = erddap.tableDatasetHashMap.get(tId);
-                        if (oldEdd != null) {
-                            StringArray childDatasetIDs = oldEdd.childDatasetIDs();
-                            for (int cd = 0; cd < childDatasetIDs.size(); cd++) {
-                                String cid = childDatasetIDs.get(cd);
-                                EDD.deleteBadFilesFile(cid); //delete the children's info
-                            }
-                        }
-                        EDD.deleteBadFilesFile(tId); //the important difference
-
-                    } else if (isHardFlagged) {
-                        String2.log("*** reloading datasetID=" + tId +
-                                " because it was in the hardFlag directory.");
-                        EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
-                        if (oldEdd == null)
-                            oldEdd = erddap.tableDatasetHashMap.get(tId);
-                        if (oldEdd != null) {
-                            StringArray childDatasetIDs = oldEdd.childDatasetIDs();
-                            for (int cd = 0; cd < childDatasetIDs.size(); cd++) {
-                                String cid = childDatasetIDs.get(cd);
-                                EDD.deleteCachedDatasetInfo(cid); //delete the children's info
-                                FileVisitorDNLS.pruneCache(EDD.decompressedDirectory(cid), 2, 0.5); //remove as many files as possible
-                            }
-                        }
-                        tryToUnload(erddap, tId, new StringArray(), true); //needToUpdateLucene
-                        EDD.deleteCachedDatasetInfo(tId); //the important difference
-                        FileVisitorDNLS.pruneCache(EDD.decompressedDirectory(tId), 2, 0.5); //remove as many files as possible
-
-                    } else {
-                        //does the dataset already exist and is young?
-                        EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
-                        if (oldEdd == null)
-                            oldEdd = erddap.tableDatasetHashMap.get(tId);
-                        if (oldEdd != null) {
-                            long minutesOld = oldEdd.creationTimeMillis() <= 0?  //see edd.setCreationTimeTo0
-                                    Long.MAX_VALUE :
-                                    (System.currentTimeMillis() - oldEdd.creationTimeMillis()) / 60000;
-                            if (minutesOld < oldEdd.getReloadEveryNMinutes()) {
-                                //it exists and is young
-                                if (reallyVerbose) String2.log("*** skipping datasetID=" + tId +
-                                        ": it already exists and minutesOld=" + minutesOld +
-                                        " is less than reloadEvery=" + oldEdd.getReloadEveryNMinutes());
-                                skip = true;
-                            }
-                        }
-                    }
-
-                    //active="false"?  (very powerful)
-                    String tActiveString = xmlReader.attributeValue("active");
-                    boolean tActive = tActiveString != null && tActiveString.equals("false")? false : true;
-                    if (!tActive) {
-                        //marked not active now; was it active?
-                        boolean needToUpdateLucene =
-                                System.currentTimeMillis() - lastLuceneUpdate > MAX_MILLIS_BEFORE_LUCENE_UPDATE;
-                        if (tryToUnload(erddap, tId, changedDatasetIDs, needToUpdateLucene)) {
-                            //yes, it was unloaded
-                            String2.log("*** unloaded datasetID=" + tId + " because active=\"false\".");
-                            if (needToUpdateLucene)
-                                lastLuceneUpdate = System.currentTimeMillis(); //because Lucene was updated
-                        }
-
+                    //Looking for reasons to skip loading this dataset.
+                    //Test first: skip dataset because it is a duplicate datasetID?
+                    //  If isDuplicate, act as if this doesn't even occur in datasets.xml.
+                    //  This is imperfect. It just tests top-level datasets,
+                    //  not lower level, e.g., within EDDGridCopy.
+                    boolean skip = false;
+                    boolean isDuplicate = !datasetIDSet.add(tId);
+                    if (isDuplicate) {
                         skip = true;
+                        duplicateDatasetIDs.add(tId);
+                        if (reallyVerbose)
+                            String2.log("*** skipping datasetID=" + tId +
+                                    " because it's a duplicate.");
                     }
-                }
+
+                    //Test second: skip dataset because of datasetsRegex?
+                    if (!skip && !tId.matches(datasetsRegex)) {
+                        skip = true;
+                        if (reallyVerbose)
+                            String2.log("*** skipping datasetID=" + tId +
+                                    " because of datasetsRegex.");
+                    }
+
+                    //Test third: look at flag/age  or active=false
+                    if (!skip) {
+                        //always check both flag locations
+                        boolean isFlagged = File2.delete(EDStatic.fullResetFlagDirectory + tId);
+                        boolean isBadFilesFlagged = File2.delete(EDStatic.fullBadFilesFlagDirectory + tId);
+                        boolean isHardFlagged = File2.delete(EDStatic.fullHardFlagDirectory + tId);
+                        if (isFlagged) {
+                            String2.log("*** reloading datasetID=" + tId +
+                                    " because it was in the flag directory.");
+
+                        } else if (isBadFilesFlagged) {
+                            String2.log("*** reloading datasetID=" + tId +
+                                    " because it was in the badFilesFlag directory.");
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
+                            if (oldEdd == null)
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
+                            if (oldEdd != null) {
+                                StringArray childDatasetIDs = oldEdd.childDatasetIDs();
+                                for (int cd = 0; cd < childDatasetIDs.size(); cd++) {
+                                    String cid = childDatasetIDs.get(cd);
+                                    EDD.deleteBadFilesFile(cid); //delete the children's info
+                                }
+                            }
+                            EDD.deleteBadFilesFile(tId); //the important difference
+
+                        } else if (isHardFlagged) {
+                            String2.log("*** reloading datasetID=" + tId +
+                                    " because it was in the hardFlag directory.");
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
+                            if (oldEdd == null)
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
+                            if (oldEdd != null) {
+                                StringArray childDatasetIDs = oldEdd.childDatasetIDs();
+                                for (int cd = 0; cd < childDatasetIDs.size(); cd++) {
+                                    String cid = childDatasetIDs.get(cd);
+                                    EDD.deleteCachedDatasetInfo(cid); //delete the children's info
+                                    FileVisitorDNLS.pruneCache(EDD.decompressedDirectory(cid), 2, 0.5); //remove as many files as possible
+                                }
+                            }
+                            tryToUnload(erddap, tId, new StringArray(), true); //needToUpdateLucene
+                            EDD.deleteCachedDatasetInfo(tId); //the important difference
+                            FileVisitorDNLS.pruneCache(EDD.decompressedDirectory(tId), 2, 0.5); //remove as many files as possible
+
+                        } else {
+                            //does the dataset already exist and is young?
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
+                            if (oldEdd == null)
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
+                            if (oldEdd != null) {
+                                long minutesOld = oldEdd.creationTimeMillis() <= 0 ?  //see edd.setCreationTimeTo0
+                                        Long.MAX_VALUE :
+                                        (System.currentTimeMillis() - oldEdd.creationTimeMillis()) / 60000;
+                                if (minutesOld < oldEdd.getReloadEveryNMinutes()) {
+                                    //it exists and is young
+                                    if (reallyVerbose) String2.log("*** skipping datasetID=" + tId +
+                                            ": it already exists and minutesOld=" + minutesOld +
+                                            " is less than reloadEvery=" + oldEdd.getReloadEveryNMinutes());
+                                    skip = true;
+                                }
+                            }
+                        }
+
+                        //active="false"?  (very powerful)
+                        String tActiveString = xmlReader.attributeValue("active");
+                        boolean tActive = tActiveString != null && tActiveString.equals("false") ? false : true;
+                        if (!tActive) {
+                            //marked not active now; was it active?
+                            boolean needToUpdateLucene =
+                                    System.currentTimeMillis() - lastLuceneUpdate > MAX_MILLIS_BEFORE_LUCENE_UPDATE;
+                            if (tryToUnload(erddap, tId, changedDatasetIDs, needToUpdateLucene)) {
+                                //yes, it was unloaded
+                                String2.log("*** unloaded datasetID=" + tId + " because active=\"false\".");
+                                if (needToUpdateLucene)
+                                    lastLuceneUpdate = System.currentTimeMillis(); //because Lucene was updated
+                            }
+
+                            skip = true;
+                        }
+                    }
 
 //To test just EDDTable datasets...
 //if (xmlReader.attributeValue("type").startsWith("EDDGrid") &&
 //    !tId.startsWith("etopo"))
 //    skip = true;
 
-                if (skip) {
-                    //skip over the tags for this dataset
-                    while (!tags.equals("<erddapDatasets></dataset>")) {
-                        xmlReader.nextTag();
-                        tags = xmlReader.allTags();
-                    }
-                } else {
-                    //try to load this dataset
-                    nTry++;
-                    String change = "";
-                    EDD dataset = null, oldDataset = null;
-                    boolean oldCatInfoRemoved = false;
-                    long timeToLoadThisDataset = System.currentTimeMillis();
-                    EDStatic.cldNTry = nTry;
-                    EDStatic.cldStartMillis = timeToLoadThisDataset;
-                    EDStatic.cldDatasetID = tId;
-                    try {
-                        dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-
-                        //check for interruption right before making changes to Erddap
-                        if (isInterrupted()) { //this is a likely place to catch interruption
-                            String2.log("*** The LoadDatasets thread was interrupted at " +
-                                    Calendar2.getCurrentISODateTimeStringLocalTZ());
-                            updateLucene(erddap, changedDatasetIDs);
-                            lastLuceneUpdate = System.currentTimeMillis();
-                            return;
+                    if (skip) {
+                        //skip over the tags for this dataset
+                        while (!tags.equals("<erddapDatasets></dataset>")) {
+                            xmlReader.nextTag();
+                            tags = xmlReader.allTags();
                         }
-
-                        //do several things in quick succession...
-                        //(??? synchronize on (?) if really need avoid inconsistency)
-
-                        //was there a dataset with the same datasetID?
-                        oldDataset = erddap.gridDatasetHashMap.get(tId);
-                        if (oldDataset == null)
-                            oldDataset = erddap.tableDatasetHashMap.get(tId);
-
-                        //if oldDataset existed, remove its info from categoryInfo
-                        //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
-                        if (oldDataset != null) {
-                            addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
-                            oldCatInfoRemoved = true;
-                        }
-
-                        //put dataset in place
-                        //(hashMap.put atomically replaces old version with new)
-                        if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
-                                dataset instanceof EDDGrid eddGrid) {
-                            erddap.gridDatasetHashMap.put(tId, eddGrid);  //was/is grid
-
-                        } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
-                                dataset instanceof EDDTable eddTable) {
-                            erddap.tableDatasetHashMap.put(tId, eddTable); //was/is table
-
-                        } else if (dataset instanceof EDDGrid eddGrid) {
-                            if (oldDataset != null)
-                                erddap.tableDatasetHashMap.remove(tId);   //was table
-                            erddap.gridDatasetHashMap.put(tId, eddGrid);  //now grid
-
-                        } else if (dataset instanceof EDDTable eddTable) {
-                            if (oldDataset != null)
-                                erddap.gridDatasetHashMap.remove(tId);     //was grid
-                            erddap.tableDatasetHashMap.put(tId, eddTable); //now table
-                        }
-
-                        //add new info to categoryInfo
-                        addRemoveDatasetInfo(ADD, erddap.categoryInfo, dataset);
-
-                        //clear the dataset's cache
-                        //since axis values may have changed and "last" may have changed
-                        File2.deleteAllFiles(dataset.cacheDirectory());
-
-                        change = dataset.changed(oldDataset);
-                        if (change.length() == 0 && dataset instanceof EDDTable)
-                            change = "The dataset was reloaded.";
-
-                    } catch (Throwable t) {
-                        dataset = null;
-                        timeToLoadThisDataset = System.currentTimeMillis() - timeToLoadThisDataset;
-
-                        //check for interruption right before making changes to Erddap
-                        if (isInterrupted()) { //this is a likely place to catch interruption
-                            String tError2 = "*** The LoadDatasets thread was interrupted at " +
-                                    Calendar2.getCurrentISODateTimeStringLocalTZ();
-                            String2.log(tError2);
-                            warningsFromLoadDatasets.append(tError2 + "\n\n");
-                            updateLucene(erddap, changedDatasetIDs);
-                            lastLuceneUpdate = System.currentTimeMillis();
-                            return;
-                        }
-
-
-                        //actually remove old dataset (if any existed)
-                        EDD tDataset = erddap.gridDatasetHashMap.remove(tId); //always ensure it was removed
-                        if (tDataset == null)
-                            tDataset = erddap.tableDatasetHashMap.remove(tId);
-                        if (oldDataset == null)
-                            oldDataset = tDataset;
-
-                        //if oldDataset existed, remove it from categoryInfo
-                        if (oldDataset != null && !oldCatInfoRemoved)
-                            addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
-
-                        String tError = startError + xmlReader.lineNumber() + "\n" +
-                                "While trying to load datasetID=" + tId + " (after " +
-                                timeToLoadThisDataset + " ms)\n" +
-                                MustBe.throwableToString(t);
-                        String2.log(tError);
-                        warningsFromLoadDatasets.append(tError + "\n\n");
-                        datasetsThatFailedToLoadSB.append(tId + ", ");
-
-                        //stop???
-                        if (!xmlReader.isOpen()) { //error was really serious
-                            throw new RuntimeException(startError + xmlReader.lineNumber() +
-                                    ": " + t.toString(), t);
-                        }
-
-                        //skip over the remaining tags for this dataset
+                    } else {
+                        //try to load this dataset
+                        nTry++;
+                        String change = "";
+                        EDD dataset = null, oldDataset = null;
+                        boolean oldCatInfoRemoved = false;
+                        long timeToLoadThisDataset = System.currentTimeMillis();
+                        EDStatic.cldNTry = nTry;
+                        EDStatic.cldStartMillis = timeToLoadThisDataset;
+                        EDStatic.cldDatasetID = tId;
                         try {
-                            while (!xmlReader.allTags().equals("<erddapDatasets></dataset>"))
-                                xmlReader.nextTag();
-                        } catch (Throwable t2) {
-                            throw new RuntimeException(startError + xmlReader.lineNumber() +
-                                    ": " + t2.toString(), t2);
+                            dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+
+                            //check for interruption right before making changes to Erddap
+                            if (isInterrupted()) { //this is a likely place to catch interruption
+                                String2.log("*** The LoadDatasets thread was interrupted at " +
+                                        Calendar2.getCurrentISODateTimeStringLocalTZ());
+                                updateLucene(erddap, changedDatasetIDs);
+                                lastLuceneUpdate = System.currentTimeMillis();
+                                return;
+                            }
+
+                            //do several things in quick succession...
+                            //(??? synchronize on (?) if really need avoid inconsistency)
+
+                            //was there a dataset with the same datasetID?
+                            oldDataset = erddap.gridDatasetHashMap.get(tId);
+                            if (oldDataset == null)
+                                oldDataset = erddap.tableDatasetHashMap.get(tId);
+
+                            //if oldDataset existed, remove its info from categoryInfo
+                            //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
+                            if (oldDataset != null) {
+                                addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
+                                oldCatInfoRemoved = true;
+                            }
+
+                            //put dataset in place
+                            //(hashMap.put atomically replaces old version with new)
+                            if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
+                                    dataset instanceof EDDGrid eddGrid) {
+                                erddap.gridDatasetHashMap.put(tId, eddGrid);  //was/is grid
+
+                            } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
+                                    dataset instanceof EDDTable eddTable) {
+                                erddap.tableDatasetHashMap.put(tId, eddTable); //was/is table
+
+                            } else if (dataset instanceof EDDGrid eddGrid) {
+                                if (oldDataset != null)
+                                    erddap.tableDatasetHashMap.remove(tId);   //was table
+                                erddap.gridDatasetHashMap.put(tId, eddGrid);  //now grid
+
+                            } else if (dataset instanceof EDDTable eddTable) {
+                                if (oldDataset != null)
+                                    erddap.gridDatasetHashMap.remove(tId);     //was grid
+                                erddap.tableDatasetHashMap.put(tId, eddTable); //now table
+                            }
+
+                            //add new info to categoryInfo
+                            addRemoveDatasetInfo(ADD, erddap.categoryInfo, dataset);
+
+                            //clear the dataset's cache
+                            //since axis values may have changed and "last" may have changed
+                            File2.deleteAllFiles(dataset.cacheDirectory());
+
+                            change = dataset.changed(oldDataset);
+                            if (change.length() == 0 && dataset instanceof EDDTable)
+                                change = "The dataset was reloaded.";
+
+                        } catch (Throwable t) {
+                            dataset = null;
+                            timeToLoadThisDataset = System.currentTimeMillis() - timeToLoadThisDataset;
+
+                            //check for interruption right before making changes to Erddap
+                            if (isInterrupted()) { //this is a likely place to catch interruption
+                                String tError2 = "*** The LoadDatasets thread was interrupted at " +
+                                        Calendar2.getCurrentISODateTimeStringLocalTZ();
+                                String2.log(tError2);
+                                warningsFromLoadDatasets.append(tError2 + "\n\n");
+                                updateLucene(erddap, changedDatasetIDs);
+                                lastLuceneUpdate = System.currentTimeMillis();
+                                return;
+                            }
+
+
+                            //actually remove old dataset (if any existed)
+                            EDD tDataset = erddap.gridDatasetHashMap.remove(tId); //always ensure it was removed
+                            if (tDataset == null)
+                                tDataset = erddap.tableDatasetHashMap.remove(tId);
+                            if (oldDataset == null)
+                                oldDataset = tDataset;
+
+                            //if oldDataset existed, remove it from categoryInfo
+                            if (oldDataset != null && !oldCatInfoRemoved)
+                                addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
+
+                            String tError = startError + xmlReader.lineNumber() + "\n" +
+                                    "While trying to load datasetID=" + tId + " (after " +
+                                    timeToLoadThisDataset + " ms)\n" +
+                                    MustBe.throwableToString(t);
+                            String2.log(tError);
+                            warningsFromLoadDatasets.append(tError + "\n\n");
+                            datasetsThatFailedToLoadSB.append(tId + ", ");
+
+                            //stop???
+                            if (!xmlReader.isOpen()) { //error was really serious
+                                throw new RuntimeException(startError + xmlReader.lineNumber() +
+                                        ": " + t.toString(), t);
+                            }
+
+                            //skip over the remaining tags for this dataset
+                            try {
+                                while (!xmlReader.allTags().equals("<erddapDatasets></dataset>"))
+                                    xmlReader.nextTag();
+                            } catch (Throwable t2) {
+                                throw new RuntimeException(startError + xmlReader.lineNumber() +
+                                        ": " + t2.toString(), t2);
+                            }
+
+                            //change      (if oldDataset=null and new one failed to load, no change)
+                            if (oldDataset != null)
+                                change = tError;
+                        }
+                        if (verbose) String2.log("change=" + change);
+                        EDStatic.cldNTry = nTry;
+                        EDStatic.cldStartMillis = 0;
+                        EDStatic.cldDatasetID = null;
+
+                        //whether succeeded (new or swapped in) or failed (removed), it was changed
+                        changedDatasetIDs.add(tId);
+                        if (System.currentTimeMillis() - lastLuceneUpdate >
+                                MAX_MILLIS_BEFORE_LUCENE_UPDATE) {
+                            updateLucene(erddap, changedDatasetIDs);
+                            lastLuceneUpdate = System.currentTimeMillis();
                         }
 
-                        //change      (if oldDataset=null and new one failed to load, no change)
-                        if (oldDataset != null)
-                            change = tError;
-                    }
-                    if (verbose) String2.log("change=" + change);
-                    EDStatic.cldNTry = nTry;
-                    EDStatic.cldStartMillis = 0;
-                    EDStatic.cldDatasetID = null;
-
-                    //whether succeeded (new or swapped in) or failed (removed), it was changed
-                    changedDatasetIDs.add(tId);
-                    if (System.currentTimeMillis() - lastLuceneUpdate >
-                            MAX_MILLIS_BEFORE_LUCENE_UPDATE) {
-                        updateLucene(erddap, changedDatasetIDs);
-                        lastLuceneUpdate = System.currentTimeMillis();
+                        //trigger subscription and dataset.onChange actions (after new dataset is in place)
+                        EDD cooDataset = dataset == null ? oldDataset : dataset; //currentOrOld, may be null
+                        tryToDoActions(erddap, tId, cooDataset,
+                                startError + xmlReader.lineNumber() + " with Subscriptions",
+                                change);
                     }
 
-                    //trigger subscription and dataset.onChange actions (after new dataset is in place)
-                    EDD cooDataset = dataset == null? oldDataset : dataset; //currentOrOld, may be null
-                    tryToDoActions(erddap, tId, cooDataset,
-                            startError + xmlReader.lineNumber() + " with Subscriptions",
-                            change);
-                }
+                } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
+                } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
+                    String ts = xmlReader.content();
+                    if (!String2.isSomething(ts))
+                        ts = EDStatic.DEFAULT_ANGULAR_DEGREE_UNITS;
+                    EDStatic.angularDegreeUnitsSet =
+                            new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
+                    String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
 
-            } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
-            } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
-                String ts = xmlReader.content();
-                if (!String2.isSomething(ts))
-                    ts = EDStatic.DEFAULT_ANGULAR_DEGREE_UNITS;
-                EDStatic.angularDegreeUnitsSet =
-                        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
-                String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
+                } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
+                } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
+                    String ts = xmlReader.content();
+                    if (!String2.isSomething(ts))
+                        ts = EDStatic.DEFAULT_ANGULAR_DEGREE_TRUE_UNITS;
+                    EDStatic.angularDegreeTrueUnitsSet =
+                            new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
+                    String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
 
-            } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
-            } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
-                String ts = xmlReader.content();
-                if (!String2.isSomething(ts))
-                    ts = EDStatic.DEFAULT_ANGULAR_DEGREE_TRUE_UNITS;
-                EDStatic.angularDegreeTrueUnitsSet =
-                        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
-                String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
+                } else if (tags.equals("<erddapDatasets><awsS3OutputBucketUrl>")) {
+                } else if (tags.equals("<erddapDatasets></awsS3OutputBucketUrl>")) {
+                    String ts = xmlReader.content();
+                    if (!String2.isSomething(ts))
+                        ts = null;
+                    EDStatic.awsS3OutputBucketUrl = ts;
+                    String2.log("awsS3OutputBucketUrl=" + ts);
 
-            } else if (tags.equals("<erddapDatasets><awsS3OutputBucketUrl>")) {
-            } else if (tags.equals("<erddapDatasets></awsS3OutputBucketUrl>")) {
-                String ts = xmlReader.content();
-                if (!String2.isSomething(ts))
-                    ts = null;
-                EDStatic.awsS3OutputBucketUrl = ts;
-                String2.log("awsS3OutputBucketUrl=" + ts);
+                } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
+                } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.cacheMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_cacheMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
+                    String2.log("cacheMinutes=" + EDStatic.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
 
-            } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.cacheMillis = (tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_cacheMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("cacheMinutes=" + EDStatic.cacheMillis/Calendar2.MILLIS_PER_MINUTE);
+                } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
+                } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.commonStandardNames = String2.isSomething(ts) ?
+                            String2.canonical(StringArray.arrayFromCSV(ts)) :
+                            EDStatic.DEFAULT_commonStandardNames;
+                    String2.log("commonStandardNames=" + String2.toCSSVString(EDStatic.commonStandardNames));
 
-            } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
-            } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
-                String ts = xmlReader.content();
-                EDStatic.commonStandardNames = String2.isSomething(ts)?
-                        String2.canonical(StringArray.arrayFromCSV(ts)) :
-                        EDStatic.DEFAULT_commonStandardNames;
-                String2.log("commonStandardNames=" + String2.toCSSVString(EDStatic.commonStandardNames));
+                } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
+                    String tFrom = xmlReader.attributeValue("from");
+                    String tTo = xmlReader.attributeValue("to");
+                    int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
+                    if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
+                        EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
+                } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
 
-            } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
-                String tFrom = xmlReader.attributeValue("from");
-                String tTo   = xmlReader.attributeValue("to");
-                int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
-                if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
-                    EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
-            } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
+                } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
+                } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.decompressedCacheMaxGB = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_decompressedCacheMaxGB : tnt;
+                    String2.log("decompressedCacheMaxGB=" + EDStatic.decompressedCacheMaxGB);
 
-            } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
-            } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.decompressedCacheMaxGB = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_decompressedCacheMaxGB : tnt;
-                String2.log("decompressedCacheMaxGB=" + EDStatic.decompressedCacheMaxGB);
+                } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
+                } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.decompressedCacheMaxMinutesOld = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_decompressedCacheMaxMinutesOld : tnt;
+                    String2.log("decompressedCacheMaxMinutesOld=" + EDStatic.decompressedCacheMaxMinutesOld);
 
-            } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
-            } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.decompressedCacheMaxMinutesOld = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_decompressedCacheMaxMinutesOld : tnt;
-                String2.log("decompressedCacheMaxMinutesOld=" + EDStatic.decompressedCacheMaxMinutesOld);
+                } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
+                } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
+                    String ts = xmlReader.content();
+                    int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
+                    EDStatic.drawLandMask = tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt];
+                    String2.log("drawLandMask=" + EDStatic.drawLandMask);
 
-            } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
-            } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
-                String ts = xmlReader.content();
-                int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
-                EDStatic.drawLandMask = tnt < 1? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt];
-                String2.log("drawLandMask=" + EDStatic.drawLandMask);
+                } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
+                } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
+                    String ts = xmlReader.content();
+                    boolean ted = String2.isSomething(ts) ? String2.parseBoolean(ts) : true;  //the default
+                    EDStatic.emailDiagnosticsToErdData = ted;
+                    String2.log("emailDiagnosticsToErdData=" + ted);
 
-            } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
-            } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
-                String ts = xmlReader.content();
-                boolean ted = String2.isSomething(ts)? String2.parseBoolean(ts) : true;  //the default
-                EDStatic.emailDiagnosticsToErdData = ted;
-                String2.log("emailDiagnosticsToErdData=" + ted);
+                } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
+                } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
+                    String ts = xmlReader.content();
+                    int tnt = String2.isSomething(ts) ? String2.parseInt(ts) : EDStatic.DEFAULT_graphBackgroundColorInt;
+                    EDStatic.graphBackgroundColor = new Color(tnt, true); //hasAlpha
+                    String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
 
-            } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
-            } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
-                String ts = xmlReader.content();
-                int tnt = String2.isSomething(ts)? String2.parseInt(ts) : EDStatic.DEFAULT_graphBackgroundColorInt;
-                EDStatic.graphBackgroundColor = new Color(tnt, true); //hasAlpha
-                String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    tnt = tnt < 6 || tnt > 1000 ? EDStatic.DEFAULT_ipAddressMaxRequests : tnt;
+                    EDStatic.ipAddressMaxRequests = tnt;
+                    String2.log("ipAddressMaxRequests=" + tnt);
 
-            } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                tnt = tnt < 6 || tnt > 1000? EDStatic.DEFAULT_ipAddressMaxRequests : tnt;
-                EDStatic.ipAddressMaxRequests = tnt;
-                String2.log("ipAddressMaxRequests=" + tnt);
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    tnt = tnt < 1 || tnt > 100 ? EDStatic.DEFAULT_ipAddressMaxRequestsActive : tnt;
+                    EDStatic.ipAddressMaxRequestsActive = tnt;
+                    String2.log("ipAddressMaxRequestsActive=" + tnt);
 
-            } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                tnt = tnt < 1 || tnt > 100? EDStatic.DEFAULT_ipAddressMaxRequestsActive : tnt;
-                EDStatic.ipAddressMaxRequestsActive = tnt;
-                String2.log("ipAddressMaxRequestsActive=" + tnt);
+                } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
+                    String ts = xmlReader.content();
+                    String sar[] = StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
+                    EDStatic.ipAddressUnlimited = new HashSet<String>(String2.toArrayList(sar)); //atomically swap into place
+                    //then remove all these from ipAddressQueue
+                    //This also offers a way to solve problem where a user has a
+                    //request permanently in the ipAddressQueue so s/he only receives
+                    //"Timeout waiting for your other requests to process.":
+                    //This clears his/her ipAddressQueue.
+                    for (int i = 0; i < sar.length; i++)
+                        EDStatic.ipAddressQueue.remove(sar[i]);
+                    String2.log("ipAddressUnlimited=" + String2.toCSVString(EDStatic.ipAddressUnlimited));
 
-            } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
-                String ts = xmlReader.content();
-                String sar[] = StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
-                EDStatic.ipAddressUnlimited = new HashSet<String>(String2.toArrayList(sar)); //atomically swap into place
-                //then remove all these from ipAddressQueue
-                //This also offers a way to solve problem where a user has a
-                //request permanently in the ipAddressQueue so s/he only receives
-                //"Timeout waiting for your other requests to process.":
-                //This clears his/her ipAddressQueue.
-                for (int i = 0; i < sar.length; i++)
-                    EDStatic.ipAddressQueue.remove(sar[i]);
-                String2.log("ipAddressUnlimited=" + String2.toCSVString(EDStatic.ipAddressUnlimited));
+                } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
+                } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.loadDatasetsMinMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_loadDatasetsMinMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
+                    String2.log("loadDatasetsMinMinutes=" + EDStatic.loadDatasetsMinMillis / Calendar2.MILLIS_PER_MINUTE);
 
-            } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.loadDatasetsMinMillis = (tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_loadDatasetsMinMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("loadDatasetsMinMinutes=" + EDStatic.loadDatasetsMinMillis/Calendar2.MILLIS_PER_MINUTE);
+                } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
+                } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.loadDatasetsMaxMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_loadDatasetsMaxMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
+                    String2.log("loadDatasetsMaxMinutes=" + EDStatic.loadDatasetsMaxMillis / Calendar2.MILLIS_PER_MINUTE);
 
-            } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.loadDatasetsMaxMillis = (tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_loadDatasetsMaxMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("loadDatasetsMaxMinutes=" + EDStatic.loadDatasetsMaxMillis/Calendar2.MILLIS_PER_MINUTE);
+                } else if (tags.equals("<erddapDatasets><logLevel>")) {
+                } else if (tags.equals("<erddapDatasets></logLevel>")) {
+                    EDStatic.setLogLevel(xmlReader.content()); //""->"info".  It prints diagnostic to log.txt.
 
-            } else if (tags.equals("<erddapDatasets><logLevel>")) {
-            } else if (tags.equals("<erddapDatasets></logLevel>")) {
-                EDStatic.setLogLevel(xmlReader.content()); //""->"info".  It prints diagnostic to log.txt.
+                } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
+                } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.nGridThreads = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_nGridThreads : tnt;
+                    String2.log("nGridThreads=" + EDStatic.nGridThreads);
 
-            } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
-            } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.nGridThreads = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_nGridThreads : tnt;
-                String2.log("nGridThreads=" + EDStatic.nGridThreads);
+                } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
+                } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.nTableThreads = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_nTableThreads : tnt;
+                    String2.log("nTableThreads=" + EDStatic.nTableThreads);
 
-            } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
-            } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.nTableThreads = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_nTableThreads : tnt;
-                String2.log("nTableThreads=" + EDStatic.nTableThreads);
+                } else if (tags.equals("<erddapDatasets><palettes>")) {
+                } else if (tags.equals("<erddapDatasets></palettes>")) {
+                    String tContent = xmlReader.content();
+                    String tPalettes[] = String2.isSomething(tContent) ?
+                            String2.split(tContent, ',') : EDStatic.DEFAULT_palettes;
+                    //ensure that all of the original palettes are present
+                    HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
+                    //String2.log(">>> newPaletteSet=" + String2.toCSSVString(newPaletteSet));
+                    //String2.log(">>> defPaletteSet=" + String2.toCSSVString(EDStatic.DEFAULT_palettes_set));
 
-            } else if (tags.equals("<erddapDatasets><palettes>")) {
-            } else if (tags.equals("<erddapDatasets></palettes>")) {
-                String tContent = xmlReader.content();
-                String tPalettes[] = String2.isSomething(tContent)?
-                        String2.split(tContent, ',') : EDStatic.DEFAULT_palettes;
-                //ensure that all of the original palettes are present
-                HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
-                //String2.log(">>> newPaletteSet=" + String2.toCSSVString(newPaletteSet));
-                //String2.log(">>> defPaletteSet=" + String2.toCSSVString(EDStatic.DEFAULT_palettes_set));
+                    if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
+                        throw new RuntimeException(
+                                "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");
+                    String tPalettes0[] = new String[tPalettes.length + 1];
+                    tPalettes0[0] = "";
+                    System.arraycopy(tPalettes, 0, tPalettes0, 1, tPalettes.length);
+                    //then copy into place
+                    EDStatic.palettes = tPalettes;
+                    EDStatic.palettes0 = tPalettes0;
+                    String2.log("palettes=" + String2.toCSSVString(tPalettes));
 
-                if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
-                    throw new RuntimeException(
-                            "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");
-                String tPalettes0[] = new String[tPalettes.length + 1];
-                tPalettes0[0] = "";
-                System.arraycopy(tPalettes, 0, tPalettes0, 1, tPalettes.length);
-                //then copy into place
-                EDStatic.palettes  = tPalettes;
-                EDStatic.palettes0 = tPalettes0;
-                String2.log("palettes=" + String2.toCSSVString(tPalettes));
+                } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
+                } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.partialRequestMaxBytes = tnt < 1000000 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_partialRequestMaxBytes : tnt;
+                    String2.log("partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes);
 
-            } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
-            } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.partialRequestMaxBytes = tnt < 1000000 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_partialRequestMaxBytes : tnt;
-                String2.log("partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes);
+                } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
+                } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.partialRequestMaxCells = tnt < 1000 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_partialRequestMaxCells : tnt;
+                    String2.log("partialRequestMaxCells=" + EDStatic.partialRequestMaxCells);
 
-            } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
-            } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.partialRequestMaxCells = tnt < 1000 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_partialRequestMaxCells : tnt;
-                String2.log("partialRequestMaxCells=" + EDStatic.partialRequestMaxCells);
+                } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
+                } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
+                    EDStatic.setRequestBlacklist(xmlReader.content());
 
-            } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
-                EDStatic.setRequestBlacklist(xmlReader.content());
+                } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
+                } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
+                    int tms = String2.parseInt(xmlReader.content());
+                    EDStatic.slowDownTroubleMillis = tms < 0 || tms > 1000000 ? 1000 : tms;
+                    String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
 
-            } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
-            } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
-                int tms = String2.parseInt(xmlReader.content());
-                EDStatic.slowDownTroubleMillis = tms < 0 || tms > 1000000? 1000 : tms;
-                String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
+                } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
+                } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
+                    if (EDStatic.subscriptionSystemActive)
+                        EDStatic.subscriptions.setEmailBlacklist(xmlReader.content());
 
-            } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
-                if (EDStatic.subscriptionSystemActive)
-                    EDStatic.subscriptions.setEmailBlacklist(xmlReader.content());
+                } else if (tags.equals("<erddapDatasets><standardLicense>")) {
+                } else if (tags.equals("<erddapDatasets></standardLicense>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardLicense = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardLicense;
+                    String2.log("standardLicense was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardLicense>")) {
-            } else if (tags.equals("<erddapDatasets></standardLicense>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardLicense = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardLicense;
-                String2.log("standardLicense was set.");
+                } else if (tags.equals("<erddapDatasets><standardContact>")) {
+                } else if (tags.equals("<erddapDatasets></standardContact>")) {
+                    String ts = xmlReader.content();
+                    ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardContactAr[0];
+                    ts = String2.replaceAll(ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
+                    EDStatic.standardContactAr[0] = ts; //swap into place
+                    String2.log("standardContact was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardContact>")) {
-            } else if (tags.equals("<erddapDatasets></standardContact>")) {
-                String ts = xmlReader.content();
-                ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_standardContactAr[0];
-                ts = String2.replaceAll(ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
-                EDStatic.standardContactAr[0] = ts; //swap into place
-                String2.log("standardContact was set.");
+                } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
+                } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardDataLicensesAr[0] = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardDataLicensesAr[0];
+                    String2.log("standardDataLicenses was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
-            } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardDataLicensesAr[0] = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardDataLicensesAr[0];
-                String2.log("standardDataLicenses was set.");
+                } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
+                } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardDisclaimerOfEndorsementAr[0] = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardDisclaimerOfEndorsementAr[0];
+                    String2.log("standardDisclaimerOfEndorsement was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
-            } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardDisclaimerOfEndorsementAr[0] = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardDisclaimerOfEndorsementAr[0];
-                String2.log("standardDisclaimerOfEndorsement was set.");
+                } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
+                } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardDisclaimerOfExternalLinksAr[0] = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
+                    String2.log("standardDisclaimerOfExternalLinks was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
-            } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardDisclaimerOfExternalLinksAr[0] = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
-                String2.log("standardDisclaimerOfExternalLinks was set.");
+                } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
+                } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardGeneralDisclaimerAr[0] = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardGeneralDisclaimerAr[0];
+                    String2.log("standardGeneralDisclaimer was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
-            } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardGeneralDisclaimerAr[0] = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardGeneralDisclaimerAr[0];
-                String2.log("standardGeneralDisclaimer was set.");
+                } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
+                } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.standardPrivacyPolicyAr[0] = String2.isSomething(ts) ? ts :
+                            EDStatic.DEFAULT_standardPrivacyPolicyAr[0];
+                    String2.log("standardPrivacyPolicy was set.");
 
-            } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
-            } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
-                String ts = xmlReader.content();
-                EDStatic.standardPrivacyPolicyAr[0] = String2.isSomething(ts)? ts :
-                        EDStatic.DEFAULT_standardPrivacyPolicyAr[0];
-                String2.log("standardPrivacyPolicy was set.");
+                } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
+                } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
+                    String ts = xmlReader.content();
+                    ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_startHeadHtml;
+                    if (!ts.startsWith("<!DOCTYPE html>")) {
+                        String2.log(String2.ERROR + " in datasets.xml: <startHeadHtml> must start with \"<!DOCTYPE html>\". Using default <startHeadHtml> instead.");
+                        ts = EDStatic.DEFAULT_startHeadHtml;
+                    }
+                    EDStatic.startHeadHtml = ts; //swap into place
+                    String2.log("startHeadHtml5 was set.");
 
-            } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
-                String ts = xmlReader.content();
-                ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_startHeadHtml;
-                if (!ts.startsWith("<!DOCTYPE html>")) {
-                    String2.log(String2.ERROR + " in datasets.xml: <startHeadHtml> must start with \"<!DOCTYPE html>\". Using default <startHeadHtml> instead.");
-                    ts = EDStatic.DEFAULT_startHeadHtml;
-                }
-                EDStatic.startHeadHtml = ts; //swap into place
-                String2.log("startHeadHtml5 was set.");
+                } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
+                } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
+                    String ts = xmlReader.content();
+                    ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
+                    EDStatic.startBodyHtmlAr[0] = ts; //swap into place
+                    String2.log("startBodyHtml5 was set.");
 
-            } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
-                String ts = xmlReader.content();
-                ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
-                EDStatic.startBodyHtmlAr[0] = ts; //swap into place
-                String2.log("startBodyHtml5 was set.");
+                } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
+                } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
+                    String ts = xmlReader.content();
+                    ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_theShortDescriptionHtmlAr[0];
+                    EDStatic.theShortDescriptionHtmlAr[0] = ts; //swap into place
+                    String2.log("theShortDescriptionHtml was set.");
 
-            } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
-            } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
-                String ts = xmlReader.content();
-                ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_theShortDescriptionHtmlAr[0];
-                EDStatic.theShortDescriptionHtmlAr[0] = ts; //swap into place
-                String2.log("theShortDescriptionHtml was set.");
+                } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
+                } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
+                    String ts = xmlReader.content();
+                    EDStatic.endBodyHtmlAr[0] = String2.replaceAll(
+                            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_endBodyHtmlAr[0],
+                            "&erddapVersion;", EDStatic.erddapVersion);
+                    String2.log("endBodyHtml5 was set.");
 
-            } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
-                String ts = xmlReader.content();
-                EDStatic.endBodyHtmlAr[0] = String2.replaceAll(
-                        String2.isSomething(ts)? ts : EDStatic.DEFAULT_endBodyHtmlAr[0],
-                        "&erddapVersion;", EDStatic.erddapVersion);
-                String2.log("endBodyHtml5 was set.");
+                } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
+                    EDStatic.convertInterpolateRequestCSVExample = xmlReader.content();
+                    String2.log("convertInterpolateRequestCSVExample=" + xmlReader.content());
 
-            } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
-            } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
-                EDStatic.convertInterpolateRequestCSVExample = xmlReader.content();
-                String2.log("convertInterpolateRequestCSVExample=" + xmlReader.content());
+                } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
+                } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
+                    String sar[] = StringArray.arrayFromCSV(xmlReader.content());
+                    EDStatic.convertInterpolateDatasetIDVariableList = sar;
+                    String2.log("convertInterpolateDatasetIDVariableList=" + String2.toCSVString(sar));
 
-            } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
-            } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
-                String sar[] = StringArray.arrayFromCSV(xmlReader.content());
-                EDStatic.convertInterpolateDatasetIDVariableList = sar;
-                String2.log("convertInterpolateDatasetIDVariableList=" + String2.toCSVString(sar));
+                } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
+                } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.unusualActivity = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_unusualActivity : tnt;
+                    String2.log("unusualActivity=" + EDStatic.unusualActivity);
 
-            } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
-            } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.unusualActivity = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_unusualActivity : tnt;
-                String2.log("unusualActivity=" + EDStatic.unusualActivity);
+                } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
+                } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.updateMaxEvents = tnt < 1 || tnt == Integer.MAX_VALUE ?
+                            EDStatic.DEFAULT_updateMaxEvents : tnt;
+                    String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
 
-            } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
-            } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
-                int tnt = String2.parseInt(xmlReader.content());
-                EDStatic.updateMaxEvents = tnt < 1 || tnt == Integer.MAX_VALUE?
-                        EDStatic.DEFAULT_updateMaxEvents : tnt;
-                String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
+                    //<user username="bsimons" password="..." roles="admin, role1" />
+                    //this mimics tomcat syntax
+                } else if (tags.equals("<erddapDatasets><user>")) {
+                    String tUsername = xmlReader.attributeValue("username");
+                    String tPassword = xmlReader.attributeValue("password");
+                    if (tUsername != null)
+                        tUsername = tUsername.trim();
+                    if (tPassword != null)
+                        tPassword = tPassword.trim().toLowerCase(); //match Digest Authentication standard case
+                    String ttRoles = xmlReader.attributeValue("roles");
+                    String tRoles[] = StringArray.arrayFromCSV(
+                            (ttRoles == null ? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn,
+                            ",", true, false); //splitChars, trim, keepNothing. Result may be String[0].
 
-                //<user username="bsimons" password="..." roles="admin, role1" />
-                //this mimics tomcat syntax
-            } else if (tags.equals("<erddapDatasets><user>")) {
-                String tUsername = xmlReader.attributeValue("username");
-                String tPassword  = xmlReader.attributeValue("password");
-                if (tUsername != null)
-                    tUsername = tUsername.trim();
-                if (tPassword != null)
-                    tPassword = tPassword.trim().toLowerCase(); //match Digest Authentication standard case
-                String ttRoles = xmlReader.attributeValue("roles");
-                String tRoles[] = StringArray.arrayFromCSV(
-                        (ttRoles == null? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn,
-                        ",", true, false); //splitChars, trim, keepNothing. Result may be String[0].
-
-                //is username nothing?
-                if (!String2.isSomething(tUsername)) {
-                    warningsFromLoadDatasets.append(
-                            "datasets.xml error: A <user> tag in datasets.xml had no username=\"someName\" attribute.\n\n");
-
-                    //is username reserved?
-                } else if (EDStatic.loggedInAsHttps.equals(tUsername) ||
-                        EDStatic.anyoneLoggedIn.equals(tUsername)  ||
-                        EDStatic.loggedInAsSuperuser.equals(tUsername)) { //shouldn't be possible because \t would be trimmed above, but double check
-                    warningsFromLoadDatasets.append(
-                            "datasets.xml error: <user> username=\"" +
-                                    String2.annotatedString(tUsername) + "\" is a reserved username.\n\n");
-
-                    //is username invalid?
-                } else if (!String2.isPrintable(tUsername)) {
-                    warningsFromLoadDatasets.append(
-                            "datasets.xml error: <user> username=\"" +
-                                    String2.annotatedString(tUsername) + "\" has invalid characters.\n\n");
-
-                    //is password invalid?
-                } else if (EDStatic.authentication.equals("custom") &&   //others in future
-                        !String2.isHexString(tPassword)) {
-                    warningsFromLoadDatasets.append(
-                            "datasets.xml error: The password for <user> username=" + tUsername +
-                                    " in datasets.xml isn't a hexadecimal string.\n\n");
-
-                    //a role is not allowed?
-                } else if (String2.indexOf(tRoles, EDStatic.loggedInAsSuperuser) >= 0) { //not possible because \t would be trimmed, but be doubly sure
-                    warningsFromLoadDatasets.append(
-                            "datasets.xml error: For <user> username=" + tUsername +
-                                    ", the superuser role isn't allowed for any user.\n\n");
-
-                    //add user info to tUserHashMap
-                } else {
-                    Arrays.sort(tRoles);
-                    if ("email".equals(EDStatic.authentication) ||
-                            "google".equals(EDStatic.authentication))
-                        tUsername = tUsername.toLowerCase();  //so case insensitive, to avoid trouble
-                    if (reallyVerbose) String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
-                    Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
-                    if (o != null)
+                    //is username nothing?
+                    if (!String2.isSomething(tUsername)) {
                         warningsFromLoadDatasets.append(
-                                "datasets.xml error: There are two <user> tags in datasets.xml with username=" +
-                                        tUsername + "\nChange one of them.\n\n");
+                                "datasets.xml error: A <user> tag in datasets.xml had no username=\"someName\" attribute.\n\n");
+
+                        //is username reserved?
+                    } else if (EDStatic.loggedInAsHttps.equals(tUsername) ||
+                            EDStatic.anyoneLoggedIn.equals(tUsername) ||
+                            EDStatic.loggedInAsSuperuser.equals(tUsername)) { //shouldn't be possible because \t would be trimmed above, but double check
+                        warningsFromLoadDatasets.append(
+                                "datasets.xml error: <user> username=\"" +
+                                        String2.annotatedString(tUsername) + "\" is a reserved username.\n\n");
+
+                        //is username invalid?
+                    } else if (!String2.isPrintable(tUsername)) {
+                        warningsFromLoadDatasets.append(
+                                "datasets.xml error: <user> username=\"" +
+                                        String2.annotatedString(tUsername) + "\" has invalid characters.\n\n");
+
+                        //is password invalid?
+                    } else if (EDStatic.authentication.equals("custom") &&   //others in future
+                            !String2.isHexString(tPassword)) {
+                        warningsFromLoadDatasets.append(
+                                "datasets.xml error: The password for <user> username=" + tUsername +
+                                        " in datasets.xml isn't a hexadecimal string.\n\n");
+
+                        //a role is not allowed?
+                    } else if (String2.indexOf(tRoles, EDStatic.loggedInAsSuperuser) >= 0) { //not possible because \t would be trimmed, but be doubly sure
+                        warningsFromLoadDatasets.append(
+                                "datasets.xml error: For <user> username=" + tUsername +
+                                        ", the superuser role isn't allowed for any user.\n\n");
+
+                        //add user info to tUserHashMap
+                    } else {
+                        Arrays.sort(tRoles);
+                        if ("email".equals(EDStatic.authentication) ||
+                                "google".equals(EDStatic.authentication))
+                            tUsername = tUsername.toLowerCase();  //so case insensitive, to avoid trouble
+                        if (reallyVerbose) String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
+                        Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
+                        if (o != null)
+                            warningsFromLoadDatasets.append(
+                                    "datasets.xml error: There are two <user> tags in datasets.xml with username=" +
+                                            tUsername + "\nChange one of them.\n\n");
+                    }
+
+                } else if (tags.equals("<erddapDatasets></user>")) { //do nothing
+
+                } else {
+                    xmlReader.unexpectedTagException();
                 }
-
-            } else if (tags.equals("<erddapDatasets></user>")) { //do nothing
-
-            } else {
-                xmlReader.unexpectedTagException();
             }
+            nTryAndDatasets[0] = nTry;
+            nTryAndDatasets[1] = nDatasets;
+            xmlReader.close();
+            xmlReader = null;
+        } catch (Throwable t) {
+            String subject = String2.ERROR + " while processing " +
+                    (xmlReader == null? "" : "line #" + xmlReader.lineNumber() + " ") +
+                    "datasets.xml";
+            if (!isInterrupted()) {
+                EDStatic.errorsDuringMajorReload  =
+                        subject + ": see log.txt for details.\n";  //swap into place
+                String content = MustBe.throwableToString(t);
+                unexpectedError = subject + ": " + content;
+                String2.log(unexpectedError);
+                EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+            }
+        } finally {
+            if (xmlReader != null)
+                try {xmlReader.close();} catch (Exception e) {}
+            EDStatic.suggestAddFillValueCSV.setLength(0);
         }
-        xmlReader.close();
-        xmlReader = null;
     }
 
     private void emailOrphanDatasetsRemoved(HashSet<String> orphanIDSet, StringArray changedDatasetIDs, String errorsDuringMajorReload) {
