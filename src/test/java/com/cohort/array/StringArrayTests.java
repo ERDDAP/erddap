@@ -458,7 +458,7 @@ class StringArrayTests {
     Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
     anArray.set(2, "30.1");
     Test.ensureEqual(anArray.isEvenlySpaced(),
-        "StringArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, expected spacing=10.05.", "");
+        "StringArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
     Test.ensureEqual(anArray.smallestBiggestSpacing(),
         "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
             "    biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1",

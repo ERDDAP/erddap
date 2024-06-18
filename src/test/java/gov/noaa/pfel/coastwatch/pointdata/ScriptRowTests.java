@@ -9,7 +9,6 @@ import org.apache.commons.jexl3.MapContext;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.StringArray;
-import com.cohort.util.MustBe;
 import com.cohort.util.Script2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -82,7 +81,8 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = "Caught: " + e.toString();
     }
-    expected = "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:75@1:24 JEXL error : + error caused by null operand";
+    expected = "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand";
+    results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
     Test.ensureEqual(results.substring(0, expected.length()),
         expected,
         "results=\n" + results);
@@ -163,9 +163,10 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = e.toString();
     }
+    results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
     Test.ensureEqual(results,
         "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:159@1:1 unsolvable function/method 'java.lang.StringBuilder(String)'",
+            "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION unsolvable function/method 'java.lang.StringBuilder(String)'",
         "");
 
     // work with static functions by making a shell class (ScriptMath) that can be
@@ -217,8 +218,9 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = e.toString();
     }
+    results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
     Test.ensureEqual(results,
-        "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:211@1:34 JEXL error : + error caused by null operand",
+        "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand",
         "");
 
     // String static methods are accessible if String in MapContext

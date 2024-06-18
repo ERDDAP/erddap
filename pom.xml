@@ -46,7 +46,7 @@
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
-        <test.resources.version>test1.0</test.resources.version>
+        <test.resources.version>test1.01</test.resources.version>
         <jettyVersion>12.0.10</jettyVersion>
     </properties>
 
@@ -212,7 +212,7 @@
                 <artifactId>download-maven-plugin</artifactId>
                 <version>1.9.0</version>
                 <executions>
-                    <!-- <execution>
+                    <execution>
                         <id>download-content</id>
                         <phase>initialize</phase>
                         <goals>
@@ -303,7 +303,7 @@
                             <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                         </configuration>
-                    </execution> -->
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

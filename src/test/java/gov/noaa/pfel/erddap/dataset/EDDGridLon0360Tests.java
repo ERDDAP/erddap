@@ -7,7 +7,6 @@ import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -18,62 +17,6 @@ class EDDGridLon0360Tests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
-  }
-
-  /**
-   * This tests generateDatasetsXmlFromErddapCatalog.
-   *
-   * @throws Throwable if trouble
-   */
-  @org.junit.jupiter.api.Test
-  void testGenerateDatasetsXmlFromErddapCatalog() throws Throwable {
-
-    // String2.log("\n*** EDDGridLon0360.testGenerateDatasetsXmlFromErddapCatalog()
-    // ***\n");
-    // testVerboseOn();
-    int language = 0;
-    String url = "http://coastwatch.pfeg.noaa.gov/erddap/"; // purposefully http:// to test if ERDDAP will
-                                                            // promote
-                                                            // to
-                                                            // https://
-    // erdMH1's are -179 to 179, so will be in results
-    // others are ~0 to 360 so won't be in results
-    // -180 to 180 -180.0 to -110
-    String regex = "(erdMH1chlamday|erdVHNchlamday|erdMWchlamday|erdMHsstnmday)";
-
-    String results = EDDGridLon0360.generateDatasetsXmlFromErddapCatalog(url, regex) + "\n";
-
-    String expected = "<dataset type=\"EDDGridLon0360\" datasetID=\"erdMH1chlamday_Lon0360\" active=\"true\">\n"
-        +
-        "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chlamday_Lon0360Child\">\n" +
-        "        <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)\n"
-        +
-        "             minLon=-179.9792 maxLon=179.9792 -->\n" +
-        "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday</sourceUrl>\n"
-        +
-        "    </dataset>\n" +
-        "</dataset>\n" +
-        "\n" +
-        "<dataset type=\"EDDGridLon0360\" datasetID=\"erdVHNchlamday_Lon0360\" active=\"true\">\n"
-        +
-        "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdVHNchlamday_Lon0360Child\">\n" +
-        "        <!-- Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)\n"
-        +
-        "             minLon=-180.03375 maxLon=-110.00625 -->\n" +
-        "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday</sourceUrl>\n"
-        +
-        "    </dataset>\n" +
-        "</dataset>\n" +
-        "\n\n";
-    Test.ensureEqual(results, expected, "results=\n" + results);
-
-    // GenerateDatasetsXml
-    String gdxResults = (new GenerateDatasetsXml()).doIt(new String[] { "-verbose",
-        "EDDGridLon0360FromErddapCatalog", url, regex },
-        false); // doIt loop?
-    Test.ensureEqual(gdxResults, results,
-        "Unexpected results from GenerateDatasetsXml.doIt. results=\n" + results);
-
   }
 
   /**

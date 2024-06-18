@@ -30,6 +30,7 @@ class EDDGridAggregateExistingDimensionTests {
      * @throws Throwable if trouble
      */
     @org.junit.jupiter.api.Test
+    @TagThredds
     void testBasic() throws Throwable {
 
         String2.log("\n****************** EDDGridAggregateExistingDimension.testBasic() *****************\n");

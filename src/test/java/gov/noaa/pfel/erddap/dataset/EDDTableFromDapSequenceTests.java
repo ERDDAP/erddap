@@ -26,6 +26,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import tags.TagExternalERDDAP;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
@@ -968,6 +969,7 @@ class EDDTableFromDapSequenceTests {
 
   /** Test reading .das */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testReadDas() throws Exception {
     String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";

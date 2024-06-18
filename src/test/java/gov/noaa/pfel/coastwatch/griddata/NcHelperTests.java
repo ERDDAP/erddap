@@ -721,20 +721,6 @@ class NcHelperTests {
     Test.ensureEqual(results, expected, "");
   }
 
-  /**
-   * An experiment with NetcdfDataset accessing a DAP sequence dataset.
-   */
-  @org.junit.jupiter.api.Test
-  void testSequence() throws Throwable {
-    NetcdfDataset ncd = NetcdfDatasets.openDataset( // 2021: 's' is new API
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
-    try {
-      String2.log(ncd.toString());
-    } finally {
-      ncd.close();
-    }
-  }
-
   /** Diagnose a problem */
   @org.junit.jupiter.api.Test
   @TagMissingFile

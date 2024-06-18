@@ -390,7 +390,7 @@ class UShortArrayTests {
     Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
     anArray.set(2, (short) 31);
     Test.ensureEqual(anArray.isEvenlySpaced(),
-        "UShortArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, expected spacing=10.5.", "");
+        "UShortArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.5.", "");
     Test.ensureEqual(anArray.smallestBiggestSpacing(),
         "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
             "    biggest  spacing=11.0: [1]=20.0, [2]=31.0",

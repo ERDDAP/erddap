@@ -20,6 +20,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagAWS;
+import tags.TagExternalERDDAP;
 import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
@@ -4870,6 +4871,7 @@ class EDDTableFromAsciiFilesTests {
    * testOutOfDate.
    */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
 

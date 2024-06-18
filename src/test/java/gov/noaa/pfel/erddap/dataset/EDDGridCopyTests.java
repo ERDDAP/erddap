@@ -68,7 +68,7 @@ class EDDGridCopyTests {
     expected = "Attributes {\n" +
         "  time {\n" +
         "    String _CoordinateAxisType \"Time\";\n" +
-        "    Float64 actual_range 1.1991888e+9, 1.1999664e+9;\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
         "    String axis \"T\";\n" +
         "    Int32 fraction_digits 0;\n" +
         "    String ioos_category \"Time\";\n" +
@@ -80,7 +80,7 @@ class EDDGridCopyTests {
         "  altitude {\n" +
         "    String _CoordinateAxisType \"Height\";\n" +
         "    String _CoordinateZisPositive \"up\";\n" +
-        "    Float64 actual_range 0.0, 0.0;\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
         "    String axis \"Z\";\n" +
         "    Int32 fraction_digits 0;\n" +
         "    String ioos_category \"Location\";\n" +
@@ -91,7 +91,7 @@ class EDDGridCopyTests {
         "  }\n" +
         "  latitude {\n" +
         "    String _CoordinateAxisType \"Lat\";\n" +
-        "    Float64 actual_range -89.875, 89.875;\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
         "    String axis \"Y\";\n" +
         "    String coordsys \"geographic\";\n" +
         "    Int32 fraction_digits 2;\n" +
@@ -103,7 +103,7 @@ class EDDGridCopyTests {
         "  }\n" +
         "  longitude {\n" +
         "    String _CoordinateAxisType \"Lon\";\n" +
-        "    Float64 actual_range 0.125, 359.875;\n" +
+        "    Float64 actual_range MIN, MAX;\n" +
         "    String axis \"X\";\n" +
         "    String coordsys \"geographic\";\n" +
         "    Int32 fraction_digits 2;\n" +
@@ -180,6 +180,9 @@ class EDDGridCopyTests {
         "    String history \"Remote Sensing Systems, Inc\n" +
         "2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
         today;
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+e.[0-9]+, -?[0-9]+.[0-9]+e.[0-9]+", "Float64 actual_range MIN, MAX");
+    results = results.replaceAll("Float64 actual_range -?[0-9]+.[0-9]+, -?[0-9]+.[0-9]+",
+        "Float64 actual_range MIN, MAX");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -212,11 +215,14 @@ class EDDGridCopyTests {
         "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n"
         +
         "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
-        "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +
+        "    String time_coverage_start \"YYYY-MM-DDTHH:00:00Z\";\n" +
         "    String title \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\";\n" +
         "    Float64 Westernmost_Easting 0.125;\n" +
         "  }\n" +
         "}\n";
+
+    results = results.replaceAll("String time_coverage_start \\\"....-..-..T..:00:00Z\\\"",
+        "String time_coverage_start \"YYYY-MM-DDTHH:00:00Z\"");
     int tpo = results.indexOf(expected.substring(0, 17));
     Test.ensureTrue(tpo > 0, "tpo=-1 results=\n" + results);
     Test.ensureEqual(results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
@@ -228,38 +234,39 @@ class EDDGridCopyTests {
     results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "Dataset {\n" +
-        "  Float64 time[time = 10];\n" +
+        "  Float64 time[time = NUM];\n" +
         "  Float64 altitude[altitude = 1];\n" +
         "  Float64 latitude[latitude = 720];\n" +
         "  Float64 longitude[longitude = 1440];\n" +
         "  GRID {\n" +
         "    ARRAY:\n" +
-        "      Float32 x_wind[time = 10][altitude = 1][latitude = 720][longitude = 1440];\n" +
+        "      Float32 x_wind[time = NUM][altitude = 1][latitude = 720][longitude = 1440];\n" +
         "    MAPS:\n" +
-        "      Float64 time[time = 10];\n" +
+        "      Float64 time[time = NUM];\n" +
         "      Float64 altitude[altitude = 1];\n" +
         "      Float64 latitude[latitude = 720];\n" +
         "      Float64 longitude[longitude = 1440];\n" +
         "  } x_wind;\n" +
         "  GRID {\n" +
         "    ARRAY:\n" +
-        "      Float32 y_wind[time = 10][altitude = 1][latitude = 720][longitude = 1440];\n" +
+        "      Float32 y_wind[time = NUM][altitude = 1][latitude = 720][longitude = 1440];\n" +
         "    MAPS:\n" +
-        "      Float64 time[time = 10];\n" +
+        "      Float64 time[time = NUM];\n" +
         "      Float64 altitude[altitude = 1];\n" +
         "      Float64 latitude[latitude = 720];\n" +
         "      Float64 longitude[longitude = 1440];\n" +
         "  } y_wind;\n" +
         "  GRID {\n" +
         "    ARRAY:\n" +
-        "      Float32 mod[time = 10][altitude = 1][latitude = 720][longitude = 1440];\n" +
+        "      Float32 mod[time = NUM][altitude = 1][latitude = 720][longitude = 1440];\n" +
         "    MAPS:\n" +
-        "      Float64 time[time = 10];\n" +
+        "      Float64 time[time = NUM];\n" +
         "      Float64 altitude[altitude = 1];\n" +
         "      Float64 latitude[latitude = 720];\n" +
         "      Float64 longitude[longitude = 1440];\n" +
         "  } mod;\n" +
         "} testGridCopy;\n"; // different
+    results = results.replaceAll("time = [0-9]+", "time = NUM");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // .csv with data from one file

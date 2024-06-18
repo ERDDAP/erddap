@@ -222,6 +222,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosATempAllStations() throws Throwable {
     // testVerboseOn();
 

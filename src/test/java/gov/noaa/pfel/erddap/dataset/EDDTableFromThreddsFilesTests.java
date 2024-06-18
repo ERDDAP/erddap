@@ -17,6 +17,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
+import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -742,6 +743,7 @@ class EDDTableFromThreddsFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testGetThreddsFileInfo() throws Throwable {
     String2.log("\n*** EDDTableFromThredds.testGetThreddsFileInfo");
     String results, expected;
@@ -870,6 +872,7 @@ class EDDTableFromThreddsFilesTests {
    * it doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     String results = EDDTableFromThreddsFiles.generateDatasetsXml(
