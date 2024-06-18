@@ -41,7 +41,7 @@ class TranslateMessagesTests {
    * from Google.
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagPassword // Can be run with Google Cloud api credentials
   void testGoogleSampleCode() throws Exception {
     String2.log("\n*** TranslateMessages.testGoogleSampleCode()");
     Test.ensureEqual(
@@ -49,7 +49,7 @@ class TranslateMessagesTests {
             "The variable name \"sst\" converts to the full name \"Sea Surface Temperature\"."),
         // 2022-01-28 was \"sst\"
         // 2022-01-28 was \"Sea Surface Temperature\"
-        "Der Variablenname \u201esst\u201c wird in den vollständigen Namen \u201eMeeresoberflächentemperatur\u201c umgewandelt.",
+        "Der Variablenname \u201esst\u201c wird in den vollständigen Namen \u201eSea Surface Temperature\u201c umgewandelt.",
         "");
   }
 
@@ -96,7 +96,7 @@ class TranslateMessagesTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagPassword // Can be run with Google Cloud api credentials
   void testTranslateHtml() throws Exception {
     String2.log("\n*** TranslateMessages.testTranslateHtml()");
     String raw = // a devious string with numerous of test cases
@@ -137,45 +137,42 @@ class TranslateMessagesTests {
     String2.setClipboardString(results.toString());
     String2.log("The results are on the clipboard.");
     Test.ensureEqual(results.toString(),
-        "RESULTS: html=true messageFormat=false\n" +
-            "en=<![CDATA[<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\n" +
-            "Test &mdash; test2? Test3 &ndash; test4?\n" +
-            "<br>Does test5 &rarr; test6? \"&micro;\" means micro. Temperature is &plusmn;5 degrees.\n" +
-            "<br>This is a question? This is an answer.\n" +
-            "<br>E = &sum;(w Y)/&sum;(w). This is a &middot; (middot).\n" +
-            "<h1>ERDDAP</h1> [standardShortDescriptionHtml] Add \"&amp;units=...\" to the query. \n" +
-            "<br>Add \"<kbd>&amp;time&gt;now-7days</kbd>\" to the query.\n" +
-            "<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" +
-            "<br>Convert &amp; into %26.\n" +
-            "<br>This is version=&wmsVersion; and <kbd>&adminEmail;</kbd>.\n" +
-            "See <a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Data Provider Form</a>.\n"
-            +
-            "See <img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" +
-            "]]\n" +
-            "\n" +
-            "de=<![CDATA[\n" +
-            "<br>• &lt;subsetVariables&gt; wurde nicht angegeben.\n" +
-            "Ist x &gt; 90?\n" +
-            "Test — test2?\n" +
-            "Test3 – Test4?\n" +
-            "<br>Bedeutet test5 → test6?\n" +
-            "&quot;µ&quot; bedeutet Mikro.\n" +
-            "Die Temperatur beträgt ±5 Grad.\n" +
-            "<br>Das ist eine Frage?\n" +
-            "Dies ist eine Antwort.\n" +
-            "<br>E = ∑(w Y)/∑(w) .\n" +
-            "Dies ist ein · (Mittelpunkt).\n" +
-            "<h1>ERDDAP</h1>\n" +
-            "[standardShortDescriptionHtml] Fügen Sie der Abfrage &quot;&amp;units=...&quot; hinzu.\n" +
-            "<br>Fügen Sie der Abfrage &quot;<kbd>&amp;time&gt;now-7days</kbd>&quot; hinzu.\n" +
-            "<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" +
-            "<br>Wandle &amp; in %26 um.\n" +
-            "<br>Dies ist version= &wmsVersion; und <kbd>&adminEmail;</kbd> .\n" +
-            "Siehe\n" +
-            "<a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Datenanbieterformular</a> .\n"
-            +
-            "Sehen<img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" +
-            "]]", // !Bad: missing space after Sehen
+        "RESULTS: html=true messageFormat=false\n" + //
+                    "en=<![CDATA[<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\n" + //
+                    "Test &mdash; test2? Test3 &ndash; test4?\n" + //
+                    "<br>Does test5 &rarr; test6? \"&micro;\" means micro. Temperature is &plusmn;5 degrees.\n" + //
+                    "<br>This is a question? This is an answer.\n" + //
+                    "<br>E = &sum;(w Y)/&sum;(w). This is a &middot; (middot).\n" + //
+                    "<h1>ERDDAP</h1> [standardShortDescriptionHtml] Add \"&amp;units=...\" to the query. \n" + //
+                    "<br>Add \"<kbd>&amp;time&gt;now-7days</kbd>\" to the query.\n" + //
+                    "<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" + //
+                    "<br>Convert &amp; into %26.\n" + //
+                    "<br>This is version=&wmsVersion; and <kbd>&adminEmail;</kbd>.\n" + //
+                    "See <a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Data Provider Form</a>.\n" + //
+                    "See <img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" + //
+                    "]]\n" + //
+                    "\n" + //
+                    "de=<![CDATA[\n" + //
+                    "<br>• &lt;subsetVariables&gt; wurde nicht angegeben.\n" + //
+                    "Ist x&gt;90?\n" + //
+                    "Test – Test2?\n" + //
+                    "Test3 – Test4?\n" + //
+                    "<br>Ist test5 → test6?\n" + //
+                    "&quot;µ&quot; steht für Mikro.\n" + //
+                    "Die Temperatur beträgt ±5 Grad.\n" + //
+                    "<br>Das ist eine Frage?\n" + //
+                    "Das ist eine Antwort.\n" + //
+                    "<br>Dies ist ein · (middot E = ∑(w Y)/∑(w) .\n" + //
+                    "<h1>ERDDAP</h1>\n" + //
+                    "[standardShortDescriptionHtml] Fügen Sie der Abfrage &quot;&amp;units=...&quot; hinzu.\n" + //
+                    "<br>Fügen Sie der Abfrage &quot;<kbd>&amp;time&gt;now-7days</kbd>&quot; hinzu.\n" + //
+                    "<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" + //
+                    "<br>Konvertieren Sie &amp; in %26.\n" + //
+                    "<br>Dies ist version= &wmsVersion; und <kbd>&adminEmail;</kbd> .\n" + //
+                    "Siehe\n" + //
+                    "<a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Datenproviderformular</a> .\n" + //
+                    "Siehe<img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" + //
+                    "]]", // !Bad: missing space after Sehen
         // chinese zh-cn translation often varies a little, so don't test it
         results.toString());
     // The results seem to change a little sometimes!
@@ -188,7 +185,7 @@ class TranslateMessagesTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagPassword // Can be run with Google Cloud api credentials
   void testTranslateComment() throws Exception {
     String2.log("\n*** TranslateMessages.testTranslateComment()");
     String raw = "<!-- This tests a devious comment with <someTag> and <b> and {0}\nand a newline. -->";
@@ -213,7 +210,7 @@ class TranslateMessagesTests {
             "\n" +
             "de=&lt;!-- Dies testet einen hinterhältigen Kommentar mit &lt;someTag&gt; und &lt;b&gt; und {0}\n"
             +
-            "und ein Zeilenumbruch. --&gt;",
+            "und einer neuen Zeile. --&gt;",
         results.toString());
     // debugMode = oDebugMode;
   }
@@ -224,7 +221,7 @@ class TranslateMessagesTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagPassword // Can be run with Google Cloud api credentials
   void testTranslatePlainText() throws Exception {
     String2.log("\n*** TranslateMessages.testTranslatePlainText()");
     String raw = // a devious string with numerous of test cases
@@ -254,12 +251,12 @@ class TranslateMessagesTests {
             "the non-image {0} (anything but .kml, .pdf, or .png).\n" +
             "\n" +
             "\n" +
-            "de=Um tabellarische Daten von den RESTful-Diensten von ERDDAP über &tErddapUrl; herunterzuladen,\n"
+            "de=Um tabellarische Daten von ERDDAPs RESTful-Diensten über &tErddapUrl; herunterzuladen,\n"
             +
-            "Stellen Sie sicher, dass der Breitengrad &gt;30 und &lt;50 oder &quot;BLANK&quot; ist. Fügen Sie &amp; vor jeder Einschränkung hinzu.\n"
-            +
-            "Wählen Sie für Dateityp einen der folgenden aus\n" +
-            "das Nicht-Bild {0} (alles außer .kml, .pdf oder .png).\n",
+            "stellen Sie sicher, dass der Breitengrad &gt;30 und &lt;50 oder „LEER“ ist. Fügen Sie vor jeder Einschränkung ein &amp; hinzu.\n"
+            + "\n" +
+            "Wählen Sie als Dateityp einen\n" +
+            "der Nicht-Bild-{0} (alles außer .kml, .pdf oder .png).\n",
 
         results.toString());
     // debugMode = oDebugMode;

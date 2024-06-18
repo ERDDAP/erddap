@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import tags.TagExternalERDDAP;
 import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
@@ -380,6 +381,7 @@ class EDDTableFromErddapTests {
    * This tests making a fromErddap from a fromErddap on coastwatch.
    */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testFromErddapFromErddap() throws Throwable {
     String2.log("\n*** EDDTableFromErddap.testFromErddapFromErddap");
     EDDTable edd = (EDDTableFromErddap) EDDTestDataset.gettestFromErddapFromErddap();

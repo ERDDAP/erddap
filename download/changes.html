@@ -70,6 +70,51 @@ those great suggestions coming!
 
 <!-- ****************************************************************************** -->
 
+<h2><a class="selfLink" id="changes2.24" href="#changes2.24" rel="bookmark">Changes</a>
+  in ERDDAP™ version 2.24 (released TBD)</h2> <!-- todo add release date -->
+<ul>
+  <li><strong>New Features and Changes (for users):</strong>
+    <ul>
+      <li>New color palette EK80 for acoustic datasets available.
+        Thanks to Rob Cermak for this.
+        <br>&nbsp;
+      <li>Fixen an issue where EDDTableAggregateRows did not show proper ranges from all children.
+        Thanks to Marco Alba for the fix and bug report.
+        <br>&nbsp;
+    </ul>
+  <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong>
+    <ul>
+      <li>TO DO: SECURITY CHANGE: Google Authentication might require changes to your CSP.
+        <p>Specifically, you may also need to add <kbd>https://accounts.google.com/gsi/style</kbd>
+          to <kbd>stlye-src</kbd> and <kbd>https://accounts.google.com/gsi/</kbd> to <kbd>connect-src</kbd>.
+          For the <kbd>script-src</kbd> you can now use <kbd>https://accounts.google.com/gsi/client</kbd>.
+        <p>For more information you can go to the <a rel="help"
+            href="https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#content_security_policy">Google
+            page</a>
+          about CSP configuration.
+          <br>&nbsp;
+
+      <li>New Shared Watch Service. This is a new option for watching directories for updates. It has one thread for
+        each filesystem instead of one thread per dataset. Most likely this will drastically reduce the number of
+        threads used to watch for changes. It does mean all datasets get updated together instead of each dataset
+        having its own update frequency. Most likely this will mean more frequent updates for most datasets.
+
+        <br>To enable this add <kbd>
+          <useSharedWatchService>true</useSharedWatchService>
+        </kbd> to your setup.xml.
+
+        <br>Please do try this and report back how it works for you to chris.john at noaa.gov.
+        <br>&nbsp;
+      <li>Fix for incorrect var names in logs.
+        Thanks to Ayush Singh for the fix.
+        <br>&nbsp;
+      <li>Some small changes and bug fixes.
+        <br>&nbsp;
+    </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
+
 <h2><a class="selfLink" id="changes2.23" href="#changes2.23" rel="bookmark">Changes</a> 
 in ERDDAP™ version 2.23 (released 2023-02-27)</h2>
 Note that this release was done by Bob Simons, thereby showing that he
@@ -7042,7 +7087,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.23
+<p>ERDDAP, Version 2.24
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

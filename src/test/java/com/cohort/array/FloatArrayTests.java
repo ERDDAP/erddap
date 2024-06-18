@@ -353,7 +353,7 @@ class FloatArrayTests {
         String2.log("\nevenlySpaced test #2");
         anArray.set(2, 30.1f);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, expected spacing=10.05.", "");
+            "FloatArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
         Test.ensureEqual(anArray.smallestBiggestSpacing(),
             "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
             "    biggest  spacing=10.100000381469727: [1]=20.0, [2]=30.100000381469727", "");
@@ -367,7 +367,7 @@ class FloatArrayTests {
         String2.log("\nevenlySpaced test #4");
         anArray.set(2, 1.23081f); 
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: [0]=1.2306, [1]=1.2307, spacing=1.00016594E-4, expected spacing=1.05023384E-4.", "");
+            "FloatArray isn't evenly spaced: [0]=1.2306, [1]=1.2307, spacing=1.00016594E-4, average spacing=1.05023384E-4.", "");
 
         //isAscending
         anArray = new FloatArray(new float[] {10,10,30});

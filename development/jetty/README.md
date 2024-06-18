@@ -52,7 +52,7 @@ The following table is a short list of Maven commands describing the workflow to
 |**Command**|**Description**|
 |-----------|---------------|
 | `mvn compile` | Compiles ERDDAP™ Java classes to `./target/classes`. <br /><br />This can be skipped if you haven't modified any Java source files.  |
-| `mvn war:exploded` | Creates an 'exploded' ERDDAP™ WAR file in `./target/${project.build.finalName}` (currently `./target/ERDDAP-2.23-SNAPSHOT`) to run ERDDAP™ in Jetty, including Java classes that were compiled to `./target/classes` via `mvn compile`. <br /><br />This can be run without the `mvn compile` step if only static (non-Java) files have been modified. | 
+| `mvn war:exploded` | Creates an 'exploded' ERDDAP™ WAR file in `./target/${project.build.finalName}` (currently `./target/ERDDAP-2.24-SNAPSHOT`) to run ERDDAP™ in Jetty, including Java classes that were compiled to `./target/classes` via `mvn compile`. <br /><br />This can be run without the `mvn compile` step if only static (non-Java) files have been modified. | 
 | `CR (carriage return)` | Type a CR (carriage return) in the console running the Jetty process (`mvn jetty:run`) to reload the ERDDAP™ web application (most likely only necessary for changes to compiled Java classes). | 
 
 **Note:** both the `mvn compile` and `mvn war:exploded` commands must be run before launching ERDDAP™ via `mvn jetty:run`, or after making code changes and reloading ERDDAP™ via `CR (carriage return)` in the Jetty console, due to some ERDDAP™ filesystem lookups in utility classes like [File2.java](https://github.com/ERDDAP/erddap/blob/33e6e531484b0cc6ed461f0640b1f0ad3b83e45b/WEB-INF/classes/com/cohort/util/File2.java#L216).  These require ERDDAP™ to be run in Jetty in 'exploded WAR' format so that the `WEB-INF` directory is in the path.  
@@ -74,4 +74,4 @@ Some other useful commands for developing ERDDAP™ with Maven (not needed for d
 |-----------|---------------|
 | `mvn clean` |  Deletes the `${project.build.directory}` (i.e. `./target`) directory. |
 | `mvn resources:resources` |  Copies ERDDAP™ static files from `./WEB-INF/classes` to `./target/classes`. |
-| `mvn package` |  Builds `./target/${project.build.finalName}.war` (currently `/target/ERDDAP-2.23-SNAPSHOT.war`) distributable ERDDAP™ WAR (suitable for deployment to Tomcat if desired). |
+| `mvn package` |  Builds `./target/${project.build.finalName}.war` (currently `/target/ERDDAP-2.24-SNAPSHOT.war`) distributable ERDDAP™ WAR (suitable for deployment to Tomcat if desired). |

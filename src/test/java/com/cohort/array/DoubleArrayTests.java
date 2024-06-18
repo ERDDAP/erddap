@@ -402,7 +402,7 @@ class DoubleArrayTests {
     String2.log("\nevenlySpaced test #2");
     anArray.set(2, 30.1);
     Test.ensureEqual(anArray.isEvenlySpaced(),
-        "DoubleArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, expected spacing=10.05.", "");
+        "DoubleArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
     Test.ensureEqual(anArray.smallestBiggestSpacing(),
         "    smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
             "    biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1",
@@ -418,7 +418,7 @@ class DoubleArrayTests {
     anArray.set(2, 1.23456789081);
     Test.ensureEqual(anArray.isEvenlySpaced(),
         "DoubleArray isn't evenly spaced: [0]=1.2345678906, [1]=1.2345678907, " +
-            "spacing=1.000000082740371E-10, expected spacing=1.0500000868773895E-10.",
+            "spacing=1.000000082740371E-10, average spacing=1.0500000868773895E-10.",
         "");
 
     // isAscending

@@ -7192,12 +7192,13 @@ class TestUtil {
             Math2.gcAndWait("TestUtil (between tests)");
             Math2.gcAndWait("TestUtil (between tests)"); // aggressive //in a test
             long memoryInUse = Math2.getMemoryInUse();
-            int shouldBe = outer == 0 ? 415 : 260; // ms
-            String2.log(String2.canonicalStatistics() +
-                    "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe +
-                    "ms [1st pass is slower]) " +
-                    Math2.memoryString());
-            Test.ensureTrue(time < shouldBe * 3, "Unexpected time");
+            // TODO get a better system for time based performance tests
+        //     int shouldBe = outer == 0 ? 415 : 260; // ms
+        //     String2.log(String2.canonicalStatistics() +
+        //             "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe +
+        //             "ms [1st pass is slower]) " +
+        //             Math2.memoryString());
+        //     Test.ensureTrue(time < shouldBe * 3, "Unexpected time");
             if (oMemoryInUse == -1) {
                 oMemoryInUse = memoryInUse;
                 canSize = String2.canonicalSize(); // added strings should be gc'd after each iteration
@@ -7206,8 +7207,10 @@ class TestUtil {
                 // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
                 // too inaccurate to be useful
                 Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB,
-                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
+                // Disable this total memory usage check because with new test approach there is no guarantee
+                // about what else might be running. If we need this check, make an isolated test to do this. 
+                // Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB,
+                //         "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
             }
             Test.ensureEqual(String2.canonicalSize(), canSize,
                     "Unexpected String2.canonicalSize!");

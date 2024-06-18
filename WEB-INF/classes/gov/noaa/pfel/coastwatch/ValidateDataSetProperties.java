@@ -2,7 +2,7 @@
  * ValidateDataSetPropterties Copyright 2006, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package scripts;
+package gov.noaa.pfel.coastwatch;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
@@ -25,6 +25,8 @@ import gov.noaa.pfel.coastwatch.util.SSR;
  *
  */
 public class ValidateDataSetProperties {
+
+    public final static int N_DUMMY_GRID_DATASETS = 2;
 
     /**
      * This class is designed to be a stand-alone program to 
@@ -68,7 +70,7 @@ public class ValidateDataSetProperties {
         //Test.ensureEqual(nDataSets, 228, "nDataSets"); //useful to me, but Dave can't add dataset without recompiling this
         String2.log("  testing " + nDataSets + " data sets");
         boolean excessivelyStrict = true;  
-        for (int i = OneOf.N_DUMMY_GRID_DATASETS; i < nDataSets; i++) {  //"2" in order to skip 0=OneOf.NO_DATA, 1=BATHYMETRY
+        for (int i = ValidateDataSetProperties.N_DUMMY_GRID_DATASETS; i < nDataSets; i++) {  //"2" in order to skip 0=OneOf.NO_DATA, 1=BATHYMETRY
             String seven = tDataSetList[i];
             Test.ensureTrue(seven != null && seven.length() > 0, "  tDataSetList[" + i + "] is ''.");
             fnu.ensureValidDataSetProperties(seven, excessivelyStrict);
@@ -100,7 +102,7 @@ public class ValidateDataSetProperties {
                 String[] tsa = String2.split(ts, '`');
                 validDataSets = new StringArray(tsa);
             }
-            for (int i = OneOf.N_DUMMY_GRID_DATASETS; i < nDataSets; i++) {  //"2" in order to skip 0=OneOf.NO_DATA and 1=BATHYMETRY
+            for (int i = ValidateDataSetProperties.N_DUMMY_GRID_DATASETS; i < nDataSets; i++) {  //"2" in order to skip 0=OneOf.NO_DATA and 1=BATHYMETRY
                 if (validDataSets.indexOf(tDataSetList[i], 0) == -1) {
                     Test.error("In " + propNames[pni] + ".properties, [" + i + "]=" + 
                         tDataSetList[i] + " not found in DataSet.properties validDataSets:\n" +

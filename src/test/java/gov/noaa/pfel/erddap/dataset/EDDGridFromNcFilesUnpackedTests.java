@@ -1909,14 +1909,14 @@ class EDDGridFromNcFilesUnpackedTests {
                 "    Float32 valid_min 0.0;\n" +
                 "  }\n" +
                 "  NC_GLOBAL {\n" +
-                "    String _lastModified \"2016-08-30T07:47:52.000Z\";\n" +
+                "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n" +
                 "    String cdm_data_type \"Grid\";\n" +
                 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
                 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
                 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
                 "    String creator_type \"group\";\n" +
                 "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-                "    String date_created \"2016-08-30T07:47:52.000Z\";\n" +
+                "    String date_created \"YYYY-MM-DDThh:mm:ss.000Z\";\n" +
                 "    Float64 Easternmost_Easting 179.9792;\n" +
                 "    Float64 geospatial_lat_max 89.97916;\n" +
                 "    Float64 geospatial_lat_min -89.97918;\n" +
@@ -1930,6 +1930,9 @@ class EDDGridFromNcFilesUnpackedTests {
                 "NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses ERDDAP to add the time variable and slightly modify the metadata.\n"
                 +
                 "Direct read of HDF4 file through CDM library.\n";
+        results = results.replaceAll("String _lastModified \"....-..-..T..:..:...000Z", "String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z");
+        results = results.replaceAll("String date_created \"....-..-..T..:..:...000Z",
+                        "String date_created \"YYYY-MM-DDThh:mm:ss.000Z");
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -1962,7 +1965,7 @@ class EDDGridFromNcFilesUnpackedTests {
                         "    Float64 Northernmost_Northing 89.97916;\n" +
                         "    String platform \"Aqua\";\n" +
                         "    String processing_level \"L3 Mapped\";\n" +
-                        "    String processing_version \"2014.0.1QL\";\n" +
+                        "    String processing_version \"VERSION\";\n" +
                         "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
                         "    String publisher_email \"erd.data@noaa.gov\";\n" +
                         "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
@@ -1983,6 +1986,7 @@ class EDDGridFromNcFilesUnpackedTests {
                         "    Float64 Westernmost_Easting -179.9792;\n" +
                         "  }\n" +
                         "}\n";
+        results = results.replaceAll("String processing_version \\\"[\\w\\d]+(\\.[\\w\\d]+)*\\\"", "String processing_version \\\"VERSION\\\"");
         int tpo = results.indexOf(expected.substring(0, 50));
         Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(

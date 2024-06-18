@@ -8,7 +8,7 @@ The Technical Board is responsible for the following documents and processes:
 
 * **Review and Approve new features** that are proposed in GitHub Discussions.
 
-* **ERDDAP™ Priority Projects** list, which determine projects that we are working on. Check out the current [priority projects list](PRIORITY_PROJECTS.md).
+* **ERDDAP™ Priority Projects** list, which determine projects that we are working on. Check out the current [priority projects list](https://github.com/ERDDAP/erddap/issues/158).
 
 * **ERDDAP™ Release Feature Goals**, which determine specific features which we aim to include in each release of ERDDAP™. These are documented in the GitHub project for each release.
 

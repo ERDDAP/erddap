@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.cohort.array.DoubleArray;
@@ -19,11 +20,17 @@ import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import tags.TagImageComparison;
+import testDataset.Initialization;
 
 class SgtGraphTests {
 
   @TempDir
   private static Path TEMP_DIR;
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /**
    * Test for memory leak.

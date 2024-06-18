@@ -112,7 +112,7 @@ public abstract class PrimitiveArray {
     public static String ArrayNotDescending =
         "{0} isn''t sorted in descending order: {1}.";
     public static String ArrayNotEvenlySpaced =
-        "{0} isn''t evenly spaced: [{1}]={2}, [{3}]={4}, spacing={5}, expected spacing={6}.";
+        "{0} isn''t evenly spaced: [{1}]={2}, [{3}]={4}, spacing={5}, average spacing={6}.";
     public static String ArrayRemove =
         String2.ERROR + " in {0}.remove: index ({1}) >= size ({2}).";
     public static String ArraySubsetStart =

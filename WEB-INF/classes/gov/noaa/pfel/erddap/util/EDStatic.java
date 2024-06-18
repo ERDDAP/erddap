@@ -182,6 +182,7 @@ public class EDStatic {
      * <br>2.21 released on 2022-10-09
      * <br>2.22 released on 2022-12-08
      * <br>2.23 released on 2023-02-27
+     * <br>2.24 released on 2024-06-07
      *
      * For main branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -195,7 +196,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.23"; //see comment above
+    public static String erddapVersion = "2.24"; //see comment above
 
     /** 
      * This is almost always false.  

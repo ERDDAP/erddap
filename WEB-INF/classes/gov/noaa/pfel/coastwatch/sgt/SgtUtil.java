@@ -4,24 +4,19 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
-import com.cohort.array.DoubleArray;
 import com.cohort.array.StringArray;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
-import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-
-//from itext-1.3.1.jar:
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
 
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -34,8 +29,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.image.BufferedImage;
-import java.awt.RenderingHints; 
-import java.io.File;
+import java.awt.RenderingHints;
 import java.io.*;
 import javax.imageio.ImageIO;
 
