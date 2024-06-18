@@ -346,6 +346,8 @@ public class LoadDatasets extends Thread {
 
         } catch (Exception e) {
             String2.log(e.toString());
+        } finally {
+            EDStatic.suggestAddFillValueCSV.setLength(0);
         }
     }
 
@@ -1017,10 +1019,10 @@ public class LoadDatasets extends Thread {
             xmlReader.close();
             xmlReader = null;
         } catch (Throwable t) {
-            String subject = String2.ERROR + " while processing " +
-                    (xmlReader == null? "" : "line #" + xmlReader.lineNumber() + " ") +
-                    "datasets.xml";
             if (!isInterrupted()) {
+                String subject = String2.ERROR + " while processing " +
+                        (xmlReader == null? "" : "line #" + xmlReader.lineNumber() + " ") +
+                        "datasets.xml";
                 EDStatic.errorsDuringMajorReload  =
                         subject + ": see log.txt for details.\n";  //swap into place
                 String content = MustBe.throwableToString(t);
@@ -1031,7 +1033,6 @@ public class LoadDatasets extends Thread {
         } finally {
             if (xmlReader != null)
                 try {xmlReader.close();} catch (Exception e) {}
-            EDStatic.suggestAddFillValueCSV.setLength(0);
         }
     }
 
@@ -1113,9 +1114,9 @@ public class LoadDatasets extends Thread {
         contentSB.append(threadList);
 
         //clear all the "since last daily report" tallies
-        EDStatic.clearAllTallies();
+        EDStatic.clearDailyTallies();
         //reset these "since last daily report" time distributions
-        EDStatic.resetTimeDistributions();
+        EDStatic.resetDailyDistributions();
 
         String2.log("\n" + stars);
         String2.log(contentSB.toString());

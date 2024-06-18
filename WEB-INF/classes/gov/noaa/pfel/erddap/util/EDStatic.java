@@ -6779,7 +6779,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         EDStatic.responseTimesDistributionLoadDatasets = new int[String2.TimeDistributionSize];
     }
 
-    public static void clearAllTallies() {
+    public static void clearDailyTallies() {
         EDStatic.tally.remove(".subset (since last daily report)");
         EDStatic.tally.remove(".subset DatasetID (since last daily report)");
         EDStatic.tally.remove("Advanced Search with Category Constraints (since last daily report)");
@@ -6838,7 +6838,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         EDStatic.tally.remove("WMS index.html (since last daily report)");
     }
 
-    public static void resetTimeDistributions() {
+    public static void resetDailyDistributions() {
         EDStatic.emailThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
         EDStatic.emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
         EDStatic.emailThreadNEmailsDistribution24   = new int[String2.CountDistributionSize]; //count, not time
