@@ -6763,4 +6763,92 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             } catch (Exception e2) {}
         }
     }
+
+    public static void actionsAfterEveryMajorLoadDatasets() {
+        EDStatic.tally.remove("Large Request, IP address (since last Major LoadDatasets)");
+        EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)");
+        EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)");
+        EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)");
+        EDStatic.tally.remove("Request refused: not authorized (since last Major LoadDatasets)"); //datasetID (not IP address)
+        EDStatic.tally.remove("Requester's IP Address (Allowed) (since last Major LoadDatasets)");
+        EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)");
+        EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
+        EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)");
+
+        EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.TimeDistributionSize];
+        EDStatic.responseTimesDistributionLoadDatasets = new int[String2.TimeDistributionSize];
+    }
+
+    public static void clearDailyTallies() {
+        EDStatic.tally.remove(".subset (since last daily report)");
+        EDStatic.tally.remove(".subset DatasetID (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Category Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Lat Lon Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search with Time Constraints (since last daily report)");
+        EDStatic.tally.remove("Advanced Search, .fileType (since last daily report)");
+        EDStatic.tally.remove("Advanced Search, Search For (since last daily report)");
+        EDStatic.tally.remove("Categorize Attribute (since last daily report)");
+        EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
+        EDStatic.tally.remove("Categorize File Type (since last daily report)");
+        EDStatic.tally.remove("Convert (since last daily report)");
+        EDStatic.tally.remove("files browse DatasetID (since last daily report)");
+        EDStatic.tally.remove("files download DatasetID (since last daily report)");
+        EDStatic.tally.remove("griddap DatasetID (since last daily report)");
+        EDStatic.tally.remove("griddap File Type (since last daily report)");
+        EDStatic.tally.remove("Home Page (since last daily report)");
+        EDStatic.tally.remove("Info (since last daily report)");
+        EDStatic.tally.remove("Info File Type (since last daily report)");
+        EDStatic.tally.remove("Language (since last daily report)");
+        EDStatic.tally.remove("Large Request, IP address (since last daily report)");
+        EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
+        EDStatic.tally.remove("Log in failed (since last daily report)");
+        EDStatic.tally.remove("Log in succeeded (since last daily report)");
+        EDStatic.tally.remove("Log out (since last daily report)");
+        EDStatic.tally.remove("Main Resources List (since last daily report)");
+        EDStatic.tally.remove("Metadata requests (since last daily report)");
+        EDStatic.tally.remove("OpenSearch For (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Array Size), IP Address (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Too Big), IP Address (since last daily report)");
+        EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last daily report)");
+        EDStatic.tally.remove("POST (since last daily report)");
+        EDStatic.tally.remove("Protocol (since last daily report)");
+        EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
+        EDStatic.tally.remove("Request refused: not authorized (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
+        EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last daily report)");
+        EDStatic.tally.remove("RequestReloadASAP (since last daily report)");
+        EDStatic.tally.remove("Response Failed    Time (since last daily report)");
+        EDStatic.tally.remove("Response Succeeded Time (since last daily report)");
+        EDStatic.tally.remove("RSS (since last daily report)");
+        EDStatic.tally.remove("Search File Type (since last daily report)");
+        EDStatic.tally.remove("Search For (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag Failed, IP Address (since last daily report)");
+        EDStatic.tally.remove("SetDatasetFlag Succeeded, IP Address (since last daily report)");
+        EDStatic.tally.remove("SOS index.html (since last daily report)");
+        EDStatic.tally.remove("Subscriptions (since last daily report)");
+        EDStatic.tally.remove("tabledap DatasetID (since last daily report)");
+        EDStatic.tally.remove("tabledap File Type (since last daily report)");
+        EDStatic.tally.remove("WCS index.html (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
+        EDStatic.tally.remove("WMS doWmsDemo (since last daily report)");
+        EDStatic.tally.remove("WMS index.html (since last daily report)");
+    }
+
+    public static void resetDailyDistributions() {
+        EDStatic.emailThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+        EDStatic.emailThreadNEmailsDistribution24   = new int[String2.CountDistributionSize]; //count, not time
+        EDStatic.failureTimesDistribution24         = new int[String2.TimeDistributionSize];
+        EDStatic.majorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.minorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.responseTimesDistribution24        = new int[String2.TimeDistributionSize];
+        EDStatic.taskThreadFailedDistribution24     = new int[String2.TimeDistributionSize];
+        EDStatic.taskThreadSucceededDistribution24  = new int[String2.TimeDistributionSize];
+        EDStatic.touchThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+        EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+    }
 }
