@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+    <dataset type="EDDTableFromErddap" datasetID="pmelTaoDyQnet" active="true">
+        <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Total Heat Flux -->
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyQnet</sourceUrl>
+    </dataset>
+    <dataset type="EDDGridFromErddap" datasetID="erdMH1chla1day" active="true">
+        <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day</sourceUrl>
+    </dataset>
+    <dataset type="EDDGridFromEtopo" datasetID="etopo180" />
+    <dataset type="EDDGridFromEtopo" datasetID="etopo360" />
+</erddapDatasets>
