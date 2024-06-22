@@ -729,9 +729,9 @@ public static boolean developmentMode = false;
         sosActive, wcsActive, wmsActive,
         quickRestart, subscribeToRemoteErddapDataset,
         //if useLuceneSearchEngine=false (a setting, or after error), original search engine will be used 
-        useLuceneSearchEngine,  
+        useLuceneSearchEngine,
         variablesMustHaveIoosCategory,
-        verbose;
+        verbose, setParser;
     public static String  categoryAttributes[];       //as it appears in metadata (and used for hashmap)
     public static String  categoryAttributesInURLs[]; //fileNameSafe (as used in URLs)
     public static boolean categoryIsGlobal[];
@@ -2155,6 +2155,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         subscribeToRemoteErddapDataset = getSetupEVBoolean(setup, ev,      "subscribeToRemoteErddapDataset", true);
         subscriptionSystemActive   = getSetupEVBoolean(setup, ev,          "subscriptionSystemActive",       true);
         convertersActive           = getSetupEVBoolean(setup, ev,          "convertersActive",               true);
+        setParser                  = getSetupEVBoolean(setup, ev,          "setParser",                      false);
         slideSorterActive          = getSetupEVBoolean(setup, ev,          "slideSorterActive",              true);
         variablesMustHaveIoosCategory = getSetupEVBoolean(setup, ev,       "variablesMustHaveIoosCategory",  true);
         warName                    = getSetupEVString(setup, ev,           "warName",                        "erddap");

@@ -184,9 +184,13 @@ public class LoadDatasets extends Thread {
             //    Low memory use.
             //I went with SimpleXMLReader
             inputStream = getInputStream(inputStream);
-
+            boolean setParser = EDStatic.setParser;
             int[] nTryAndDatasets = new int[2];
-            parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            if(setParser) {
+                //SAX parsing
+            } else {
+                parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            }
             int nTry = nTryAndDatasets[0];
             int nDatasets = nTryAndDatasets[1];
 
