@@ -39,6 +39,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.index.Term;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP.
@@ -184,10 +189,11 @@ public class LoadDatasets extends Thread {
             //    Low memory use.
             //I went with SimpleXMLReader
             inputStream = getInputStream(inputStream);
-            boolean setParser = EDStatic.setParser;
+            boolean useSaxParser = EDStatic.useSaxParser;
             int[] nTryAndDatasets = new int[2];
-            if(setParser) {
+            if(useSaxParser) {
                 //SAX parsing
+                parseUsingSAX();
             } else {
                 parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
             }
@@ -353,6 +359,14 @@ public class LoadDatasets extends Thread {
         } finally {
             EDStatic.suggestAddFillValueCSV.setLength(0);
         }
+    }
+
+    private void parseUsingSAX() throws ParserConfigurationException, SAXException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setXIncludeAware(true);
+        factory.setNamespaceAware(true);
+        SAXParser saxParser = factory.newSAXParser();
+//        saxParser.parse("/path/to/setup.xml", new TopLevelHandler());
     }
 
     private void parseUsingSimpleXmlReader(
