@@ -21,11 +21,13 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -193,7 +195,7 @@ public class LoadDatasets extends Thread {
             int[] nTryAndDatasets = new int[2];
             if(useSaxParser) {
                 //SAX parsing
-                parseUsingSAX();
+                parseUsingSAX(warningsFromLoadDatasets, tUserHashMap);
             } else {
                 parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
             }
@@ -361,12 +363,13 @@ public class LoadDatasets extends Thread {
         }
     }
 
-    private void parseUsingSAX() throws ParserConfigurationException, SAXException {
+    private void parseUsingSAX(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setXIncludeAware(true);
         factory.setNamespaceAware(true);
         SAXParser saxParser = factory.newSAXParser();
-//        saxParser.parse("/path/to/setup.xml", new TopLevelHandler());
+        saxParser.parse(inputStream, new TopLevelHandler(warningsFromLoadDatasets, tUserHashMap
+        ));
     }
 
     private void parseUsingSimpleXmlReader(
