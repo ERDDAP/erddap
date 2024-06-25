@@ -368,8 +368,7 @@ public class LoadDatasets extends Thread {
         factory.setXIncludeAware(true);
         factory.setNamespaceAware(true);
         SAXParser saxParser = factory.newSAXParser();
-        saxParser.parse(inputStream, new TopLevelHandler(warningsFromLoadDatasets, tUserHashMap
-        ));
+        saxParser.parse(inputStream, new TopLevelHandler(warningsFromLoadDatasets, tUserHashMap));
     }
 
     private void parseUsingSimpleXmlReader(

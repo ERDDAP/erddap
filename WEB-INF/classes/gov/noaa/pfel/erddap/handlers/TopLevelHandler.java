@@ -19,6 +19,7 @@ public class TopLevelHandler extends DefaultHandler {
     private StringBuilder warningsFromLoadDatasets;
     private StringBuilder data = new StringBuilder();
     private HashMap tUserHashMap;
+    private boolean reallyVerbose = false;
 
     public TopLevelHandler(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) {
         this.warningsFromLoadDatasets = warningsFromLoadDatasets;
@@ -91,6 +92,9 @@ public class TopLevelHandler extends DefaultHandler {
                             "google".equals(EDStatic.authentication)) {
                         tUsername = tUsername.toLowerCase();
                     }
+                    if (reallyVerbose) {
+                        String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
+                    }
                     Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
                     if (o != null) {
                         warningsFromLoadDatasets.append(
@@ -116,7 +120,10 @@ public class TopLevelHandler extends DefaultHandler {
                     ts = EDStatic.DEFAULT_ANGULAR_DEGREE_UNITS;
                 EDStatic.angularDegreeUnitsSet =
                         new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray()));
-                String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
+
+                if(reallyVerbose) {
+                    String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
+                }
 
             }
             case "angularDegreeTrueUnits" -> {
@@ -126,7 +133,9 @@ public class TopLevelHandler extends DefaultHandler {
                 EDStatic.angularDegreeTrueUnitsSet =
                         new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
 
-                String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
+                if(reallyVerbose) {
+                    String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
+                }
 
             }
             case "awsS3OutputBucketUrl" -> {
@@ -134,14 +143,20 @@ public class TopLevelHandler extends DefaultHandler {
                 if (!String2.isSomething(ts))
                     ts = null;
                 EDStatic.awsS3OutputBucketUrl = ts;
-                String2.log("awsS3OutputBucketUrl=" + ts);
+
+                if(reallyVerbose) {
+                    String2.log("awsS3OutputBucketUrl=" + ts);
+                }
 
             }
             case "cacheMinutes" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.cacheMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_cacheMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("cacheMinutes=" + EDStatic.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
+
+                if(reallyVerbose) {
+                    String2.log("cacheMinutes=" + EDStatic.cacheMillis / Calendar2.MILLIS_PER_MINUTE);
+                }
 
             }
             case "commonStandardNames" -> {
@@ -149,28 +164,40 @@ public class TopLevelHandler extends DefaultHandler {
                 EDStatic.commonStandardNames = String2.isSomething(ts) ?
                         String2.canonical(StringArray.arrayFromCSV(ts)) :
                         EDStatic.DEFAULT_commonStandardNames;
-                String2.log("commonStandardNames=" + String2.toCSSVString(EDStatic.commonStandardNames));
+
+                if(reallyVerbose) {
+                    String2.log("commonStandardNames=" + String2.toCSSVString(EDStatic.commonStandardNames));
+                }
 
             }
             case "decompressedCacheMaxGB" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.decompressedCacheMaxGB = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_decompressedCacheMaxGB : tnt;
-                String2.log("decompressedCacheMaxGB=" + EDStatic.decompressedCacheMaxGB);
+
+                if(reallyVerbose) {
+                    String2.log("decompressedCacheMaxGB=" + EDStatic.decompressedCacheMaxGB);
+                }
 
             }
             case "decompressedCacheMaxMinutesOld" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.decompressedCacheMaxMinutesOld = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_decompressedCacheMaxMinutesOld : tnt;
-                String2.log("decompressedCacheMaxMinutesOld=" + EDStatic.decompressedCacheMaxMinutesOld);
+
+                if(reallyVerbose) {
+                    String2.log("decompressedCacheMaxMinutesOld=" + EDStatic.decompressedCacheMaxMinutesOld);
+                }
 
             }
             case "drawLandMask" -> {
                 String ts = data.toString();
                 int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
                 EDStatic.drawLandMask = tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt];
-                String2.log("drawLandMask=" + EDStatic.drawLandMask);
+
+                if(reallyVerbose) {
+                    String2.log("drawLandMask=" + EDStatic.drawLandMask);
+                }
 
             }
             case "emailDiagnosticsToErdData" -> {
@@ -178,7 +205,10 @@ public class TopLevelHandler extends DefaultHandler {
                 boolean ted = String2.isSomething(ts) ? String2.parseBoolean(ts) : true;  //the default
 
                 EDStatic.emailDiagnosticsToErdData = ted;
-                String2.log("emailDiagnosticsToErdData=" + ted);
+
+                if(reallyVerbose) {
+                    String2.log("emailDiagnosticsToErdData=" + ted);
+                }
 
             }
             case "graphBackgroundColor" -> {
@@ -186,44 +216,62 @@ public class TopLevelHandler extends DefaultHandler {
                 int tnt = String2.isSomething(ts) ? String2.parseInt(ts) : EDStatic.DEFAULT_graphBackgroundColorInt;
                 EDStatic.graphBackgroundColor = new Color(tnt, true); //hasAlpha
 
-                String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
+                if(reallyVerbose) {
+                    String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
+                }
 
             }
             case "ipAddressMaxRequests" -> {
                 int tnt = String2.parseInt(data.toString());
                 tnt = tnt < 6 || tnt > 1000 ? EDStatic.DEFAULT_ipAddressMaxRequests : tnt;
                 EDStatic.ipAddressMaxRequests = tnt;
-                String2.log("ipAddressMaxRequests=" + tnt);
+
+                if(reallyVerbose) {
+                    String2.log("ipAddressMaxRequests=" + tnt);
+                }
 
             }
             case "ipAddressMaxRequestsActive" -> {
                 int tnt = String2.parseInt(data.toString());
                 tnt = tnt < 1 || tnt > 100 ? EDStatic.DEFAULT_ipAddressMaxRequestsActive : tnt;
                 EDStatic.ipAddressMaxRequestsActive = tnt;
-                String2.log("ipAddressMaxRequestsActive=" + tnt);
+
+                if(reallyVerbose) {
+                    String2.log("ipAddressMaxRequestsActive=" + tnt);
+                }
 
             }
             case "ipAddressUnlimited" -> {
                 String ts = data.toString();
-                String sar[] = StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
+                String[] sar = StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
                 EDStatic.ipAddressUnlimited = new HashSet<String>(String2.toArrayList(sar));
-                for (int i = 0; i < sar.length; i++)
-                    EDStatic.ipAddressQueue.remove(sar[i]);
-                String2.log("ipAddressUnlimited=" + String2.toCSVString(EDStatic.ipAddressUnlimited));
+                for (String s : sar) {
+                    EDStatic.ipAddressQueue.remove(s);
+                }
+
+                if(reallyVerbose) {
+                    String2.log("ipAddressUnlimited=" + String2.toCSVString(EDStatic.ipAddressUnlimited));
+                }
 
             }
             case "loadDatasetsMinMinutes" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.loadDatasetsMinMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_loadDatasetsMinMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("loadDatasetsMinMinutes=" + EDStatic.loadDatasetsMinMillis / Calendar2.MILLIS_PER_MINUTE);
+
+                if(reallyVerbose) {
+                    String2.log("loadDatasetsMinMinutes=" + EDStatic.loadDatasetsMinMillis / Calendar2.MILLIS_PER_MINUTE);
+                }
 
             }
             case "loadDatasetsMaxMinutes" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.loadDatasetsMaxMillis = (tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_loadDatasetsMaxMinutes : tnt) * Calendar2.MILLIS_PER_MINUTE;
-                String2.log("loadDatasetsMaxMinutes=" + EDStatic.loadDatasetsMaxMillis / Calendar2.MILLIS_PER_MINUTE);
+
+                if(reallyVerbose) {
+                    String2.log("loadDatasetsMaxMinutes=" + EDStatic.loadDatasetsMaxMillis / Calendar2.MILLIS_PER_MINUTE);
+                }
 
             }
             case "logLevel" -> EDStatic.setLogLevel(data.toString());
@@ -231,62 +279,86 @@ public class TopLevelHandler extends DefaultHandler {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.nGridThreads = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_nGridThreads : tnt;
-                String2.log("nGridThreads=" + EDStatic.nGridThreads);
+
+                if(reallyVerbose) {
+                    String2.log("nGridThreads=" + EDStatic.nGridThreads);
+                }
 
             }
             case "nTableThreads" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.nTableThreads = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_nTableThreads : tnt;
-                String2.log("nTableThreads=" + EDStatic.nTableThreads);
+
+                if(reallyVerbose) {
+                    String2.log("nTableThreads=" + EDStatic.nTableThreads);
+                }
 
             }
             case "palettes" -> {
                 String tContent = data.toString();
-                String tPalettes[] = String2.isSomething(tContent) ?
+                String[] tPalettes = String2.isSomething(tContent) ?
                         String2.split(tContent, ',') : EDStatic.DEFAULT_palettes;
-                //ensure that all of the original palettes are present
                 HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
                 if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
                     throw new RuntimeException(
                             "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");
-                String tPalettes0[] = new String[tPalettes.length + 1];
+                String[] tPalettes0 = new String[tPalettes.length + 1];
                 tPalettes0[0] = "";
                 System.arraycopy(tPalettes, 0, tPalettes0, 1, tPalettes.length);
                 //then copy into place
                 EDStatic.palettes = tPalettes;
                 EDStatic.palettes0 = tPalettes0;
-                String2.log("palettes=" + String2.toCSSVString(tPalettes));
+
+                if(reallyVerbose) {
+                    String2.log("palettes=" + String2.toCSSVString(tPalettes));
+                }
+
             }
             case "partialRequestMaxBytes" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.partialRequestMaxBytes = tnt < 1000000 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_partialRequestMaxBytes : tnt;
-                String2.log("partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes);
+
+                if(reallyVerbose) {
+                    String2.log("partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes);
+                }
 
             }
             case "partialRequestMaxCells" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.partialRequestMaxCells = tnt < 1000 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_partialRequestMaxCells : tnt;
-                String2.log("partialRequestMaxCells=" + EDStatic.partialRequestMaxCells);
+
+                if(reallyVerbose) {
+                    String2.log("partialRequestMaxCells=" + EDStatic.partialRequestMaxCells);
+                }
 
             }
             case "requestBlacklist" -> EDStatic.setRequestBlacklist(data.toString());
             case "slowDownTroubleMillis" -> {
                 int tms = String2.parseInt(data.toString());
                 EDStatic.slowDownTroubleMillis = tms < 0 || tms > 1000000 ? 1000 : tms;
-                String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
+
+                if(reallyVerbose) {
+                    String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
+                }
+
             }
             case "subscriptionEmailBlacklist" -> {
-                if (EDStatic.subscriptionSystemActive)
+                if (EDStatic.subscriptionSystemActive) {
                     EDStatic.subscriptions.setEmailBlacklist(data.toString());
+                }
+
             }
             case "standardLicense" -> {
                 String ts = data.toString();
                 EDStatic.standardLicense = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardLicense;
-                String2.log("standardLicense was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardLicense was set.");
+                }
 
             }
             case "standardContact" -> {
@@ -295,42 +367,59 @@ public class TopLevelHandler extends DefaultHandler {
                 ts = String2.replaceAll(ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
                 EDStatic.standardContactAr[0] = ts; //swap into place
 
-                String2.log("standardContact was set.");
+                if(reallyVerbose) {
+                    String2.log("standardContact was set.");
+                }
 
             }
             case "standardDataLicenses" -> {
                 String ts = data.toString();
                 EDStatic.standardDataLicensesAr[0] = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardDataLicensesAr[0];
-                String2.log("standardDataLicenses was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardDataLicenses was set.");
+                }
 
             }
             case "standardDisclaimerOfEndorsement" -> {
                 String ts = data.toString();
                 EDStatic.standardDisclaimerOfEndorsementAr[0] = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardDisclaimerOfEndorsementAr[0];
-                String2.log("standardDisclaimerOfEndorsement was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardDisclaimerOfEndorsement was set.");
+                }
 
             }
             case "standardDisclaimerOfExternalLinks" -> {
                 String ts = data.toString();
                 EDStatic.standardDisclaimerOfExternalLinksAr[0] = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
-                String2.log("standardDisclaimerOfExternalLinks was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardDisclaimerOfExternalLinks was set.");
+                }
 
             }
             case "standardGeneralDisclaimer" -> {
                 String ts = data.toString();
                 EDStatic.standardGeneralDisclaimerAr[0] = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardGeneralDisclaimerAr[0];
-                String2.log("standardGeneralDisclaimer was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardGeneralDisclaimer was set.");
+                }
 
             }
             case "standardPrivacyPolicy" -> {
                 String ts = data.toString();
                 EDStatic.standardPrivacyPolicyAr[0] = String2.isSomething(ts) ? ts :
                         EDStatic.DEFAULT_standardPrivacyPolicyAr[0];
-                String2.log("standardPrivacyPolicy was set.");
+
+                if(reallyVerbose) {
+                    String2.log("standardPrivacyPolicy was set.");
+                }
 
             }
             case "startHeadHtml5" -> {
@@ -342,7 +431,9 @@ public class TopLevelHandler extends DefaultHandler {
                 }
                 EDStatic.startHeadHtml = ts; //swap into place
 
-                String2.log("startHeadHtml5 was set.");
+                if(reallyVerbose) {
+                    String2.log("startHeadHtml5 was set.");
+                }
 
             }
             case "startBodyHtml5" -> {
@@ -350,7 +441,9 @@ public class TopLevelHandler extends DefaultHandler {
                 ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
                 EDStatic.startBodyHtmlAr[0] = ts; //swap into place
 
-                String2.log("startBodyHtml5 was set.");
+                if(reallyVerbose) {
+                    String2.log("startBodyHtml5 was set.");
+                }
 
             }
             case "theShortDescriptionHtml" -> {
@@ -358,7 +451,9 @@ public class TopLevelHandler extends DefaultHandler {
                 ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_theShortDescriptionHtmlAr[0];
                 EDStatic.theShortDescriptionHtmlAr[0] = ts; //swap into place
 
-                String2.log("theShortDescriptionHtml was set.");
+                if(reallyVerbose) {
+                    String2.log("theShortDescriptionHtml was set.");
+                }
 
             }
             case "endBodyHtml5" -> {
@@ -366,31 +461,48 @@ public class TopLevelHandler extends DefaultHandler {
                 EDStatic.endBodyHtmlAr[0] = String2.replaceAll(
                         String2.isSomething(ts) ? ts : EDStatic.DEFAULT_endBodyHtmlAr[0],
                         "&erddapVersion;", EDStatic.erddapVersion);
-                String2.log("endBodyHtml5 was set.");
+
+                if(reallyVerbose) {
+                    String2.log("endBodyHtml5 was set.");
+                }
 
             }
             case "convertInterpolateRequestCSVExample" -> {
                 EDStatic.convertInterpolateRequestCSVExample = data.toString();
-                String2.log("convertInterpolateRequestCSVExample=" + data);
+
+                if(reallyVerbose) {
+                    String2.log("convertInterpolateRequestCSVExample=" + data);
+                }
+
             }
             case "convertInterpolateDatasetIDVariableList" -> {
-                String sar[] = StringArray.arrayFromCSV(data.toString());
+                String[] sar = StringArray.arrayFromCSV(data.toString());
                 EDStatic.convertInterpolateDatasetIDVariableList = sar;
-                String2.log("convertInterpolateDatasetIDVariableList=" + String2.toCSVString(sar));
+
+                if(reallyVerbose) {
+                    String2.log("convertInterpolateDatasetIDVariableList=" + String2.toCSVString(sar));
+                }
 
             }
             case "unusualActivity" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.unusualActivity = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_unusualActivity : tnt;
-                String2.log("unusualActivity=" + EDStatic.unusualActivity);
+
+                if(reallyVerbose) {
+                    String2.log("unusualActivity=" + EDStatic.unusualActivity);
+                }
 
             }
             case "updateMaxEvents" -> {
                 int tnt = String2.parseInt(data.toString());
                 EDStatic.updateMaxEvents = tnt < 1 || tnt == Integer.MAX_VALUE ?
                         EDStatic.DEFAULT_updateMaxEvents : tnt;
-                String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
+
+                if(reallyVerbose) {
+                    String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
+                }
+
             }
         }
     }
