@@ -13,6 +13,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -56,6 +58,14 @@ public class TopLevelHandlerTests {
     void unusualActivityTest() throws IOException, SAXException {
         saxParser.parse(inputStream, new TopLevelHandler(null, null));
         assertEquals(EDStatic.unusualActivity, 25);
+    }
+
+    @Test
+    void userTest() throws IOException, SAXException {
+        var tUserHashMap = new HashMap();
+        saxParser.parse(inputStream, new TopLevelHandler(null, tUserHashMap));
+        Object[] user1Data = (Object[]) tUserHashMap.get("user1");
+        assertEquals("pass1", user1Data[0]);
     }
 
 }

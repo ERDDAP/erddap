@@ -9,4 +9,7 @@
     <unusualActivity>
         25
     </unusualActivity>
+    <user username="user1" password="pass1" roles="admin">
+        Test User
+    </user>
 </erddapDatasets>
