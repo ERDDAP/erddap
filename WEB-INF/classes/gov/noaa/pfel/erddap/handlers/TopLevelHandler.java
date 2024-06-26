@@ -49,7 +49,7 @@ public class TopLevelHandler extends DefaultHandler {
                     tPassword = tPassword.trim().toLowerCase();
                 }
                 String ttRoles = attributes.getValue("roles");
-                String tRoles[] = StringArray.arrayFromCSV(
+                String[] tRoles = StringArray.arrayFromCSV(
                         (ttRoles == null ? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn,
                         ",", true, false);
 
