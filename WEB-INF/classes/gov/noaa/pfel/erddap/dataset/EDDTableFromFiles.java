@@ -3122,6 +3122,126 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) throws Throwable;
 
+    private class SourceDataInfo {
+        String columnNameForExtractType = null;
+        StringArray globalNames = null;
+        StringArray globalTypes = null;
+        StringArray variableNames = null;
+        StringArray variableAttNames = null;
+        StringArray variableTypes = null;
+        StringArray fileNameNames = null;
+        StringArray fileNameTypes = null;
+        StringArray fileNameRegexes = null;
+        IntArray fileNameCGs = null;
+        StringArray pathNameNames = null;
+        StringArray pathNameTypes = null;
+        StringArray pathNameRegexes = null;
+        IntArray pathNameCGs = null;
+        StringArray scriptNames = null;
+        StringArray scriptTypes = null;
+    }
+
+    private void processSourceNames(StringArray sourceDataNames, String sourceDataTypes[],
+        StringArray sourceNames, StringArray sourceTypes, SourceDataInfo sourceInfo,
+            HashSet<String> needOtherSourceNames, HashSet<String> sourceNamesSet) {
+        // grab any "global:..." and "variable:..." sourceDataNames
+        int nSourceDataNames = sourceDataNames.size();
+        for (int i = 0; i < nSourceDataNames; i++) {
+            String name = sourceDataNames.get(i);
+
+            if (name.equals(columnNameForExtract)) {
+                sourceInfo.columnNameForExtractType = sourceDataTypes[i];
+
+            } else if (name.startsWith("global:")) {
+                // promote a global attribute
+                if (sourceInfo.globalNames == null) {
+                    sourceInfo.globalNames = new StringArray();
+                    sourceInfo.globalTypes = new StringArray();
+                }
+                sourceInfo.globalNames.add(name.substring(7));
+                sourceInfo.globalTypes.add(sourceDataTypes[i]);
+
+            } else if (name.startsWith("variable:")) {
+                // promote a variable attribute
+                if (sourceInfo.variableNames == null) {
+                    sourceInfo.variableNames = new StringArray();
+                    sourceInfo.variableAttNames = new StringArray();
+                    sourceInfo.variableTypes = new StringArray();
+                }
+                String s = name.substring(9);
+                int cpo = s.indexOf(':');
+                if (cpo <= 0) {
+                    throw new SimpleException("datasets.xml error: " +
+                            "To convert variable metadata to data, sourceName should be " +
+                            "variable:[varName]:[attributeName]. " +
+                            "Invalid sourceName=" + name);
+                }
+                String tVarName = s.substring(0, cpo);
+                sourceInfo.variableNames.add(tVarName);
+                sourceInfo.variableAttNames.add(s.substring(cpo + 1));
+                sourceInfo.variableTypes.add(sourceDataTypes[i]);
+                needOtherSourceNames.add(tVarName);
+
+            } else if (name.startsWith("***fileName,")) {
+                // grab content from the fileName
+                if (sourceInfo.fileNameNames == null) {
+                    sourceInfo.fileNameNames = new StringArray();
+                    sourceInfo.fileNameTypes = new StringArray();
+                    sourceInfo.fileNameRegexes = new StringArray();
+                    sourceInfo.fileNameCGs = new IntArray();
+                }
+                String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
+                if (csv.length != 2) {
+                    throw new SimpleException("datasets.xml error: " +
+                            "To extract data from a fileName, sourceName should be " +
+                            "***fileName,[extractRegex],[captureGroupNumber] . " +
+                            "Invalid sourceName=" + name);
+                }
+                sourceInfo.fileNameNames.add(name);
+                sourceInfo.fileNameTypes.add(sourceDataTypes[i]);
+                sourceInfo.fileNameRegexes.add(csv[0]);
+                sourceInfo.fileNameCGs.add(String2.parseInt(csv[1]));
+
+            } else if (name.startsWith("***pathName,")) {
+                // grab content from the pathName
+                if (sourceInfo.pathNameNames == null) {
+                    sourceInfo.pathNameNames = new StringArray();
+                    sourceInfo.pathNameTypes = new StringArray();
+                    sourceInfo.pathNameRegexes = new StringArray();
+                    sourceInfo.pathNameCGs = new IntArray();
+                }
+                String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
+                if (csv.length != 2) {
+                    throw new SimpleException("datasets.xml error: " +
+                            "To extract data from a pathName, sourceName should be " +
+                            "***pathName,[extractRegex],[captureGroupNumber] . " +
+                            "Invalid sourceName=" + name);
+                }
+                sourceInfo.pathNameNames.add(name);
+                sourceInfo.pathNameTypes.add(sourceDataTypes[i]);
+                sourceInfo.pathNameRegexes.add(csv[0]);
+                sourceInfo.pathNameCGs.add(String2.parseInt(csv[1]));
+
+            } else if (name.startsWith("=")) {
+                // content comes from a script
+                if (sourceInfo.scriptNames == null) {
+                    sourceInfo.scriptNames = new StringArray();
+                    sourceInfo.scriptTypes = new StringArray();
+                }
+                sourceInfo.scriptNames.add(name);
+                sourceInfo.scriptTypes.add(sourceDataTypes[i]);
+
+                // later: ensure columns referenced in script are in sourceNamesSet
+                needOtherSourceNames.addAll(scriptNeedsColumns.get(name));
+            } else {
+                // regular variable. Keep it.
+                if (sourceNamesSet.add(name)) { // if not already present
+                    sourceNames.add(name);
+                    sourceTypes.add(sourceDataTypes[i]);
+                }
+            }
+        }
+    }
 
     /** 
      * This parent method for lowGetSourceDataFromFile
@@ -3139,128 +3259,35 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         double sortedSpacing, double minSorted, double maxSorted, 
         StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) throws Throwable {
-
-        //grab any "global:..." and "variable:..." sourceDataNames
-        int nSourceDataNames = sourceDataNames.size();
-        HashSet<String> sourceNamesSet = new HashSet();
-        HashSet<String> needOtherSourceNames = new HashSet();
+        
+        HashSet<String> sourceNamesSet = new HashSet<>();
+        HashSet<String> needOtherSourceNames = new HashSet<>();
         StringArray sourceNames = new StringArray(); //subset with true sourceNames (actual vars)
         StringArray sourceTypes = new StringArray();
-        String      columnNameForExtractType = null;
-        StringArray globalNames = null;
-        StringArray globalTypes = null;
-        StringArray variableNames    = null;
-        StringArray variableAttNames = null;
-        StringArray variableTypes    = null;
-        StringArray fileNameNames   = null;
-        StringArray fileNameTypes   = null;
-        StringArray fileNameRegexes = null; 
-        IntArray    fileNameCGs     = null;
-        StringArray pathNameNames   = null;
-        StringArray pathNameTypes   = null;
-        StringArray pathNameRegexes = null; 
-        IntArray    pathNameCGs     = null;
-        StringArray scriptNames     = null;
-        StringArray scriptTypes     = null;
-
-        for (int i = 0; i < nSourceDataNames; i++) {
-            String name = sourceDataNames.get(i);
-
-            if (name.equals(columnNameForExtract)) {
-                columnNameForExtractType = sourceDataTypes[i];
-
-            } else if (name.startsWith("global:")) {
-                //promote a global attribute
-                if (globalNames == null) {
-                    globalNames = new StringArray();
-                    globalTypes = new StringArray();
+        SourceDataInfo sourceInfo = new SourceDataInfo();
+        
+        processSourceNames(sourceDataNames, sourceDataTypes, sourceNames, sourceTypes, sourceInfo, needOtherSourceNames, sourceNamesSet);
+        
+        if (needOtherSourceNames.size() > 0) {
+            StringArray secondPassNames = new StringArray();
+            StringArray secondPassTypes = new StringArray();
+            for (String osName : needOtherSourceNames) {
+                if (!sourceNamesSet.contains(osName)) { //if not already present
+                    secondPassNames.add(osName);
+                    secondPassTypes.add("String");
                 }
-                globalNames.add(name.substring(7));
-                globalTypes.add(sourceDataTypes[i]);
-
-            } else if (name.startsWith("variable:")) {
-                //promote a variable attribute
-                if (variableNames == null) {
-                    variableNames    = new StringArray();
-                    variableAttNames = new StringArray();
-                    variableTypes    = new StringArray();
-                }
-                String s = name.substring(9);
-                int cpo = s.indexOf(':');
-                if (cpo <= 0) 
-                    throw new SimpleException("datasets.xml error: " +
-                        "To convert variable metadata to data, sourceName should be " +
-                        "variable:[varName]:[attributeName]. " +
-                        "Invalid sourceName=" + name);                
-                String tVarName = s.substring(0, cpo);
-                variableNames.add(tVarName);
-                variableAttNames.add(s.substring(cpo + 1));
-                variableTypes.add(sourceDataTypes[i]);
-                needOtherSourceNames.add(tVarName);
-
-            } else if (name.startsWith("***fileName,")) {
-                //grab content from the fileName
-                if (fileNameNames == null) {
-                    fileNameNames   = new StringArray();
-                    fileNameTypes   = new StringArray();
-                    fileNameRegexes = new StringArray();
-                    fileNameCGs     = new IntArray();
-                }
-                String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
-                if (csv.length != 2) 
-                    throw new SimpleException("datasets.xml error: " +
-                        "To extract data from a fileName, sourceName should be " +
-                        "***fileName,[extractRegex],[captureGroupNumber] . " +
-                        "Invalid sourceName=" + name);  
-                fileNameNames.add(name);
-                fileNameTypes.add(sourceDataTypes[i]);
-                fileNameRegexes.add(csv[0]);
-                fileNameCGs.add(String2.parseInt(csv[1]));
-
-            } else if (name.startsWith("***pathName,")) {
-                //grab content from the pathName
-                if (pathNameNames == null) {
-                    pathNameNames   = new StringArray();
-                    pathNameTypes   = new StringArray();
-                    pathNameRegexes = new StringArray();
-                    pathNameCGs     = new IntArray();
-                }
-                String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
-                if (csv.length != 2) 
-                    throw new SimpleException("datasets.xml error: " +
-                        "To extract data from a pathName, sourceName should be " +
-                        "***pathName,[extractRegex],[captureGroupNumber] . " +
-                        "Invalid sourceName=" + name);                
-                pathNameNames.add(name);
-                pathNameTypes.add(sourceDataTypes[i]);
-                pathNameRegexes.add(csv[0]);
-                pathNameCGs.add(String2.parseInt(csv[1]));
-
-            } else if (name.startsWith("=")) {
-                //content comes from a script
-                if (scriptNames == null) {
-                    scriptNames = new StringArray();                
-                    scriptTypes = new StringArray();                
-                }
-                scriptNames.add(name);
-                scriptTypes.add(sourceDataTypes[i]);
-
-                //later: ensure columns referenced in script are in sourceNamesSet
-                needOtherSourceNames.addAll(scriptNeedsColumns.get(name));
-
-            } else {
-                //regular variable. Keep it.
-                if (sourceNamesSet.add(name)) { //if not already present
-                    sourceNames.add(name);
-                    sourceTypes.add(sourceDataTypes[i]);
-                }
+            }
+            if (secondPassNames.size() > 0) {
+                needOtherSourceNames.clear();
+                processSourceNames(secondPassNames, secondPassTypes.toArray(), sourceNames, sourceTypes, sourceInfo, needOtherSourceNames, sourceNamesSet);
             }
         }
 
         //?! remove sourceConVars, sourceConOps, sourceConValues that are used by 
         //special variables. Not necessary, since no column in source will have the special name.
 
-        //then ensure needOtherSourceNames are in sourceNames
+        // third pass, ensure needOtherSourceNames are in sourceNames
+        // This assumes all source names in this "third" pass are actually in the source.
         for (String osName : needOtherSourceNames) {
             if (sourceNamesSet.add(osName)) { //if not already present
                 sourceNames.add(osName);
@@ -3275,7 +3302,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
         Table table;
         int nRows;
-        if (sourceNames.size() == 0 && globalNames == null) {  //if globalNames!=null, we need global atts
+        if (sourceNames.size() == 0 && sourceInfo.globalNames == null) {  //if globalNames!=null, we need global atts
             //we don't need anything from the file, just special variables added below.
             table = new Table();
             nRows = 1; //so one row of special values will be added below
@@ -3295,27 +3322,27 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                 //or =[script] because no source var with that name in the file.
                 //If this leads to trouble, remove them above.
                 sourceConVars, sourceConOps, sourceConValues,
-                getMetadata || globalNames != null || variableNames != null, 
+                getMetadata || sourceInfo.globalNames != null || sourceInfo.variableNames != null, 
                 mustGetData);
             nRows = table.nRows();  //may be 0 if mustGetData=false
             //if (debugMode) String2.log(table.getNCHeader("row"));
         }
 
         //columnNameForExtract
-        if (columnNameForExtractType != null) {
+        if (sourceInfo.columnNameForExtractType != null) {
             String value = extractFromFileName(tFileName);
             PrimitiveArray pa = PrimitiveArray.factory(
-                PAType.fromCohortString(columnNameForExtractType), nRows, value); 
+                PAType.fromCohortString(sourceInfo.columnNameForExtractType), nRows, value); 
             table.addColumn(columnNameForExtract, pa);
 
         }
 
         //convert global: metadata to be data columns
-        if (globalNames != null) {
+        if (sourceInfo.globalNames != null) {
             Attributes globalAtts = table.globalAttributes();
-            int nGlobalNames = globalNames.size();
+            int nGlobalNames = sourceInfo.globalNames.size();
             for (int gni = 0; gni < nGlobalNames; gni++) {
-                PrimitiveArray pa = globalAtts.remove(globalNames.get(gni));
+                PrimitiveArray pa = globalAtts.remove(sourceInfo.globalNames.get(gni));
                 if (pa != null && pa.size() > 0) {
 
                     //make pa size=1
@@ -3324,36 +3351,41 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
                     //force column to be specified type
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PAType.fromCohortString(globalTypes.get(gni)), 1, false);
+                        PAType.fromCohortString(sourceInfo.globalTypes.get(gni)), 1, false);
                     newPa.append(pa);
                     pa = newPa;
 
+                    int count = nRows - 1;
+                    if (nRows == 0) {
+                        count = 1;
+                    }
                     //duplicate the value
-                    if (nRows == 0) { //e.g., when just getting metadata
-                       pa.clear();
+                    if (nRows == 0 && !mustGetData) { 
+                        // e.g., when just getting metadata
+                        pa.clear();
                     } else if (pa instanceof StringArray) {
                         String ts = pa.getString(0);
-                        pa.addNStrings(nRows - 1, ts == null? "" : ts);
+                        pa.addNStrings(count, ts == null? "" : ts);
                     } else {
-                        pa.addNDoubles(nRows - 1, pa.getDouble(0));
+                        pa.addNDoubles(count, pa.getDouble(0));
                     }
 
                     //add pa to the table
-                    table.addColumn("global:" + globalNames.get(gni), pa);
+                    table.addColumn("global:" + sourceInfo.globalNames.get(gni), pa);
                 } //If att not in results, just don't add to results table.  
             }
         }
 
         //convert variable: metadata to be data columns
-        if (variableNames != null) {
-            int nVariableNames = variableNames.size();
+        if (sourceInfo.variableNames != null) {
+            int nVariableNames = sourceInfo.variableNames.size();
             for (int vni = 0; vni < nVariableNames; vni++) {
-                int col = table.findColumnNumber(variableNames.get(vni));
+                int col = table.findColumnNumber(sourceInfo.variableNames.get(vni));
                 if (col >= 0) {
                     //var is in file. Try to get attribute
-                    PrimitiveArray pa = table.columnAttributes(col).get(variableAttNames.get(vni));
+                    PrimitiveArray pa = table.columnAttributes(col).get(sourceInfo.variableAttNames.get(vni));
                     if (pa != null && pa.size() > 0) {
-                        pa = PrimitiveArray.factory(PAType.fromCohortString(variableTypes.get(vni)), pa);
+                        pa = PrimitiveArray.factory(PAType.fromCohortString(sourceInfo.variableTypes.get(vni)), pa);
 
                         //make pa size=1
                         if (pa.size() > 1) {
@@ -3377,51 +3409,53 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                         }
 
                         //add pa to the table
-                        table.addColumn("variable:" + variableNames.get(vni) + 
-                            ":" + variableAttNames.get(vni), 
+                        table.addColumn("variable:" + sourceInfo.variableNames.get(vni) + 
+                            ":" + sourceInfo.variableAttNames.get(vni), 
                             pa);
                     }
                 } else {
-                    if (reallyVerbose) String2.log("WARNING: extract varName=" + variableNames.get(vni) + " not in table.");
+                    if (reallyVerbose) String2.log("WARNING: extract varName=" + sourceInfo.variableNames.get(vni) + " not in table.");
                 }
                 //If var or att not in results, just don't add to results table.  
             }
         }
 
         //convert "***fileName," extract into data column
-        if (fileNameNames != null) {
-            int nFileNameNames = fileNameNames.size();
+        if (sourceInfo.fileNameNames != null) {
+            int nFileNameNames = sourceInfo.fileNameNames.size();
             for (int fni = 0; fni < nFileNameNames; fni++) {
-                Matcher matcher = Pattern.compile(fileNameRegexes.get(fni)).matcher(tFileName); 
+                Matcher matcher = Pattern.compile(sourceInfo.fileNameRegexes.get(fni)).matcher(tFileName); 
                 if (matcher.matches()) {  
-                    String val = matcher.group(fileNameCGs.get(fni)); 
+                    String val = matcher.group(sourceInfo.fileNameCGs.get(fni)); 
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PAType.fromCohortString(fileNameTypes.get(fni)),
+                        PAType.fromCohortString(
+                                    sourceInfo.fileNameTypes.get(fni)),
                         nRows, val);
-                    table.addColumn(fileNameNames.get(fni), newPa);
+                    table.addColumn(sourceInfo.fileNameNames.get(fni), newPa);
                 } //if no match, just don't add to results table.  
             }
         }
 
         //convert "***pathName," extract into data column
-        if (pathNameNames != null) {
-            int nPathNameNames = pathNameNames.size();
+        if (sourceInfo.pathNameNames != null) {
+            int nPathNameNames = sourceInfo.pathNameNames.size();
             for (int fni = 0; fni < nPathNameNames; fni++) {
-                Matcher matcher = Pattern.compile(pathNameRegexes.get(fni)).matcher(tFileDir + tFileName); 
+                Matcher matcher = Pattern.compile(sourceInfo.pathNameRegexes.get(fni)).matcher(tFileDir + tFileName); 
                 if (matcher.matches()) {  
-                    String val = matcher.group(pathNameCGs.get(fni)); 
+                    String val = matcher.group(sourceInfo.pathNameCGs.get(fni)); 
                     PrimitiveArray newPa = PrimitiveArray.factory(
-                        PAType.fromCohortString(pathNameTypes.get(fni)),
+                        PAType.fromCohortString(
+                                    sourceInfo.pathNameTypes.get(fni)),
                         nRows, val);
-                    table.addColumn(pathNameNames.get(fni), newPa);
+                    table.addColumn(sourceInfo.pathNameNames.get(fni), newPa);
                 } //if no match, just don't add to results table.  
             }
         }
 
         //convert script columns into data columns
-        if (scriptNames != null)             
+        if (sourceInfo.scriptNames != null)             
             convertScriptColumnsToDataColumns(tFileDir + tFileName, table, 
-                scriptNames, scriptTypes, scriptNeedsColumns);
+                    sourceInfo.scriptNames, sourceInfo.scriptTypes, scriptNeedsColumns);
 
         return table;
     }

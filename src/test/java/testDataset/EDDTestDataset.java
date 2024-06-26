@@ -236,6 +236,7 @@ public class EDDTestDataset {
       // get the data
       datasetsXml.append(xmlFragment_testGridWav());
       // datasetsXml.append(xmlFragment_TS_SLEV_TAD()); // dataset not available
+      datasetsXml.append(xmlFragment_TS_ATMP_AAD());
 
       datasetsXml.append(
               "<!-- For EDDGridSideBySide, the datasetID's for the parent and the children must be different. -->\n" + //
@@ -39924,6 +39925,179 @@ public class EDDTestDataset {
         "        </addAttributes>\n" + //
         "    </dataVariable>\n" + //
         "</dataset>\n";
+  }
+
+  public static EDD getTS_ATMP_AAD() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_TS_ATMP_AAD());
+  }
+
+  private static String xmlFragment_TS_ATMP_AAD() throws URISyntaxException {
+    return "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"TS_ATMP_AAD\" active=\"true\">\n" + //
+            "\t<reloadEveryNMinutes>60</reloadEveryNMinutes>\n" + //
+            "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/TS_ATMP_AAD/").toURI()).toString()
+        + "</fileDir>\n" +
+            "\t<fileNameRegex>.*\\.nc</fileNameRegex>\n" + //
+            "\t<recursive>true</recursive>\n" + //
+            "\t<pathRegex>.*</pathRegex>\n" + //
+            "\t<metadataFrom>last</metadataFrom>\n" + //
+            "\t<standardizeWhat>0</standardizeWhat>\n" + //
+            "\t<removeMVRows>true</removeMVRows>\n" + //
+            "\t<sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
+            "\t<fileTableInMemory>false</fileTableInMemory>\n" + //
+            "\t<addAttributes>\n" + //
+            "\t\t<!-- omississ -->\n" +
+        "        <att name=\"cdm_data_type\">TimeSeries</att>\n" + //
+        "        <att name=\"cdm_timeseries_variables\">PLATFORMCODE,SOURCE,latitude,longitude</att>\n" + //
+
+            "        <att name=\"sourceUrl\">(local files)</att>\n" +
+            "        <att name=\"infoUrl\">http://www.emodnet-physics.eu</att>\n" + //
+        "        <att name=\"institution\">AAD</att>\n" + //
+            "        <att name=\"summary\">AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation</att>\n" + //
+            "        <att name=\"title\">AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation</att>\n" + //
+            "\t</addAttributes>        \n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>global:platformCode</sourceName>\n" + //
+            "\t\t<destinationName>PLATFORMCODE</destinationName>\n" + //
+            "\t\t<dataType>String</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"long_name\">EMODnet Platform Code</att>\n" + //
+            "\t\t\t<att name=\"cf_role\">timeseries_id</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>    \n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>=\"aad\"</sourceName>\n" + //
+            "\t\t<destinationName>SOURCE</destinationName>\n" + //
+            "\t\t<dataType>String</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"long_name\">source</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>      \n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>variable:ATMP:sensor</sourceName>\n" + //
+            "\t\t<destinationName>SENSOR</destinationName>\n" + //
+            "\t\t<dataType>String</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"long_name\">Platform Sensor</att>\n" +
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>    \n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>TIME</sourceName>\n" + //
+            "\t\t<destinationName>time</destinationName>\n" + //
+            "\t\t<dataType>double</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>TIME_QC</sourceName>\n" + //
+            "\t\t<destinationName>TIME_QC</destinationName>\n" + //
+            "\t\t<dataType>short</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>DEPTH</sourceName>\n" + //
+            "\t\t<destinationName>depth</destinationName>\n" + //
+            "\t\t<dataType>double</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>DEPTH_QC</sourceName>\n" + //
+            "\t\t<destinationName>DEPTH_QC</destinationName>\n" + //
+            "\t\t<dataType>short</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "\t\t\t<att name=\"standard_name\">depth</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>LATITUDE</sourceName>\n" + //
+            "\t\t<destinationName>latitude</destinationName>\n" + //
+            "\t\t<dataType>double</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "\t\t\t<att name=\"latitude.reference_datum\">null</att>\n" + //
+            "\t\t\t<att name=\"latitude_reference_datum\">geographical coordinates, WGS84 projection</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>    \n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>LONGITUDE</sourceName>\n" + //
+            "\t\t<destinationName>longitude</destinationName>\n" + //
+            "\t\t<dataType>double</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t\t<att name=\"latitude.reference_datum\">null</att>\n" + //
+            "\t\t\t<att name=\"latitude_reference_datum\">geographical coordinates, WGS84 projection</att>\n" + //
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>POSITION_QC</sourceName>\n" + //
+            "\t\t<destinationName>POSITION_QC</destinationName>\n" + //
+            "\t\t<dataType>short</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>ATMP</sourceName>\n" + //
+            "\t\t<destinationName>ATMP</destinationName>\n" + //
+            "\t\t<dataType>double</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>ATMP_QC</sourceName>\n" + //
+            "\t\t<destinationName>ATMP_QC</destinationName>\n" + //
+            "\t\t<dataType>short</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>ATMP_DM</sourceName>\n" + //
+            "\t\t<destinationName>ATMP_DM</destinationName>\n" + //
+            "\t\t<dataType>char</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"_ChunkSizes\">null</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>=var p=row.columnString(\"global:platformCode\");var s=\"aad\";var x=\"https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&amp;PLATFORMCODE=%22\"+p+\"%22&amp;integrator_id=%22\"+s+\"%22&amp;distinct()\";return x</sourceName>\n" + //
+            "\t\t<destinationName>url_metadata</destinationName>\n" + //
+            "\t\t<dataType>String</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "\t\t\t<att name=\"long_name\">Metadata Link</att>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "\t<dataVariable>\n" + //
+            "\t\t<sourceName>=25</sourceName>\n" + //
+            "\t\t<destinationName>qc_entity</destinationName>\n" + //
+            "\t\t<dataType>int</dataType>\n" + //
+            "\t\t<addAttributes>\n" + //
+            "            <att name=\"ioos_category\">Unknown</att>\n" +
+            "\t\t\t<att name=\"qc_reference_table\">\"https://er2webapps.emodnet-physics.eu/erddap/tabledap/qc_reference_table.htmlTable</att>\n" + //
+            "\t\t</addAttributes>\n" + //
+            "\t</dataVariable>\n" + //
+            "</dataset>\n";
   }
 
   public static EDD gettestTreatDimensionsAs() throws Throwable {

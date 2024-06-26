@@ -1,5 +1,9 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -4746,4 +4750,32 @@ class EDDTableFromMultidimNcFilesTests {
     // String2.log(results);
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
+
+  @org.junit.jupiter.api.Test
+  void testScriptOnlyRequest() throws Throwable {
+
+    EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)EDDTestDataset.getTS_ATMP_AAD();    
+    String dir = EDStatic.fullTestCacheDirectory;
+    // edd.makeNewFileForDapQuery(0, null, null, )
+    String fileTypeExtension = ".csv";
+    String fileName = "testScriptOnlyRequest" + fileTypeExtension;
+    String fullName = dir + fileName;
+    OutputStreamSource outputStreamSource = new OutputStreamSourceSimple(
+            new BufferedOutputStream(new FileOutputStream(fullName)));
+    edd.respondToDapQuery(0, null, null, null, null,
+    "erddap/tabledap/TS_ATMP_AAD.csv",
+    "TS_ATMP_AAD.csv",
+    "url_metadata&distinct()",
+    outputStreamSource, dir, fileName, fileTypeExtension);
+    String results = File2.directReadFrom88591File(fullName);
+    assertEquals("url_metadata\n" + //
+                "\n" + //
+                "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Casey Skiway%22&integrator_id=%22aad%22&distinct()\n" + //
+                "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Casey%22&integrator_id=%22aad%22&distinct()\n" + //
+                "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Davis%22&integrator_id=%22aad%22&distinct()\n" + //
+                "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Macquarie Island%22&integrator_id=%22aad%22&distinct()\n" + //
+                "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Mawson%22&integrator_id=%22aad%22&distinct()\n",
+                results);
+  }
+  
 }
