@@ -21,11 +21,13 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -39,6 +41,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.index.Term;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP.
@@ -184,9 +191,14 @@ public class LoadDatasets extends Thread {
             //    Low memory use.
             //I went with SimpleXMLReader
             inputStream = getInputStream(inputStream);
-
+            boolean useSaxParser = EDStatic.useSaxParser;
             int[] nTryAndDatasets = new int[2];
-            parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            if(useSaxParser) {
+                //SAX parsing
+                parseUsingSAX(warningsFromLoadDatasets, tUserHashMap);
+            } else {
+                parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
+            }
             int nTry = nTryAndDatasets[0];
             int nDatasets = nTryAndDatasets[1];
 
@@ -349,6 +361,14 @@ public class LoadDatasets extends Thread {
         } finally {
             EDStatic.suggestAddFillValueCSV.setLength(0);
         }
+    }
+
+    private void parseUsingSAX(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setXIncludeAware(true);
+        factory.setNamespaceAware(true);
+        SAXParser saxParser = factory.newSAXParser();
+        saxParser.parse(inputStream, new TopLevelHandler(warningsFromLoadDatasets, tUserHashMap));
     }
 
     private void parseUsingSimpleXmlReader(
