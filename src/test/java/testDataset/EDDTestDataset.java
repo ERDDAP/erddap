@@ -191,6 +191,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_nwioosGroundfish());
       // datasetsXml.append(xmlFragment_nosCoopsRWL()); //stationTable=null
       datasetsXml.append(xmlFragment_erdQSwindmday());
+      datasetsXml.append(xmlFragment_erdQSwindmday_LonPM180());
       // datasetsXml.append(xmlFragment_erdQSwind8day()); // very large files, not
       // currently loaded
       // datasetsXml.append(xmlFragment_erdQSstress1day()); // very large files, not
@@ -33655,6 +33656,20 @@ public class EDDTestDataset {
             "    </dataVariable>\n" + //
             "</dataset>\n" + //
             "</dataset>\n";
+  }
+
+  public static EDD geterdQSwindmday_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_erdQSwindmday_LonPM180());
+  }
+
+  private static String xmlFragment_erdQSwindmday_LonPM180() {
+    return "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdQSwindmday_LonPM180\" active=\"true\">\r\n" + //
+            "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdQSwindmday_LonPM180Child\">\r\n" + //
+            "        <!-- Wind, QuikSCAT SeaWinds, 0.125&#xc2;&#xb0;, Global, Science Quality, 1999-2009 (Monthly)\r\n" + //
+            "             minLon=0.0 maxLon=360.0 -->\r\n" + //
+            "        <sourceUrl>http://localhost:8080/erddap/griddap/erdQSwindmday</sourceUrl>\r\n" + //
+            "    </dataset>\r\n" + //
+            "</dataset>";
   }
 
   public static EDD geterdQSwind8day() throws Throwable {

@@ -12389,6 +12389,9 @@ class JettyTests {
         String fileName, expected, results;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
+        // There was a bug where loading the wms page for this dataset would cause the altitude value to
+        // increase by 10 every time. To verify that isn't happening, load the wms page.
+        SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap/wms/erdQSwindmday_LonPM180/index.html");
         fileName = TEMP_DIR.toAbsolutePath() + "/testDapToNcDGrid.nc";
         System.out.println(fileName);
         String dGridUrl = "http://localhost:8080/erddap/griddap/erdQSwindmday";
