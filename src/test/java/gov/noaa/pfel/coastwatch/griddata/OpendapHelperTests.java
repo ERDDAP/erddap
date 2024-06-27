@@ -14,8 +14,6 @@ import com.cohort.util.Test;
 /** The Java DAP classes.  */
 import dods.dap.DAS;
 import dods.dap.DConnect;
-import dods.dap.DDS;
-import tags.TagExternalERDDAP;
 import tags.TagIncompleteTest;
 import tags.TagThredds;
 
