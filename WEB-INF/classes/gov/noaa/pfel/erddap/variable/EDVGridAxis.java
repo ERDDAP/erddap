@@ -259,7 +259,8 @@ public class EDVGridAxis extends EDV {
      * dest is altitude).
      */
     public PrimitiveArray destinationValues() {
-        return toDestination(sourceValues()); //alt and time may modify the values, so use sourceValues.clone()
+        // alt and time may modify the values, so use sourceValues.clone()
+        return toDestination((PrimitiveArray)sourceValues().clone());
     }
 
     /**
