@@ -7748,7 +7748,7 @@ public class EDDTestDataset {
         "        <recursive>false</recursive>\n" + //
         "        <pathRegex>.*</pathRegex>\n" + //
         "        <metadataFrom>last</metadataFrom>\n" + //
-        "        <removeMVRows>true</removeMVRows>\n" + //
+        "        <removeMVRows>false</removeMVRows>\n" + //
         "        <sortedColumnSourceName>time</sortedColumnSourceName>\n" + //
         "        <defaultGraphQuery>time,temperature&amp;time&gt;=max(time)-3days&amp;.draw=lines</defaultGraphQuery>\n"
         + //
@@ -38904,7 +38904,7 @@ public class EDDTestDataset {
         "    <postExtractRegex></postExtractRegex>\n" + //
         "    <extractRegex></extractRegex>\n" + //
         "    <columnNameForExtract></columnNameForExtract>\n" + //
-        "    <removeMVRows>true</removeMVRows>\n" + //
+        "    <removeMVRows>false</removeMVRows>\n" + //
         "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" + //
         "    <fileTableInMemory>false</fileTableInMemory>\n" + //
         "    <addAttributes>\n" + //
@@ -39142,7 +39142,7 @@ public class EDDTestDataset {
         "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
         "    <fileTableInMemory>false</fileTableInMemory>\n" + //
         "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
-        "    <removeMVRows>true</removeMVRows>\n" + //
+        "    <removeMVRows>false</removeMVRows>\n" + //
         "    <!-- sourceAttributes>\n" + //
         "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
         "        <att name=\"featureType\">trajectoryProfile</att>\n" + //
@@ -39942,7 +39942,7 @@ public class EDDTestDataset {
             "\t<pathRegex>.*</pathRegex>\n" + //
             "\t<metadataFrom>last</metadataFrom>\n" + //
             "\t<standardizeWhat>0</standardizeWhat>\n" + //
-            "\t<removeMVRows>true</removeMVRows>\n" + //
+            "\t<removeMVRows>false</removeMVRows>\n" + //
             "\t<sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
             "\t<fileTableInMemory>false</fileTableInMemory>\n" + //
             "\t<addAttributes>\n" + //
@@ -41105,7 +41105,7 @@ public class EDDTestDataset {
         "    <postExtractRegex></postExtractRegex>\n" + //
         "    <extractRegex></extractRegex>\n" + //
         "    <columnNameForExtract></columnNameForExtract>\n" + //
-        "    <removeMVRows>true</removeMVRows>\n" + //
+        "    <removeMVRows>false</removeMVRows>\n" + //
         "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" + //
         "    <fileTableInMemory>false</fileTableInMemory>\n" + //
         "    <!-- sourceAttributes>\n" + //
@@ -42316,7 +42316,7 @@ public class EDDTestDataset {
         "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
         "    <fileTableInMemory>false</fileTableInMemory>\n" + //
         "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
-        "    <removeMVRows>true</removeMVRows>\n" + //
+        "    <removeMVRows>false</removeMVRows>\n" + //
         "    <!-- sourceAttributes>\n" + //
         "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
         "        <att name=\"featureType\">trajectoryProfile</att>\n" + //
@@ -43125,7 +43125,7 @@ public class EDDTestDataset {
         "    <!--sortFilesBySourceNames>FLOAT_SERIAL_NO JULD</sortFilesBySourceNames-->\n" + //
         "    <fileTableInMemory>false</fileTableInMemory>\n" + //
         "    <!--accessibleViaFiles>true</accessibleViaFiles-->\n" + //
-        "    <removeMVRows>true</removeMVRows>\n" + //
+        "    <removeMVRows>false</removeMVRows>\n" + //
         "    <!-- sourceAttributes>\n" + //
         "        <att name=\"Conventions\">Argo-3.1 CF-1.6</att>\n" + //
         "        <att name=\"featureType\">trajectoryProfile</att>\n" + //

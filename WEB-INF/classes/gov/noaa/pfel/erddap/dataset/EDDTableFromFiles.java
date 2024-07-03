@@ -1083,6 +1083,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         sortedColumnSourceName = tSortedColumnSourceName;
         int ndv = tDataVariables.length;
 
+        removeMVRows = tRemoveMVRows;
+
         if (String2.isSomething(tCacheFromUrl) && !String2.isRemote(tCacheFromUrl))
             throw new IllegalArgumentException(errorInMethod + "'cacheFromUrl' must be a URL.");
         tCacheFromUrl = File2.addSlash(tCacheFromUrl);
