@@ -350,6 +350,51 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.cosium.code</groupId>
+                <artifactId>git-code-format-maven-plugin</artifactId>
+                <version>5.3</version>
+                <executions>
+                    <!-- On commit, format the modified files -->
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>install-formatter-hook</id>
+                        <goals>
+                            <goal>install-hooks</goal>
+                        </goals>
+                    </execution>
+                    <!-- On Maven verify phase, fail if any file
+                    (including unmodified) is badly formatted -->
+                    <execution>
+                        <id>validate-code-format</id>
+                        <goals>
+                            <goal>validate-code-format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- Enable https://github.com/google/google-java-format -->
+                    <dependency>
+                    <groupId>com.cosium.code</groupId>
+                    <artifactId>google-java-format</artifactId>
+                    <version>5.3</version>
+                    </dependency>
+                </dependencies>      
+                <configuration>
+                    <formatterOptions>
+                        <!-- Use AOSP style instead of Google Style (4-space indentation). -->
+                        <googleJavaFormat.aosp>false</googleJavaFormat.aosp>
+                        <!-- Format the javadoc -->
+                        <googleJavaFormat.formatJavadoc>true</googleJavaFormat.formatJavadoc>
+                        <!-- Fix import order and remove any unused imports, but do no other formatting. -->
+                        <googleJavaFormat.fixImportsOnly>false</googleJavaFormat.fixImportsOnly>
+                        <!-- Do not fix the import order. Unused imports will still be removed. -->
+                        <googleJavaFormat.skipSortingImports>false</googleJavaFormat.skipSortingImports>
+                        <!-- Do not remove unused imports. Imports will still be sorted. -->
+                        <googleJavaFormat.skipRemovingUnusedImports>false</googleJavaFormat.skipRemovingUnusedImports>
+                    </formatterOptions>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
