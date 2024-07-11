@@ -6,17 +6,12 @@ package com.cohort.util;
 
 import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
-import com.cohort.array.StringArray;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.TimeZone;
 

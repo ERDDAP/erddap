@@ -172,6 +172,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ in
       <li><a rel="help" href="#standard_name">standard_name</a>
       <li><a rel="help" href="#units">units</a>
       </ul -->
+      <li><a rel="help" href="#removeMVRows"><kbd>&lt;removeMVRows></removeMVRows&gt;</kbd></a>
       <br>&nbsp;
     </ul>
   </ul>
@@ -15755,7 +15756,20 @@ email Chris.John at noaa.gov .</td>
         </ul>
 
       </ul> <!-- end of variable attributes -->
-  </ul>
+      <li><a class="selfLink" id="removeMVRows" href="#removeMVRows" rel="bookmark"><kbd><strong>&lt;removeMVRows&gt;</strong></kbd></a> 
+        is an OPTIONAL tag within a <dataset> tag in datasets.xml for EDDTableFromFiles (including all subclasses) datasets, though it is only used for EDDTableFromMultidimNcFiles. It can have a value of true or false. For example,
+          <removeMVRows>true</removeMVRows>
+          <br>
+          This removes any block of rows at the end of a group where all the values are missing_value, _FillValue, or the CoHort ...Array native missing value (or char=#32 for CharArrays).
+          This is for the CF DSG Multidimensional Array file type and similar files.
+          If true, this does the proper test and so always loads all the max dim variables, so it may take extra time. 
+          <br>
+          The default value of <removeMVRows> is false.
+            <br>
+          Recommendation -- If possible for your dataset, we recommend setting removeMVRows to false. Setting removeMVRows to true can significantly slow down requests, though may be needed for some datasets.
+          <br>&nbsp;
+        </ul>
+    </ul>
 </ul>
 
 

@@ -17,6 +17,7 @@ import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.pointdata.TableFromMultidimNcFile;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -116,7 +117,9 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             tFileDir + tFileName, fileDir, decompressedDirectory(), 
             EDStatic.decompressedCacheMaxGB, true); //reuseExisting
         if (mustGetData) {
-            table.readMultidimNc(decompFullName, sourceDataNames, null,
+            
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(decompFullName, sourceDataNames, null,
                 treatDimensionsAs,
                 getMetadata, standardizeWhat, removeMVRows,  
                 sourceConVars, sourceConOps, sourceConValues);
@@ -231,7 +234,8 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         //read the sample file
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;
-        dataSourceTable.readMultidimNc(sampleFileName, null, useDimensions,  
+        TableFromMultidimNcFile reader = new TableFromMultidimNcFile(dataSourceTable);
+        reader.readMultidimNc(sampleFileName, null, useDimensions,  
             tDimAs, //treatDimensionsAs
             true, tStandardizeWhat, tRemoveMVRows, //getMetadata, standardizeWhat, removeMVRows
             null, null, null); //conVars, conOps, conVals

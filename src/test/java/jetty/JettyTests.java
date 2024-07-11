@@ -236,7 +236,7 @@ class JettyTests {
                         "            <gco:Integer>NUMBER</gco:Integer>\n" + //
                         "          </gmd:dimensionSize>\n" + //
                         "          <gmd:resolution>\n" + //
-                        "            <gco:Measure uom=\"s\">2.176416E8</gco:Measure>\n" + //
+                        "            <gco:Measure uom=\"s\">VALUE</gco:Measure>\n" + //
                         "          </gmd:resolution>\n" + //
                         "        </gmd:MD_Dimension>\n" + //
                         "      </gmd:axisDimensionProperties>\n" + //
@@ -1232,6 +1232,8 @@ class JettyTests {
         results = results.replaceAll("<gco:Date>....-..-..</gco:Date>", "<gco:Date>YYYY-MM-DD</gco:Date>");
         results = results.replaceAll("<gco:Measure uom=\\\"s\\\">[0-9]+.[0-9]+</gco:Measure>",
                 "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
+        results = results.replaceAll("<gco:Measure uom=\\\"s\\\">.*</gco:Measure>",
+                        "<gco:Measure uom=\"s\">VALUE</gco:Measure>");
         results = results.replaceAll("<gml:endPosition>....-..-..T..:00:00Z</gml:endPosition>",
                 "<gml:endPosition>YYYY-MM-DDThh:00:00Z</gml:endPosition>");
         results = results.replaceAll("<gco:Integer>[0-9]+</gco:Integer>", "<gco:Integer>NUMBER</gco:Integer>");
@@ -2889,7 +2891,7 @@ class JettyTests {
         // String2.log("\n*** FileVisitorDNLS.testErddapFilesWAF2()\n");
 
         // *** test localhost
-        String2.log("\nThis test requires erdMH1chla1day in localhost erddap.");
+        // String2.log("\nThis test requires erdMH1chla1day in localhost erddap.");
         String url = "http://localhost:" + PORT + "/erddap/files/erdMH1chla1day/";
         String tFileNameRegex = "A20.*\\.nc(|\\.gz)";
         boolean tRecursive = true;
@@ -4704,7 +4706,7 @@ class JettyTests {
                         "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n" + //
                         "  \"headline\": \"erdMH1chla1day\",\n" + //
                         "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n" + //
-                        "_lastModified=2016-10-18T06:45:00.000Z\\n" + //
+                        "_lastModified=YYYY-MM-DDThh:mm:ss.000Z\\n" + //
                         "cdm_data_type=Grid\\n" + //
                         "Conventions=CF-1.6, COARDS, ACDD-1.3\\n" + //
                         "Easternmost_Easting=179.9792\\n" + //
@@ -4731,7 +4733,7 @@ class JettyTests {
                         "Northernmost_Northing=89.97916\\n" + //
                         "platform=Aqua\\n" + //
                         "processing_level=L3 Mapped\\n" + //
-                        "processing_version=2014.0.1QL\\n" + //
+                        "processing_version=VERSION\\n" + //
                         "product_name=A2016291.L3m_DAY_CHL_chlor_a_4km.nc\\n" + //
                         "project=Ocean Biology Processing Group (NASA/GSFC/OBPG)\\n" + //
                         "sourceUrl=(local files)\\n" + //
@@ -5050,6 +5052,8 @@ class JettyTests {
         results = results.replaceAll("dateCreated\\\": \\\"....-..-..T..:..:..Z",
                 "dateCreated\\\": \\\"yyyy-mm-ddThh:mm:ssZ");
         results = results.replaceAll("100_multi_........1200", "100_multi_yyyymmdd1200");
+        results = results.replaceAll("_lastModified=....-..-..T..:..:...000Z", "_lastModified=YYYY-MM-DDThh:mm:ss.000Z");
+        results = results.replaceAll("processing_version=[0-9]+.[0-9].?.?.?.?\\\\n", "processing_version=VERSION\\\\n");
         po = Math.max(0, results.indexOf(expected.substring(0, 80)));
         Test.ensureEqual(results.substring(po, Math.min(results.length(), po + expected.length())),
                 expected, "results=\n" + results);
