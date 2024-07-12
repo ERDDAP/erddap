@@ -5,25 +5,57 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class TopLevelHandler extends DefaultHandler {
+public class TopLevelHandler extends State {
     private StringBuilder warningsFromLoadDatasets;
     private StringBuilder data = new StringBuilder();
     private HashMap tUserHashMap;
-    private boolean reallyVerbose = false;
+    private boolean reallyVerbose = false, majorLoad;
+    private int[] nTryAndDatasets;
+    private int nDatasets = 0;
+    private Erddap erddap;
+    private long lastLuceneUpdate;
+    StringArray changedDatasetIDs;
+    HashSet<String> orphanIDSet;
+    HashSet<String> datasetIDSet;
+    StringArray duplicateDatasetIDs;
+    String datasetsRegex;
 
-    public TopLevelHandler(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) {
+    public TopLevelHandler(
+            SaxHandler saxHandler,
+            int[] nTryAndDatasets,
+            StringBuilder warningsFromLoadDatasets,
+            HashMap tUserHashMap,
+            boolean majorLoad,
+            Erddap erddap,
+            long lastLuceneUpdate,
+            StringArray changedDatasetIDs,
+            HashSet<String> orphanIDSet,
+            HashSet<String> datasetIDSet,
+            StringArray duplicateDatasetIDs,
+            String datasetsRegex
+            ) {
+        super(saxHandler);
         this.warningsFromLoadDatasets = warningsFromLoadDatasets;
         this.tUserHashMap = tUserHashMap;
+        this.erddap = erddap;
+        this.majorLoad = majorLoad;
+        this.lastLuceneUpdate = lastLuceneUpdate;
+        this.nTryAndDatasets = nTryAndDatasets;
+        this.changedDatasetIDs = changedDatasetIDs;
+        this.orphanIDSet = orphanIDSet;
+        this.datasetIDSet = datasetIDSet;
+        this.duplicateDatasetIDs = duplicateDatasetIDs;
+        this.datasetsRegex = datasetsRegex;
     }
 
     @Override
@@ -102,6 +134,20 @@ public class TopLevelHandler extends DefaultHandler {
                                         tUsername + "\nChange one of them.\n\n");
                     }
                 }
+            }
+            case "dataset" -> {
+                nDatasets++;
+
+                String datasetType = attributes.getValue("type");
+                String datasetID = attributes.getValue("datasetID");
+                String active = attributes.getValue("active");
+
+                State state = HandlerFactory.getHandlerFor(
+                        datasetType, datasetID, active, this, saxHandler, majorLoad, erddap, reallyVerbose, lastLuceneUpdate,
+                        changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsRegex, nTryAndDatasets
+                );
+                nTryAndDatasets[1] = nDatasets;
+                saxHandler.setState(state);
             }
         }
     }

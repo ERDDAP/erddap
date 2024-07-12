@@ -12,5 +12,5 @@ abstract public class State {
 
     public abstract void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException;
     public abstract void characters(char[] ch, int start, int length) throws SAXException;
-    public abstract void endElement(String uri, String localName, String qName) throws SAXException;
+    public abstract void endElement(String uri, String localName, String qName) throws Throwable;
 }

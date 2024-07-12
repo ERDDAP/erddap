@@ -21,6 +21,7 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -194,8 +195,7 @@ public class LoadDatasets extends Thread {
             boolean useSaxParser = EDStatic.useSaxParser;
             int[] nTryAndDatasets = new int[2];
             if(useSaxParser) {
-                //SAX parsing
-                parseUsingSAX(warningsFromLoadDatasets, tUserHashMap);
+                parseUsingSAX(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, warningsFromLoadDatasets, tUserHashMap);
             } else {
                 parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
             }
@@ -215,7 +215,7 @@ public class LoadDatasets extends Thread {
             String datasetsThatFailedToLoad =
                 "n Datasets Failed To Load (in the last " + 
                 (majorLoad? "major" : "minor") + " LoadDatasets) = " + ndf + "\n" +
-                (datasetsThatFailedToLoadSB.length() == 0? "" :
+                (datasetsThatFailedToLoadSB.isEmpty() ? "" :
                     "    " + dtftl + "(end)\n");
             String errorsDuringMajorReload = majorLoad && duplicateDatasetIDs.size() > 0?         
                 String2.ERROR + ": Duplicate datasetIDs in datasets.xml:\n    " +
@@ -363,12 +363,29 @@ public class LoadDatasets extends Thread {
         }
     }
 
-    private void parseUsingSAX(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) throws ParserConfigurationException, SAXException, IOException {
+    private void parseUsingSAX(
+            int[] nTryAndDatasets,
+            StringArray changedDatasetIDs,
+            HashSet<String> orphanIDSet,
+            HashSet<String> datasetIDSet,
+            StringArray duplicateDatasetIDs,
+            StringBuilder warningsFromLoadDatasets,
+            HashMap tUserHashMap
+    ) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setXIncludeAware(true);
         factory.setNamespaceAware(true);
+
         SAXParser saxParser = factory.newSAXParser();
-        saxParser.parse(inputStream, new TopLevelHandler(warningsFromLoadDatasets, tUserHashMap));
+        SaxHandler saxHandler = new SaxHandler();
+
+        TopLevelHandler topLevelHandler = new TopLevelHandler(
+                saxHandler, nTryAndDatasets, warningsFromLoadDatasets, tUserHashMap, majorLoad, erddap, lastLuceneUpdate,
+                changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsRegex
+        );
+
+        saxHandler.setState(topLevelHandler);
+        saxParser.parse(inputStream, saxHandler);
     }
 
     private void parseUsingSimpleXmlReader(
@@ -381,8 +398,7 @@ public class LoadDatasets extends Thread {
             HashMap tUserHashMap
     ) {
         SimpleXMLReader xmlReader = null;
-        int nTry = 0;
-        int nDatasets = 0;
+        int nTry = 0, nDatasets = 0;
         try {
             xmlReader = new SimpleXMLReader(inputStream, "erddapDatasets");
             String startError = "datasets.xml error on line #";
@@ -496,7 +512,7 @@ public class LoadDatasets extends Thread {
 
                         //active="false"?  (very powerful)
                         String tActiveString = xmlReader.attributeValue("active");
-                        boolean tActive = tActiveString != null && tActiveString.equals("false") ? false : true;
+                        boolean tActive = tActiveString == null || !tActiveString.equals("false");
                         if (!tActive) {
                             //marked not active now; was it active?
                             boolean needToUpdateLucene =
@@ -589,7 +605,7 @@ public class LoadDatasets extends Thread {
                             File2.deleteAllFiles(dataset.cacheDirectory());
 
                             change = dataset.changed(oldDataset);
-                            if (change.length() == 0 && dataset instanceof EDDTable)
+                            if (change.isEmpty() && dataset instanceof EDDTable)
                                 change = "The dataset was reloaded.";
 
                         } catch (Throwable t) {
@@ -1522,8 +1538,8 @@ public class LoadDatasets extends Thread {
      * @param catInfo the new categoryInfo hashMap of hashMaps of hashSets
      * @param edd the dataset who's info should be added to catInfo
      */
-    protected static void addRemoveDatasetInfo(boolean add, 
-        ConcurrentHashMap catInfo, EDD edd) {
+    public static void addRemoveDatasetInfo(boolean add,
+                                            ConcurrentHashMap catInfo, EDD edd) {
 
         //go through the gridDatasets
         String id = edd.datasetID();

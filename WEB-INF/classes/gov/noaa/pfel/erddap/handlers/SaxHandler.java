@@ -22,7 +22,11 @@ public class SaxHandler extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        this.state.endElement(uri, localName, qName);
+    public void endElement(String uri, String localName, String qName) {
+        try {
+            this.state.endElement(uri, localName, qName);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 }
