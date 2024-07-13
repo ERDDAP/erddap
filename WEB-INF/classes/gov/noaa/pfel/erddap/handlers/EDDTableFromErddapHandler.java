@@ -2,28 +2,26 @@ package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import static gov.noaa.pfel.erddap.handlers.HandlerFactory.processDataset;
+import static gov.noaa.pfel.erddap.Erddap.processDataset;
+
 
 public class EDDTableFromErddapHandler extends State {
     private StringBuilder content = new StringBuilder();
     private String datasetID;
     private State completeState;
-    private int[] nTryAndDatasets;
-    private Erddap erddap;
+    private SaxParsingContext context;
 
-    public EDDTableFromErddapHandler(SaxHandler saxHandler, String datasetID, State completeState, int[] nTryAndDatasets, Erddap erddap) {
+    public EDDTableFromErddapHandler(SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
         super(saxHandler);
         this.datasetID = datasetID;
         this.completeState = completeState;
-        this.nTryAndDatasets = nTryAndDatasets;
-        this.erddap = erddap;
+        this.context = context;
     }
 
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
@@ -77,7 +75,7 @@ public class EDDTableFromErddapHandler extends State {
                         tReloadEveryNMinutes,
                         tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
 
-                processDataset(dataset, nTryAndDatasets, erddap, datasetID);
+                processDataset(dataset, context);
                 saxHandler.setState(this.completeState);
             }
             default -> String2.log("Unexpected end tag: " + localName);

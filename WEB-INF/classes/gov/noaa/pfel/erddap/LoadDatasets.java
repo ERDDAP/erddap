@@ -22,6 +22,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
+import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -195,7 +196,7 @@ public class LoadDatasets extends Thread {
             boolean useSaxParser = EDStatic.useSaxParser;
             int[] nTryAndDatasets = new int[2];
             if(useSaxParser) {
-                parseUsingSAX(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, warningsFromLoadDatasets, tUserHashMap);
+                parseUsingSAX(changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, warningsFromLoadDatasets, tUserHashMap);
             } else {
                 parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
             }
@@ -364,7 +365,6 @@ public class LoadDatasets extends Thread {
     }
 
     private void parseUsingSAX(
-            int[] nTryAndDatasets,
             StringArray changedDatasetIDs,
             HashSet<String> orphanIDSet,
             HashSet<String> datasetIDSet,
@@ -372,6 +372,21 @@ public class LoadDatasets extends Thread {
             StringBuilder warningsFromLoadDatasets,
             HashMap tUserHashMap
     ) throws ParserConfigurationException, SAXException, IOException {
+
+        var context = new SaxParsingContext();
+
+        context.setChangedDatasetIDs(changedDatasetIDs);
+        context.setOrphanIDSet(orphanIDSet);
+        context.setDatasetIDSet(datasetIDSet);
+        context.setDuplicateDatasetIDs(duplicateDatasetIDs);
+        context.setWarningsFromLoadDatasets(warningsFromLoadDatasets);
+        context.settUserHashMap(tUserHashMap);
+        context.setMajorLoad(majorLoad);
+        context.setErddap(erddap);
+        context.setLastLuceneUpdate(lastLuceneUpdate);
+        context.setDatasetsRegex(datasetsRegex);
+        context.setReallyVerbose(reallyVerbose);
+
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setXIncludeAware(true);
         factory.setNamespaceAware(true);
@@ -379,10 +394,7 @@ public class LoadDatasets extends Thread {
         SAXParser saxParser = factory.newSAXParser();
         SaxHandler saxHandler = new SaxHandler();
 
-        TopLevelHandler topLevelHandler = new TopLevelHandler(
-                saxHandler, nTryAndDatasets, warningsFromLoadDatasets, tUserHashMap, majorLoad, erddap, lastLuceneUpdate,
-                changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsRegex
-        );
+        TopLevelHandler topLevelHandler = new TopLevelHandler(saxHandler, context);
 
         saxHandler.setState(topLevelHandler);
         saxParser.parse(inputStream, saxHandler);

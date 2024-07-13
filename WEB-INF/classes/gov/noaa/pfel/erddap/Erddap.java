@@ -35,6 +35,7 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 
@@ -82,6 +83,8 @@ import org.apache.lucene.search.TermQuery;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import static gov.noaa.pfel.erddap.LoadDatasets.addRemoveDatasetInfo;
 
 //import org.verisign.joid.consumer.OpenIdFilter;
 
@@ -18095,6 +18098,64 @@ writer.write(
                 baseDir + "setup.xml",
                 baseDir + "images/erddapStart2.css"},
             10, removeDir);
+    }
+
+    public static void processDataset(EDD dataset, SaxParsingContext context) {
+        Erddap erddap = context.getErddap();
+
+        String change = "";
+        EDD oldDataset = null;
+        boolean oldCatInfoRemoved = false;
+        long timeToLoadThisDataset = System.currentTimeMillis();
+//        EDStatic.cldNTry = nTry;
+        EDStatic.cldStartMillis = timeToLoadThisDataset;
+        EDStatic.cldDatasetID = dataset.datasetID();
+        //do several things in quick succession...
+        //(??? synchronize on (?) if really need avoid inconsistency)
+
+        //was there a dataset with the same datasetID?
+        oldDataset = erddap.gridDatasetHashMap.get(dataset.datasetID());
+        if (oldDataset == null) {
+            oldDataset = erddap.tableDatasetHashMap.get(dataset.datasetID());
+        }
+
+        //if oldDataset existed, remove its info from categoryInfo
+        //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
+        if (oldDataset != null) {
+            addRemoveDatasetInfo(false, erddap.categoryInfo, oldDataset);
+            oldCatInfoRemoved = true;
+        }
+
+        //put dataset in place
+        //(hashMap.put atomically replaces old version with new)
+        if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
+                dataset instanceof EDDGrid eddGrid) {
+            erddap.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //was/is grid
+
+        } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
+                dataset instanceof EDDTable eddTable) {
+            erddap.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //was/is table
+
+        } else if (dataset instanceof EDDGrid eddGrid) {
+            erddap.tableDatasetHashMap.remove(dataset.datasetID());   //was table
+            erddap.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //now grid
+
+        } else if (dataset instanceof EDDTable eddTable) {
+            erddap.gridDatasetHashMap.remove(dataset.datasetID());     //was grid
+            erddap.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //now table
+        }
+
+        //add new info to categoryInfo
+        addRemoveDatasetInfo(true, erddap.categoryInfo, dataset);
+
+        //clear the dataset's cache
+        //since axis values may have changed and "last" may have changed
+        File2.deleteAllFiles(dataset.cacheDirectory());
+
+        change = dataset.changed(oldDataset);
+        if (change.isEmpty() && dataset instanceof EDDTable) {
+            change = "The dataset was reloaded.";
+        }
     }
 
     /**

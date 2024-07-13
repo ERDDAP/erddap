@@ -5,57 +5,25 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class TopLevelHandler extends State {
-    private StringBuilder warningsFromLoadDatasets;
     private StringBuilder data = new StringBuilder();
-    private HashMap tUserHashMap;
-    private boolean reallyVerbose = false, majorLoad;
-    private int[] nTryAndDatasets;
-    private int nDatasets = 0;
-    private Erddap erddap;
-    private long lastLuceneUpdate;
-    StringArray changedDatasetIDs;
-    HashSet<String> orphanIDSet;
-    HashSet<String> datasetIDSet;
-    StringArray duplicateDatasetIDs;
-    String datasetsRegex;
+    private SaxParsingContext context;
+    private boolean reallyVerbose;
+    private StringBuilder warningsFromLoadDatasets;
 
-    public TopLevelHandler(
-            SaxHandler saxHandler,
-            int[] nTryAndDatasets,
-            StringBuilder warningsFromLoadDatasets,
-            HashMap tUserHashMap,
-            boolean majorLoad,
-            Erddap erddap,
-            long lastLuceneUpdate,
-            StringArray changedDatasetIDs,
-            HashSet<String> orphanIDSet,
-            HashSet<String> datasetIDSet,
-            StringArray duplicateDatasetIDs,
-            String datasetsRegex
-            ) {
+    public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {
         super(saxHandler);
-        this.warningsFromLoadDatasets = warningsFromLoadDatasets;
-        this.tUserHashMap = tUserHashMap;
-        this.erddap = erddap;
-        this.majorLoad = majorLoad;
-        this.lastLuceneUpdate = lastLuceneUpdate;
-        this.nTryAndDatasets = nTryAndDatasets;
-        this.changedDatasetIDs = changedDatasetIDs;
-        this.orphanIDSet = orphanIDSet;
-        this.datasetIDSet = datasetIDSet;
-        this.duplicateDatasetIDs = duplicateDatasetIDs;
-        this.datasetsRegex = datasetsRegex;
+        this.context = context;
+        this.reallyVerbose = context.getReallyVerbose();
+        this.warningsFromLoadDatasets = context.getWarningsFromLoadDatasets();
     }
 
     @Override
@@ -127,7 +95,7 @@ public class TopLevelHandler extends State {
                     if (reallyVerbose) {
                         String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
                     }
-                    Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
+                    Object o = context.gettUserHashMap().put(tUsername, new Object[]{tPassword, tRoles});
                     if (o != null) {
                         warningsFromLoadDatasets.append(
                                 "datasets.xml error: There are two <user> tags in datasets.xml with username=" +
@@ -136,17 +104,11 @@ public class TopLevelHandler extends State {
                 }
             }
             case "dataset" -> {
-                nDatasets++;
-
                 String datasetType = attributes.getValue("type");
                 String datasetID = attributes.getValue("datasetID");
                 String active = attributes.getValue("active");
 
-                State state = HandlerFactory.getHandlerFor(
-                        datasetType, datasetID, active, this, saxHandler, majorLoad, erddap, reallyVerbose, lastLuceneUpdate,
-                        changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsRegex, nTryAndDatasets
-                );
-                nTryAndDatasets[1] = nDatasets;
+                State state = HandlerFactory.getHandlerFor(datasetType, datasetID, active, this, saxHandler, context);
                 saxHandler.setState(state);
             }
         }

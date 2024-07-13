@@ -7,75 +7,58 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.EDD;
-import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 import java.util.HashSet;
 
-import static gov.noaa.pfel.erddap.LoadDatasets.addRemoveDatasetInfo;
 import static gov.noaa.pfel.erddap.LoadDatasets.tryToUnload;
 
 public class HandlerFactory {
-    private static int nTry = 0;
+
     public static State getHandlerFor(
             String datasetType,
             String datasetID,
             String active,
             State completeState,
             SaxHandler saxHandler,
-            boolean majorLoad,
-            Erddap erddap,
-            boolean reallyVerbose,
-            long lastLuceneUpdate,
-            StringArray changedDatasetIDs,
-            HashSet<String> orphanIDSet,
-            HashSet<String> datasetIDSet,
-            StringArray duplicateDatasetIDs,
-            String datasetsRegex,
-            int[] nTryAndDatasets
+            SaxParsingContext context
     ) {
-        if(skipDataset(datasetID, active, majorLoad, reallyVerbose, orphanIDSet, datasetIDSet, datasetsRegex, duplicateDatasetIDs, changedDatasetIDs, erddap, lastLuceneUpdate)) {
+        if(skipDataset(datasetID, active, context)) {
             return new SkipDatasetHandler(saxHandler, completeState);
         }
 
         switch (datasetType) {
             case "EDDTableFromErddapHandler" -> {
-                return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState, nTryAndDatasets, erddap);
+                return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState, context);
             }
             default -> throw new IllegalArgumentException("Unknown dataset type: " + datasetType);
         }
     }
 
-    public static boolean skipDataset(
-            String datasetID,
-            String active,
-            boolean majorLoad,
-            boolean reallyVerbose,
-            HashSet<String> orphanIDSet,
-            HashSet<String> datasetIDSet,
-            String datasetsRegex,
-            StringArray duplicateDatasetIDs,
-            StringArray changedDatasetIDs,
-            Erddap erddap,
-            long lastLuceneUpdate
-    ) {
-        if (majorLoad)
-            orphanIDSet.remove(datasetID);
+    public static boolean skipDataset(String datasetID, String active, SaxParsingContext context) {
+        boolean majorLoad = context.getMajorLoad();
+        HashSet<String> orphanIDSet = context.getOrphanIDSet();
+        HashSet<String> datasetIDSet = context.getDatasetIDSet();
+        boolean reallyVerbose = context.getReallyVerbose();
+        StringArray duplicateDatasetIDs = context.getDuplicateDatasetIDs();
+        String datasetsRegex = context.getDatasetsRegex();
+        Erddap erddap = context.getErddap();
+        long lastLuceneUpdate = context.getLastLuceneUpdate();
+        StringArray changedDatasetIDs = context.getChangedDatasetIDs();
 
-        //Looking for reasons to skip loading this dataset.
-        //Test first: skip dataset because it is a duplicate datasetID?
-        //  If isDuplicate, act as if this doesn't even occur in datasets.xml.
-        //  This is imperfect. It just tests top-level datasets,
-        //  not lower level, e.g., within EDDGridCopy.
+        if (majorLoad) {
+            orphanIDSet.remove(datasetID);
+        }
+
         boolean skip = false;
         boolean isDuplicate = !datasetIDSet.add(datasetID);
         if (isDuplicate) {
             skip = true;
             duplicateDatasetIDs.add(datasetID);
-            if (reallyVerbose)
+            if (reallyVerbose) {
                 String2.log("*** skipping datasetID=" + datasetID +
                         " because it's a duplicate.");
+            }
         }
 
         //Test second: skip dataset because of datasetsRegex?
@@ -165,62 +148,5 @@ public class HandlerFactory {
             }
         }
         return skip;
-    }
-
-    public static void processDataset(EDD dataset, int[] nTryAndDatasets, Erddap erddap, String datasetID) {
-        nTry++;
-        String change = "";
-        EDD oldDataset = null;
-        boolean oldCatInfoRemoved = false;
-        long timeToLoadThisDataset = System.currentTimeMillis();
-        EDStatic.cldNTry = nTry;
-        EDStatic.cldStartMillis = timeToLoadThisDataset;
-        EDStatic.cldDatasetID = datasetID;
-        //do several things in quick succession...
-        //(??? synchronize on (?) if really need avoid inconsistency)
-
-        //was there a dataset with the same datasetID?
-        oldDataset = erddap.gridDatasetHashMap.get(datasetID);
-        if (oldDataset == null)
-            oldDataset = erddap.tableDatasetHashMap.get(datasetID);
-
-        //if oldDataset existed, remove its info from categoryInfo
-        //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
-        if (oldDataset != null) {
-            addRemoveDatasetInfo(false, erddap.categoryInfo, oldDataset);
-            oldCatInfoRemoved = true;
-        }
-
-        //put dataset in place
-        //(hashMap.put atomically replaces old version with new)
-        if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
-                dataset instanceof EDDGrid eddGrid) {
-            erddap.gridDatasetHashMap.put(datasetID, eddGrid);  //was/is grid
-
-        } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
-                dataset instanceof EDDTable eddTable) {
-            erddap.tableDatasetHashMap.put(datasetID, eddTable); //was/is table
-
-        } else if (dataset instanceof EDDGrid eddGrid) {
-            erddap.tableDatasetHashMap.remove(datasetID);   //was table
-            erddap.gridDatasetHashMap.put(datasetID, eddGrid);  //now grid
-
-        } else if (dataset instanceof EDDTable eddTable) {
-            erddap.gridDatasetHashMap.remove(datasetID);     //was grid
-            erddap.tableDatasetHashMap.put(datasetID, eddTable); //now table
-        }
-
-        //add new info to categoryInfo
-        addRemoveDatasetInfo(true, erddap.categoryInfo, dataset);
-
-        //clear the dataset's cache
-        //since axis values may have changed and "last" may have changed
-        File2.deleteAllFiles(dataset.cacheDirectory());
-
-        change = dataset.changed(oldDataset);
-        if (change.isEmpty() && dataset instanceof EDDTable) {
-            change = "The dataset was reloaded.";
-        }
-        nTryAndDatasets[0] = nTry;
     }
 }
