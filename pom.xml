@@ -48,6 +48,7 @@
         <netcdfJavaVersion>5.5.3</netcdfJavaVersion>
         <test.resources.version>test1.02</test.resources.version>
         <jettyVersion>12.0.10</jettyVersion>
+        <error-prone.version>2.27.0</error-prone.version>
     </properties>
 
     <repositories>
@@ -111,6 +112,11 @@
                     <failOnError>true</failOnError>
                     <source>21</source>   <!-- java version -->
                     <target>21</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:ComparableType:OFF -Xep:EqualsHashCode:OFF -Xep:InfiniteRecursion:OFF -Xep:ReturnValueIgnored:OFF -Xep:SelfAssignment:OFF -Xep:ConstantOverflow:OFF -Xep:SizeGreaterThanOrEqualsZero:OFF -Xep:ComparisonOutOfRange:OFF -Xep:ChainingConstructorIgnoresParameter:OFF -Xep:DeadException:OFF -Xep:BanJNDI:OFF -Xep:ArrayToString:OFF -Xep:DoNotCall:OFF -Xep:MissingOverride:OFF -Xep:AmbiguousMethodReference:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:NonOverridingEquals:OFF -Xep:MissingImplementsComparable:OFF -Xep:OperatorPrecedence:OFF -Xep:UnnecessaryParentheses:OFF -Xep:UnusedVariable:OFF -Xep:InvalidParam:OFF -Xep:MutablePublicArray:OFF -Xep:FloatingPointLiteralPrecision:OFF -Xep:ThreadPriorityCheck:OFF -Xep:EmptyCatch:OFF -Xep:InconsistentCapitalization:OFF -Xep:JdkObsolete:OFF -Xep:DefaultCharset:OFF -Xep:FloatCast:OFF -Xep:UnusedMethod:OFF -Xep:NotJavadoc:OFF -Xep:AlreadyChecked:OFF -Xep:NarrowCalculation:OFF -Xep:ReferenceEquality:OFF -Xep:LongDoubleConversion:OFF -Xep:LongFloatConversion:OFF -Xep:NonApiType:OFF -Xep:InvalidThrows:OFF -Xep:BadComparable:OFF -Xep:BadInstanceof:OFF -Xep:JavaUtilDate:OFF -Xep:InvalidBlockTag:OFF -Xep:IntLongMath:OFF -Xep:ReturnFromVoid:OFF -Xep:StaticAssignmentInConstructor:OFF -Xep:UnusedLabel:OFF -Xep:ReturnAtTheEndOfVoidFunction:OFF -Xep:ClassNewInstance:OFF -Xep:NarrowingCompoundAssignment:OFF -Xep:StringCharset:OFF -Xep:DoNotCallSuggester:OFF -Xep:SynchronizeOnNonFinalField:OFF -Xep:NonAtomicVolatileUpdate:OFF -Xep:FallThrough:OFF -Xep:UnicodeEscape:OFF -Xep:ClassCanBeStatic:OFF -Xep:UnnecessaryStringBuilder:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:EqualsUnsafeCast:OFF -Xep:BoxedPrimitiveConstructor:OFF -Xep:UnsynchronizedOverridesSynchronized:OFF -Xep:FutureReturnValueIgnored:OFF -Xep:Finalize:OFF -Xep:EqualsIncompatibleType:OFF -Xep:ComplexBooleanConstant:OFF -Xep:IncrementInForLoopAndHeader:OFF -Xep:StaticGuardedByInstance:OFF</arg>
+                    </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/MapGraph.javaINACTIVE</exclude>
@@ -136,6 +142,18 @@
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostNcFiles.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/util/FileVisitorDNLS.javaOLD</exclude>
                     </excludes>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error-prone.version}</version>
+                        </path>
+                        <!-- Other annotation processors go here.
+
+                        If 'annotationProcessorPaths' is set, processors will no longer be
+                        discovered on the regular -classpath; see also 'Using Error Prone
+                        together with other annotation processors' below. -->
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
              <plugin>
@@ -314,6 +332,23 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.6.0</version>
+                <configuration>
+                    <maxHeap>2048</maxHeap>
+                    <includeFilterFile>spotbugs-security-include.xml</includeFilterFile>
+                    <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.12.0</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
@@ -331,6 +366,51 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.cosium.code</groupId>
+                <artifactId>git-code-format-maven-plugin</artifactId>
+                <version>5.3</version>
+                <executions>
+                    <!-- On commit, format the modified files -->
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>install-formatter-hook</id>
+                        <goals>
+                            <goal>install-hooks</goal>
+                        </goals>
+                    </execution>
+                    <!-- On Maven verify phase, fail if any file
+                    (including unmodified) is badly formatted -->
+                    <execution>
+                        <id>validate-code-format</id>
+                        <goals>
+                            <goal>validate-code-format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- Enable https://github.com/google/google-java-format -->
+                    <dependency>
+                    <groupId>com.cosium.code</groupId>
+                    <artifactId>google-java-format</artifactId>
+                    <version>5.3</version>
+                    </dependency>
+                </dependencies>      
+                <configuration>
+                    <formatterOptions>
+                        <!-- Use AOSP style instead of Google Style (4-space indentation). -->
+                        <googleJavaFormat.aosp>false</googleJavaFormat.aosp>
+                        <!-- Format the javadoc -->
+                        <googleJavaFormat.formatJavadoc>true</googleJavaFormat.formatJavadoc>
+                        <!-- Fix import order and remove any unused imports, but do no other formatting. -->
+                        <googleJavaFormat.fixImportsOnly>false</googleJavaFormat.fixImportsOnly>
+                        <!-- Do not fix the import order. Unused imports will still be removed. -->
+                        <googleJavaFormat.skipSortingImports>false</googleJavaFormat.skipSortingImports>
+                        <!-- Do not remove unused imports. Imports will still be sorted. -->
+                        <googleJavaFormat.skipRemovingUnusedImports>false</googleJavaFormat.skipRemovingUnusedImports>
+                    </formatterOptions>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
