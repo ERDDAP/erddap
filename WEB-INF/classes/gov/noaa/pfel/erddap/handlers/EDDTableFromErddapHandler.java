@@ -8,8 +8,6 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import static gov.noaa.pfel.erddap.Erddap.processDataset;
-
 
 public class EDDTableFromErddapHandler extends State {
     private StringBuilder content = new StringBuilder();
@@ -75,7 +73,7 @@ public class EDDTableFromErddapHandler extends State {
                         tReloadEveryNMinutes,
                         tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
 
-                processDataset(dataset, context);
+                context.getErddap().processDataset(dataset);
                 saxHandler.setState(this.completeState);
             }
             default -> String2.log("Unexpected end tag: " + localName);

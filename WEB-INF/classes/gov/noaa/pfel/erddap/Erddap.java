@@ -18100,8 +18100,7 @@ writer.write(
             10, removeDir);
     }
 
-    public static void processDataset(EDD dataset, SaxParsingContext context) {
-        Erddap erddap = context.getErddap();
+    public void processDataset(EDD dataset) {
 
         String change = "";
         EDD oldDataset = null;
@@ -18114,15 +18113,15 @@ writer.write(
         //(??? synchronize on (?) if really need avoid inconsistency)
 
         //was there a dataset with the same datasetID?
-        oldDataset = erddap.gridDatasetHashMap.get(dataset.datasetID());
+        oldDataset = this.gridDatasetHashMap.get(dataset.datasetID());
         if (oldDataset == null) {
-            oldDataset = erddap.tableDatasetHashMap.get(dataset.datasetID());
+            oldDataset = this.tableDatasetHashMap.get(dataset.datasetID());
         }
 
         //if oldDataset existed, remove its info from categoryInfo
         //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
         if (oldDataset != null) {
-            addRemoveDatasetInfo(false, erddap.categoryInfo, oldDataset);
+            addRemoveDatasetInfo(false, this.categoryInfo, oldDataset);
             oldCatInfoRemoved = true;
         }
 
@@ -18130,23 +18129,23 @@ writer.write(
         //(hashMap.put atomically replaces old version with new)
         if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
                 dataset instanceof EDDGrid eddGrid) {
-            erddap.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //was/is grid
+            this.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //was/is grid
 
         } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
                 dataset instanceof EDDTable eddTable) {
-            erddap.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //was/is table
+            this.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //was/is table
 
         } else if (dataset instanceof EDDGrid eddGrid) {
-            erddap.tableDatasetHashMap.remove(dataset.datasetID());   //was table
-            erddap.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //now grid
+            this.tableDatasetHashMap.remove(dataset.datasetID());   //was table
+            this.gridDatasetHashMap.put(dataset.datasetID(), eddGrid);  //now grid
 
         } else if (dataset instanceof EDDTable eddTable) {
-            erddap.gridDatasetHashMap.remove(dataset.datasetID());     //was grid
-            erddap.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //now table
+            this.gridDatasetHashMap.remove(dataset.datasetID());     //was grid
+            this.tableDatasetHashMap.put(dataset.datasetID(), eddTable); //now table
         }
 
         //add new info to categoryInfo
-        addRemoveDatasetInfo(true, erddap.categoryInfo, dataset);
+        addRemoveDatasetInfo(true, this.categoryInfo, dataset);
 
         //clear the dataset's cache
         //since axis values may have changed and "last" may have changed
