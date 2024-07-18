@@ -22,20 +22,20 @@ public class EDDTableFromErddapHandler extends State {
         this.context = context;
     }
 
-    int tReloadEveryNMinutes = Integer.MAX_VALUE;
-    String tAccessibleTo = null;
-    String tGraphsAccessibleTo = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-    StringArray tOnChange = new StringArray();
-    boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
-    boolean tRedirect = true;
-    String tFgdcFile = null;
-    String tIso19115File = null;
-    String tSosOfferingPrefix = null;
-    String tLocalSourceUrl = null;
-    String tDefaultDataQuery = null;
-    String tDefaultGraphQuery = null;
-    String tAddVariablesWhere = null;
+    public int tReloadEveryNMinutes = Integer.MAX_VALUE;
+    public String tAccessibleTo = null;
+    public String tGraphsAccessibleTo = null;
+    public boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    public StringArray tOnChange = new StringArray();
+    public boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
+    public boolean tRedirect = true;
+    public String tFgdcFile = null;
+    public String tIso19115File = null;
+    public String tSosOfferingPrefix = null;
+    public String tLocalSourceUrl = null;
+    public String tDefaultDataQuery = null;
+    public String tDefaultGraphQuery = null;
+    public String tAddVariablesWhere = null;
 
 
     @Override
@@ -71,9 +71,10 @@ public class EDDTableFromErddapHandler extends State {
                         tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                         tDefaultDataQuery, tDefaultGraphQuery, tAddVariablesWhere,
                         tReloadEveryNMinutes,
-                        tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect);
+                        tLocalSourceUrl, tSubscribeToRemoteErddapDataset, tRedirect
+                );
 
-                context.getErddap().processDataset(dataset);
+                context.getErddap().processDataset(dataset, context);
                 saxHandler.setState(this.completeState);
             }
             default -> String2.log("Unexpected end tag: " + localName);

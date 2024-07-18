@@ -84,7 +84,7 @@ import org.apache.lucene.search.TermQuery;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import static gov.noaa.pfel.erddap.LoadDatasets.addRemoveDatasetInfo;
+import static gov.noaa.pfel.erddap.LoadDatasets.*;
 
 //import org.verisign.joid.consumer.OpenIdFilter;
 
@@ -15834,7 +15834,7 @@ writer.write(
      * This is static (with gridDatasetHashMap as a param) to facilitate testing.
      *
      * @param language the index of the selected language
-     * @param gridDatasetHashMap 
+     * @param gridDatasetHashMap
      * @param TLLTable ASCII text with table with latitude,longitude,time columns
      * @param requestCSV the CSV list of desired datasetID/variable/algorithm/nearby settings
      * @return a table with latitude,longitude,time and requested datasetID/variable columns
@@ -18100,13 +18100,12 @@ writer.write(
             10, removeDir);
     }
 
-    public void processDataset(EDD dataset) {
-
+    public void processDataset(EDD dataset, SaxParsingContext context) {
         String change = "";
         EDD oldDataset = null;
         boolean oldCatInfoRemoved = false;
         long timeToLoadThisDataset = System.currentTimeMillis();
-//        EDStatic.cldNTry = nTry;
+        EDStatic.cldNTry = context.getNTryAndDatasets()[0];
         EDStatic.cldStartMillis = timeToLoadThisDataset;
         EDStatic.cldDatasetID = dataset.datasetID();
         //do several things in quick succession...
@@ -18155,6 +18154,25 @@ writer.write(
         if (change.isEmpty() && dataset instanceof EDDTable) {
             change = "The dataset was reloaded.";
         }
+
+        if (verbose) String2.log("change=" + change);
+        EDStatic.cldNTry = context.getNTryAndDatasets()[0];
+        EDStatic.cldStartMillis = 0;
+        EDStatic.cldDatasetID = null;
+
+        //whether succeeded (new or swapped in) or failed (removed), it was changed
+        context.getChangedDatasetIDs().add(dataset.datasetID());
+        if (System.currentTimeMillis() - context.getLastLuceneUpdate() >
+                5 * Calendar2.MILLIS_PER_MINUTE) {
+            updateLucene(this, context.getChangedDatasetIDs());
+            context.setLastLuceneUpdate(System.currentTimeMillis());
+        }
+
+        //trigger subscription and dataset.onChange actions (after new dataset is in place)
+        EDD cooDataset = dataset == null ? oldDataset : dataset; //currentOrOld, may be null
+        tryToDoActions(this, dataset.datasetID(), cooDataset,
+                "",
+                change);
     }
 
     /**
