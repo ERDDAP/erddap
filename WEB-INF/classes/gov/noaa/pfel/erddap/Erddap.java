@@ -18104,10 +18104,6 @@ writer.write(
         String change = "";
         EDD oldDataset = null;
         boolean oldCatInfoRemoved = false;
-        long timeToLoadThisDataset = System.currentTimeMillis();
-        EDStatic.cldNTry = context.getNTryAndDatasets()[0];
-        EDStatic.cldStartMillis = timeToLoadThisDataset;
-        EDStatic.cldDatasetID = dataset.datasetID();
         //do several things in quick succession...
         //(??? synchronize on (?) if really need avoid inconsistency)
 
