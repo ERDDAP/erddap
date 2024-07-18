@@ -18,6 +18,7 @@ public class TopLevelHandler extends State {
     private SaxParsingContext context;
     private boolean reallyVerbose;
     private StringBuilder warningsFromLoadDatasets;
+    private int nDatasets = 0;
 
     public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {
         super(saxHandler);
@@ -104,6 +105,9 @@ public class TopLevelHandler extends State {
                 }
             }
             case "dataset" -> {
+                this.nDatasets++;
+                context.getNTryAndDatasets()[1] = nDatasets;
+
                 String datasetType = attributes.getValue("type");
                 String datasetID = attributes.getValue("datasetID");
                 String active = attributes.getValue("active");

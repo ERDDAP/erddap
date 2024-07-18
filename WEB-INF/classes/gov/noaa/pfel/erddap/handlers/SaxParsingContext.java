@@ -24,11 +24,11 @@ public class SaxParsingContext {
     }
 
 
-    public int[] getnTryAndDatasets() {
+    public int[] getNTryAndDatasets() {
         return nTryAndDatasets;
     }
 
-    public void setnTryAndDatasets(int[] nTryAndDatasets) {
+    public void setNTryAndDatasets(int[] nTryAndDatasets) {
         this.nTryAndDatasets = nTryAndDatasets;
     }
 

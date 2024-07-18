@@ -14,6 +14,7 @@ import java.util.HashSet;
 import static gov.noaa.pfel.erddap.LoadDatasets.tryToUnload;
 
 public class HandlerFactory {
+    private static int nTry = 0;
 
     public static State getHandlerFor(
             String datasetType,
@@ -27,11 +28,17 @@ public class HandlerFactory {
             return new SkipDatasetHandler(saxHandler, completeState);
         }
 
+        nTry++;
+        context.getNTryAndDatasets()[0] = nTry;
         switch (datasetType) {
-            case "EDDTableFromErddapHandler" -> {
+            case "EDDTableFromErddap" -> {
                 return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState, context);
             }
-            default -> throw new IllegalArgumentException("Unknown dataset type: " + datasetType);
+            default -> {
+                nTry--;
+                context.getNTryAndDatasets()[0] = nTry;
+                throw new IllegalArgumentException("Unknown dataset type: " + datasetType);
+            }
         }
     }
 

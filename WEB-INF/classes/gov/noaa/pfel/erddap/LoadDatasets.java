@@ -196,7 +196,7 @@ public class LoadDatasets extends Thread {
             boolean useSaxParser = EDStatic.useSaxParser;
             int[] nTryAndDatasets = new int[2];
             if(useSaxParser) {
-                parseUsingSAX(changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, warningsFromLoadDatasets, tUserHashMap);
+                parseUsingSAX(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, warningsFromLoadDatasets, tUserHashMap);
             } else {
                 parseUsingSimpleXmlReader(nTryAndDatasets, changedDatasetIDs, orphanIDSet, datasetIDSet, duplicateDatasetIDs, datasetsThatFailedToLoadSB, tUserHashMap);
             }
@@ -365,6 +365,7 @@ public class LoadDatasets extends Thread {
     }
 
     private void parseUsingSAX(
+            int[] nTryAndDatasets,
             StringArray changedDatasetIDs,
             HashSet<String> orphanIDSet,
             HashSet<String> datasetIDSet,
@@ -375,6 +376,7 @@ public class LoadDatasets extends Thread {
 
         var context = new SaxParsingContext();
 
+        context.setNTryAndDatasets(nTryAndDatasets);
         context.setChangedDatasetIDs(changedDatasetIDs);
         context.setOrphanIDSet(orphanIDSet);
         context.setDatasetIDSet(datasetIDSet);
