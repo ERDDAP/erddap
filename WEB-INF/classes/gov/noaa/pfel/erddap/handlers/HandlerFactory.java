@@ -28,6 +28,11 @@ public class HandlerFactory {
             return new SkipDatasetHandler(saxHandler, completeState);
         }
 
+        long timeToLoadThisDataset = System.currentTimeMillis();
+        EDStatic.cldNTry = context.getNTryAndDatasets()[0];
+        EDStatic.cldStartMillis = timeToLoadThisDataset;
+        EDStatic.cldDatasetID = datasetID;
+
         nTry++;
         context.getNTryAndDatasets()[0] = nTry;
         switch (datasetType) {
