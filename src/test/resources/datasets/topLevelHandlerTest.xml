@@ -12,4 +12,10 @@
     <user username="user1" password="pass1" roles="admin">
         Test User
     </user>
+    <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
+    </dataset>
+    <dataset type="EDDTableFromErddap" datasetID="erdGtsppBest" active="false">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest</sourceUrl>
+    </dataset>
 </erddapDatasets>
