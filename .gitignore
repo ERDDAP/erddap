@@ -21,3 +21,6 @@ src/test/resources/*
 development/test/datasets.xml
 development/test/datasets.xml*
 missingImage.txt
+*.hprof
+jmeter.log
+development/jmeter/results.csv
