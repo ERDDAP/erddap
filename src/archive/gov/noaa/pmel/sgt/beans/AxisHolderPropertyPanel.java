@@ -25,25 +25,19 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import java.util.Vector;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import gov.noaa.pmel.util.SoTRange;
-import gov.noaa.pmel.util.SoTPoint;
 import gov.noaa.pmel.util.Rectangle2D;
-import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.IllegalTimeValue;
 
 import gov.noaa.pmel.sgt.Axis;
 import gov.noaa.pmel.sgt.TimeAxis;
-import gov.noaa.pmel.sgt.SGLabel;
-import gov.noaa.pmel.sgt.swing.ColorSwatchIcon;
 import gov.noaa.pmel.sgt.swing.prop.SGLabelDialog;
 import gov.noaa.pmel.sgt.swing.prop.FontDialog;
 import gov.noaa.pmel.sgt.swing.prop.ColorDialog;

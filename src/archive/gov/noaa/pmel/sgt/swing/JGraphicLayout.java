@@ -38,7 +38,6 @@ import gov.noaa.pmel.util.Units;
 import gov.noaa.pmel.util.SoTRange;
 
 import gov.noaa.pmel.sgt.dm.SGTData;
-import gov.noaa.pmel.sgt.dm.SGTPoint;
 import gov.noaa.pmel.sgt.dm.SGTLine;
 import gov.noaa.pmel.sgt.dm.SGTGrid;
 import gov.noaa.pmel.sgt.dm.Collection;
@@ -52,7 +51,6 @@ import gov.noaa.pmel.sgt.swing.prop.LogoDialog;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.net.URL;
 import java.awt.Image;
 import java.awt.Color;
 import java.awt.Rectangle;

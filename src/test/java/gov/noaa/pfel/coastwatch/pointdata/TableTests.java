@@ -371,11 +371,13 @@ public class TableTests {
                     null, // all vars
                     0, // standardizeWhat=0
                     StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     null, null, null, // read default dimensions
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected =
@@ -401,13 +403,15 @@ public class TableTests {
                     StringArray.fromCSV("station,latitude,longitude"),
                     0, // standardizeWhat=0
                     null, null, null);
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("station,latitude,longitude"),
                     null, // dimensions
                     null, // treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     null, null, null);
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = "station,latitude,longitude\n" +
@@ -440,12 +444,14 @@ public class TableTests {
                     StringArray.fromCSV("station,latitude,longitude"),
                     0, // standardizeWhat=0
                     StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("station,latitude,longitude"),
                     null, null, // dimensions, treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = "station,latitude,longitude\n" +
@@ -461,12 +467,15 @@ public class TableTests {
                     StringArray.fromCSV("time,discharge"),
                     0, // standardizeWhat=0
                     StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("time,discharge"),
                     null, null, // dimensions, treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = "time,discharge\n" +
@@ -492,12 +501,14 @@ public class TableTests {
                     StringArray.fromCSV("station,latitude,longitude,time,discharge"),
                     0, // standardizeWhat=0
                     StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("station,latitude,longitude,time,discharge"),
                     null, null, // dimensions, treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected =
@@ -537,11 +548,13 @@ public class TableTests {
             table.readNcCF(fileName,
                     null, 0, // standardizeWhat=0
                     null, null, null);
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     null, null, null, // read all dimensions
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     null, null, null);
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString(10);
         expected = readAsNcCF ? "discharge,station,time,longitude,latitude\n" +
@@ -579,12 +592,14 @@ public class TableTests {
                     StringArray.fromCSV("station,latitude,longitude,time,discharge"),
                     0, // standardizeWhat=0
                     StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("station,latitude,longitude,time,discharge"),
                     null, null, // dimensions, treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = "station,latitude,longitude,time,discharge\n" +
@@ -611,13 +626,15 @@ public class TableTests {
                     0, // standardizeWhat=0
                     StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"),
                     StringArray.fromCSV("1463500.0,5400"));
-        else
-            table.readMultidimNc(fileName,
+        else {
+            TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                     StringArray.fromCSV("station,latitude,longitude,time,discharge"),
                     null, null, // dimensions, treatDimensionsAs
                     true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
                     StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"),
                     StringArray.fromCSV("1463500.0,5400"));
+        }
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = "station,latitude,longitude,time,discharge\n" +
@@ -2916,7 +2933,8 @@ public class TableTests {
         /* */
 
         // ** don't specify varNames or dimNames -- it find vars with most dims
-        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+        TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
                 true, 0, false, // readMetadata, standardizeWhat=0, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);
@@ -2936,7 +2954,7 @@ public class TableTests {
         Test.ensureEqual(table.nRows(), 762, "nRows"); // 254*3
 
         // * same but quick reject based on constraint
-        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+        reader.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
                 true, 0, false, // readMetadata, standardizeWhat=0, removeMVRows
                 StringArray.fromCSV("FORMAT_VERSION,FORMAT_VERSION"), // conVars
                 StringArray.fromCSV("=,="), // conOps
@@ -2944,7 +2962,7 @@ public class TableTests {
         Test.ensureEqual(table.nRows(), 0, "nRows");
 
         // * test don't removeMVRows
-        table.readMultidimNc(fiName, null,
+        reader.readMultidimNc(fiName, null,
                 StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"),
                 null,
                 true, 0, false, // readMetadata, standardizeWhat=0, removeMVRows
@@ -3223,7 +3241,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedEnd, "results=\n" + results);
 
         // * test do removeMVRows
-        table.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), null,
+        reader.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);
@@ -3244,7 +3262,7 @@ public class TableTests {
 
         // * same but quick reject based on constraint LAT,LON 26.587,154.853
         // *** this takes 9ms while test above takes 99ms!
-        table.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), null,
+        reader.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 StringArray.fromCSV("LATITUDE"), // conVars
                 StringArray.fromCSV("="), // conOps
@@ -3252,7 +3270,7 @@ public class TableTests {
         Test.ensureEqual(table.nRows(), 0, "nRows");
 
         // * test different dim order (should be rearranged so the same)
-        table.readMultidimNc(fiName, null, StringArray.fromCSV("N_LEVELS, ZZTOP, N_PROF"), null,
+        reader.readMultidimNc(fiName, null, StringArray.fromCSV("N_LEVELS, ZZTOP, N_PROF"), null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);
@@ -3269,7 +3287,7 @@ public class TableTests {
         // "Returning an empty table because var=PLATFORM_NUMBER failed its constraints,
         // including =2901175. time=0"
 
-        table.readMultidimNc(fiName, StringArray.fromCSV(
+        reader.readMultidimNc(fiName, StringArray.fromCSV(
                 "DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, " +
                         "DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, CYCLE_NUMBER, DIRECTION, " +
                         "DATA_CENTRE, DC_REFERENCE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, " +
@@ -3317,7 +3335,7 @@ public class TableTests {
         Test.ensureEqual(table.nRows(), 17266, "nRows"); // same as when all variables were explicitly loaded
 
         // * test different varNames
-        table.readMultidimNc(fiName,
+        reader.readMultidimNc(fiName,
                 StringArray.fromCSV(
                         "DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR"),
                 null, null,
@@ -3334,7 +3352,7 @@ public class TableTests {
 
         // * test do removeMVRows when loadVariables is limited (to ensure all are
         // loaded for the test)
-        table.readMultidimNc(fiName, StringArray.fromCSV("LONGITUDE,PRES,PSAL_ADJUSTED_ERROR"),
+        reader.readMultidimNc(fiName, StringArray.fromCSV("LONGITUDE,PRES,PSAL_ADJUSTED_ERROR"),
                 null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
@@ -3357,7 +3375,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedEnd, "results=\n" + results);
 
         // * test read JULD
-        table.readMultidimNc(fiName, StringArray.fromCSV("JULD"), null, null,
+        reader.readMultidimNc(fiName, StringArray.fromCSV("JULD"), null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);
@@ -3378,7 +3396,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedStart, "results=\n" + results);
 
         // * test read JULD && PRES
-        table.readMultidimNc(fiName, StringArray.fromCSV("JULD,PRES"), null, null,
+        reader.readMultidimNc(fiName, StringArray.fromCSV("JULD,PRES"), null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);
@@ -3399,7 +3417,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedStart, "results=\n" + results);
 
         // * test read just static vars, in a different order
-        table.readMultidimNc(fiName,
+        reader.readMultidimNc(fiName,
                 StringArray.fromCSV("HANDBOOK_VERSION,FORMAT_VERSION,DATA_TYPE"),
                 null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
@@ -3410,7 +3428,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedStart, "results=\n" + results);
 
         // * test read 0 dim variable -> empty table
-        table.readMultidimNc(fiName,
+        reader.readMultidimNc(fiName,
                 StringArray.fromCSV("HISTORY_INSTITUTION"),
                 null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
@@ -3419,7 +3437,7 @@ public class TableTests {
         Test.ensureEqual(table.nColumns(), 0, "");
 
         // * test read non-existent dim -> just scalar vars
-        table.readMultidimNc(fiName,
+        reader.readMultidimNc(fiName,
                 null, StringArray.fromCSV("ZZTOP"), null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
@@ -3429,7 +3447,7 @@ public class TableTests {
         Test.ensureEqual(results, expectedStart, "results=\n" + results);
 
         // * test read non-existent Var -> empty table
-        table.readMultidimNc(fiName,
+        reader.readMultidimNc(fiName,
                 StringArray.fromCSV("ZZTOP"), null, null,
                 true, 0, true, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
@@ -4682,7 +4700,8 @@ public class TableTests {
         // Table.debugMode = true;
         Table table = new Table();
         // String2.log(NcHelper.ncdump(fileName, "-h"));
-        table.readMultidimNc(fileName,
+        TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fileName,
                 StringArray.fromCSV("TIME,LATITUDE,LONGITUDE,DEPTH,TEMP,TEMP_DM"), // loadVarNames,
                 null, // loadDimNames,
                 new String[][] { { "LATITUDE", "LONGITUDE", "TIME" } }, // treatDimensionsAs
@@ -4723,7 +4742,7 @@ public class TableTests {
 
         // standardizeWhat
         table.clear();
-        table.readMultidimNc(fileName,
+        reader.readMultidimNc(fileName,
                 StringArray.fromCSV("TIME,LATITUDE,LONGITUDE,DEPTH,TEMP,TEMP_DM"), // loadVarNames,
                 null, // loadDimNames,
                 new String[][] { { "LATITUDE", "LONGITUDE", "TIME" } }, // treatDimensionsAs
@@ -4779,7 +4798,8 @@ public class TableTests {
         String results, expected;
 
         // ** test the original packed format for comparison
-        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+        TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
                 true, 0, false, // readMetadata, unpack, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.toString(3);
@@ -4957,7 +4977,7 @@ public class TableTests {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         // ** don't specify varNames or dimNames -- it find vars with most dims
-        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+        reader.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
                 true, 3, false, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.toString(3);
@@ -5163,7 +5183,8 @@ public class TableTests {
         /* */
 
         // ** don't specify varNames or dimNames -- it find vars with most dims
-        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+        TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
+            reader.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
                 true, 0, false, // readMetadata, standardizeWhat, removeMVRows
                 null, null, null); // conVars, conOps, conVals
         results = table.dataToString(3);

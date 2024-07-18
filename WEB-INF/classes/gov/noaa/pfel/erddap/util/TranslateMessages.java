@@ -192,7 +192,7 @@ public class TranslateMessages {
         "French",   "German",          "Greek",       "Gujarati",    "Hindi",      "Hungarian",  "Indonesian", "Irish",      "Italian",
         "Japanese", "Korean",          "Marathi",     "Norwegian",   "Polish",     "Portuguese",
         "Punjabi",  "Romanian",        "Russian",     "Spanish",     "Swahili",    "Swedish",    "Tagalog",    "Thai",
-        "Turkish",  "Ukranian",        "Urdu",        "Vietnamese"};  
+        "Turkish",  "Ukrainian",        "Urdu",        "Vietnamese"};  
     public static String[] languageCodeList =   {  
         //list of available languages: https://cloud.google.com/translate/docs/languages
         "en",       "bn",              "zh-CN",       "zh-TW",       "cs",         "da",         "nl",         "fi",      
