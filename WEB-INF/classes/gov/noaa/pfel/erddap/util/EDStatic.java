@@ -1844,7 +1844,7 @@ public static boolean developmentMode = false;
         emailIsActive = //ie if actual emails will be sent
             String2.isSomething(emailSmtpHost) &&
             emailSmtpPort > 0 &&
-            String2.isEmailAddress(emailUserName) &&
+            String2.isSomething(emailUserName) &&
             String2.isSomething(emailPassword) &&
             String2.isEmailAddress(emailFromAddress);
 
