@@ -8,22 +8,23 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
-public class TopLevelHandler extends DefaultHandler {
-    private StringBuilder warningsFromLoadDatasets;
+public class TopLevelHandler extends State {
     private StringBuilder data = new StringBuilder();
-    private HashMap tUserHashMap;
-    private boolean reallyVerbose = false;
+    private SaxParsingContext context;
+    private boolean reallyVerbose;
+    private StringBuilder warningsFromLoadDatasets;
+    private int nDatasets = 0;
 
-    public TopLevelHandler(StringBuilder warningsFromLoadDatasets, HashMap tUserHashMap) {
-        this.warningsFromLoadDatasets = warningsFromLoadDatasets;
-        this.tUserHashMap = tUserHashMap;
+    public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {
+        super(saxHandler);
+        this.context = context;
+        this.reallyVerbose = context.getReallyVerbose();
+        this.warningsFromLoadDatasets = context.getWarningsFromLoadDatasets();
     }
 
     @Override
@@ -95,13 +96,24 @@ public class TopLevelHandler extends DefaultHandler {
                     if (reallyVerbose) {
                         String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
                     }
-                    Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
+                    Object o = context.gettUserHashMap().put(tUsername, new Object[]{tPassword, tRoles});
                     if (o != null) {
                         warningsFromLoadDatasets.append(
                                 "datasets.xml error: There are two <user> tags in datasets.xml with username=" +
                                         tUsername + "\nChange one of them.\n\n");
                     }
                 }
+            }
+            case "dataset" -> {
+                this.nDatasets++;
+                context.getNTryAndDatasets()[1] = nDatasets;
+
+                String datasetType = attributes.getValue("type");
+                String datasetID = attributes.getValue("datasetID");
+                String active = attributes.getValue("active");
+
+                State state = HandlerFactory.getHandlerFor(datasetType, datasetID, active, this, saxHandler, context);
+                saxHandler.setState(state);
             }
         }
     }

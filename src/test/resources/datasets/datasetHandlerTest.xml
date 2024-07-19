@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+    <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
+    </dataset>
+</erddapDatasets>
