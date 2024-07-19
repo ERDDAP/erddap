@@ -203,7 +203,7 @@ public class LoadDatasets extends Thread {
             int nTry = nTryAndDatasets[0];
             int nDatasets = nTryAndDatasets[1];
 
-            Erddap.updateLucene(erddap, changedDatasetIDs);
+            erddap.updateLucene(changedDatasetIDs);
             lastLuceneUpdate = System.currentTimeMillis();
 
             //atomic swap into place
@@ -421,7 +421,7 @@ public class LoadDatasets extends Thread {
                 if (isInterrupted()) {
                     String2.log("*** The LoadDatasets thread was interrupted at " +
                             Calendar2.getCurrentISODateTimeStringLocalTZ());
-                    Erddap.updateLucene(erddap, changedDatasetIDs);
+                    erddap.updateLucene(changedDatasetIDs);
                     return;
                 }
 
@@ -570,7 +570,7 @@ public class LoadDatasets extends Thread {
                             if (isInterrupted()) { //this is a likely place to catch interruption
                                 String2.log("*** The LoadDatasets thread was interrupted at " +
                                         Calendar2.getCurrentISODateTimeStringLocalTZ());
-                                Erddap.updateLucene(erddap, changedDatasetIDs);
+                                erddap.updateLucene(changedDatasetIDs);
                                 lastLuceneUpdate = System.currentTimeMillis();
                                 return;
                             }
@@ -586,7 +586,7 @@ public class LoadDatasets extends Thread {
                             //if oldDataset existed, remove its info from categoryInfo
                             //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
                             if (oldDataset != null) {
-                                Erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
+                                erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
                                 oldCatInfoRemoved = true;
                             }
 
@@ -612,7 +612,7 @@ public class LoadDatasets extends Thread {
                             }
 
                             //add new info to categoryInfo
-                            Erddap.addRemoveDatasetInfo(ADD, erddap.categoryInfo, dataset);
+                            erddap.addRemoveDatasetInfo(ADD, erddap.categoryInfo, dataset);
 
                             //clear the dataset's cache
                             //since axis values may have changed and "last" may have changed
@@ -632,7 +632,7 @@ public class LoadDatasets extends Thread {
                                         Calendar2.getCurrentISODateTimeStringLocalTZ();
                                 String2.log(tError2);
                                 warningsFromLoadDatasets.append(tError2 + "\n\n");
-                                Erddap.updateLucene(erddap, changedDatasetIDs);
+                                erddap.updateLucene(changedDatasetIDs);
                                 lastLuceneUpdate = System.currentTimeMillis();
                                 return;
                             }
@@ -647,7 +647,7 @@ public class LoadDatasets extends Thread {
 
                             //if oldDataset existed, remove it from categoryInfo
                             if (oldDataset != null && !oldCatInfoRemoved)
-                                Erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
+                                erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset);
 
                             String tError = startError + xmlReader.lineNumber() + "\n" +
                                     "While trying to load datasetID=" + tId + " (after " +
@@ -685,13 +685,13 @@ public class LoadDatasets extends Thread {
                         changedDatasetIDs.add(tId);
                         if (System.currentTimeMillis() - lastLuceneUpdate >
                                 MAX_MILLIS_BEFORE_LUCENE_UPDATE) {
-                            Erddap.updateLucene(erddap, changedDatasetIDs);
+                            erddap.updateLucene(changedDatasetIDs);
                             lastLuceneUpdate = System.currentTimeMillis();
                         }
 
                         //trigger subscription and dataset.onChange actions (after new dataset is in place)
                         EDD cooDataset = dataset == null ? oldDataset : dataset; //currentOrOld, may be null
-                        Erddap.tryToDoActions(erddap, tId, cooDataset,
+                        erddap.tryToDoActions(tId, cooDataset,
                                 startError + xmlReader.lineNumber() + " with Subscriptions",
                                 change);
                     }
@@ -1090,7 +1090,7 @@ public class LoadDatasets extends Thread {
         Iterator it = orphanIDSet.iterator();
         while (it.hasNext())
             tryToUnload(erddap, (String)it.next(), changedDatasetIDs, false);  //needToUpdateLucene
-        Erddap.updateLucene(erddap, changedDatasetIDs);
+        erddap.updateLucene(changedDatasetIDs);
 
         String msg = String2.ERROR + ": n Orphan Datasets removed (datasets in ERDDAP but not in datasets.xml) = " + orphanIDSet.size() + "\n" +
                 "    " +
@@ -1336,13 +1336,13 @@ public class LoadDatasets extends Thread {
         //it was active; finish removing it
         //do in quick succession...   (???synchronized on ?)
         String2.log("*** unloading datasetID=" + tId);
-        Erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldEdd);
+        erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldEdd);
         File2.deleteAllFiles(EDD.cacheDirectory(tId));
         changedDatasetIDs.add(tId);
         if (needToUpdateLucene)
-            Erddap.updateLucene(erddap, changedDatasetIDs);
+            erddap.updateLucene(changedDatasetIDs);
         //do dataset actions so subscribers know it is gone
-        Erddap.tryToDoActions(erddap, tId, oldEdd, null,  //default subject
+        erddap.tryToDoActions(tId, oldEdd, null,  //default subject
             "This dataset is currently unavailable.");
 
         return true;

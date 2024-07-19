@@ -18160,13 +18160,13 @@ writer.write(
         context.getChangedDatasetIDs().add(dataset.datasetID());
         if (System.currentTimeMillis() - context.getLastLuceneUpdate() >
                 5 * Calendar2.MILLIS_PER_MINUTE) {
-            updateLucene(this, context.getChangedDatasetIDs());
+            updateLucene(context.getChangedDatasetIDs());
             context.setLastLuceneUpdate(System.currentTimeMillis());
         }
 
         //trigger subscription and dataset.onChange actions (after new dataset is in place)
         EDD cooDataset = dataset == null ? oldDataset : dataset; //currentOrOld, may be null
-        tryToDoActions(this, dataset.datasetID(), cooDataset,
+        tryToDoActions(dataset.datasetID(), cooDataset,
                 "",
                 change);
     }
@@ -18181,7 +18181,7 @@ writer.write(
      * @param subject for email messages
      * @param change the change description must be specified or nothing is done
      */
-    protected static void tryToDoActions(Erddap erddap, String tDatasetID, EDD cooDataset,
+    protected void tryToDoActions(String tDatasetID, EDD cooDataset,
                                       String subject, String change) {
         if (String2.isSomething(tDatasetID) && String2.isSomething(change)) {
             if (!String2.isSomething(subject))
@@ -18255,8 +18255,9 @@ writer.write(
 
                 //trigger RSS action
                 // (after new dataset is in place and if there is either a current or older dataset)
-                if (cooDataset != null && erddap != null)
-                    cooDataset.updateRSS(erddap, change);
+                if (cooDataset != null) {
+                    cooDataset.updateRSS(this, change);
+                }
 
             } catch (Throwable subT) {
                 String content = MustBe.throwableToString(subT);
@@ -18280,7 +18281,7 @@ writer.write(
      * @param catInfo the new categoryInfo hashMap of hashMaps of hashSets
      * @param edd the dataset who's info should be added to catInfo
      */
-    protected static void addRemoveDatasetInfo(boolean add,
+    protected void addRemoveDatasetInfo(boolean add,
                                             ConcurrentHashMap catInfo, EDD edd) {
 
         //go through the gridDatasets
@@ -18313,7 +18314,7 @@ writer.write(
      *
      * @param datasetIDs
      */
-    protected static void updateLucene(Erddap erddap, StringArray datasetIDs) {
+    protected void updateLucene(StringArray datasetIDs) {
 
         //update dataset's Document in Lucene Index
         int nDatasetIDs = datasetIDs.size();
@@ -18332,9 +18333,9 @@ writer.write(
                 HashSet<String> deletedSet = new HashSet();
                 for (int idi = 0; idi < nDatasetIDs; idi++) {
                     String tDatasetID = String2.canonical(datasetIDs.get(idi));
-                    EDD edd = erddap.gridDatasetHashMap.get(tDatasetID);
+                    EDD edd = this.gridDatasetHashMap.get(tDatasetID);
                     if (edd == null)
-                        edd = erddap.tableDatasetHashMap.get(tDatasetID);
+                        edd = this.tableDatasetHashMap.get(tDatasetID);
                     if (edd == null) {
                         //remove it from Lucene     luceneIndexWriter is thread-safe
                         EDStatic.luceneIndexWriter.deleteDocuments(
