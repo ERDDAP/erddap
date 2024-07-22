@@ -118,6 +118,7 @@ public class Grid {
    *
    * @return a clone of this Grid.
    */
+  @Override
   public Object clone() {
     Grid grid = new Grid();
 
@@ -396,6 +397,7 @@ public class Grid {
    * @param o an object, presumably a Grid
    * @throws Exception if a difference is found.
    */
+  @Override
   public boolean equals(Object o) {
     try {
       if (!(o instanceof Grid)) {
@@ -429,6 +431,7 @@ public class Grid {
     }
   }
 
+  @Override
   public int hashCode() {
     double hash = 31 * latSpacing;
     hash = 31 * hash + 31 * lonSpacing;
@@ -4300,7 +4303,7 @@ public class Grid {
         fileNameUtility.ensureValidDataSetProperties(
             FileNameUtility.get7CharName(tInCWName),
             true); // ensure is very important here, since this is often the conversion to
-                   // thredds-format data
+        // thredds-format data
 
         // read the input file  (always get the full range, file's min/max lon/lat
         Grid grid = new Grid();

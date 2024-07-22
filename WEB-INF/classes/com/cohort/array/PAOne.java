@@ -18,7 +18,7 @@ import java.math.BigInteger;
  * <p>Yes, you could use BigDecimal instead of this. The advantage is: using a PAOne to transfer the
  * values from one pa to another can be very efficient (one fast operation vs two slow operations).
  */
-public class PAOne {
+public class PAOne implements Comparable<PAOne> {
 
   private PrimitiveArray pa;
   private int elementSize;
@@ -99,6 +99,7 @@ public class PAOne {
    * @return a new object, with the same elements. It will have a new backing array with a capacity
    *     equal to its size.
    */
+  @Override
   public Object clone() {
     return new PAOne(pa, 0);
   }
@@ -343,6 +344,7 @@ public class PAOne {
    * @return a negative integer (if this is less than Other), zero (if this is same as Other), or a
    *     positive integer (if this is greater than Other). Think "this - other".
    */
+  @Override
   public final int compareTo(PAOne otherPAOne) {
     return pa.compare(0, otherPAOne.pa, 0);
   }
@@ -476,6 +478,7 @@ public class PAOne {
    * This returns a string representation of the value. Integer types show MAX_VALUE number (not
    * "").
    */
+  @Override
   public final String toString() {
     return pa.toString();
   }

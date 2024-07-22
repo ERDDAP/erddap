@@ -62,6 +62,7 @@ public abstract class Point2D implements Serializable, Cloneable {
       return (int) Math.round(7 * 31 * x * y);
     }
 
+    @Override
     public String toString() {
       return new String("(" + x + ", " + y + ")");
     }
@@ -120,6 +121,7 @@ public abstract class Point2D implements Serializable, Cloneable {
       return (int) Math.round(7 * 31 * x * y);
     }
 
+    @Override
     public String toString() {
       return new String("(" + x + ", " + y + ")");
     }

@@ -21,6 +21,7 @@ import java.beans.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+
 // jdk1.2
 // import  java.awt.geom.Rectangle2D;
 // import  java.awt.geom.Point2D;
@@ -91,6 +92,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
 
   /** Bob Simons added this to avoid memory leak problems. */
+  @Override
   public void releaseResources() throws Exception {
     try {
       proxy_ = null;
@@ -155,6 +157,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   //      }
   //    }
 
+  @Override
   public LayerChild copy() {
     SGLabel newLabel;
     try {
@@ -182,6 +185,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   /**
    * @since 3.0
    */
+  @Override
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof SGLabel)) return false;
     SGLabel sg = (SGLabel) obj;
@@ -210,28 +214,34 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     // We might want to include some proxy values, but ideally proxy would
     // be able to provide its own hash.
     return ident_.hashCode();
   }
 
+  @Override
   public void draw(Graphics g) throws LayerNotFoundException {
     proxy_.draw(g);
   }
 
+  @Override
   public void setSelected(boolean sel) {
     selected_ = sel;
   }
 
+  @Override
   public boolean isSelected() {
     return selected_;
   }
 
+  @Override
   public void setSelectable(boolean select) {
     selectable_ = select;
   }
 
+  @Override
   public boolean isSelectable() {
     return selectable_;
   }
@@ -434,6 +444,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
 
   /** */
+  @Override
   public void setLayer(Layer l) {
     proxy_.setLayer(l);
   }
@@ -443,14 +454,17 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @return the layer object.
    */
+  @Override
   public Layer getLayer() {
     return proxy_.getLayer();
   }
 
+  @Override
   public AbstractPane getPane() {
     return proxy_.getLayer().getPane();
   }
 
+  @Override
   public void modified(String text) {
     Layer layer = proxy_.getLayer();
     if (layer != null) {
@@ -485,6 +499,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @return the identifier
    */
+  @Override
   public String getId() {
     return ident_;
   }
@@ -494,6 +509,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @param id the label identifier
    */
+  @Override
   public void setId(String id) {
     ident_ = id;
   }
@@ -512,6 +528,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @return the label position
    */
+  @Override
   public Point getLocation() {
     return proxy_.getLocation();
   }
@@ -522,6 +539,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @param loc physical location of label
    */
+  @Override
   public void setLocation(Point loc) {
     Point dloc = proxy_.getLocation();
     if (dloc.x != loc.x || dloc.y != loc.y) {
@@ -546,6 +564,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    *
    * @return the label bounds
    */
+  @Override
   public Rectangle getBounds() {
     return proxy_.getBounds();
   }
@@ -560,15 +579,18 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     proxy_.setBounds(x, y, width, height);
   }
 
+  @Override
   public String toString() {
     String name = getClass().getName();
     return name.substring(name.lastIndexOf(".") + 1) + ": " + ident_;
   }
 
+  @Override
   public boolean isVisible() {
     return proxy_.isVisible();
   }
 
+  @Override
   public void setVisible(boolean visible) {
     boolean vis = proxy_.isVisible();
     if (vis != visible) {
@@ -577,10 +599,12 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     }
   }
 
+  @Override
   public boolean isMoveable() {
     return moveable_;
   }
 
+  @Override
   public void setMoveable(boolean moveable) {
     if (moveable_ != moveable) {
       moveable_ = moveable;
@@ -606,11 +630,13 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     return proxy_.getStringHeight(g);
   }
 
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     if (changes_ == null) changes_ = new PropertyChangeSupport(this);
     changes_.addPropertyChangeListener(l);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     changes_.removePropertyChangeListener(l);
   }

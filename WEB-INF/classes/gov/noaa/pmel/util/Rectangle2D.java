@@ -78,6 +78,7 @@ public abstract class Rectangle2D implements Serializable, Cloneable {
       return (int) Math.round(7 * 31 * x * y * width * height);
     }
 
+    @Override
     public String toString() {
       String result;
       result = "[x=" + x + ",y=" + y + ",width=" + width + ",height=" + height + "]";
@@ -141,6 +142,7 @@ public abstract class Rectangle2D implements Serializable, Cloneable {
     }
 
     /** Make a copy of the <code>Rectangle2D</code>. */
+    @Override
     public Rectangle2D copy() {
       try {
         return (Rectangle2D) clone();
@@ -201,10 +203,12 @@ public abstract class Rectangle2D implements Serializable, Cloneable {
       }
     }
 
+    @Override
     public int hashCode() {
       return (int) Math.round(7 * 31 * x * y * width * height);
     }
 
+    @Override
     public String toString() {
       String result;
       result = "[x=" + x + ",y=" + y + ",width=" + width + ",height=" + height + "]";
@@ -268,6 +272,7 @@ public abstract class Rectangle2D implements Serializable, Cloneable {
     }
 
     /** Make a copy of the <code>Rectangle2D</code>. */
+    @Override
     public Rectangle2D copy() {
       try {
         return (Rectangle2D) clone();

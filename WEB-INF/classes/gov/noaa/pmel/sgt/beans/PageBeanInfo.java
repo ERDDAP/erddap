@@ -18,7 +18,7 @@ import java.beans.*;
  * @author Donald Denbo
  * @version $Revision: 1.4 $, $Date: 2003/09/18 17:31:44 $
  * @since 3.0
- **/
+ */
 public class PageBeanInfo extends SimpleBeanInfo {
   private Class beanClass = Page.class;
   private String iconColor16x16Filename = "PageIcon16.gif";
@@ -26,38 +26,51 @@ public class PageBeanInfo extends SimpleBeanInfo {
   private String iconMono16x16Filename;
   private String iconMono32x32Filename;
 
-  public PageBeanInfo() {
-  }
+  public PageBeanInfo() {}
+
+  @Override
   public PropertyDescriptor[] getPropertyDescriptors() {
     try {
-      PropertyDescriptor _background = new PropertyDescriptor("background", beanClass, null, "setBackground");
-      PropertyDescriptor _dataModel = new PropertyDescriptor("dataModel", beanClass, "getDataModel", "setDataModel");
+      PropertyDescriptor _background =
+          new PropertyDescriptor("background", beanClass, null, "setBackground");
+      PropertyDescriptor _dataModel =
+          new PropertyDescriptor("dataModel", beanClass, "getDataModel", "setDataModel");
       PropertyDescriptor _JPane = new PropertyDescriptor("JPane", beanClass, "getJPane", null);
-      PropertyDescriptor _JPaneSize = new PropertyDescriptor("JPaneSize", beanClass, "getJPaneSize", null);
+      PropertyDescriptor _JPaneSize =
+          new PropertyDescriptor("JPaneSize", beanClass, "getJPaneSize", null);
       PropertyDescriptor _name = new PropertyDescriptor("name", beanClass, "getName", "setName");
-      PropertyDescriptor _panelModel = new PropertyDescriptor("panelModel", beanClass, "getPanelModel", "setPanelModel");
-      PropertyDescriptor _printHAlign = new PropertyDescriptor("printHAlign", beanClass, "getPrintHAlign", "setPrintHAlign");
-      PropertyDescriptor _printOrigin = new PropertyDescriptor("printOrigin", beanClass, "getPrintOrigin", "setPrintOrigin");
-      PropertyDescriptor _printScaleMode = new PropertyDescriptor("printScaleMode", beanClass, "getPrintScaleMode", "setPrintScaleMode");
-      PropertyDescriptor _printVAlign = new PropertyDescriptor("printVAlign", beanClass, "getPrintVAlign", "setPrintVAlign");
-      PropertyDescriptor[] pds = new PropertyDescriptor[] {
-        _background,
-        _dataModel,
-        _JPane,
-        _JPaneSize,
-        _name,
-        _panelModel,
-        _printHAlign,
-        _printOrigin,
-        _printScaleMode,
-        _printVAlign};
+      PropertyDescriptor _panelModel =
+          new PropertyDescriptor("panelModel", beanClass, "getPanelModel", "setPanelModel");
+      PropertyDescriptor _printHAlign =
+          new PropertyDescriptor("printHAlign", beanClass, "getPrintHAlign", "setPrintHAlign");
+      PropertyDescriptor _printOrigin =
+          new PropertyDescriptor("printOrigin", beanClass, "getPrintOrigin", "setPrintOrigin");
+      PropertyDescriptor _printScaleMode =
+          new PropertyDescriptor(
+              "printScaleMode", beanClass, "getPrintScaleMode", "setPrintScaleMode");
+      PropertyDescriptor _printVAlign =
+          new PropertyDescriptor("printVAlign", beanClass, "getPrintVAlign", "setPrintVAlign");
+      PropertyDescriptor[] pds =
+          new PropertyDescriptor[] {
+            _background,
+            _dataModel,
+            _JPane,
+            _JPaneSize,
+            _name,
+            _panelModel,
+            _printHAlign,
+            _printOrigin,
+            _printScaleMode,
+            _printVAlign
+          };
       return pds;
-    }
-    catch(IntrospectionException ex) {
+    } catch (IntrospectionException ex) {
       ex.printStackTrace();
       return null;
     }
   }
+
+  @Override
   public java.awt.Image getIcon(int iconKind) {
     switch (iconKind) {
       case BeanInfo.ICON_COLOR_16x16:

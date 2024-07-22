@@ -706,6 +706,7 @@ public class Table {
    *
    * @return a new Table.
    */
+  @Override
   public Object clone() {
     return subset(0, 1, nRows() - 1);
   }
@@ -1871,6 +1872,7 @@ public class Table {
   }
 
   /** This prints the metadata and the data to a CSV table. This shows row numbers. */
+  @Override
   public String toString() {
     return toString(Integer.MAX_VALUE);
   }
@@ -2304,7 +2306,6 @@ public class Table {
     minMax.addDouble(min);
     minMax.addDouble(max);
     columnAttributes(column).set("actual_range", minMax);
-    return;
   }
 
   /**
@@ -2410,6 +2411,7 @@ public class Table {
    * @return true if o is a Table object and has column types and data values that equal this Table
    *     object.
    */
+  @Override
   public boolean equals(Object o) {
     return equals(o, true);
   }
@@ -2492,6 +2494,7 @@ public class Table {
     }
   }
 
+  @Override
   public int hashCode() {
     int hash = 7;
     int nColumns = nColumns();
@@ -4238,7 +4241,7 @@ public class Table {
         "OBIS_" + String2.md5Hex12(url + String2.toCSSVString(resources) + querySummary),
         "GCMD Science Keywords",
         "Oceans > Marine Biology", // not correct if a darwin provider searched for non-oceanography
-                                   // data
+        // data
         "http://www.iobis.org/ and "
             + url
             + " ("
@@ -4638,7 +4641,7 @@ public class Table {
     // how do global attributes fit into opendap view of attributes?
     OpendapHelper.writeToDAS(
         "NC_GLOBAL", // DAP 2.0 spec doesn't talk about global attributes, was "GLOBAL"; ncBrowse
-                     // and netcdf-java treat NC_GLOBAL as special case
+        // and netcdf-java treat NC_GLOBAL as special case
         PAType.DOUBLE, // isUnsigned doesn't apply to global atts. double won't trigger "_Unsigned"
         globalAttributes,
         writer,
@@ -9533,9 +9536,9 @@ public class Table {
       boolean isPcmSigned = encoding.equals("PCM_SIGNED");
       boolean isBigEndian = af.isBigEndian();
       boolean is24Bit = nBits == 24;
-      if (!isALAW && !isULAW && !isPcmFloat && !isPcmUnsigned && !isPcmSigned)
-        new SimpleException(errorWhile + "Unsupported audioSampleSizeInBits=" + nBits + ".");
-
+      if (!isALAW && !isULAW && !isPcmFloat && !isPcmUnsigned && !isPcmSigned) {
+        throw new SimpleException(errorWhile + "Unsupported audioSampleSizeInBits=" + nBits + ".");
+      }
       int frameSize = af.getFrameSize();
       globalAttributes.set("audioBigEndian", "" + isBigEndian);
       globalAttributes.set("audioChannels", nChannels);
@@ -10032,7 +10035,7 @@ public class Table {
             (nCol * nBits) / 8,
             frameRate,
             true, // bigEndian. My data is bigEndian, but I think Java always swaps and writes
-                  // littleEndian
+            // littleEndian
             props);
 
     DataInputStream dis = new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName));
@@ -15574,9 +15577,8 @@ public class Table {
                       + line);
             for (int col = 0; col < nCol; col++) {
               String ts =
-                  sal.get(
-                      col); // will be "null" for empty cells.  Note that this treats null and
-                            // "null" in file as empty cell.
+                  sal.get(col); // will be "null" for empty cells.  Note that this treats null and
+              // "null" in file as empty cell.
               // String2.log(">> col=" + col + " ts=" + String2.annotatedString(ts));
               if (isUTC[col])
                 pas[col].addDouble(
@@ -17057,8 +17059,8 @@ public class Table {
 
   private static String[] splitColNameForRounders(String colName) {
     String split[] = colName.split("/", 2); // split on '/'
-    Arrays.stream(split).forEach(s -> s.trim()); // remove outer whitespace
     return Arrays.stream(split)
+        .map(s -> s.trim()) // remove outer whitespace
         .filter(s -> s.length() > 0)
         .toArray(size -> new String[size]); // discard blanks.
   }

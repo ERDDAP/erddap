@@ -110,6 +110,7 @@ public abstract class SpaceAxis extends Axis {
   static final double LABEL_RATIO = 1.3;
 
   //
+  @Override
   protected void updateRegisteredTransforms() {
     if (!registeredTransforms_.isEmpty()) {
       AxisTransform trns;
@@ -122,6 +123,7 @@ public abstract class SpaceAxis extends Axis {
   }
 
   //
+  @Override
   protected void updateRegisteredAxes() {
     if (!registeredAxes_.isEmpty()) {
       SpaceAxis ax;
@@ -297,6 +299,7 @@ public abstract class SpaceAxis extends Axis {
     }
   }
 
+  @Override
   public void setRangeU(SoTRange ur) {
     setRangeU(
         new Range2D(
@@ -314,6 +317,7 @@ public abstract class SpaceAxis extends Axis {
     return uRange_;
   }
 
+  @Override
   public SoTRange getSoTRangeU() {
     return new SoTRange.Double(uRange_);
   }
@@ -365,6 +369,7 @@ public abstract class SpaceAxis extends Axis {
     }
   }
 
+  @Override
   public void setLocationU(SoTPoint upt) {
     double x;
     double y;
@@ -403,6 +408,7 @@ public abstract class SpaceAxis extends Axis {
     return tLocation_;
   }
 
+  @Override
   public SoTPoint getSoTLocationU() {
     if (tLocation_ == null) {
       return new SoTPoint(uLocation_.x, uLocation_.y);
@@ -416,6 +422,7 @@ public abstract class SpaceAxis extends Axis {
   }
 
   //
+  @Override
   public abstract void draw(Graphics g);
 
   /**
@@ -424,8 +431,10 @@ public abstract class SpaceAxis extends Axis {
    * @return bounding box
    * @see Rectangle
    */
+  @Override
   public abstract Rectangle getBounds();
 
+  @Override
   public void modified(String mess) {
     //    if(Debug.EVENT) System.out.println("SpaceAxis: modified()");
     if (graph_ != null) graph_.modified(mess);

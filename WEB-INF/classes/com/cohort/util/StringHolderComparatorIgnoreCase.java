@@ -21,6 +21,7 @@ public class StringHolderComparatorIgnoreCase implements Comparator<StringHolder
    * @return returns a negative integer, zero, or a positive integer if the value at index1 is less
    *     than, equal to, or greater than the value at index2. Think "o1 - o2".
    */
+  @Override
   public int compare(StringHolder o1, StringHolder o2) {
     if (o1 == null) return o2 == null ? 0 : -1;
     if (o2 == null) return 1;
@@ -32,10 +33,12 @@ public class StringHolderComparatorIgnoreCase implements Comparator<StringHolder
    *
    * @param obj usually another RowComparator
    */
+  @Override
   public boolean equals(Object obj) {
     return obj != null && obj instanceof StringHolderComparatorIgnoreCase;
   }
 
+  @Override
   public int hashCode() {
     return 1;
   }

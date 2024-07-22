@@ -21,6 +21,7 @@ public class StringHolderComparator implements Comparator<StringHolder> {
    * @return returns a negative integer, zero, or a positive integer if the value at index1 is less
    *     than, equal to, or greater than the value at index2. Think "o1 - o2".
    */
+  @Override
   public int compare(StringHolder o1, StringHolder o2) {
     if (o1 == null) return o2 == null ? 0 : -1;
     return o1.compareTo(o2);
@@ -31,10 +32,12 @@ public class StringHolderComparator implements Comparator<StringHolder> {
    *
    * @param obj usually another RowComparator
    */
+  @Override
   public boolean equals(Object obj) {
     return obj != null && obj instanceof StringHolderComparator;
   }
 
+  @Override
   public int hashCode() {
     // There is nothing meaningul to hash.
     return 1;

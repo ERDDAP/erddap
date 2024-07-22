@@ -10,30 +10,46 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import java.awt.Container;
 import java.awt.Graphics;
+
 /**
  * <code>LayerStack</code> is used to manage a group of layers together.
+ *
  * @since 2.x
  */
 public class LayerStack extends Container implements LayerControl {
-    public LayerStack() {
-        setLayout(new StackedLayout());
-    }
+  public LayerStack() {
+    setLayout(new StackedLayout());
+  }
+
+  @Override
   public void setPane(AbstractPane pane) {
-    /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
+    /**
+     * @todo Implement this gov.noaa.pmel.sgt.LayerControl method
+     */
     throw new UnsupportedOperationException("Method setPane() not yet implemented.");
   }
+
+  @Override
   public void draw(Graphics g) {
-    /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
+    /**
+     * @todo Implement this gov.noaa.pmel.sgt.LayerControl method
+     */
     throw new UnsupportedOperationException("Method draw() not yet implemented.");
   }
+
+  @Override
   public void drawDraggableItems(Graphics g) {
-    /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
+    /**
+     * @todo Implement this gov.noaa.pmel.sgt.LayerControl method
+     */
     throw new UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
   }
+
+  @Override
   public String getId() {
     return getName();
   }

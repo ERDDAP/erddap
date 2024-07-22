@@ -17,22 +17,18 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-
 import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTMetaData;
 import gov.noaa.pmel.util.SoTRange;
-
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 
 /**
- * Defines a data object to be a Vector. Interpretation
- * of U and V is determined by the <code>CoordinateSystem</code>.  For
- * <code>Cartesian</code>, U and V are the Cartesian vector
- * components. For <code>Polar</code> ,
- * U and V are R (radius) and Theta (angle) vector components,
+ * Defines a data object to be a Vector. Interpretation of U and V is determined by the <code>
+ * CoordinateSystem</code>. For <code>Cartesian</code>, U and V are the Cartesian vector components.
+ * For <code>Polar</code> , U and V are R (radius) and Theta (angle) vector components,
  * respectively.
  *
  * @author Donald Denbo
@@ -48,28 +44,24 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
   double[] xValues, yValues, uValues, vValues;
   SoTRange xRange, yRange;
 
-    /** 
-     * Bob Simons added this to avoid memory leak problems.
-     */
-    public void releaseResources() throws Exception {
-        try {  
-            xValues = null;
-            yValues = null;
-            uValues = null;
-            vValues = null;
-            if (JPane.debug) String2.log("sgt.SGTPointsVector.releaseResources() finished");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            if (JPane.debug) 
-                String2.pressEnterToContinue(); 
-        }
+  /** Bob Simons added this to avoid memory leak problems. */
+  @Override
+  public void releaseResources() throws Exception {
+    try {
+      xValues = null;
+      yValues = null;
+      uValues = null;
+      vValues = null;
+      if (JPane.debug) String2.log("sgt.SGTPointsVector.releaseResources() finished");
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+      if (JPane.debug) String2.pressEnterToContinue();
     }
-
-  /**
-   * Default constructor.
-   */
-  public SGTPointsVector() {
   }
+
+  /** Default constructor. */
+  public SGTPointsVector() {}
+
   /**
    * Construct a SGTPointVector from 4 double[] of the same length.
    *
@@ -87,8 +79,10 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
     DoubleArray yArray = new DoubleArray(yValues);
     double xStats[] = xArray.calculateStats();
     double yStats[] = yArray.calculateStats();
-    xRange = new SoTRange.Double(xStats[PrimitiveArray.STATS_MIN], xStats[PrimitiveArray.STATS_MAX]);
-    yRange = new SoTRange.Double(yStats[PrimitiveArray.STATS_MIN], yStats[PrimitiveArray.STATS_MAX]);
+    xRange =
+        new SoTRange.Double(xStats[PrimitiveArray.STATS_MIN], xStats[PrimitiveArray.STATS_MAX]);
+    yRange =
+        new SoTRange.Double(yStats[PrimitiveArray.STATS_MIN], yStats[PrimitiveArray.STATS_MAX]);
   }
 
   /**
@@ -96,9 +90,11 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
    *
    * @see SGTData
    */
+  @Override
   public SGTData copy() {
     return new SGTPointsVector(xValues, yValues, uValues, vValues);
   }
+
   /**
    * Set the vector's title.
    *
@@ -107,59 +103,78 @@ public class SGTPointsVector implements SGTData, Cloneable, Serializable {
   public void setTitle(String title) {
     title_ = title;
   }
+
+  @Override
   public SGLabel getKeyTitle() {
     return keyTitle_;
   }
+
   /** Set the title formatted for the <code>VectorKey</code>. */
   public void setKeyTitle(SGLabel title) {
     keyTitle_ = title;
   }
+
   /**
-   * Get the unique identifier.  The presence of the identifier
-   * is optional, but if it is present it should be unique.  This
-   * field is used to search for the layer that contains the data.
+   * Get the unique identifier. The presence of the identifier is optional, but if it is present it
+   * should be unique. This field is used to search for the layer that contains the data.
    *
    * @return unique identifier
    * @see gov.noaa.pmel.sgt.Pane
    * @see gov.noaa.pmel.sgt.Layer
    */
+  @Override
   public String getId() {
     return id_;
   }
-  /**
-   * Set the unique identifier.
-   */
+
+  /** Set the unique identifier. */
   public void setId(String ident) {
     id_ = ident;
   }
+
   /**
    * Get the vector's title.
    *
    * @return the title
    */
+  @Override
   public String getTitle() {
     return title_;
   }
+
+  @Override
   public boolean isXTime() {
     return false;
   }
+
+  @Override
   public boolean isYTime() {
     return false;
   }
+
+  @Override
   public SGTMetaData getXMetaData() {
     return null;
   }
+
+  @Override
   public SGTMetaData getYMetaData() {
     return null;
   }
+
+  @Override
   public SoTRange getXRange() {
     return xRange;
   }
+
+  @Override
   public SoTRange getYRange() {
     return yRange;
   }
-  public void addPropertyChangeListener(PropertyChangeListener l) {
-  }
-  public void removePropertyChangeListener(PropertyChangeListener l) {
-  }
+
+  @Override
+  public void addPropertyChangeListener(PropertyChangeListener l) {}
+
+  @Override
+  public void removePropertyChangeListener(PropertyChangeListener l) {}
 }

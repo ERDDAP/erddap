@@ -99,40 +99,49 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Get start value */
+    @Override
     public SoTValue getStart() {
       return new SoTValue.Time(start);
     }
 
+    @Override
     public void setStart(SoTValue value) {
       start = ((SoTValue.Time) value).getValue();
     }
 
     /** Get end value */
+    @Override
     public SoTValue getEnd() {
       return new SoTValue.Time(end);
     }
 
+    @Override
     public void setEnd(SoTValue value) {
       end = ((SoTValue.Time) value).getValue();
     }
 
     /** Get delta value */
+    @Override
     public SoTValue getDelta() {
       return new SoTValue.Time(delta);
     }
 
+    @Override
     public void setDelta(SoTValue value) {
       delta = ((SoTValue.Time) value).getValue();
     }
 
+    @Override
     public Object getStartObject() {
       return java.lang.Long.valueOf(start);
     }
 
+    @Override
     public Object getEndObject() {
       return java.lang.Long.valueOf(end);
     }
 
+    @Override
     public Object getDeltaObject() {
       return java.lang.Long.valueOf(delta);
     }
@@ -142,6 +151,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
      * SoTRange</code> is the smallest <code>SoTRange</code> that contains both the origial <code>
      * SoTRange</code> and the specified <code>SoTRange</code>.
      */
+    @Override
     public void add(SoTRange range) {
       if (!range.isTime()) return;
       if ((start <= end) && ((SoTRange.Time) range).start <= ((SoTRange.Time) range).end) {
@@ -190,17 +200,20 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Test if <code>SoTRange</code> is temportal */
+    @Override
     public boolean isTime() {
       return true;
     }
 
     /** Exchange start and end values */
+    @Override
     public void flipStartAndEnd() {
       long save = end;
       end = start;
       start = save;
     }
 
+    @Override
     public String toString() {
       StringBuffer buf = new StringBuffer(50);
       buf.append("[").append(start).append(";").append(end);
@@ -213,6 +226,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Make a copy of the <code>SoTRange</code>. */
+    @Override
     public SoTRange copy() {
       try {
         return (SoTRange) clone();
@@ -222,6 +236,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Test if start or end values are missing */
+    @Override
     public boolean isStartOrEndMissing() {
       return (start == java.lang.Long.MAX_VALUE) || (end == java.lang.Long.MAX_VALUE);
     }
@@ -278,40 +293,49 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Get start value */
+    @Override
     public SoTValue getStart() {
       return new SoTValue.Double(start);
     }
 
+    @Override
     public void setStart(SoTValue value) {
       start = ((SoTValue.Double) value).getValue();
     }
 
     /** Get end value */
+    @Override
     public SoTValue getEnd() {
       return new SoTValue.Double(end);
     }
 
+    @Override
     public void setEnd(SoTValue value) {
       end = ((SoTValue.Double) value).getValue();
     }
 
     /** Get delta value */
+    @Override
     public SoTValue getDelta() {
       return new SoTValue.Double(delta);
     }
 
+    @Override
     public void setDelta(SoTValue value) {
       delta = ((SoTValue.Double) value).getValue();
     }
 
+    @Override
     public Object getStartObject() {
       return java.lang.Double.valueOf(start);
     }
 
+    @Override
     public Object getEndObject() {
       return java.lang.Double.valueOf(end);
     }
 
+    @Override
     public Object getDeltaObject() {
       return java.lang.Double.valueOf(delta);
     }
@@ -321,6 +345,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
      * SoTRange</code> is the smallest <code>SoTRange</code> that contains both the origial <code>
      * SoTRange</code> and the specified <code>SoTRange</code>.
      */
+    @Override
     public void add(SoTRange range) {
       if (range.isTime()) return;
       if ((start <= end) && ((SoTRange.Double) range).start <= ((SoTRange.Double) range).end) {
@@ -367,17 +392,20 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Test if <code>SoTRange</code> is temportal */
+    @Override
     public boolean isTime() {
       return false;
     }
 
     /** Exchange start and end values */
+    @Override
     public void flipStartAndEnd() {
       double save = end;
       end = start;
       start = save;
     }
 
+    @Override
     public String toString() {
       StringBuffer buf = new StringBuffer(50);
       buf.append("[").append(start).append(";").append(end);
@@ -390,6 +418,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Make a copy of the <code>SoTRange</code>. */
+    @Override
     public SoTRange copy() {
       try {
         return (SoTRange) clone();
@@ -399,6 +428,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
     }
 
     /** Test if start or end values are missing */
+    @Override
     public boolean isStartOrEndMissing() {
       return java.lang.Double.isNaN(start) || java.lang.Double.isNaN(end);
     }
@@ -413,10 +443,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
 
   public abstract boolean isTime();
 
+  @Override
   public abstract String toString();
 
+  @Override
   public abstract boolean equals(Object range);
 
+  @Override
   public abstract int hashCode();
 
   public abstract void add(SoTRange range);

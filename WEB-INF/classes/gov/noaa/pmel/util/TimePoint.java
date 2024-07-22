@@ -12,7 +12,6 @@
 
 package gov.noaa.pmel.util;
 
-
 /**
  * TimePoint allows specification of a time-space point.
  *
@@ -68,6 +67,7 @@ public class TimePoint {
    *
    * @return string representation of the TimePoint.
    */
+  @Override
   public String toString() {
     return new String("(" + x + ", " + t.toString() + ")");
   }

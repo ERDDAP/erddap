@@ -53,11 +53,13 @@ public abstract class SoTValue implements Serializable {
       value_ = value;
     }
 
+    @Override
     public Object getObjectValue() {
       return java.lang.Long.valueOf(value_);
     }
 
     /** Test if <code>SoTValue</code> is time */
+    @Override
     public boolean isTime() {
       return true;
     }
@@ -81,6 +83,7 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public void add(SoTValue val) {
       if (!val.isTime()) return;
       long dval = val.getLongTime();
@@ -92,6 +95,7 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public long getLongTime() {
       return value_;
     }
@@ -101,10 +105,12 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public gov.noaa.pmel.util.GeoDate getGeoDate() {
       return new gov.noaa.pmel.util.GeoDate(value_);
     }
 
+    @Override
     public String toString() {
       //      return java.lang.Long.toString(value_);
       return getGeoDate().toString();
@@ -137,11 +143,13 @@ public abstract class SoTValue implements Serializable {
       value_ = value;
     }
 
+    @Override
     public Object getObjectValue() {
       return java.lang.Double.valueOf(value_);
     }
 
     /** Test if <code>SoTValue</code> is time */
+    @Override
     public boolean isTime() {
       return false;
     }
@@ -165,6 +173,7 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public void add(SoTValue val) {
       if (val.isTime()) return;
       double dval = ((Number) val.getObjectValue()).doubleValue();
@@ -176,6 +185,7 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public long getLongTime() {
       throw new Error("Method not appropriate for SoTValue.Double");
     }
@@ -185,10 +195,12 @@ public abstract class SoTValue implements Serializable {
      *
      * @since 3.0
      */
+    @Override
     public gov.noaa.pmel.util.GeoDate getGeoDate() {
       throw new Error("Method not appropriate for SoTValue.Double");
     }
 
+    @Override
     public String toString() {
       return java.lang.Double.toString(value_);
     }
@@ -203,10 +215,13 @@ public abstract class SoTValue implements Serializable {
 
   public abstract boolean isTime();
 
+  @Override
   public abstract String toString();
 
+  @Override
   public abstract boolean equals(Object val);
 
+  @Override
   public abstract int hashCode();
 
   public abstract Object getObjectValue();

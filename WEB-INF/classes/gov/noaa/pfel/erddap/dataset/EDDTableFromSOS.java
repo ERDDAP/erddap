@@ -533,7 +533,7 @@ public class EDDTableFromSOS extends EDDTable {
     sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; // just lat and lon
     sourceCanConstrainStringData =
         CONSTRAIN_PARTIAL; // time (but not != or regex), station_id (even REGEX_OP), but nothing
-                           // else
+    // else
     sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; // just for station_id
 
     // set source attributes (none available from source)
@@ -866,9 +866,8 @@ public class EDDTableFromSOS extends EDDTable {
                   "Warning while parsing TimePeriod /gml:endPosition; content=\"\" tIndeterminateEnd="
                       + tIndeterminateEnd);
               tBeginTime =
-                  Double
-                      .NaN; // mark as invalid; use tBeginTime since tIndeterminateEnd isn't
-                            // required.
+                  Double.NaN; // mark as invalid; use tBeginTime since tIndeterminateEnd isn't
+              // required.
             }
             if (reallyVerbose)
               String2.log("    endTime(from <gml:TimePeriod></gml:endPosition>)=" + tEndTime);
@@ -1199,6 +1198,7 @@ public class EDDTableFromSOS extends EDDTable {
    * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
    *     false if it doesn't (e.g., EDDTableFromDatabase).
    */
+  @Override
   public boolean knowsActualRange() {
     return false;
   } // because data is from a remote service
@@ -1212,6 +1212,7 @@ public class EDDTableFromSOS extends EDDTable {
    * @param userDapQuery the part after the '?', still percentEncoded, may be null.
    * @throws Throwable if trouble (notably, WaitThenTryAgainException)
    */
+  @Override
   public void getDataForDapQuery(
       int language,
       String loggedInAs,
@@ -2288,28 +2289,28 @@ public class EDDTableFromSOS extends EDDTable {
                     String ts = rowValues[col];
                     if (ts != null) {
                       PrimitiveArray pa = table.getColumn(col);
-                      if (true || verbose) {
-                        // if there was an old value, ensure that old value = new value
-                        // leave this test in as insurance!
-                        String tso = pa.getString(tRow);
-                        pa.setString(tRow, ts);
-                        ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
-                        if (tso.length() > 0 && !tso.equals(ts)) {
-                          String2.log("URL=" + localSourceUrl + kvp);
-                          throw new SimpleException(
-                              "Error: there are two rows for lon,lat,alt,time,id="
-                                  + tHash
-                                  + " and they have different data values (column="
-                                  + table.getColumnName(col)
-                                  + "="
-                                  + tso
-                                  + " and "
-                                  + ts
-                                  + ").");
-                        }
-                      } else {
-                        pa.setString(tRow, ts);
+                      // if (true || verbose) {
+                      // if there was an old value, ensure that old value = new value
+                      // leave this test in as insurance!
+                      String tso = pa.getString(tRow);
+                      pa.setString(tRow, ts);
+                      ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
+                      if (tso.length() > 0 && !tso.equals(ts)) {
+                        String2.log("URL=" + localSourceUrl + kvp);
+                        throw new SimpleException(
+                            "Error: there are two rows for lon,lat,alt,time,id="
+                                + tHash
+                                + " and they have different data values (column="
+                                + table.getColumnName(col)
+                                + "="
+                                + tso
+                                + " and "
+                                + ts
+                                + ").");
                       }
+                      // } else {
+                      //   pa.setString(tRow, ts);
+                      // }
                     }
                   }
                 } else {
@@ -2643,28 +2644,28 @@ public class EDDTableFromSOS extends EDDTable {
                     String ts = rowValues[col];
                     if (ts != null) {
                       PrimitiveArray pa = table.getColumn(col);
-                      if (true || verbose) {
-                        // if there was an old value, ensure that old value = new value
-                        // leave this test in as insurance!
-                        String tso = pa.getString(tRow);
-                        pa.setString(tRow, ts);
-                        ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
-                        if (tso.length() > 0 && !tso.equals(ts)) {
-                          String2.log("URL=" + localSourceUrl + kvp);
-                          throw new SimpleException(
-                              "Error: there are two rows for lon,lat,alt,time,id="
-                                  + tHash
-                                  + " and they have different data values (column="
-                                  + table.getColumnName(col)
-                                  + "="
-                                  + tso
-                                  + " and "
-                                  + ts
-                                  + ").");
-                        }
-                      } else {
-                        pa.setString(tRow, ts);
+                      // if (true || verbose) {
+                      // if there was an old value, ensure that old value = new value
+                      // leave this test in as insurance!
+                      String tso = pa.getString(tRow);
+                      pa.setString(tRow, ts);
+                      ts = pa.getString(tRow); // setting a number changes it, e.g., 1 -> 1.0
+                      if (tso.length() > 0 && !tso.equals(ts)) {
+                        String2.log("URL=" + localSourceUrl + kvp);
+                        throw new SimpleException(
+                            "Error: there are two rows for lon,lat,alt,time,id="
+                                + tHash
+                                + " and they have different data values (column="
+                                + table.getColumnName(col)
+                                + "="
+                                + tso
+                                + " and "
+                                + ts
+                                + ").");
                       }
+                      // } else {
+                      //   pa.setString(tRow, ts);
+                      // }
                     }
                   }
                 } else {
@@ -2880,8 +2881,8 @@ public class EDDTableFromSOS extends EDDTable {
 
   private static String
       standardSummary = // from http://www.oostethys.org/ogc-oceans-interoperability-experiment
-                        // [GONE]
-      "The OCEANS IE -- formally approved as an OGC Interoperability\n"
+          // [GONE]
+          "The OCEANS IE -- formally approved as an OGC Interoperability\n"
               + "Experiment in December 2006 -- engages data managers and scientists\n"
               + "in the Ocean-Observing community to advance their understanding and\n"
               + "application of various OGC specifications, solidify demonstrations\n"
@@ -2918,7 +2919,8 @@ public class EDDTableFromSOS extends EDDTable {
               + "  efficient queries;\n"
               + "* Explore possible enhancements of THREDDS server, so that THREDDS\n"
               + "  resident data sources might be made available via SOS or WFS;"; // better
-                                                                                   // summary?
+
+  // summary?
 
   // IRIS - This SOS listed at
   //  http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1 [GONE]
@@ -3070,7 +3072,7 @@ public class EDDTableFromSOS extends EDDTable {
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (s.length() >= 0 && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
             license = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + license);
           }
@@ -3495,7 +3497,7 @@ public class EDDTableFromSOS extends EDDTable {
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (s.length() >= 0 && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
             tLicense = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + tLicense);
           }
@@ -4044,7 +4046,6 @@ public class EDDTableFromSOS extends EDDTable {
   public static void getPhenomena(String url, HashMap hashMap) throws Throwable {
 
     String2.log("EDDTableFromSOS.getPhenomena" + "\nurl=" + url);
-    StringBuilder sb = new StringBuilder();
 
     SimpleXMLReader xmlReader = new SimpleXMLReader(SSR.getUrlBufferedInputStream(url));
     try {

@@ -92,6 +92,7 @@ public class Attributes {
    *
    * @return a new Table.
    */
+  @Override
   public Object clone() {
     Attributes attributes2 = new Attributes();
     this.copyTo(attributes2);
@@ -687,6 +688,7 @@ public class Attributes {
    * For diagnostics, this prints the attributes to a newline separated String, one per line:
    * "&nbsp;&nbsp;&nbsp;&nbsp;[name]=[value]", where [value] is att.toNccsv127AttString().
    */
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     String names[] = getNames();
@@ -776,10 +778,12 @@ public class Attributes {
    *
    * @param o an object, presumably an Attributes
    */
+  @Override
   public boolean equals(Object o) {
     return testEquals(o).length() == 0;
   }
 
+  @Override
   public int hashCode() {
     return toString().hashCode();
   }
@@ -996,7 +1000,7 @@ public class Attributes {
                   "NCCSV-\\d\\.\\d",
                   String2
                       .NCCSV_VERSION); // string.replaceAll(regex, newS) should match. No change if
-                                       // not.
+        // not.
         else val += ", " + String2.NCCSV_VERSION;
       } else {
         val = "COARDS, CF-1.10, ACDD-1.3, " + String2.NCCSV_VERSION;
@@ -1137,9 +1141,8 @@ public class Attributes {
       if (isString) {
         tType = "char";
       } else if (tType.equals("long")) {
-        tType =
-            "int64"; // see
-                     // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+        tType = "int64"; // see
+        // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
       } else if (tType.equals("ulong")) {
         tType = "uint64";
       }
@@ -1315,7 +1318,7 @@ public class Attributes {
                         : unsigned && oPAType == PAType.BYTE
                             ? PAType.UBYTE
                             : // similar code below   //trouble (not), but change to not doing
-                              // this???
+                            // this???
                             unsigned && oPAType == PAType.SHORT
                                 ? PAType.USHORT
                                 : unsigned && oPAType == PAType.INT

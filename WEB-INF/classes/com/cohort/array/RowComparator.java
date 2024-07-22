@@ -50,6 +50,7 @@ public class RowComparator implements Comparator<Integer> {
    * @return returns a negative integer, zero, or a positive integer if the value at index1 is less
    *     than, equal to, or greater than the value at index2. Think "o1 - o2".
    */
+  @Override
   public int compare(Integer o1, Integer o2) {
     for (int k = 0; k < keys.length; k++) {
       int result = table.get(keys[k]).compare(o1, o2);
@@ -63,6 +64,7 @@ public class RowComparator implements Comparator<Integer> {
    *
    * @param obj usually another RowComparator
    */
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof RowComparator) {
     } else return false;
@@ -84,6 +86,7 @@ public class RowComparator implements Comparator<Integer> {
     return true;
   }
 
+  @Override
   public int hashCode() {
     int hash = table.hashCode();
     for (int i = 0; i < keys.length; i++) {

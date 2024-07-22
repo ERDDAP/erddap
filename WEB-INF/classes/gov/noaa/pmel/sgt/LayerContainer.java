@@ -10,14 +10,15 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import java.awt.*;
 import java.beans.*;
+
 /**
- * A <code>Container</code> designed hold <code>Layer</code>s.
- * The <code>LayerContainer</code> improves the flexiblity in
- * laying out multiple stacked <code>Layer</code>s on a <code>Pane</code>.
+ * A <code>Container</code> designed hold <code>Layer</code>s. The <code>LayerContainer</code>
+ * improves the flexiblity in laying out multiple stacked <code>Layer</code>s on a <code>Pane</code>
+ * .
  *
  * @author Donald Denbo
  * @version $Revision: 1.6 $, $Date: 2003/09/15 22:05:41 $
@@ -32,31 +33,38 @@ public class LayerContainer extends java.awt.Container implements LayerControl {
   public LayerContainer() {
     super();
   }
-  /**
-   * Used internally by sgt.
-   */
+
+  /** Used internally by sgt. */
+  @Override
   public void setPane(AbstractPane pane) {
     pane_ = pane;
   }
-  /**
-   * Used internally by sgt.
-   */
+
+  /** Used internally by sgt. */
+  @Override
   public void draw(Graphics g) throws PaneNotFoundException {
     throw new MethodNotImplementedError();
   }
+
   /**
    * Used internally by sgt.
+   *
    * @since 2.0
    */
+  @Override
   public void drawDraggableItems(Graphics g) throws PaneNotFoundException {
-    /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
+    /**
+     * @todo Implement this gov.noaa.pmel.sgt.LayerControl method
+     */
     throw new UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
   }
 
   /**
    * Get identifier.
+   *
    * @return identifier/name
    */
+  @Override
   public String getId() {
     return getName();
   }

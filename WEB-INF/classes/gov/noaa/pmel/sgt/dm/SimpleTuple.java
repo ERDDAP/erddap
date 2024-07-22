@@ -15,15 +15,15 @@ package gov.noaa.pmel.sgt.dm;
 import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.GeoDateArray;
-import gov.noaa.pmel.util.SoTRange;
 import gov.noaa.pmel.util.Range2D;
-
+import gov.noaa.pmel.util.SoTRange;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+
 /**
- * <code>SimpleTuple</code> provides an implementation of the
- * <code>SGTTuple</code> and <code>Cartesian</code> interfaces.
+ * <code>SimpleTuple</code> provides an implementation of the <code>SGTTuple</code> and <code>
+ * Cartesian</code> interfaces.
  *
  * @author Donald Denbo
  * @version $Revision: 1.7 $, $Date: 2003/08/22 23:02:38 $
@@ -39,7 +39,7 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
   private String id_ = null;
   private double[] xArray_ = null;
   private double[] yArray_ = null;
-//  private GeoDate[] tArray_ = null;
+  //  private GeoDate[] tArray_ = null;
   private GeoDateArray tArray_ = null;
   private double[] zArray_ = null;
   private double[] assocArray_ = null;
@@ -58,88 +58,88 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
 
   /**
    * @link aggregation
-   * @clientRole z*/
+   * @clientRole z
+   */
   protected SGTMetaData zMetaData_ = null;
+
   private SoTRange xRange_ = null;
   private SoTRange yRange_ = null;
   private Range2D zRange_ = null;
 
   private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
-    public SimpleTuple(double[] xArray, double[] yArray, String title) {
-      xArray_ = xArray;
-      yArray_ = yArray;
-      xTime_ = false;
-      yTime_ = false;
-      title_ = title;
-      xRange_ = computeSoTRange(xArray);
-      yRange_ = computeSoTRange(yArray);
-    }
+  public SimpleTuple(double[] xArray, double[] yArray, String title) {
+    xArray_ = xArray;
+    yArray_ = yArray;
+    xTime_ = false;
+    yTime_ = false;
+    title_ = title;
+    xRange_ = computeSoTRange(xArray);
+    yRange_ = computeSoTRange(yArray);
+  }
 
-    public SimpleTuple(GeoDate[] xArray, double[] yArray, String title) {
-      tArray_ = new GeoDateArray(xArray);
-      yArray_ = yArray;
-      xTime_ = true;
-      yTime_ = false;
-      title_ = title;
-      xRange_ = computeSoTRange(tArray_);
-      yRange_ = computeSoTRange(yArray);
-    }
+  public SimpleTuple(GeoDate[] xArray, double[] yArray, String title) {
+    tArray_ = new GeoDateArray(xArray);
+    yArray_ = yArray;
+    xTime_ = true;
+    yTime_ = false;
+    title_ = title;
+    xRange_ = computeSoTRange(tArray_);
+    yRange_ = computeSoTRange(yArray);
+  }
 
-    public SimpleTuple(double[] xArray, GeoDate[] yArray, String title) {
-      xArray_ = xArray;
-      tArray_ = new GeoDateArray(yArray);
-      xTime_ = false;
-      yTime_ = true;
-      title_ = title;
-      xRange_ = computeSoTRange(xArray);
-      yRange_ = computeSoTRange(tArray_);
-    }
+  public SimpleTuple(double[] xArray, GeoDate[] yArray, String title) {
+    xArray_ = xArray;
+    tArray_ = new GeoDateArray(yArray);
+    xTime_ = false;
+    yTime_ = true;
+    title_ = title;
+    xRange_ = computeSoTRange(xArray);
+    yRange_ = computeSoTRange(tArray_);
+  }
 
-    public SimpleTuple(double[] xArray, double[] yArray,
-                       double[] zArray, String title) {
-      xArray_ = xArray;
-      yArray_ = yArray;
-      zArray_ = zArray;
-      xTime_ = false;
-      yTime_ = false;
-      title_ = title;
-      xRange_ = computeSoTRange(xArray);
-      yRange_ = computeSoTRange(yArray);
-      zRange_ = computeRange2D(zArray);
-    }
+  public SimpleTuple(double[] xArray, double[] yArray, double[] zArray, String title) {
+    xArray_ = xArray;
+    yArray_ = yArray;
+    zArray_ = zArray;
+    xTime_ = false;
+    yTime_ = false;
+    title_ = title;
+    xRange_ = computeSoTRange(xArray);
+    yRange_ = computeSoTRange(yArray);
+    zRange_ = computeRange2D(zArray);
+  }
 
-    public SimpleTuple(GeoDate[] xArray, double[] yArray,
-                       double[] zArray, String title) {
-      tArray_ = new GeoDateArray(xArray);
-      yArray_ = yArray;
-      zArray_ = zArray;
-      xTime_ = true;
-      yTime_ = false;
-      title_ = title;
-      xRange_ = computeSoTRange(tArray_);
-      yRange_ = computeSoTRange(yArray);
-      zRange_ = computeRange2D(zArray);
-    }
+  public SimpleTuple(GeoDate[] xArray, double[] yArray, double[] zArray, String title) {
+    tArray_ = new GeoDateArray(xArray);
+    yArray_ = yArray;
+    zArray_ = zArray;
+    xTime_ = true;
+    yTime_ = false;
+    title_ = title;
+    xRange_ = computeSoTRange(tArray_);
+    yRange_ = computeSoTRange(yArray);
+    zRange_ = computeRange2D(zArray);
+  }
 
-    public SimpleTuple(double[] xArray, GeoDate[] yArray,
-                       double[] zArray, String title) {
-      xArray_ = xArray;
-      tArray_ = new GeoDateArray(yArray);
-      zArray_ = zArray;
-      xTime_ = false;
-      yTime_ = true;
-      title_ = title;
-      xRange_ = computeSoTRange(xArray);
-      yRange_ = computeSoTRange(tArray_);
-      zRange_ = computeRange2D(zArray);
-    }
+  public SimpleTuple(double[] xArray, GeoDate[] yArray, double[] zArray, String title) {
+    xArray_ = xArray;
+    tArray_ = new GeoDateArray(yArray);
+    zArray_ = zArray;
+    xTime_ = false;
+    yTime_ = true;
+    title_ = title;
+    xRange_ = computeSoTRange(xArray);
+    yRange_ = computeSoTRange(tArray_);
+    zRange_ = computeRange2D(zArray);
+  }
 
   public SimpleTuple() {
     xTime_ = false;
     yTime_ = false;
   }
 
+  @Override
   public double[] getXArray() {
     return xArray_;
   }
@@ -148,14 +148,13 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     xArray_ = xArray;
     xTime_ = false;
     xRange_ = computeSoTRange(xArray);
-    changes_.firePropertyChange("dataModified",
-                                Integer.valueOf(0),
-                                Integer.valueOf(xArray.length));
+    changes_.firePropertyChange("dataModified", Integer.valueOf(0), Integer.valueOf(xArray.length));
   }
 
   public void setXArray(GeoDate[] tArray) {
     setXArray(new GeoDateArray(tArray));
   }
+
   /**
    * @since 3.0
    */
@@ -164,11 +163,11 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     xTime_ = true;
     xArray_ = null;
     xRange_ = computeSoTRange(tArray);
-    changes_.firePropertyChange("dataModified",
-                                Integer.valueOf(0),
-                                Integer.valueOf(tArray.getLength()));
+    changes_.firePropertyChange(
+        "dataModified", Integer.valueOf(0), Integer.valueOf(tArray.getLength()));
   }
 
+  @Override
   public double[] getYArray() {
     return yArray_;
   }
@@ -177,14 +176,13 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     yArray_ = yArray;
     yTime_ = false;
     yRange_ = computeSoTRange(yArray);
-    changes_.firePropertyChange("dataModified",
-                                Integer.valueOf(0),
-                                Integer.valueOf(yArray.length));
+    changes_.firePropertyChange("dataModified", Integer.valueOf(0), Integer.valueOf(yArray.length));
   }
 
   public void setYArray(GeoDate[] tArray) {
     setYArray(new GeoDateArray(tArray));
   }
+
   /**
    * @since 3.0
    */
@@ -193,10 +191,11 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     yTime_ = true;
     yArray_ = null;
     yRange_ = computeSoTRange(tArray);
-    changes_.firePropertyChange("dataModified",
-                                Integer.valueOf(0),
-                                Integer.valueOf(tArray.getLength()));
+    changes_.firePropertyChange(
+        "dataModified", Integer.valueOf(0), Integer.valueOf(tArray.getLength()));
   }
+
+  @Override
   public double[] getZArray() {
     return zArray_;
   }
@@ -204,29 +203,32 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
   public void setZArray(double[] zArray) {
     zArray_ = zArray;
     zRange_ = computeRange2D(zArray);
-    changes_.firePropertyChange("dataModified",
-                                Integer.valueOf(0),
-                                Integer.valueOf(zArray.length));
+    changes_.firePropertyChange("dataModified", Integer.valueOf(0), Integer.valueOf(zArray.length));
   }
 
+  @Override
   public int getSize() {
-    if(xTime_) {
+    if (xTime_) {
       return tArray_.getLength();
     } else {
       return xArray_.length;
     }
   }
 
+  @Override
   public GeoDate[] getTimeArray() {
     return tArray_.getGeoDate();
   }
+
   /**
    * @since 3.0
    */
+  @Override
   public GeoDateArray getGeoDateArray() {
     return tArray_;
   }
 
+  @Override
   public double[] getAssociatedData() {
     return assocArray_;
   }
@@ -235,10 +237,12 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     assocArray_ = assocArray;
   }
 
+  @Override
   public boolean hasAssociatedData() {
     return (assocArray_ != null);
   }
 
+  @Override
   public SGTMetaData getZMetaData() {
     return zMetaData_;
   }
@@ -247,6 +251,7 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     zMetaData_ = zMeta;
   }
 
+  @Override
   public String getTitle() {
     return title_;
   }
@@ -255,6 +260,7 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     title_ = title;
   }
 
+  @Override
   public SGLabel getKeyTitle() {
     return keyTitle_;
   }
@@ -263,6 +269,7 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     keyTitle_ = title;
   }
 
+  @Override
   public String getId() {
     return id_;
   }
@@ -271,24 +278,28 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     id_ = id;
   }
 
+  @Override
   public SGTData copy() {
     SGTTuple newTuple;
     try {
-      newTuple = (SGTTuple)clone();
+      newTuple = (SGTTuple) clone();
     } catch (CloneNotSupportedException e) {
       newTuple = new SimpleTuple();
     }
-    return (SGTData)newTuple;
+    return (SGTData) newTuple;
   }
 
+  @Override
   public boolean isXTime() {
     return xTime_;
   }
 
+  @Override
   public boolean isYTime() {
     return yTime_;
   }
 
+  @Override
   public SGTMetaData getXMetaData() {
     return xMetaData_;
   }
@@ -297,6 +308,7 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     xMetaData_ = xMeta;
   }
 
+  @Override
   public SGTMetaData getYMetaData() {
     return yMetaData_;
   }
@@ -305,22 +317,27 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     yMetaData_ = yMeta;
   }
 
+  @Override
   public SoTRange getXRange() {
     return xRange_;
   }
 
+  @Override
   public SoTRange getYRange() {
     return yRange_;
   }
 
+  @Override
   public Range2D getZRange() {
     return zRange_;
   }
 
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     changes_.addPropertyChangeListener(l);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     changes_.removePropertyChangeListener(l);
   }
@@ -335,16 +352,15 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     long end = Long.MIN_VALUE;
     long[] tar = tarray.getTime();
     int count = 0;
-    for(int i=0; i < tar.length; i++) {
-      if(!(tar[i] == Long.MAX_VALUE)) {
+    for (int i = 0; i < tar.length; i++) {
+      if (!(tar[i] == Long.MAX_VALUE)) {
         start = Math.min(start, tar[i]);
         end = Math.max(end, tar[i]);
         count++;
       }
     }
-    if(count == 0) {
-      return new SoTRange.Time(Long.MAX_VALUE,
-                               Long.MAX_VALUE);
+    if (count == 0) {
+      return new SoTRange.Time(Long.MAX_VALUE, Long.MAX_VALUE);
     } else {
       return new SoTRange.Time(start, end);
     }
@@ -354,27 +370,29 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     double start = Double.POSITIVE_INFINITY;
     double end = Double.NEGATIVE_INFINITY;
     int count = 0;
-    for(int i=0; i < array.length; i++) {
-      if(!Double.isNaN(array[i])) {
+    for (int i = 0; i < array.length; i++) {
+      if (!Double.isNaN(array[i])) {
         start = Math.min(start, array[i]);
         end = Math.max(end, array[i]);
         count++;
       }
     }
-    if(count == 0) {
+    if (count == 0) {
       return new Range2D(Double.NaN, Double.NaN);
     } else {
       return new Range2D(start, end);
     }
   }
-  public void releaseResources() throws Exception { //Kyle and Bob added
-      title_ = null;
-      keyTitle_ = null;
-      id_ = null;
-      xArray_ = null;
-      yArray_ = null;
-      tArray_ = null;
-      zArray_ = null;
-      assocArray_ = null;
+
+  @Override
+  public void releaseResources() throws Exception { // Kyle and Bob added
+    title_ = null;
+    keyTitle_ = null;
+    id_ = null;
+    xArray_ = null;
+    yArray_ = null;
+    tArray_ = null;
+    zArray_ = null;
+    assocArray_ = null;
   }
 }

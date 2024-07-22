@@ -9,14 +9,13 @@
  * Administration should the software be included by the recipient as an
  * element in other product development.
  */
- 
+
 package gov.noaa.pmel.sgt;
 
 import gov.noaa.pmel.util.Range2D;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
- 
+
 /**
  * Description of Class TableLookupTransform
  *
@@ -28,56 +27,79 @@ public class TableLookupTransform implements Cloneable, Transform {
   private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   private double[] pvals_;
   private double[] uvals_;
-  public TableLookupTransform() {
-  }
-  public TableLookupTransform(double p1,double p2,double u1,double u2) {
-  }
-  public TableLookupTransform(Range2D pr,Range2D ur) {
-  }
-  public TableLookupTransform(double[] p,double[] u) throws DataNotSameShapeException  {
-  }
+
+  public TableLookupTransform() {}
+
+  public TableLookupTransform(double p1, double p2, double u1, double u2) {}
+
+  public TableLookupTransform(Range2D pr, Range2D ur) {}
+
+  public TableLookupTransform(double[] p, double[] u) throws DataNotSameShapeException {}
+
+  @Override
   public void setRangeP(Range2D pr) {
     throw new MethodNotImplementedError();
   }
-  public void setRangeP(double pmin,double pmax) {
+
+  @Override
+  public void setRangeP(double pmin, double pmax) {
     throw new MethodNotImplementedError();
   }
+
+  @Override
   public Range2D getRangeP() {
     throw new MethodNotImplementedError();
   }
+
+  @Override
   public void setRangeU(Range2D ur) {
     throw new MethodNotImplementedError();
   }
-  public void setRangeU(double umin,double umax) {
+
+  @Override
+  public void setRangeU(double umin, double umax) {
     throw new MethodNotImplementedError();
   }
+
+  @Override
   public Range2D getRangeU() {
     throw new MethodNotImplementedError();
   }
+
   public void setDoInteger(boolean si) {
     throw new MethodNotImplementedError();
   }
+
   public boolean getDoInteger() {
     throw new MethodNotImplementedError();
   }
+
+  @Override
   public double getTransP(double u) {
     throw new MethodNotImplementedError();
   }
+
+  @Override
   public double getTransU(double p) {
     throw new MethodNotImplementedError();
   }
+
   void computeTransform() {
     throw new MethodNotImplementedError();
   }
-  /**
-   * Add listener to changes in <code>TableLookupTransform</code> properties.
-   */
+
+  /** Add listener to changes in <code>TableLookupTransform</code> properties. */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     changes_.addPropertyChangeListener(listener);
   }
+
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
+
+  @Override
   public void releaseResources() throws Exception {
     changes_ = null;
     pvals_ = null;

@@ -113,6 +113,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof PointAttribute)) return false;
     PointAttribute attr = (PointAttribute) obj;
@@ -141,6 +142,7 @@ public class PointAttribute implements Attribute, Cloneable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return Objects.hash(id_, color_, mark_, markHeightP_, pwidth_, drawLabel_);
   }
@@ -329,17 +331,20 @@ public class PointAttribute implements Attribute, Cloneable {
    *
    * @return <code>String</code> representation
    */
+  @Override
   public String toString() {
     String name = getClass().getName();
     return name.substring(name.lastIndexOf(".") + 1);
   }
 
   /** Add listener to changes in <code>PointAttribute</code> properties. */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     if (changes_ == null) changes_ = new PropertyChangeSupport(this);
     changes_.addPropertyChangeListener(listener);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
@@ -347,6 +352,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setId(String id) {
     id_ = id;
   }
@@ -354,6 +360,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public String getId() {
     return id_;
   }
@@ -371,6 +378,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setBatch(boolean batch) {
     setBatch(batch, true);
   }
@@ -378,6 +386,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setBatch(boolean batch, boolean local) {
     batch_ = batch;
     local_ = local;
@@ -387,6 +396,7 @@ public class PointAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public boolean isBatch() {
     return batch_;
   }

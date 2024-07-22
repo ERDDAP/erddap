@@ -118,6 +118,7 @@ public class Page extends JComponent implements PropertyChangeListener, Serializ
     return pane_.getSize();
   }
 
+  @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
   }
@@ -182,20 +183,24 @@ public class Page extends JComponent implements PropertyChangeListener, Serializ
     firePropertyChange("panelModel", saved, this.panelModel);
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public void setBackground(Color color) {
     super.setBackground(color);
     pane_.setBackground(color);
   }
 
+  @Override
   public void setName(String name) {
     firePropertyChange("name", this.name, name);
     this.name = name;
   }
 
+  @Override
   public void propertyChange(PropertyChangeEvent evt) {
     Object source = evt.getSource();
     String property = evt.getPropertyName();
@@ -339,22 +344,26 @@ public class Page extends JComponent implements PropertyChangeListener, Serializ
   }
 
   class PageMouse extends MouseAdapter {
+    @Override
     public void mousePressed(MouseEvent event) {
       if (!pane_.isMouseEventsEnabled()) return;
       pageMousePressed(event);
     }
 
+    @Override
     public void mouseClicked(MouseEvent event) {
       if (!pane_.isMouseEventsEnabled()) return;
       pageMouseClicked(event);
     }
 
+    @Override
     public void mouseReleased(MouseEvent event) {
       if (!pane_.isMouseEventsEnabled()) return;
       pageMouseReleased(event);
     }
   }
 
+  @Override
   public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
     int result = NO_SUCH_PAGE;
     Color saveColor = getBackground();

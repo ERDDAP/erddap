@@ -144,6 +144,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof LineAttribute)) return false;
     LineAttribute attr = (LineAttribute) obj;
@@ -173,6 +174,7 @@ public class LineAttribute implements Attribute, Cloneable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return Objects.hash(id_, color_, style_);
   }
@@ -408,17 +410,20 @@ public class LineAttribute implements Attribute, Cloneable {
    *
    * @return <code>String</code> representation
    */
+  @Override
   public String toString() {
     String name = getClass().getName();
     return name.substring(name.lastIndexOf(".") + 1);
   }
 
   /** Add listener to changes in <code>LineAttribute</code> properties. */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     if (changes_ == null) changes_ = new PropertyChangeSupport(this);
     changes_.addPropertyChangeListener(listener);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
@@ -426,6 +431,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setId(String id) {
     id_ = id;
   }
@@ -433,6 +439,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public String getId() {
     return id_;
   }
@@ -450,6 +457,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setBatch(boolean batch) {
     setBatch(batch, true);
   }
@@ -457,6 +465,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public void setBatch(boolean batch, boolean local) {
     local_ = local;
     batch_ = batch;
@@ -466,6 +475,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /**
    * @since 3.0
    */
+  @Override
   public boolean isBatch() {
     return batch_;
   }

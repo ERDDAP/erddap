@@ -82,6 +82,7 @@ public class CompoundColorMap extends ColorMap {
   public long cumulativeCount = 0; // 0 indicates not used
 
   /** This returns a shallow copy of this colormap. */
+  @Override
   public ColorMap copy() {
     CompoundColorMap ccm = new CompoundColorMap();
     ccm.rangeLow = rangeLow;
@@ -530,6 +531,7 @@ public class CompoundColorMap extends ColorMap {
    *
    * @return the range
    */
+  @Override
   public Range2D getRange() {
     return new Range2D(rangeMin, rangeMax);
   }
@@ -548,6 +550,7 @@ public class CompoundColorMap extends ColorMap {
    *     If rangeMin <= inVal <= rangeMax, but inVal isn't covered by any piece, this returns
    *     NaNColor.
    */
+  @Override
   public Color getColor(double inVal) {
 
     // deal with special cases quickly
@@ -604,8 +607,7 @@ public class CompoundColorMap extends ColorMap {
       Color tColor =
           new Color(
               rLow[foundPiece]
-                  + ((val1024 * rRange[foundPiece])
-                      >> 10), // >>10 same as /1024 since 1024 is 2^10
+                  + ((val1024 * rRange[foundPiece]) >> 10), // >>10 same as /1024 since 1024 is 2^10
               gLow[foundPiece] + ((val1024 * gRange[foundPiece]) >> 10),
               bLow[foundPiece] + ((val1024 * bRange[foundPiece]) >> 10));
       // TESTING ON/OFF: don't delete cumulative system, since I sometimes uncomment for test()
@@ -958,6 +960,7 @@ public class CompoundColorMap extends ColorMap {
           + " (0=not measured)";
   }
 
+  @Override
   public String toString() {
     return "CompoundColorMap min=" + rangeMin + " max=" + rangeMax;
   }

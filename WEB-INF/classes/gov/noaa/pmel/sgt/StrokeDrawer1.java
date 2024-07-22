@@ -10,9 +10,9 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
-import  java.awt.*;
+import java.awt.*;
 
 /**
  * Implements stroke drawing for JDK1.1
@@ -23,42 +23,40 @@ import  java.awt.*;
  */
 public class StrokeDrawer1 implements StrokeDrawer, Cloneable {
 
-  public void drawHeavy(Graphics g, int[] xout, int[] yout, int size,
-                        LineAttribute attr) {
+  @Override
+  public void drawHeavy(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr) {
     g.drawPolyline(xout, yout, size);
   }
 
-  public void drawDashed(Graphics g, int[] xout, int[] yout, int size,
-                         LineAttribute attr) {
+  @Override
+  public void drawDashed(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr) {
     g.drawPolyline(xout, yout, size);
   }
 
-  public void drawStroke(Graphics g, int[] xout, int[] yout, int size,
-                         LineAttribute attr) {
+  @Override
+  public void drawStroke(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr) {
     g.drawPolyline(xout, yout, size);
   }
 
-  public void drawHighlight(Graphics g, int[] x, int[] y, int size,
-			    LineAttribute attr) {
+  @Override
+  public void drawHighlight(Graphics g, int[] x, int[] y, int size, LineAttribute attr) {
     int[] xr = new int[size];
     int[] yr = new int[size];
     int i;
     Color col = attr.getColor();
-    Color rev = new Color(255 - col.getRed(),
-                          255 - col.getGreen(),
-                          255 - col.getBlue());
+    Color rev = new Color(255 - col.getRed(), 255 - col.getGreen(), 255 - col.getBlue());
     //
     // simple hightlight draw with pixel displacements in reverse
     // color
     //
     g.setPaintMode();
-    for(i=0; i < size; i++) {
+    for (i = 0; i < size; i++) {
       xr[i] = x[i] + 1;
       yr[i] = y[i] + 1;
     }
     g.setColor(col);
     g.drawPolyline(xr, yr, size);
-    for(i=0; i < size; i++) {
+    for (i = 0; i < size; i++) {
       xr[i] = x[i] - 1;
       yr[i] = y[i] - 1;
     }

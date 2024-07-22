@@ -22,6 +22,7 @@ public class StringComparatorIgnoreCase implements Comparator {
    * @return returns a negative integer, zero, or a positive integer if the value at index1 is less
    *     than, equal to, or greater than the value at index2. Think "o1 - o2".
    */
+  @Override
   public int compare(Object o1, Object o2) {
     if (o1 == null) return o2 == null ? 0 : -1;
     if (o2 == null) return 1;
@@ -37,10 +38,12 @@ public class StringComparatorIgnoreCase implements Comparator {
    *
    * @param obj usually another RowComparator
    */
+  @Override
   public boolean equals(Object obj) {
     return obj == this;
   }
 
+  @Override
   public int hashCode() {
     // There is nothing meaningul to hash.
     return 1;

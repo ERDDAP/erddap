@@ -218,6 +218,7 @@ public class Domain implements java.io.Serializable {
     return hash;
   }
 
+  @Override
   public String toString() {
     StringBuffer buf = new StringBuffer(100);
     buf.append("x=");

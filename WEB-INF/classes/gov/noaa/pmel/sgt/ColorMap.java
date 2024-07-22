@@ -66,8 +66,10 @@ public abstract class ColorMap implements Cloneable, PropertyChangeListener, Ser
   public abstract Range2D getRange();
 
   /** Test for equality of color maps. */
+  @Override
   public abstract boolean equals(Object cm);
 
+  @Override
   public abstract int hashCode();
 
   /** Add listener to changes in <code>ColorMap</code> properties. */
@@ -80,6 +82,7 @@ public abstract class ColorMap implements Cloneable, PropertyChangeListener, Ser
     changes_.removePropertyChangeListener(listener);
   }
 
+  @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if (Debug.EVENT) {
       System.out.println("ColorMap: " + evt);
