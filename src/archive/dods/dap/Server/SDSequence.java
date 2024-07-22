@@ -123,7 +123,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
     *
     * @see BaseType#printDecl(PrintWriter, String, boolean,boolean)
     */
-    public void printDecl(PrintWriter os, String space,
+    @Override public void printDecl(PrintWriter os, String space,
                                     boolean print_semi, boolean constrained) {
 
         // BEWARE! Since printDecl()is (multiple) overloaded in BaseType
@@ -182,7 +182,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
     * @see BaseType#printVal(PrintWriter, String, boolean)
     * @see ServerMethods#isProject()
     */
-    public void printVal(PrintWriter os, String space, boolean print_decl_p) {
+    @Override public void printVal(PrintWriter os, String space, boolean print_decl_p) {
     
     
         if (!Project)
@@ -233,7 +233,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@param all If <code>true</code>, set the Project property of all the
 	members (and their children, and so on).
 	@see CEEvaluator */
-    public void setProject(boolean state, boolean all) {
+    @Override public void setProject(boolean state, boolean all) {
         Project = state;        
 	    if (all) 
 	        for (Enumeration e = varTemplate.elements(); e.hasMoreElements();) {
@@ -251,7 +251,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@param state <code>true</code> if the variable is part of the current
 	projection, <code>false</code> otherwise.
 	@see CEEvaluator */
-    public void setProject(boolean state) {
+    @Override public void setProject(boolean state) {
 	setProject(state, true);
     }
 
@@ -265,7 +265,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@see CEEvaluator 
         @see #setProject(boolean)        
     */
-    public boolean isProject(){
+    @Override public boolean isProject(){
         return(Project);
     }
     
@@ -277,25 +277,25 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
     expression but DString will). For those operators that are nonsensical a
     class should throw InvalidOperatorException.*/
     
-    public boolean equal(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean equal(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("Equals (=) operator does not work with the type SDSequence!");
     }
-    public boolean not_equal(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean not_equal(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("Not Equals (!=) operator does not work with the type SDSequence!");
     }
-    public boolean greater(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean greater(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("Greater Than (>)operator does not work with the type SDSequence!");
     }
-    public boolean greater_eql(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean greater_eql(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("GreaterThan or equals (<=) operator does not work with the type SDSequence!");
     }
-    public boolean less(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean less(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("LessThan (<) operator does not work with the type SDSequence!");
     }
-    public boolean less_eql(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean less_eql(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("LessThan oe equals (<=) operator does not work with the type SDSequence!");
     }
-    public boolean regexp(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
+    @Override public boolean regexp(BaseType bt) throws InvalidOperatorException, RegExpException, SBHException{
         throw new InvalidOperatorException("Regular Expression's don't work with the type SDSequence!");
     }
     
@@ -312,14 +312,14 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@see #isSynthesized()
 	@see #read(String, Object)
     */
-    public void setSynthesized(boolean state){
+    @Override public void setSynthesized(boolean state){
         Synthesized = state;
     }
 
     /** Get the value of the Synthesized property.
 	@return <code>true</code> if this is a synthetic variable,
 	<code>false</code> otherwise. */
-    public boolean isSynthesized(){
+    @Override public boolean isSynthesized(){
         return(Synthesized);
     }
 
@@ -332,7 +332,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@see #isRead()
 	@see #read(String, Object)
     */
-    public void setRead(boolean state){
+    @Override public void setRead(boolean state){
         ReadMe = state;
 		
 	    //for (Enumeration e = varTemplate.elements();e.hasMoreElements();) {
@@ -371,7 +371,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	@see #read(String, Object)
 	@see #setRead(boolean)
     */
-    public boolean isRead(){
+    @Override public boolean isRead(){
         return(ReadMe);
     }
 
@@ -386,7 +386,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
 	as part of the installation/localization of a DODS server.
 	@exception IOException
 	@exception EOFException */
-    public abstract boolean read(String datasetName, Object specialO) throws NoSuchVariableException, IOException, EOFException;
+    @Override public abstract boolean read(String datasetName, Object specialO) throws NoSuchVariableException, IOException, EOFException;
     
 
     /** 
@@ -406,7 +406,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
     * @see BaseType
     * @see DDS
     * @see ServerDDS */
-    public void serialize(String dataset,DataOutputStream sink,CEEvaluator ce,Object specialO) 
+    @Override public void serialize(String dataset,DataOutputStream sink,CEEvaluator ce,Object specialO) 
 	                        throws NoSuchVariableException, SDODSException, IOException {
 		
 

@@ -9,7 +9,7 @@
  * Administration should the software be included by the recipient as an
  * element in other product development.
  */
- 
+
 package gov.noaa.pmel.util;
 
 /**
@@ -22,14 +22,17 @@ package gov.noaa.pmel.util;
 public class Dimension2D {
   public double height;
   public double width;
+
   public Dimension2D() {
     width = 0.0;
     height = 0.0;
-}
+  }
+
   public Dimension2D(double width, double height) {
     this.width = width;
     this.height = height;
   }
+
   /**
    * Returns the width.
    *
@@ -38,7 +41,7 @@ public class Dimension2D {
   public double getWidth() {
     return width;
   }
-  
+
   /**
    * Returns the height.
    *
@@ -47,41 +50,50 @@ public class Dimension2D {
   public double getHeight() {
     return height;
   }
-  
+
   /**
-   * Set the size to the specified width
-   * and height.
-   * This method is included for completeness, to parallel the
-   * getSize method of <code>Component</code>.
-   * @param width  the new width
-   * @param height  the new height
+   * Set the size to the specified width and height. This method is included for completeness, to
+   * parallel the getSize method of <code>Component</code>.
+   *
+   * @param width the new width
+   * @param height the new height
    */
   public void setSize(double width, double height) {
     this.width = width;
     this.height = height;
   }
-  
+
   /**
-   * Set the size to match the specified size.
-   * This method is included for completeness, to parallel the
-   * getSize method of <code>Component</code>.
-   * @param d  the new size
+   * Set the size to match the specified size. This method is included for completeness, to parallel
+   * the getSize method of <code>Component</code>.
+   *
+   * @param d the new size
    */
   public void setSize(Dimension2D d) {
     setSize(d.getWidth(), d.getHeight());
   }
-  /**
-   *
-   */
+
+  /** */
+  @Override
   public String toString() {
-    return getClass().getName() + "[width=" + width + ",height=" + height +
-"]";
+    return getClass().getName() + "[width=" + width + ",height=" + height + "]";
   }
-  /**
-   * Test for equality.  Both width and height must be equal to be
-   * true.
-   */
-  public boolean equals(Dimension2D d) {
+
+  /** Test for equality. Both width and height must be equal to be true. */
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Dimension2D)) {
+      return false;
+    }
+    Dimension2D d = (Dimension2D) o;
     return (width == d.width && height == d.height);
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 31 * 7;
+    hash = 31 * hash + (int) (width * 31) % java.lang.Integer.MAX_VALUE;
+    hash = 31 * hash + (int) (height * 31) % java.lang.Integer.MAX_VALUE;
+    return hash;
   }
 }

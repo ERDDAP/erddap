@@ -22,8 +22,6 @@ import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-
-/** The Java DAP classes.  */
 import dods.dap.*;
 
 /** 
