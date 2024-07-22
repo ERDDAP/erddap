@@ -4,9 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
-import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
-import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
+import gov.noaa.pfel.erddap.handlers.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import testDataset.Initialization;
 
-public class TopLevelHandlerTests {
-
+public class DatasetHandlerTests {
   private static TopLevelHandler topLevelHandler;
   private static SAXParserFactory factory;
   private static SAXParser saxParser;
@@ -53,51 +50,25 @@ public class TopLevelHandlerTests {
     saxParser = factory.newSAXParser();
     saxHandler = new SaxHandler();
     topLevelHandler = new TopLevelHandler(saxHandler, context);
-    saxHandler.setState(topLevelHandler);
   }
 
   @BeforeEach
-  void init() throws IOException, SAXException {
+  void init() {
     inputStream =
         TopLevelHandlerTests.class.getResourceAsStream("/datasets/topLevelHandlerTest.xml");
     if (inputStream == null) {
       throw new IllegalArgumentException("File not found: /datasets/topLevelHandlerTest.xml");
     }
+  }
+
+  @Test
+  void EDDTableFromErddapHandlerTest() throws IOException, SAXException {
+    var eddTableFromErddapHandler =
+        new EDDTableFromErddapHandler(saxHandler, "cwwcNDBCMet", topLevelHandler, context);
+    saxHandler.setState(eddTableFromErddapHandler);
     saxParser.parse(inputStream, saxHandler);
-  }
-
-  @Test
-  void convertToPublicSourceUrlTest() {
     assertEquals(
-        EDStatic.convertToPublicSourceUrl.get("http://example.com/"), "http://public.example.com/");
-  }
-
-  @Test
-  void angularDegreeUnitsTest() {
-    assertEquals(
-        EDStatic.angularDegreeUnitsSet.toString(), "[angular, for, degree, units, content]");
-  }
-
-  @Test
-  void unusualActivityTest() {
-    assertEquals(EDStatic.unusualActivity, 25);
-  }
-
-  @Test
-  void userTest() {
-    Object[] user1Data = (Object[]) context.gettUserHashMap().get("user1");
-    assertEquals("pass1", user1Data[0]);
-  }
-
-  @Test
-  void datasetTest() {
-    assertEquals(2, context.getNTryAndDatasets()[1]);
-  }
-
-  // Takes some time because loads a dataset and skips the other. Hence also verifies the
-  // skipDataset function
-  @Test
-  void NTryTest() {
-    assertEquals(1, context.getNTryAndDatasets()[0]);
+        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
+        eddTableFromErddapHandler.tLocalSourceUrl);
   }
 }

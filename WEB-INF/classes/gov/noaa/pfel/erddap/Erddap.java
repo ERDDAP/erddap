@@ -4,6 +4,8 @@
  */
 package gov.noaa.pfel.erddap;
 
+import static gov.noaa.pfel.erddap.LoadDatasets.*;
+
 import com.cohort.array.Attributes;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
@@ -33,6 +35,7 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.ServletException;
@@ -581,9 +584,8 @@ public class Erddap extends HttpServlet {
           boolean printMsg = reallyVerbose; // just print msg first time, if reallyVerbose
           TOP_N:
           while (true) {
-            synchronized (
-                iaq) { // this takes very little time (~ 31 nanoseconds) (see
-                       // IntArray.testSynchSpeed())
+            synchronized (iaq) { // this takes very little time (~ 31 nanoseconds) (see
+              // IntArray.testSynchSpeed())
               for (int which = Math.min(iaq.size() - 1, EDStatic.ipAddressMaxRequestsActive - 1);
                   which >= 0;
                   which--)
@@ -1893,9 +1895,8 @@ public class Erddap extends HttpServlet {
       long expireSec =
           String2.parseLong(expires_in); // ensure it isn't an out-of-date authentication
       if (expireSec == Long.MAX_VALUE
-          || expireSec
-              <= 1) { // 631138518 ! I don't know what their units are. If epSec, that's
-                      // 1989-12-31T20:15:18Z
+          || expireSec <= 1) { // 631138518 ! I don't know what their units are. If epSec, that's
+        // 1989-12-31T20:15:18Z
         String2.log(diagMsg);
         throw new SimpleException(msg + "expires_in=" + expires_in + " isn't valid.");
       }
@@ -2170,8 +2171,7 @@ public class Erddap extends HttpServlet {
           EDStatic.subscriptions == null
               ? String2.testEmailAddress(email)
               : // tests syntax
-              EDStatic.subscriptions.testEmailValid(
-                  email); // tests syntax and blacklist
+              EDStatic.subscriptions.testEmailValid(email); // tests syntax and blacklist
 
       // FIRST STEP: Is user submitting is user requesting the invitation email?
       // use getParameter because form info may have been POST'd
@@ -2508,7 +2508,7 @@ public class Erddap extends HttpServlet {
                           + "\n<br>&nbsp;\n"
                       : "")
                   + // don't say succeeded. It only succeeds if user successfully signed into
-                    // Google.
+                  // Google.
                   (isOrcid || isOauth2
                       ?
                       // link to orcid web page to enter user's orcid and request authorization
@@ -2783,7 +2783,7 @@ public class Erddap extends HttpServlet {
               + EDStatic.youAreHere(language, tLoggedInAs, EDStatic.dataProviderFormAr[language]));
 
       // begin text
-      writer.write(dataProviderFormLongDescriptionHTML/*
+      writer.write(dataProviderFormLongDescriptionHTML /*
 "This Data Provider Form is for people who have data and want it to be served by this ERDDAP.\n" +
 "The overview of the process is:\n" +
 "<ol>\n" +
@@ -2846,7 +2846,7 @@ public class Erddap extends HttpServlet {
 "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html\"\n" +
 "><span style=\"font-size:xx-large; line-height:130%;\"><strong>Click Here for Part 1 (of 4) of the\n" +
 "<br>Data Provider Form</strong></span></a>\n"
-*/ );
+*/);
 
       writer.write("</div>\n");
       endHtmlWriter(language, out, writer, tErddapUrl, tLoggedInAs, false);
@@ -3047,13 +3047,13 @@ public class Erddap extends HttpServlet {
       String dataProviderFormPart1 =
           EDStatic.dataProviderFormPart1Ar[language].replaceAll(
               "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
-      writer.write(dataProviderFormPart1/*
+      writer.write(dataProviderFormPart1 /*
 "This is part 1 (of 4) of the Data Provider Form.\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
-*/ );
+*/);
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
@@ -3082,7 +3082,7 @@ public class Erddap extends HttpServlet {
                       tEmailAddress,
                       ""))
               .replace("&tTimestamp;", XML.encodeAsHTML(tTimestamp));
-      writer.write(dataProviderContactInfo/*
+      writer.write(dataProviderContactInfo /*
 "<h2>Your Contact Information</h2>\n" +
 "This will be used by the ERDDAP administrator to contact you.\n" +
 "This won't go in the dataset's metadata or be made public.\n" +
@@ -3094,7 +3094,7 @@ widgets.textField("emailAddress", "", //tooltip
     30, 50, tEmailAddress, "") +
 "  <br>This dataset submission's timestamp is " + XML.encodeAsHTML(tTimestamp) + ".\n" +
 "\n"
-*/ );
+*/);
       String dataProviderData =
           EDStatic.dataProviderDataAr[language]
               .replaceAll(
@@ -3109,7 +3109,7 @@ widgets.textField("emailAddress", "", //tooltip
                   "&widgetFrequencyOptions;",
                   widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, ""));
       // The Data
-      writer.write(dataProviderData/*
+      writer.write(dataProviderData /*
 "<h2>The Data</h2>\n" +
 "ERDDAP deals with a dataset in one of two ways: as gridded data or as tabular data.\n" +
 
@@ -3172,7 +3172,7 @@ widgets.select("tabularOption", "", 1, tabularOptions, tabularOption, "") +
 widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") +
 "<br>&nbsp;\n" +
 "\n"
-*/ );
+*/);
 
       // Submit
       writer.write(
@@ -3370,7 +3370,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         String tcdmType =
             cdmDataTypes[
                 tCdmDataType]; // Grid, Point, Profile, TimeSeries, TimeSeriesProfile, Trajectory,
-                               // TrajectoryProfile, Other
+        // TrajectoryProfile, Other
         HashSet<String> keywordHS = new HashSet();
         EDD.chopUpAndAdd(String2.replaceAll(tInstitution, '/', ' '), keywordHS);
         EDD.chopUpAndAdd(String2.replaceAll(tTitle, '/', ' '), keywordHS);
@@ -3528,14 +3528,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
               .replace(
                   "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
-      writer.write(dataProviderFormPart2Header/*
+      writer.write(dataProviderFormPart2Header /*
 "This is part 2 (of 4) of the Data Provider Form\n" +
 "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
-*/ );
+*/);
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
@@ -3543,7 +3543,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
 
       // Global Metadata
-      writer.write(EDStatic.dataProviderFormPart2GlobalMetadataAr[language]/*
+      writer.write(EDStatic.dataProviderFormPart2GlobalMetadataAr[language] /*
 "<h2>Global Metadata</h2>\n" +
 "Global metadata is information about the entire dataset. It is a set of\n" +
 "<kbd>attribute=value</kbd> pairs, for example,\n" +
@@ -3552,7 +3552,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 "just provide the information below for attributes that aren't in your files\n" +
 "or where you want to change the attribute's value.\n" +
 "\n"
-*/ );
+*/);
 
       writer.write(
           "<br>"
@@ -5216,7 +5216,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "&dataFiletypeInfo2;",
                   XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDasIndex]));
 
-      writer.write(restfulHTMLContinued/*
+      writer.write(restfulHTMLContinued /*
                 "  <br>&nbsp;\n" +
                 "  </ul>\n" +
                 "<li><a class=\"selfLink\" id=\"GriddapAndTabledap\" href=\"#GriddapAndTabledap\" rel=\"bookmark\">Griddap and tabledap</a> have many web services that you can use.\n" +
@@ -5264,14 +5264,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "    for example, .html, .xhtml, .csv, .json, .jsonlCSV1, .jsonlCSV, or .jsonlKVP.\n" +
                 "    <br>&nbsp;\n" +
                 "  </ul>\n"
-                */ );
+                */);
       if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
-        writer.write(EDStatic.restfulProtocolsAr[language]/*
+        writer.write(EDStatic.restfulProtocolsAr[language] /*
                 "<li><a class=\"selfLink\" id=\"OtherProtocols\" href=\"#OtherProtocols\" rel=\"bookmark\"\n" +
                 ">ERDDAP's other protocols</a> also have web services that you can use.\n" +
                 "  See\n" +
                 "  <ul>\n"
-                */ );
+                */);
         if (EDStatic.sosActive)
           writer.write(
               // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
@@ -5376,12 +5376,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + ")\n<br>&nbsp;\n"));
       String outOfDateKeepTrack =
           EDStatic.outOfDateKeepTrackAr[language].replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack/*
+      if (EDStatic.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
                 "<li>ERDDAP has a system to keep track of\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/outOfDateDatasets.html\">Out-Of-Date Datasets</a>.\n" +
                 "    See the Options at the bottom of that web page.\n" +
                 "  <br>&nbsp;\n"
-                */ );
+                */);
       writer.write("</ul>\n" + EDStatic.additionalLinksAr[language] + "\n");
       // "If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot
       // gov</kbd>.\n");
@@ -5404,7 +5404,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           );
 
       // login
-      writer.write(EDStatic.loginHTMLAr[language]/*
+      writer.write(EDStatic.loginHTMLAr[language] /*
                 "<h2><a class=\"selfLink\" id=\"login\" href=\"#login\" rel=\"bookmark\">Log in to access private datasets.</a></h2>\n" +
                 "Many ERDDAP installations don't have authentication enabled and thus\n" +
                 "don't provide any way for users to login, nor do they have any private datasets.\n" +
@@ -5417,7 +5417,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "For instructions on logging into ERDDAP from a browser or via a script, see\n" +
                 "<a rel=\"help\" href=\"https://erddap.github.io/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n" +
                 "\n"
-                */ );
+                */);
 
       // erddap version
       writer.write(
@@ -6361,7 +6361,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String id = endOfRequestUrl; // eventually will be datasetID (if any)
     String nextPath =
         null; // optional, after datasetID, before nameAndExt, trailing but no leading /; could be
-              // called "relativePath"
+    // called "relativePath"
     String nameAndExt = null;
     int slashPoNP = endOfRequestUrl.indexOf('/');
     if (slashPoNP == 0) { // e.g. files//something
@@ -7931,9 +7931,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDDGrid
                 .wcsRequestFormats100; // version100? wcsRequestFormats100  : wcsRequestFormats112;
         String tResponseFormats[] =
-            EDDGrid
-                .wcsResponseFormats100; // version100? wcsResponseFormats100 :
-                                        // wcsResponseFormats112;
+            EDDGrid.wcsResponseFormats100; // version100? wcsResponseFormats100 :
+        // wcsResponseFormats112;
         int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
         if (fi < 0)
           throw new SimpleException(
@@ -13912,7 +13911,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "url" + newSlide,
                 "Enter a URL for the slide from ERDDAP's Make-A-Graph (or any URL).",
                 -1, // (contentWidth / 7) - (tPrompt.length()-10),  // /7px=avg char width   10 for
-                    // submit
+                // submit
                 1000,
                 tUrl,
                 "style=\"width:" + tWidth + "px; background:" + bgColor + "\""));
@@ -23499,6 +23498,304 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         },
         10,
         removeDir);
+  }
+
+  public void processDataset(EDD dataset, SaxParsingContext context) {
+    String change = "";
+    EDD oldDataset = null;
+    boolean oldCatInfoRemoved = false;
+    // do several things in quick succession...
+    // (??? synchronize on (?) if really need avoid inconsistency)
+
+    // was there a dataset with the same datasetID?
+    oldDataset = this.gridDatasetHashMap.get(dataset.datasetID());
+    if (oldDataset == null) {
+      oldDataset = this.tableDatasetHashMap.get(dataset.datasetID());
+    }
+
+    // if oldDataset existed, remove its info from categoryInfo
+    // (check now, before put dataset in place, in case EDDGrid <--> EDDTable)
+    if (oldDataset != null) {
+      addRemoveDatasetInfo(false, this.categoryInfo, oldDataset);
+      oldCatInfoRemoved = true;
+    }
+
+    // put dataset in place
+    // (hashMap.put atomically replaces old version with new)
+    if ((oldDataset == null || oldDataset instanceof EDDGrid)
+        && dataset instanceof EDDGrid eddGrid) {
+      this.gridDatasetHashMap.put(dataset.datasetID(), eddGrid); // was/is grid
+
+    } else if ((oldDataset == null || oldDataset instanceof EDDTable)
+        && dataset instanceof EDDTable eddTable) {
+      this.tableDatasetHashMap.put(dataset.datasetID(), eddTable); // was/is table
+
+    } else if (dataset instanceof EDDGrid eddGrid) {
+      this.tableDatasetHashMap.remove(dataset.datasetID()); // was table
+      this.gridDatasetHashMap.put(dataset.datasetID(), eddGrid); // now grid
+
+    } else if (dataset instanceof EDDTable eddTable) {
+      this.gridDatasetHashMap.remove(dataset.datasetID()); // was grid
+      this.tableDatasetHashMap.put(dataset.datasetID(), eddTable); // now table
+    }
+
+    // add new info to categoryInfo
+    addRemoveDatasetInfo(true, this.categoryInfo, dataset);
+
+    // clear the dataset's cache
+    // since axis values may have changed and "last" may have changed
+    File2.deleteAllFiles(dataset.cacheDirectory());
+
+    change = dataset.changed(oldDataset);
+    if (change.isEmpty() && dataset instanceof EDDTable) {
+      change = "The dataset was reloaded.";
+    }
+
+    if (verbose) String2.log("change=" + change);
+    EDStatic.cldNTry = context.getNTryAndDatasets()[0];
+    EDStatic.cldStartMillis = 0;
+    EDStatic.cldDatasetID = null;
+
+    // whether succeeded (new or swapped in) or failed (removed), it was changed
+    context.getChangedDatasetIDs().add(dataset.datasetID());
+    if (System.currentTimeMillis() - context.getLastLuceneUpdate()
+        > 5 * Calendar2.MILLIS_PER_MINUTE) {
+      updateLucene(context.getChangedDatasetIDs());
+      context.setLastLuceneUpdate(System.currentTimeMillis());
+    }
+
+    // trigger subscription and dataset.onChange actions (after new dataset is in place)
+    EDD cooDataset = dataset == null ? oldDataset : dataset; // currentOrOld, may be null
+    tryToDoActions(dataset.datasetID(), cooDataset, "", change);
+  }
+
+  /**
+   * If change is something, this tries to do the actions /notify the subscribers to this dataset.
+   * This may or may not succeed but won't throw an exception.
+   *
+   * @param tDatasetID must be specified or nothing is done
+   * @param cooDataset The Current Or Old Dataset may be null
+   * @param subject for email messages
+   * @param change the change description must be specified or nothing is done
+   */
+  protected void tryToDoActions(String tDatasetID, EDD cooDataset, String subject, String change) {
+    if (String2.isSomething(tDatasetID) && String2.isSomething(change)) {
+      if (!String2.isSomething(subject)) subject = "Change to datasetID=" + tDatasetID;
+      try {
+        StringArray actions = null;
+
+        if (EDStatic.subscriptionSystemActive) {
+          // get subscription actions
+          try { // beware exceptions from subscriptions
+            actions = EDStatic.subscriptions.listActions(tDatasetID);
+          } catch (Throwable listT) {
+            String content = MustBe.throwableToString(listT);
+            String2.log(subject + ":\n" + content);
+            EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+            actions = new StringArray();
+          }
+        } else actions = new StringArray();
+
+        // get dataset.onChange actions
+        int nSubscriptionActions = actions.size();
+        if (cooDataset != null && cooDataset.onChange() != null)
+          actions.append(cooDataset.onChange());
+
+        // do the actions
+        if (verbose) String2.log("nActions=" + actions.size());
+
+        for (int a = 0; a < actions.size(); a++) {
+          String tAction = actions.get(a);
+          if (verbose) String2.log("doing action[" + a + "]=" + tAction);
+          try {
+            if (tAction.startsWith("http://") || tAction.startsWith("https://")) {
+              if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0
+                  && EDStatic.urlIsThisComputer(tAction)) {
+                // a dataset on this ERDDAP! just set the flag
+                // e.g.,
+                // https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
+                String trDatasetID = String2.extractCaptureGroup(tAction, "datasetID=(.+?)&", 1);
+                if (trDatasetID == null) EDStatic.addTouch(tAction);
+                else EDD.requestReloadASAP(trDatasetID);
+
+              } else {
+                // but don't get the input stream! I don't need to,
+                // and it is a big security risk.
+                EDStatic.addTouch(tAction);
+              }
+            } else if (tAction.startsWith("mailto:")) {
+              String tEmail = tAction.substring("mailto:".length());
+              EDStatic.email(
+                  tEmail,
+                  "datasetID=" + tDatasetID + " changed.",
+                  "datasetID="
+                      + tDatasetID
+                      + " changed.\n"
+                      + change
+                      + "\n\n*****\n"
+                      + (a < nSubscriptionActions
+                          ? EDStatic.subscriptions.messageToRequestList(tEmail)
+                          : "This action is specified in datasets.xml.\n"));
+              // It would be nice to include unsubscribe
+              // info for this action,
+              // but it isn't easily available.
+            } else {
+              throw new RuntimeException(
+                  "The startsWith of action=" + tAction + " is not allowed!");
+            }
+          } catch (Throwable actionT) {
+            String2.log(
+                subject
+                    + "\n"
+                    + "action="
+                    + tAction
+                    + "\ncaught:\n"
+                    + MustBe.throwableToString(actionT));
+          }
+        }
+
+        // trigger RSS action
+        // (after new dataset is in place and if there is either a current or older dataset)
+        if (cooDataset != null) {
+          cooDataset.updateRSS(this, change);
+        }
+
+      } catch (Throwable subT) {
+        String content = MustBe.throwableToString(subT);
+        String2.log(subject + ":\n" + content);
+        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+      }
+    }
+  }
+
+  /**
+   * This high level method is the entry point to add/remove the dataset's metadata to/from the
+   * proper places in catInfo.
+   *
+   * <p>Since catInfo is a ConcurrentHashMap, this is thread-safe to the extent that data structures
+   * won't be corrupted; however, it is still susceptible to incorrect information if 2+ thredds
+   * work with the same datasetID at the same time (if one adding and one removing) because of race
+   * conditions.
+   *
+   * @param add determines whether datasetID references will be ADDed or REMOVEd
+   * @param catInfo the new categoryInfo hashMap of hashMaps of hashSets
+   * @param edd the dataset who's info should be added to catInfo
+   */
+  protected void addRemoveDatasetInfo(boolean add, ConcurrentHashMap catInfo, EDD edd) {
+
+    // go through the gridDatasets
+    String id = edd.datasetID();
+
+    // globalAtts
+    categorizeGlobalAtts(add, catInfo, edd, id);
+
+    // go through data variables
+    int nd = edd.dataVariables().length;
+    for (int dv = 0; dv < nd; dv++)
+      categorizeVariableAtts(add, catInfo, edd.dataVariables()[dv], id);
+
+    if (edd instanceof EDDGrid eddGrid) {
+      // go through axis variables
+      int na = eddGrid.axisVariables().length;
+      for (int av = 0; av < na; av++)
+        categorizeVariableAtts(add, catInfo, eddGrid.axisVariables()[av], id);
+    }
+  }
+
+  /**
+   * If useLuceneSearchEngine, this will update the Lucene indices for these datasets.
+   *
+   * <p>Since luceneIndexWriter is thread-safe, this is thread-safe to the extent that data
+   * structures won't be corrupted; however, it is still susceptible to incorrect information if 2+
+   * thredds work with the same datasetID at the same time (if one adding and one removing) because
+   * of race conditions.
+   *
+   * @param datasetIDs
+   */
+  protected void updateLucene(StringArray datasetIDs) {
+
+    // update dataset's Document in Lucene Index
+    int nDatasetIDs = datasetIDs.size();
+    if (EDStatic.useLuceneSearchEngine && nDatasetIDs > 0) {
+
+      try {
+        // gc to avoid out-of-memory
+        Math2.gcAndWait("LoadDatasets.updateLucene"); // avoid trouble in updateLucene()
+
+        String2.log("start updateLucene()");
+        if (EDStatic.luceneIndexWriter == null) // if trouble last time
+        EDStatic.createLuceneIndexWriter(false); // throws exception if trouble
+
+        // update the datasetIDs
+        long tTime = System.currentTimeMillis();
+        HashSet<String> deletedSet = new HashSet();
+        for (int idi = 0; idi < nDatasetIDs; idi++) {
+          String tDatasetID = String2.canonical(datasetIDs.get(idi));
+          EDD edd = this.gridDatasetHashMap.get(tDatasetID);
+          if (edd == null) edd = this.tableDatasetHashMap.get(tDatasetID);
+          if (edd == null) {
+            // remove it from Lucene     luceneIndexWriter is thread-safe
+            EDStatic.luceneIndexWriter.deleteDocuments(new Term("datasetID", tDatasetID));
+            deletedSet.add(tDatasetID);
+
+          } else {
+            // add/update it in Lucene
+            EDStatic.luceneIndexWriter.updateDocument(
+                new Term("datasetID", tDatasetID), edd.searchDocument());
+          }
+        }
+
+        // commit the changes  (recommended over close+reopen)
+        EDStatic.luceneIndexWriter.commit();
+
+        // after commit (so after changes made), remove deleted datasetIDs from
+        // luceneDocNToDatasetID
+        String2.removeValues(EDStatic.luceneDocNToDatasetID, deletedSet);
+
+        String2.log(
+            "updateLucene() finished."
+                + " nDocs="
+                + EDStatic.luceneIndexWriter.getPendingNumDocs()
+                + " nChanged="
+                + nDatasetIDs
+                + " time="
+                + (System.currentTimeMillis() - tTime)
+                + "ms");
+      } catch (Throwable t) {
+
+        // any exception is pretty horrible
+        //  e.g., out of memory, index corrupt, IO exception
+        EDStatic.useLuceneSearchEngine = false;
+        String subject = String2.ERROR + " in updateLucene()";
+        String content = MustBe.throwableToString(t);
+        String2.log(subject + ":\n" + content);
+        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+
+        // abandon the changes and the indexWriter
+        if (EDStatic.luceneIndexWriter != null) {
+          // close luceneIndexWriter  (see indexWriter javaDocs)
+          try {
+            // abandon pending changes
+            EDStatic.luceneIndexWriter.close();
+            Math2.gcAndWait(
+                "LoadDatasets.updateLucene (handle trouble)"); // part of dealing with lucene
+                                                               // trouble
+          } catch (Throwable t2) {
+            String2.log(MustBe.throwableToString(t2));
+          }
+
+          // trigger creation of another indexWriter next time updateLucene is called
+          EDStatic.luceneIndexWriter = null;
+        }
+      }
+
+      // last: update indexReader+indexSearcher
+      // (might as well take the time to do it in this thread,
+      // rather than penalize next search request)
+      EDStatic.needNewLuceneIndexReader = true;
+      EDStatic.luceneIndexSearcher();
+    }
+    datasetIDs.clear();
   }
 
   /**

@@ -122,8 +122,6 @@ public class EDDGridFromDap extends EDDGrid {
       } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
       else if (localTags.equals("<graphsAccessibleTo>")) {
       } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
       else if (localTags.equals("<accessibleViaWMS>")) {
       } else if (localTags.equals("</accessibleViaWMS>"))
         tAccessibleViaWMS = String2.parseBoolean(content);
@@ -1659,7 +1657,7 @@ public class EDDGridFromDap extends EDDGrid {
       String ts = "" + (float) latSpacing;
       if (tTitle.indexOf(ts)
           < 0) { // not ideal. This will fail (in a safe way) if version# (or ...) in title and
-                 // spacing both equal 1.0.
+        // spacing both equal 1.0.
         tTitle += ", " + ts + "°";
         axisAddTable.globalAttributes().set("title", tTitle);
       }

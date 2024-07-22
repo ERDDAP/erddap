@@ -250,11 +250,11 @@ public abstract class EDDTable extends EDD {
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP ascii
     // csv: also see https://www.ietf.org/rfc/rfc4180.txt
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://developers.google.com/chart/interactive/docs/reference#dataparam",
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
@@ -334,7 +334,7 @@ public abstract class EDDTable extends EDD {
   public static final String sosDataResponseFormats[] = {
     "text/xml;schema=\"ioos/0.6.1\"", // two names for the same IOOS SOS XML format
     "application/ioos+xml;version=0.6.1", // "ioos" in the names is detected by
-                                          // OutputStreamFromHttpResponse
+    // OutputStreamFromHttpResponse
     "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style  pre 2010-04-30 was application/com-xml
     "text/csv",
     "application/json;subtype=geojson",
@@ -358,7 +358,7 @@ public abstract class EDDTable extends EDD {
     "application/ioos+xml;version=0.6.1", // needed by OutputStreamFromHttpResponse
     // see isOosethysXmlResponseFormat()
     "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style //checked for by
-                                      // OutputStreamFromHttpResponse, was application/com-xml
+    // OutputStreamFromHttpResponse, was application/com-xml
     ".csvp",
     ".geoJson",
     ".htmlTable",
@@ -1325,7 +1325,7 @@ public abstract class EDDTable extends EDD {
             || (constraintValue.length() == 0
                 && edv.safeStringMissingValue().length()
                     > 0)) { // not possible to expand "" constraints to include stringMissingValue
-                            // and stringFillValue
+          // and stringFillValue
           // remove from constraints and constrain after the fact in standardizeResultsTable
           constraintVariables.remove(cv);
           constraintOps.remove(cv);
@@ -1817,7 +1817,7 @@ public abstract class EDDTable extends EDD {
               (constraintValue.length() == 0
                   && edv.safeStringMissingValue().length()
                       > 0)) { // not possible to expand "" constraints to include stringMissingValue
-                              // and stringFillValue
+            // and stringFillValue
             // fall through to test below
           } else {
             // source did the test
@@ -3952,7 +3952,7 @@ public abstract class EDDTable extends EDD {
                   NcHelper.ncdump(
                       cacheFullName,
                       "-h")); // !!!this doesn't do anything to internal " in a String attribute
-                              // value.
+          // value.
           if (error.length() == 0) {
             File2.rename(fullName + random, fullName); // make available in an instant
             File2.isFile(
@@ -4038,7 +4038,7 @@ public abstract class EDDTable extends EDD {
     // the logic here is complex!   So this is written for clarity, not fewest operations.
     int skipPart =
         -1; // skip if first distinct() or orderBy...() AND will be handled by source  -1=still
-            // looking -2=no longer looking
+    // looking -2=no longer looking
     int firstActiveDistinctOrOrderBy =
         -1; // it gets metadata from edd, others from first addSome table
     for (int part = 0; part < parts.length; part++) {
@@ -5714,7 +5714,7 @@ public abstract class EDDTable extends EDD {
                 "",
                 "",
                 "", // MessageFormat.format(EDStatic.imageDataCourtesyOf,
-                    // SgtMap.TOPOGRAPHY_COURTESY)
+                // SgtMap.TOPOGRAPHY_COURTESY)
                 "off".equals(currentDrawLandMask)
                     ? SgtMap.NO_LAKES_AND_RIVERS
                     : SgtMap.FILL_LAKES_AND_RIVERS,
@@ -6153,10 +6153,8 @@ public abstract class EDDTable extends EDD {
         int bufferSize =
             (int) Math.min(isChar ? 8192 : 10, nRows); // this is also nPerLine for all except char
         if (isString) tType = writeStringsAsStrings ? "string" : "char";
-        else if (tType.equals("long"))
-          tType =
-              "int64"; // see
-                       // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+        else if (tType.equals("long")) tType = "int64"; // see
+        // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
         else if (tType.equals("ulong")) tType = "uint64";
         writer.write(
             "    "
@@ -6782,7 +6780,7 @@ public abstract class EDDTable extends EDD {
         cdmGlobalAttributes.set(
             "id",
             datasetID); // 2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file
-                        // name
+      // name
       cdmGlobalAttributes.set(
           "Conventions", ensureAtLeastCF110(cdmGlobalAttributes.getString("Conventions")));
       NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
@@ -7244,7 +7242,7 @@ public abstract class EDDTable extends EDD {
         cdmGlobalAttributes.set(
             "id",
             datasetID); // 2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file
-                        // name
+      // name
       cdmGlobalAttributes.set(
           "Conventions", ensureAtLeastCF110(cdmGlobalAttributes.getString("Conventions")));
       NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
@@ -11846,7 +11844,7 @@ public abstract class EDDTable extends EDD {
                       + // [i]faster than add() in FF, but unique_tag_id not sorted!
                       "  tDisRow.style.display=\"\";"
                       + // make it visible: "" defaults to "block"; don't use "block" to avoid
-                        // problems in firefox
+                      // problems in firefox
                       "}"
                       + " document.body.style.cursor=\"default\";"
                       + // no effect in Firefox
@@ -12635,8 +12633,8 @@ public abstract class EDDTable extends EDD {
               + colors.length
               + "; rb++) \n"
               + "      if (d.f1.colr[rb].checked) q2 += d.f1.colr[rb].value; \n"); // always: one
-                                                                                   // will be
-                                                                                   // checked
+      // will be
+      // checked
       if (drawLinesAndMarkers || drawMarkers)
         writer.write(
             "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n"
@@ -13805,7 +13803,7 @@ public abstract class EDDTable extends EDD {
                     pngInfoIntWESN,
                     pngInfoDoubleWESN,
                     pngInfoDoubleWESN); // use pngInfoDoubleWESN for maxExtentWESN (insist on click
-                                        // within visible map)
+            // within visible map)
             Test.ensureTrue(clickLonLat != null, "clickLonLat is null!");
             if (verbose) String2.log("clickLon=" + clickLonLat[0] + " lat=" + clickLonLat[1]);
 
@@ -14398,7 +14396,7 @@ public abstract class EDDTable extends EDD {
                   + XML.encodeAsHTMLAttribute(
                       graphDapQuery
                           + // userClicked above needs to be able to extract exact same
-                            // graphDapQuery
+                          // graphDapQuery
                           viewQuery.toString()
                           + // &.view marks end of graphDapQuery
                           "&.click=")
@@ -14570,9 +14568,8 @@ public abstract class EDDTable extends EDD {
                       "" + countTable.nRows(),
                       XML.encodeAsHTML(lastPName))
                   + "\n");
-          writer
-              .flush(); // essential, since creating and using another writer to write the
-                        // countTable
+          writer.flush(); // essential, since creating and using another writer to write the
+          // countTable
           TableWriterHtmlTable.writeAllAndFinish(
               language,
               this,
@@ -14778,9 +14775,8 @@ public abstract class EDDTable extends EDD {
                       "" + countTable.nRows(),
                       XML.encodeAsHTML(lastPName))
                   + "\n");
-          writer
-              .flush(); // essential, since creating and using another writer to write the
-                        // countTable
+          writer.flush(); // essential, since creating and using another writer to write the
+          // countTable
           TableWriterHtmlTable.writeAllAndFinish(
               language,
               this,
@@ -14866,9 +14862,8 @@ public abstract class EDDTable extends EDD {
                   + "</span>\n");
 
         } else {
-          writer
-              .flush(); // essential, since creating and using another writer to write the
-                        // subsetTable
+          writer.flush(); // essential, since creating and using another writer to write the
+          // subsetTable
           try {
             // this shows only the first viewValue[current] rows of related data
             TableWriterHtmlTable twht =
@@ -15436,7 +15431,8 @@ public abstract class EDDTable extends EDD {
    * This returns a table with the specified columns and 0 rows active, suitable for catching source
    * results. There are no attributes, since attributes are added in standardizeResultsTable.
    *
-   * @param resultsDVIs the indices of the results dataVariables. @@param capacityNRows
+   * @param resultsDVIs the indices of the results dataVariables.
+   * @param capacityNRows
    * @return an empty table with the specified columns and 0 rows active, suitable for catching
    *     source results.
    */
@@ -15451,7 +15447,8 @@ public abstract class EDDTable extends EDD {
    * This returns a table with the specified columns and 0 rows active, suitable for catching source
    * results. There are no attributes, since attributes are added in standardizeResultsTable.
    *
-   * @param resultsEDVs @@param capacityNRows
+   * @param resultsEDVs
+   * @param capacityNRows
    * @return an empty table with the specified columns and 0 rows active, suitable for catching
    *     source results.
    */
@@ -22227,7 +22224,7 @@ public abstract class EDDTable extends EDD {
                 + "              </gmd:role>\n"
                 + "            </gmd:CI_ResponsibleParty>\n"
                 + "          </gmd:citedResponsibleParty>\n"); // end of  if (contributorName !=
-                                                               // null ...
+      // null ...
 
       writer.write(
           "        </gmd:CI_Citation>\n"
