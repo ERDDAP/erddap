@@ -3,4 +3,29 @@
     <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
         <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
     </dataset>
+    <dataset type="EDDTableFromEDDGrid" datasetID="EDDTableFromEDDGrid_ID" active="true">
+        <accessibleTo>
+            String for accessibleTo
+        </accessibleTo>
+        <dataset type="EDDGridFromDap" datasetID="erdTAsshl1day">
+            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <addAttributes>
+                <att name="cols">null</att>
+                <att name="license">[standard]</att>
+            </addAttributes>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>TAsshl</sourceName>
+                <destinationName>ssh</destinationName>
+                <addAttributes>
+                    <att name="ioos_category">Sea Level</att>
+                    <att name="percentCoverage" />
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+    </dataset>
 </erddapDatasets>

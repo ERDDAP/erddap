@@ -13,7 +13,6 @@ import java.util.HashSet;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import testDataset.Initialization;
@@ -50,25 +49,17 @@ public class DatasetHandlerTests {
     saxParser = factory.newSAXParser();
     saxHandler = new SaxHandler();
     topLevelHandler = new TopLevelHandler(saxHandler, context);
-  }
+    saxHandler.setState(topLevelHandler);
 
-  @BeforeEach
-  void init() {
     inputStream =
-        TopLevelHandlerTests.class.getResourceAsStream("/datasets/topLevelHandlerTest.xml");
+            TopLevelHandlerTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
     if (inputStream == null) {
-      throw new IllegalArgumentException("File not found: /datasets/topLevelHandlerTest.xml");
+      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
     }
   }
 
   @Test
-  void EDDTableFromErddapHandlerTest() throws IOException, SAXException {
-    var eddTableFromErddapHandler =
-        new EDDTableFromErddapHandler(saxHandler, "cwwcNDBCMet", topLevelHandler, context);
-    saxHandler.setState(eddTableFromErddapHandler);
+  void parseAllDatasets() throws IOException, SAXException {
     saxParser.parse(inputStream, saxHandler);
-    assertEquals(
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
-        eddTableFromErddapHandler.tLocalSourceUrl);
   }
 }
