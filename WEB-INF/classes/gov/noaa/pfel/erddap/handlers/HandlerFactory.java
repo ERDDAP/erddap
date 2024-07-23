@@ -1,7 +1,5 @@
 package gov.noaa.pfel.erddap.handlers;
 
-import static gov.noaa.pfel.erddap.LoadDatasets.tryToUnload;
-
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -11,6 +9,8 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.HashSet;
+
+import static gov.noaa.pfel.erddap.LoadDatasets.tryToUnload;
 
 public class HandlerFactory {
   private static int nTry = 0;
@@ -35,7 +35,13 @@ public class HandlerFactory {
     context.getNTryAndDatasets()[0] = nTry;
     switch (datasetType) {
       case "EDDTableFromErddap" -> {
-        return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState, context);
+        return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromEDDGrid" -> {
+        return new EDDTableFromEDDGridHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDGridFromDap" -> {
+        return new EDDGridFromDapHandler(saxHandler, datasetID, completeState);
       }
       default -> {
         nTry--;

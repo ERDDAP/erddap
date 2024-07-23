@@ -12,14 +12,12 @@ public class EDDTableFromErddapHandler extends State {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
   private State completeState;
-  private SaxParsingContext context;
 
   public EDDTableFromErddapHandler(
-      SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
+      SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler);
     this.datasetID = datasetID;
     this.completeState = completeState;
-    this.context = context;
   }
 
   public int tReloadEveryNMinutes = Integer.MAX_VALUE;
@@ -83,7 +81,7 @@ public class EDDTableFromErddapHandler extends State {
                 tSubscribeToRemoteErddapDataset,
                 tRedirect);
 
-        context.getErddap().processDataset(dataset, context);
+        this.completeState.handleDataset(dataset);
         saxHandler.setState(this.completeState);
       }
       default -> String2.log("Unexpected end tag: " + localName);
