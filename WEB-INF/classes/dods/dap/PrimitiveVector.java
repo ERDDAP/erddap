@@ -11,7 +11,6 @@
 
 package dods.dap;
 
-import dods.dap.Server.*;
 import java.io.*;
 
 /**

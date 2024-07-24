@@ -5269,7 +5269,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.10)\n"
+            + "Server: Jetty(12.0.11)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -6836,12 +6836,12 @@ class JettyTests {
           "http://127.0.0.1:8080/manager/html/", // will always fail this test
           "http://127.0.0.1:8080/erddap/status.html", // will always fail this test
           "https://127.0.0.1:8443/cwexperimental/login.html", // the links to log in (upper right of
-                                                              // most web
+          // most web
           // pages) will
           // fail on my test computer
           "https://192.168.31.18/",
           "https://basin.ceoe.udel.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException:
-                                                           // PKIX path
+          // PKIX path
           // building
           // failed:
           // sun.security.provider.certpath.SunCertPathBuilderException:
@@ -6852,7 +6852,7 @@ class JettyTests {
           "https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy",
           "https://coastwatch.pfeg.noaa.gov/erddap/index.html",
           "http://coastwatch.pfeg.noaa.gov:8080/", // java.net.SocketTimeoutException: Connect timed
-                                                   // out
+          // out
           "http://localhost:"
               + PORT
               + "/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc", // intended
@@ -6869,17 +6869,17 @@ class JettyTests {
           // character
           "https://dev.mysql.com", // fails here, but works in browser
           "https://myhsts.org", // javax.net.ssl.SSLHandshakeException: No subject alternative DNS
-                                // name matching
+          // name matching
           // myhsts.org found.
           "https://gcoos5.geos.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException:
-                                                            // PKIX path
+          // PKIX path
           // building
           // failed:
           // sun.security.provider.certpath.SunCertPathBuilderException:
           // unable to find valid certification path to
           // requested target
           "https://gcoos4.tamu.edu/erddap/index.html", // javax.net.ssl.SSLHandshakeException: PKIX
-                                                       // path building
+          // path building
           // failed:
           // sun.security.provider.certpath.SunCertPathBuilderException:
           // unable to find valid certification path to requested
@@ -6887,11 +6887,11 @@ class JettyTests {
           "https://github.com/ERDDAP/", // fails here, but works in browser
           "http://localhost:" + PORT + "/manager/html/", // will always fail this test
           "https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core", // it's
-                                                                                             // clever: no
+          // clever: no
           // follow
           "https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2", // it's
-                                                                                        // clever:
-                                                                                        // no follow
+          // clever:
+          // no follow
           "https://mvnrepository.com/artifact/org.postgresql/postgresql", // it's clever: no follow
           "https://mvnrepository.com/", // it's clever: no follow
           "https://noaa-goes17.s3.us-east-1.amazonaws.com", // will always fail
@@ -8778,9 +8778,8 @@ class JettyTests {
             + "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n"
             + "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-    expected =
-        "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
-                                                          // missing
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
+    // missing
     // value
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
@@ -8804,9 +8803,8 @@ class JettyTests {
             + "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n"
             + "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-    expected =
-        "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
-                                                          // missing
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
+    // missing
     // value
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
@@ -8823,9 +8821,8 @@ class JettyTests {
             + "-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n"
             + "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-    expected =
-        "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
-                                                          // missing
+    expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; // row with missing value has "NaN"
+    // missing
     // value
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; // last row
@@ -8974,7 +8971,7 @@ class JettyTests {
     tDapQuery =
         "longitude,NO3,time,ship&latitude>0"
             + "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; // source
-                                                                                      // fails
+    // fails
     // with this
     // "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\""; //source
     // works with this
@@ -9011,7 +9008,7 @@ class JettyTests {
     tDapQuery =
         "longitude,NO3,time,ship&latitude>0"
             + "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; // source
-                                                                                      // fails
+    // fails
     // with this
     tName =
         globecBottle.makeNewFileForDapQuery(
@@ -9352,7 +9349,7 @@ class JettyTests {
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     expected =
         "      [-125, null, \"2002-08-18T13:03:00Z\", \"New_Horizon\"],\n"; // row with missing
-                                                                            // value
+    // value
     // has
     // "null". Before
     // 2018-05-17 was
@@ -15224,7 +15221,7 @@ class JettyTests {
             + "-124.4, 35.7, 1.02833814E9, \"New_Horizon\"\n";
     expected2 =
         "-124.8, -9999.0, 1.02835902E9, \"New_Horizon\"\n"; // row with missing value has source
-                                                            // missing
+    // missing
     // value
     expected3 = "-124.57, 19.31, 1.02939792E9, \"New_Horizon\"\n"; // last row
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
@@ -15249,7 +15246,7 @@ class JettyTests {
             + "-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
     expected2 =
         "-124.8,NaN,2002-08-03T07:17:00Z,New_Horizon\n"; // row with missing value has source
-                                                         // missing value
+    // missing value
     expected3 = "-124.57,19.31,2002-08-15T07:52:00Z,New_Horizon\n"; // last row
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
@@ -16351,7 +16348,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.10</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16397,7 +16394,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://eclipse.org/jetty\">Powered by Jetty:// 12.0.10</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
             + //
             "\n"
             + //
