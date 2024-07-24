@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.handlers.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
@@ -59,7 +61,15 @@ public class DatasetHandlerTests {
   }
 
   @Test
-  void parseAllDatasets() throws IOException, SAXException {
+  void parserAllDatasets() throws IOException, SAXException {
     saxParser.parse(inputStream, saxHandler);
+
+    EDDTableFromErddap eddTableFromErddap =
+            (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
+    assertEquals("https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet", eddTableFromErddap.localSourceUrl());
+
+    EDDTableFromEDDGrid eddTableFromEDDGrid =
+            (EDDTableFromEDDGrid) context.getErddap().tableDatasetHashMap.get("EDDTableFromEDDGrid_ID");
+    assertEquals(new String[]{"String", "for", "accessibleTo"}, eddTableFromEDDGrid.getAccessibleTo());
   }
 }

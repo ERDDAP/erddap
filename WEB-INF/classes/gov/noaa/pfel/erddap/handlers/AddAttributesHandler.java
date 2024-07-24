@@ -10,13 +10,13 @@ import org.xml.sax.SAXException;
 
 public class AddAttributesHandler extends State {
     private StringBuilder content = new StringBuilder();
-    private com.cohort.array.Attributes tAttributes;
+    private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
     private String tName = null, tType =  null;
     private State completeState;
 
-    public AddAttributesHandler(SaxHandler saxHandler, State completeState, com.cohort.array.Attributes tAttributes) {
+    public AddAttributesHandler(SaxHandler saxHandler, com.cohort.array.Attributes tAddGlobalAttributes, State completeState) {
         super(saxHandler);
-        this.tAttributes = tAttributes;
+        tAddGlobalAttributes = this.tAttributes;
         this.completeState = completeState;
     }
 

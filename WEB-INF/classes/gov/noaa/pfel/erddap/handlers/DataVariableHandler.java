@@ -22,7 +22,7 @@ public class DataVariableHandler extends State {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if (localName.equals("addAttributes")) {
-            State state = new AddAttributesHandler(saxHandler, this, tAttributes);
+            State state = new AddAttributesHandler(saxHandler, tAttributes, this);
             saxHandler.setState(state);
         } else {
             String2.log("Unexpected start tag: " + localName);

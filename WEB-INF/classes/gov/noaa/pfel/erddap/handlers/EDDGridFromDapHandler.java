@@ -46,7 +46,7 @@ public class EDDGridFromDapHandler extends State {
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
         switch (localName) {
             case "addAttributes" -> {
-                State state = new AddAttributesHandler(saxHandler, this, tGlobalAttributes);
+                State state = new AddAttributesHandler(saxHandler, tGlobalAttributes, this);
                 saxHandler.setState(state);
             }
             case "altitudeMetersPerSourceUnit" -> throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);

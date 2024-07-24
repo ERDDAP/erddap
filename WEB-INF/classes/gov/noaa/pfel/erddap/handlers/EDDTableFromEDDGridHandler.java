@@ -60,7 +60,7 @@ public class EDDTableFromEDDGridHandler extends State {
                 }
             }
             case "addAttributes" -> {
-                State state = new AddAttributesHandler(saxHandler, this, tAddGlobalAttributes);
+                State state = new AddAttributesHandler(saxHandler, tAddGlobalAttributes, this);
                 saxHandler.setState(state);
             }
             default -> String2.log("Unexpected start tag: " + localName);

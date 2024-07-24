@@ -26,7 +26,7 @@ public class AxisVariableHandler extends State {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         switch (localName) {
             case "addAttributes" -> {
-                State state = new AddAttributesHandler(saxHandler, this, tAttributes);
+                State state = new AddAttributesHandler(saxHandler, tAttributes, this);
                 saxHandler.setState(state);
             }
             case "values" -> {
