@@ -189,8 +189,9 @@ public class PlainAxis extends SpaceAxis implements Cloneable {
       //
       dir = delta > 0 ? 1.0 : -1.0;
       yt =
-          (int) ((uRange_.start / delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
-              * delta;
+          (int)
+              (((uRange_.start / delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * delta);
       if (dir * yt < dir * uRange_.start) yt += delta;
       istop = (int) ((uRange_.end - yt) / delta + 0.00001);
       y = yt;

@@ -725,7 +725,7 @@ public class LongArray extends PrimitiveArray {
    */
   @Override
   public int getInt(final int index) {
-    return Math2.roundToInt(get(index));
+    return Math2.roundToInt((double) get(index));
   }
 
   // getRawInt(index) uses default getInt(index) since missingValue is bigger than int.
@@ -946,8 +946,8 @@ public class LongArray extends PrimitiveArray {
       if (s == null
           || s.indexOf("223372036854775807")
               < 0) // without leading 9 to allow for 9.2233...e18 etc //not perfect, but gets common
-                   // cases
-      maxIsMV = true;
+        // cases
+        maxIsMV = true;
     }
     set(index, tl);
   }

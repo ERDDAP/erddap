@@ -1721,10 +1721,10 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       long elapsedTime = System.currentTimeMillis();
       // was tFileNames with dir+name
       Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
-      StringArray tFileDirPA = (StringArray) (tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
-      StringArray tFileNamePA = (StringArray) (tFileTable.getColumn(FileVisitorDNLS.NAME));
-      LongArray tFileLastModPA = (LongArray) (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
-      LongArray tFileSizePA = (LongArray) (tFileTable.getColumn(FileVisitorDNLS.SIZE));
+      StringArray tFileDirPA = (StringArray) tFileTable.getColumn(FileVisitorDNLS.DIRECTORY);
+      StringArray tFileNamePA = (StringArray) tFileTable.getColumn(FileVisitorDNLS.NAME);
+      LongArray tFileLastModPA = (LongArray) tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED);
+      LongArray tFileSizePA = (LongArray) tFileTable.getColumn(FileVisitorDNLS.SIZE);
       tFileTable.removeColumn(FileVisitorDNLS.SIZE);
       int ntft = tFileNamePA.size();
       msg =
@@ -3552,7 +3552,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   public Table getDirTableCopy() throws Throwable {
     Table tDirTable =
         fileTableInMemory
-            ? (Table) (dirTable.clone())
+            ? (Table) dirTable.clone()
             : tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME); // may be null
     Test.ensureNotNull(tDirTable, "dirTable");
     return tDirTable;
@@ -3567,7 +3567,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   public Table getFileTableCopy() throws Throwable {
     Table tFileTable =
         fileTableInMemory
-            ? (Table) (fileTable.clone())
+            ? (Table) fileTable.clone()
             : tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); // may be null
     Test.ensureNotNull(tFileTable, "fileTable");
     return tFileTable;
@@ -4310,7 +4310,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
       Table table = new Table();
       PrimitiveArray names =
-          (StringArray) (tFileTable.getColumn(dv0 + extractedColNameIndex * 3 + 0).clone());
+          (StringArray) tFileTable.getColumn(dv0 + extractedColNameIndex * 3 + 0).clone();
       PrimitiveArray unique = names.makeIndices(new IntArray()); // it returns unique values, sorted
       table.addColumn(columnNameForExtract, unique);
 

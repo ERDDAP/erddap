@@ -425,7 +425,7 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public void addNLongs(final int n, final long value) {
-    addN(n, value); // ! assumes value=Integer.MAX_VALUE isn't maxIsMV
+    addN(n, (double) value); // ! assumes value=Integer.MAX_VALUE isn't maxIsMV
   }
 
   /**
@@ -733,7 +733,7 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public void setLong(final int index, final long i) {
-    set(index, i);
+    set(index, (double) i);
   }
 
   /**

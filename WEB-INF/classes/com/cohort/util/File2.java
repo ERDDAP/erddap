@@ -30,6 +30,9 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
+
+import com.google.common.collect.ImmutableList;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
@@ -62,86 +65,227 @@ public class File2 {
     private static String classPath; //lazy creation by getClassPath
     private static String webInfParentDirectory; //lazy creation by webInfParentDirectory()
 
-    //define the file types for the purpose of assigning icon in Table.directoryListing
-    //compressed and image ext from wikipedia
-    //many ext from http://www.fileinfo.com/filetypes/common
-    public static final String BINARY_EXT[] = {
-        ".accdb", ".bin", ".bufr", ".cab", ".cdf", ".cer", ".class", ".cpi", ".csr",
-        ".db", ".dbf", ".dll", ".dmp", ".drv", ".dwg", ".dxf", ".fnt", ".fon", 
-        ".grb", ".grib", ".grib2", ".ini", ".keychain", 
-        ".lnk", ".mat", ".mdb", ".mim", ".nc", 
-        ".otf", ".pdb", ".prf", ".sys", ".ttf"};
-    public static final String COMPRESSED_EXT[] = {
-        ".7z", ".a", ".ace", ".afa", ".alz", ".apk", 
-        ".ar", ".arc", ".arj", ".ba", ".bh", ".bz2", 
-        ".cab", ".cfs", ".cpio", ".dar", ".dd", ".deb", ".dgc", ".dmg", ".f",
-        ".gca", ".gho", ".gz", 
-        ".gzip", ".ha", ".hki", ".hqx", ".infl", ".iso", 
-        ".j", ".jar", ".kgb", ".kmz", 
-        ".lbr", ".lha", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", 
-        ".mar", ".msi", ".partimg", ".paq6", ".paq7", ".paq8", ".pea", ".pim", ".pit",
-        ".pkg", ".qda", ".rar", ".rk", ".rpm", ".rz", 
-        ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx",
-        ".tar", ".tbz2", ".tgz", ".tlz", ".toast", ".torrent",
-        ".uca", ".uha", ".uue", ".vcd", ".war", ".wim", ".xar", ".xp3", ".xz", ".yz1", 
-        ".z", ".zip", ".zipx", ".zoo"};
-    public static final String IMAGE_EXT[] = {
-        ".ai", ".bmp", ".cgm", ".draw", ".drw", ".gif", 
-        ".ico", ".jfif", ".jpeg", ".jpg", 
-        ".pbm", ".pgm", ".png", ".pnm", ".ppm", ".pspimage", 
-        ".raw", ".svg", ".thm", ".tif", ".tiff", ".webp", ".yuv"};
-    public static final String COMPRESSED_IMAGE_EXT[] = { //done quickly, the obvious compressed
-        ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"};
-    public static final String LAYOUT_EXT[] = {
-        ".doc", ".docx", ".indd", ".key", ".pct",
-        ".pps", ".ppt", ".pptx",
-        ".psd", ".qxd", ".qxp", ".rels", ".rtf", ".wpd", ".wps",
-        ".xlr", ".xls", ".xlsx"};  
-    public static final String MOVIE_EXT[] = {
-        ".3g2", ".3gp", ".asf", ".asx", ".avi", ".fla", ".flv", 
-        ".mov", ".mp4", ".mpg", ".ogv", ".rm", ".swf", ".vob", ".wmv", ".webm"};
-    public static final String PDF_EXT[] = {".pdf"};
-    public static final String PS_EXT[] = {".eps", ".ps"};
-    public static final String SCRIPT_EXT[] = {  //or executable  
-        ".app", ".asp", ".bat", ".cgi", ".com", ".csh", ".exe", ".gadget", ".js", ".jsp", 
-        ".ksh", ".php", ".pif", ".pl", ".py", ".sh", ".tcsh", ".vb", ".wsf"};
-    public static final String SOUND_EXT[] = {
-        ".aif", ".aiff", ".aifc", ".au",
-        ".flac", ".iff", ".m3u", ".m4a", ".mid", 
-        ".mp3", ".mpa", ".ogg", ".wav", ".wave", ".wma"};
-    public static final String COMPRESSED_SOUND_EXT[] = {  //done quickly, the obvious compressed
-        ".flac", ".iff", ".m3u", ".m4a",  
-        ".mp3", ".mpa", ".ogg", ".wma"};
-    public static final String TEXT_EXT[] = {
-        ".asc", ".c", ".cpp", ".cs", ".csv", ".das", ".dat", ".dds", 
-        ".java", ".json", ".log", ".m", 
-        ".sdf", ".sql", ".tsv", ".txt", ".vcf"};
-    public static final String WORLD_EXT[] = {".css", ".htm", ".html", ".xhtml"};
-    public static final String XML_EXT[] = {".dtd", ".gpx", ".kml", ".xml", ".rss"};
+  // define the file types for the purpose of assigning icon in Table.directoryListing
+  // compressed and image ext from wikipedia
+  // many ext from http://www.fileinfo.com/filetypes/common
+  public static final ImmutableList<String> BINARY_EXT =
+      ImmutableList.of(
+          ".accdb",
+          ".bin",
+          ".bufr",
+          ".cab",
+          ".cdf",
+          ".cer",
+          ".class",
+          ".cpi",
+          ".csr",
+          ".db",
+          ".dbf",
+          ".dll",
+          ".dmp",
+          ".drv",
+          ".dwg",
+          ".dxf",
+          ".fnt",
+          ".fon",
+          ".grb",
+          ".grib",
+          ".grib2",
+          ".ini",
+          ".keychain",
+          ".lnk",
+          ".mat",
+          ".mdb",
+          ".mim",
+          ".nc",
+          ".otf",
+          ".pdb",
+          ".prf",
+          ".sys",
+          ".ttf");
+  public static final ImmutableList<String> COMPRESSED_EXT =
+      ImmutableList.of(
+          ".7z",
+          ".a",
+          ".ace",
+          ".afa",
+          ".alz",
+          ".apk",
+          ".ar",
+          ".arc",
+          ".arj",
+          ".ba",
+          ".bh",
+          ".bz2",
+          ".cab",
+          ".cfs",
+          ".cpio",
+          ".dar",
+          ".dd",
+          ".deb",
+          ".dgc",
+          ".dmg",
+          ".f",
+          ".gca",
+          ".gho",
+          ".gz",
+          ".gzip",
+          ".ha",
+          ".hki",
+          ".hqx",
+          ".infl",
+          ".iso",
+          ".j",
+          ".jar",
+          ".kgb",
+          ".kmz",
+          ".lbr",
+          ".lha",
+          ".lz",
+          ".lzh",
+          ".lzma",
+          ".lzo",
+          ".lzx",
+          ".mar",
+          ".msi",
+          ".partimg",
+          ".paq6",
+          ".paq7",
+          ".paq8",
+          ".pea",
+          ".pim",
+          ".pit",
+          ".pkg",
+          ".qda",
+          ".rar",
+          ".rk",
+          ".rpm",
+          ".rz",
+          ".s7z",
+          ".sda",
+          ".sea",
+          ".sen",
+          ".sfark",
+          ".sfx",
+          ".shar",
+          ".sit",
+          ".sitx",
+          ".sqx",
+          ".tar",
+          ".tbz2",
+          ".tgz",
+          ".tlz",
+          ".toast",
+          ".torrent",
+          ".uca",
+          ".uha",
+          ".uue",
+          ".vcd",
+          ".war",
+          ".wim",
+          ".xar",
+          ".xp3",
+          ".xz",
+          ".yz1",
+          ".z",
+          ".zip",
+          ".zipx",
+          ".zoo");
+  public static final ImmutableList<String> IMAGE_EXT =
+      ImmutableList.of(
+          ".ai",
+          ".bmp",
+          ".cgm",
+          ".draw",
+          ".drw",
+          ".gif",
+          ".ico",
+          ".jfif",
+          ".jpeg",
+          ".jpg",
+          ".pbm",
+          ".pgm",
+          ".png",
+          ".pnm",
+          ".ppm",
+          ".pspimage",
+          ".raw",
+          ".svg",
+          ".thm",
+          ".tif",
+          ".tiff",
+          ".webp",
+          ".yuv");
+  public static final ImmutableList<String> COMPRESSED_IMAGE_EXT =
+      ImmutableList.of( // done quickly, the obvious compressed
+          ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp");
+  public static final ImmutableList<String> LAYOUT_EXT =
+      ImmutableList.of(
+          ".doc", ".docx", ".indd", ".key", ".pct", ".pps", ".ppt", ".pptx", ".psd", ".qxd", ".qxp",
+          ".rels", ".rtf", ".wpd", ".wps", ".xlr", ".xls", ".xlsx");
+  public static final ImmutableList<String> MOVIE_EXT =
+      ImmutableList.of(
+          ".3g2", ".3gp", ".asf", ".asx", ".avi", ".fla", ".flv", ".mov", ".mp4", ".mpg", ".ogv",
+          ".rm", ".swf", ".vob", ".wmv", ".webm");
+  public static final ImmutableList<String> PDF_EXT = ImmutableList.of(".pdf");
+  public static final ImmutableList<String> PS_EXT = ImmutableList.of(".eps", ".ps");
+  public static final ImmutableList<String> SCRIPT_EXT =
+      ImmutableList.of( // or executable
+          ".app", ".asp", ".bat", ".cgi", ".com", ".csh", ".exe", ".gadget", ".js", ".jsp", ".ksh",
+          ".php", ".pif", ".pl", ".py", ".sh", ".tcsh", ".vb", ".wsf");
+  public static final ImmutableList<String> SOUND_EXT =
+      ImmutableList.of(
+          ".aif", ".aiff", ".aifc", ".au", ".flac", ".iff", ".m3u", ".m4a", ".mid", ".mp3", ".mpa",
+          ".ogg", ".wav", ".wave", ".wma");
+  public static final ImmutableList<String> COMPRESSED_SOUND_EXT =
+      ImmutableList.of( // done quickly, the obvious compressed
+          ".flac", ".iff", ".m3u", ".m4a", ".mp3", ".mpa", ".ogg", ".wma");
+  public static final ImmutableList<String> TEXT_EXT =
+      ImmutableList.of(
+          ".asc", ".c", ".cpp", ".cs", ".csv", ".das", ".dat", ".dds", ".java", ".json", ".log",
+          ".m", ".sdf", ".sql", ".tsv", ".txt", ".vcf");
+  public static final ImmutableList<String> WORLD_EXT =
+      ImmutableList.of(".css", ".htm", ".html", ".xhtml");
+  public static final ImmutableList<String> XML_EXT =
+      ImmutableList.of(".dtd", ".gpx", ".kml", ".xml", ".rss");
 
-    /** The image file names in ERDDAP's /images/ for the different file types.
-     * These may change periodically.
-     * These parallel ICON_ALT. */
-    public static final String ICON_FILENAME[] = {
-        "generic.gif", "index.gif", "binary.gif", "compressed.gif", "image2.gif", 
-        "layout.gif", "movie.gif", "pdf.gif", "ps.gif", "script.gif", 
-        "sound1.gif", "text.gif", "world1.gif", "xml.gif"};
+  /**
+   * The image file names in ERDDAP's /images/ for the different file types. These may change
+   * periodically. These parallel ICON_ALT.
+   */
+  public static final ImmutableList<String> ICON_FILENAME =
+      ImmutableList.of(
+          "generic.gif",
+          "index.gif",
+          "binary.gif",
+          "compressed.gif",
+          "image2.gif",
+          "layout.gif",
+          "movie.gif",
+          "pdf.gif",
+          "ps.gif",
+          "script.gif",
+          "sound1.gif",
+          "text.gif",
+          "world1.gif",
+          "xml.gif");
 
-    /** The 3 character string used for <img alt=...> for the different file types.
-     * I hope these won't change (other than adding new types).
-     * These are from Apache directory listings.
-     * These parallel ICON_FILENAME */
-    public static final String ICON_ALT[] = {
-        "UNK", "IDX", "BIN", "ZIP", "IMG", 
-        "DOC", "MOV", "PDF", "PS", "EXE", 
-        "SND", "TXT", "WWW", "XML"};
+  /**
+   * The 3 character string used for <img alt=...> for the different file types. I hope these won't
+   * change (other than adding new types). These are from Apache directory listings. These parallel
+   * ICON_FILENAME
+   */
+  public static final ImmutableList<String> ICON_ALT =
+      ImmutableList.of(
+          "UNK", "IDX", "BIN", "ZIP", "IMG", "DOC", "MOV", "PDF", "PS", "EXE", "SND", "TXT", "WWW",
+          "XML");
 
-    /** These are the extensions of file types that netcdf-java makes 
-     * additional index files for. This is not a perfect list.
-     * I think GRIB and BUFR files can have other or no extension. */
-    public static final String NETCDF_INDEX_EXT[] = {
-        ".grb", ".grib", ".grib2", ".bufr"};
-
+  /**
+   * These are the extensions of file types that netcdf-java makes additional index files for. This
+   * is not a perfect list. I think GRIB and BUFR files can have other or no extension.
+   */
+  public static final ImmutableList<String> NETCDF_INDEX_EXT =
+      ImmutableList.of(".grb", ".grib", ".grib2", ".bufr");
 
     /**
      * Set this to true (by calling verbose=true in your program, not by changing the code here)
@@ -152,7 +296,8 @@ public class File2 {
 
     private static String tempDirectory; //lazy creation by getSystemTempDirectory
 
-    private static ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap();
+  private static ConcurrentHashMap<String, S3Client> s3ClientMap =
+      new ConcurrentHashMap<String, S3Client>();
 
     /**
      * This returns the directory that is the classpath for the source
@@ -291,34 +436,33 @@ public class File2 {
      */
     public static int whichIcon(String fileName) {
         String fileNameLC = fileName.toLowerCase();
-        String extLC = getExtension(fileNameLC);
+    String extLC = getExtension(fileNameLC);
 
-        if (fileNameLC.equals("index.html") ||
-            fileNameLC.equals("index.htm"))              return String2.indexOf(ICON_ALT, "IDX");
-        if (String2.indexOf(BINARY_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "BIN");
-        if (String2.indexOf(COMPRESSED_EXT, extLC) >= 0) return String2.indexOf(ICON_ALT, "ZIP");
-        if (String2.indexOf(IMAGE_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "IMG");
-        if (String2.indexOf(LAYOUT_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "DOC");
-        if (String2.indexOf(MOVIE_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "MOV");
-        if (String2.indexOf(PDF_EXT,        extLC) >= 0) return String2.indexOf(ICON_ALT, "PDF");
-        if (String2.indexOf(PS_EXT,         extLC) >= 0) return String2.indexOf(ICON_ALT, "PS ");
-        if (String2.indexOf(SCRIPT_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "EXE");
-        if (String2.indexOf(SOUND_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "SND");
-        if (String2.indexOf(TEXT_EXT,       extLC) >= 0) return String2.indexOf(ICON_ALT, "TXT");
-        if (String2.indexOf(WORLD_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "WWW");
-        if (String2.indexOf(XML_EXT,        extLC) >= 0) return String2.indexOf(ICON_ALT, "XML");
-        
-        return String2.indexOf(ICON_ALT, "UNK");
+    if (fileNameLC.equals("index.html") || fileNameLC.equals("index.htm"))
+      return ICON_ALT.indexOf("IDX");
+    if (BINARY_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("BIN");
+    if (COMPRESSED_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("ZIP");
+    if (IMAGE_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("IMG");
+    if (LAYOUT_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("DOC");
+    if (MOVIE_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("MOV");
+    if (PDF_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("PDF");
+    if (PS_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("PS ");
+    if (SCRIPT_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("EXE");
+    if (SOUND_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("SND");
+    if (TEXT_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("TXT");
+    if (WORLD_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("WWW");
+    if (XML_EXT.indexOf(extLC) >= 0) return ICON_ALT.indexOf("XML");
+
+    return ICON_ALT.indexOf("UNK");
     }
 
     public static boolean isCompressedExtension(String ext) {
-        if (!String2.isSomething(ext))
-            return false;
-        ext = ext.toLowerCase();
-        return String2.indexOf(COMPRESSED_EXT, ext) >= 0 || 
-               String2.indexOf(COMPRESSED_IMAGE_EXT, ext) >= 0 ||
-               String2.indexOf(MOVIE_EXT, ext) >= 0 ||
-               String2.indexOf(COMPRESSED_SOUND_EXT, ext) >= 0;
+    if (!String2.isSomething(ext)) return false;
+    ext = ext.toLowerCase();
+    return COMPRESSED_EXT.indexOf(ext) >= 0
+        || COMPRESSED_IMAGE_EXT.indexOf(ext) >= 0
+        || MOVIE_EXT.indexOf(ext) >= 0
+        || COMPRESSED_SOUND_EXT.indexOf(ext) >= 0;
     }
 
 

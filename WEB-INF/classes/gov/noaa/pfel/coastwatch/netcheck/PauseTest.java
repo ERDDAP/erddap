@@ -105,7 +105,7 @@ public class PauseTest extends NetCheckTest {
    */
   @Override
   public String test() {
-    Math2.sleep(nSeconds * 1000);
+    Math2.sleep(nSeconds * 1000L);
     return "";
   }
 

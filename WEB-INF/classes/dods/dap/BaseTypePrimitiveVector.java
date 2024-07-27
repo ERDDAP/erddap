@@ -197,7 +197,7 @@ public class BaseTypePrimitiveVector extends PrimitiveVector implements Cloneabl
    */
   @Override
   public Object getInternalStorage() {
-    return (vals);
+    return vals;
   }
 
   /**

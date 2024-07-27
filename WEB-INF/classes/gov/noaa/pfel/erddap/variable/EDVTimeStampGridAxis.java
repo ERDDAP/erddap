@@ -343,7 +343,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     return destinationToString(
         destinationMin
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
-                           // double
+    // double
   }
 
   /**
@@ -357,7 +357,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     return destinationToString(
         destinationMax
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
-                           // double
+    // double
   }
 
   /**
@@ -515,7 +515,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
   @Override
   public PrimitiveArray destinationValues() {
     // alt and time may modify the values, so use sourceValues.clone()
-    return toDestination((PrimitiveArray) (sourceValues().clone()));
+    return toDestination((PrimitiveArray) sourceValues().clone());
   }
 
   /** This returns one of this axis' source values as epochSeconds. */

@@ -6906,6 +6906,7 @@ class JettyTests {
           "http://localhost:"
               + PORT
               + "/erddap/griddap/erdMHchla8day.timeGaps", // dataset not found
+          "https://linux.die.net/man/1/ncdump", // fail, works in browser
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
@@ -6928,7 +6929,7 @@ class JettyTests {
             ((InputStream) o3[1]).close();
             throw new IOException("The URL for SSR.testForBrokenLinks can't be an AWS S3 URL.");
           }
-          HttpURLConnection conn = (HttpURLConnection) (o3[0]);
+          HttpURLConnection conn = (HttpURLConnection) o3[0];
           int code = conn.getResponseCode();
           if (code != 200) msg = " code=" + code + " " + ttUrl;
         } catch (Exception e) {
@@ -10313,7 +10314,7 @@ class JettyTests {
             tLocalDir),
         5,
         "nFilesToDownload");
-    Math2.sleep(5000);
+    Math2.sleep(10000);
     // String2.pressEnterToContinue("Hopefully the first download tasks finished.");
 
     // Use ".*" for the path regex to make the test compatible with windows systems.
@@ -10414,7 +10415,7 @@ class JettyTests {
 
       // GenerateDatasetsXml
       String gdxResults =
-          (new GenerateDatasetsXml())
+          new GenerateDatasetsXml()
               .doIt(
                   new String[] {
                     "-verbose",
@@ -12733,7 +12734,6 @@ class JettyTests {
 
     // *** test that EDDGridFromDap can treat itself as a datasource
     String2.log("\n*** EDDGridFromDap test can treat itself as a datasource\n");
-    ArrayList tDataVariables = new ArrayList();
 
     EDDGrid eddGrid2 =
         new EDDGridFromDap(
@@ -12882,7 +12882,7 @@ class JettyTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {"-verbose", "EDDGridFromErddap", EDStatic.erddapUrl, "false"},
                 false); // doIt loop?
@@ -14591,7 +14591,7 @@ class JettyTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {"-verbose", "EDDGridLon0360FromErddapCatalog", url, regex},
                 false); // doIt loop?
@@ -15541,7 +15541,7 @@ class JettyTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {"-verbose", "EDDGridLonPM180FromErddapCatalog", url, regex},
                 false); // doIt loop?

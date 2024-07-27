@@ -881,9 +881,8 @@ public class NcHelper {
     // look for unlimited dimension
     if (mainDimension == null) {
       List dimensions =
-          rootGroup
-              .getDimensions(); // next nc version: getRootGroup().getDimensions();  //was
-                                // netcdfFile.getDimensions()
+          rootGroup.getDimensions(); // next nc version: getRootGroup().getDimensions();  //was
+      // netcdfFile.getDimensions()
       if (dimensions.size() == 0)
         Test.error(String2.ERROR + " in NcHelper.findVariables: the file has no dimensions.");
       for (int i = 0; i < dimensions.size(); i++) {
@@ -1135,8 +1134,8 @@ public class NcHelper {
       if (!String2.isSomething(tName)
           || tName.equals(
               "_NCProperties")) // If I write this, netcdf nc4 code later throws Exception when it
-                                // writes its own version
-      continue;
+        // writes its own version
+        continue;
       PrimitiveArray tValue = attributes.get(tName);
       if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0)
         continue; // do nothing
@@ -1844,7 +1843,7 @@ public class NcHelper {
     PrimitiveArray pa = getPrimitiveArray(array);
     Test.ensureEqual(
         pa.size(),
-        nX * nY * nZ * nT,
+        nX * nY * nZ * ((long) nT),
         "NcHelper.get4DValues nFound!=nExpected.\n"
             + " name="
             + variable.getFullName()
@@ -1945,13 +1944,13 @@ public class NcHelper {
     if (paType == PAType.CHAR)
       // netcdf-java 3 & 4 just write 1 byte chars
       // (but nc4 will writes strings as utf-8 encoded
-      pa = (new CharArray(pa)).toIso88591();
+      pa = new CharArray(pa).toIso88591();
     else if (nc3Mode) {
       if (paType == PAType.LONG || paType == PAType.ULONG) pa = new DoubleArray(pa);
       else if (paType == PAType.CHAR)
-        pa = (new CharArray(pa)).toIso88591(); // netcdf-java 3 just writes low byte
+        pa = new CharArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
       else if (paType == PAType.STRING)
-        pa = (new StringArray(pa)).toIso88591(); // netcdf-java 3 just writes low byte
+        pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
     }
 
     if (nc3Mode && paType == PAType.STRING) {

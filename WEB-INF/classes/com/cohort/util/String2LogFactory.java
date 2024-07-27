@@ -17,7 +17,6 @@
 
 package com.cohort.util;
 
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -37,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public final class String2LogFactory extends LogFactory {
 
   /** The configuration attributes for this LogFactory. */
-  private Hashtable attributes =
+  private final Hashtable attributes =
       new Hashtable(); // don't change to ConcurrentHashMap since not heavily used.
 
   private String2Log string2Log;
@@ -57,7 +56,7 @@ public final class String2LogFactory extends LogFactory {
    */
   @Override
   public Object getAttribute(String name) {
-    return (attributes.get(name));
+    return attributes.get(name);
   }
 
   /**
@@ -76,7 +75,7 @@ public final class String2LogFactory extends LogFactory {
       for (int i = 0; i < results.length; i++) {
         results[i] = (String) names.elementAt(i);
       }
-      return (results);
+      return results;
     }
   }
 

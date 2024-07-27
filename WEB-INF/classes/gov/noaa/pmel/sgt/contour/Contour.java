@@ -26,7 +26,6 @@ import gov.noaa.pmel.util.Debug;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Range2D;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -259,15 +258,6 @@ public class Contour implements PropertyChangeListener {
     return array;
   }
 
-  private GeoDate[] getTimeArray(double[] array, GeoDate tref) {
-    GeoDate[] tarray = new GeoDate[array.length];
-    for (int i = 0; i < array.length; i++) {
-      tarray[i] = new GeoDate(tref);
-      tarray[i].increment(array[i], GeoDate.DAYS);
-    }
-    return tarray;
-  }
-
   /**
    * Given the current <code>ContourLevels</code>, mask, and <code>SGTGrid</code> generate the
    * <code>ContourLine</code>s.
@@ -321,10 +311,10 @@ public class Contour implements PropertyChangeListener {
         gridFlag_ = new GridFlag(grid_, zc);
       }
       for (ii = 0; ii < nx_; ii++) {
-          /* 1001 */
+        /* 1001 */
         loop1000:
         for (jj = 0; jj < ny_; jj++) {
-            /* 1000 */
+          /* 1000 */
           i = ii;
           j = jj;
           kabij = gridFlag_.getValue(i, j);
@@ -383,7 +373,7 @@ public class Contour implements PropertyChangeListener {
           //
           loop350:
           while (true) {
-              /* 350 */
+            /* 350 */
             lp1 = lin + 1 - ((lin + 1) / 4) * 4;
             lp2 = lp1 + 1 - ((lp1 + 1) / 4) * 4;
             lm1 = lp2 + 1 - ((lp2 + 1) / 4) * 4;
@@ -416,7 +406,7 @@ public class Contour implements PropertyChangeListener {
               } else {
                 exit = lp2;
                 if (kabov_[lp2] + kabov_[lm1] != 0) {
-                    /* 470 */
+                  /* 470 */
                   if (kabov_[lp2] + kabov_[lm1] <= 15) {
                     kda = lin;
                     kdb = lp2;
@@ -514,7 +504,7 @@ public class Contour implements PropertyChangeListener {
     //  (i,j)      0      (i+1,j)
     //
     for (int lcorner = 0; lcorner < 4; lcorner++) {
-        /* 620 */
+      /* 620 */
       jl = j + lcorner / 2;
       lp1 = lcorner + 1 - ((lcorner + 1) / 4) * 4;
       il = i + lp1 / 2;
@@ -522,7 +512,7 @@ public class Contour implements PropertyChangeListener {
       kabov_[lcorner] = 10;
       if (((il + 1) * (nx_ - il) > 0)
           && ((jl + 1) * (ny_ - jl) > 0)
-          && (!gridFlag_.isMissing(il, jl))) {
+          && !gridFlag_.isMissing(il, jl)) {
         used[lcorner] = sides_.isSideUsed(i, j, lcorner);
         zz_[lcorner] = setZ(z(il, jl), zc);
         if (zz_[lcorner] < zc) {
@@ -676,7 +666,7 @@ public class Contour implements PropertyChangeListener {
       // check conditions for labelling
       //
       while (k < kmax) {
-          /* 755 */
+        /* 755 */
         km1 = Math.max(k - 1, 1);
         stest = stest + s[k] - s[km1];
         //
@@ -818,41 +808,6 @@ public class Contour implements PropertyChangeListener {
         }
       }
     }
-  }
-
-  private void drawRotatedRectangle(
-      Graphics g, double angle, double x0, double y0, double width, double height) {
-    double sinthta = Math.sin(angle * Math.PI / 180.0);
-    double costhta = Math.cos(angle * Math.PI / 180.0);
-    double[] x, y;
-    double xp, yp;
-    int[] xd, yd;
-    double xorig, yorig;
-    x = new double[4];
-    y = new double[4];
-    xd = new int[5];
-    yd = new int[5];
-    xorig = x0;
-    yorig = y0;
-    x[0] = x0;
-    y[0] = y0;
-    x[1] = x[0] + width;
-    y[1] = y[0];
-    x[2] = x[1];
-    y[2] = y[0] + height;
-    x[3] = x[0];
-    y[3] = y[2];
-    for (int i = 0; i < 4; i++) {
-      xp = (x[i] - xorig) * costhta - (y[i] - yorig) * sinthta + xorig;
-      yp = (y[i] - yorig) * costhta + (x[i] - xorig) * sinthta + yorig;
-      xd[i] = cg_.getLayer().getXPtoD(xp);
-      yd[i] = cg_.getLayer().getYPtoD(yp);
-    }
-    xd[4] = xd[0];
-    yd[4] = yd[0];
-    g.setColor(Color.blue);
-    g.drawPolyline(xd, yd, 5);
-    g.setColor(Color.black);
   }
 
   //    private void drawLineSegment(Graphics g, double x0, double y0,

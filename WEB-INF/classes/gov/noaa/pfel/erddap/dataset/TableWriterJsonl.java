@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TableWriterJsonl provides a way to write a table to JSON (https://www.json.org/) file in a JSON
@@ -37,7 +38,7 @@ public class TableWriterJsonl extends TableWriter {
   protected volatile BufferedWriter writer;
 
   // other
-  public volatile long totalNRows = 0;
+  public volatile AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -134,9 +135,10 @@ public class TableWriterJsonl extends TableWriter {
 
     // avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
     int nRows = table.nRows();
-    boolean flushAfterward = totalNRows == 0; // flush initial chunk so info gets to user quickly
-    totalNRows += nRows;
-    Math2.ensureArraySizeOkay(totalNRows, "jsonl");
+    boolean flushAfterward =
+        totalNRows.get() == 0; // flush initial chunk so info gets to user quickly
+    totalNRows.addAndGet(nRows);
+    Math2.ensureArraySizeOkay(totalNRows.get(), "jsonl");
 
     // write the data
     for (int row = 0; row < nRows; row++) {

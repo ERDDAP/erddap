@@ -68,7 +68,7 @@ public class TaskThread extends Thread {
 
   /** The constructor. TaskThread uses task variables in EDStatic. */
   public TaskThread(int tNextTask) {
-    EDStatic.nextTask = tNextTask;
+    EDStatic.nextTask.set(tNextTask);
     EDStatic.lastFinishedTask = tNextTask - 1;
     setName("TaskThread");
   }
@@ -81,7 +81,7 @@ public class TaskThread extends Thread {
   /** This does any pending tasks, then exits. */
   @Override
   public void run() {
-    while (EDStatic.nextTask < EDStatic.taskList.size()) {
+    while (EDStatic.nextTask.get() < EDStatic.taskList.size()) {
       String taskSummary = null;
       try {
         // check isInterrupted
@@ -102,12 +102,12 @@ public class TaskThread extends Thread {
                 + (EDStatic.taskList.size() - 1)
                 + " at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        EDStatic.nextTask++;
+        EDStatic.nextTask.incrementAndGet();
 
         // get the task settings
-        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask - 1);
+        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.decrementAndGet());
         if (taskOA == null) {
-          String2.log("task #" + (EDStatic.nextTask - 1) + " was null.");
+          String2.log("task #" + EDStatic.nextTask.decrementAndGet() + " was null.");
           continue;
         }
         Integer taskType = (Integer) taskOA[0];
@@ -230,7 +230,7 @@ public class TaskThread extends Thread {
               "TaskThread error: Unknown taskType="
                   + taskType
                   + " for task #"
-                  + (EDStatic.nextTask - 1)
+                  + EDStatic.nextTask.decrementAndGet()
                   + ".");
         }
 
@@ -238,7 +238,7 @@ public class TaskThread extends Thread {
         long tElapsedTime = elapsedTime();
         String2.log(
             "%%% TaskThread task #"
-                + (EDStatic.nextTask - 1)
+                + EDStatic.nextTask.decrementAndGet()
                 + " of "
                 + (EDStatic.taskList.size() - 1)
                 + " succeeded.  elapsedTime = "
@@ -252,7 +252,7 @@ public class TaskThread extends Thread {
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
         String subject =
             "TaskThread error: task #"
-                + (EDStatic.nextTask - 1)
+                + EDStatic.nextTask.decrementAndGet()
                 + " failed after "
                 + Calendar2.elapsedTimeString(tElapsedTime);
         String content = "" + taskSummary + "\n" + MustBe.throwableToString(t);
@@ -262,8 +262,9 @@ public class TaskThread extends Thread {
 
       // whether succeeded or failed
       synchronized (EDStatic.taskList) {
-        EDStatic.lastFinishedTask = EDStatic.nextTask - 1;
-        EDStatic.taskList.set(EDStatic.nextTask - 1, null); // throw away the task info (gc)
+        EDStatic.lastFinishedTask = EDStatic.nextTask.decrementAndGet();
+        EDStatic.taskList.set(
+            EDStatic.nextTask.decrementAndGet(), null); // throw away the task info (gc)
       }
     }
   }

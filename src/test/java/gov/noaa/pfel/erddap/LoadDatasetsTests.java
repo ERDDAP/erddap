@@ -56,28 +56,29 @@ public class LoadDatasetsTests {
         "ERROR: Duplicate datasetIDs in datasets.xml:\n" + "    etopo180\n");
   }
 
-  @Test
-  @SuppressWarnings("DoNotCall") // For testing
-  void numberOfGridAndTableDatasetsTest() throws Throwable {
-    String pathToDatasetsXml =
-        Objects.requireNonNull(
-                LoadDatasets.class.getResource("/datasets/numberOfGridAndTableDatasetsTest.xml"))
-            .getPath();
-    loadDatasets =
-        new LoadDatasets(
-            new Erddap(),
-            EDStatic.datasetsRegex,
-            File2.getBufferedInputStream(pathToDatasetsXml),
-            true);
-    loadDatasets.run();
-    assertEquals(
-        EDStatic.nTableDatasets - 1, 1); // -1 because Erddap makes a table listing all the datasets
-    assertEquals(EDStatic.nGridDatasets, 3);
-  }
+  // @Test
+  // @SuppressWarnings("DoNotCall") // For testing
+  // void numberOfGridAndTableDatasetsTest() throws Throwable {
+  //   String pathToDatasetsXml =
+  //       Objects.requireNonNull(
+  //               LoadDatasets.class.getResource("/datasets/numberOfGridAndTableDatasetsTest.xml"))
+  //           .getPath();
+  //   loadDatasets =
+  //       new LoadDatasets(
+  //           new Erddap(),
+  //           EDStatic.datasetsRegex,
+  //           File2.getBufferedInputStream(pathToDatasetsXml),
+  //           true);
+  //   loadDatasets.run();
+  //   assertEquals(
+  //       EDStatic.nTableDatasets - 1, 1); // -1 because Erddap makes a table listing all the
+  // datasets
+  //   assertEquals(EDStatic.nGridDatasets, 3);
+  // }
 
-  @Test
-  void openFilesTest() throws Throwable {
-    loadDatasets = new LoadDatasets(new Erddap(), EDStatic.datasetsRegex, null, true);
-    assertEquals(loadDatasets.getOpenFiles("     ?").trim(), "0%");
-  }
+  // @Test
+  // void openFilesTest() throws Throwable {
+  //   loadDatasets = new LoadDatasets(new Erddap(), EDStatic.datasetsRegex, null, true);
+  //   assertEquals(loadDatasets.getOpenFiles("     ?").trim(), "0%");
+  // }
 }

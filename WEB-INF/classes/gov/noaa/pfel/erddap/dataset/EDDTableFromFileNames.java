@@ -79,9 +79,8 @@ public class EDDTableFromFileNames extends EDDTable {
 
   String fromFilesFileDir; // remote dir                  ***fromFiles spec[2]
   EDDTableFromFiles fromFilesEDDTable; // the child dataset holding all file dir info
-  Table
-      fromFilesCache3LevelFileTable; // the table with first 3 levels of file table items (usu.
-                                     // directories), may be null
+  Table fromFilesCache3LevelFileTable; // the table with first 3 levels of file table items (usu.
+  // directories), may be null
 
   // standard variable names
   public static final String URL = FileVisitorDNLS.URL; // "url";
@@ -346,7 +345,7 @@ public class EDDTableFromFileNames extends EDDTable {
                 null, // tSosOfferingPrefix,
                 null,
                 null, // String tDefaultDataQuery, String tDefaultGraphQuery,
-                (new Attributes()) // Attributes tAddGlobalAttributes,
+                new Attributes() // Attributes tAddGlobalAttributes,
                     .add("cdm_data_type", "other")
                     .add(
                         "infoUrl",
@@ -356,19 +355,18 @@ public class EDDTableFromFileNames extends EDDTable {
                     .add("sourceUrl", "(local files)")
                     .add("summary", "A child dataset.")
                     .add("title", datasetID + "_child"),
-                new Object[]
-                    [] { // tDataVariables: Object[4] 0=sourceName, 1=destinationName,
-                         // 2=addAttributes, 3=dataType.
+                new Object[][] { // tDataVariables: Object[4] 0=sourceName, 1=destinationName,
+                  // 2=addAttributes, 3=dataType.
                   new Object[] {
-                    "directory", null, (new Attributes()).add("ioos_category", "Other"), "String"
+                    "directory", null, new Attributes().add("ioos_category", "Other"), "String"
                   },
                   new Object[] {
-                    "name", null, (new Attributes()).add("ioos_category", "Other"), "String"
+                    "name", null, new Attributes().add("ioos_category", "Other"), "String"
                   },
                   new Object[] {
                     "lastModified",
                     null,
-                    (new Attributes())
+                    new Attributes()
                         .add("ioos_category", "Time")
                         .add("units", "milliseconds since 1970-01-01T00:00:00Z"),
                     "long"
@@ -376,18 +374,18 @@ public class EDDTableFromFileNames extends EDDTable {
                   new Object[] {
                     "size",
                     null,
-                    (new Attributes()).add("ioos_category", "Other").add("units", "bytes"),
+                    new Attributes().add("ioos_category", "Other").add("units", "bytes"),
                     "long"
                   }
                 },
                 1000000000, // int tReloadEveryNMinutes, It will be reloaded when this dataset is
-                            // reloaded (here!)
+                // reloaded (here!)
                 -1, // int tUpdateEveryNMillis,
                 parts[2],
                 parts[3],
                 true,
                 ".*", // String tFileDir, String tFileNameRegex, boolean tRecursive, String
-                      // tPathRegex,
+                // tPathRegex,
                 EDDTableFromFiles.MF_LAST,
                 "UTF-8", // String tMetadataFrom, String tCharset,
                 "",
@@ -395,7 +393,7 @@ public class EDDTableFromFileNames extends EDDTable {
                 1,
                 2,
                 ",", // skipHeaderToRegex, skipLinesRegex, int tColumnNamesRow, int tFirstDataRow,
-                     // String tColumnSeparator,
+                // String tColumnSeparator,
                 null,
                 null,
                 null, // String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
@@ -881,7 +879,7 @@ public class EDDTableFromFileNames extends EDDTable {
       }
 
       // and add subdirs
-      String subdirs[] = (String[]) (twardt.subdirHash().toArray(new String[0]));
+      String subdirs[] = (String[]) twardt.subdirHash().toArray(new String[0]);
       Arrays.sort(subdirs, String2.STRING_COMPARATOR_IGNORE_CASE);
       int nSubdirs = subdirs.length;
       StringArray dirSA = (StringArray) dnlsTable.getColumn(0);
@@ -1295,7 +1293,7 @@ public class EDDTableFromFileNames extends EDDTable {
                 pathRegex,
                 loggedInAs,
                 datasetID); // loggedInAs - irrelevant since just getting this for metadata, not
-                            // data
+        // data
       }
       int nRows = table.nRows();
 

@@ -117,8 +117,8 @@ public class PointAttribute implements Attribute, Cloneable {
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof PointAttribute)) return false;
     PointAttribute attr = (PointAttribute) obj;
-    if ((!id_.equals(attr.getId()))
-        || (!color_.equals(attr.getColor()))
+    if (!id_.equals(attr.getId())
+        || !color_.equals(attr.getColor())
         || (mark_ != attr.getMark())
         || (markHeightP_ != attr.getMarkHeightP())
         || (pwidth_ != attr.getWidthP())

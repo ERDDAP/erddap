@@ -834,9 +834,9 @@ public abstract class EDD {
               + ":\n";
       dataVariables[i].ensureValid(tErrorInMethod);
     }
-    (new StringArray(dataVariableSourceNames()))
+    new StringArray(dataVariableSourceNames())
         .ensureNoDuplicates("Duplicate dataVariableSourceNames: ");
-    (new StringArray(dataVariableDestinationNames()))
+    new StringArray(dataVariableDestinationNames())
         .ensureNoDuplicates("Duplicate dataVariableDestinationNames: ");
 
     // standardize GCMD keywords
@@ -1627,7 +1627,7 @@ public abstract class EDD {
       else if (topTag.equals("addAttributes")) tAttributes = getAttributesFromXml(xmlReader);
       else if (topTag.equals(
           "values")) { // 2017-04-27 what is this? An unfinished system for specifying a set of
-                       // values for a GridAxisVariable?
+        // values for a GridAxisVariable?
         // always make a PA
         String type = xmlReader.attributeValue("type");
         if (type == null) type = "";
@@ -2862,7 +2862,7 @@ public abstract class EDD {
             datasetID,
             Field.Store
                 .YES)); // YES= StringField is not tokenized, so can be retrieved whole (also, it's
-                        // just one word)
+    // just one word)
     doc.add(
         new TextField(
             EDStatic.luceneDefaultField,
@@ -3077,9 +3077,8 @@ public abstract class EDD {
                                             daysAgo < 370
                                                 ? 8 * Calendar2.MINUTES_PER_DAY
                                                 : // 2-12 month delay,      update every 8 days
-                                                Calendar2
-                                                    .MINUTES_PER_30DAYS; // 1+year delay,
-                                                                         // update monthly
+                                                Calendar2.MINUTES_PER_30DAYS; // 1+year delay,
+    // update monthly
     snm = Math2.roundToInt(suggestReloadEveryNMinutesFactor * snm);
     snm = Math.min(suggestReloadEveryNMinutesMax, snm);
     snm = Math.max(suggestReloadEveryNMinutesMin, snm);
@@ -5158,7 +5157,7 @@ public abstract class EDD {
             Arrays.asList(
                 // Enter them lowercase here. The search for them is case-insensitive.
                 "_ncproperties", // If I write this, netcdf nc4 code later throws Exception when it
-                                 // writes its own version
+                // writes its own version
                 "cols",
                 "columns",
                 "cpu",
@@ -6101,13 +6100,10 @@ public abstract class EDD {
 
         // AWS S3
       } else if (sourceUrlIsAwsS3 != null) {
-        if (!String2.isSomething2(creator_name))
-          creator_name = sourceUrlIsAwsS3[0]; // bucket
-        if (!String2.isSomething2(creator_url))
-          creator_url = tPublicSourceUrl; // best I have
+        if (!String2.isSomething2(creator_name)) creator_name = sourceUrlIsAwsS3[0]; // bucket
+        if (!String2.isSomething2(creator_url)) creator_url = tPublicSourceUrl; // best I have
         if (!String2.isSomething2(infoUrl)) infoUrl = tPublicSourceUrl; // best I have
-        if (!String2.isSomething2(tInstitution))
-          tInstitution = sourceUrlIsAwsS3[0]; // bucket
+        if (!String2.isSomething2(tInstitution)) tInstitution = sourceUrlIsAwsS3[0]; // bucket
       }
 
       if (debugMode)
@@ -6664,8 +6660,8 @@ public abstract class EDD {
     // expand common acronyms in summary
     if (String2.isSomething2(tSummary)) {
       Table tTable = EDStatic.gdxAcronymsTable();
-      StringArray acronymSA = (StringArray) (tTable.getColumn(0));
-      StringArray fullNameSA = (StringArray) (tTable.getColumn(1));
+      StringArray acronymSA = (StringArray) tTable.getColumn(0);
+      StringArray fullNameSA = (StringArray) tTable.getColumn(1);
       int n = acronymSA.size();
       for (int i = 0; i < acronymSA.size(); i++)
         tSummary =
@@ -7426,7 +7422,6 @@ public abstract class EDD {
       addAtts.set("creator_name", creator_name); // removeIfSame below
     if (String2.isSomething2(creator_email))
       addAtts.set("creator_email", creator_email); // removeIfSame below
-    creator_url = creator_url;
     if (String2.isSomething2(creator_url)) {
       addAtts.set("creator_url", creator_url); // removeIfSame below
       // set infoUrl from creator_url?
@@ -7445,8 +7440,7 @@ public abstract class EDD {
     tInstitution = String2.replaceAll(tInstitution, "THREDDS Server Catalog : ", "");
     tSummary = String2.replaceAll(tSummary, "THREDDS Server Catalog : ", "");
     tTitle = String2.replaceAll(tTitle, "THREDDS Server Catalog : ", "");
-    addAtts.set(
-        "infoUrl", String2.isSomething2(infoUrl) ? infoUrl : "???"); // hopefully never
+    addAtts.set("infoUrl", String2.isSomething2(infoUrl) ? infoUrl : "???"); // hopefully never
     addAtts.set(
         "institution",
         String2.isSomething2(tInstitution) ? tInstitution : "???"); // hopefully never
@@ -7775,7 +7769,7 @@ public abstract class EDD {
       "grads_step",
       "grid_mapping",
       "gridmapping", // now grid_mapping and variants are removed because var they point to is
-                     // removed
+      // removed
       "gridtype",
       "infile_datatype",
       "input_files",
@@ -7957,9 +7951,9 @@ public abstract class EDD {
                                                                                               .substring(
                                                                                                   4)
                                                                                       : // some
-                                                                                        // podaac
-                                                                                        // datasets
-                                                                                        // have this
+                                                                                      // podaac
+                                                                                      // datasets
+                                                                                      // have this
                                                                                       tUnitsLC
                                                                                                   .equals(
                                                                                                       "decimal degrees")
@@ -9408,8 +9402,10 @@ public abstract class EDD {
                     ? "mass_concentration_of_oxygen_in_sea_water"
                     : "volume_fraction_of_oxygen_in_sea_water";
       else if (lcu.indexOf("|fractional|saturation|of|oxygen|in|sea|water|") >= 0
-          || (lc.indexOf("|apparent|") >= 0 || lc.indexOf("|percent|") >= 0 || lc.indexOf('%') >= 0)
-              && lc.indexOf("|oxygen|saturation|") >= 0)
+          || ((lc.indexOf("|apparent|") >= 0
+                  || lc.indexOf("|percent|") >= 0
+                  || lc.indexOf('%') >= 0)
+              && lc.indexOf("|oxygen|saturation|") >= 0))
         tStandardName = "fractional_saturation_of_oxygen_in_sea_water";
       else if (lc.indexOf("phosphate") >= 0 || lc.indexOf("|po4|") >= 0)
         tStandardName =
@@ -9927,7 +9923,7 @@ public abstract class EDD {
           isDegreesK = false;
           isDegreesC = true;
           tUnits = "degree_C";
-          ao = (PrimitiveArray) (ao.clone()); // if from sourceAtts, don't change sourceAtts value
+          ao = (PrimitiveArray) ao.clone(); // if from sourceAtts, don't change sourceAtts value
           ao.scaleAddOffset(1.0, Math2.kelvinToC);
           tAddOffset = ao.getDouble(0);
           addAtts.set("add_offset", ao);
@@ -10052,7 +10048,7 @@ public abstract class EDD {
             isDegreesK = false;
             isDegreesC = true;
             tUnits = "degree_C";
-            ao = (PrimitiveArray) (ao.clone()); // if from sourceAtts, don't change sourceAtts value
+            ao = (PrimitiveArray) ao.clone(); // if from sourceAtts, don't change sourceAtts value
             ao.scaleAddOffset(1.0, Math2.kelvinToC);
             tAddOffset = ao.getDouble(0);
             addAtts.set("add_offset", ao);
@@ -10170,7 +10166,7 @@ public abstract class EDD {
             isDegreesK = false;
             isDegreesC = true;
             tUnits = "degree_C";
-            ao = (PrimitiveArray) (ao.clone()); // if from sourceAtts, don't change sourceAtts value
+            ao = (PrimitiveArray) ao.clone(); // if from sourceAtts, don't change sourceAtts value
             ao.scaleAddOffset(1.0, Math2.kelvinToC);
             tAddOffset = ao.getDouble(0);
             addAtts.set("add_offset", ao);
@@ -10243,8 +10239,7 @@ public abstract class EDD {
           tMax = pa.getDouble(1);
         }
         if (Double.isNaN(tMin))
-          tMin =
-              addAtts.getRawDouble("valid_min"); // often too wide   //better: getUnsignedDouble?
+          tMin = addAtts.getRawDouble("valid_min"); // often too wide   //better: getUnsignedDouble?
         if (Double.isNaN(tMax)) tMax = addAtts.getRawDouble("valid_max");
         if (Double.isNaN(tMin)) tMin = sourceAtts.getRawDouble("valid_min"); // often too wide
         if (Double.isNaN(tMax)) tMax = sourceAtts.getRawDouble("valid_max");

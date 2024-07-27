@@ -201,7 +201,7 @@ public class DGrid extends DConstructor implements ClientIO {
   @Override
   public BaseType getVar(int index) throws NoSuchVariableException {
     if (index == 0) {
-      return (arrayVar);
+      return arrayVar;
     } else {
       int i = index - 1;
       if (i < mapVars.size()) return ((BaseType) mapVars.elementAt(i));

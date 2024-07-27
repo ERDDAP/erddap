@@ -16,6 +16,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TableWriterNccsv provides a way to write a table to an NCCSV file (see
@@ -36,7 +37,7 @@ public class TableWriterNccsv extends TableWriter {
   protected volatile String time_precision[];
   protected volatile BufferedWriter writer;
 
-  public volatile long totalNRows = 0;
+  public volatile AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -137,8 +138,9 @@ public class TableWriterNccsv extends TableWriter {
     // unchanged
 
     int nRows = table.nRows();
-    boolean flushAfterward = totalNRows == 0; // flush initial chunk so info gets to user quickly
-    totalNRows += nRows;
+    boolean flushAfterward =
+        totalNRows.get() == 0; // flush initial chunk so info gets to user quickly
+    totalNRows.addAndGet(nRows);
     // no: avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
     // no: Math2.ensureArraySizeOkay(totalNRows, "NCCSV");
 

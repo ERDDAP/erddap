@@ -124,11 +124,6 @@ public class ExprParserTokenManager implements ExprParserConstants {
     } while (start++ != end);
   }
 
-  private final void jjCheckNAddStates(int start) {
-    jjCheckNAdd(jjnextStates[start]);
-    jjCheckNAdd(jjnextStates[start + 1]);
-  }
-
   static final long[] jjbitVec0 = {0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL};
 
   private final int jjMoveNfa_0(int startState, int curPos) {
@@ -142,7 +137,6 @@ public class ExprParserTokenManager implements ExprParserConstants {
       if (++jjround == 0x7fffffff) ReInitRounds();
       if (curChar < 64) {
         long l = 1L << curChar;
-        MatchLoop:
         do {
           switch (jjstateSet[--i]) {
             case 0:
@@ -244,7 +238,6 @@ public class ExprParserTokenManager implements ExprParserConstants {
         } while (i != startsAt);
       } else if (curChar < 128) {
         long l = 1L << (curChar & 077);
-        MatchLoop:
         do {
           switch (jjstateSet[--i]) {
             case 0:
@@ -290,7 +283,6 @@ public class ExprParserTokenManager implements ExprParserConstants {
       } else {
         int i2 = (curChar & 0xff) >> 6;
         long l2 = 1L << (curChar & 077);
-        MatchLoop:
         do {
           switch (jjstateSet[--i]) {
             case 15:

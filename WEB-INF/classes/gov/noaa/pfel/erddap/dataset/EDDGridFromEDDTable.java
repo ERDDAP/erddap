@@ -666,7 +666,6 @@ public class EDDGridFromEDDTable extends EDDGrid {
             suggestFileName(loggedInAs, datasetID, ".twa"));
     twa.ignoreFinish = true;
     int qn = 0;
-    outerLoop:
     while (outerNDIndex.increment()) { // updates outerNDCurrent
 
       // build the eddTable query for this subset of full request

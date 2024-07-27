@@ -194,7 +194,7 @@ public class Float64PrimitiveVector extends PrimitiveVector implements Cloneable
    */
   @Override
   public Object getInternalStorage() {
-    return (vals);
+    return vals;
   }
 
   /**

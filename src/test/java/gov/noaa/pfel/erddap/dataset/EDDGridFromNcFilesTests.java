@@ -1951,7 +1951,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -2536,7 +2536,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -3074,7 +3074,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -3448,7 +3448,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -4092,7 +4092,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -4351,7 +4351,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -5664,7 +5664,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -8717,10 +8717,9 @@ class EDDGridFromNcFilesTests {
 
       // swap x and y axes
       start = "EDDGridFromNcFiles_gridTestLogAxis4_LonChla_";
-      query =
-          "chlorophyll[last][0][(50.7825885)][]&.draw=lines&.vars=longitude|chlorophyll"; // lat
-                                                                                          // chosen
-                                                                                          // for
+      query = "chlorophyll[last][0][(50.7825885)][]&.draw=lines&.vars=longitude|chlorophyll"; // lat
+      // chosen
+      // for
       // high chl values
       /* */
 
@@ -10376,7 +10375,7 @@ class EDDGridFromNcFilesTests {
   /** This tests matchAxisNDigits */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest // Runtime datasets.xml error on or before line #208: AxisVariable=time has
-                     // tied
+  // tied
   // values:
   void testMatchAxisNDigits() throws Throwable {
 
@@ -13803,7 +13802,7 @@ class EDDGridFromNcFilesTests {
               null,
               null,
               "taux[0:150][][(30)][(330)]", // around time=[210], it slows way down for awhile
-                                            // (something in
+              // (something in
               // Windows: virus check?)
               tDir,
               "EDDGridFromNcFiles.testNThreads" + nt,
@@ -14346,20 +14345,9 @@ class EDDGridFromNcFilesTests {
     } finally {
       // rename it back to original
       String2.log("\n*** rename it back to original\n");
-      try {
-        // put things back to initial state
-        File2.rename(dataDir, "bad.nc", "bad.notnc");
-      } catch (Exception e) {
-        throw new RuntimeException(
-            "2020-05-15 This fails often in TestAll, but not when run individually. Need longer timeouts?"); // 2021-11-17
-        // I
-        // doubled
-        // timeouts.
-        // Maybe
-        // that
-        // will
-        // help.
-      }
+      // put things back to initial state
+      File2.rename(dataDir, "bad.nc", "bad.notnc");
+
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update(language));
         Math2.sleep(1000);
@@ -15906,7 +15894,7 @@ class EDDGridFromNcFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",

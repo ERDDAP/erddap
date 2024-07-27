@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -271,7 +272,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     if (quickRestartAttributes != null) {
       PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
       if (sourceInfoBytes != null && sourceInfoBytes instanceof ByteArray)
-        sourceInfoString = new String(((ByteArray) sourceInfoBytes).toArray(), File2.UTF_8);
+        sourceInfoString =
+            new String(((ByteArray) sourceInfoBytes).toArray(), StandardCharsets.UTF_8);
     }
     if (sourceInfoString == null) sourceInfoString = SSR.getUrlResponseStringNewline(jsonUrl);
     Table table = new Table();

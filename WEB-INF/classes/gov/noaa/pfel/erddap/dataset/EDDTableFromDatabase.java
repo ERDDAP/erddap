@@ -490,10 +490,10 @@ public class EDDTableFromDatabase extends EDDTable {
     sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
     sourceCanConstrainNumericData =
         CONSTRAIN_PARTIAL; // database won't see sourceName=script constraints, so ERDDAP applies
-                           // them, too
+    // them, too
     sourceCanConstrainStringData =
         CONSTRAIN_PARTIAL; // database won't see sourceName=script constraints, so ERDDAP applies
-                           // them, too
+    // them, too
     sourceCanConstrainStringRegex = "";
 
     // set global attributes
@@ -802,7 +802,7 @@ public class EDDTableFromDatabase extends EDDTable {
           // So if database is going to handle DISTINCT, also tell it to sort the results.
           // https://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
 
-          queryOrderBy = (StringArray) (resultsVariables.clone());
+          queryOrderBy = (StringArray) resultsVariables.clone();
           // String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
         }
 

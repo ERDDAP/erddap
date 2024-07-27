@@ -525,7 +525,7 @@ public class EDDTableFromOBIS extends EDDTable {
         new EDVTime(
             datasetID,
             "TIME",
-            (new Attributes())
+            new Attributes()
                 .add("actual_range", new StringArray(new String[] {tTimeMin, tTimeMax}))
                 .add(
                     "comment",
@@ -539,7 +539,7 @@ public class EDDTableFromOBIS extends EDDTable {
             datasetID,
             "ID",
             null,
-            (new Attributes())
+            new Attributes()
                 .add(
                     "comment",
                     "Created from the [darwin:InstitutionCode]:[darwin:CollectionCode]:[darwin:CatalogNumber] variables.")

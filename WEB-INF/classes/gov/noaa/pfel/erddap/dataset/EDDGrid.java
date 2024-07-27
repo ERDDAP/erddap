@@ -183,11 +183,11 @@ public abstract class EDDGrid extends EDD {
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP ascii
     // csv: also see https://www.ietf.org/rfc/rfc4180.txt
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-                                                            // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
     "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
@@ -329,7 +329,7 @@ public abstract class EDDGrid extends EDD {
             EDStatic.fileHelp_largePngAr[tl],
             EDStatic.fileHelp_transparentPngAr[tl]
           }; // .transparentPng: if lon and lat are evenly spaced, .png size will be 1:1; otherwise,
-             // 1:1 but morphed a little
+      // 1:1 but morphed a little
     }
 
     Test.ensureEqual(
@@ -974,9 +974,9 @@ public abstract class EDDGrid extends EDD {
     String errorInMethod =
         "datasets.xml/EDDGrid.ensureValid error for datasetID=" + datasetID + ":\n ";
 
-    (new StringArray(axisVariableSourceNames()))
+    new StringArray(axisVariableSourceNames())
         .ensureNoDuplicates("Duplicate axisVariableSourceNames: ");
-    (new StringArray(axisVariableDestinationNames()))
+    new StringArray(axisVariableDestinationNames())
         .ensureNoDuplicates("Duplicate axisVariableDestinationNames: ");
 
     HashSet<String> sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
@@ -1523,8 +1523,7 @@ public abstract class EDDGrid extends EDD {
                       EDStatic.queryErrorAr[language]
                           + MessageFormat.format(
                               EDStatic.queryErrorGridNoAxisVarAr[language], destName)));
-            findDataVariableByDestinationName(
-                destName); // throws Throwable if trouble
+            findDataVariableByDestinationName(destName); // throws Throwable if trouble
           }
         }
 
@@ -2850,9 +2849,8 @@ public abstract class EDDGrid extends EDD {
         Writer writer =
             File2.getBufferedWriter88591(
                 outputStreamSource.outputStream(
-                    File2
-                        .ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might
-                                       // as well go for compatible common 8bit
+                    File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might
+        // as well go for compatible common 8bit
         try {
           writeDDS(language, requestUrl, userDapQuery, writer);
         } finally {
@@ -3316,7 +3314,7 @@ public abstract class EDDGrid extends EDD {
                   NcHelper.ncdump(
                       cacheFullName,
                       "-h")); // !!!this doesn't do anything to internal " in a String attribute
-                              // value.
+          // value.
           if (error.length() == 0) {
             File2.rename(fullName + random, fullName); // make available in an instant
             File2.isFile(
@@ -3801,9 +3799,8 @@ public abstract class EDDGrid extends EDD {
           } else {
             if (!Math2.lessThanAE(precision, dStart, dStop))
               dStart =
-                  edvga
-                      .firstDestinationValue(); // not defStart; stop field is always visible, so
-                                                // change start
+                  edvga.firstDestinationValue(); // not defStart; stop field is always visible, so
+            // change start
             if (!Math2.lessThanAE(precision, dStart, dStop)) dStop = edvga.lastDestinationValue();
           }
         } else {
@@ -3815,9 +3812,8 @@ public abstract class EDDGrid extends EDD {
           } else {
             if (!Math2.lessThanAE(precision, dStop, dStart))
               dStart =
-                  edvga
-                      .firstDestinationValue(); // not defStart; stop field is always visible, so
-                                                // change start
+                  edvga.firstDestinationValue(); // not defStart; stop field is always visible, so
+            // change start
             if (!Math2.lessThanAE(precision, dStop, dStart)) dStop = edvga.lastDestinationValue();
           }
         }
@@ -4798,8 +4794,8 @@ public abstract class EDDGrid extends EDD {
                 + colors.length
                 + "; rb++) \n"
                 + "      if (d.f1.colr[rb].checked) q += d.f1.colr[rb].value; \n"); // always: one
-                                                                                    // will be
-                                                                                    // checked
+      // will be
+      // checked
       if (drawLinesAndMarkers || drawMarkers || drawSurface)
         writer.write(
             "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n"
@@ -5737,9 +5733,8 @@ public abstract class EDDGrid extends EDD {
       Writer writer =
           File2.getBufferedWriter88591(
               outputStreamSource.outputStream(
-                  File2
-                      .ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-                                     // well go for compatible common 8bit
+                  File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+      // well go for compatible common 8bit
       try {
         writeDDS(language, requestUrl, userDapQuery, writer);
 
@@ -5796,9 +5791,8 @@ public abstract class EDDGrid extends EDD {
     Writer writer =
         File2.getBufferedWriter88591(
             outputStreamSource.outputStream(
-                File2
-                    .ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-                                   // well go for compatible common 8bit
+                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+    // well go for compatible common 8bit
     try {
       writeDDS(language, requestUrl, userDapQuery, writer);
 
@@ -5909,9 +5903,8 @@ public abstract class EDDGrid extends EDD {
     Writer writer =
         File2.getBufferedWriter88591(
             outputStreamSource.outputStream(
-                File2
-                    .ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-                                   // well go for compatible common 8bit
+                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+    // well go for compatible common 8bit
     try {
       // write the DAS
       writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
@@ -5988,7 +5981,7 @@ public abstract class EDDGrid extends EDD {
 
     OpendapHelper.writeToDAS(
         "NC_GLOBAL", // .nc files say NC_GLOBAL; ncBrowse and netcdf-java treat NC_GLOBAL as special
-                     // case
+        // case
         PAType.DOUBLE, // isUnsigned doesn't apply to global atts. double won't trigger "_Unsigned"
         gAtts,
         writer,
@@ -6215,9 +6208,8 @@ public abstract class EDDGrid extends EDD {
         atts = new Attributes(ega.combinedAttributes()); // make a copy since it may be changed
         String type = ega.destinationDataType();
         if (type.equals("long")) {
-          type =
-              "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
-                        // dimension
+          type = "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
+          // dimension
           atts.add("NcHelper", NcHelper.originally_a_LongArray);
         } else if (type.equals("char")) {
           type = "short";
@@ -6243,9 +6235,8 @@ public abstract class EDDGrid extends EDD {
                 + "\" ");
         String type = edv.destinationDataType();
         if (type.equals("long")) {
-          type =
-              "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
-                        // dimension
+          type = "String"; // but trouble since there will be no NcHelper.StringLengthSuffix _strlen
+          // dimension
           atts.add("NcHelper", NcHelper.originally_a_LongArray);
         } else if (type.equals("char")) {
           type = "short";
@@ -6309,7 +6300,7 @@ public abstract class EDDGrid extends EDD {
       Writer writer =
           File2.getBufferedWriter88591(
               outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
-                             // for compatible common 8bit
+      // for compatible common 8bit
       try {
         writeDDS(language, requestUrl, userDapQuery, writer); // writer is flushed
 
@@ -6368,7 +6359,7 @@ public abstract class EDDGrid extends EDD {
     Writer writer =
         File2.getBufferedWriter88591(
             outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
-                           // for compatible common 8bit
+    // for compatible common 8bit
     try {
       writeDDS(language, requestUrl, userDapQuery, writer);
 
@@ -7731,8 +7722,7 @@ public abstract class EDDGrid extends EDD {
                     maxXY, Math.max(imageWidth, imageHeight), fontScale);
 
             activeWidth =
-                Math.max(
-                    5, Math2.roundToInt((maxX - minX) / vecInc)); // e.g., 20 deg / 2 deg -> 10
+                Math.max(5, Math2.roundToInt((maxX - minX) / vecInc)); // e.g., 20 deg / 2 deg -> 10
             activeHeight = Math.max(5, Math2.roundToInt((maxY - minY) / vecInc));
 
           } else { // drawSurface;
@@ -7848,7 +7838,7 @@ public abstract class EDDGrid extends EDD {
                   : // Table needs row-major order
                   yAxisIndex
                       > xAxisIndex, // Grid needs column-major order (so depends on axis order)
-                                    // //??? what if xAxisIndex < 0???
+              // //??? what if xAxisIndex < 0???
               true); // convertToNaN
       long requestNL = gda.totalIndex().size();
       Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage");
@@ -9866,12 +9856,7 @@ public abstract class EDDGrid extends EDD {
     // to check for error when parsing query or getting data
     GridDataAccessor gda =
         new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            userDapQuery,
-            true,
-            false); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
     EDV tDataVariables[] = gda.dataVariables();
     int nDV = tDataVariables.length;
 
@@ -9903,8 +9888,7 @@ public abstract class EDDGrid extends EDD {
         while (gda.increment()) {
           int i =
               (int)
-                  (partialIndex
-                      .getIndex()); // safe since partialIndex size checked when constructed
+                  partialIndex.getIndex(); // safe since partialIndex size checked when constructed
           for (int dvi = 0; dvi < nDV; dvi++)
             dos.writeInt((int) (pdv[dvi].getLong(i) >> 32)); // as int
         }
@@ -9913,8 +9897,7 @@ public abstract class EDDGrid extends EDD {
         while (gda.increment()) {
           int i =
               (int)
-                  (partialIndex
-                      .getIndex()); // safe since partialIndex size checked when constructed
+                  partialIndex.getIndex(); // safe since partialIndex size checked when constructed
           for (int dvi = 0; dvi < nDV; dvi++) pdv[dvi].writeDos(dos, i);
         }
       }
@@ -9992,12 +9975,7 @@ public abstract class EDDGrid extends EDD {
     // and to check n values
     GridDataAccessor gda =
         new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            userDapQuery,
-            true,
-            true); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
     EDV tDataVariables[] = gda.dataVariables();
     int nDV = tDataVariables.length;
 
@@ -10217,7 +10195,7 @@ public abstract class EDDGrid extends EDD {
             + 8
             + // field name length (for all fields)
             8
-            + (nAv + ntDv) * 32; // field names
+            + (nAv + ntDv) * 32L; // field names
 
     PrimitiveArray avPa[] = new PrimitiveArray[nAv];
     NDimensionalIndex avNDIndex[] = new NDimensionalIndex[nAv];
@@ -10505,9 +10483,8 @@ public abstract class EDDGrid extends EDD {
                   rootGroup,
                   destName,
                   NcHelper.getNc3DataType(
-                      pa
-                          .elementType()), // nc3Mode long & ulong->double done above. No Strings as
-                                           // axes.
+                      pa.elementType()), // nc3Mode long & ulong->double done above. No Strings as
+                  // axes.
                   Arrays.asList(dimension));
 
           // write axis attributes
@@ -10565,12 +10542,7 @@ public abstract class EDDGrid extends EDD {
     // This throws exception if invalid query.
     GridDataAccessor gda =
         new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            userDapQuery,
-            true,
-            false); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
 
     // ensure file size < 2GB
     // ???is there a way to allow >2GB netcdf 3 files?
@@ -10850,9 +10822,8 @@ public abstract class EDDGrid extends EDD {
           if (tType.equals("String")) { // shouldn't be any
             tType = writeStringsAsStrings ? "string" : "char";
           } else if (tType.equals("long")) {
-            tType =
-                "int64"; // see
-                         // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+            tType = "int64"; // see
+            // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
           } else if (tType.equals("ulong")) {
             tType = "uint64";
           }
@@ -10965,9 +10936,8 @@ public abstract class EDDGrid extends EDD {
         EDVGridAxis av = axisVariables[avi];
         String tType = av.destinationDataType(); // never char or string
         if (tType.equals("long")) {
-          tType =
-              "int64"; // see
-                       // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+          tType = "int64"; // see
+          // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
         } else if (tType.equals("ulong")) {
           tType = "uint64";
         }
@@ -10992,9 +10962,9 @@ public abstract class EDDGrid extends EDD {
       }
 
       // dataVariables
-      String tdvShape = (new StringArray(axisVariableDestinationNames)).toJsonCsvString();
+      String tdvShape = new StringArray(axisVariableDestinationNames).toJsonCsvString();
       NDimensionalIndex tIndex =
-          (NDimensionalIndex) (gda.totalIndex().clone()); // incremented before get data
+          (NDimensionalIndex) gda.totalIndex().clone(); // incremented before get data
       int tnDim = tIndex.nDimensions();
       long nRows = tIndex.size();
       for (int dvi = 0; dvi < nRDV; dvi++) {
@@ -11018,9 +10988,8 @@ public abstract class EDDGrid extends EDD {
             tType = "char";
           }
         } else if (tType.equals("long")) {
-          tType =
-              "int64"; // see
-                       // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+          tType = "int64"; // see
+          // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
         } else if (tType.equals("ulong")) {
           tType = "uint64";
         }
@@ -11648,7 +11617,7 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "avar" + av,
               downloadTooltip,
-              userDapQuery.length() > 0 && isAxisDapQuery
+              (userDapQuery.length() > 0 && isAxisDapQuery)
                   ? destinationNames.indexOf(edvga.destinationName()) >= 0
                   : true,
               edvga.destinationName(),
@@ -11795,7 +11764,7 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "dvar" + dv,
               downloadTooltip,
-              userDapQuery.length() > 0 && isAxisDapQuery
+              (userDapQuery.length() > 0 && isAxisDapQuery)
                   ? false
                   : userDapQuery.length() > 0
                       ? destinationNames.indexOf(edv.destinationName()) >= 0
@@ -17077,7 +17046,7 @@ public abstract class EDDGrid extends EDD {
                 + "              </gmd:role>\n"
                 + "            </gmd:CI_ResponsibleParty>\n"
                 + "          </gmd:citedResponsibleParty>\n"); // end of  if (contributorName !=
-                                                               // null ...
+      // null ...
 
       writer.write(
           "        </gmd:CI_Citation>\n"
