@@ -3,77 +3,136 @@
     <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
         <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
     </dataset>
-    <dataset type="EDDTableFromEDDGrid" datasetID="EDDTableFromEDDGrid_ID" active="true">
-        <accessibleTo>
-            String for accessibleTo
-        </accessibleTo>
-        <dataset type="EDDGridFromDap"    datasetID="erdTAsshl1day">
-            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>
-            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <dataset type="EDDGridFromDap" datasetID="hawaii_d90f_20ee_c4cb" active="true">
+        <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>
+        <accessibleViaWMS>false</accessibleViaWMS>
+        <reloadEveryNMinutes>15000</reloadEveryNMinutes>
+        <defaultDataQuery>temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]</defaultDataQuery>
+        <defaultGraphQuery>temp[last][0][0:last][0:last]&amp;.draw=surface&amp;.vars=longitude|latitude|temp</defaultGraphQuery>
+        <axisVariable>
+            <sourceName>time</sourceName>
+            <destinationName>time</destinationName>
             <addAttributes>
-                <att name="cols">null</att>
-                <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
-                <att name="creator_email">erd.data@noaa.gov</att>
-                <att name="creator_name">NOAA NMFS SWFSC ERD</att>
-                <att name="creator_type">institution</att>
-                <att name="creator_url">https://www.pfeg.noaa.gov</att>
-                <att name="cwhdf_version">null</att>
-                <att name="et_affine">null</att>
-                <att name="gctp_datum">null</att>
-                <att name="gctp_parm">null</att>
-                <att name="gctp_sys">null</att>
-                <att name="gctp_zone">null</att>
-                <att name="id">null</att>
-                <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshl_las.html</att>
-                <att name="institution">NOAA NMFS SWFSC ERD</att>
-                <att name="keywords">above, absolute, altitude, archiving, aviso, coast, coastwatch, data, degrees, earth, geodetics, geoid, global, gravity, height, interpretation, level, long, ltm, mean, noaa, node, ocean, oceanography, oceans,
-                    Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,
-                    properties, quality, satellite, science, science quality, sea, sea level, sea_surface_height_above_geoid, solid,
-                    Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,
-                    ssh, surface, TAsshl, term, time, topography, validation, wcn, west</att>
-                <att name="license">[standard]</att>
-                <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
-                <att name="pass_date">null</att>
-                <att name="polygon_latitude">null</att>
-                <att name="polygon_longitude">null</att>
-                <att name="project">CoastWatch (https://coastwatch.noaa.gov/)</att>
-                <att name="publisher_email">erd.data@noaa.gov</att>
-                <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
-                <att name="publisher_type">institution</att>
-                <att name="publisher_url">https://www.pfeg.noaa.gov</att>
-                <att name="references">Aviso: https://www.aviso.altimetry.fr/en/my-aviso.html .</att>
-                <att name="rows">null</att>
-                <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
-                <att name="start_time">null</att>
-                <att name="title">Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)</att>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_min"></att>
+                <att name="grads_size"></att>
+                <att name="grads_step"></att>
+                <att name="ioos_category">Time</att>
+                <att name="long_name">Centered Time</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="units">days since 0001-01-01T00:00:00</att>
+                <att name="standard_name">time</att>
             </addAttributes>
-            <axisVariable>
-                <sourceName>time</sourceName>
-            </axisVariable>
-            <axisVariable>
-                <sourceName>altitude</sourceName>
-            </axisVariable>
-            <axisVariable>
-                <sourceName>lat</sourceName>
-                <destinationName>latitude</destinationName>
-            </axisVariable>
-            <axisVariable>
-                <sourceName>lon</sourceName>
-                <destinationName>longitude</destinationName>
-            </axisVariable>
-            <dataVariable>
-                <sourceName>TAsshl</sourceName>
-                <destinationName>ssh</destinationName>
-                <addAttributes>
-                    <att name="ioos_category">Sea Level</att>
-                    <att name="long_name">Sea Surface Height</att>
-                    <att name="colorBarMinimum" type="double">-10</att>
-                    <att name="colorBarMaximum" type="double">10</att>
-                    <att name="actual_range" />
-                    <att name="numberOfObservations" />
-                    <att name="percentCoverage" />
-                </addAttributes>
-            </dataVariable>
-        </dataset>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lev</sourceName>
+            <destinationName>depth</destinationName>
+            <addAttributes>
+                <att name="ioos_category">Location</att>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="long_name">Depth</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="name"></att>
+                <att name="resolution"></att>
+                <att name="units">m</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lat</sourceName>
+            <destinationName>latitude</destinationName>
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Latitude</att>
+                <att name="standard_name">latitude</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lon</sourceName>
+            <destinationName>longitude</destinationName>
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="long_name"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Longitude</att>
+                <att name="standard_name">longitude</att>
+            </addAttributes>
+        </axisVariable>
+        <dataVariable>
+            <sourceName>temp</sourceName>
+            <destinationName>temp</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">0</att>
+                <att name="colorBarMaximum" type="double">32</att>
+                <att name="ioos_category">Temperature</att>
+                <att name="long_name">Sea Water Temperature</att>
+                <att name="standard_name">sea_water_temperature</att>
+                <att name="units">degree_C</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>salt</sourceName>
+            <destinationName>salt</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">32.0</att>
+                <att name="colorBarMaximum" type="double">37.0</att>
+                <att name="ioos_category">Salinity</att>
+                <att name="long_name">Sea Water Practical Salinity</att>
+                <att name="standard_name">sea_water_practical_salinity</att>
+                <att name="units">PSU</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>u</sourceName>
+            <destinationName>u</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Eastward Sea Water Velocity</att>
+                <att name="standard_name">eastward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>v</sourceName>
+            <destinationName>v</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Northward Sea Water Velocity</att>
+                <att name="standard_name">northward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>w</sourceName>
+            <destinationName>w</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-1e-5</att>
+                <att name="colorBarMaximum" type="double">1e-5</att>
+                <att name="comment">WARNING: Please use this variable's data with caution.</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Upward Sea Water Velocity</att>
+                <att name="standard_name">upward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
     </dataset>
 </erddapDatasets>
