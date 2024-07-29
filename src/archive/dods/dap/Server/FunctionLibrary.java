@@ -1,6 +1,9 @@
 package dods.dap.Server;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
 import dods.dap.NoSuchFunctionException;
 
 
@@ -125,10 +128,14 @@ public class FunctionLibrary {
     protected void loadNewFunction(String name) {
 	try {
 	    String fullName = prefix + name;
-	    Class value = Class.forName(fullName);
+	    Class<?> value = Class.forName(fullName);
 	    if ((ServerSideFunction.class).isAssignableFrom(value)) {
-		add((ServerSideFunction)value.newInstance());
-		return;
+            try {
+                add((ServerSideFunction)value.getDeclaredConstructor().newInstance());
+            } catch (IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                e.printStackTrace();
+            }
+		    return;
 	    }
 	} catch (ClassNotFoundException e) {
 	} catch (IllegalAccessException e) {

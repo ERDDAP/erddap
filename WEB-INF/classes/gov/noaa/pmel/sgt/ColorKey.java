@@ -756,9 +756,9 @@ public class ColorKey implements Cloneable, DataKey, PropertyChangeListener {
             "ColorKey.drawBar i="
                 + i
                 + " P="
-                + (layer_.getXDtoP(i))
+                + layer_.getXDtoP(i)
                 + " trans="
-                + (sTrans.getTransU(layer_.getXDtoP(i)))
+                + sTrans.getTransU(layer_.getXDtoP(i))
                 + " color="
                 + Integer.toHexString(cm_.getColor(sTrans.getTransU(layer_.getXDtoP(i))).getRGB()));
         g.setColor(cm_.getColor(sTrans.getTransU(layer_.getXDtoP(i))));

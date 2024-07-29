@@ -116,7 +116,7 @@ public class TableWriterWav extends TableWriter {
     // write the data
     if (isLong) {
       LongArray pas[] = new LongArray[nColumns];
-      for (int col = 0; col < nColumns; col++) pas[col] = (LongArray) (table.getColumn(col));
+      for (int col = 0; col < nColumns; col++) pas[col] = (LongArray) table.getColumn(col);
       for (int row = 0; row < nRows; row++)
         for (int col = 0; col < nColumns; col++) dos.writeInt((int) (pas[col].array[row] >> 32));
     } else {

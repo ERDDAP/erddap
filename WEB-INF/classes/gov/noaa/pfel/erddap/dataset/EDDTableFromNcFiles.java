@@ -635,24 +635,23 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     return sb.toString();
   }
 
-  private static void metadataToData(
-      Table table, String colName, String attName, String newColName, PAType tPAType)
-      throws Exception {
+  // private static void metadataToData(
+  //     Table table, String colName, String attName, String newColName, PAType tPAType)
+  //     throws Exception {
 
-    int col = table.findColumnNumber(colName);
-    if (col < 0)
-      throw new RuntimeException(
-          "col=" + colName + " not found in " + table.getColumnNamesCSSVString());
-    String value = table.columnAttributes(col).getString(attName);
-    table.columnAttributes(col).remove(attName);
-    if (value == null) value = "";
-    table.addColumn(
-        table.nColumns(),
-        newColName,
-        PrimitiveArray.factory(tPAType, table.nRows(), value),
-        new Attributes());
-  }
-
+  //   int col = table.findColumnNumber(colName);
+  //   if (col < 0)
+  //     throw new RuntimeException(
+  //         "col=" + colName + " not found in " + table.getColumnNamesCSSVString());
+  //   String value = table.columnAttributes(col).getString(attName);
+  //   table.columnAttributes(col).remove(attName);
+  //   if (value == null) value = "";
+  //   table.addColumn(
+  //       table.nColumns(),
+  //       newColName,
+  //       PrimitiveArray.factory(tPAType, table.nRows(), value),
+  //       new Attributes());
+  // }
   /**
    * NOT FOR GENERAL USE. Bob uses this to consolidate the individual WOD data files into 45° x 45°
    * x 1 month files (tiles). 45° x 45° leads to 8x4=32 files for a given time point, so a request

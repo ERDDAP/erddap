@@ -199,14 +199,14 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     boolean t8 = (proxy_.getFont() != null) && !proxy_.getFont().equals(sg.getFont());
     boolean t9 = proxy_.getOrientation() != sg.getOrientation();
     if(t1 || t2 || t3 || t4 || t5 || t6 || t7 || t8 || t9) return false; */
-    if ((!ident_.equals(sg.getId()))
-        || (!proxy_.getText().equals(sg.getText()))
+    if (!ident_.equals(sg.getId())
+        || !proxy_.getText().equals(sg.getText())
         || (proxy_.getHeightP() != sg.getHeightP())
-        || (!proxy_.getLocationP().equals(sg.getLocationP()))
+        || !proxy_.getLocationP().equals(sg.getLocationP())
         || (proxy_.getVAlign() != sg.getVAlign())
         || (proxy_.getHAlign() != sg.getHAlign())
-        || (proxy_.getColor() != null) && (!proxy_.getColor().equals(sg.getColor()))
-        || (proxy_.getFont() != null) && (!proxy_.getFont().equals(sg.getFont()))
+        || ((proxy_.getColor() != null) && !proxy_.getColor().equals(sg.getColor()))
+        || ((proxy_.getFont() != null) && !proxy_.getFont().equals(sg.getFont()))
         || (proxy_.getOrientation() != sg.getOrientation())) return false;
     if (proxy_.getOrientation() == ANGLE) {
       if (proxy_.getAngle() != sg.getAngle()) return false;

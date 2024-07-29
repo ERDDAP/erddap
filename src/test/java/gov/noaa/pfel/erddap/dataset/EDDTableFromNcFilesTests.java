@@ -114,7 +114,7 @@ class EDDTableFromNcFilesTests {
 
       // GenerateDatasetsXml
       String gdxResults =
-          (new GenerateDatasetsXml())
+          new GenerateDatasetsXml()
               .doIt(
                   new String[] {
                     "-verbose",
@@ -864,7 +864,7 @@ class EDDTableFromNcFilesTests {
 
     // just header
     String results =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "ncdump",
@@ -909,7 +909,7 @@ class EDDTableFromNcFilesTests {
 
     // csv list of vars
     results =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "ncdump",
@@ -8141,21 +8141,21 @@ class EDDTableFromNcFilesTests {
         EDDTable.formatAsDapQuery(rv, cv, co, cv2),
         "pressure"
             + "&pressure<"
-            + (maxP)
+            + maxP
             + "&pressure<"
             + (maxP - 1.5f)
             + "&pressure>"
-            + (minP)
+            + minP
             + "&pressure>"
             + (minP + 2.5f)
             + "&time<"
-            + (maxT)
+            + maxT
             + "&time<"
             + (maxT - 1.5)
             + "&time<"
             + (maxT - 120)
             + "&time>"
-            + (minT)
+            + minT
             + "&time>"
             + (minT + 2.5)
             + "&time>"
@@ -8177,15 +8177,7 @@ class EDDTableFromNcFilesTests {
         true); // repair?
     Test.ensureEqual(
         EDDTable.formatAsDapQuery(rv, cv, co, cv2),
-        "pressure"
-            + "&pressure<"
-            + (maxP)
-            + "&pressure>"
-            + (minP)
-            + "&time<"
-            + (maxT)
-            + "&time>"
-            + (minT),
+        "pressure" + "&pressure<" + maxP + "&pressure>" + minP + "&time<" + maxT + "&time>" + minT,
         "");
 
     // test early error
@@ -12863,7 +12855,7 @@ class EDDTableFromNcFilesTests {
         }
 
         // display?
-        if (false && String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0) {
+        if (false) { // String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0
           // Test.displayInBrowser("file://" + outName);
           Math2.gc("EDDTableFromNcFiles (between tests)", 5000); // in a test, pause for
           // image display
@@ -18313,37 +18305,37 @@ class EDDTableFromNcFilesTests {
                           tTable.nColumns(),
                           "longitude",
                           new FloatArray(),
-                          (new Attributes()).add("units", EDV.LON_UNITS));
+                          new Attributes().add("units", EDV.LON_UNITS));
                   latitudeCol =
                       tTable.addColumn(
                           tTable.nColumns(),
                           "latitude",
                           new FloatArray(),
-                          (new Attributes()).add("units", EDV.LAT_UNITS));
+                          new Attributes().add("units", EDV.LAT_UNITS));
                   timeCol =
                       tTable.addColumn(
                           tTable.nColumns(),
                           "time",
                           new DoubleArray(),
-                          (new Attributes()).add("units", EDV.TIME_UNITS));
+                          new Attributes().add("units", EDV.TIME_UNITS));
                   depthCol =
                       tTable.addColumn(
                           tTable.nColumns(),
                           "depth",
                           new FloatArray(),
-                          (new Attributes()).add("units", "m"));
+                          new Attributes().add("units", "m"));
                   temperatureCol =
                       tTable.addColumn(
                           tTable.nColumns(),
                           "temperature",
                           new FloatArray(),
-                          (new Attributes()).add("units", "degree_C"));
+                          new Attributes().add("units", "degree_C"));
                   salinityCol =
                       tTable.addColumn(
                           tTable.nColumns(),
                           "salinity",
                           new FloatArray(),
-                          (new Attributes()).add("units", "1e-3")); // PSU
+                          new Attributes().add("units", "1e-3")); // PSU
                   // changed
                   // to
                   // 1e-3

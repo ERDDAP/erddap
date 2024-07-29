@@ -97,8 +97,9 @@ public class PlainAxis2 extends PlainAxis {
       dir = delta > 0 ? 1.0 : -1.0;
       // System.out.println(">PlainAxis2 horizontal delta=" + delta);
       xt =
-          (int) ((uRange_.start / delta + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001))
-              * delta; // safe? Denbo code
+          (int)
+              ((uRange_.start / delta + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * delta); // safe? Denbo code
       if (dir * xt < dir * uRange_.start) xt += delta;
       istop = (int) ((uRange_.end - xt) / delta + 0.00001); // safe? Denbo code
       x = xt;
@@ -183,8 +184,9 @@ public class PlainAxis2 extends PlainAxis {
       dir = delta > 0 ? 1.0 : -1.0;
       // System.out.println(">PlainAxis2 vertical delta=" + delta);
       yt =
-          (int) ((uRange_.start / delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
-              * delta;
+          (int)
+              (((uRange_.start / delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * delta);
       if (dir * yt < dir * uRange_.start) yt += delta;
       istop = (int) ((uRange_.end - yt) / delta + 0.00001);
       y = yt;

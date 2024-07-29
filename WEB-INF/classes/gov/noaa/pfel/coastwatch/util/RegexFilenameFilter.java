@@ -134,7 +134,7 @@ public class RegexFilenameFilter implements FilenameFilter {
     PrimitiveArray paAr[] = new PrimitiveArray[] {dirNames, fileNames, fileLastModified, fileSize};
 
     // get a list of files and dirs
-    String[] names = (new File(dir)).list();
+    String[] names = new File(dir).list();
     if (names == null) return paAr;
 
     // for each, determine if it is a file or a dir
@@ -205,7 +205,7 @@ public class RegexFilenameFilter implements FilenameFilter {
     dir = File2.addSlash(dir);
 
     // get a list of files and dirs
-    String[] names = (new File(dir)).list();
+    String[] names = new File(dir).list();
     if (names == null) return;
 
     // for each, determine if it is a file or a dir
@@ -329,7 +329,7 @@ public class RegexFilenameFilter implements FilenameFilter {
 
     if (!File2.isFile(fullName)) return false;
 
-    if (String2.indexOf(File2.NETCDF_INDEX_EXT, File2.getExtension(fullName)) >= 0) {
+    if (File2.NETCDF_INDEX_EXT.indexOf(File2.getExtension(fullName)) >= 0) {
       // It's .grib or .bufr or ..., so touch index files (e.g., .gbx9 or .ncx3), too.
       // Note that if NETCDF_INDEX_EXT doesn't catch one of these files,
       // it's okay because netcdf-java will just re-make the index files

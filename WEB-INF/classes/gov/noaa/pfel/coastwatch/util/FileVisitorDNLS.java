@@ -428,7 +428,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                   .prefix(prefix)
                   .maxKeys(
                       S3_MAX_KEYS); // maxKeys is only useful for setting the max to <1000, so I
-                                    // only set lower for testing.
+          // only set lower for testing.
 
           if (!tRecursive)
             reqBuilder =
@@ -465,8 +465,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
               boolean matchesPath =
                   keyDir.startsWith(tDir)
                       && // it should
-                      ((keyDir.length() == tDir.length()
-                          || tRecursive && pathRegexPattern.matcher(keyDir).matches()));
+                      (keyDir.length() == tDir.length()
+                          || (tRecursive && pathRegexPattern.matcher(keyDir).matches()));
               if (debugMode) String2.log(">> key=" + keyFullName);
               // + "\n>> matchesPathRegex=" + matchesPath);
               if (matchesPath) {
@@ -780,7 +780,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       // Windows gives it a time of 10 minutes ago(!), which causes problems!
       File2.touch(
           localFullName); // no point in trying to touchFileAndRelated -- the related don't exist
-                          // yet
+      // yet
       long fl = File2.length(localFullName);
       incrementPruneCacheDirSize(localDir, fl);
       return fl;
@@ -2609,7 +2609,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     HashSet<String> subdirHash = new HashSet();
     reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
 
-    String subDirs[] = (String[]) (subdirHash.toArray(new String[0]));
+    String subDirs[] = (String[]) subdirHash.toArray(new String[0]);
     Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
     return subDirs;
   }

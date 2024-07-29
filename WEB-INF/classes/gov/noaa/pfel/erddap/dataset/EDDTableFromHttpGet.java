@@ -511,7 +511,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                   PAOne.fromDouble(
                       maxTimestampSeconds
                           + 0.0005)); // 1/2 milli later to avoid rounding problems, and because I
-                                      // want to remove > (not GE)
+      // want to remove > (not GE)
       // String2.log("  timestamp constraint removed " + (nRows-row) + " rows. Now nRows=" + row);
       if (row < nRows) {
         table.removeRows(row, nRows); // exclusive
@@ -801,7 +801,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     }
 
     // then faster things
-    Table tMinMaxTable = makeMinMaxTable((StringArray) (tDirTable.getColumn(0)), tFileTable);
+    Table tMinMaxTable = makeMinMaxTable((StringArray) tDirTable.getColumn(0), tFileTable);
 
     // then, change secondary parts of instance variables
     // e.g., update all variable destinationMinMax
@@ -1376,7 +1376,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String fileName = File2.getNameAndExtension(fullFileName);
 
             // which row in dirTable?
-            int dirTableRow = ((StringArray) (dirTable.getColumn(0))).indexOf(fileDir);
+            int dirTableRow = ((StringArray) dirTable.getColumn(0)).indexOf(fileDir);
             if (dirTableRow < 0) {
               dirTableRow = dirTable.getColumn(0).size();
               dirTable.getColumn(0).addString(fileDir);
@@ -1384,8 +1384,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
             // which row in the fileTable?
             int fileTableRow = 0;
-            ShortArray fileTableDirPA = (ShortArray) (fileTable.getColumn(FT_DIR_INDEX_COL));
-            StringArray fileTableNamePA = (StringArray) (fileTable.getColumn(FT_FILE_LIST_COL));
+            ShortArray fileTableDirPA = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
+            StringArray fileTableNamePA = (StringArray) fileTable.getColumn(FT_FILE_LIST_COL);
             int fileTableNRows = fileTable.nRows();
             while (fileTableRow < fileTableNRows
                 && (fileTableDirPA.get(fileTableRow) != dirTableRow
@@ -1643,7 +1643,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         destPA = new StringArray(sourcePA);
       } else { // non-StringArray
         destAtts.add("units", "_placeholder");
-        destPA = (PrimitiveArray) (sourcePA.clone());
+        destPA = (PrimitiveArray) sourcePA.clone();
       }
 
       if (destPA.elementType() != PAType.STRING)

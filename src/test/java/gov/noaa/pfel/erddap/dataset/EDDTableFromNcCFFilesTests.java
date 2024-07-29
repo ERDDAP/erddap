@@ -72,7 +72,7 @@ class EDDTableFromNcCFFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -373,7 +373,7 @@ class EDDTableFromNcCFFilesTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",

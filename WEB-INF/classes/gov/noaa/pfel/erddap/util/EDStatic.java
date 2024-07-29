@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -250,12 +251,15 @@ public class EDStatic {
   public static int touchThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
   public static int touchThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
   public static int touchThreadSucceededDistributionTotal[] = new int[String2.TimeDistributionSize];
-  public static volatile int requestsShed = 0; // since last Major LoadDatasets
-  public static volatile int dangerousMemoryEmails = 0; // since last Major LoadDatasets
-  public static volatile int dangerousMemoryFailures = 0; // since last Major LoadDatasets
+  public static volatile AtomicInteger requestsShed =
+      new AtomicInteger(0); // since last Major LoadDatasets
+  public static volatile AtomicInteger dangerousMemoryEmails =
+      new AtomicInteger(0); // since last Major LoadDatasets
+  public static volatile AtomicInteger dangerousMemoryFailures =
+      new AtomicInteger(0); // since last Major LoadDatasets
   public static StringBuffer suggestAddFillValueCSV =
       new StringBuffer(); // EDV constructors append message here   //thread-safe but probably
-                          // doesn't need to be
+  // doesn't need to be
 
   public static String datasetsThatFailedToLoad = "";
   public static String errorsDuringMajorReload = "";
@@ -292,18 +296,18 @@ public class EDStatic {
   public static final int DEFAULT_ipAddressMaxRequestsActive = 2; // in datasets.xml
   public static final int DEFAULT_ipAddressMaxRequests =
       15; // in datasets.xml //more requests will see Too Many Requests error. This must be at least
-          // 6 because browsers make up to 6 simultaneous requests. This can't be >1000.
+  // 6 because browsers make up to 6 simultaneous requests. This can't be >1000.
   public static final String DEFAULT_ipAddressUnlimited = ", " + ipAddressUnknown;
   public static int ipAddressMaxRequestsActive =
       DEFAULT_ipAddressMaxRequestsActive; // in datasets.xml
   public static int ipAddressMaxRequests =
       DEFAULT_ipAddressMaxRequests; // in datasets.xml //more requests will see Too Many Requests
-                                    // error. This must be at least 6 because browsers make up to 6
-                                    // simultaneous requests.
+  // error. This must be at least 6 because browsers make up to 6
+  // simultaneous requests.
   public static HashSet<String>
       ipAddressUnlimited = // in datasets.xml  //read only. New one is swapped into place. You can
-                           // add and remove addresses as needed.
-      new HashSet<String>(
+          // add and remove addresses as needed.
+          new HashSet<String>(
               String2.toArrayList(
                   StringArray.fromCSVNoBlanks(DEFAULT_ipAddressUnlimited).toArray()));
   public static int tooManyRequests =
@@ -497,7 +501,7 @@ public class EDStatic {
    * This returns the index number of the task in taskList (0..) that will be started when the
    * current task is finished.
    */
-  public static volatile int nextTask = 0;
+  public static volatile AtomicInteger nextTask = new AtomicInteger(0);
 
   // touchThread variables
   // Funnelling all touchThread tasks through one touchThread ensures that
@@ -517,7 +521,7 @@ public class EDStatic {
    * This returns the index number of the touch in touchList (0..) that will be started when the
    * current touch is finished.
    */
-  public static volatile int nextTouch = 0;
+  public static volatile AtomicInteger nextTouch = new AtomicInteger(0);
 
   /**
    * This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets and is
@@ -690,7 +694,7 @@ public class EDStatic {
       sosBaseGmlName,
       sosStandardNamePrefix,
       authentication, // will be one of "", "custom", "email", "google", "orcid", "oauth2". If
-                      // baseHttpsUrl doesn't start with https:, this will be "".
+      // baseHttpsUrl doesn't start with https:, this will be "".
       datasetsRegex,
       emailEverythingToCsv,
       emailDailyReportToCsv,
@@ -1958,7 +1962,7 @@ public class EDStatic {
         errorInMethod = "ERROR while converting from oldBaseDir=" + oldBaseDir + ": ";
         try {
           String2.log("[[converting datasetInfo/ to dataset/");
-          String oldBaseDirList[] = (new File(oldBaseDir)).list();
+          String oldBaseDirList[] = new File(oldBaseDir).list();
           int oldBaseDirListSize = oldBaseDirList == null ? 0 : oldBaseDirList.length;
           for (int od = 0; od < oldBaseDirListSize; od++) {
             String odName = oldBaseDirList[od];
@@ -1973,7 +1977,7 @@ public class EDStatic {
             }
             String fullNdName = EDD.datasetDir(odName);
             File2.makeDirectory(fullNdName);
-            String oldFileList[] = (new File(oldBaseDir + odName)).list();
+            String oldFileList[] = new File(oldBaseDir + odName).list();
             int oldFileListSize = oldFileList == null ? 0 : oldFileList.length;
             for (int of = 0; of < oldFileListSize; of++) {
               String ofName = oldFileList[of];
@@ -2140,9 +2144,8 @@ public class EDStatic {
       SgtMap.drawPoliticalBoundaries = politicalBoundariesActive;
 
       // until SOS is finished, it is always inactive
-      sosActive =
-          false; //        sosActive                  = getSetupEVBoolean(setup, ev,
-                 // "sosActive",                  false);
+      sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,
+      // "sosActive",                  false);
       if (sosActive) {
         sosFeatureOfInterest =
             getSetupEVNotNothingString(setup, ev, "sosFeatureOfInterest", errorInMethod);
@@ -2671,7 +2674,7 @@ public class EDStatic {
                 .replaceAll(
                     "&C;",
                     "C") // these handled this way be cause you can't just avoid translating all
-                         // words with 'C'
+                // words with 'C'
                 .replaceAll("&g;", "g") // "
                 .replaceAll("&F;", "F") // "
                 .replaceAll("&NTU;", "NTU")
@@ -4326,45 +4329,6 @@ public class EDStatic {
   }
 
   /**
-   * This will read translated tags from messages.xml and all messages-langCode.xml
-   *
-   * @param messages The Array of ResourceBundle2 objects of messages.xml files
-   * @param tagName The tagName of the corresponding text
-   * @param errorInMethod The start of an Error message
-   */
-  private static String[] getMessageInAllVersions(
-      ResourceBundle2[] messages, String tagName, String errorInMethod) {
-    String[] res = new String[messages.length];
-    for (int i = 0; i < messages.length; i++) {
-      res[i] = messages[i].getNotNothingString(tagName, errorInMethod);
-    }
-    return res;
-  }
-
-  /**
-   * This will read translated tags from messages.xml and all messages-langCode.xml, with some
-   * modifications
-   *
-   * @param messages The Array of ResourceBundle2 objects of messages.xml files
-   * @param tagName The tagName of the corresponding text
-   * @param appendFront Text to add at the beginning of the message
-   * @param appendEnd Text to add at the end of the message
-   * @param errorInMethod The start of an Error message
-   */
-  private String[] getMessageInAllVersions(
-      ResourceBundle2[] messages,
-      String tagName,
-      String appendFront,
-      String appendEnd,
-      String errorInMethod) {
-    String[] res = new String[messages.length];
-    for (int i = 0; i < messages.length; i++) {
-      res[i] = appendFront + messages[i].getNotNothingString(tagName, errorInMethod) + appendEnd;
-    }
-    return res;
-  }
-
-  /**
    * This gets a boolean from setup.xml or environmentalVariables (preferred).
    *
    * @param setup from setup.xml
@@ -4945,7 +4909,7 @@ public class EDStatic {
         String err =
             subscriptions == null
                 ? // don't use EDStatic.subscriptionSystemActive for this test -- it's a separate
-                  // issue
+                // issue
                 String2.testEmailAddress(addr)
                 : // tests syntax
                 subscriptions.testEmailValid(addr); // tests syntax and blacklist
@@ -5185,7 +5149,7 @@ public class EDStatic {
 
     synchronized (taskList) {
       ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for checking
-                                           // on it
+      // on it
       long tElapsedTime = taskThread == null ? -1 : taskThread.elapsedTime();
       sb.append(
           "TaskThread has finished "
@@ -5212,7 +5176,7 @@ public class EDStatic {
 
     synchronized (emailList) {
       ensureEmailThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
-                                            // checking on it
+      // checking on it
       if (emailIsActive) {
         long tElapsedTime = emailThread == null ? -1 : emailThread.elapsedTime();
         sb.append(
@@ -5239,7 +5203,7 @@ public class EDStatic {
 
     synchronized (touchList) {
       ensureTouchThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
-                                            // checking on it
+      // checking on it
       long tElapsedTime = touchThread == null ? -1 : touchThread.elapsedTime();
       sb.append(
           "TouchThread has finished "
@@ -5763,7 +5727,7 @@ public class EDStatic {
     String s =
         startBodyHtmlAr[
             0]; // It's hard for admins to customized this for all languages. So for now, just use
-                // language=0.
+    // language=0.
     s =
         String2.replaceAll(
             s, "&EasierAccessToScientificData;", EasierAccessToScientificDataAr[language]);
@@ -5806,7 +5770,7 @@ public class EDStatic {
                             + "<br>"
                             + translationDisclaimer)
                 : ""); // we could also redirect to erddap/index.html but that loses the user's
-                       // place (and this should never happen)
+    // place (and this should never happen)
 
     // String2.log(">> EDStatic startBodyHtml=" + s);
     return String2.replaceAll(s, "&erddapUrl;", erddapUrl(loggedInAs, language));
@@ -5896,7 +5860,7 @@ public class EDStatic {
     String s =
         theShortDescriptionHtmlAr[
             0]; // from datasets.xml or messages.xml.  Always use English, but parts (most) will be
-                // translated.
+    // translated.
     s = String2.replaceAll(s, "&erddapIs;", erddapIsAr[language]);
     s = String2.replaceAll(s, "&thisParticularErddap;", thisParticularErddapAr[language]);
     s =
@@ -6105,7 +6069,7 @@ public class EDStatic {
         long eTime =
             emailThread
                 .elapsedTime(); // elapsed time is the session time, not 1 email.  -1 if no session
-                                // active
+        // active
         long maxTime = 5 * Calendar2.MILLIS_PER_MINUTE; // appropriate??? user settable???
         if (eTime > maxTime) {
 
@@ -6166,7 +6130,7 @@ public class EDStatic {
 
           stopThread(taskThread, 10); // short time; it is already in trouble
           // runningThreads.remove   not necessary since new one is put() in below
-          lastFinishedTask = nextTask - 1;
+          lastFinishedTask = nextTask.decrementAndGet();
           taskThread = null;
           return false;
         }
@@ -6176,7 +6140,7 @@ public class EDStatic {
         String2.log(
             "%%% TaskThread: EDStatic noticed that taskThread is finished at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        lastFinishedTask = nextTask - 1;
+        lastFinishedTask = nextTask.decrementAndGet();
         taskThread = null;
         return false;
       }
@@ -6196,7 +6160,7 @@ public class EDStatic {
       if (touchThread.isAlive()) {
         // is it stalled?
         long eTime = touchThread.elapsedTime(); // for the current touch
-        long maxTime = TouchThread.TIMEOUT_MILLIS * 2;
+        long maxTime = TouchThread.TIMEOUT_MILLIS * 2L;
         if (eTime > maxTime) {
 
           // touchThread is stalled; interrupt it
@@ -6212,7 +6176,7 @@ public class EDStatic {
 
           stopThread(touchThread, 10); // short time; it is already in trouble
           // runningThreads.remove   not necessary since new one is put() in below
-          lastFinishedTouch = nextTouch - 1;
+          lastFinishedTouch = nextTouch.decrementAndGet();
           touchThread = null;
           return false;
         }
@@ -6222,7 +6186,7 @@ public class EDStatic {
         String2.log(
             "%%% TouchThread: EDStatic noticed that touchThread isn't alive at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        lastFinishedTouch = nextTouch - 1;
+        lastFinishedTouch = nextTouch.decrementAndGet();
         touchThread = null;
         return false;
       }
@@ -6261,11 +6225,11 @@ public class EDStatic {
 
       // taskThread isn't running
       // Are there no tasks to do?
-      int nPending = taskList.size() - nextTask;
+      int nPending = taskList.size() - nextTask.get();
       if (nPending <= 0) return; // no need to start it
 
       // need to start a new taskThread
-      taskThread = new TaskThread(nextTask);
+      taskThread = new TaskThread(nextTask.get());
       runningThreads.put(taskThread.getName(), taskThread);
       String2.log(
           "%%% TaskThread: new TaskThread started at "
@@ -6285,7 +6249,7 @@ public class EDStatic {
 
       // touchThread isn't running
       // always start a new touchThread
-      touchThread = new TouchThread(nextTouch);
+      touchThread = new TouchThread(nextTouch.get());
       runningThreads.put(touchThread.getName(), touchThread);
       String2.log(
           "%%% TouchThread: new touchThread started at "
@@ -6423,8 +6387,8 @@ public class EDStatic {
   public static Table gdxAcronymsTable() throws Exception {
     if (gdxAcronymsTable == null) {
       Table table = oceanicAtmosphericAcronymsTable();
-      StringArray acronymSA = (StringArray) (table.getColumn(0));
-      StringArray fullNameSA = (StringArray) (table.getColumn(1));
+      StringArray acronymSA = (StringArray) table.getColumn(0);
+      StringArray fullNameSA = (StringArray) table.getColumn(1);
 
       // remove some really common acronyms I don't want to expand
       BitSet keep = new BitSet();
@@ -6453,8 +6417,8 @@ public class EDStatic {
   public static HashMap<String, String> gdxAcronymsHashMap() throws Exception {
     if (gdxAcronymsHashMap == null) {
       Table table = gdxAcronymsTable();
-      StringArray acronymSA = (StringArray) (table.getColumn(0));
-      StringArray fullNameSA = (StringArray) (table.getColumn(1));
+      StringArray acronymSA = (StringArray) table.getColumn(0);
+      StringArray fullNameSA = (StringArray) table.getColumn(1);
       int n = table.nRows();
       HashMap<String, String> hm = new HashMap();
       for (int i = 1; i < n; i++) hm.put(acronymSA.get(i), fullNameSA.get(i));
@@ -6473,8 +6437,8 @@ public class EDStatic {
   public static HashMap<String, String> gdxVariableNamesHashMap() throws Exception {
     if (gdxVariableNamesHashMap == null) {
       Table table = oceanicAtmosphericVariableNamesTable();
-      StringArray varNameSA = (StringArray) (table.getColumn(0));
-      StringArray fullNameSA = (StringArray) (table.getColumn(1));
+      StringArray varNameSA = (StringArray) table.getColumn(0);
+      StringArray fullNameSA = (StringArray) table.getColumn(1);
       int n = table.nRows();
       HashMap<String, String> hm = new HashMap();
       for (int i = 1; i < n; i++) hm.put(varNameSA.get(i), fullNameSA.get(i));
@@ -7273,11 +7237,11 @@ public class EDStatic {
         && inUse
             >= Math2
                 .halfMemory) { // This is arbitrary. I don't want to call gc too often but I don't
-                               // want to shed needlessly.
+      // want to shed needlessly.
       inUse =
           Math2.gcAndWait(
               "shedThisRequest"); // waits Math2.shortSleep   //in shedThisRequest   //a diagnostic
-                                  // is always logged
+      // is always logged
     }
 
     // if memory use is now low enough for this request, return false
@@ -7292,7 +7256,7 @@ public class EDStatic {
     if (inUse >= Math2.dangerousMemory && lastActiveRequestReportTime == 0) {
       lastActiveRequestReportTime =
           System.currentTimeMillis(); // do first so other threads don't also report this
-      dangerousMemoryEmails++;
+      dangerousMemoryEmails.incrementAndGet();
       activeRequests.remove(requestNumber + ""); // don't blame this request
       String activeRequestLines[] = activeRequests.values().toArray(new String[0]);
       Arrays.sort(activeRequestLines);
@@ -7319,7 +7283,7 @@ public class EDStatic {
     // memory use is too high, so shed this request
     String2.log(
         "shedThisRequest #"
-            + requestsShed++
+            + requestsShed.getAndIncrement()
             + // since last Major LoadDatasets
             ", request #"
             + requestNumber
@@ -7461,8 +7425,8 @@ public class EDStatic {
         errorNo =
             HttpServletResponse
                 .SC_REQUEST_ENTITY_TOO_LARGE; // http error 413 (the old name for Payload Too
-                                              // Large), although it could be other user's requests
-                                              // that are too large
+        // Large), although it could be other user's requests
+        // that are too large
         String ipAddress = getIPAddress(request);
         tally.add(
             "OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", ipAddress);
@@ -7476,9 +7440,9 @@ public class EDStatic {
         errorNo =
             HttpServletResponse
                 .SC_REQUEST_ENTITY_TOO_LARGE; // http error 413 (the old name for Payload Too
-                                              // Large), although it could be other user's requests
-                                              // that are too large
-        dangerousMemoryFailures++;
+        // Large), although it could be other user's requests
+        // that are too large
+        dangerousMemoryFailures.incrementAndGet();
         String ipAddress = getIPAddress(request);
         tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
         tally.add("OutOfMemory (Too Big), IP Address (since last daily report)", ipAddress);
@@ -7573,7 +7537,7 @@ public class EDStatic {
       msg =
             "Bad Request: "
                 + msg; // Don't translate these (or at least keep English first) so user can look
-                       // for them
+      // for them
       else if (errorNo == HttpServletResponse.SC_UNAUTHORIZED) // http error 401
       msg = "Unauthorized: " + msg;
       else if (errorNo == HttpServletResponse.SC_FORBIDDEN) // http error 403
@@ -7664,7 +7628,7 @@ public class EDStatic {
     EDStatic.tally.remove("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)");
     EDStatic.tally.remove(
         "Request refused: not authorized (since last Major LoadDatasets)"); // datasetID (not IP
-                                                                            // address)
+    // address)
     EDStatic.tally.remove("Requester's IP Address (Allowed) (since last Major LoadDatasets)");
     EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)");
     EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");

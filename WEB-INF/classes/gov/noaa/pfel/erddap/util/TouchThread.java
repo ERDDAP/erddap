@@ -33,7 +33,7 @@ public class TouchThread extends Thread {
 
   /** The constructor. TouchThread uses touch variables in EDStatic. */
   public TouchThread(int tNextTouch) {
-    EDStatic.nextTouch = tNextTouch;
+    EDStatic.nextTouch.set(tNextTouch);
     EDStatic.lastFinishedTouch = tNextTouch - 1;
     setName("TouchThread");
   }
@@ -58,7 +58,7 @@ public class TouchThread extends Thread {
         return; // only return (stop thread) if interrupted
       }
 
-      while (EDStatic.nextTouch < EDStatic.touchList.size()) {
+      while (EDStatic.nextTouch.get() < EDStatic.touchList.size()) {
         String url = null;
         try {
           // check isInterrupted
@@ -71,8 +71,8 @@ public class TouchThread extends Thread {
 
           // start to do the touch
           // do these things quickly to keep internal consistency
-          EDStatic.nextTouch++;
-          url = EDStatic.touchList.get(EDStatic.nextTouch - 1);
+          EDStatic.nextTouch.incrementAndGet();
+          url = EDStatic.touchList.get(EDStatic.nextTouch.decrementAndGet());
           lastStartTime = System.currentTimeMillis();
           String2.log(
               "%%% TouchThread started touch #"
@@ -91,7 +91,7 @@ public class TouchThread extends Thread {
           long tElapsedTime = elapsedTime();
           String2.log(
               "%%% TouchThread touch #"
-                  + (EDStatic.nextTouch - 1)
+                  + EDStatic.nextTouch.decrementAndGet()
                   + " of "
                   + (EDStatic.touchList.size() - 1)
                   + " succeeded.  elapsedTime="
@@ -109,7 +109,7 @@ public class TouchThread extends Thread {
           long tElapsedTime = elapsedTime();
           String2.log(
               "%%% TouchThread error: touch #"
-                  + (EDStatic.nextTouch - 1)
+                  + EDStatic.nextTouch.decrementAndGet()
                   + " failed after "
                   + tElapsedTime
                   + "ms"
@@ -125,8 +125,9 @@ public class TouchThread extends Thread {
           // whether succeeded or failed
           lastStartTime = -1;
           synchronized (EDStatic.touchList) {
-            EDStatic.lastFinishedTouch = EDStatic.nextTouch - 1;
-            EDStatic.touchList.set(EDStatic.nextTouch - 1, null); // throw away the touch info (gc)
+            EDStatic.lastFinishedTouch = EDStatic.nextTouch.decrementAndGet();
+            EDStatic.touchList.set(
+                EDStatic.nextTouch.decrementAndGet(), null); // throw away the touch info (gc)
           }
         }
       }

@@ -919,12 +919,10 @@ public class TestAll {
     gov.noaa.pmel.sgt.contour.ContourLine sgtccl;
     gov.noaa.pmel.sgt.DayMonthAxis sgtdma;
     gov.noaa.pmel.sgt.DecadeAxis sgtda;
-    gov.noaa.pmel.sgt.dm.SGT3DVector sgtsg3dv;
     gov.noaa.pmel.sgt.dm.SGTGrid sgtsgdtg;
     gov.noaa.pmel.sgt.dm.SGTImage sgti;
     gov.noaa.pmel.sgt.dm.SGTLine sgtl;
     gov.noaa.pmel.sgt.dm.SGTPoint sgtp;
-    gov.noaa.pmel.sgt.dm.SGTTuple sgtt;
     gov.noaa.pmel.sgt.dm.SGTVector sgtsgdtv;
     gov.noaa.pmel.sgt.GridAttribute sgtga;
     gov.noaa.pmel.sgt.GridCartesianRenderer sgtgcr;

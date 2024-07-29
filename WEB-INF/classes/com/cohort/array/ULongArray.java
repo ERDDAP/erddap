@@ -41,7 +41,7 @@ public class ULongArray extends PrimitiveArray {
 
   /** This is the Long.MAX_VALUE+1 stored as a BigInteger. */
   public static final BigInteger LONG_MAX_VALUE1 =
-      (new BigInteger("" + Long.MAX_VALUE)).add(BigInteger.ONE);
+      new BigInteger("" + Long.MAX_VALUE).add(BigInteger.ONE);
 
   /** This is the maximum value, stored as a double. */
   public static final double MAX_VALUE_AS_DOUBLE = MAX_VALUE.doubleValue();
@@ -1474,7 +1474,7 @@ public class ULongArray extends PrimitiveArray {
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       BigInteger currentValue = unpackIgnoreMaxIsMV(array[i]);
-      if (currentValue != lastValue) {
+      if (!currentValue.equals(lastValue)) {
         if (currentValue.compareTo(lastValue) < 0) alreadySorted = false;
         lastValue = currentValue;
         hashMap.put(lastValue, dummy);

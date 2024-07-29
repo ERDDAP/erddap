@@ -148,7 +148,7 @@ public class LineAttribute implements Attribute, Cloneable {
   public boolean equals(Object obj) {
     if (obj == null || !(obj instanceof LineAttribute)) return false;
     LineAttribute attr = (LineAttribute) obj;
-    if ((id_ != attr.getId()) || (!color_.equals(attr.getColor())) || (style_ != attr.getStyle()))
+    if ((id_ != attr.getId()) || !color_.equals(attr.getColor()) || (style_ != attr.getStyle()))
       return false;
     if (style_ == MARK || style_ == MARK_LINE) {
       if ((mark_ != attr.getMark()) || (markHeightP_ != attr.getMarkHeightP())) return false;

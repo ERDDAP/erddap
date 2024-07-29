@@ -1493,8 +1493,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           background.append("> child-item #" + nChildItems + " catalog-item-id=" + content + "\n");
           if (hasContent) gAddAtts.add(childItemsPre + "catalog_id", content);
         } else if (tags.equals("<child-items><child-item></catalog-item-type>") && hasContent) {
-          childItems.append(
-              sep + " item-type=" + content + "\n"); // e.g., Entity
+          childItems.append(sep + " item-type=" + content + "\n"); // e.g., Entity
           gAddAtts.add(childItemsPre + "item_type", content);
         } else if (tags.equals("<child-items><child-item></title>") && hasContent) {
           childItems.append("Title: " + content + "\n");
@@ -1776,7 +1775,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
               Attributes atts = fileTable.columnAttributes(fcol);
               PrimitiveArray pa = fileTable.getColumn(fcol);
               sourceTable.addColumn(
-                  fcol, colName, (PrimitiveArray) (pa.clone()), (Attributes) (atts.clone()));
+                  fcol, colName, (PrimitiveArray) pa.clone(), (Attributes) atts.clone());
             }
 
           } else {
@@ -1869,8 +1868,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
       addTable.addColumn(
           col,
           colName,
-          (PrimitiveArray) (sourceTable.getColumn(col).clone()),
-          (Attributes) (sourceTable.columnAttributes(col).clone())); // move from source to add
+          (PrimitiveArray) sourceTable.getColumn(col).clone(),
+          (Attributes) sourceTable.columnAttributes(col).clone()); // move from source to add
       sourceTable.columnAttributes(col).clear();
     }
 
@@ -2295,7 +2294,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         sourceTable.simplify();
         sourceTable.standardize(tStandardizeWhat);
 
-        Table addTable = (Table) (sourceTable.clone());
+        Table addTable = (Table) sourceTable.clone();
         addTable.globalAttributes().add(gatts);
         gatts = addTable.globalAttributes();
 

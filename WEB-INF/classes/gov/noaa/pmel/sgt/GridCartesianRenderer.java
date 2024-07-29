@@ -122,14 +122,14 @@ public class GridCartesianRenderer extends CartesianRenderer {
           xp[1] = cg_.getLayer().getXPtoD(1);
           // String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]);
         } else {
-          xp[0] = cg_.getXUtoD(tValues[0].subtract((tValues[1].subtract(tValues[0])).divide(2.0)));
+          xp[0] = cg_.getXUtoD(tValues[0].subtract(tValues[1].subtract(tValues[0]).divide(2.0)));
           for (count = 1; count < xSize; count++) {
-            xp[count] = cg_.getXUtoD((tValues[count - 1].add(tValues[count])).divide(2.0));
+            xp[count] = cg_.getXUtoD(tValues[count - 1].add(tValues[count]).divide(2.0));
           }
           xp[xSize] =
               cg_.getXUtoD(
                   tValues[xSize - 1].add(
-                      (tValues[xSize - 1].subtract(tValues[xSize - 2])).divide(2.0)));
+                      tValues[xSize - 1].subtract(tValues[xSize - 2]).divide(2.0)));
         }
       }
     } else {
@@ -183,14 +183,14 @@ public class GridCartesianRenderer extends CartesianRenderer {
           yp[1] = cg_.getLayer().getYPtoD(1);
           // String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]);
         } else {
-          yp[0] = cg_.getYUtoD(tValues[0].subtract((tValues[1].subtract(tValues[0])).divide(2.0)));
+          yp[0] = cg_.getYUtoD(tValues[0].subtract(tValues[1].subtract(tValues[0]).divide(2.0)));
           for (count = 1; count < ySize; count++) {
-            yp[count] = cg_.getYUtoD((tValues[count - 1].add(tValues[count])).divide(2.0));
+            yp[count] = cg_.getYUtoD(tValues[count - 1].add(tValues[count]).divide(2.0));
           }
           yp[ySize] =
               cg_.getYUtoD(
                   tValues[ySize - 1].add(
-                      (tValues[ySize - 1].subtract(tValues[ySize - 2])).divide(2.0)));
+                      tValues[ySize - 1].subtract(tValues[ySize - 2]).divide(2.0)));
         }
       }
     } else {
@@ -513,7 +513,7 @@ public class GridCartesianRenderer extends CartesianRenderer {
       }
       npoly = -1;
       for (j = 0; j < 4; j++) {
-          /* sides */
+        /* sides */
         if (z[j] < zlev) {
           //
           // z[j] is below

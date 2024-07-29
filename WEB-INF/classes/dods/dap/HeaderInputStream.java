@@ -131,7 +131,7 @@ class HeaderInputStream extends FilterInputStream {
   @Override
   public long skip(long n) {
     if (bytesRemaining >= n) {
-      bytesRemaining -= n;
+      bytesRemaining = (int) (bytesRemaining - n);
       return n;
     } else {
       int oldBytesRemaining = bytesRemaining;

@@ -141,7 +141,7 @@ public class EDV {
     "Pathogens",
     "Physical Oceanography", // Bob added 2011-10-11
     "Phytoplankton Species", // ??the species name? better to use Taxonomy??  Add "Phytoplankton
-                             // Abundance"?
+    // Abundance"?
     "Pressure", // bob added
     "Productivity", // bob added
     "Quality", // bob added 2010-11-10
@@ -157,7 +157,7 @@ public class EDV {
     "Total Suspended Matter", // added 2011-05-19
     "Unknown",
     "Wind", // had Wind. 2011-05-19 has "Wind Speed and Direction", but that seems unnecessarily
-            // limited
+    // limited
     "Zooplankton Species", // ??the species name? better to use Taxonomy??
     "Zooplankton Abundance"
   };
@@ -261,7 +261,7 @@ public class EDV {
   protected String stringFillValue = ""; // for String variables. destination.  won't be null
   protected String safeStringMissingValue =
       ""; // for String variables. destination.  won't be null. If not "", then there is probably no
-          // 1 source MV
+  // 1 source MV
   protected boolean hasColorBarMinMax = false;
   protected byte[] sliderCsvValues = null; // stored as utf8Bytes
 
@@ -1564,9 +1564,9 @@ public class EDV {
     int stride = Math.max(1, (n - 1) / SLIDER_MAX_NVALUES); // -1 because [0] will be removed
     StringArray dsa = new StringArray(distinct);
     if (stride == 1) {
-      dsa = (StringArray) (dsa.subset(1, 1, n - 1)); // make a copy without array[0]
+      dsa = (StringArray) dsa.subset(1, 1, n - 1); // make a copy without array[0]
     } else {
-      dsa = (StringArray) (dsa.subset(1, stride, n - 1)); // a copy, without array[0], with stride
+      dsa = (StringArray) dsa.subset(1, stride, n - 1); // a copy, without array[0], with stride
       // add the last value if not already there
       if (!dsa.get(dsa.size() - 1).equals(distinct[n - 1])) dsa.add(distinct[n - 1]);
     }
