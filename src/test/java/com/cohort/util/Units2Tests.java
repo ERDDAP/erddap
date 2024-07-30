@@ -1,15 +1,12 @@
 package com.cohort.util;
 
+import com.cohort.array.Attributes;
+import com.cohort.array.StringArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.regex.Pattern;
-
 import org.junit.jupiter.api.BeforeAll;
-
-import com.cohort.array.Attributes;
-import com.cohort.array.StringArray;
-
 import tags.TagIncompleteTest;
 import testDataset.Initialization;
 import ucar.units.Unit;
@@ -24,18 +21,18 @@ class Units2Tests {
   }
 
   /**
-   * This is used every year or so:
-   * Given a CF standard names XML file, this finds all canonical units
-   * strings, reduces that to just the unique names, makes a few changes
-   * (e.g., K to degree_C) and saves that to cfUnique.
+   * This is used every year or so: Given a CF standard names XML file, this finds all canonical
+   * units strings, reduces that to just the unique names, makes a few changes (e.g., K to degree_C)
+   * and saves that to cfUnique.
    *
    * @param fullCFXMLFileName A CF standard names XML file downloaded from
-   *                          https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml
+   *     https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml
    * @throws Exception if trouble
    */
   private static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
 
-    ArrayList<String> lines = File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); // nAttempts
+    ArrayList<String> lines =
+        File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); // nAttempts
     HashSet<String> reject = new HashSet();
     HashSet<String> set = new HashSet();
     set.add("degree_C"); // test it, too
@@ -44,14 +41,16 @@ class Units2Tests {
     for (int i = 0; i < nLines; i++) {
       String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); // captureGroupNumber
       if (s != null) {
-        if (s.startsWith("1e-") || // eg. "1e-3 kg m-2" All are present and better without 1e-3.
-            s.equals("m -1") || // I think those aren't valid udunits
+        if (s.startsWith("1e-")
+            || // eg. "1e-3 kg m-2" All are present and better without 1e-3.
+            s.equals("m -1")
+            || // I think those aren't valid udunits
             s.equals("J kg -1")) { // and version without space exists
           reject.add(s);
           continue;
         }
         if (s.equals("degrees")) // makes no sense to have degree and degrees
-          s = "degree";
+        s = "degree";
         s = String2.replaceAll(s, "mole", "mol");
         set.add(s);
       }
@@ -65,13 +64,13 @@ class Units2Tests {
     sa.sortIgnoreCase();
     String2.log("Rejected:\n" + sa.toNewlineString());
     String2.log(
-        "* UdunitsHelper.gatherUniqueCFUnits() successfully wrote the list of unique CF units to\n" +
-            cfUnique);
+        "* UdunitsHelper.gatherUniqueCFUnits() successfully wrote the list of unique CF units to\n"
+            + cfUnique);
   }
 
   /**
-   * This generates a list of unique units mentioned in datasetsUAF.xml,
-   * datasetsFEDCW.xml and uniqueCFUnits.txt.
+   * This generates a list of unique units mentioned in datasetsUAF.xml, datasetsFEDCW.xml and
+   * uniqueCFUnits.txt.
    */
   private static StringArray getTestUdunits() throws Exception {
 
@@ -85,15 +84,17 @@ class Units2Tests {
 
     Pattern pattern = Pattern.compile("<att name=\"units\">(.*)</att>");
     for (int f = 2; f < 3; f++) {
-      String fileName = testResources +
-          (f == 0 ? "datasetsFED31UAF.xml" : f == 1 ? "datasetsFEDCW.xml" : "uniqueCFUnits.txt");
+      String fileName =
+          testResources
+              + (f == 0
+                  ? "datasetsFED31UAF.xml"
+                  : f == 1 ? "datasetsFEDCW.xml" : "uniqueCFUnits.txt");
 
       ArrayList<String> lines = File2.readLinesFromFile(fileName, File2.UTF_8, 1); // nAttempts
       int nLines = lines.size();
       for (int i = 0; i < nLines; i++) {
         String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); // captureGroupNumber
-        if (String2.isSomething(s))
-          set.add(XML.decodeEntities(s));
+        if (String2.isSomething(s)) set.add(XML.decodeEntities(s));
       }
     }
     StringArray sa = new StringArray(set.toArray(new String[0]));
@@ -104,13 +105,10 @@ class Units2Tests {
     return sa;
   }
 
-  /**
-   * This generates all the detailed tests.
-   */
+  /** This generates all the detailed tests. */
   private static void generateTests() throws Exception {
     StringArray uaf = getTestUdunits();
-    for (int i = 0; i < uaf.size(); i++)
-      generateOneTest(uaf.get(i));
+    for (int i = 0; i < uaf.size(); i++) generateOneTest(uaf.get(i));
   }
 
   private static void generateOneTest(String udunit) {
@@ -123,11 +121,16 @@ class Units2Tests {
     String c = String2.left(String2.toJson(udunits2) + ", ", 20);
     String d = String2.toJson(ucum2);
 
-    String2.log("testToUcumToUdunits(" +
-        a + (a.length() > 20 ? pad : "") +
-        b + (a.length() > 20 ? pad : "") +
-        c + (a.length() > 20 ? pad : "") +
-        d + ");");
+    String2.log(
+        "testToUcumToUdunits("
+            + a
+            + (a.length() > 20 ? pad : "")
+            + b
+            + (a.length() > 20 ? pad : "")
+            + c
+            + (a.length() > 20 ? pad : "")
+            + d
+            + ");");
 
     // String2.log(String2.left("" + udunit, 15) + " = " +
     // String2.left("" + safeCanonicalString(udunit), 15) + " = " +
@@ -135,27 +138,26 @@ class Units2Tests {
     // standardizeUdunits(udunit));
   }
 
-  private static void repeatedlyTestOneUdunit() throws Exception {
-    while (true) {
-      String udunits = String2.getStringFromSystemIn("Udunits? ");
-      String2.log(
-          "ud canonical=" + Units2.safeCanonicalUdunitsString(udunits) +
-              "\n        ucum=" + Units2.safeUdunitsToUcum(udunits) +
-              "\n  toUcumToUd=" + Units2.safeStandardizeUdunits(udunits));
-    }
-  }
+  //   private static void repeatedlyTestOneUdunit() throws Exception {
+  //     while (true) {
+  //       String udunits = String2.getStringFromSystemIn("Udunits? ");
+  //       String2.log(
+  //           "ud canonical=" + Units2.safeCanonicalUdunitsString(udunits) +
+  //               "\n        ucum=" + Units2.safeUdunitsToUcum(udunits) +
+  //               "\n  toUcumToUd=" + Units2.safeStandardizeUdunits(udunits));
+  //     }
+  //   }
 
   /**
-   * This tests udunitsToUcum.
-   * The most likely bugs are:
+   * This tests udunitsToUcum. The most likely bugs are:
+   *
    * <ul>
-   * <li>Excess/incorrect substitutions, e.g., "avoirdupois_pounds" to "[lb_av]"
-   * to "[[lb_av]_av]".
-   * <br>
-   * This is the only thing that this method has pretty good tests for.
-   * <li>Plural vs Singular conversions
-   * <li>Typos
-   * <li>Misunderstanding (e.g., use of [H2O])
+   *   <li>Excess/incorrect substitutions, e.g., "avoirdupois_pounds" to "[lb_av]" to
+   *       "[[lb_av]_av]". <br>
+   *       This is the only thing that this method has pretty good tests for.
+   *   <li>Plural vs Singular conversions
+   *   <li>Typos
+   *   <li>Misunderstanding (e.g., use of [H2O])
    * </ul>
    *
    * @throws RuntimeException if trouble
@@ -174,7 +176,8 @@ class Units2Tests {
     testUdunitsToUcum("days since 1971-02-03", "d{since 1971-02-03}");
     testUdunitsToUcum("months since 1971-02-03", "mo{since 1971-02-03}"); // mo_j?
     testUdunitsToUcum("yrs since 1971-02-03", "a{since 1971-02-03}"); // a_j?
-    testUdunitsToUcum("zztops since 1971-02-03", "{zztops}.{since}.1971-02-03"); // not a point in time
+    testUdunitsToUcum(
+        "zztops since 1971-02-03", "{zztops}.{since}.1971-02-03"); // not a point in time
 
     testUdunitsToUcum("-", ""); // !String2.isSomething2()
     testUdunitsToUcum(".", ""); // !String2.isSomething2()
@@ -251,9 +254,11 @@ class Units2Tests {
     testUdunitsToUcum("bu", "[bu_us]");
     testUdunitsToUcum("byte", "By");
 
-    testUdunitsToUcum("C", "Cel"); // Non-standard: In udunits and ucum, "C" means coulomb, but I treat as Celsius
-    testUdunitsToUcum("c", "[c]"); // can't deal with "c" -> "[c]" (velocity of light) without parsing everything
-                                   // (since it is also a prefix)
+    testUdunitsToUcum(
+        "C", "Cel"); // Non-standard: In udunits and ucum, "C" means coulomb, but I treat as Celsius
+    testUdunitsToUcum(
+        "c", "[c]"); // can't deal with "c" -> "[c]" (velocity of light) without parsing everything
+    // (since it is also a prefix)
     testUdunitsToUcum("C12_faraday", "(9648531/100.C)"); // 9.648531e4
     testUdunitsToUcum("cal", "cal_IT");
     testUdunitsToUcum("calorie", "cal_IT");
@@ -604,8 +609,12 @@ class Units2Tests {
     testUdunitsToUcum("printers_pica", "[pca_pr]");
     testUdunitsToUcum("printers_point", "[pnt_pr]");
     testUdunitsToUcum("psi", "[psi]");
-    testUdunitsToUcum("PSU", "{PSU}"); // ??? PSU changed to 1e-3 with CF std names 25. Crazy. Useless. Don't do it.
-    testUdunitsToUcum("psu", "{PSU}"); // ??? PSU changed to 1e-3 with CF std names 25. Crazy. Useless. Don't do it.
+    testUdunitsToUcum(
+        "PSU",
+        "{PSU}"); // ??? PSU changed to 1e-3 with CF std names 25. Crazy. Useless. Don't do it.
+    testUdunitsToUcum(
+        "psu",
+        "{PSU}"); // ??? PSU changed to 1e-3 with CF std names 25. Crazy. Useless. Don't do it.
     testUdunitsToUcum("pt", "[pt_us]");
 
     testUdunitsToUcum("quart", "[qt_us]");
@@ -810,8 +819,10 @@ class Units2Tests {
 
     // failures
     testUdunitsToUcum("dkilo", "{dkilo}"); // 2 prefixes isn't allowed
-    testUdunitsToUcum("kiloBobs", "{kiloBobs}"); // original returned as comment, not split into k{Bobs}
-    testUdunitsToUcum("some unrelated24 con33tent, really (a fact)",
+    testUdunitsToUcum(
+        "kiloBobs", "{kiloBobs}"); // original returned as comment, not split into k{Bobs}
+    testUdunitsToUcum(
+        "some unrelated24 con33tent, really (a fact)",
         "{some}.{unrelated}24.{con33tent},.{really}.(a.{fact})"); // not butchered
 
     // punctuation
@@ -841,16 +852,15 @@ class Units2Tests {
   }
 
   /**
-   * This tests UcumToUdunits.
-   * The most likely bugs are:
+   * This tests UcumToUdunits. The most likely bugs are:
+   *
    * <ul>
-   * <li>Excess/incorrect substitutions, e.g., "avoirdupois_pounds" to "[lb_av]"
-   * to "[[lb_av]_av]".
-   * <br>
-   * This is the only thing that this method has pretty good tests for.
-   * <li>Plural vs Singular conversions
-   * <li>Typos
-   * <li>Misunderstanding (e.g., use of [H2O])
+   *   <li>Excess/incorrect substitutions, e.g., "avoirdupois_pounds" to "[lb_av]" to
+   *       "[[lb_av]_av]". <br>
+   *       This is the only thing that this method has pretty good tests for.
+   *   <li>Plural vs Singular conversions
+   *   <li>Typos
+   *   <li>Misunderstanding (e.g., use of [H2O])
    * </ul>
    *
    * @throws RuntimeException if trouble
@@ -896,7 +906,8 @@ class Units2Tests {
     // time point
     testUcumToUdunits("s{since 1970-01-01T00:00:00Z}", "seconds since 1970-01-01T00:00:00Z");
     testUcumToUdunits("Gb{since 1970-01-01T00}", "gilbert since 1970-01-01T00"); // absurd but okay
-    testUcumToUdunits("s.m{ since 1970-01-01T00}", "s m( since 1970-01-01T00)"); // fail, so comment falls through
+    testUcumToUdunits(
+        "s.m{ since 1970-01-01T00}", "s m( since 1970-01-01T00)"); // fail, so comment falls through
 
     // debugMode = false;
   }
@@ -905,13 +916,12 @@ class Units2Tests {
     Test.ensureEqual(Units2.ucumToUdunits(ucum), udunits, "original=" + ucum);
   }
 
-  /**
-   * This tests if the canonical units for each unique CF unit is unique.
-   */
+  /** This tests if the canonical units for each unique CF unit is unique. */
   @org.junit.jupiter.api.Test
   void testIfCFCanonicalUnitsUnique() throws Throwable {
-    // gatherUniqueCFUnits(Units2Tests.class.getResource("/data/cf-standard-name-table.xml").getPath());
-    // generateTests();
+    gatherUniqueCFUnits(
+        Units2Tests.class.getResource("/data/cf-standard-name-table.xml").getPath());
+    generateTests();
     StringArray sa = StringArray.fromFileUtf8(cfUnique);
     Attributes atts = new Attributes(); // use it as a hashmap: canon -> source
     for (int i = 0; i < sa.size(); i++) {
@@ -923,8 +933,7 @@ class Units2Tests {
         String2.log("! " + s + " and " + already + " both have canonicalUnits=" + canon);
       atts.set(canon, s);
     }
-    String2.log("\nThe canonical -> source pairs:" +
-        atts.toString());
+    String2.log("\nThe canonical -> source pairs:" + atts.toString());
   }
 
   /*
@@ -940,7 +949,7 @@ class Units2Tests {
    * ucar.units.Converter converter = unitK.getConverterTo(unitMS);
    * String2.log("convert 1 knots to " + converter.convert(1.0) + " m/s");
    * String2.log("convert 2 knots to " + converter.convert(2.0) + " m/s");
-   * 
+   *
    * Unit unitC = unitFormat.parse("degree_C");
    * String2.log("unitC=" + unitC.toString() + "=" + unitC.getCanonicalString());
    * Unit unitF = unitFormat.parse("degree_F");
@@ -948,7 +957,7 @@ class Units2Tests {
    * String2.log("isCompatible=" + unitC.isCompatible(unitF));
    * ucar.units.Converter converter2 = unitF.getConverterTo(unitC);
    * String2.log("convert 33 F to " + converter2.convert(33.0) + " C");
-   * 
+   *
    * while (true) {
    * s = String2.getStringFromSystemIn("units? ");
    * if (s.length() == 0) break;
@@ -960,12 +969,9 @@ class Units2Tests {
    * This tests the udunitsToUcum and ucumToUdunits conversions.
    *
    * @param udunits the source udunits string
-   * @param ucum    the expected/desired, resulting ucum string from
-   *                udunitsToUcum.
-   * @param rt1     the sanitized udunits string created by round trip: udunits to
-   *                ucum to udunits.
-   * @param rt2     the sanitized ucum string created by round trip: ucum to
-   *                udunits to ucum.
+   * @param ucum the expected/desired, resulting ucum string from udunitsToUcum.
+   * @param rt1 the sanitized udunits string created by round trip: udunits to ucum to udunits.
+   * @param rt2 the sanitized ucum string created by round trip: ucum to udunits to ucum.
    */
   private void testToUcumToUdunits(String udunits, String ucum, String rt1, String rt2) {
     String ucum2 = Units2.safeUdunitsToUcum(udunits);
@@ -983,7 +989,8 @@ class Units2Tests {
     testToUcumToUdunits("#", "{count}", "count", "{count}");
     testToUcumToUdunits("%", "%", "%", "%");
     testToUcumToUdunits("(0 - 1)", "1", "1", "1");
-    testToUcumToUdunits("(kg m-3) (m s-1)", "(kg.m-3).(m.s-1)", "(kg m-3) (m s-1)", "(kg.m-3).(m.s-1)");
+    testToUcumToUdunits(
+        "(kg m-3) (m s-1)", "(kg.m-3).(m.s-1)", "(kg m-3) (m s-1)", "(kg.m-3).(m.s-1)");
     testToUcumToUdunits("-", "", "", "");
     testToUcumToUdunits("0.001", "10^-3", "1.0E-3", "10^-3");
     testToUcumToUdunits("1", "1", "1", "1");
@@ -992,33 +999,32 @@ class Units2Tests {
     testToUcumToUdunits("1./s", "s-1", "s-1", "s-1");
     testToUcumToUdunits("1/s", "s-1", "s-1", "s-1");
     testToUcumToUdunits("10**10 J m-2", "10^10.J.m-2", "1.0E10 J m-2", "10^10.J.m-2");
-    testToUcumToUdunits("10**6 kg m-2 s-1", "10^6.kg.m-2.s-1", "1.0E6 kg m-2 s-1", "10^6.kg.m-2.s-1");
+    testToUcumToUdunits(
+        "10**6 kg m-2 s-1", "10^6.kg.m-2.s-1", "1.0E6 kg m-2 s-1", "10^6.kg.m-2.s-1");
     testToUcumToUdunits("1e-3", "10^-3", "1.0E-3", "10^-3");
     testToUcumToUdunits("1e-3 day-1", "10^-3.d-1", "1.0E-3 day-1", "10^-3.d-1");
     testToUcumToUdunits("1e-9", "10^-9", "1.0E-9", "10^-9");
-    testToUcumToUdunits("8 bits, encoded", "{8 bits, encoded}",
-        "8 bits, encoded", "{8 bits, encoded}");
+    testToUcumToUdunits(
+        "8 bits, encoded", "{8 bits, encoded}", "8 bits, encoded", "{8 bits, encoded}");
     testToUcumToUdunits("?", "", "", "");
     testToUcumToUdunits("???", "", "", "");
     testToUcumToUdunits("angular_degree", "deg", "degree", "deg");
-    testToUcumToUdunits("becquerel per liter",
-        "Bq.l-1", "Bq l-1", "Bq.l-1");
-    testToUcumToUdunits("biomass density unit per abundance unit",
+    testToUcumToUdunits("becquerel per liter", "Bq.l-1", "Bq l-1", "Bq.l-1");
+    testToUcumToUdunits(
+        "biomass density unit per abundance unit",
         "{biomass density unit per abundance unit}",
         "biomass density unit per abundance unit",
         "{biomass density unit per abundance unit}");
     testToUcumToUdunits("bytes", "By", "byte", "By");
     testToUcumToUdunits("C", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("Cel", "Cel", "degree_C", "Cel");
-    testToUcumToUdunits("cells per milliliter",
-        "{cells}.ml-1", "cells ml-1", "{cells}.ml-1");
+    testToUcumToUdunits("cells per milliliter", "{cells}.ml-1", "cells ml-1", "{cells}.ml-1");
     testToUcumToUdunits("cells/milliliter", "{cells}.ml-1", "cells ml-1", "{cells}.ml-1");
     testToUcumToUdunits("Celsius", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("celsius", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("Celsius day-1", "Cel.d-1", "degree_C day-1", "Cel.d-1");
     testToUcumToUdunits("centimeter", "cm", "cm", "cm");
-    testToUcumToUdunits("centimeter per second",
-        "cm.s-1", "cm s-1", "cm.s-1");
+    testToUcumToUdunits("centimeter per second", "cm.s-1", "cm s-1", "cm.s-1");
     testToUcumToUdunits("centimeter^2", "cm2", "cm2", "cm2");
     testToUcumToUdunits("Centimeters", "cm", "cm", "cm");
     testToUcumToUdunits("centimeters", "cm", "cm", "cm");
@@ -1030,281 +1036,344 @@ class Units2Tests {
     testToUcumToUdunits("correl", "{correl}", "correl", "{correl}");
     testToUcumToUdunits("count", "{count}", "count", "{count}");
     testToUcumToUdunits("count m-3", "{count}.m-3", "count m-3", "{count}.m-3");
-    testToUcumToUdunits("count per 85 centimeter^2 per day",
+    testToUcumToUdunits(
+        "count per 85 centimeter^2 per day",
         "{count}.(85.cm2)-1.d-1",
         "count (85 cm2)-1 day-1",
         "{count}.(85.cm2)-1.d-1");
     testToUcumToUdunits("count per liter", "{count}.l-1", "count l-1", "{count}.l-1");
-    testToUcumToUdunits("count per meter^2",
-        "{count}.m-2", "count m-2", "{count}.m-2");
-    testToUcumToUdunits("count per microliter",
-        "{count}.ul-1", "count ul-1", "{count}.ul-1");
+    testToUcumToUdunits("count per meter^2", "{count}.m-2", "count m-2", "{count}.m-2");
+    testToUcumToUdunits("count per microliter", "{count}.ul-1", "count ul-1", "{count}.ul-1");
     testToUcumToUdunits("counts", "{count}", "count", "{count}");
     testToUcumToUdunits("cubic kilometers", "km3", "km3", "km3");
     testToUcumToUdunits("cubic meter", "m3", "m3", "m3");
-    testToUcumToUdunits("cubic meter per kilogram",
-        "m3.kg-1", "m3 kg-1", "m3.kg-1");
+    testToUcumToUdunits("cubic meter per kilogram", "m3.kg-1", "m3 kg-1", "m3.kg-1");
     testToUcumToUdunits("day", "d", "day", "d");
-    testToUcumToUdunits("day since 1992-10-05 00:00:00",
+    testToUcumToUdunits(
+        "day since 1992-10-05 00:00:00",
         "d{since 1992-10-05T00:00:00Z}",
         "days since 1992-10-05T00:00:00Z",
         "d{since 1992-10-05T00:00:00Z}");
     testToUcumToUdunits("day-1", "d-1", "day-1", "d-1");
     testToUcumToUdunits("day_of_year", "d", "day", "d");
     testToUcumToUdunits("days", "d", "day", "d");
-    testToUcumToUdunits("days since 0000-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 0000-01-01T00:00:00Z",
         "d{since 0000-01-01T00:00:00Z}",
         "days since 0000-01-01T00:00:00Z",
         "d{since 0000-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 0000-1-1",
+    testToUcumToUdunits(
+        "days since 0000-1-1",
         "d{since 0000-01-01}",
         "days since 0000-01-01",
         "d{since 0000-01-01}");
-    testToUcumToUdunits("days since 0001-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 0001-01-01 00:00:00",
         "d{since 0001-01-01T00:00:00Z}",
         "days since 0001-01-01T00:00:00Z",
         "d{since 0001-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 0001-01-01T00:00:00",
+    testToUcumToUdunits(
+        "days since 0001-01-01T00:00:00",
         "d{since 0001-01-01T00:00:00Z}",
         "days since 0001-01-01T00:00:00Z",
         "d{since 0001-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 0001-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "days since 0001-01-01T00:00:00.000Z",
         "d{since 0001-01-01T00:00:00.000Z}",
         "days since 0001-01-01T00:00:00.000Z",
         "d{since 0001-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("days since 0001-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 0001-01-01T00:00:00Z",
         "d{since 0001-01-01T00:00:00Z}",
         "days since 0001-01-01T00:00:00Z",
         "d{since 0001-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1-1-1 00:00:0.0",
+    testToUcumToUdunits(
+        "days since 1-1-1 00:00:0.0",
         "d{since 0001-01-01T00:00:00.000Z}",
         "days since 0001-01-01T00:00:00.000Z",
         "d{since 0001-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("days since 1-1-1 00:00:00",
+    testToUcumToUdunits(
+        "days since 1-1-1 00:00:00",
         "d{since 0001-01-01T00:00:00Z}",
         "days since 0001-01-01T00:00:00Z",
         "d{since 0001-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1700-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1700-01-01 00:00:00",
         "d{since 1700-01-01T00:00:00Z}",
         "days since 1700-01-01T00:00:00Z",
         "d{since 1700-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1700-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1700-01-01T00:00:00Z",
         "d{since 1700-01-01T00:00:00Z}",
         "days since 1700-01-01T00:00:00Z",
         "d{since 1700-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1800-01-01 00:00:0.0",
+    testToUcumToUdunits(
+        "days since 1800-01-01 00:00:0.0",
         "d{since 1800-01-01T00:00:00.000Z}",
         "days since 1800-01-01T00:00:00.000Z",
         "d{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("days since 1800-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "days since 1800-01-01T00:00:00.000Z",
         "d{since 1800-01-01T00:00:00.000Z}",
         "days since 1800-01-01T00:00:00.000Z",
         "d{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("days since 1800-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1800-01-01T00:00:00Z",
         "d{since 1800-01-01T00:00:00Z}",
         "days since 1800-01-01T00:00:00Z",
         "d{since 1800-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1800-1-1 00:00:0.0",
+    testToUcumToUdunits(
+        "days since 1800-1-1 00:00:0.0",
         "d{since 1800-01-01T00:00:00.000Z}",
         "days since 1800-01-01T00:00:00.000Z",
         "d{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("days since 1800-1-1 00:00:00",
+    testToUcumToUdunits(
+        "days since 1800-1-1 00:00:00",
         "d{since 1800-01-01T00:00:00Z}",
         "days since 1800-01-01T00:00:00Z",
         "d{since 1800-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1850-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1850-01-01 00:00:00",
         "d{since 1850-01-01T00:00:00Z}",
         "days since 1850-01-01T00:00:00Z",
         "d{since 1850-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1850-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1850-01-01T00:00:00Z",
         "d{since 1850-01-01T00:00:00Z}",
         "days since 1850-01-01T00:00:00Z",
         "d{since 1850-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1861-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1861-01-01 00:00:00",
         "d{since 1861-01-01T00:00:00Z}",
         "days since 1861-01-01T00:00:00Z",
         "d{since 1861-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1861-01-01T00:00:00",
+    testToUcumToUdunits(
+        "days since 1861-01-01T00:00:00",
         "d{since 1861-01-01T00:00:00Z}",
         "days since 1861-01-01T00:00:00Z",
         "d{since 1861-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1861-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1861-01-01T00:00:00Z",
         "d{since 1861-01-01T00:00:00Z}",
         "days since 1861-01-01T00:00:00Z",
         "d{since 1861-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1870-1-1 0:0:0",
+    testToUcumToUdunits(
+        "days since 1870-1-1 0:0:0",
         "d{since 1870-01-01T00:00:00Z}",
         "days since 1870-01-01T00:00:00Z",
         "d{since 1870-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1891-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1891-01-01T00:00:00Z",
         "d{since 1891-01-01T00:00:00Z}",
         "days since 1891-01-01T00:00:00Z",
         "d{since 1891-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1891-1-1 00:00:00",
+    testToUcumToUdunits(
+        "days since 1891-1-1 00:00:00",
         "d{since 1891-01-01T00:00:00Z}",
         "days since 1891-01-01T00:00:00Z",
         "d{since 1891-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1900-01-01",
+    testToUcumToUdunits(
+        "days since 1900-01-01",
         "d{since 1900-01-01}",
         "days since 1900-01-01",
         "d{since 1900-01-01}");
-    testToUcumToUdunits("days since 1900-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1900-01-01 00:00:00",
         "d{since 1900-01-01T00:00:00Z}",
         "days since 1900-01-01T00:00:00Z",
         "d{since 1900-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1900-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1900-01-01T00:00:00Z",
         "d{since 1900-01-01T00:00:00Z}",
         "days since 1900-01-01T00:00:00Z",
         "d{since 1900-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1900-12-31 00:00:00",
+    testToUcumToUdunits(
+        "days since 1900-12-31 00:00:00",
         "d{since 1900-12-31T00:00:00Z}",
         "days since 1900-12-31T00:00:00Z",
         "d{since 1900-12-31T00:00:00Z}");
-    testToUcumToUdunits("days since 1902-01-01 12:00:00",
+    testToUcumToUdunits(
+        "days since 1902-01-01 12:00:00",
         "d{since 1902-01-01T12:00:00Z}",
         "days since 1902-01-01T12:00:00Z",
         "d{since 1902-01-01T12:00:00Z}");
-    testToUcumToUdunits("days since 1920-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1920-01-01 00:00:00",
         "d{since 1920-01-01T00:00:00Z}",
         "days since 1920-01-01T00:00:00Z",
         "d{since 1920-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1920-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1920-01-01T00:00:00Z",
         "d{since 1920-01-01T00:00:00Z}",
         "days since 1920-01-01T00:00:00Z",
         "d{since 1920-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1950-01-01",
+    testToUcumToUdunits(
+        "days since 1950-01-01",
         "d{since 1950-01-01}",
         "days since 1950-01-01",
         "d{since 1950-01-01}");
-    testToUcumToUdunits("days since 1950-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1950-01-01 00:00:00",
         "d{since 1950-01-01T00:00:00Z}",
         "days since 1950-01-01T00:00:00Z",
         "d{since 1950-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1950-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1950-01-01T00:00:00Z",
         "d{since 1950-01-01T00:00:00Z}",
         "days since 1950-01-01T00:00:00Z",
         "d{since 1950-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1970-01-01 0:0:0",
+    testToUcumToUdunits(
+        "days since 1970-01-01 0:0:0",
         "d{since 1970-01-01T00:00:00Z}",
         "days since 1970-01-01T00:00:00Z",
         "d{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1970-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1970-01-01T00:00:00Z",
         "d{since 1970-01-01T00:00:00Z}",
         "days since 1970-01-01T00:00:00Z",
         "d{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1970-01-01T12:00:00Z",
+    testToUcumToUdunits(
+        "days since 1970-01-01T12:00:00Z",
         "d{since 1970-01-01T12:00:00Z}",
         "days since 1970-01-01T12:00:00Z",
         "d{since 1970-01-01T12:00:00Z}");
-    testToUcumToUdunits("days since 1970-01-05T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1970-01-05T00:00:00Z",
         "d{since 1970-01-05T00:00:00Z}",
         "days since 1970-01-05T00:00:00Z",
         "d{since 1970-01-05T00:00:00Z}");
-    testToUcumToUdunits("days since 1970-01-15T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1970-01-15T00:00:00Z",
         "d{since 1970-01-15T00:00:00Z}",
         "days since 1970-01-15T00:00:00Z",
         "d{since 1970-01-15T00:00:00Z}");
-    testToUcumToUdunits("days since 1970-1-1 00:00:00",
+    testToUcumToUdunits(
+        "days since 1970-1-1 00:00:00",
         "d{since 1970-01-01T00:00:00Z}",
         "days since 1970-01-01T00:00:00Z",
         "d{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1976-01-01T00:00:00",
+    testToUcumToUdunits(
+        "days since 1976-01-01T00:00:00",
         "d{since 1976-01-01T00:00:00Z}",
         "days since 1976-01-01T00:00:00Z",
         "d{since 1976-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1981-01-01",
+    testToUcumToUdunits(
+        "days since 1981-01-01",
         "d{since 1981-01-01}",
         "days since 1981-01-01",
         "d{since 1981-01-01}");
-    testToUcumToUdunits("days since 1982-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1982-01-01 00:00:00",
         "d{since 1982-01-01T00:00:00Z}",
         "days since 1982-01-01T00:00:00Z",
         "d{since 1982-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1982-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 1982-01-01T00:00:00Z",
         "d{since 1982-01-01T00:00:00Z}",
         "days since 1982-01-01T00:00:00Z",
         "d{since 1982-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1983-04-16 12:00:00",
+    testToUcumToUdunits(
+        "days since 1983-04-16 12:00:00",
         "d{since 1983-04-16T12:00:00Z}",
         "days since 1983-04-16T12:00:00Z",
         "d{since 1983-04-16T12:00:00Z}");
-    testToUcumToUdunits("days since 1990-01-01",
+    testToUcumToUdunits(
+        "days since 1990-01-01",
         "d{since 1990-01-01}",
         "days since 1990-01-01",
         "d{since 1990-01-01}");
-    testToUcumToUdunits("days since 1990-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1990-01-01 00:00:00",
         "d{since 1990-01-01T00:00:00Z}",
         "days since 1990-01-01T00:00:00Z",
         "d{since 1990-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1991-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1991-01-01 00:00:00",
         "d{since 1991-01-01T00:00:00Z}",
         "days since 1991-01-01T00:00:00Z",
         "d{since 1991-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1997-01-01",
+    testToUcumToUdunits(
+        "days since 1997-01-01",
         "d{since 1997-01-01}",
         "days since 1997-01-01",
         "d{since 1997-01-01}");
-    testToUcumToUdunits("days since 1997-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 1997-01-01 00:00:00",
         "d{since 1997-01-01T00:00:00Z}",
         "days since 1997-01-01T00:00:00Z",
         "d{since 1997-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 1999-01-01",
+    testToUcumToUdunits(
+        "days since 1999-01-01",
         "d{since 1999-01-01}",
         "days since 1999-01-01",
         "d{since 1999-01-01}");
-    testToUcumToUdunits("days since 2000-01-01",
+    testToUcumToUdunits(
+        "days since 2000-01-01",
         "d{since 2000-01-01}",
         "days since 2000-01-01",
         "d{since 2000-01-01}");
-    testToUcumToUdunits("days since 2000-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 2000-01-01 00:00:00",
         "d{since 2000-01-01T00:00:00Z}",
         "days since 2000-01-01T00:00:00Z",
         "d{since 2000-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2000-01-01 00:00:00 UTC",
+    testToUcumToUdunits(
+        "days since 2000-01-01 00:00:00 UTC",
         "d{since 2000-01-01T00:00:00Z}",
         "days since 2000-01-01T00:00:00Z",
         "d{since 2000-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2000-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 2000-01-01T00:00:00Z",
         "d{since 2000-01-01T00:00:00Z}",
         "days since 2000-01-01T00:00:00Z",
         "d{since 2000-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2001-01-01T00:00:00",
+    testToUcumToUdunits(
+        "days since 2001-01-01T00:00:00",
         "d{since 2001-01-01T00:00:00Z}",
         "days since 2001-01-01T00:00:00Z",
         "d{since 2001-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2002-01-01",
+    testToUcumToUdunits(
+        "days since 2002-01-01",
         "d{since 2002-01-01}",
         "days since 2002-01-01",
         "d{since 2002-01-01}");
-    testToUcumToUdunits("days since 2002-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 2002-01-01 00:00:00",
         "d{since 2002-01-01T00:00:00Z}",
         "days since 2002-01-01T00:00:00Z",
         "d{since 2002-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2002-1-1",
+    testToUcumToUdunits(
+        "days since 2002-1-1",
         "d{since 2002-01-01}",
         "days since 2002-01-01",
         "d{since 2002-01-01}");
-    testToUcumToUdunits("days since 2006-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 2006-01-01 00:00:00",
         "d{since 2006-01-01T00:00:00Z}",
         "days since 2006-01-01T00:00:00Z",
         "d{since 2006-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2006-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 2006-01-01T00:00:00Z",
         "d{since 2006-01-01T00:00:00Z}",
         "days since 2006-01-01T00:00:00Z",
         "d{since 2006-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2010-01-01 00:00:00",
+    testToUcumToUdunits(
+        "days since 2010-01-01 00:00:00",
         "d{since 2010-01-01T00:00:00Z}",
         "days since 2010-01-01T00:00:00Z",
         "d{since 2010-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2011-01-01",
+    testToUcumToUdunits(
+        "days since 2011-01-01",
         "d{since 2011-01-01}",
         "days since 2011-01-01",
         "d{since 2011-01-01}");
-    testToUcumToUdunits("days since 2011-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "days since 2011-01-01T00:00:00Z",
         "d{since 2011-01-01T00:00:00Z}",
         "days since 2011-01-01T00:00:00Z",
         "d{since 2011-01-01T00:00:00Z}");
-    testToUcumToUdunits("days since 2011-01-03T12:00:00Z",
+    testToUcumToUdunits(
+        "days since 2011-01-03T12:00:00Z",
         "d{since 2011-01-03T12:00:00Z}",
         "days since 2011-01-03T12:00:00Z",
         "d{since 2011-01-03T12:00:00Z}");
@@ -1325,7 +1394,8 @@ class Units2Tests {
     testToUcumToUdunits("degC", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("degC m s-1", "Cel.m.s-1", "degree_C m s-1", "Cel.m.s-1");
     testToUcumToUdunits("degC m/s", "Cel.m.s-1", "degree_C m s-1", "Cel.m.s-1");
-    testToUcumToUdunits("degC-m/s", "Cel-m.s-1", "degree_C-m s-1", "Cel-m.s-1"); // invalid passes through
+    testToUcumToUdunits(
+        "degC-m/s", "Cel-m.s-1", "degree_C-m s-1", "Cel-m.s-1"); // invalid passes through
     testToUcumToUdunits("degC/day", "Cel.d-1", "degree_C day-1", "Cel.d-1");
     testToUcumToUdunits("degK", "K", "degree_K", "K");
     testToUcumToUdunits("degree", "deg", "degree", "deg");
@@ -1334,30 +1404,36 @@ class Units2Tests {
     testToUcumToUdunits("degree_C day-1", "Cel.d-1", "degree_C day-1", "Cel.d-1");
     testToUcumToUdunits("degree_Celsius", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("degree_east", "deg{east}", "degrees_east", "deg{east}");
-    testToUcumToUdunits("degree_East", "deg{east}", "degrees_east", "deg{east}"); // East is not valid udunits
+    testToUcumToUdunits(
+        "degree_East", "deg{east}", "degrees_east", "deg{east}"); // East is not valid udunits
     testToUcumToUdunits("degree_F", "[degF]", "degree_F", "[degF]");
     testToUcumToUdunits("degree_K", "K", "degree_K", "K");
     testToUcumToUdunits("degree_north", "deg{north}", "degrees_north", "deg{north}");
-    testToUcumToUdunits("degree_North", "deg{north}", "degrees_north", "deg{north}"); // North is not valid udunits
+    testToUcumToUdunits(
+        "degree_North", "deg{north}", "degrees_north", "deg{north}"); // North is not valid udunits
     testToUcumToUdunits("degree_true", "deg{true}", "degrees_true", "deg{true}");
     testToUcumToUdunits("degrees", "deg", "degree", "deg");
     testToUcumToUdunits("degrees (+E)", "deg{east}", "degrees_east", "deg{east}");
     testToUcumToUdunits("degrees (+N)", "deg{north}", "degrees_north", "deg{north}");
-    testToUcumToUdunits("degrees (clockwise from bow)",
+    testToUcumToUdunits(
+        "degrees (clockwise from bow)",
         "deg{clockwise from bow}",
         "degree(clockwise from bow)",
         "deg{clockwise from bow}");
-    testToUcumToUdunits("degrees (clockwise from true north)",
-        "deg{true}", "degrees_true", "deg{true}");
-    testToUcumToUdunits("degrees (clockwise towards true north)",
-        "deg{true}", "degrees_true", "deg{true}");
+    testToUcumToUdunits(
+        "degrees (clockwise from true north)", "deg{true}", "degrees_true", "deg{true}");
+    testToUcumToUdunits(
+        "degrees (clockwise towards true north)", "deg{true}", "degrees_true", "deg{true}");
     testToUcumToUdunits("degrees C", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("degrees Celcius", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("degrees Celsius", "Cel", "degree_C", "Cel");
     testToUcumToUdunits("Degrees(azimuth)", "deg{azimuth}", "degree(azimuth)", "deg{azimuth}");
     testToUcumToUdunits("degrees(azimuth)", "deg{azimuth}", "degree(azimuth)", "deg{azimuth}");
-    testToUcumToUdunits("Degrees, Oceanographic Convention, 0=toward N, 90=toward E",
-        "deg{true}", "degrees_true", "deg{true}");
+    testToUcumToUdunits(
+        "Degrees, Oceanographic Convention, 0=toward N, 90=toward E",
+        "deg{true}",
+        "degrees_true",
+        "deg{true}");
     testToUcumToUdunits("degrees-east", "deg{east}", "degrees_east", "deg{east}");
     testToUcumToUdunits("degrees-north", "deg{north}", "degrees_north", "deg{north}");
     testToUcumToUdunits("degrees/min", "deg.min-1", "degree minute-1", "deg.min-1");
@@ -1370,19 +1446,17 @@ class Units2Tests {
     testToUcumToUdunits("Dobsons", "{dobson}", "dobson", "{dobson}");
     testToUcumToUdunits("dyn-cm", "[g].cm", "geopotential cm", "[g].cm");
     testToUcumToUdunits("dynamic meter", "[g].m", "geopotential m", "[g].m");
-    testToUcumToUdunits("einstein m^-2 day^-1",
-        "einstein.m-2.d-1", "einstein m-2 day-1", "einstein.m-2.d-1");
-    testToUcumToUdunits("Einsteins m-2 d-1", "einstein.m-2.d-1", "einstein m-2 day-1", "einstein.m-2.d-1");
-    testToUcumToUdunits("fish per cubic kilometer",
-        "{fish}.km-3", "fish km-3", "{fish}.km-3");
-    testToUcumToUdunits("fish per square kilometer",
-        "{fish}.km-2", "fish km-2", "{fish}.km-2");
+    testToUcumToUdunits(
+        "einstein m^-2 day^-1", "einstein.m-2.d-1", "einstein m-2 day-1", "einstein.m-2.d-1");
+    testToUcumToUdunits(
+        "Einsteins m-2 d-1", "einstein.m-2.d-1", "einstein m-2 day-1", "einstein.m-2.d-1");
+    testToUcumToUdunits("fish per cubic kilometer", "{fish}.km-3", "fish km-3", "{fish}.km-3");
+    testToUcumToUdunits("fish per square kilometer", "{fish}.km-2", "fish km-2", "{fish}.km-2");
     testToUcumToUdunits("fish per tow", "{fish}.{tow}-1", "fish tow-1", "{fish}.{tow}-1");
     testToUcumToUdunits("four digit year", "a", "year", "a");
     testToUcumToUdunits("frac.", "1", "1", "1");
     testToUcumToUdunits("fraction", "1", "1", "1");
-    testToUcumToUdunits("fraction (between 0 and 1)",
-        "1", "1", "1");
+    testToUcumToUdunits("fraction (between 0 and 1)", "1", "1", "1");
     testToUcumToUdunits("ft", "[ft_i]", "ft", "[ft_i]");
     testToUcumToUdunits("g/kg", "g.kg-1", "g kg-1", "g.kg-1");
     testToUcumToUdunits("gm/kg", "g.kg-1", "g kg-1", "g.kg-1");
@@ -1390,309 +1464,382 @@ class Units2Tests {
     testToUcumToUdunits("gram", "g", "g", "g");
     testToUcumToUdunits("gram per gram", "g.g-1", "g g-1", "g.g-1");
     testToUcumToUdunits("gram per meter^2", "g.m-2", "g m-2", "g.m-2");
-    testToUcumToUdunits("gram per meter^2 per day",
-        "g.m-2.d-1", "g m-2 day-1", "g.m-2.d-1");
-    testToUcumToUdunits("gram per one tenth meter^2",
-        "g.m-2.10-2", "g m-2 10-2", "g.m-2.10-2"); // ???
+    testToUcumToUdunits("gram per meter^2 per day", "g.m-2.d-1", "g m-2 day-1", "g.m-2.d-1");
+    testToUcumToUdunits(
+        "gram per one tenth meter^2", "g.m-2.10-2", "g m-2 10-2", "g.m-2.10-2"); // ???
     testToUcumToUdunits("grams/kg", "g.kg-1", "g kg-1", "g.kg-1");
     testToUcumToUdunits("grams/kg m/s", "g.kg-1.m.s-1", "g kg-1 m s-1", "g.kg-1.m.s-1");
     testToUcumToUdunits("HH:MM:SS", "{HH:mm:ss}", "HH:mm:ss", "{HH:mm:ss}");
     testToUcumToUdunits("HHmm.m", "{HHmm.m}", "HHmm.m", "{HHmm.m}");
     testToUcumToUdunits("hour", "h", "hour", "h");
-    testToUcumToUdunits("hour since 1984-01-14 14:00:00",
+    testToUcumToUdunits(
+        "hour since 1984-01-14 14:00:00",
         "h{since 1984-01-14T14:00:00Z}",
         "hours since 1984-01-14T14:00:00Z",
         "h{since 1984-01-14T14:00:00Z}");
-    testToUcumToUdunits("hour since 2000-01-01 00:00 UTC",
+    testToUcumToUdunits(
+        "hour since 2000-01-01 00:00 UTC",
         "h{since 2000-01-01T00:00:00Z}",
         "hours since 2000-01-01T00:00:00Z",
         "h{since 2000-01-01T00:00:00Z}");
-    testToUcumToUdunits("Hour since 2013-02-13T00:00:00Z",
+    testToUcumToUdunits(
+        "Hour since 2013-02-13T00:00:00Z",
         "h{since 2013-02-13T00:00:00Z}",
         "hours since 2013-02-13T00:00:00Z",
         "h{since 2013-02-13T00:00:00Z}");
-    testToUcumToUdunits("Hour since 2013-02-15T12:00:00Z",
+    testToUcumToUdunits(
+        "Hour since 2013-02-15T12:00:00Z",
         "h{since 2013-02-15T12:00:00Z}",
         "hours since 2013-02-15T12:00:00Z",
         "h{since 2013-02-15T12:00:00Z}");
     testToUcumToUdunits("hours", "h", "hour", "h");
-    testToUcumToUdunits("hours since 0001-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 0001-01-01T00:00:00.000Z",
         "h{since 0001-01-01T00:00:00.000Z}",
         "hours since 0001-01-01T00:00:00.000Z",
         "h{since 0001-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1-1-1 00:00:0.0",
+    testToUcumToUdunits(
+        "hours since 1-1-1 00:00:0.0",
         "h{since 0001-01-01T00:00:00.000Z}",
         "hours since 0001-01-01T00:00:00.000Z",
         "h{since 0001-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1800-01-01 00:00",
+    testToUcumToUdunits(
+        "hours since 1800-01-01 00:00",
         "h{since 1800-01-01T00:00:00Z}",
         "hours since 1800-01-01T00:00:00Z",
         "h{since 1800-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1800-01-01 00:00:0.0",
+    testToUcumToUdunits(
+        "hours since 1800-01-01 00:00:0.0",
         "h{since 1800-01-01T00:00:00.000Z}",
         "hours since 1800-01-01T00:00:00.000Z",
         "h{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1800-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 1800-01-01T00:00:00.000Z",
         "h{since 1800-01-01T00:00:00.000Z}",
         "hours since 1800-01-01T00:00:00.000Z",
         "h{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1800-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 1800-01-01T00:00:00Z",
         "h{since 1800-01-01T00:00:00Z}",
         "hours since 1800-01-01T00:00:00Z",
         "h{since 1800-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1800-1-1 00:00:0.0",
+    testToUcumToUdunits(
+        "hours since 1800-1-1 00:00:0.0",
         "h{since 1800-01-01T00:00:00.000Z}",
         "hours since 1800-01-01T00:00:00.000Z",
         "h{since 1800-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1800-1-1 00:00:00",
+    testToUcumToUdunits(
+        "hours since 1800-1-1 00:00:00",
         "h{since 1800-01-01T00:00:00Z}",
         "hours since 1800-01-01T00:00:00Z",
         "h{since 1800-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1901-01-15",
+    testToUcumToUdunits(
+        "hours since 1901-01-15",
         "h{since 1901-01-15}",
         "hours since 1901-01-15",
         "h{since 1901-01-15}");
-    testToUcumToUdunits("HOURS since 1901-01-15 00:00:00",
+    testToUcumToUdunits(
+        "HOURS since 1901-01-15 00:00:00",
         "h{since 1901-01-15T00:00:00Z}",
         "hours since 1901-01-15T00:00:00Z",
         "h{since 1901-01-15T00:00:00Z}");
-    testToUcumToUdunits("hours since 1948-01-01",
+    testToUcumToUdunits(
+        "hours since 1948-01-01",
         "h{since 1948-01-01}",
         "hours since 1948-01-01",
         "h{since 1948-01-01}");
-    testToUcumToUdunits("hours since 1950-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 1950-01-01T00:00:00Z",
         "h{since 1950-01-01T00:00:00Z}",
         "hours since 1950-01-01T00:00:00Z",
         "h{since 1950-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1950-1-1 0:0:0",
+    testToUcumToUdunits(
+        "hours since 1950-1-1 0:0:0",
         "h{since 1950-01-01T00:00:00Z}",
         "hours since 1950-01-01T00:00:00Z",
         "h{since 1950-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1970-01-01 00:00:00",
+    testToUcumToUdunits(
+        "hours since 1970-01-01 00:00:00",
         "h{since 1970-01-01T00:00:00Z}",
         "hours since 1970-01-01T00:00:00Z",
         "h{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1970-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 1970-01-01T00:00:00Z",
         "h{since 1970-01-01T00:00:00Z}",
         "hours since 1970-01-01T00:00:00Z",
         "h{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1987-01-01 00:00:0.0",
+    testToUcumToUdunits(
+        "hours since 1987-01-01 00:00:0.0",
         "h{since 1987-01-01T00:00:00.000Z}",
         "hours since 1987-01-01T00:00:00.000Z",
         "h{since 1987-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 1987-01-01 00:00:00",
+    testToUcumToUdunits(
+        "hours since 1987-01-01 00:00:00",
         "h{since 1987-01-01T00:00:00Z}",
         "hours since 1987-01-01T00:00:00Z",
         "h{since 1987-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1992-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 1992-01-01T00:00:00Z",
         "h{since 1992-01-01T00:00:00Z}",
         "hours since 1992-01-01T00:00:00Z",
         "h{since 1992-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 1996-01-01",
+    testToUcumToUdunits(
+        "hours since 1996-01-01",
         "h{since 1996-01-01}",
         "hours since 1996-01-01",
         "h{since 1996-01-01}");
-    testToUcumToUdunits("hours since 1998-01-01",
+    testToUcumToUdunits(
+        "hours since 1998-01-01",
         "h{since 1998-01-01}",
         "hours since 1998-01-01",
         "h{since 1998-01-01}");
-    testToUcumToUdunits("hours since 2000-01-01 00:00:00",
+    testToUcumToUdunits(
+        "hours since 2000-01-01 00:00:00",
         "h{since 2000-01-01T00:00:00Z}",
         "hours since 2000-01-01T00:00:00Z",
         "h{since 2000-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 2006-01-01 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2006-01-01 00:00:00.000 UTC",
         "h{since 2006-01-01T00:00:00.000Z}",
         "hours since 2006-01-01T00:00:00.000Z",
         "h{since 2006-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2006-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2006-01-01T00:00:00.000Z",
         "h{since 2006-01-01T00:00:00.000Z}",
         "hours since 2006-01-01T00:00:00.000Z",
         "h{since 2006-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2006-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2006-01-01T00:00:00Z",
         "h{since 2006-01-01T00:00:00Z}",
         "hours since 2006-01-01T00:00:00Z",
         "h{since 2006-01-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 2009-02-08 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2009-02-08 00:00:00.000 UTC",
         "h{since 2009-02-08T00:00:00.000Z}",
         "hours since 2009-02-08T00:00:00.000Z",
         "h{since 2009-02-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-02-08T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2009-02-08T00:00:00.000Z",
         "h{since 2009-02-08T00:00:00.000Z}",
         "hours since 2009-02-08T00:00:00.000Z",
         "h{since 2009-02-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-02-08T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2009-02-08T00:00:00Z",
         "h{since 2009-02-08T00:00:00Z}",
         "hours since 2009-02-08T00:00:00Z",
         "h{since 2009-02-08T00:00:00Z}");
-    testToUcumToUdunits("hours since 2009-05-03 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2009-05-03 00:00:00.000 UTC",
         "h{since 2009-05-03T00:00:00.000Z}",
         "hours since 2009-05-03T00:00:00.000Z",
         "h{since 2009-05-03T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-05-03T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2009-05-03T00:00:00.000Z",
         "h{since 2009-05-03T00:00:00.000Z}",
         "hours since 2009-05-03T00:00:00.000Z",
         "h{since 2009-05-03T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-05-03T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2009-05-03T00:00:00Z",
         "h{since 2009-05-03T00:00:00Z}",
         "hours since 2009-05-03T00:00:00Z",
         "h{since 2009-05-03T00:00:00Z}");
-    testToUcumToUdunits("hours since 2009-11-19 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2009-11-19 00:00:00.000 UTC",
         "h{since 2009-11-19T00:00:00.000Z}",
         "hours since 2009-11-19T00:00:00.000Z",
         "h{since 2009-11-19T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-11-19T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2009-11-19T00:00:00.000Z",
         "h{since 2009-11-19T00:00:00.000Z}",
         "hours since 2009-11-19T00:00:00.000Z",
         "h{since 2009-11-19T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2009-11-19T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2009-11-19T00:00:00Z",
         "h{since 2009-11-19T00:00:00Z}",
         "hours since 2009-11-19T00:00:00Z",
         "h{since 2009-11-19T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-01-13 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-01-13 00:00:00.000 UTC",
         "h{since 2010-01-13T00:00:00.000Z}",
         "hours since 2010-01-13T00:00:00.000Z",
         "h{since 2010-01-13T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-01-13T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-01-13T00:00:00.000Z",
         "h{since 2010-01-13T00:00:00.000Z}",
         "hours since 2010-01-13T00:00:00.000Z",
         "h{since 2010-01-13T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-01-13T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-01-13T00:00:00Z",
         "h{since 2010-01-13T00:00:00Z}",
         "hours since 2010-01-13T00:00:00Z",
         "h{since 2010-01-13T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-01-23 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-01-23 00:00:00.000 UTC",
         "h{since 2010-01-23T00:00:00.000Z}",
         "hours since 2010-01-23T00:00:00.000Z",
         "h{since 2010-01-23T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-01-23T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-01-23T00:00:00.000Z",
         "h{since 2010-01-23T00:00:00.000Z}",
         "hours since 2010-01-23T00:00:00.000Z",
         "h{since 2010-01-23T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-01-23T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-01-23T00:00:00Z",
         "h{since 2010-01-23T00:00:00Z}",
         "hours since 2010-01-23T00:00:00Z",
         "h{since 2010-01-23T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-02-08 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-02-08 00:00:00.000 UTC",
         "h{since 2010-02-08T00:00:00.000Z}",
         "hours since 2010-02-08T00:00:00.000Z",
         "h{since 2010-02-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-02-08T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-02-08T00:00:00.000Z",
         "h{since 2010-02-08T00:00:00.000Z}",
         "hours since 2010-02-08T00:00:00.000Z",
         "h{since 2010-02-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-02-08T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-02-08T00:00:00Z",
         "h{since 2010-02-08T00:00:00Z}",
         "hours since 2010-02-08T00:00:00Z",
         "h{since 2010-02-08T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-02-24 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-02-24 00:00:00.000 UTC",
         "h{since 2010-02-24T00:00:00.000Z}",
         "hours since 2010-02-24T00:00:00.000Z",
         "h{since 2010-02-24T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-02-24T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-02-24T00:00:00.000Z",
         "h{since 2010-02-24T00:00:00.000Z}",
         "hours since 2010-02-24T00:00:00.000Z",
         "h{since 2010-02-24T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-02-24T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-02-24T00:00:00Z",
         "h{since 2010-02-24T00:00:00Z}",
         "hours since 2010-02-24T00:00:00Z",
         "h{since 2010-02-24T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-05-01 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-05-01 00:00:00.000 UTC",
         "h{since 2010-05-01T00:00:00.000Z}",
         "hours since 2010-05-01T00:00:00.000Z",
         "h{since 2010-05-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-05-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-05-01T00:00:00.000Z",
         "h{since 2010-05-01T00:00:00.000Z}",
         "hours since 2010-05-01T00:00:00.000Z",
         "h{since 2010-05-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-05-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-05-01T00:00:00Z",
         "h{since 2010-05-01T00:00:00Z}",
         "hours since 2010-05-01T00:00:00Z",
         "h{since 2010-05-01T00:00:00Z}");
-    testToUcumToUdunits("hours since 2010-05-08 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2010-05-08 00:00:00.000 UTC",
         "h{since 2010-05-08T00:00:00.000Z}",
         "hours since 2010-05-08T00:00:00.000Z",
         "h{since 2010-05-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-05-08T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2010-05-08T00:00:00.000Z",
         "h{since 2010-05-08T00:00:00.000Z}",
         "hours since 2010-05-08T00:00:00.000Z",
         "h{since 2010-05-08T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2010-05-08T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2010-05-08T00:00:00Z",
         "h{since 2010-05-08T00:00:00Z}",
         "hours since 2010-05-08T00:00:00Z",
         "h{since 2010-05-08T00:00:00Z}");
-    testToUcumToUdunits("hours since 2011-03-10T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2011-03-10T00:00:00Z",
         "h{since 2011-03-10T00:00:00Z}",
         "hours since 2011-03-10T00:00:00Z",
         "h{since 2011-03-10T00:00:00Z}");
-    testToUcumToUdunits("hours since 2011-03-28T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2011-03-28T00:00:00Z",
         "h{since 2011-03-28T00:00:00Z}",
         "hours since 2011-03-28T00:00:00Z",
         "h{since 2011-03-28T00:00:00Z}");
-    testToUcumToUdunits("hours since 2013-01-03T01:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2013-01-03T01:00:00Z",
         "h{since 2013-01-03T01:00:00Z}",
         "hours since 2013-01-03T01:00:00Z",
         "h{since 2013-01-03T01:00:00Z}");
-    testToUcumToUdunits("hours since 2013-02-27 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2013-02-27 00:00:00.000 UTC",
         "h{since 2013-02-27T00:00:00.000Z}",
         "hours since 2013-02-27T00:00:00.000Z",
         "h{since 2013-02-27T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-02-27T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2013-02-27T00:00:00.000Z",
         "h{since 2013-02-27T00:00:00.000Z}",
         "hours since 2013-02-27T00:00:00.000Z",
         "h{since 2013-02-27T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-02-27T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2013-02-27T00:00:00Z",
         "h{since 2013-02-27T00:00:00Z}",
         "hours since 2013-02-27T00:00:00Z",
         "h{since 2013-02-27T00:00:00Z}");
-    testToUcumToUdunits("hours since 2013-03-05 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2013-03-05 00:00:00.000 UTC",
         "h{since 2013-03-05T00:00:00.000Z}",
         "hours since 2013-03-05T00:00:00.000Z",
         "h{since 2013-03-05T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-03-05T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2013-03-05T00:00:00.000Z",
         "h{since 2013-03-05T00:00:00.000Z}",
         "hours since 2013-03-05T00:00:00.000Z",
         "h{since 2013-03-05T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-03-05T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2013-03-05T00:00:00Z",
         "h{since 2013-03-05T00:00:00Z}",
         "hours since 2013-03-05T00:00:00Z",
         "h{since 2013-03-05T00:00:00Z}");
-    testToUcumToUdunits("hours since 2013-04-05 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2013-04-05 00:00:00.000 UTC",
         "h{since 2013-04-05T00:00:00.000Z}",
         "hours since 2013-04-05T00:00:00.000Z",
         "h{since 2013-04-05T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-04-05T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2013-04-05T00:00:00.000Z",
         "h{since 2013-04-05T00:00:00.000Z}",
         "hours since 2013-04-05T00:00:00.000Z",
         "h{since 2013-04-05T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-04-05T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2013-04-05T00:00:00Z",
         "h{since 2013-04-05T00:00:00Z}",
         "hours since 2013-04-05T00:00:00Z",
         "h{since 2013-04-05T00:00:00Z}");
-    testToUcumToUdunits("hours since 2013-05-18 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2013-05-18 00:00:00.000 UTC",
         "h{since 2013-05-18T00:00:00.000Z}",
         "hours since 2013-05-18T00:00:00.000Z",
         "h{since 2013-05-18T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-05-18T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2013-05-18T00:00:00.000Z",
         "h{since 2013-05-18T00:00:00.000Z}",
         "hours since 2013-05-18T00:00:00.000Z",
         "h{since 2013-05-18T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2013-05-18T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2013-05-18T00:00:00Z",
         "h{since 2013-05-18T00:00:00Z}",
         "hours since 2013-05-18T00:00:00Z",
         "h{since 2013-05-18T00:00:00Z}");
-    testToUcumToUdunits("hours since 2017-10-19T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2017-10-19T00:00:00Z",
         "h{since 2017-10-19T00:00:00Z}",
         "hours since 2017-10-19T00:00:00Z",
         "h{since 2017-10-19T00:00:00Z}");
-    testToUcumToUdunits("hours since 2018-01-01 00:00:00.000 UTC",
+    testToUcumToUdunits(
+        "hours since 2018-01-01 00:00:00.000 UTC",
         "h{since 2018-01-01T00:00:00.000Z}",
         "hours since 2018-01-01T00:00:00.000Z",
         "h{since 2018-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2018-01-01T00:00:00.000Z",
+    testToUcumToUdunits(
+        "hours since 2018-01-01T00:00:00.000Z",
         "h{since 2018-01-01T00:00:00.000Z}",
         "hours since 2018-01-01T00:00:00.000Z",
         "h{since 2018-01-01T00:00:00.000Z}");
-    testToUcumToUdunits("hours since 2018-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "hours since 2018-01-01T00:00:00Z",
         "h{since 2018-01-01T00:00:00Z}",
         "hours since 2018-01-01T00:00:00Z",
         "h{since 2018-01-01T00:00:00Z}");
@@ -1702,7 +1849,8 @@ class Units2Tests {
     testToUcumToUdunits("index", "{index}", "index", "{index}");
     testToUcumToUdunits("integer", "1", "1", "1");
     testToUcumToUdunits("J/kg", "J.kg-1", "J kg-1", "J.kg-1");
-    testToUcumToUdunits("Julian days since December 31, 2010",
+    testToUcumToUdunits(
+        "Julian days since December 31, 2010",
         "d{since 2010-12-31}",
         "days since 2010-12-31",
         "d{since 2010-12-31}");
@@ -1725,25 +1873,21 @@ class Units2Tests {
     testToUcumToUdunits("kg/m^2/s", "kg.m-2.s-1", "kg m-2 s-1", "kg.m-2.s-1");
     testToUcumToUdunits("kg/m^3", "kg.m-3", "kg m-3", "kg.m-3");
     testToUcumToUdunits("kilogram", "kg", "kg", "kg");
-    testToUcumToUdunits("kilogram meter-1 s-1",
-        "kg.m-1.s-1", "kg m-1 s-1", "kg.m-1.s-1");
+    testToUcumToUdunits("kilogram meter-1 s-1", "kg.m-1.s-1", "kg m-1 s-1", "kg.m-1.s-1");
     testToUcumToUdunits("kilogram meter-2", "kg.m-2", "kg m-2", "kg.m-2");
-    testToUcumToUdunits("kilogram meter-2 second-1",
-        "kg.m-2.s-1", "kg m-2 s-1", "kg.m-2.s-1");
+    testToUcumToUdunits("kilogram meter-2 second-1", "kg.m-2.s-1", "kg m-2 s-1", "kg.m-2.s-1");
     testToUcumToUdunits("kilogram meter-3", "kg.m-3", "kg m-3", "kg.m-3");
     testToUcumToUdunits("kilogram meter3", "kg.m3", "kg m3", "kg.m3");
-    testToUcumToUdunits("kilogram per meter^2",
-        "kg.m-2", "kg m-2", "kg.m-2");
-    testToUcumToUdunits("kilogram per meter^2 per day",
-        "kg.m-2.d-1", "kg m-2 day-1", "kg.m-2.d-1");
-    testToUcumToUdunits("kilogram per meter^3",
-        "kg.m-3", "kg m-3", "kg.m-3");
-    testToUcumToUdunits("kilograms per cubic meter",
-        "kg.m-3", "kg m-3", "kg.m-3");
-    testToUcumToUdunits("kilograms per cubic meter - 1000", // not ideal, not valid?
-        "kg.m-3.-.1000", "kg m-3 - 1000", "kg.m-3.-.1000");
-    testToUcumToUdunits("kilograms/cubic meter",
-        "kg.m-3", "kg m-3", "kg.m-3");
+    testToUcumToUdunits("kilogram per meter^2", "kg.m-2", "kg m-2", "kg.m-2");
+    testToUcumToUdunits("kilogram per meter^2 per day", "kg.m-2.d-1", "kg m-2 day-1", "kg.m-2.d-1");
+    testToUcumToUdunits("kilogram per meter^3", "kg.m-3", "kg m-3", "kg.m-3");
+    testToUcumToUdunits("kilograms per cubic meter", "kg.m-3", "kg m-3", "kg.m-3");
+    testToUcumToUdunits(
+        "kilograms per cubic meter - 1000", // not ideal, not valid?
+        "kg.m-3.-.1000",
+        "kg m-3 - 1000",
+        "kg.m-3.-.1000");
+    testToUcumToUdunits("kilograms/cubic meter", "kg.m-3", "kg m-3", "kg.m-3");
     testToUcumToUdunits("kilometers", "km", "km", "km");
     testToUcumToUdunits("km*mm/hr", "km.mm.h-1", "km mm hour-1", "km.mm.h-1");
     testToUcumToUdunits("km2", "km2", "km2", "km2");
@@ -1770,7 +1914,8 @@ class Units2Tests {
     testToUcumToUdunits("m^-1", "m-1", "m-1", "m-1");
     testToUcumToUdunits("m^2/Hz", "m2.Hz-1", "m2 Hz-1", "m2.Hz-1");
     testToUcumToUdunits("m^2/s^2", "m2.s-2", "m2 s-2", "m2.s-2");
-    testToUcumToUdunits("m^3 s^-1 100m^-1", "m3.s-1.100m-1", "m3 s-1 100m-1", "m3.s-1.100m-1"); // ???
+    testToUcumToUdunits(
+        "m^3 s^-1 100m^-1", "m3.s-1.100m-1", "m3 s-1 100m-1", "m3.s-1.100m-1"); // ???
     testToUcumToUdunits("mb", "mbar", "mbar", "mbar");
     testToUcumToUdunits("mBar", "mbar", "mbar", "mbar");
     testToUcumToUdunits("mean", "{mean}", "mean", "{mean}");
@@ -1783,17 +1928,14 @@ class Units2Tests {
     testToUcumToUdunits("meter3 second-1", "m3.s-1", "m3 s-1", "m3.s-1");
     testToUcumToUdunits("meter^2", "m2", "m2", "m2");
     testToUcumToUdunits("meters", "m", "m", "m");
-    testToUcumToUdunits("meters per second",
-        "m.s-1", "m s-1", "m.s-1");
+    testToUcumToUdunits("meters per second", "m.s-1", "m s-1", "m.s-1");
     testToUcumToUdunits("meters/sec", "m.s-1", "m s-1", "m.s-1");
     testToUcumToUdunits("meters/second", "m.s-1", "m s-1", "m.s-1");
     testToUcumToUdunits("meters^3", "m3", "m3", "m3");
-    testToUcumToUdunits("mg C m-2 day-1", "mg.Cel.m-2.d-1", "mg degree_C m-2 day-1",
-        "mg.Cel.m-2.d-1");
-    testToUcumToUdunits("mg Carbon m-2 day-1",
-        "mg.{Carbon}.m-2.d-1",
-        "mg Carbon m-2 day-1",
-        "mg.{Carbon}.m-2.d-1");
+    testToUcumToUdunits(
+        "mg C m-2 day-1", "mg.Cel.m-2.d-1", "mg degree_C m-2 day-1", "mg.Cel.m-2.d-1");
+    testToUcumToUdunits(
+        "mg Carbon m-2 day-1", "mg.{Carbon}.m-2.d-1", "mg Carbon m-2 day-1", "mg.{Carbon}.m-2.d-1");
     testToUcumToUdunits("mg m-3", "mg.m-3", "mg m-3", "mg.m-3");
     testToUcumToUdunits("mg m^-3", "mg.m-3", "mg m-3", "mg.m-3");
     testToUcumToUdunits("mg mg-1", "mg.mg-1", "mg mg-1", "mg.mg-1");
@@ -1801,35 +1943,35 @@ class Units2Tests {
     testToUcumToUdunits("micro-atmospheres", "uatm", "uatm", "uatm");
     testToUcumToUdunits("microatmosphere", "uatm", "uatm", "uatm");
     testToUcumToUdunits("microatomosphere", "uatm", "uatm", "uatm");
-    testToUcumToUdunits("microEinsteins m-2 s-1",
-        "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
-    testToUcumToUdunits("microEinsteins m^-2 s-1",
-        "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
+    testToUcumToUdunits(
+        "microEinsteins m-2 s-1", "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
+    testToUcumToUdunits(
+        "microEinsteins m^-2 s-1", "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
     testToUcumToUdunits("microgram", "ug", "ug", "ug");
     testToUcumToUdunits("micromol mol-1", "umol.mol-1", "umol mol-1", "umol.mol-1");
     testToUcumToUdunits("micromole kg-1", "umol.kg-1", "umol kg-1", "umol.kg-1");
-    testToUcumToUdunits("micromole per centimeter^2 per hour",
-        "umol.cm-2.h-1", "umol cm-2 hour-1", "umol.cm-2.h-1");
-    testToUcumToUdunits("micromole per centimeter^2 per hour per photon flux",
+    testToUcumToUdunits(
+        "micromole per centimeter^2 per hour",
+        "umol.cm-2.h-1",
+        "umol cm-2 hour-1",
+        "umol.cm-2.h-1");
+    testToUcumToUdunits(
+        "micromole per centimeter^2 per hour per photon flux",
         "umol.cm-2.h-1.{photon_flux}-1",
         "umol cm-2 hour-1 photon_flux-1",
         "umol.cm-2.h-1.{photon_flux}-1"); // ???
-    testToUcumToUdunits("micromole per kilogram",
-        "umol.kg-1", "umol kg-1", "umol.kg-1");
-    testToUcumToUdunits("micromole per liter",
-        "umol.l-1", "umol l-1", "umol.l-1");
-    testToUcumToUdunits("micromole per meter^2 per second",
-        "umol.m-2.s-1", "umol m-2 s-1", "umol.m-2.s-1");
+    testToUcumToUdunits("micromole per kilogram", "umol.kg-1", "umol kg-1", "umol.kg-1");
+    testToUcumToUdunits("micromole per liter", "umol.l-1", "umol l-1", "umol.l-1");
+    testToUcumToUdunits(
+        "micromole per meter^2 per second", "umol.m-2.s-1", "umol m-2 s-1", "umol.m-2.s-1");
     testToUcumToUdunits("micromoles L-1", "umol.l-1", "umol l-1", "umol.l-1");
-    testToUcumToUdunits("micromoles per Kilogram",
-        "umol.kg-1", "umol kg-1", "umol.kg-1");
-    testToUcumToUdunits("micromoles per liter (umoles L-1)",
-        "umol.l-1", "umol l-1", "umol.l-1");
+    testToUcumToUdunits("micromoles per Kilogram", "umol.kg-1", "umol kg-1", "umol.kg-1");
+    testToUcumToUdunits("micromoles per liter (umoles L-1)", "umol.l-1", "umol l-1", "umol.l-1");
     testToUcumToUdunits("micromoles/l", "umol.l-1", "umol l-1", "umol.l-1");
-    testToUcumToUdunits("micromoles_per_liter",
-        "umol.l-1", "umol l-1", "umol.l-1");
+    testToUcumToUdunits("micromoles_per_liter", "umol.l-1", "umol l-1", "umol.l-1");
     testToUcumToUdunits("microns", "um", "um", "um");
-    testToUcumToUdunits("microwatt cm-2 s-2 nm-1 sr-1",
+    testToUcumToUdunits(
+        "microwatt cm-2 s-2 nm-1 sr-1",
         "uW.cm-2.s-2.nm-1.sr-1",
         "uW cm-2 s-2 nm-1 sr-1",
         "uW.cm-2.s-2.nm-1.sr-1");
@@ -1838,52 +1980,48 @@ class Units2Tests {
     testToUcumToUdunits("milliBars", "mbar", "mbar", "mbar");
     testToUcumToUdunits("millibars", "mbar", "mbar", "mbar");
     testToUcumToUdunits("milligram", "mg", "mg", "mg");
-    testToUcumToUdunits("milligram per gram per hour",
-        "mg.g-1.h-1", "mg g-1 hour-1", "mg.g-1.h-1");
-    testToUcumToUdunits("milligram per gram per hour per photon flux",
+    testToUcumToUdunits("milligram per gram per hour", "mg.g-1.h-1", "mg g-1 hour-1", "mg.g-1.h-1");
+    testToUcumToUdunits(
+        "milligram per gram per hour per photon flux",
         "mg.g-1.h-1.{photon_flux}-1",
         "mg g-1 hour-1 photon_flux-1",
         "mg.g-1.h-1.{photon_flux}-1"); // ???
-    testToUcumToUdunits("milligram per liter",
-        "mg.l-1", "mg l-1", "mg.l-1");
-    testToUcumToUdunits("milligram per meter^3",
-        "mg.m-3", "mg m-3", "mg.m-3");
-    testToUcumToUdunits("milligrams per cubic meter",
-        "mg.m-3", "mg m-3", "mg.m-3");
-    testToUcumToUdunits("milligrams per liter (mg/L)",
-        "mg.l-1", "mg l-1", "mg.l-1");
-    testToUcumToUdunits("milliliter per liter",
-        "ml.l-1", "ml l-1", "ml.l-1");
-    testToUcumToUdunits("milliliters per Liter",
-        "ml.l-1", "ml l-1", "ml.l-1");
-    testToUcumToUdunits("milliliters_per_liter",
-        "ml.l-1", "ml l-1", "ml.l-1");
+    testToUcumToUdunits("milligram per liter", "mg.l-1", "mg l-1", "mg.l-1");
+    testToUcumToUdunits("milligram per meter^3", "mg.m-3", "mg m-3", "mg.m-3");
+    testToUcumToUdunits("milligrams per cubic meter", "mg.m-3", "mg m-3", "mg.m-3");
+    testToUcumToUdunits("milligrams per liter (mg/L)", "mg.l-1", "mg l-1", "mg.l-1");
+    testToUcumToUdunits("milliliter per liter", "ml.l-1", "ml l-1", "ml.l-1");
+    testToUcumToUdunits("milliliters per Liter", "ml.l-1", "ml l-1", "ml.l-1");
+    testToUcumToUdunits("milliliters_per_liter", "ml.l-1", "ml l-1", "ml.l-1");
     testToUcumToUdunits("millimeter", "mm", "mm", "mm");
-    testToUcumToUdunits("millimole per meter^2 per day",
-        "mmol.m-2.d-1", "mmol m-2 day-1", "mmol.m-2.d-1");
-    testToUcumToUdunits("millimoles per kilogram",
-        "mmol.kg-1", "mmol kg-1", "mmol.kg-1");
-    testToUcumToUdunits("milliseconds since 1980-1-1T00:00:00Z",
+    testToUcumToUdunits(
+        "millimole per meter^2 per day", "mmol.m-2.d-1", "mmol m-2 day-1", "mmol.m-2.d-1");
+    testToUcumToUdunits("millimoles per kilogram", "mmol.kg-1", "mmol kg-1", "mmol.kg-1");
+    testToUcumToUdunits(
+        "milliseconds since 1980-1-1T00:00:00Z",
         "ms{since 1980-01-01T00:00:00Z}",
         "milliseconds since 1980-01-01T00:00:00Z",
         "ms{since 1980-01-01T00:00:00Z}");
-    testToUcumToUdunits("milliSiemens per centimeter [mS/cm]",
-        "mS.cm-1", "mS cm-1", "mS.cm-1");
+    testToUcumToUdunits("milliSiemens per centimeter [mS/cm]", "mS.cm-1", "mS cm-1", "mS.cm-1");
     testToUcumToUdunits("millivolts (mV)", "mV", "mV", "mV");
     // ! Calendar2.tryToIsoString was unable to find a format for 1-1-1980 00:00 UTC
-    testToUcumToUdunits("minutes since 1-1-1980 00:00 UTC",
+    testToUcumToUdunits(
+        "minutes since 1-1-1980 00:00 UTC",
         "min{since 1980-01-01T00:00:00Z}",
         "minutes since 1980-01-01T00:00:00Z",
         "min{since 1980-01-01T00:00:00Z}");
-    testToUcumToUdunits("minutes since 1980-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "minutes since 1980-01-01T00:00:00Z",
         "min{since 1980-01-01T00:00:00Z}",
         "minutes since 1980-01-01T00:00:00Z",
         "min{since 1980-01-01T00:00:00Z}");
-    testToUcumToUdunits("minutes since 1980-1-1",
+    testToUcumToUdunits(
+        "minutes since 1980-1-1",
         "min{since 1980-01-01}",
         "minutes since 1980-01-01",
         "min{since 1980-01-01}");
-    testToUcumToUdunits("minutes since 2017-01-01 00:00",
+    testToUcumToUdunits(
+        "minutes since 2017-01-01 00:00",
         "min{since 2017-01-01T00:00:00Z}",
         "minutes since 2017-01-01T00:00:00Z",
         "min{since 2017-01-01T00:00:00Z}");
@@ -1894,7 +2032,8 @@ class Units2Tests {
     testToUcumToUdunits("mm", "mm", "mm", "mm");
     testToUcumToUdunits("mm (01 to 12)", "mo", "month", "mo");
     testToUcumToUdunits("mm day-1", "mm.d-1", "mm day-1", "mm.d-1");
-    testToUcumToUdunits("mm water per 1.38m soil (0 to 7 layers)",
+    testToUcumToUdunits(
+        "mm water per 1.38m soil (0 to 7 layers)",
         "{mm water per 1.38m soil (0 to 7 layers)}",
         "mm water per 1.38m soil (0 to 7 layers)",
         "{mm water per 1.38m soil (0 to 7 layers)}"); // ???
@@ -1902,11 +2041,11 @@ class Units2Tests {
     testToUcumToUdunits("MM-dd-yyyy", "{MM-dd-yyyy}", "MM-dd-yyyy", "{MM-dd-yyyy}");
     testToUcumToUdunits("mm/day", "mm.d-1", "mm day-1", "mm.d-1");
     testToUcumToUdunits("MM/dd/yy", "{MM/dd/yy}", "MM/dd/yy", "{MM/dd/yy}");
-    testToUcumToUdunits("MM/dd/yy' 'HH:mm", "{MM/dd/yy' 'HH:mm}",
-        "MM/dd/yy' 'HH:mm", "{MM/dd/yy' 'HH:mm}");
+    testToUcumToUdunits(
+        "MM/dd/yy' 'HH:mm", "{MM/dd/yy' 'HH:mm}", "MM/dd/yy' 'HH:mm", "{MM/dd/yy' 'HH:mm}");
     testToUcumToUdunits("MM/dd/yyyy", "{MM/dd/yyyy}", "MM/dd/yyyy", "{MM/dd/yyyy}");
-    testToUcumToUdunits("MM/dd/yyyy HH:mm", "{MM/dd/yyyy HH:mm}",
-        "MM/dd/yyyy HH:mm", "{MM/dd/yyyy HH:mm}");
+    testToUcumToUdunits(
+        "MM/dd/yyyy HH:mm", "{MM/dd/yyyy HH:mm}", "MM/dd/yyyy HH:mm", "{MM/dd/yyyy HH:mm}");
     testToUcumToUdunits("MM/HR", "mm.h-1", "mm hour-1", "mm.h-1");
     testToUcumToUdunits("mm/hr", "mm.h-1", "mm hour-1", "mm.h-1");
     testToUcumToUdunits("mm/mn", "mm.mo-1", "mm month-1", "mm.mo-1");
@@ -1916,44 +2055,48 @@ class Units2Tests {
     testToUcumToUdunits("mol m-2 s-1", "mol.m-2.s-1", "mol m-2 s-1", "mol.m-2.s-1");
     testToUcumToUdunits("mol m^-3", "mol.m-3", "mol m-3", "mol.m-3");
     testToUcumToUdunits("mol/cell", "mol.{cell}-1", "mol cell-1", "mol.{cell}-1");
-    testToUcumToUdunits("mole per meter^2 per day",
-        "mol.m-2.d-1", "mol m-2 day-1", "mol.m-2.d-1");
-    testToUcumToUdunits("molm-2Season-1", "mol.m-2.{Season}-1", "mol m-2 Season-1", "mol.m-2.{Season}-1");
+    testToUcumToUdunits("mole per meter^2 per day", "mol.m-2.d-1", "mol m-2 day-1", "mol.m-2.d-1");
+    testToUcumToUdunits(
+        "molm-2Season-1", "mol.m-2.{Season}-1", "mol m-2 Season-1", "mol.m-2.{Season}-1");
     testToUcumToUdunits("molm-2Yr-1", "mol.m-2.a-1", "mol m-2 year-1", "mol.m-2.a-1");
     testToUcumToUdunits("month", "mo", "month", "mo");
-    testToUcumToUdunits("months since 0000-01-01 00:00:00",
+    testToUcumToUdunits(
+        "months since 0000-01-01 00:00:00",
         "mo{since 0000-01-01T00:00:00Z}",
         "months since 0000-01-01T00:00:00Z",
         "mo{since 0000-01-01T00:00:00Z}");
-    testToUcumToUdunits("months since 0000-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "months since 0000-01-01T00:00:00Z",
         "mo{since 0000-01-01T00:00:00Z}",
         "months since 0000-01-01T00:00:00Z",
         "mo{since 0000-01-01T00:00:00Z}");
-    testToUcumToUdunits("months since 1400-01-15T00:00:00Z",
+    testToUcumToUdunits(
+        "months since 1400-01-15T00:00:00Z",
         "mo{since 1400-01-15T00:00:00Z}",
         "months since 1400-01-15T00:00:00Z",
         "mo{since 1400-01-15T00:00:00Z}");
-    testToUcumToUdunits("months since 1400-1-15 00:00:00",
+    testToUcumToUdunits(
+        "months since 1400-1-15 00:00:00",
         "mo{since 1400-01-15T00:00:00Z}",
         "months since 1400-01-15T00:00:00Z",
         "mo{since 1400-01-15T00:00:00Z}");
-    testToUcumToUdunits("months since 2010-01-15 00:00:00",
+    testToUcumToUdunits(
+        "months since 2010-01-15 00:00:00",
         "mo{since 2010-01-15T00:00:00Z}",
         "months since 2010-01-15T00:00:00Z",
         "mo{since 2010-01-15T00:00:00Z}");
     testToUcumToUdunits("MPa m-1", "MPa.m-1", "MPa m-1", "MPa.m-1");
     testToUcumToUdunits("mS cm-1", "mS.cm-1", "mS cm-1", "mS.cm-1");
     testToUcumToUdunits("mS/cm", "mS.cm-1", "mS cm-1", "mS.cm-1");
-    testToUcumToUdunits("mW cm^-2 um^-1 sr^-1",
-        "mW.cm-2.um-1.sr-1", "mW cm-2 um-1 sr-1", "mW.cm-2.um-1.sr-1");
+    testToUcumToUdunits(
+        "mW cm^-2 um^-1 sr^-1", "mW.cm-2.um-1.sr-1", "mW cm-2 um-1 sr-1", "mW.cm-2.um-1.sr-1");
     testToUcumToUdunits("mWh", "mWh", "mWh", "mWh");
     testToUcumToUdunits("N m-2", "N.m-2", "N m-2", "N.m-2");
     testToUcumToUdunits("n/a", "", "", "");
     testToUcumToUdunits("N/m2", "N.m-2", "N m-2", "N.m-2");
     testToUcumToUdunits("N/m^2", "N.m-2", "N m-2", "N.m-2");
     testToUcumToUdunits("NA", "", "", "");
-    testToUcumToUdunits("nanomoles per liter",
-        "nmol.l-1", "nmol l-1", "nmol.l-1");
+    testToUcumToUdunits("nanomoles per liter", "nmol.l-1", "nmol l-1", "nmol.l-1");
     testToUcumToUdunits("nautical_miles", "[nmi_i]", "nautical_mile", "[nmi_i]");
     testToUcumToUdunits("Newton meter-2", "N.m-2", "N m-2", "N.m-2");
     testToUcumToUdunits("newton meter-2", "N.m-2", "N m-2", "N.m-2");
@@ -1964,8 +2107,7 @@ class Units2Tests {
     testToUcumToUdunits("none (fraction)", "1", "1", "1");
     testToUcumToUdunits("null", "", "", "");
     testToUcumToUdunits("number of cells", "{count}", "count", "{count}");
-    testToUcumToUdunits("number of observations",
-        "{count}", "count", "{count}");
+    testToUcumToUdunits("number of observations", "{count}", "count", "{count}");
     testToUcumToUdunits("numeric", "1", "1", "1");
     testToUcumToUdunits("Obs count", "{count}", "count", "{count}");
     testToUcumToUdunits("observations", "{count}", "count", "{count}");
@@ -1976,10 +2118,8 @@ class Units2Tests {
     testToUcumToUdunits("Pa m-1", "Pa.m-1", "Pa m-1", "Pa.m-1");
     testToUcumToUdunits("Pa s-1", "Pa.s-1", "Pa s-1", "Pa.s-1");
     testToUcumToUdunits("Pa/s", "Pa.s-1", "Pa s-1", "Pa.s-1");
-    testToUcumToUdunits("parts per 1000000",
-        "[ppm]", "ppm", "[ppm]");
-    testToUcumToUdunits("parts per million (ppm)",
-        "[ppm]", "ppm", "[ppm]");
+    testToUcumToUdunits("parts per 1000000", "[ppm]", "ppm", "[ppm]");
+    testToUcumToUdunits("parts per million (ppm)", "[ppm]", "ppm", "[ppm]");
     testToUcumToUdunits("Pascal", "Pa", "Pa", "Pa");
     testToUcumToUdunits("pascal", "Pa", "Pa", "Pa");
     testToUcumToUdunits("Pascal/s", "Pa.s-1", "Pa s-1", "Pa.s-1");
@@ -1987,22 +2127,20 @@ class Units2Tests {
     testToUcumToUdunits("per 1000", "10^-3", "1.0E-3", "10^-3");
     testToUcumToUdunits("per day", "d-1", "day-1", "d-1");
     testToUcumToUdunits("per meter", "m-1", "m-1", "m-1");
-    testToUcumToUdunits("per meter per steradian",
-        "m-1.sr-1", "m-1 sr-1", "m-1.sr-1");
-    testToUcumToUdunits("per mil relative to NIST SRM 3104a",
+    testToUcumToUdunits("per meter per steradian", "m-1.sr-1", "m-1 sr-1", "m-1.sr-1");
+    testToUcumToUdunits(
+        "per mil relative to NIST SRM 3104a",
         "[ppm].{relative to NIST SRM 3104a}",
         "ppm relative to NIST SRM 3104a",
         "[ppm].{relative to NIST SRM 3104a}");
     testToUcumToUdunits("percent", "%", "%", "%");
     testToUcumToUdunits("percent cover", "%.{cover}", "% cover", "%.{cover}");
     testToUcumToUdunits("pH", "[pH]", "pH", "[pH]");
-    testToUcumToUdunits("picomoles per liter",
-        "pmol.l-1", "pmol l-1", "pmol.l-1");
+    testToUcumToUdunits("picomoles per liter", "pmol.l-1", "pmol l-1", "pmol.l-1");
     testToUcumToUdunits("pounds", "[lb_av]", "pound", "[lb_av]");
     testToUcumToUdunits("ppm", "[ppm]", "ppm", "[ppm]");
     // CF standard names v25 switched to 1e-1, not PSU. Crazy. Useless. Don't do it.
-    testToUcumToUdunits("practical salinity units (PSU)",
-        "{PSU}", "PSU", "{PSU}");
+    testToUcumToUdunits("practical salinity units (PSU)", "{PSU}", "PSU", "{PSU}");
     testToUcumToUdunits("PSS", "{PSS}", "PSS", "{PSS}");
     testToUcumToUdunits("PSS-78", "{PSS_78}", "PSS_78", "{PSS_78}");
     testToUcumToUdunits("PSU", "{PSU}", "PSU", "{PSU}");
@@ -2018,79 +2156,90 @@ class Units2Tests {
     testToUcumToUdunits("S m-1", "S.m-1", "S m-1", "S.m-1");
     testToUcumToUdunits("s-1", "s-1", "s-1", "s-1");
     testToUcumToUdunits("S/m", "S.m-1", "S m-1", "S.m-1");
-    testToUcumToUdunits("sec since 1970-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "sec since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}",
         "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}");
     testToUcumToUdunits("second", "s", "s", "s");
     testToUcumToUdunits("second-1", "s-1", "s-1", "s-1");
     testToUcumToUdunits("seconds", "s", "s", "s");
-    testToUcumToUdunits("seconds since 1970-01-01 00:00:00",
+    testToUcumToUdunits(
+        "seconds since 1970-01-01 00:00:00",
         "s{since 1970-01-01T00:00:00Z}",
         "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-01 00:00:00 UTC",
+    testToUcumToUdunits(
+        "seconds since 1970-01-01 00:00:00 UTC",
         "s{since 1970-01-01T00:00:00Z}",
         "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-01 00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-01 00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}",
         "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-01T00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}",
         "seconds since 1970-01-01T00:00:00Z",
         "s{since 1970-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-01T12:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-01T12:00:00Z",
         "s{since 1970-01-01T12:00:00Z}",
         "seconds since 1970-01-01T12:00:00Z",
         "s{since 1970-01-01T12:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-05T00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-05T00:00:00Z",
         "s{since 1970-01-05T00:00:00Z}",
         "seconds since 1970-01-05T00:00:00Z",
         "s{since 1970-01-05T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-15T00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-15T00:00:00Z",
         "s{since 1970-01-15T00:00:00Z}",
         "seconds since 1970-01-15T00:00:00Z",
         "s{since 1970-01-15T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1970-01-16T00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 1970-01-16T00:00:00Z",
         "s{since 1970-01-16T00:00:00Z}",
         "seconds since 1970-01-16T00:00:00Z",
         "s{since 1970-01-16T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1981-01-01 00:00:00",
+    testToUcumToUdunits(
+        "seconds since 1981-01-01 00:00:00",
         "s{since 1981-01-01T00:00:00Z}",
         "seconds since 1981-01-01T00:00:00Z",
         "s{since 1981-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1981-01-01 00:00:00 UTC",
+    testToUcumToUdunits(
+        "seconds since 1981-01-01 00:00:00 UTC",
         "s{since 1981-01-01T00:00:00Z}",
         "seconds since 1981-01-01T00:00:00Z",
         "s{since 1981-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 1993-01-01 00:00:00",
+    testToUcumToUdunits(
+        "seconds since 1993-01-01 00:00:00",
         "s{since 1993-01-01T00:00:00Z}",
         "seconds since 1993-01-01T00:00:00Z",
         "s{since 1993-01-01T00:00:00Z}");
-    testToUcumToUdunits("seconds since 2010-01-19T00:00:00Z",
+    testToUcumToUdunits(
+        "seconds since 2010-01-19T00:00:00Z",
         "s{since 2010-01-19T00:00:00Z}",
         "seconds since 2010-01-19T00:00:00Z",
         "s{since 2010-01-19T00:00:00Z}");
-    testToUcumToUdunits("seconds since 2015-1-1 00:00:00 UTC",
+    testToUcumToUdunits(
+        "seconds since 2015-1-1 00:00:00 UTC",
         "s{since 2015-01-01T00:00:00Z}",
         "seconds since 2015-01-01T00:00:00Z",
         "s{since 2015-01-01T00:00:00Z}");
     testToUcumToUdunits("siemens meter-1", "S.m-1", "S m-1", "S.m-1");
-    testToUcumToUdunits("siemens per centimeter",
-        "S.cm-1", "S cm-1", "S.cm-1");
-    testToUcumToUdunits("siemens per meter",
-        "S.m-1", "S m-1", "S.m-1");
+    testToUcumToUdunits("siemens per centimeter", "S.cm-1", "S cm-1", "S.cm-1");
+    testToUcumToUdunits("siemens per meter", "S.m-1", "S m-1", "S.m-1");
     testToUcumToUdunits("sigma", "{sigma}", "sigma", "{sigma}");
     testToUcumToUdunits("sigma_level", "{sigma_level}", "sigma_level", "{sigma_level}");
     testToUcumToUdunits("site", "{site}", "site", "{site}");
-    testToUcumToUdunits("square centimeters (cm^2)",
-        "cm2", "cm2", "cm2");
-    testToUcumToUdunits("square kilometers",
-        "km2", "km2", "km2");
+    testToUcumToUdunits("square centimeters (cm^2)", "cm2", "cm2", "cm2");
+    testToUcumToUdunits("square kilometers", "km2", "km2", "km2");
     testToUcumToUdunits("sr^-1", "sr-1", "sr-1", "sr-1");
-    testToUcumToUdunits("Standardized Units of Relative Dry and Wet",
+    testToUcumToUdunits(
+        "Standardized Units of Relative Dry and Wet",
         "{Standardized Units of Relative Dry and Wet}",
         "Standardized Units of Relative Dry and Wet",
         "{Standardized Units of Relative Dry and Wet}");
@@ -2099,15 +2248,16 @@ class Units2Tests {
     testToUcumToUdunits("two digit day", "d", "day", "d");
     testToUcumToUdunits("two digit month", "mo", "month", "mo");
     testToUcumToUdunits("uatm", "uatm", "uatm", "uatm");
-    testToUcumToUdunits("uE/m<sup>2</sup>/sec",
-        "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
+    testToUcumToUdunits(
+        "uE/m<sup>2</sup>/sec", "ueinstein.m-2.s-1", "ueinstein m-2 s-1", "ueinstein.m-2.s-1");
     testToUcumToUdunits("ug L-1", "ug.l-1", "ug l-1", "ug.l-1");
     testToUcumToUdunits("ug/m3", "ug.m-3", "ug m-3", "ug.m-3");
     testToUcumToUdunits("um^3", "um3", "um3", "um3");
     testToUcumToUdunits("umol/kg", "umol.kg-1", "umol kg-1", "umol.kg-1");
     testToUcumToUdunits("Unitless", "1", "1", "1");
     testToUcumToUdunits("uS/cm", "uS.cm-1", "uS cm-1", "uS.cm-1");
-    testToUcumToUdunits("varies by taxon/group (see description)",
+    testToUcumToUdunits(
+        "varies by taxon/group (see description)",
         "{varies by taxon/group (see description)}",
         "varies by taxon/group (see description)",
         "{varies by taxon/group (see description)}");
@@ -2116,64 +2266,67 @@ class Units2Tests {
     testToUcumToUdunits("volts (0-5 FSO)", "V", "V", "V");
     testToUcumToUdunits("W m-2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("w m-2", "W.m-2", "W m-2", "W.m-2");
-    testToUcumToUdunits("W m^-2 um^-1 sr^-1",
-        "W.m-2.um-1.sr-1", "W m-2 um-1 sr-1", "W.m-2.um-1.sr-1");
+    testToUcumToUdunits(
+        "W m^-2 um^-1 sr^-1", "W.m-2.um-1.sr-1", "W m-2 um-1 sr-1", "W.m-2.um-1.sr-1");
     testToUcumToUdunits("W/M**2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("w/m2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("W/m^2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("watt m-2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("watt meter-2", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("watt per meter^2", "W.m-2", "W m-2", "W.m-2");
-    testToUcumToUdunits("watts/meters<sup>2</sup>",
-        "W.m-2", "W m-2", "W.m-2");
+    testToUcumToUdunits("watts/meters<sup>2</sup>", "W.m-2", "W m-2", "W.m-2");
     testToUcumToUdunits("year", "a", "year", "a");
     testToUcumToUdunits("years", "a", "year", "a");
-    testToUcumToUdunits("years since 0000-01-01",
+    testToUcumToUdunits(
+        "years since 0000-01-01",
         "a{since 0000-01-01}",
         "years since 0000-01-01",
         "a{since 0000-01-01}");
-    testToUcumToUdunits("years since 0000-07-01",
+    testToUcumToUdunits(
+        "years since 0000-07-01",
         "a{since 0000-07-01}",
         "years since 0000-07-01",
         "a{since 0000-07-01}");
-    testToUcumToUdunits("years since 02-JAN-1985",
+    testToUcumToUdunits(
+        "years since 02-JAN-1985",
         "a{since 1985-01-02}",
         "years since 1985-01-02",
         "a{since 1985-01-02}");
     testToUcumToUdunits("yyyy", "{yyyy}", "yyyy", "{yyyy}");
     testToUcumToUdunits("yyyy-MM-dd", "{yyyy-MM-dd}", "yyyy-MM-dd", "{yyyy-MM-dd}");
-    testToUcumToUdunits("yyyy-MM-dd HH:mm", "{yyyy-MM-dd HH:mm}",
-        "yyyy-MM-dd HH:mm", "{yyyy-MM-dd HH:mm}");
-    testToUcumToUdunits("yyyy-MM-dd' 'HH:mm:ss",
+    testToUcumToUdunits(
+        "yyyy-MM-dd HH:mm", "{yyyy-MM-dd HH:mm}", "yyyy-MM-dd HH:mm", "{yyyy-MM-dd HH:mm}");
+    testToUcumToUdunits(
+        "yyyy-MM-dd' 'HH:mm:ss",
         "{yyyy-MM-dd' 'HH:mm:ss}",
         "yyyy-MM-dd' 'HH:mm:ss",
         "{yyyy-MM-dd' 'HH:mm:ss}");
-    testToUcumToUdunits("yyyy-MM-dd'T'HH:mm",
-        "{yyyy-MM-dd'T'HH:mm}",
-        "yyyy-MM-dd'T'HH:mm",
-        "{yyyy-MM-dd'T'HH:mm}");
-    testToUcumToUdunits("yyyy-MM-dd'T'HH:mm:ss",
+    testToUcumToUdunits(
+        "yyyy-MM-dd'T'HH:mm", "{yyyy-MM-dd'T'HH:mm}", "yyyy-MM-dd'T'HH:mm", "{yyyy-MM-dd'T'HH:mm}");
+    testToUcumToUdunits(
+        "yyyy-MM-dd'T'HH:mm:ss",
         "{yyyy-MM-dd'T'HH:mm:ss}",
         "yyyy-MM-dd'T'HH:mm:ss",
         "{yyyy-MM-dd'T'HH:mm:ss}");
-    testToUcumToUdunits("yyyy-MM-dd'T'HH:mm:ss.SSS",
+    testToUcumToUdunits(
+        "yyyy-MM-dd'T'HH:mm:ss.SSS",
         "{yyyy-MM-dd'T'HH:mm:ss.SSS}",
         "yyyy-MM-dd'T'HH:mm:ss.SSS",
         "{yyyy-MM-dd'T'HH:mm:ss.SSS}");
-    testToUcumToUdunits("yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+    testToUcumToUdunits(
+        "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
         "{yyyy-MM-dd'T'HH:mm:ss.SSSZ}",
         "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
         "{yyyy-MM-dd'T'HH:mm:ss.SSSZ}");
-    testToUcumToUdunits("yyyy-MM-dd'T'HH:mm:ssZ",
+    testToUcumToUdunits(
+        "yyyy-MM-dd'T'HH:mm:ssZ",
         "{yyyy-MM-dd'T'HH:mm:ssZ}",
         "yyyy-MM-dd'T'HH:mm:ssZ",
         "{yyyy-MM-dd'T'HH:mm:ssZ}");
     testToUcumToUdunits("yyyy/M/d", "{yyyy/M/d}", "yyyy/M/d", "{yyyy/M/d}");
     testToUcumToUdunits("yyyyMMdd", "{yyyyMMdd}", "yyyyMMdd", "{yyyyMMdd}");
-    testToUcumToUdunits("yyyyMMdd'_'HHmmss",
-        "{yyyyMMdd'_'HHmmss}",
-        "yyyyMMdd'_'HHmmss",
-        "{yyyyMMdd'_'HHmmss}");
+    testToUcumToUdunits(
+        "yyyyMMdd'_'HHmmss", "{yyyyMMdd'_'HHmmss}", "yyyyMMdd'_'HHmmss", "{yyyyMMdd'_'HHmmss}");
     testToUcumToUdunits("yyyyMMddHHmm", "{yyyyMMddHHmm}", "yyyyMMddHHmm", "{yyyyMMddHHmm}");
     testToUcumToUdunits("µmole/kg", "umol.kg-1", "umol kg-1", "umol.kg-1");
 
@@ -2186,17 +2339,24 @@ class Units2Tests {
     Test.ensureEqual(Units2.udunitsToUcum("some (any nonsense)"), "{some}.({any}.{nonsense})", "");
     Test.ensureEqual(Units2.ucumToUdunits("{some}.({any}.{nonsense})"), "some (any nonsense)", "");
 
-    testToUcumToUdunits("some unrelated24 con33tent, really (a fact)",
+    testToUcumToUdunits(
+        "some unrelated24 con33tent, really (a fact)",
         "{some}.{unrelated}24.{con33tent},.{really}.(a.{fact})",
         "some unrelated24 con33tent, really (year fact)",
         "{some}.{unrelated}24.{con33tent},.{really}.(a.{fact})");
 
     // test of <ucumToUdunits> and <udunitsToUcum> in messages.xml
-    Test.ensureEqual(Units2.ucumToUdunits("deg north"), "degree north", ""); // this also tests that last triplet is
-                                                                             // read
-    Test.ensureEqual(Units2.udunitsToUcum("degrees north"), "deg.{north}", ""); // this also tests that last triplet
-                                                                                // is
-                                                                                // read
+    Test.ensureEqual(
+        Units2.ucumToUdunits("deg north"),
+        "degree north",
+        ""); // this also tests that last triplet is
+    // read
+    Test.ensureEqual(
+        Units2.udunitsToUcum("degrees north"),
+        "deg.{north}",
+        ""); // this also tests that last triplet
+    // is
+    // read
 
     Test.ensureEqual(Units2.safeStandardizeUdunits("percent"), "%", "");
     Test.ensureEqual(Units2.safeStandardizeUdunits("percentage"), "%", "");
@@ -2205,10 +2365,7 @@ class Units2Tests {
     // debugMode = false;
   }
 
-  /**
-   * This is used by Bob as a one time test.
-   * No one else will need to use this.
-   */
+  /** This is used by Bob as a one time test. No one else will need to use this. */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest // doesn't pass, need to investigate mismatches for problems
   void testRoundTripConversions() throws Exception {
@@ -2220,11 +2377,7 @@ class Units2Tests {
       String uc1 = (String) ucKeys[i];
       String ud1 = Units2.ucumToUdunits(uc1);
       String uc2 = Units2.udunitsToUcum(ud1);
-      if (!uc1.equals(uc2))
-        throw new Exception(
-            "\nuc1=" + uc1 +
-                "\nud1=" + ud1 +
-                "\nuc2=" + uc2);
+      if (!uc1.equals(uc2)) throw new Exception("\nuc1=" + uc1 + "\nud1=" + ud1 + "\nuc2=" + uc2);
     }
   }
 }

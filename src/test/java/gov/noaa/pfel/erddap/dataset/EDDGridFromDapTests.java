@@ -761,7 +761,7 @@ class EDDGridFromDapTests {
             ".das");
     results =
         String2.annotatedString(
-            new String((ByteArray.fromFile(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            new String(ByteArray.fromFile(EDStatic.fullTestCacheDirectory + tName).toArray()));
     expected = // see OpendapHelper.EOL definition for comments
         // "Attributes {[10]\n" +
         // " time {[10]\n" +
@@ -3013,7 +3013,7 @@ class EDDGridFromDapTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose", "-i#testGenerateDatasetsXml", "EDDGridFromDap", url, "-1"
@@ -5472,7 +5472,7 @@ class EDDGridFromDapTests {
             "testDatasetID",
             "mytime",
             null,
-            (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970),
+            new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
             new Attributes(),
             seconds);
     time = System.currentTimeMillis();
@@ -5490,7 +5490,7 @@ class EDDGridFromDapTests {
         new EDVTimeGridAxis(
             "testDatasetID",
             "time",
-            (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970),
+            new Attributes().add("units", Calendar2.SECONDS_SINCE_1970),
             new Attributes(),
             seconds);
     time = System.currentTimeMillis();

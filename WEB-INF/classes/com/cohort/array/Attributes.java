@@ -1162,7 +1162,7 @@ public class Attributes {
         // if (tName.equals("_FillValue")) String2.pressEnterToContinue(">> ncoJson _FillValue=" +
         // String2.annotatedString((new StringArray(pa)).toString()) + " maxIsMV=" +
         // pa.getMaxIsMV());
-        String s = (new StringArray(pa)).toNewlineString();
+        String s = new StringArray(pa).toNewlineString();
         sb.append(String2.toJson(s.substring(0, s.length() - 1))); // remove trailing \n
       } else {
         String js = pa.toJsonCsvString();

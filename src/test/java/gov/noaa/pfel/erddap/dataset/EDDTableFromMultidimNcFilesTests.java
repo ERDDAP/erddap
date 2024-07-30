@@ -831,7 +831,7 @@ class EDDTableFromMultidimNcFilesTests {
 
     // GenerateDatasetsXml
     results =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",
@@ -2484,7 +2484,7 @@ class EDDTableFromMultidimNcFilesTests {
 
     // GenerateDatasetsXml
     results =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {
                   "-verbose",

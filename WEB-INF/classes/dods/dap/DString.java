@@ -12,6 +12,7 @@
 package dods.dap;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Holds a DODS <code>String</code> value.
@@ -154,7 +155,7 @@ public class DString extends BaseType implements ClientIO {
     // with no translation (the first 256 glyphs in Unicode are ISO8859_1)
 
     try {
-      byte byteArray[] = val.getBytes("ISO-8859-1"); // bob changed from ISO8859_1
+      byte byteArray[] = val.getBytes(StandardCharsets.ISO_8859_1); // bob changed from ISO8859_1
       sink.writeInt(byteArray.length);
       int modFour = byteArray.length % 4;
       // number of bytes to pad

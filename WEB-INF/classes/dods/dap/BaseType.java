@@ -374,7 +374,7 @@ public abstract class BaseType implements Cloneable {
   }
 
   public BaseType getParent() {
-    return (_myParent);
+    return _myParent;
   }
 
   public String getLongName() {
@@ -389,6 +389,6 @@ public abstract class BaseType implements Cloneable {
       longName = parent.getName() + "." + longName;
       parent = parent.getParent();
     }
-    return (longName);
+    return longName;
   }
 }

@@ -705,7 +705,7 @@ public class OpendapHelper {
     if (paType == PAType.USHORT) return "UInt16";
     if (paType == PAType.BYTE)
       return "Byte"; // ! technically, DAP bytes are unsigned, but for name consistency and
-                     // ERDDAP/THREDDS convention, Byte means signed
+    // ERDDAP/THREDDS convention, Byte means signed
     if (paType == PAType.UBYTE) return strictDapMode ? "Byte" : "UByte"; // DAP has no ubyte
     if (paType == PAType.CHAR)
       return strictDapMode ? "String" : "Char"; // DAP has no char, so represent it as a String
@@ -787,7 +787,7 @@ public class OpendapHelper {
     if (strictDapMode
         && (paType == PAType.BYTE || paType == PAType.UBYTE)
         && // for bytes, explicitly say _Unsigned=true (which DAP defines) or false (which ERDDAP
-           // and TDS used as default)
+        // and TDS used as default)
         attributes.getString("_Unsigned") == null) {
       addedUnsigned = true;
       names.atInsert(0, "_Unsigned"); // 0 is a good guess at the correct position
@@ -944,8 +944,7 @@ public class OpendapHelper {
     return t.getValue(index);
     if (pv instanceof Int16PrimitiveVector t) return t.getValue(index);
     if (pv
-        instanceof
-        UInt32PrimitiveVector t) // uint32 is instanceof int32! so must test uint32 first
+        instanceof UInt32PrimitiveVector t) // uint32 is instanceof int32! so must test uint32 first
     return t.getValue(index);
     if (pv instanceof Int32PrimitiveVector t) return t.getValue(index);
     throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
@@ -1064,7 +1063,7 @@ public class OpendapHelper {
     if (pv instanceof BytePrimitiveVector)
       return PAType
           .BYTE; // technically should be UByte, but ERDDAP and TDS traditionally treat DAP bytes as
-                 // signed
+    // signed
     if (pv instanceof UInt16PrimitiveVector)
       return PAType.USHORT; // UInt16 is instanceof Int16! so must test uint16 first
     if (pv instanceof UInt32PrimitiveVector)
@@ -1400,7 +1399,7 @@ public class OpendapHelper {
           // String variable
           int n = pas[0].size();
           // ArrayString.D1 doesn't work below. Why not?
-          ArrayObject.D1 ta = (ArrayObject.D1) (Array.factory(DataType.STRING, new int[] {n}));
+          ArrayObject.D1 ta = (ArrayObject.D1) Array.factory(DataType.STRING, new int[] {n});
           for (int i = 0; i < n; i++) ta.set(i, pas[0].getString(i));
           ncWriter.writeStringDataToChar(newVar, ta);
         } else {
@@ -1559,7 +1558,6 @@ public class OpendapHelper {
     // if projection is null or "", figure out the projection
     if (projection == null || projection.length() == 0) {
       StringBuilder sb = new StringBuilder();
-      BUILD_PROJECTION:
       for (int v = 0; v < varNames.length; v++) {
         if (varNames[v] == null) continue;
         BaseType baseType = dds.getVariable(varNames[v]);
@@ -1858,7 +1856,7 @@ public class OpendapHelper {
             // String variable
             int n = pas[0].size();
             // ArrayString.D1 doesn't work below. Why not?
-            ArrayObject.D1 ta = (ArrayObject.D1) (Array.factory(DataType.STRING, new int[] {n}));
+            ArrayObject.D1 ta = (ArrayObject.D1) Array.factory(DataType.STRING, new int[] {n});
             for (int i = 0; i < n; i++) ta.set(i, pas[0].getString(i));
             ncWriter.writeStringDataToChar(newVar, ta);
           } else {

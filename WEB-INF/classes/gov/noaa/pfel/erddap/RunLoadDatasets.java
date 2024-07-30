@@ -186,7 +186,7 @@ public class RunLoadDatasets extends Thread {
                 EDStatic.fullHardFlagDirectory, // order is used below. see "hs =="
                 EDStatic
                     .fullResetFlagDirectory, // so safer to add rather than insert new option before
-                                             // end of list
+                // end of list
                 EDStatic.fullBadFilesFlagDirectory
               };
               String fDirName[] = {"hardFlag", "flag", "badFilesFlag"};
@@ -219,8 +219,8 @@ public class RunLoadDatasets extends Thread {
                     File2.delete(fDir[hs] + ttName);
 
                     if (String2.isFileNameSafe(ttName)) {
-                      EDD edd = (EDD) (erddap.gridDatasetHashMap.get(ttName));
-                      if (edd == null) edd = (EDD) (erddap.tableDatasetHashMap.get(ttName));
+                      EDD edd = (EDD) erddap.gridDatasetHashMap.get(ttName);
+                      if (edd == null) edd = (EDD) erddap.tableDatasetHashMap.get(ttName);
 
                       // if hardFlag, delete cached dataset info
                       //  (whether the dataset is live or not)

@@ -261,13 +261,13 @@ public class TableWriterHtmlTable extends TableWriter {
                   edd == null
                       ? "index.html"
                       : // this happens when .htmlTable is used for non-dataset data. Fall back to
-                        // index.html
+                      // index.html
                       edd.dapProtocol()
                           + "/"
                           + edd.datasetID()
                           + ".html", // was endOfRequest. Now should be .htmlTable, but since no
-                                     // params that would request entire dataset, so go back to
-                                     // .html form
+                  // params that would request entire dataset, so go back to
+                  // .html form
                   queryString));
           // writer.write(HtmlWidgets.BACK_BUTTON);
           writer.write("&nbsp;<br>");
@@ -410,7 +410,7 @@ public class TableWriterHtmlTable extends TableWriter {
                   // if media url, show '?' with viewer
                   // very similar code in Table.directoryListing and TableWriterHtmlTable.
                   int whichIcon = File2.whichIcon(url);
-                  String iconAlt = File2.ICON_ALT[whichIcon]; // always 3 characters
+                  String iconAlt = File2.ICON_ALT.get(whichIcon); // always 3 characters
 
                   // make HTML for a viewer?
                   String viewer = "";

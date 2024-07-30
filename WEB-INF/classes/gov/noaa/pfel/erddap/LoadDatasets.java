@@ -172,7 +172,7 @@ public class LoadDatasets extends Thread {
       EDStatic.cldNTry = 0; // that alone says none is currently active
       HashMap tUserHashMap =
           new HashMap(); // no need for thread-safe, all puts are here (1 thread); future gets are
-                         // thread safe
+      // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
       HashSet<String> datasetIDSet =
           new HashSet(); // to detect duplicates, just local use, no need for thread-safe
@@ -383,8 +383,8 @@ public class LoadDatasets extends Thread {
                 + " ("
                 + String2.right("" + Math.min(999999, medianResponseFailed), 6)
                 + ")"
-                + String2.right("" + Math.min(99999, EDStatic.requestsShed), 5)
-                + String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures), 8)
+                + String2.right("" + Math.min(99999, EDStatic.requestsShed.get()), 5)
+                + String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures.get()), 8)
                 + String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8)
                 + threadCounts
                 + String2.right("" + using / Math2.BytesPerMB, 7)
@@ -394,10 +394,10 @@ public class LoadDatasets extends Thread {
                 + "\n");
 
         // reset  since last majorReload
-        Math2.gcCallCount = 0;
-        EDStatic.requestsShed = 0;
-        EDStatic.dangerousMemoryEmails = 0;
-        EDStatic.dangerousMemoryFailures = 0;
+        Math2.gcCallCount.set(0);
+        EDStatic.requestsShed.set(0);
+        EDStatic.dangerousMemoryEmails.set(0);
+        EDStatic.dangerousMemoryFailures.set(0);
         EDStatic.tooManyRequests = 0;
 
         // email daily report?, threadSummary-String,
@@ -1131,7 +1131,7 @@ public class LoadDatasets extends Thread {
               || EDStatic.anyoneLoggedIn.equals(tUsername)
               || EDStatic.loggedInAsSuperuser.equals(
                   tUsername)) { // shouldn't be possible because \t would be trimmed above, but
-                                // double check
+            // double check
             warningsFromLoadDatasets.append(
                 "datasets.xml error: <user> username=\""
                     + String2.annotatedString(tUsername)
@@ -1601,7 +1601,7 @@ public class LoadDatasets extends Thread {
 
     if (catAtt.length() == 0) return;
 
-    ConcurrentHashMap hm = (ConcurrentHashMap) (catInfo.get(catName)); // e.g., for institution
+    ConcurrentHashMap hm = (ConcurrentHashMap) catInfo.get(catName); // e.g., for institution
     ConcurrentHashMap hs = (ConcurrentHashMap) hm.get(catAtt); // e.g., for NDBC,  acts as hashset
     if (hs == null) {
       if (!add) // remove mode and reference isn't there, so we're done

@@ -110,7 +110,7 @@ public class LogAxis extends SpaceAxis implements Cloneable {
 
       // X tics drawing
       dir = delta > 0 ? 1.0 : -1.0;
-      xt = (int) ((uRangeStart / delta + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001)) * delta;
+      xt = (int) ((uRangeStart / delta + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001) * delta);
 
       if (dir * xt < dir * uRangeStart) xt += delta;
       istop = (int) ((uRangeEnd - xt) / delta + 0.00001);
@@ -119,9 +119,9 @@ public class LogAxis extends SpaceAxis implements Cloneable {
 
       int imin =
           (int)
-              (Math.ceil(
-                  Math.log10(uRangeStart) - 0.000000000001)); // first large tic //Bob added fudge
-      int imax = (int) (Math.floor(Math.log10(uRangeEnd) + 0.000000000001)); // last large tic
+              Math.ceil(
+                  Math.log10(uRangeStart) - 0.000000000001); // first large tic //Bob added fudge
+      int imax = (int) Math.floor(Math.log10(uRangeEnd) + 0.000000000001); // last large tic
       int nblabel = imax - imin + 1;
 
       /*      System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
@@ -243,7 +243,7 @@ public class LogAxis extends SpaceAxis implements Cloneable {
 
       // draw Y tics
       dir = delta > 0 ? 1.0 : -1.0;
-      yt = (int) ((uRangeStart / delta) + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001) * delta;
+      yt = (int) (((uRangeStart / delta) + (dir * uRangeStart > 0 ? 1.0 : -1.0) * 0.00001) * delta);
       if (dir * yt < dir * uRangeStart) yt += delta;
       istop = (int) ((uRangeEnd - yt) / delta + 0.00001);
 
@@ -251,10 +251,9 @@ public class LogAxis extends SpaceAxis implements Cloneable {
 
       int imin =
           (int)
-              (Math.ceil(
-                  Math.log10(uRangeStart)
-                      - 0.000000000001)); // premier large tic  //Bob added fudge
-      int imax = (int) (Math.floor(Math.log10(uRangeEnd) + 0.000000000001)); // dernier large tic
+              Math.ceil(
+                  Math.log10(uRangeStart) - 0.000000000001); // premier large tic  //Bob added fudge
+      int imax = (int) Math.floor(Math.log10(uRangeEnd) + 0.000000000001); // dernier large tic
       int nblabel = imax - imin + 1;
 
       // System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);

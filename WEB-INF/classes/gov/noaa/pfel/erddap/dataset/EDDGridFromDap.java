@@ -2339,7 +2339,7 @@ public class EDDGridFromDap extends EDDGrid {
     //        ": Invalid Thredds catalog at " + catalogXmlUrl + "\n" + errorSB.toString());
     // errorSB = null;
     // 2020-01-17 with netcdf-java 5.2 is (thanks to Roland Schweitzer)
-    Catalog catalog = (new CatalogBuilder()).buildFromURI(new java.net.URI(catalogXmlUrl));
+    Catalog catalog = new CatalogBuilder().buildFromURI(new java.net.URI(catalogXmlUrl));
     Test.ensureTrue(catalog != null, "catalog is null!");
 
     // process the catalog's datasets

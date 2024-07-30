@@ -1306,15 +1306,14 @@ public class SSR {
     msg.setContent(
         "<pre>" + XML.encodeAsHTML(content) + "</pre>",
         "text/html"); // thus content is 7-bit ASCII, which avoids need for extra steps to support
-                      // utf-8.
+    // utf-8.
     msg.setHeader("X-Mailer", "msgsend"); // program that sent the email
     msg.setSentDate(new Date());
     msg.saveChanges(); // do last.  don't forget this
 
     smtpTransport.sendMessage(
-        msg,
-        internetAddresses); // assumes session is already connected.  Old: send(...) did
-                            // connect(),sendMessage(),close().
+        msg, internetAddresses); // assumes session is already connected.  Old: send(...) did
+    // connect(),sendMessage(),close().
   }
 
   /**
@@ -2068,7 +2067,7 @@ public class SSR {
           if (!String2.isSomething(eString)) eString = "";
           String lookFor =
               "java.io.IOException: Server returned HTTP response code: \\d\\d\\d for .*"; // "for
-                                                                                           // [url]"
+          // [url]"
           if (eString.matches(lookFor)) eString = eString.substring(61); // leaving "for [url]"
           throw new IOException(
               "HTTP status code="
@@ -2136,7 +2135,7 @@ public class SSR {
    *     always).
    */
   public static BufferedInputStream getUrlBufferedInputStream(String urlString) throws Exception {
-    return (BufferedInputStream) (getUrlConnBufferedInputStream(urlString, 120000)[1]);
+    return (BufferedInputStream) getUrlConnBufferedInputStream(urlString, 120000)[1];
   }
 
   /**
@@ -2771,15 +2770,14 @@ public class SSR {
       try {
         in =
             (BufferedInputStream)
-                (getUrlConnBufferedInputStream(
-                        source, // throws Exception   //handles AWS S3
-                        120000,
-                        true,
-                        false,
-                        firstByte,
-                        lastByte,
-                        handleS3ViaSDK))
-                    [1]; // timeOutMillis, requestCompression, touchMode, ...
+                getUrlConnBufferedInputStream(
+                    source, // throws Exception   //handles AWS S3
+                    120000,
+                    true,
+                    false,
+                    firstByte,
+                    lastByte,
+                    handleS3ViaSDK)[1]; // timeOutMillis, requestCompression, touchMode, ...
 
         // adjust firstByte,lastByte
         long newLastByte = lastByte - (firstByte > 0 && lastByte >= 0 ? firstByte : 0);

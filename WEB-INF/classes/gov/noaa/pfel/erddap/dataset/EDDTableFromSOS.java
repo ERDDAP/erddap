@@ -1046,7 +1046,7 @@ public class EDDTableFromSOS extends EDDTable {
 
     sosOfferingIndex = 2; // aka stationID
     Attributes tAtts =
-        (new Attributes()).add("long_name", "Station ID").add("ioos_category", "Identifier");
+        new Attributes().add("long_name", "Station ID").add("ioos_category", "Identifier");
     if (CDM_TIMESERIES.equals(cdmType) || CDM_TIMESERIESPROFILE.equals(cdmType))
       tAtts.add("cf_role", "timeseries_id");
     else if (CDM_TRAJECTORY.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
@@ -1092,7 +1092,7 @@ public class EDDTableFromSOS extends EDDTable {
             ? // some indeterminant
             PAOne.fromDouble(Double.NaN)
             : stats2[PrimitiveArray.STATS_MAX];
-    tAtts = (new Attributes()).add("units", tTimeSourceFormat);
+    tAtts = new Attributes().add("units", tTimeSourceFormat);
     if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
       tAtts.add("cf_role", "profile_id");
     EDVTime edvTime =

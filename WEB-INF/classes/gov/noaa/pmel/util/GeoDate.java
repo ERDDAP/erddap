@@ -262,7 +262,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     cal_.set(year, mon - 1, day, hour, min, sec);
 
     //    this.setTime(cal.getTimeInMillis() + msec);
-    this.setTime((cal_.getTime()).getTime() + msec);
+    this.setTime(cal_.getTime().getTime() + msec);
     splitDone_ = false;
     EPICTimeDone_ = false;
   }
@@ -440,7 +440,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
         } catch (IllegalTimeValue e) {
           System.err.println(e);
         }
-        setTime(getTime() + (long) (fract * 365.25) * MSECS_IN_DAY);
+        setTime(getTime() + (long) ((fract * 365.25) * MSECS_IN_DAY));
         break;
     }
     splitDone_ = false;
@@ -532,7 +532,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
         } catch (IllegalTimeValue e) {
           System.err.println(e);
         }
-        setTime(getTime() - (long) (fract * 365.25) * MSECS_IN_DAY);
+        setTime(getTime() - (long) ((fract * 365.25) * MSECS_IN_DAY));
         break;
     }
     splitDone_ = false;

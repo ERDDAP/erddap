@@ -319,20 +319,6 @@ public class TableWriterOrderBySum extends TableWriterAll {
     */
   }
 
-  private boolean areAllValuesIntegers(PrimitiveArray column) {
-    // Disabled for now
-    return false;
-    /*
-    int nrows = column.size();
-    for (int row=0; row<nrows; row++) {
-        if (column.getDouble(row) != column.getInt(row)) {
-            return false;
-        }
-    }
-    return true;
-    */
-  }
-
   /**
    * This finishes orderBySum and writes results to otherTableWriter If ignoreFinish=true, nothing
    * will be done.

@@ -884,8 +884,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
             && !(t
                 instanceof
                 FileNotFoundException)) // occurs when a RAID unmounts itself. If really gone,
-                                        // removing from file list is enough.                     )
-        addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
+          // removing from file list is enough.                     )
+          addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
       }
     }
     // initially there are no files, so haveValidSourceInfo will still be false
@@ -949,10 +949,10 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       long elapsedTime = System.currentTimeMillis();
       // was tAvailableFiles with dir+name
       Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
-      StringArray tFileDirPA = (StringArray) (tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
-      StringArray tFileNamePA = (StringArray) (tFileTable.getColumn(FileVisitorDNLS.NAME));
-      LongArray tFileLastModPA = (LongArray) (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
-      LongArray tFileSizePA = (LongArray) (tFileTable.getColumn(FileVisitorDNLS.SIZE));
+      StringArray tFileDirPA = (StringArray) tFileTable.getColumn(FileVisitorDNLS.DIRECTORY);
+      StringArray tFileNamePA = (StringArray) tFileTable.getColumn(FileVisitorDNLS.NAME);
+      LongArray tFileLastModPA = (LongArray) tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED);
+      LongArray tFileSizePA = (LongArray) tFileTable.getColumn(FileVisitorDNLS.SIZE);
       tFileTable.removeColumn(FileVisitorDNLS.SIZE);
       int ntft = tFileNamePA.size();
       msg =
@@ -2182,7 +2182,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   public Table getDirTableCopy() throws Throwable {
     Table tDirTable =
         fileTableInMemory
-            ? (Table) (dirTable.clone())
+            ? (Table) dirTable.clone()
             : tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME); // may be null
     Test.ensureNotNull(tDirTable, "dirTable");
     return tDirTable;
@@ -2196,7 +2196,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   public Table getFileTableCopy() throws Throwable {
     Table tFileTable =
         fileTableInMemory
-            ? (Table) (fileTable.clone())
+            ? (Table) fileTable.clone()
             : tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); // may be null
     Test.ensureNotNull(tFileTable, "fileTable");
     return tFileTable;
@@ -2542,7 +2542,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
           String2.log(
               ">> EDDGridFromFiles.getSourceAxisValues just using known info, not reading the file.");
         for (int av = 1; av < nAxes; av++) // [0] created above. Value will be set below.
-        nsav[av] = (PrimitiveArray) (sourceAxisValues[av].clone()); // no need to clone???
+        nsav[av] = (PrimitiveArray) sourceAxisValues[av].clone(); // no need to clone???
 
       } else {
 

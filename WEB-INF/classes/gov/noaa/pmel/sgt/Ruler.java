@@ -596,8 +596,9 @@ public class Ruler implements Cloneable, LayerChild {
       //
       dir = uRange_.delta > 0 ? 1.0 : -1.0;
       xt =
-          (int) ((uRange_.start / uRange_.delta + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001))
-              * uRange_.delta;
+          (int)
+              ((uRange_.start / uRange_.delta + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * uRange_.delta);
       if (dir * xt < dir * uRange_.start) xt += uRange_.delta;
       istop = (int) ((uRange_.end - xt) / uRange_.delta + 0.00001);
       x = xt;
@@ -680,8 +681,9 @@ public class Ruler implements Cloneable, LayerChild {
       //
       dir = uRange_.delta > 0 ? 1.0 : -1.0;
       yt =
-          (int) ((uRange_.start / uRange_.delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
-              * uRange_.delta;
+          (int)
+              (((uRange_.start / uRange_.delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * uRange_.delta);
       if (dir * yt < dir * uRange_.start) yt += uRange_.delta;
       istop = (int) ((uRange_.end - yt) / uRange_.delta + 0.00001);
       y = yt;

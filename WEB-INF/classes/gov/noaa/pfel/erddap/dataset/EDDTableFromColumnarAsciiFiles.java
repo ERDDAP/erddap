@@ -1578,8 +1578,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             tags.equals(
                 "<eml:eml><dataset><dataTable><attributeList>"
                     + "<attribute><measurementScale><ratio><unit></standardUnit>")) { // ratio
-                                                                                      // standard:
-                                                                                      // number
+          // standard:
+          // number
           // non-dates: centimeter, number, metersquared, meter
           if (emlIsSomething(xmlReader.content())) {
             varUnits = xmlReader.content();
@@ -2337,13 +2337,13 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           if (tName.equals(goodTimeName)) continue;
           String tNameLC = tName.toLowerCase();
           String tUnits = addTable.columnAttributes(col).getString("units");
-          if (tUnits != null
+          if ((tUnits != null
                   && (Calendar2.isTimeUnits(tUnits)
                       || tUnits.indexOf("MM") >= 0
                       || tUnits.indexOf("dd") >= 0
                       || tUnits.indexOf("HH") >= 0
                       || tUnits.indexOf("mm") >= 0
-                      || tUnits.indexOf("ss") >= 0)
+                      || tUnits.indexOf("ss") >= 0))
               || tNameLC.equals("year")
               || tNameLC.equals("month")
               || (tNameLC.indexOf("day") >= 0

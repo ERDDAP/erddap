@@ -2399,7 +2399,7 @@ public abstract class EDDTable extends EDD {
       }
 
       // special case: server-side functions: special orderByClosest(varCSV, nTimeUnits)
-      if (constraint.endsWith("\")") && (constraint.startsWith("orderByClosest(\""))) {
+      if (constraint.endsWith("\")") && constraint.startsWith("orderByClosest(\"")) {
 
         // ensure all orderBy vars are in resultsVariables
         if (!repair) {
@@ -5931,7 +5931,7 @@ public abstract class EDDTable extends EDD {
             + 8
             + // field name length (for all fields)
             8
-            + nCols * 32; // field names
+            + nCols * 32L; // field names
     for (int col = 0; col < nCols; col++) {
       PAType type = twawm.columnType(col);
       if (type == PAType.STRING)
@@ -11420,7 +11420,7 @@ public abstract class EDDTable extends EDD {
             distinctOptions[sv][doi] = XML.minimalEncodeSpaces(distinctOptions[sv][doi]);
 
           writer.write(" [");
-          writer.write((new StringArray(distinctOptions[sv])).toJsonCsvString());
+          writer.write(new StringArray(distinctOptions[sv]).toJsonCsvString());
           writer.write("]" + (sv == subsetVariables.length - 1 ? "" : ",") + "\n");
         }
         writer.write("];\n" + "</script>\n");
@@ -13665,9 +13665,7 @@ public abstract class EDDTable extends EDD {
 
     // save lastP column  in a different PrimitiveArray
     PrimitiveArray lastPPA =
-        lastP < 0
-            ? null
-            : (PrimitiveArray) (subsetTable.findColumn(subsetVariables[lastP]).clone());
+        lastP < 0 ? null : (PrimitiveArray) subsetTable.findColumn(subsetVariables[lastP]).clone();
 
     // reduce subsetTable to "smallTable" (using lastP param to reduce the table size)
     if (lastP >= 0) {
@@ -13963,7 +13961,7 @@ public abstract class EDDTable extends EDD {
         PrimitiveArray pa =
             p == lastP
                 ? (PrimitiveArray) lastPPA.clone()
-                : (PrimitiveArray) (subsetTable.findColumn(pName).clone());
+                : (PrimitiveArray) subsetTable.findColumn(pName).clone();
         if (edvTimeStamp != null) {
           int paSize = pa.size();
           StringArray ta = new StringArray(paSize, false);
@@ -15188,7 +15186,7 @@ public abstract class EDDTable extends EDD {
       // correct columns in the correct order.
 
       // ensure sorted (in correct order), then remove duplicates
-      int cols[] = (new IntArray(0, tSubsetVars.length - 1)).toArray();
+      int cols[] = new IntArray(0, tSubsetVars.length - 1).toArray();
       boolean order[] = new boolean[tSubsetVars.length];
       Arrays.fill(order, true);
       table.sortIgnoreCase(cols, order);
@@ -15933,9 +15931,9 @@ public abstract class EDDTable extends EDD {
     // so far so good
     // already set up for SOS? e.g., by subsclass constructor
     if (sosOfferingPrefix == null) sosOfferingPrefix = String2.canonical("");
-    if (sosMinLon != null && sosMaxLon != null
-        || sosMinLat != null && sosMaxLat != null
-        || sosMinTime != null && sosMaxTime != null
+    if ((sosMinLon != null && sosMaxLon != null)
+        || (sosMinLat != null && sosMaxLat != null)
+        || (sosMinTime != null && sosMaxTime != null)
         || sosOfferings != null)
       // we're successfully done!
       return prelim; // ""
@@ -20559,66 +20557,6 @@ public abstract class EDDTable extends EDD {
      to be accessible as Google Data Sources.
 
   */
-
-  /**
-   * This extracts a CSV list of variable/column names (gVis style)
-   *
-   * @param start is the index in gVisQuery of white space or the first letter of the first name
-   * @param names receives the list of variable/column names. It must be empty initially.
-   * @return the new value of start (or -1 if names is an error message)
-   */
-  private int getGVisColumnNames(String gVisQuery, int start, StringBuilder names) {
-    names.setLength(0);
-    int gVisQueryLength = gVisQuery.length();
-    do {
-      if (names.length() > 0) {
-        // eat the required ',' (see matching 'while' at bottom)
-        start++;
-
-        // add , to names
-        names.append(',');
-      }
-
-      // eat any spaces
-      while (gVisQuery.startsWith(" ", start)) start++;
-
-      String name;
-      if (gVisQuery.startsWith("'", start)) {
-        // 'colName'
-        int po = gVisQuery.indexOf("'", start + 1);
-        if (po < 0) {
-          names.setLength(0);
-          names.append(EDStatic.queryErrorAr[0] + "missing \"'\" after position=" + start);
-          return -1;
-        }
-        name = gVisQuery.substring(start + 1, po);
-        start = po + 1;
-      } else {
-        // unquoted colName
-        int po = start + 1;
-        while (po < gVisQueryLength
-            && !gVisQuery.startsWith(",", po)
-            && !gVisQuery.startsWith(" ", po)) po++;
-        name = gVisQuery.substring(start, po);
-        start = po;
-      }
-      // ensure the name is valid
-      if (String2.indexOf(dataVariableDestinationNames, name) < 0) {
-        names.setLength(0);
-        names.append(
-            EDStatic.queryErrorAr[0]
-                + "unrecognized column name=\""
-                + name
-                + "\" at position="
-                + (start - name.length()));
-        return -1;
-      }
-      names.append(name);
-      while (gVisQuery.startsWith(" ", start)) start++;
-
-    } while (gVisQuery.startsWith(",", start));
-    return start;
-  }
 
   /**
    * This generates an OPeNDAP query from a Google Visualization API Query Language string. <br>

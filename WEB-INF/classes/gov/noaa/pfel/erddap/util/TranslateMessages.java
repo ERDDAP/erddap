@@ -6,162 +6,119 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.translate.*;
-
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
-//https://googleapis.dev/java/google-cloud-translate/latest/index.html?com/google/cloud/translate/v3beta1/TranslationServiceClient.html
 import com.google.cloud.translate.v3.TranslationServiceClient;
 
 import com.google.cloud.translate.v3.TranslateTextGlossaryConfig;
-import com.google.cloud.translate.v3.CreateGlossaryMetadata;
-import com.google.cloud.translate.v3.CreateGlossaryRequest;
-import com.google.cloud.translate.v3.GcsSource;
-import com.google.cloud.translate.v3.Glossary;
-import com.google.cloud.translate.v3.GlossaryInputConfig;
 import com.google.cloud.translate.v3.GlossaryName;
 
-import com.google.cloud.translate.v3.DeleteGlossaryRequest;
-import com.google.cloud.translate.v3.DeleteGlossaryMetadata;
-import com.google.cloud.translate.v3.DeleteGlossaryResponse;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
-import com.google.common.collect.Lists;
-
 
 /**
-* This class translates messages.xml into other languages, e.g., messages-de.xml.
-* See the important documentation links at the bottom of 
-* https://cloud.google.com/translate/docs/advanced/quickstart#translate_v3_translate_text.java
-* notably https://cloud.google.com/translate/troubleshooting
-
-* The initial work was by Qi Z, who worked on this for the Google Summer of Code (GSoC) in 2021.
-* Bob Simons then extensively revised that.
-
-Instruction for Translating
-From Qi's 2021-09-29 email:
-
-I followed the Google Cloud Translation Setup Guide at https://cloud.google.com/translate/docs/setup . 
-I will try to summarize the steps as below:
-
-1. Set up a Google account and activate the Google Cloud Services at https://cloud.google.com . 
-   Also set up billing information. 
-   [Bob set this up with personal gmail account, since NOAA account doesn't allow it(!) ]
-
-2. In the Google Cloud Console, create a new Google Cloud project. 
-   Navigate to the "APIs" then the "library" tab under the new project, 
-   search for "Cloud Translation API" and enable it.
-   [Bob's project: erddap-noaa-erd  ]
-
-3. Create a new service account for the project.
-   In the Cloud Console, go to the Create service account page.
-   It will ask you which project you want to create a service account for, 
-   and you want to select the project you just created. Enter the service account details.
-   I personally chose "owner" as the "service account role", but some other roles should also work fine.
-   [Bob's service account:  translate@erddap-noaa-erd.iam.gserviceaccount.com ]
-
-4. Select this service account and create a new key. Download the .json key file. 
-   Put this .json in your environment variable settings. 
-   Detailed Description for step 3 and 4 can be found on 
-   https://cloud.google.com/translate/docs/setup#windows 
-   (This guide is for computers with a Windows system.)
-   [Bob used instructions at https://phoenixnap.com/kb/windows-set-environment-variable 
-     but that didn't work. So I ran from a DOS window:
-     set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\BobSi\erddap-noaa-erd-5941b340777e.json   
-     but that didn't work. 
-     (Both set the environment variable, but the code still gave an error indicating the credentials were missing.)
-     So now I set via a file reference in translateClient() below. That works.
-     In Credentials, I created an API key (restricted to my ip address and translation api) then 
-     set GOOGLE_API_KEY=myKey
-     Qi did this. I don't know if it is necessary.]
-
-[Bob Added:
-4a. Go to Google Cloud Console > IAM
-  Add the service account email address (e.g., translate@erddap-noaa-erd.iam.gserviceaccount.com )
-    from client-email in my json credentials file
-  as a principal for the project and "Add"ed roles:
-   Cloud Translation API Admin, Cloud Translation API Editor, and Cloud Translation API User.
-  This solves IAM permissions errors.
-  This is based on 1st and 2nd answer at https://stackoverflow.com/questions/52332247/permissiondenied-403-iam-permission-dialogflow-intents-list
-  ]
-
-After step 1-4 we have set up the Google Cloud Project and account. 
-You can try to run some simple translations to ensure that you have set up the API and keys properly. 
-Example snippets can be found at https://cloud.google.com/translate/docs/samples/translate-v3-translate-text. 
-
-5. Update googleProjectId, etc below.
-   [Bob: done ]
-
-6. Update languageCodeList field to be an array of "en", plus the target 
-   language codes of the translation. 
-   [Bob: done]
-
-Now the translation system is ready to use. The Google Cloud account has been set up, 
-and the target languages are chosen, and we have set the output path. 
-We can make final modifications in this class and run main()! 
-
-7. TranslateMessages.translate() will output translated messages.xml, each named "new-messages-<languageCode>.xml", 
-the <languageCode> is the language code in that .xml file. 
-To reuse the translated messages-langCode.xml to reduce the cost, 
-you should rename "new-messages-<languageCode>.xml" to "messages-<languageCode>.xml", 
-so when you run main() next time, it will reuse the current translation.
-
-NOTES
-* These are machine translations, and so are inherently imperfect.
-  The use of ERDDAP and domain-related jargon makes it even harder 
-  (although we do use a glossary for that type of problem).
-* Most of the translated text hasn't even be read/proofed by a human.
-* This doesn't attempt to translate messages from lower level code, e.g., 
-  PrimitiveArray, String2, Math2, HtmlWidgets, MustBe. 
-  You would have to add a complex system of setting arrays
-  for each stock error message and then passing languageCode into to each method
-  so if an error occurred, the translated message would be generated. But even that 
-  is trouble if a mid-level procedure looks for a specific static error message.
-* Even some ERDDAP-related things like accessibleVia... are just English.
-* Most error messages are just English, although the start of the message, 
-  e.g., "Query Error" may appear translated and in English.
-* Several tags used on the 3rd(?) page of the Data Provider Form
-  (e.g., dpt_standardName) maybe shouldn't be translated since they refer 
-  to a specific CF or ACDD attribute (and the explanation is translated).
-* Several tags can be specified in datasets.xml (e.g., &lt;startHeadHtml5&gt;,
-  &lt;standardLicense&lt;).
-  The definitions there only affect the English language version.
-  This is not ideal.
-* Many tags get translated by this system but only the English version is used,
-  e.g., advl_datasetID. See "NOT TRANSLATED" in EDStatic.java for most of these.
-* Language=0 must be English ("en"). Many places in the code specify EDStatic....Ar[0]
-  so that only the English version of the tag is used.
-
-FUTURE?  Things to think about.
-* Make it so that, after running Translate, all changes for each language are
-  captured separately, so an editor for that language can review them.
-* Disable/change the system for removing space after odd '"' and before even '"'?
-  Or just fix problems in tags where it has problems (usually some root cause).
-* Need to note max line length in non-html tags? Then apply to translated text?
-* There is no dontTranslate for non-html. Is it needed? How do it?
-* Do more testing of non-html, e.g., {0}, line breaks, etc.
-* Is there a way to force <submit> to be the computer-button meaning?
-  E.g., I think German should be Senden (not "einreichen").
-* Should the language list be the translated language names?
-* Translate EDStatic.errorFromDataSource and use it with bilingual()?
-*/
-
+ * This class translates messages.xml into other languages, e.g., messages-de.xml. See the important
+ * documentation links at the bottom of
+ * https://cloud.google.com/translate/docs/advanced/quickstart#translate_v3_translate_text.java
+ * notably https://cloud.google.com/translate/troubleshooting
+ *
+ * <p>The initial work was by Qi Z, who worked on this for the Google Summer of Code (GSoC) in 2021.
+ * Bob Simons then extensively revised that.
+ *
+ * <p>Instruction for Translating From Qi's 2021-09-29 email:
+ *
+ * <p>I followed the Google Cloud Translation Setup Guide at
+ * https://cloud.google.com/translate/docs/setup . I will try to summarize the steps as below:
+ *
+ * <p>1. Set up a Google account and activate the Google Cloud Services at https://cloud.google.com
+ * . Also set up billing information. [Bob set this up with personal gmail account, since NOAA
+ * account doesn't allow it(!) ]
+ *
+ * <p>2. In the Google Cloud Console, create a new Google Cloud project. Navigate to the "APIs" then
+ * the "library" tab under the new project, search for "Cloud Translation API" and enable it. [Bob's
+ * project: erddap-noaa-erd ]
+ *
+ * <p>3. Create a new service account for the project. In the Cloud Console, go to the Create
+ * service account page. It will ask you which project you want to create a service account for, and
+ * you want to select the project you just created. Enter the service account details. I personally
+ * chose "owner" as the "service account role", but some other roles should also work fine. [Bob's
+ * service account: translate@erddap-noaa-erd.iam.gserviceaccount.com ]
+ *
+ * <p>4. Select this service account and create a new key. Download the .json key file. Put this
+ * .json in your environment variable settings. Detailed Description for step 3 and 4 can be found
+ * on https://cloud.google.com/translate/docs/setup#windows (This guide is for computers with a
+ * Windows system.) [Bob used instructions at
+ * https://phoenixnap.com/kb/windows-set-environment-variable but that didn't work. So I ran from a
+ * DOS window: set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\BobSi\erddap-noaa-erd-5941b340777e.json
+ * but that didn't work. (Both set the environment variable, but the code still gave an error
+ * indicating the credentials were missing.) So now I set via a file reference in translateClient()
+ * below. That works. In Credentials, I created an API key (restricted to my ip address and
+ * translation api) then set GOOGLE_API_KEY=myKey Qi did this. I don't know if it is necessary.]
+ *
+ * <p>[Bob Added: 4a. Go to Google Cloud Console > IAM Add the service account email address (e.g.,
+ * translate@erddap-noaa-erd.iam.gserviceaccount.com ) from client-email in my json credentials file
+ * as a principal for the project and "Add"ed roles: Cloud Translation API Admin, Cloud Translation
+ * API Editor, and Cloud Translation API User. This solves IAM permissions errors. This is based on
+ * 1st and 2nd answer at
+ * https://stackoverflow.com/questions/52332247/permissiondenied-403-iam-permission-dialogflow-intents-list
+ * ]
+ *
+ * <p>After step 1-4 we have set up the Google Cloud Project and account. You can try to run some
+ * simple translations to ensure that you have set up the API and keys properly. Example snippets
+ * can be found at https://cloud.google.com/translate/docs/samples/translate-v3-translate-text.
+ *
+ * <p>5. Update googleProjectId, etc below. [Bob: done ]
+ *
+ * <p>6. Update languageCodeList field to be an array of "en", plus the target language codes of the
+ * translation. [Bob: done]
+ *
+ * <p>Now the translation system is ready to use. The Google Cloud account has been set up, and the
+ * target languages are chosen, and we have set the output path. We can make final modifications in
+ * this class and run main()!
+ *
+ * <p>7. TranslateMessages.translate() will output translated messages.xml, each named
+ * "new-messages-<languageCode>.xml", the <languageCode> is the language code in that .xml file. To
+ * reuse the translated messages-langCode.xml to reduce the cost, you should rename
+ * "new-messages-<languageCode>.xml" to "messages-<languageCode>.xml", so when you run main() next
+ * time, it will reuse the current translation.
+ *
+ * <p>NOTES These are machine translations, and so are inherently imperfect. The use of ERDDAP and
+ * domain-related jargon makes it even harder (although we do use a glossary for that type of
+ * problem). Most of the translated text hasn't even be read/proofed by a human. This doesn't
+ * attempt to translate messages from lower level code, e.g., PrimitiveArray, String2, Math2,
+ * HtmlWidgets, MustBe. You would have to add a complex system of setting arrays for each stock
+ * error message and then passing languageCode into to each method so if an error occurred, the
+ * translated message would be generated. But even that is trouble if a mid-level procedure looks
+ * for a specific static error message. Even some ERDDAP-related things like accessibleVia... are
+ * just English. Most error messages are just English, although the start of the message, e.g.,
+ * "Query Error" may appear translated and in English. Several tags used on the 3rd(?) page of the
+ * Data Provider Form (e.g., dpt_standardName) maybe shouldn't be translated since they refer to a
+ * specific CF or ACDD attribute (and the explanation is translated). Several tags can be specified
+ * in datasets.xml (e.g., &lt;startHeadHtml5&gt;, &lt;standardLicense&lt;). The definitions there
+ * only affect the English language version. This is not ideal. Many tags get translated by this
+ * system but only the English version is used, e.g., advl_datasetID. See "NOT TRANSLATED" in
+ * EDStatic.java for most of these. Language=0 must be English ("en"). Many places in the code
+ * specify EDStatic....Ar[0] so that only the English version of the tag is used.
+ *
+ * <p>FUTURE? Things to think about. Make it so that, after running Translate, all changes for each
+ * language are captured separately, so an editor for that language can review them. Disable/change
+ * the system for removing space after odd '"' and before even '"'? Or just fix problems in tags
+ * where it has problems (usually some root cause). Need to note max line length in non-html tags?
+ * Then apply to translated text? There is no dontTranslate for non-html. Is it needed? How do it?
+ * Do more testing of non-html, e.g., {0}, line breaks, etc. Is there a way to force <submit> to be
+ * the computer-button meaning? E.g., I think German should be Senden (not "einreichen"). Should the
+ * language list be the translated language names? Translate EDStatic.errorFromDataSource and use it
+ * with bilingual()?
+ */
 public class TranslateMessages {
     private static boolean debugMode = true;
     private static String credentialsFileName = "C:\\Users\\BobSi\\erddap-noaa-erd-5941b340777e.json"; //for windows, use backslashes
@@ -1474,230 +1431,6 @@ public class TranslateMessages {
         }
     }
 
-
-    /* -------------------- UNUSED CODE ---------------------------- */
-
-   
-    /**
-     * Method provided by Google to create a glossary.
-     * THIS IS NO LONGER USED BECAUSE THE GLOSSARY IS NO LONGER USED.
-     * https://github.com/googleapis/java-translate/blob/main/samples/snippets/src/main/java/com/example/translate/CreateGlossary.java
-     *
-     * [Bob initially had permissions problems with this. See solution in setup comments at top.]
-     *
-     * @param projectId Google Cloud Project ID. Use static value from this class.
-     * @param glossaryId Glossary ID. Use the static value from this class.
-     * @param languageCodes Language code in the glossary, order from left to right in erddap-glossary.csv
-     * @throws Exception if trouble
-     */
-    @Deprecated
-    private static void createGlossary(String projectId, String glossaryId, 
-        List<String> languageCodes) throws Exception {
-
-        // Supported Locations: 'global', glossaryLocation, or [model location]
-        // Glossaries must be hosted in glossaryLocation.
-        // Custom Models must use the same location as your model. 
-
-        // Supported Languages: https://cloud.google.com/translate/docs/languages
-        Glossary.LanguageCodesSet languageCodesSet =
-            Glossary.LanguageCodesSet.newBuilder().addAllLanguageCodes(languageCodes).build();
-
-        // Configure the source of the file from a GCS bucket
-        GcsSource gcsSource = GcsSource.newBuilder().setInputUri(glossaryURL).build();
-        GlossaryInputConfig inputConfig = GlossaryInputConfig.newBuilder().setGcsSource(gcsSource).build();
-
-        Glossary glossary = Glossary.newBuilder()
-            .setName(glossaryName.toString())
-            .setLanguageCodesSet(languageCodesSet)
-            .setInputConfig(inputConfig)
-            .build();
-
-        CreateGlossaryRequest request = CreateGlossaryRequest.newBuilder()
-            .setParent(parent.toString())
-            .setGlossary(glossary)
-            .build();
-
-        // Start an asynchronous request
-        OperationFuture<Glossary, CreateGlossaryMetadata> future =
-            translationClient().createGlossaryAsync(request);
-        String2.log("\nCreating Glossary...");
-        Glossary response = future.get();
-        String2.log("Created Glossary.");
-        System.out.printf("Glossary name: %s\n", response.getName());
-        System.out.printf("Entry count: %s\n", response.getEntryCount());
-        System.out.printf("Input URI: %s\n", response.getInputConfig().getGcsSource().getInputUri());
-        System.out.printf("Language Code Set: %s\n", response.getLanguageCodesSet().getLanguageCodesList());
-            
-    }
-
-
-    /**
-     * Delete the target glossary. Method provided by Google.
-     * THIS IS NO LONGER USED BECAUSE THE GLOSSARY IS NO LONGER USED.
-     *
-     * @param projectId The project ID. Use the static value in this class.
-     * @param glossaryId The glossary ID. Use the static value in this class.
-     * @throws Exception if trouble
-     */
-    @Deprecated
-    private static void deleteGlossary(String projectId, String glossaryId) throws Exception {
-
-        // Supported Locations: 'global', glossaryLocation, or [model location]
-        // Glossaries must be hosted in glossaryLocation
-        // Custom Models must use the same location as your model. 
-        GlossaryName glossaryName = GlossaryName.of(projectId, glossaryLocation, glossaryId);
-        DeleteGlossaryRequest request =
-            DeleteGlossaryRequest.newBuilder().setName(glossaryName.toString()).build();
-
-        // Start an asynchronous request
-        System.out.format("Deleting Glossary...");
-        OperationFuture<DeleteGlossaryResponse, DeleteGlossaryMetadata> future =
-            translationClient().deleteGlossaryAsync(request);
-        DeleteGlossaryResponse response = future.get();
-        System.out.format("Deleted Glossary: %s\n", response.getName());
-    }
-
-    /**
-     * This updates the glossary by deleting it and recreating one with the
-     * erddap-glossary.csv file in the Google Cloud Bucket.
-     * THIS IS NO LONGER USED BECAUSE THE GLOSSARY IS NO LONGER USED.
-     *
-     * @throws Exception if trouble
-     */
-    @Deprecated
-    private static void updateGlossary() throws Exception {
-        //!!! For a new Google user, if you create a new bucket and thus new glossary file in it,
-        //    comment out the deletGlossary() line below one time.
-        try {
-            deleteGlossary(googleProjectId, glossaryId);
-        } catch (Throwable t) {
-            String2.log("This error from trying to delete the old glossary usually doesn't matter:");
-            t.printStackTrace();
-        }
-
-        //the main step
-        createGlossary(googleProjectId, glossaryId, Arrays.asList(languageCodeList));
-
-        //just to test that it can be done.
-        glossaryConfig = TranslateTextGlossaryConfig.newBuilder().setGlossary(glossaryName.toString()).build(); 
-    }
-
-    /**
-     * This method will translate the input text to the target language and output a String.
-     * This method uses a free engine, proven to have poor quality. But it's fast and free.
-     *
-     * @param langFrom source text language code in UTF-8
-     * @param langTo target language code in UTF-8
-     * @param text the text String to be translated
-     * @return the translated text
-     * @throws IOException potential exception if something is wrong
-     */
-    @Deprecated
-    private static String translateTextBudgetVer(String langFrom, String langTo, String text) throws IOException {
-        String urlStr = "https://script.google.com/macros/s/AKfycbyoLoNhi3R9QD-yIrdjXMYN_ltP1ctX1vhC_UQioQOMexfXlL3NQr4NUeLIzlPWTyil/exec" +
-                "?q=" + URLEncoder.encode(text, "UTF-8") +
-                "&target=" + langTo +
-                "&source=" + langFrom +
-                "&format=html";
-        URL url = new URL(urlStr);
-        StringBuilder response = new StringBuilder();
-        try {
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("User-Agent", "Mozilla/5.0");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-            return response.toString();
-        } catch (Exception e) {
-            String2.log("An error occured in translate()");
-            String2.log(e.getMessage());
-        }
-        return response.toString();
-    }
-    
-    /**
-     * This method utilizes Google Cloud Translation-Basic service to translate the input text to the target language.
-     * However, this does not support the glossary (keep target words untranslated) feature.
-     * Use translateTextV3 instead.
-     *
-     * @param Translator a Translate object
-     * @param langFrom source language
-     * @param langTo target language 
-     * @param text to be translated
-     * @param html if the text contains html entities to be preserved
-     * @return the translated text
-     */
-    @Deprecated
-    private static String translateTextV2(Translate translator, String langFrom, String langTo, String text, boolean html) {
-        translationCounter++;
-        return translator.translate(
-            text,
-            Translate.TranslateOption.sourceLanguage(langFrom),
-            Translate.TranslateOption.targetLanguage(langTo),
-            Translate.TranslateOption.format(html? "html" : "text"))
-            .getTranslatedText();
-    }
-
-
-    /**
-     * This function will detect the tags such that its tag name follows "</EDDGrid.*Example>" or "</EDDTable.*Example>" pattern
-     * and add the tags to the doNotTranslateSet.
-     * Call this before the translation process
-     * CURRENTLY NOT NEEDED because Qi have found all tags following the pattern (as 6/23/21) and hard coded them to the set
-     *
-     * @throws Exception if trouble
-     */
-    private static void addDoNotTranslateSet() throws Exception {
-        SimpleXMLReader xmlReader = new SimpleXMLReader(new FileInputStream(messagesXmlFileName));
-        xmlReader.nextTag();
-        while (true) {
-            xmlReader.nextTag();
-            if (xmlReader.allTags().length() == 0) {
-                break;
-            }
-            if (xmlReader.topTag().endsWith("Example") &&
-                (xmlReader.topTag().startsWith("/EDDGrid") || xmlReader.topTag().startsWith("/EDDTable"))) {
-                    doNotTranslateSet.add(xmlReader.topTag());
-            }
-
-        }
-    }
-
-    /**
-     * Uses W3C's built in DOM to read tag information in XML. Only used in testing process.
-     *
-     * @return message.xml in string form
-     * @throws Exception
-     */
-/* NOT USED and requires org.w3c libraries up above (moved here...):
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-    private static void readXMLtagsDOM() throws Exception{
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance(); 
-        DocumentBuilder db = dbf.newDocumentBuilder(); 
-        // use parse() to read message.xml
-        Document document = db.parse(messagesXmlFileName); 
-        NodeList nl = document.getElementsByTagName("*");
-        // check the amount of tags we have
-        String2.log("We have " + nl.getLength() + " tags");
-        for (int i = 0; i < 5; i++) { //just read the first 5
-            Node tag = nl.item(i); 
-            // get the attributes in the tag
-            NamedNodeMap nnm = tag.getAttributes(); 
-            for (int atti = 0; atti < nnm.getLength(); atti++) { 
-                String2.log(nnm.item(atti).getNodeName() + ":" + nnm.item(atti).getNodeValue());
-            }
-        } 
-    }
-*/
-
     /******************* TESTS **************************************/
 
     /**
@@ -1717,29 +1450,30 @@ import org.xml.sax.SAXException;
         return oa;
     }
 
-    /**
-     * Un/comment code below, then run this to do things with this class.
-     */
-    public static void main(String args[]) throws Throwable {
-        String2.log("*** TranslateMessages.main()");
+  /** Un/comment code below, then run this to do things with this class. */
+  public static void main(String args[]) throws Throwable {
+    String2.log("*** TranslateMessages.main()");
 
-        // Run the TranslateMessagesTests before this which include:
-        // testDontTranslateOrdering();
-        // findTagsMissingCDATA();
-        //*** system unit tests
-        // testGoogleSampleCode();
-        // testTranslateHtml();
-        // testTranslateComment();
-        // testTranslatePlainText();
-        // And the JettyTest
-        // checkForUncaughtSpecialText(); 
+    // Run the TranslateMessagesTests before this which include:
+    // testDontTranslateOrdering();
+    // findTagsMissingCDATA();
+    // *** system unit tests
+    // testGoogleSampleCode();
+    // testTranslateHtml();
+    // testTranslateComment();
+    // testTranslatePlainText();
+    // And the JettyTest
+    // checkForUncaughtSpecialText();
 
-        //*** Uncomment this to translate all of messages.xml.
-        // To work with just one language (e.g., German), uncomment "use these mini lists" above
-        // If you like the translation, rename new-messages-[langCode].xml to be messages-[langCode].xml   
-        // If you like the translation for all languages, copy messages.xml to be messagesOld.xml.
-        translate(-1, "all"); //params: justTranslateNTags (-1 for all), verboseLanguage (e.g., "" (none), "de" (German) or "all")
+    // *** Uncomment this to translate all of messages.xml.
+    // To work with just one language (e.g., German), uncomment "use these mini lists" above
+    // If you like the translation, rename new-messages-[langCode].xml to be messages-[langCode].xml
+    // If you like the translation for all languages, copy messages.xml to be messagesOld.xml.
+    translate(
+        -1,
+        "all"); // params: justTranslateNTags (-1 for all), verboseLanguage (e.g., "" (none), "de"
+                // (German) or "all")
 
-        String2.log("*** TranslateMessages.main() finished.");
-    }
+    String2.log("*** TranslateMessages.main() finished.");
+  }
 }

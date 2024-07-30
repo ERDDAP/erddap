@@ -2467,8 +2467,8 @@ public class Table {
             // deal with NaN in long column not simplified to LongArray
             //  so left as NaN in String column
             // or char array missing value ?
-            if (a1String && ("NaN".equals(s1))) s1 = "";
-            if (a2String && ("NaN".equals(s2))) s2 = "";
+            if (a1String && "NaN".equals(s1)) s1 = "";
+            if (a2String && "NaN".equals(s2)) s2 = "";
             if (!s1.equals(s2))
               Test.ensureEqual(
                   s1,
@@ -3329,7 +3329,7 @@ public class Table {
             PrimitiveArray.factory(
                 columnPAType[col] == PAType.BOOLEAN ? PAType.BYTE : columnPAType[col], 128, false);
         addColumn(loadColumns[col], pa[col]);
-        arBool[col] = columnPAType[col] == PAType.BOOLEAN ? (ByteArray) (pa[col]) : null;
+        arBool[col] = columnPAType[col] == PAType.BOOLEAN ? (ByteArray) pa[col] : null;
       }
 
       // skipHeaderToRegex
@@ -5420,7 +5420,7 @@ public class Table {
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = getColumn(col);
       PAType paType = pa.elementType();
-      Attributes atts = (Attributes) (columnAttributes(col).clone());
+      Attributes atts = (Attributes) columnAttributes(col).clone();
       newTable.addColumn(col, getColumnName(col), pa, atts);
 
       // for backwardcompatibility, always set it
@@ -5441,7 +5441,7 @@ public class Table {
       } else if (paType == PAType.STRING) {
         atts.set(
             "_encoded_", String2.JSON); // not _Encoding because encodeEnhancedAtts will change it
-        newTable.setColumn(col, (new StringArray(pa)).toJson()); // change a copy of pa
+        newTable.setColumn(col, new StringArray(pa).toJson()); // change a copy of pa
       }
 
       encodeEnhancedAttributes(atts);
@@ -6957,7 +6957,7 @@ public class Table {
         // readNDNc always includes scalar vars
         readNDNc(
             fullName,
-            (loadCon.toHashSet()).toArray(new String[0]),
+            loadCon.toHashSet().toArray(new String[0]),
             0, // standardizeWhat=0
             null,
             0,
@@ -7293,7 +7293,7 @@ public class Table {
           // readNDNc always includes scalar vars
           readNDNc(
               fullName,
-              (loadCon.toHashSet()).toArray(new String[0]),
+              loadCon.toHashSet().toArray(new String[0]),
               0, // standardizeWhat=0
               null,
               0,
@@ -9615,13 +9615,12 @@ public class Table {
             c,
             "channel_" + (c + 1),
             pa[c],
-            (new Attributes()).add("long_name", "Channel " + (c + 1)));
+            new Attributes().add("long_name", "Channel " + (c + 1)));
       }
 
       Attributes elapsedTimeAtts = null;
       if (addElapsedTimeColumn)
-        elapsedTimeAtts =
-            (new Attributes()).add("long_name", "Elapsed Time").add("units", "seconds");
+        elapsedTimeAtts = new Attributes().add("long_name", "Elapsed Time").add("units", "seconds");
 
       // return with just metadata?
       if (!readData) {
@@ -10491,7 +10490,7 @@ public class Table {
       newPA[lutCol] = PrimitiveArray.factory(tPAType, nRows, mvString[lutCol]);
       String colName = lookUpTable.getColumnName(lutCol);
       insertedColumnNames.add(colName);
-      addColumn(keyCol + lutCol, colName, newPA[lutCol], (Attributes) (lutAtts.clone()));
+      addColumn(keyCol + lutCol, colName, newPA[lutCol], (Attributes) lutAtts.clone());
     }
 
     // fill the new columns by matching the looking up the key value
@@ -12402,7 +12401,7 @@ public class Table {
   public void leftToRightSort(int nSortColumns) {
     boolean ascending[] = new boolean[nSortColumns];
     Arrays.fill(ascending, true);
-    sort((new IntArray(0, nSortColumns - 1)).toArray(), ascending);
+    sort(new IntArray(0, nSortColumns - 1).toArray(), ascending);
   }
 
   /**
@@ -12417,7 +12416,7 @@ public class Table {
   public void leftToRightSortIgnoreCase(int nSortColumns) {
     boolean ascending[] = new boolean[nSortColumns];
     Arrays.fill(ascending, true);
-    sortIgnoreCase((new IntArray(0, nSortColumns - 1)).toArray(), ascending);
+    sortIgnoreCase(new IntArray(0, nSortColumns - 1).toArray(), ascending);
   }
 
   /**
@@ -12450,7 +12449,7 @@ public class Table {
     if (nRows == 0) return;
 
     // make a bitset of sortColumnNumbers
-    BitSet isSortColumn = (new IntArray(keyColumns)).toBitSet();
+    BitSet isSortColumn = new IntArray(keyColumns).toBitSet();
 
     // gather sort columns
     int nSortColumns = keyColumns.length;
@@ -13535,7 +13534,7 @@ public class Table {
             + 8
             + // field name length (for all fields)
             8
-            + nCols * 32; // field names
+            + nCols * 32L; // field names
     for (int col = 0; col < nCols; col++) {
       // String ndIndex takes time to make; so make it and store it for use below
       ndIndex[col] = Matlab.make2DNDIndex(getColumn(col));
@@ -14849,7 +14848,7 @@ public class Table {
               + " nRowsSucceed="
               + (nRows - failedRows.size())
               + " nRowsFailed="
-              + (failedRows.size())
+              + failedRows.size()
               + " TIME="
               + (System.currentTimeMillis() - elapsedTime)
               + "ms");
@@ -14916,7 +14915,7 @@ public class Table {
     DatabaseMetaData dm = con.getMetaData();
     Table tables = new Table(); // works with "posttest", "public", "names", null
     tables.readSqlResultSet(dm.getTables(null, schema.toLowerCase(), null, types));
-    return (StringArray) (tables.getColumn(2)); // table name is always col (0..) 2
+    return (StringArray) tables.getColumn(2); // table name is always col (0..) 2
   }
 
   /**
@@ -16499,8 +16498,8 @@ public class Table {
 
         // very similar code in Table.directoryListing and TableWriterHtmlTable.
         int whichIcon = File2.whichIcon(fileName);
-        String iconFile = File2.ICON_FILENAME[whichIcon];
-        String iconAlt = File2.ICON_ALT[whichIcon]; // always 3 characters
+        String iconFile = File2.ICON_FILENAME.get(whichIcon);
+        String iconAlt = File2.ICON_ALT.get(whichIcon); // always 3 characters
         String extLC = File2.getExtension(fileNameLC);
 
         // make HTML for a viewer?
@@ -17088,7 +17087,7 @@ public class Table {
   public static Table.Rounder createRounder(final String responsible, final String param) {
     String[] split = splitColNameForRounders(param);
     if (split.length == 1) {
-      return (d) -> (d); // nothing to be done.
+      return (d) -> d; // nothing to be done.
     }
     String str = split[1];
     try {
@@ -17109,9 +17108,9 @@ public class Table {
         final double numberOfUnits = Double.parseDouble(parts[0]);
         if (parts.length == 2) {
           final double offset = Double.parseDouble(parts[1]);
-          return (d) -> (Math.floor((d - offset) / numberOfUnits));
+          return (d) -> Math.floor((d - offset) / numberOfUnits);
         }
-        return (d) -> (Math.floor(d / numberOfUnits));
+        return (d) -> Math.floor(d / numberOfUnits);
       }
     } catch (IllegalArgumentException e) {
       throw e;

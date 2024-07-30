@@ -377,7 +377,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     // add axisVariables
     String varName = extractColumnName;
     Attributes sourceAtts = new Attributes();
-    Attributes addAtts = (new Attributes()).add("units", "seconds since 1970-01-01T00:00:00Z");
+    Attributes addAtts = new Attributes().add("units", "seconds since 1970-01-01T00:00:00Z");
     PAType tPAType = null;
     if (extractDataType.startsWith("timeFormat=")) {
       tPAType = PAType.STRING;

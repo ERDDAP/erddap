@@ -224,11 +224,6 @@ public class TableWriterOrderByMean extends TableWriterAll {
     }
   }
 
-  private boolean isTimeColumn(Table table, int col) {
-    String units = table.columnAttributes(col).getString("units");
-    return "time".equals(table.getColumnName(col)) || EDV.TIME_UNITS.equals(units);
-  }
-
   private boolean isDegreeUnitsColumn(Table table, int col) {
     String units = table.columnAttributes(col).getString("units");
     return units != null && EDStatic.angularDegreeUnitsSet.contains(units);
@@ -342,20 +337,6 @@ public class TableWriterOrderByMean extends TableWriterAll {
         if (areAllValuesIntegers(column))
             meansTable.setColumn(col, PrimitiveArray.factory(PAType.INT, column));
     }
-    */
-  }
-
-  private boolean areAllValuesIntegers(PrimitiveArray column) {
-    // Disabled for now
-    return false;
-    /*
-    int nrows = column.size();
-    for (int row=0; row<nrows; row++) {
-        if (column.getDouble(row) != column.getInt(row)) {
-            return false;
-        }
-    }
-    return true;
     */
   }
 

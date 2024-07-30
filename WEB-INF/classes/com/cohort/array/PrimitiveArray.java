@@ -2537,8 +2537,8 @@ public abstract class PrimitiveArray {
 
         if (!String2.isSomething2(
             s)) // this catches a large number of string and numeric missing value stand-ins, but
-                // not NaN
-        continue;
+          // not NaN
+          continue;
 
         if (s.toLowerCase().equals("nan")) { // signifies a numeric missing value
           // non-specific, skip this row
@@ -2611,7 +2611,7 @@ public abstract class PrimitiveArray {
             || d
                 > Long
                     .MAX_VALUE) { // good (checks range) but imperfect: Long.MAX_VALUE is imprecise
-                                  // as a double
+          // as a double
           // String2.log(">> simplify -> LONG because d=" + d);
           type = PAType.FLOAT; // not ULONG
           if (this instanceof FloatArray) // not ULongArray
@@ -3036,8 +3036,8 @@ public abstract class PrimitiveArray {
     // append table2 to the end of table1
     for (int col = 0; col < table1.size(); col++) {
       // if needed, make a new wider PrimitiveArray in table1
-      PrimitiveArray pa1 = (PrimitiveArray) (table1.get(col));
-      PrimitiveArray pa2 = (PrimitiveArray) (table2.get(col));
+      PrimitiveArray pa1 = (PrimitiveArray) table1.get(col);
+      PrimitiveArray pa2 = (PrimitiveArray) table2.get(col);
 
       PAType needPAType = pa1.needPAType(pa2.elementType());
       if (pa1.elementType() != needPAType) {
@@ -3640,7 +3640,7 @@ public abstract class PrimitiveArray {
     if (op.equals("<")) return value1 < value2;
     if (op.equals(">")) return value1 > value2;
     if (op.equals("!="))
-      return Float.isNaN(value1) && Float.isNaN(value2) ? false : value1 != value2;
+      return (Float.isNaN(value1) && Float.isNaN(value2)) ? false : value1 != value2;
     // Regex test has to be handled via String testValueOpValue
     //  if (op.equals(PrimitiveArray.REGEX_OP))
     throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
@@ -3672,7 +3672,7 @@ public abstract class PrimitiveArray {
     if (op.equals("<")) return value1 < value2;
     if (op.equals(">")) return value1 > value2;
     if (op.equals("!="))
-      return Double.isNaN(value1) && Double.isNaN(value2) ? false : value1 != value2;
+      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
     // Regex test has to be handled via String testValueOpValue
     //  if (op.equals(PrimitiveArray.REGEX_OP))
     throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
@@ -3706,7 +3706,7 @@ public abstract class PrimitiveArray {
     if (op.equals("<")) return value1 < value2;
     if (op.equals(">")) return value1 > value2;
     if (op.equals("!="))
-      return Double.isNaN(value1) && Double.isNaN(value2) ? false : value1 != value2;
+      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
     // Regex test has to be handled via String testValueOpValue
     //  if (op.equals(PrimitiveArray.REGEX_OP))
     throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
@@ -3737,7 +3737,7 @@ public abstract class PrimitiveArray {
     if (op.equals("<")) return value1 < value2;
     if (op.equals(">")) return value1 > value2;
     if (op.equals("!="))
-      return Double.isNaN(value1) && Double.isNaN(value2) ? false : value1 != value2;
+      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
     // Regex test has to be handled via String testValueOpValue
     //  if (op.equals(PrimitiveArray.REGEX_OP))
     throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");

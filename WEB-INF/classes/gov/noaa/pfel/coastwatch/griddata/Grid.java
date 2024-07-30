@@ -1483,7 +1483,8 @@ public class Grid {
       double dar[];
       double tMissingValue = DataHelper.FAKE_MISSING_VALUE;
       if (dfntType == HdfConstants.DFNT_FLOAT32) {
-        tMissingValue = (float) tMissingValue; // to bruise it like bruised in far
+        float tempValue = (float) tMissingValue;
+        tMissingValue = tempValue; // to bruise it like bruised in far
         float[] far = SdsReader.toFloatArray(sd.data);
         int n = far.length;
         dar = new double[n];

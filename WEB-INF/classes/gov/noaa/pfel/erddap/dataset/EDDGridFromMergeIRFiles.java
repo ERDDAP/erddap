@@ -265,7 +265,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             float lon = 0.0182f;
             for (int i = 0; i < NLON; i++) {
               lonBounds.setFloat(i, lon);
-              lon += SLON;
+              lon = (float) (lon + SLON);
             }
             avPa[avi] = lonBounds;
             break;
@@ -274,7 +274,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             float lat = -59.982f;
             for (int i = 0; i < NLAT; i++) {
               latBounds.setFloat(i, lat);
-              lat += SLAT;
+              lat = (float) (lat + SLAT);
             }
             avPa[avi] = latBounds;
             break;
@@ -474,7 +474,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
           int offsetLat = NLON * la;
           for (int lo = minLon; lo <= maxLon; lo += strideLon) {
             short value = (short) (in[offsetTime + offsetLat + lo] & 0xff);
-            value += 75;
+            value = (short) (value + 75);
             out1[indexOut] = value;
             out2[indexOut] = ((double) Math.round(T2F(value) * 10.)) / 10.;
             indexOut++;

@@ -1772,7 +1772,7 @@ public class StringArray extends PrimitiveArray {
       final RandomAccessFile raf, final long start, final int index, final int nBytesPer)
       throws Exception {
 
-    raf.seek(start + nBytesPer * index);
+    raf.seek(start + nBytesPer * ((long) index));
     final byte bar[] = new byte[nBytesPer];
     raf.readFully(bar);
     int po = 0;
@@ -2180,7 +2180,7 @@ public class StringArray extends PrimitiveArray {
                   && po <= n - 4
                   && // \\uxxxx
                   String2.isHexString(searchFor.substring(po, po + 4))) {
-                word.append((char) (Integer.parseInt(searchFor.substring(po, po + 4), 16)));
+                word.append((char) Integer.parseInt(searchFor.substring(po, po + 4), 16));
                 po += 4;
               }
               // else if (ch == '') word.append('');
@@ -2431,10 +2431,9 @@ public class StringArray extends PrimitiveArray {
   public String isAscending() {
     if (size == 0) return "";
     String s = get(0);
-    if (s
-        == null) // other classes test isMissingValue. StringArray's behavior is intentionally a
-                 // little different.
-    return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(), "[0]=null");
+    if (s == null) // other classes test isMissingValue. StringArray's behavior is intentionally a
+      // little different.
+      return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(), "[0]=null");
     for (int i = 1; i < size; i++) {
       final String oldS = s;
       s = get(i);
@@ -2469,10 +2468,9 @@ public class StringArray extends PrimitiveArray {
   public String isDescending() {
     if (size == 0) return "";
     String s = get(0);
-    if (s
-        == null) // other classes test isMissingValue. StringArray's behavior is intentionally a
-                 // little different.
-    return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), "[0]=null");
+    if (s == null) // other classes test isMissingValue. StringArray's behavior is intentionally a
+      // little different.
+      return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), "[0]=null");
     for (int i = 1; i < size; i++) {
       final String oldS = s;
       s = get(i);

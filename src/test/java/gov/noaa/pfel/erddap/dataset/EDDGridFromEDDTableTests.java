@@ -201,7 +201,7 @@ class EDDGridFromEDDTableTests {
 
     // GenerateDatasetsXml
     String gdxResults =
-        (new GenerateDatasetsXml())
+        new GenerateDatasetsXml()
             .doIt(
                 new String[] {"-verbose", "EDDGridFromEDDTable", tid, "-1"}, // default reloadEvery,
                 false); // doIt loop?

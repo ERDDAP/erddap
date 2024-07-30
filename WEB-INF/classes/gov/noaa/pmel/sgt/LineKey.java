@@ -574,6 +574,7 @@ public class LineKey implements Cloneable, DataKey, Moveable, PropertyChangeList
           break;
         case LineAttribute.MARK_LINE:
           render.drawMark(g, xout, yout, 2, attr);
+          // fall through
         default:
         case LineAttribute.SOLID:
           g.drawLine(xout[0], yout[0], xout[1], yout[1]);

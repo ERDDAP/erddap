@@ -284,7 +284,7 @@ public class Erddap extends HttpServlet {
         true,
         false); // in EDStatic, was true, true, but then subdirs created
     // delete cache subdirs other than starting with "_" (i.e., the dataset dirs, not _test)
-    String tFD[] = (new File(EDStatic.fullCacheDirectory)).list();
+    String tFD[] = new File(EDStatic.fullCacheDirectory).list();
     StringBuilder rdErrors = new StringBuilder();
     for (int i = 0; i < tFD.length; i++) {
       String fd = tFD[i];
@@ -6122,7 +6122,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // more complicated test for new v2.00 orderBy features
         String parts[] = String2.splitNoTrim(queryString, '&');
         for (int p = 1; p < parts.length; p++) { // 1 because 0 is varList
-          if ((parts[p].startsWith("orderByMean("))
+          if (parts[p].startsWith("orderByMean(")
               || // new in v2.00
               (parts[p].startsWith("orderBy")
                   && parts[p].indexOf('/') > 0)) { // new system in v2.00
@@ -6455,10 +6455,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Table table = new Table();
       table.addColumn("Name", new StringArray(new String[] {"documentation.html"}));
       table.addColumn(
-          "Last modified", (new LongArray(new long[] {EDStatic.startupMillis})).setMaxIsMV(true));
+          "Last modified", new LongArray(new long[] {EDStatic.startupMillis}).setMaxIsMV(true));
       table.addColumn(
           "Size",
-          (new LongArray(new long[] {Long.MAX_VALUE}))
+          new LongArray(new long[] {Long.MAX_VALUE})
               .setMaxIsMV(true)); // it is made on-the-fly, so size not known
       table.addColumn(
           "Description",
@@ -6876,9 +6876,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       ids = new StringArray(ntids, false);
       for (int ti = 0; ti < ntids; ti++) {
         EDD edd = gridDatasetHashMap.get(tids.get(ti));
-        if (edd != null
+        if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))
+                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // griddap requests may be graphics requests {
           titles.add(edd.title());
           ids.add(edd.datasetID());
@@ -6892,9 +6892,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       ids = new StringArray(ntids, false);
       for (int ti = 0; ti < ntids; ti++) {
         EDD edd = tableDatasetHashMap.get(tids.get(ti));
-        if (edd != null
+        if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))
+                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // tabledap requests may be graphics requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
@@ -9796,7 +9796,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               && height > 0
               && height <= EDD.WMS_MAX_HEIGHT
               && format != null)
-          && (format.equals("image/png"))
+          && format.equals("image/png")
           && (exceptions.equals("INIMAGE") || exceptions.equals("BLANK"))) {
 
         // since handled here
@@ -11162,8 +11162,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // make a table for use below
     StringArray namePA = new StringArray();
-    LongArray modifiedPA = (LongArray) (new LongArray().setMaxIsMV(true));
-    LongArray sizePA = (LongArray) (new LongArray().setMaxIsMV(true));
+    LongArray modifiedPA = (LongArray) new LongArray().setMaxIsMV(true);
+    LongArray sizePA = (LongArray) new LongArray().setMaxIsMV(true);
     StringArray descriptionPA = new StringArray();
     Table table = new Table();
     table.addColumn("Name", namePA);
@@ -11788,9 +11788,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         "&gt; <a rel=\"chapter\" href=\"" + relativeUrl + "?f=html\">" + tDatasetID + "</a>\n";
     EDV tDataVariables[] = tEddGrid.dataVariables();
     EDVLonGridAxis tEdvLon =
-        (EDVLonGridAxis) (tEddGrid.axisVariables()[tEddGrid.lonIndex()]); // must exist
+        (EDVLonGridAxis) tEddGrid.axisVariables()[tEddGrid.lonIndex()]; // must exist
     EDVLatGridAxis tEdvLat =
-        (EDVLatGridAxis) (tEddGrid.axisVariables()[tEddGrid.latIndex()]); // must exist
+        (EDVLatGridAxis) tEddGrid.axisVariables()[tEddGrid.latIndex()]; // must exist
     EDVTimeGridAxis tEdvTime =
         (EDVTimeGridAxis)
             (tEddGrid.timeIndex() < 0
@@ -12016,10 +12016,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           + "]},\n")
                   + // "timeReference" : null
                   "  \"pixelSizeX\" : "
-                  + (tEdvLon.averageSpacing())
+                  + tEdvLon.averageSpacing()
                   + ", \n"
                   + "  \"pixelSizeY\" : "
-                  + (tEdvLat.averageSpacing())
+                  + tEdvLat.averageSpacing()
                   + ", \n"
                   + "  \"bandCount\" : 1, \n"
                   + "  \"pixelType\" : \""
@@ -12238,11 +12238,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "<br/>\n"
                   + "</ul>\n"
                   + "<strong>Pixel Size X:</strong> "
-                  + (tEdvLon.averageSpacing())
+                  + tEdvLon.averageSpacing()
                   + "<br/>\n"
                   + "<br/>\n"
                   + "<strong>Pixel Size Y:</strong> "
-                  + (tEdvLat.averageSpacing())
+                  + tEdvLat.averageSpacing()
                   + "<br/>\n"
                   + "<br/>\n"
                   + "<strong>Band Count:</strong> 1<br/>\n"
@@ -12506,7 +12506,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         String fileExtension = ".png";
         if (formatParam == null
             || // spec-defined default is jpgpng
-            ("||jpgpng|png|png8|png24|jpg|bmp|gif|").indexOf("|" + formatParam + "|") >= 0) {
+            "||jpgpng|png|png8|png24|jpg|bmp|gif|".indexOf("|" + formatParam + "|") >= 0) {
           // already fileExtension = ".png";   //valid but unsupported -> png  ???
         } else if (formatParam.equals("tiff")) {
           fileTypeName = ".geotif";
@@ -14542,12 +14542,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       tKeywords = String2.toSVString(tKeywordsSA.toArray(), " ", false);
 
       OutputStream out =
-          (new OutputStreamFromHttpResponse(
+          new OutputStreamFromHttpResponse(
                   request,
                   response,
                   "OpenSearchDescription",
                   "custom:application/opensearchdescription+xml",
-                  ".xml"))
+                  ".xml")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -17924,7 +17924,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     boolean tEmailIfAlreadyValid =
         String2.parseBoolean(queryMap.get("emailifalreadyvalid")); // default=true
     boolean tShowErrors =
-        queryString == null || queryString.length() == 0
+        (queryString == null || queryString.length() == 0)
             ? false
             : String2.parseBoolean(queryMap.get("showerrors")); // default=true
 
@@ -19212,7 +19212,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
     if (toCode) {
       // process code=,   a toCode query
-      int po = ((StringArray) (fipsTable.getColumn(1))).indexOf(queryCounty);
+      int po = ((StringArray) fipsTable.getColumn(1)).indexOf(queryCounty);
       if (po < 0) {
         tError = "county=\"" + queryCounty + "\" isn't an exact match of a FIPS county name.";
       } else {
@@ -19223,7 +19223,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     } else if (toCounty) {
       // process county=,   a toCounty query
-      int po = ((StringArray) (fipsTable.getColumn(0))).indexOf(queryCode);
+      int po = ((StringArray) fipsTable.getColumn(0)).indexOf(queryCode);
       if (po < 0) {
         tError = "code=\"" + queryCode + "\" isn't an exact match of a 5-digit, FIPS county code.";
       } else {
@@ -19251,7 +19251,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "ConvertFipsCounty", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "ConvertFipsCounty", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -19494,8 +19494,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
     }
-    StringArray acronymSA = (StringArray) (oaTable.getColumn(0));
-    StringArray fullNameSA = (StringArray) (oaTable.getColumn(1));
+    StringArray acronymSA = (StringArray) oaTable.getColumn(0);
+    StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
     if (toAcronym) {
       // process acronym=,   a toAcronym query
       int po = fullNameSA.indexOf(queryFullName);
@@ -19543,7 +19543,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "convertOAAcronym", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "convertOAAcronym", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -19789,8 +19789,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
     }
-    StringArray variableNameSA = (StringArray) (oaTable.getColumn(0));
-    StringArray fullNameSA = (StringArray) (oaTable.getColumn(1));
+    StringArray variableNameSA = (StringArray) oaTable.getColumn(0);
+    StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
     if (toVariableName) {
       // process variableName=,   a toVariableName query
       int po = fullNameSA.indexOf(queryFullName);
@@ -19838,8 +19838,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(
-                  request, response, "convertOAVariableName", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(
+                  request, response, "convertOAVariableName", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -20123,7 +20123,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "ConvertKeywords", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "ConvertKeywords", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -21179,7 +21179,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           nearbyTable.removeAllRows();
           int whichIsDistance0 = -1;
           boolean isBilinear = algorithm[dv] == BILINEAR;
-          ALL_LOOPS:
           for (int tTime = baseTime + startTimeOffset;
               tTime <= baseTime + stopTimeOffset;
               tTime++) {
@@ -21605,7 +21604,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "ConvertTime", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "ConvertTime", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -21935,7 +21934,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "ConvertUnits", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "ConvertUnits", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -22192,7 +22191,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // respond to a valid request
       OutputStream out =
-          (new OutputStreamFromHttpResponse(request, response, "ConvertURLs", ".txt", ".txt"))
+          new OutputStreamFromHttpResponse(request, response, "ConvertURLs", ".txt", ".txt")
               .outputStream(File2.UTF_8);
       Writer writer = File2.getBufferedWriterUtf8(out);
       try {
@@ -23779,7 +23778,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.luceneIndexWriter.close();
             Math2.gcAndWait(
                 "LoadDatasets.updateLucene (handle trouble)"); // part of dealing with lucene
-                                                               // trouble
+            // trouble
           } catch (Throwable t2) {
             String2.log(MustBe.throwableToString(t2));
           }
