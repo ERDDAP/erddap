@@ -62,8 +62,6 @@ public class EDDGridLonPM180Handler extends State {
                 + "There can be only one <dataset> defined within an "
                 + "EDDGridLonPM180 <dataset>.");
       }
-    } else {
-      String2.log("Unexpected start tag: " + localName);
     }
   }
 

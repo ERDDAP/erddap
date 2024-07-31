@@ -11,7 +11,7 @@ public class AxisVariableHandler extends State {
   private StringBuilder content = new StringBuilder();
   private ArrayList tAxisVariables;
   private String tSourceName = null, tDestinationName = null;
-  private com.cohort.array.Attributes tAttributes;
+  private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   private PrimitiveArray tValuesPA = null;
   private State completeState;
 
@@ -54,7 +54,6 @@ public class AxisVariableHandler extends State {
           tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
         }
       }
-      default -> String2.log("Unexpected start tag: " + localName);
     }
   }
 

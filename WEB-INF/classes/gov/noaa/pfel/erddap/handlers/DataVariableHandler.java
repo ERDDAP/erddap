@@ -24,8 +24,6 @@ public class DataVariableHandler extends State {
     if (localName.equals("addAttributes")) {
       State state = new AddAttributesHandler(saxHandler, tAttributes, this);
       saxHandler.setState(state);
-    } else {
-      String2.log("Unexpected start tag: " + localName);
     }
   }
 

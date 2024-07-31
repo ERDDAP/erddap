@@ -26,8 +26,6 @@ public class AddAttributesHandler extends State {
     if (localName.equals("att")) {
       tName = attributes.getValue("name");
       tType = attributes.getValue("type");
-    } else {
-      String2.log("Unexpected start tag: " + localName);
     }
   }
 

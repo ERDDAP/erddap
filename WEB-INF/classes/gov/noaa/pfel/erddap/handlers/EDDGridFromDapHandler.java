@@ -57,7 +57,6 @@ public class EDDGridFromDapHandler extends State {
         State state = new DataVariableHandler(saxHandler, tDataVariables, this);
         saxHandler.setState(state);
       }
-      default -> String2.log("Unexpected start tag: " + localName);
     }
   }
 
