@@ -1226,8 +1226,12 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static String getSampleFileName(
       String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex)
       throws Exception {
+    boolean includeDirectories =
+        (tFileNameRegex != null && tFileNameRegex.contains("zarr"))
+            || (tPathRegex != null && tPathRegex.contains("zarr"));
     Table fileTable =
-        oneStep(tFileDir, tFileNameRegex, tRecursive, tPathRegex, false); // dirNamesToo
+        oneStep(
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, includeDirectories); // dirNamesToo
     int nRows = fileTable.nRows();
     if (nRows == 0)
       throw new RuntimeException(

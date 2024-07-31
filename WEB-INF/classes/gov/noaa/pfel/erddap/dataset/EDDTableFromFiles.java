@@ -3762,6 +3762,10 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       String fileDir, String fileNameRegex, boolean recursive, String pathRegex) throws Throwable {
     // String2.log("EDDTableFromFiles getFileInfo");
 
+    boolean includeDirectories =
+        (fileNameRegex != null && fileNameRegex.contains("zarr"))
+            || (pathRegex != null && pathRegex.contains("zarr"));
+
     // if temporary cache system active, make it look like all remote files are in
     // local dir
     if (cacheFromUrl != null && cacheMaxSizeB > 0) {
@@ -3772,13 +3776,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               fileNameRegex,
               recursive,
               pathRegex,
-              false); // dirsToo
+              includeDirectories); // dirsToo
       if (table.nRows() == 0) throw new Exception("No matching files at " + cacheFromUrl);
       return table;
     }
 
     return FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
-        fileDir, fileNameRegex, recursive, pathRegex, false); // dirsToo
+        fileDir, fileNameRegex, recursive, pathRegex, includeDirectories); // dirsToo
   }
 
   /**

@@ -13,6 +13,7 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 
 /**
  * This is a command line program to run EDD.testDasDds.
@@ -21,9 +22,14 @@ import java.io.Writer;
  */
 public class DasDds {
 
-  static String logFileName = EDStatic.fullLogsDirectory + "DasDds.log";
-  static String outFileName = EDStatic.fullLogsDirectory + "DasDds.out";
+  static String logFileName = null;
+  static String outFileName = null;
   Writer outFile = null;
+
+  public DasDds() {
+    logFileName = EDStatic.fullLogsDirectory + "DasDds.log";
+    outFileName = EDStatic.fullLogsDirectory + "DasDds.out";
+  }
 
   private void printToBoth(String s) throws IOException {
     String2.log(s);
@@ -159,6 +165,27 @@ public class DasDds {
    * @param args if args has values, they are used to answer the question.
    */
   public static void main(String args[]) throws Throwable {
+
+    String ecd = "erddapContentDirectory";
+    String contentDirectory = System.getProperty(ecd);
+    if (contentDirectory == null) {
+      // Or, it must be sibling of webapps
+      // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
+      // On windows, contentDirectory may have spaces as %20(!)
+      contentDirectory =
+          String2.replaceAll(
+              File2.getClassPath(), // with / separator and / at the end
+              "%20",
+              " ");
+      int po = contentDirectory.indexOf("/webapps/");
+      if (po == -1) {
+        Path userDir = Path.of(System.getProperty("user.dir"));
+        String webInfParentDir = userDir.getParent().toString() + "/";
+        File2.setWebInfParentDirectory(webInfParentDir);
+        System.setProperty(ecd, webInfParentDir + "/development/test/");
+      }
+    }
+
     new DasDds().doIt(args, true);
     System.exit(0);
   }

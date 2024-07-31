@@ -359,6 +359,10 @@ public class File2 {
     webInfParentDirectory = System.getProperty("user.dir") + "/";
   }
 
+  public static void setWebInfParentDirectory(String dir) {
+    webInfParentDirectory = dir;
+  }
+
   /**
    * This indicates if the named file is indeed an existing local file. AWS S3 files don't count as
    * local here. If dir="", it just says it isn't a file.
@@ -932,7 +936,7 @@ public class File2 {
         // The problem might be that something needs to be gc'd.
         Math2.gcAndWait(
             "File2.getLastModified (before retry)"); // if trouble getting lastModified: gc
-                                                     // encourages success
+        // encourages success
         File file = new File(fullName);
         return file.lastModified();
       } catch (Exception e2) {
@@ -1445,7 +1449,7 @@ public class File2 {
             if (attempt == 1)
               Math2.gcAndWait(
                   "File2.readFromFile (before retry)"); // trouble! Give OS/Java a time and gc to
-                                                        // deal with trouble
+            // deal with trouble
             else Math2.sleep(1000);
           }
         }
