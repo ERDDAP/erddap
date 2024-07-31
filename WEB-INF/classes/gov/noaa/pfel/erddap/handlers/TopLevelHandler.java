@@ -5,6 +5,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.*;
 import java.util.Arrays;
@@ -506,5 +507,10 @@ public class TopLevelHandler extends State {
         }
       }
     }
+  }
+
+  @Override
+  public void handleDataset(EDD dataset) {
+    context.getErddap().processDataset(dataset, context);
   }
 }

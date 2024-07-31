@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
+import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.handlers.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
@@ -13,7 +17,6 @@ import java.util.HashSet;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 import testDataset.Initialization;
@@ -50,25 +53,40 @@ public class DatasetHandlerTests {
     saxParser = factory.newSAXParser();
     saxHandler = new SaxHandler();
     topLevelHandler = new TopLevelHandler(saxHandler, context);
-  }
+    saxHandler.setState(topLevelHandler);
 
-  @BeforeEach
-  void init() {
     inputStream =
-        TopLevelHandlerTests.class.getResourceAsStream("/datasets/topLevelHandlerTest.xml");
+        TopLevelHandlerTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
     if (inputStream == null) {
-      throw new IllegalArgumentException("File not found: /datasets/topLevelHandlerTest.xml");
+      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
     }
   }
 
   @Test
-  void EDDTableFromErddapHandlerTest() throws IOException, SAXException {
-    var eddTableFromErddapHandler =
-        new EDDTableFromErddapHandler(saxHandler, "cwwcNDBCMet", topLevelHandler, context);
-    saxHandler.setState(eddTableFromErddapHandler);
+  void parserAllDatasets() throws IOException, SAXException {
     saxParser.parse(inputStream, saxHandler);
+
+    EDDTableFromErddap eddTableFromErddap =
+        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
     assertEquals(
         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
-        eddTableFromErddapHandler.tLocalSourceUrl);
+        eddTableFromErddap.localSourceUrl());
+
+    EDDTableFromEDDGrid eddTableFromEDDGrid =
+        (EDDTableFromEDDGrid)
+            context.getErddap().tableDatasetHashMap.get("erdMH1cflh1day_AsATable");
+    assertEquals(
+        "http://localhost:8080/erddap/griddap/erdMH1cflh1day",
+        eddTableFromEDDGrid.localSourceUrl());
+
+    EDDGridFromDap eddGridFromDap =
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
+    assertEquals(
+        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
+        eddGridFromDap.localSourceUrl());
+
+    EDDGridLonPM180 eddGridLonPM180 =
+        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
+    assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
   }
 }
