@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
-import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
-import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
+import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
@@ -88,5 +85,11 @@ public class DatasetHandlerTests {
     EDDGridLonPM180 eddGridLonPM180 =
         (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
     assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+
+    EDDGridFromErddap eddGridFromErddap =
+        (EDDGridFromErddap) context.getErddap().gridDatasetHashMap.get("jplMURSST41");
+    assertEquals(
+        "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
+        eddGridFromErddap.localSourceUrl());
   }
 }

@@ -154,4 +154,8 @@
             <sourceUrl>http://localhost:8080/erddap/griddap/erdTAssh1day</sourceUrl>
         </dataset>
     </dataset>
+    <dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true">
+        <!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily -->
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41</sourceUrl>
+    </dataset>
 </erddapDatasets>
