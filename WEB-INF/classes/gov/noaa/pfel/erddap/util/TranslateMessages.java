@@ -144,12 +144,12 @@ public class TranslateMessages {
         //I got few of the Eastern European languages.
         //Google supports Tagalog but not Filipino (the official language)
         //Arabic is hard. (right to left etc)  Translated bits seemed out-of-order.
-        //in English:
-        "English",  "Bengali",         "Chinese-CN",  "Chinese-TW",  "Czech",      "Danish",     "Dutch",      "Finnish", 
-        "French",   "German",          "Greek",       "Gujarati",    "Hindi",      "Hungarian",  "Indonesian", "Irish",      "Italian",
-        "Japanese", "Korean",          "Marathi",     "Norwegian",   "Polish",     "Portuguese",
-        "Punjabi",  "Romanian",        "Russian",     "Spanish",     "Swahili",    "Swedish",    "Tagalog",    "Thai",
-        "Turkish",  "Ukrainian",        "Urdu",        "Vietnamese"};  
+        //Languages in their own name and in English. Generated using google translate for consistency with translations:
+        "English - English",  "বাংলা - Bengali", "中国人 Chinese-CN",  "中國人 - Chinese-TW",  "čeština - Czech", "dansk - Danish", "Nederlands- Dutch", "Suomalainen - Finnish",
+        "français - French",   "Deutsch - German", "Ελληνικά - Greek", "ગુજરાતી - Gujarati", "हिंदी - Hindi", "Magyar - Hungarian",  "bahasa Indonesia - Indonesian", "Gaeilge - Irish", "italiano- Italian",
+        "日本語 - Japanese", "한국인 - Korean", "मराठी - Marathi",     "norsk - Norwegian",   "polski - Polish",     "português - Portuguese",
+        "ਪੰਜਾਬੀ - Punjabi",  "Română - Romanian", "русский - Russian", "español - Spanish",     "kiswahili - Swahili",    "svenska - Swedish",    "tagalog - Tagalog",    "แบบไทย - Thai",
+        "Türkçe - Turkish",  "українська - Ukranian", "Urdu - اردو", "Tiếng Việt - Vietnamese"};
     public static String[] languageCodeList =   {  
         //list of available languages: https://cloud.google.com/translate/docs/languages
         "en",       "bn",              "zh-CN",       "zh-TW",       "cs",         "da",         "nl",         "fi",      
