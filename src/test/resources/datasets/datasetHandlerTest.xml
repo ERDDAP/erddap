@@ -3,4 +3,155 @@
     <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
         <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
     </dataset>
+    <dataset type="EDDGridFromDap" datasetID="hawaii_d90f_20ee_c4cb" active="true">
+        <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>
+        <accessibleViaWMS>false</accessibleViaWMS>
+        <reloadEveryNMinutes>15000</reloadEveryNMinutes>
+        <defaultDataQuery>temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]</defaultDataQuery>
+        <defaultGraphQuery>temp[last][0][0:last][0:last]&amp;.draw=surface&amp;.vars=longitude|latitude|temp</defaultGraphQuery>
+        <axisVariable>
+            <sourceName>time</sourceName>
+            <destinationName>time</destinationName>
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_min"></att>
+                <att name="grads_size"></att>
+                <att name="grads_step"></att>
+                <att name="ioos_category">Time</att>
+                <att name="long_name">Centered Time</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="units">days since 0001-01-01T00:00:00</att>
+                <att name="standard_name">time</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lev</sourceName>
+            <destinationName>depth</destinationName>
+            <addAttributes>
+                <att name="ioos_category">Location</att>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="long_name">Depth</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="name"></att>
+                <att name="resolution"></att>
+                <att name="units">m</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lat</sourceName>
+            <destinationName>latitude</destinationName>
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Latitude</att>
+                <att name="standard_name">latitude</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lon</sourceName>
+            <destinationName>longitude</destinationName>
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="long_name"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Longitude</att>
+                <att name="standard_name">longitude</att>
+            </addAttributes>
+        </axisVariable>
+        <dataVariable>
+            <sourceName>temp</sourceName>
+            <destinationName>temp</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">0</att>
+                <att name="colorBarMaximum" type="double">32</att>
+                <att name="ioos_category">Temperature</att>
+                <att name="long_name">Sea Water Temperature</att>
+                <att name="standard_name">sea_water_temperature</att>
+                <att name="units">degree_C</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>salt</sourceName>
+            <destinationName>salt</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">32.0</att>
+                <att name="colorBarMaximum" type="double">37.0</att>
+                <att name="ioos_category">Salinity</att>
+                <att name="long_name">Sea Water Practical Salinity</att>
+                <att name="standard_name">sea_water_practical_salinity</att>
+                <att name="units">PSU</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>u</sourceName>
+            <destinationName>u</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Eastward Sea Water Velocity</att>
+                <att name="standard_name">eastward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>v</sourceName>
+            <destinationName>v</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Northward Sea Water Velocity</att>
+                <att name="standard_name">northward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>w</sourceName>
+            <destinationName>w</destinationName>
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-1e-5</att>
+                <att name="colorBarMaximum" type="double">1e-5</att>
+                <att name="comment">WARNING: Please use this variable's data with caution.</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Upward Sea Water Velocity</att>
+                <att name="standard_name">upward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+    </dataset>
+    <dataset type="EDDTableFromEDDGrid" datasetID="erdMH1cflh1day_AsATable" active="true">
+        <accessibleTo>String for accessibleTo</accessibleTo>
+        <addAttributes>
+            <att name="maxAxis0" type="int">0</att>
+            <att name="title">Fluorescence Line Height, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite), (As A Table)</att>
+            <att name="summary">This dataset has monthly composites of Level 3, Standard Mapped Image, 4km, chlorophyll fluorescence data from NASA&#39;s Aqua Spacecraft, which gives insight into the physiology of phytoplankton in the ocean. When phytoplankton are under stress, the rate at which they fluoresce can be decoupled from the rate of photosynthetic productivity. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.  This is the August 2015 version of this dataset.</att>
+        </addAttributes>
+        <dataset type="EDDGridFromErddap" datasetID="erdMH1cflh1day_AsATableChild">
+            <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1cflh1day</sourceUrl>
+        </dataset>
+    </dataset>
+    <dataset type="EDDGridLonPM180" datasetID="erdTAssh1day_LonPM180" active="true">
+        <accessibleTo>person1</accessibleTo>
+        <dataset type="EDDGridFromErddap" datasetID="erdTAssh1day_LonPM180Child">
+            <!-- Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)
+                 minLon=0.0 maxLon=359.75 -->
+            <sourceUrl>http://localhost:8080/erddap/griddap/erdTAssh1day</sourceUrl>
+        </dataset>
+    </dataset>
 </erddapDatasets>

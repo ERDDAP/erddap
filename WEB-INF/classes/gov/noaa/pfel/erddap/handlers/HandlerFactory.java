@@ -35,7 +35,19 @@ public class HandlerFactory {
     context.getNTryAndDatasets()[0] = nTry;
     switch (datasetType) {
       case "EDDTableFromErddap" -> {
-        return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState, context);
+        return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromEDDGrid" -> {
+        return new EDDTableFromEDDGridHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDGridFromDap" -> {
+        return new EDDGridFromDapHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDGridLonPM180" -> {
+        return new EDDGridLonPM180Handler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDGridFromErddap" -> {
+        return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
       }
       default -> {
         nTry--;
