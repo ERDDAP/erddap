@@ -52,6 +52,13 @@ public class HandlerFactory {
       case "EDDTableFromAsciiFiles", "EDDTableFromNcFiles" -> {
         return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
+      case "EDDGridAggregateExistingDimension" -> {
+        return new EDDGridAggregateExistingDimensionHandler(
+            saxHandler, datasetID, completeState, context);
+      }
+      case "EDDGridCopy" -> {
+        return new EDDGridCopyHandler(saxHandler, datasetID, completeState, context);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
