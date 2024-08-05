@@ -49,6 +49,9 @@ public class HandlerFactory {
       case "EDDGridFromErddap" -> {
         return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
       }
+      case "EDDTableFromAsciiFiles", "EDDTableFromNcFiles" -> {
+        return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;

@@ -71,5 +71,6 @@ public class AddAttributesHandler extends State {
       case "addAttributes" -> saxHandler.setState(this.completeState); // return to parentHandler
       default -> String2.log("Unexpected end tag: " + localName);
     }
+    content.setLength(0);
   }
 }

@@ -77,9 +77,9 @@ public class DatasetHandlerTests {
         eddTableFromEDDGrid.localSourceUrl());
 
     EDDGridFromDap eddGridFromDap =
-        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
     assertEquals(
-        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
+        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
@@ -91,5 +91,9 @@ public class DatasetHandlerTests {
     assertEquals(
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
         eddGridFromErddap.localSourceUrl());
+
+    EDDTableFromAsciiFiles eddTableFromAsciiFiles =
+        (EDDTableFromAsciiFiles) context.getErddap().tableDatasetHashMap.get("testTimeAxis");
+    assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
   }
 }
