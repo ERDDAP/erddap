@@ -53,6 +53,9 @@ public class EDDGridFromEDDTableHandler extends State {
       throws SAXException {
     switch (localName) {
       case "dataset" -> {
+        if (tEDDTable != null) {
+          throw new SimpleException("Cannot Have multiple Child datasets for" + datasetID);
+        }
         String tType = attributes.getValue("type");
         if (tType == null || !tType.startsWith("EDDTable")) {
           throw new SimpleException(

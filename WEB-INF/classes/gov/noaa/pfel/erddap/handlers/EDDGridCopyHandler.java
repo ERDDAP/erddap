@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.handlers;
 import static gov.noaa.pfel.erddap.dataset.EDDGrid.DEFAULT_MATCH_AXIS_N_DIGITS;
 
 import com.cohort.array.StringArray;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
@@ -47,6 +48,9 @@ public class EDDGridCopyHandler extends State {
   public void startElement(String uri, String localName, String qName, Attributes attributes)
       throws SAXException {
     if (localName.equals("dataset")) {
+      if (tSourceEdd != null) {
+        throw new SimpleException("Cannot Have multiple Child datasets for" + datasetID);
+      }
       String tType = attributes.getValue("type");
       String active = attributes.getValue("active");
       String childDatasetID = attributes.getValue("datasetID");
