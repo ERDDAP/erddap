@@ -59,6 +59,9 @@ public class HandlerFactory {
       case "EDDGridCopy" -> {
         return new EDDGridCopyHandler(saxHandler, datasetID, completeState, context);
       }
+      case "EDDGridFromEDDTable" -> {
+        return new EDDGridFromEDDTableHandler(saxHandler, datasetID, completeState, context);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
