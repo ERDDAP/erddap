@@ -62,6 +62,9 @@ public class HandlerFactory {
       case "EDDGridFromEDDTable" -> {
         return new EDDGridFromEDDTableHandler(saxHandler, datasetID, completeState, context);
       }
+      case "EDDGridLon0360" -> {
+        return new EDDGridLon0360Handler(saxHandler, datasetID, completeState, context);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
