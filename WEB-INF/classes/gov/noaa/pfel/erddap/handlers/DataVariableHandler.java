@@ -46,5 +46,6 @@ public class DataVariableHandler extends State {
       }
       default -> String2.log("Unexpected end tag: " + localName);
     }
+    content.setLength(0);
   }
 }

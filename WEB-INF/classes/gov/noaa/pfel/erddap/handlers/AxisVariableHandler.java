@@ -80,5 +80,6 @@ public class AxisVariableHandler extends State {
       }
       default -> String2.log("Unexpected end tag: " + localName);
     }
+    content.setLength(0);
   }
 }

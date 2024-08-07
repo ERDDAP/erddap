@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
-import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
-import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
+import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
@@ -80,13 +77,23 @@ public class DatasetHandlerTests {
         eddTableFromEDDGrid.localSourceUrl());
 
     EDDGridFromDap eddGridFromDap =
-        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
     assertEquals(
-        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
+        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
         (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
     assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+
+    EDDGridFromErddap eddGridFromErddap =
+        (EDDGridFromErddap) context.getErddap().gridDatasetHashMap.get("jplMURSST41");
+    assertEquals(
+        "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
+        eddGridFromErddap.localSourceUrl());
+
+    EDDTableFromAsciiFiles eddTableFromAsciiFiles =
+        (EDDTableFromAsciiFiles) context.getErddap().tableDatasetHashMap.get("testTimeAxis");
+    assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
   }
 }
