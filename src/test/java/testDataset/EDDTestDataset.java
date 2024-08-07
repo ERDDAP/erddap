@@ -18,6 +18,11 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testZarr_fillValues());
       datasetsXml.append(xmlFragment_testZarr_testData());
 
+      datasetsXml.append(xmlFragment_testZarr_gridCompressedData());
+      datasetsXml.append(xmlFragment_testZarr_gridFillValues());
+      datasetsXml.append(xmlFragment_testZarr_gridTestData());
+      datasetsXml.append(xmlFragment_testZarr_griddTypes());
+
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb());
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb_LonPM180());
       datasetsXml.append(xmlFragment_erdMHchla8day());
@@ -84481,6 +84486,1042 @@ public class EDDTestDataset {
         "            <att name=\"ioos_category\">Unknown</att>\n"
         + //
         "            <att name=\"long_name\">Float Ninf</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "</dataset>\n";
+  }
+
+  public static EDD gettestZarr_gridFillValues() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testZarr_gridFillValues());
+  }
+
+  public static String xmlFragment_testZarr_gridFillValues() throws URISyntaxException {
+    return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"zarr_gridFillValues\" active=\"true\">\n"
+        + //
+        "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
+        + "</fileDir>\n"
+        + //
+        "    <fileNameRegex>fill_values\\.zarr</fileNameRegex>\n"
+        + //
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <pathRegex>.*</pathRegex>\n"
+        + //
+        "    <metadataFrom>last</metadataFrom>\n"
+        + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n"
+        + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + //
+        "    <!-- sourceAttributes>\n"
+        + //
+        "    </sourceAttributes -->\n"
+        + //
+        "    <addAttributes>\n"
+        + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n"
+        + //
+        "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"infoUrl\">???</att>\n"
+        + //
+        "        <att name=\"institution\">???</att>\n"
+        + //
+        "        <att name=\"keywords\">data, dim0, dim1, double, double_inf, double_nan, double_ninf, float, float_inf, float_nan, float_ninf, inf, local, nan, ninf, source</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n"
+        + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + //
+        "        <att name=\"summary\">Data from a local source.</att>\n"
+        + //
+        "        <att name=\"title\">Data from a local source.</att>\n"
+        + //
+        "    </addAttributes>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>dim0</sourceName>\n"
+        + //
+        "        <destinationName>dim0</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim0</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>dim1</sourceName>\n"
+        + //
+        "        <destinationName>dim1</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim1</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>double_inf</sourceName>\n"
+        + //
+        "        <destinationName>double_inf</destinationName>\n"
+        + //
+        "        <dataType>double</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Double Inf</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>double_nan</sourceName>\n"
+        + //
+        "        <destinationName>double_nan</destinationName>\n"
+        + //
+        "        <dataType>double</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Double Nan</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>double_ninf</sourceName>\n"
+        + //
+        "        <destinationName>double_ninf</destinationName>\n"
+        + //
+        "        <dataType>double</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Double Ninf</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>float_inf</sourceName>\n"
+        + //
+        "        <destinationName>float_inf</destinationName>\n"
+        + //
+        "        <dataType>float</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Float Inf</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>float_nan</sourceName>\n"
+        + //
+        "        <destinationName>float_nan</destinationName>\n"
+        + //
+        "        <dataType>float</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Float Nan</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>float_ninf</sourceName>\n"
+        + //
+        "        <destinationName>float_ninf</destinationName>\n"
+        + //
+        "        <dataType>float</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">blosc</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Float Ninf</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "</dataset>\n";
+  }
+
+  public static EDD gettestZarr_griddTypes() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testZarr_griddTypes());
+  }
+
+  public static String xmlFragment_testZarr_griddTypes() throws URISyntaxException {
+    return "<!-- NOTE! The source for this dataset has nGridVariables=21,\n"
+        + //
+        "  but this dataset will only serve 6 because the others use different dimensions. -->\n"
+        + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"zarr_griddTypes\" active=\"true\">\n"
+        + //
+        "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
+        + "</fileDir>\n"
+        + //
+        "    <fileNameRegex>test_dtypes\\.zarr</fileNameRegex>\n"
+        + //
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <pathRegex>.*</pathRegex>\n"
+        + //
+        "    <metadataFrom>last</metadataFrom>\n"
+        + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n"
+        + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + //
+        "    <!-- sourceAttributes>\n"
+        + //
+        "    </sourceAttributes -->\n"
+        + //
+        "    <addAttributes>\n"
+        + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n"
+        + //
+        "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"infoUrl\">???</att>\n"
+        + //
+        "        <att name=\"institution\">???</att>\n"
+        + //
+        "        <att name=\"keywords\">big, byte, byte_ordered_group/big_endian/dim0, byte_ordered_group/big_endian/dim1, byte_ordered_group/big_endian/double_data, byte_ordered_group/big_endian/long_data, byte_ordered_group/big_endian/ulong_data, byte_ordered_group/little_endian/double_data, byte_ordered_group/little_endian/long_data, byte_ordered_group/little_endian/ulong_data, data, dim0, dim1, double, endian, endian/dim0, endian/dim1, group, group/big, local, long, ordered, source, ulong</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n"
+        + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + //
+        "        <att name=\"summary\">Data from a local source.</att>\n"
+        + //
+        "        <att name=\"title\">Data from a local source.</att>\n"
+        + //
+        "    </addAttributes>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/big_endian/dim0</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_big_endian_dim0</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim0</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/big_endian/dim1</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_big_endian_dim1</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim1</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/big_endian/double_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_big_endian_double_data</destinationName>\n"
+        + //
+        "        <dataType>double</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Double Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/big_endian/long_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_big_endian_long_data</destinationName>\n"
+        + //
+        "        <dataType>long</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Long Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/big_endian/ulong_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_big_endian_ulong_data</destinationName>\n"
+        + //
+        "        <dataType>ulong</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"ulong\">18446744073709551615</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Ulong Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/little_endian/double_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_little_endian_double_data</destinationName>\n"
+        + //
+        "        <dataType>double</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Double Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/little_endian/long_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_little_endian_long_data</destinationName>\n"
+        + //
+        "        <dataType>long</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Long Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>byte_ordered_group/little_endian/ulong_data</sourceName>\n"
+        + //
+        "        <destinationName>byte_ordered_group_little_endian_ulong_data</destinationName>\n"
+        + //
+        "        <dataType>ulong</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"ulong\">18446744073709551615</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Ulong Data</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "</dataset>\n";
+  }
+
+  public static EDD gettestZarr_gridCompressedData() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testZarr_gridCompressedData());
+  }
+
+  public static String xmlFragment_testZarr_gridCompressedData() throws URISyntaxException {
+    return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"zarr_gridCompressedData\" active=\"true\">\n"
+        + //
+        "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
+        + "</fileDir>\n"
+        + //
+        "    <fileNameRegex>zarr_compressed_data\\.zarr</fileNameRegex>\n"
+        + //
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <pathRegex>.*</pathRegex>\n"
+        + //
+        "    <metadataFrom>last</metadataFrom>\n"
+        + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n"
+        + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + //
+        "    <!-- sourceAttributes>\n"
+        + //
+        "    </sourceAttributes -->\n"
+        + //
+        "    <addAttributes>\n"
+        + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n"
+        + //
+        "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"infoUrl\">???</att>\n"
+        + //
+        "        <att name=\"institution\">???</att>\n"
+        + //
+        "        <att name=\"keywords\">adler, adler32, comp, comp_filt/Adler_shuffle_deflate, comp_filt/shuffle_deflate, compressed, compressed/adler32, compressed/crc32, compressed/deflate1, compressed/deflate9, compressed/scale, compressed/scaleOffset, compressed/shuffle, compressor, crc32, data, deflate, deflate1, deflate9, dim0, dim1, filt, filt/adler, filt/shuffle, filtered, filtered/adler, filtered/adler32, filtered/adler_shuffle, local, null_compressor, offset, scale, shuffle, source</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n"
+        + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + //
+        "        <att name=\"summary\">Data from a local source.</att>\n"
+        + //
+        "        <att name=\"title\">Data from a local source.</att>\n"
+        + //
+        "    </addAttributes>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>dim0</sourceName>\n"
+        + //
+        "        <destinationName>dim0</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim0</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>dim1</sourceName>\n"
+        + //
+        "        <destinationName>dim1</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Dim1</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>null_compressor</sourceName>\n"
+        + //
+        "        <destinationName>null_compressor</destinationName>\n"
+        + //
+        "        <dataType>float</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Null Compressor</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>comp_filt/Adler_shuffle_deflate</sourceName>\n"
+        + //
+        "        <destinationName>comp_filt_Adler_shuffle_deflate</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">zlib</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Comp Filt/Adler Shuffle Deflate</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>comp_filt/shuffle_deflate</sourceName>\n"
+        + //
+        "        <destinationName>comp_filt_shuffle_deflate</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">zlib</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Comp Filt/shuffle Deflate</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/adler32</sourceName>\n"
+        + //
+        "        <destinationName>compressed_adler32</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">adler32</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/adler32</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/crc32</sourceName>\n"
+        + //
+        "        <destinationName>compressed_crc32</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">crc32</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/crc32</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/deflate1</sourceName>\n"
+        + //
+        "        <destinationName>compressed_deflate1</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">zlib</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/deflate1</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/deflate9</sourceName>\n"
+        + //
+        "        <destinationName>compressed_deflate9</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">zlib</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/deflate9</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/scaleOffset</sourceName>\n"
+        + //
+        "        <destinationName>compressed_scaleOffset</destinationName>\n"
+        + //
+        "        <dataType>float</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">fixedscaleoffset</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/scale Offset</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>compressed/shuffle</sourceName>\n"
+        + //
+        "        <destinationName>compressed_shuffle</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">shuffle</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Compressed/shuffle</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>filtered/adler32</sourceName>\n"
+        + //
+        "        <destinationName>filtered_adler32</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Filtered/adler32</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>filtered/adler_shuffle</sourceName>\n"
+        + //
+        "        <destinationName>filtered_adler_shuffle</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Filtered/adler Shuffle</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "</dataset>\n";
+  }
+
+  public static EDD gettestZarr_gridTestData() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testZarr_gridTestData());
+  }
+
+  public static String xmlFragment_testZarr_gridTestData() throws URISyntaxException {
+    return "<!-- NOTE! The source for this dataset has nGridVariables=8,\n"
+        + //
+        "  but this dataset will only serve 1 because the others use different dimensions. -->\n"
+        + //
+        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"zarr_gridTestData\" active=\"true\">\n"
+        + //
+        "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
+        + "</fileDir>\n"
+        + //
+        "    <fileNameRegex>zarr_test_data\\.zarr</fileNameRegex>\n"
+        + //
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <pathRegex>.*</pathRegex>\n"
+        + //
+        "    <metadataFrom>last</metadataFrom>\n"
+        + //
+        "    <matchAxisNDigits>20</matchAxisNDigits>\n"
+        + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + //
+        "    <!-- sourceAttributes>\n"
+        + //
+        "    </sourceAttributes -->\n"
+        + //
+        "    <addAttributes>\n"
+        + //
+        "        <att name=\"cdm_data_type\">Grid</att>\n"
+        + //
+        "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"infoUrl\">???</att>\n"
+        + //
+        "        <att name=\"institution\">???</att>\n"
+        + //
+        "        <att name=\"keywords\">data, dim0, dim1, dim2, dim3, dims, dims/dim0, dims/dim1, dims/dim2, dims/dim3, dims/var4, group, group_with_dims/dim0, group_with_dims/dim1, group_with_dims/dim2, group_with_dims/dim3, group_with_dims/var4D, local, source, var4, with</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n"
+        + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + //
+        "        <att name=\"summary\">Data from a local source.</att>\n"
+        + //
+        "        <att name=\"title\">Data from a local source.</att>\n"
+        + //
+        "    </addAttributes>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>group_with_dims/dim0</sourceName>\n"
+        + //
+        "        <destinationName>group_with_dims_dim0</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Group With Dims/dim0</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>group_with_dims/dim1</sourceName>\n"
+        + //
+        "        <destinationName>group_with_dims_dim1</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Group With Dims/dim1</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>group_with_dims/dim2</sourceName>\n"
+        + //
+        "        <destinationName>group_with_dims_dim2</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Group With Dims/dim2</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <axisVariable>\n"
+        + //
+        "        <sourceName>group_with_dims/dim3</sourceName>\n"
+        + //
+        "        <destinationName>group_with_dims_dim3</destinationName>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Group With Dims/dim3</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </axisVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>group_with_dims/var4D</sourceName>\n"
+        + //
+        "        <destinationName>group_with_dims_var4D</destinationName>\n"
+        + //
+        "        <dataType>int</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "            <att name=\"_Compressor\">null</att>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Group With Dims/var4 D</att>\n"
         + //
         "        </addAttributes>\n"
         + //

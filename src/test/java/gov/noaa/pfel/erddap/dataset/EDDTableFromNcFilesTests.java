@@ -17118,7 +17118,400 @@ class EDDTableFromNcFilesTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime) + "ms");
     // String2.pressEnterToContinue();
+  }
 
+  @org.junit.jupiter.api.Test
+  void testZarr() throws Throwable {
+
+    EDD zarr = EDDTestDataset.gettestZarr_testData();
+    int language = 0;
+
+    // *** test getting das for entire dataset
+    String2.log("\n*** .nc test das dds for entire dataset\n");
+    String tName =
+        zarr.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "",
+            EDStatic.fullTestCacheDirectory,
+            zarr.className() + "_testData",
+            ".das");
+    String results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    String expected =
+        "Attributes {\n"
+            + //
+            " s {\n"
+            + //
+            "  dim0 {\n"
+            + //
+            "    Byte _FillValue 127;\n"
+            + //
+            "    String _Unsigned \"false\";\n"
+            + //
+            "    Byte actual_range 0, 19;\n"
+            + //
+            "    String ioos_category \"Unknown\";\n"
+            + //
+            "    String long_name \"Dim0\";\n"
+            + //
+            "  }\n"
+            + //
+            "  dim1 {\n"
+            + //
+            "    Byte _FillValue 127;\n"
+            + //
+            "    String _Unsigned \"false\";\n"
+            + //
+            "    Byte actual_range 0, 19;\n"
+            + //
+            "    String ioos_category \"Unknown\";\n"
+            + //
+            "    String long_name \"Dim1\";\n"
+            + //
+            "  }\n"
+            + //
+            "  dim2 {\n"
+            + //
+            "    Byte _FillValue 127;\n"
+            + //
+            "    String _Unsigned \"false\";\n"
+            + //
+            "    Byte actual_range 0, 19;\n"
+            + //
+            "    String ioos_category \"Unknown\";\n"
+            + //
+            "    String long_name \"Dim2\";\n"
+            + //
+            "  }\n"
+            + //
+            "  dim3 {\n"
+            + //
+            "    Byte _FillValue 127;\n"
+            + //
+            "    String _Unsigned \"false\";\n"
+            + //
+            "    Byte actual_range 0, 19;\n"
+            + //
+            "    String ioos_category \"Unknown\";\n"
+            + //
+            "    String long_name \"Dim3\";\n"
+            + //
+            "  }\n"
+            + //
+            "  group_with_dims_var4D {\n"
+            + //
+            "    Int32 _FillValue 2147483647;\n"
+            + //
+            "    Int32 actual_range 0, 19;\n"
+            + //
+            "    String ioos_category \"Unknown\";\n"
+            + //
+            "    String long_name \"Group With Dims/var4 D\";\n"
+            + //
+            "  }\n"
+            + //
+            " }\n"
+            + //
+            "  NC_GLOBAL {\n"
+            + //
+            "    String cdm_data_type \"Other\";\n"
+            + //
+            "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + //
+            "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + //
+            "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/zarr_testData.das\";\n"
+            + //
+            "    String infoUrl \"???\";\n"
+            + //
+            "    String institution \"???\";\n"
+            + //
+            "    String keywords \"data, dim0, dim1, dim2, dim3, dims, dims/var4, group, group_with_dims_var4D, local, source, var4, with\";\n"
+            + //
+            "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + //
+            "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + //
+            "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + //
+            "of their employees or contractors, makes any warranty, express or\n"
+            + //
+            "implied, including warranties of merchantability and fitness for a\n"
+            + //
+            "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + //
+            "completeness, or usefulness, of this information.\";\n"
+            + //
+            "    String sourceUrl \"(local files)\";\n"
+            + //
+            "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + //
+            "    String summary \"Data from a local source.\";\n"
+            + //
+            "    String title \"Data from a local source.\";\n"
+            + //
+            "  }\n"
+            + //
+            "}\n";
+    results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
+    Test.ensureEqual(results, expected, "results=\n" + results);
+
+    tName =
+        zarr.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "dim0,dim1,dim2,dim3,group_with_dims_var4D&dim0%3E=0&dim0%3C=0&dim3%3E=4&dim3%3C=6&dim2%3E=9&dim2%3C=10",
+            EDStatic.fullTestCacheDirectory,
+            zarr.className(),
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    expected =
+        "dim0,dim1,dim2,dim3,group_with_dims_var4D\n"
+            + //
+            ",,,,\n"
+            + //
+            "0,0,9,4,4\n"
+            + //
+            "0,0,9,5,5\n"
+            + //
+            "0,0,9,6,6\n"
+            + //
+            "0,0,10,4,4\n"
+            + //
+            "0,0,10,5,5\n"
+            + //
+            "0,0,10,6,6\n"
+            + //
+            "0,1,9,4,4\n"
+            + //
+            "0,1,9,5,5\n"
+            + //
+            "0,1,9,6,6\n"
+            + //
+            "0,1,10,4,4\n"
+            + //
+            "0,1,10,5,5\n"
+            + //
+            "0,1,10,6,6\n"
+            + //
+            "0,2,9,4,4\n"
+            + //
+            "0,2,9,5,5\n"
+            + //
+            "0,2,9,6,6\n"
+            + //
+            "0,2,10,4,4\n"
+            + //
+            "0,2,10,5,5\n"
+            + //
+            "0,2,10,6,6\n"
+            + //
+            "0,3,9,4,4\n"
+            + //
+            "0,3,9,5,5\n"
+            + //
+            "0,3,9,6,6\n"
+            + //
+            "0,3,10,4,4\n"
+            + //
+            "0,3,10,5,5\n"
+            + //
+            "0,3,10,6,6\n"
+            + //
+            "0,4,9,4,4\n"
+            + //
+            "0,4,9,5,5\n"
+            + //
+            "0,4,9,6,6\n"
+            + //
+            "0,4,10,4,4\n"
+            + //
+            "0,4,10,5,5\n"
+            + //
+            "0,4,10,6,6\n"
+            + //
+            "0,5,9,4,4\n"
+            + //
+            "0,5,9,5,5\n"
+            + //
+            "0,5,9,6,6\n"
+            + //
+            "0,5,10,4,4\n"
+            + //
+            "0,5,10,5,5\n"
+            + //
+            "0,5,10,6,6\n"
+            + //
+            "0,6,9,4,4\n"
+            + //
+            "0,6,9,5,5\n"
+            + //
+            "0,6,9,6,6\n"
+            + //
+            "0,6,10,4,4\n"
+            + //
+            "0,6,10,5,5\n"
+            + //
+            "0,6,10,6,6\n"
+            + //
+            "0,7,9,4,4\n"
+            + //
+            "0,7,9,5,5\n"
+            + //
+            "0,7,9,6,6\n"
+            + //
+            "0,7,10,4,4\n"
+            + //
+            "0,7,10,5,5\n"
+            + //
+            "0,7,10,6,6\n"
+            + //
+            "0,8,9,4,4\n"
+            + //
+            "0,8,9,5,5\n"
+            + //
+            "0,8,9,6,6\n"
+            + //
+            "0,8,10,4,4\n"
+            + //
+            "0,8,10,5,5\n"
+            + //
+            "0,8,10,6,6\n"
+            + //
+            "0,9,9,4,4\n"
+            + //
+            "0,9,9,5,5\n"
+            + //
+            "0,9,9,6,6\n"
+            + //
+            "0,9,10,4,4\n"
+            + //
+            "0,9,10,5,5\n"
+            + //
+            "0,9,10,6,6\n"
+            + //
+            "0,10,9,4,4\n"
+            + //
+            "0,10,9,5,5\n"
+            + //
+            "0,10,9,6,6\n"
+            + //
+            "0,10,10,4,4\n"
+            + //
+            "0,10,10,5,5\n"
+            + //
+            "0,10,10,6,6\n"
+            + //
+            "0,11,9,4,4\n"
+            + //
+            "0,11,9,5,5\n"
+            + //
+            "0,11,9,6,6\n"
+            + //
+            "0,11,10,4,4\n"
+            + //
+            "0,11,10,5,5\n"
+            + //
+            "0,11,10,6,6\n"
+            + //
+            "0,12,9,4,4\n"
+            + //
+            "0,12,9,5,5\n"
+            + //
+            "0,12,9,6,6\n"
+            + //
+            "0,12,10,4,4\n"
+            + //
+            "0,12,10,5,5\n"
+            + //
+            "0,12,10,6,6\n"
+            + //
+            "0,13,9,4,4\n"
+            + //
+            "0,13,9,5,5\n"
+            + //
+            "0,13,9,6,6\n"
+            + //
+            "0,13,10,4,4\n"
+            + //
+            "0,13,10,5,5\n"
+            + //
+            "0,13,10,6,6\n"
+            + //
+            "0,14,9,4,4\n"
+            + //
+            "0,14,9,5,5\n"
+            + //
+            "0,14,9,6,6\n"
+            + //
+            "0,14,10,4,4\n"
+            + //
+            "0,14,10,5,5\n"
+            + //
+            "0,14,10,6,6\n"
+            + //
+            "0,15,9,4,4\n"
+            + //
+            "0,15,9,5,5\n"
+            + //
+            "0,15,9,6,6\n"
+            + //
+            "0,15,10,4,4\n"
+            + //
+            "0,15,10,5,5\n"
+            + //
+            "0,15,10,6,6\n"
+            + //
+            "0,16,9,4,4\n"
+            + //
+            "0,16,9,5,5\n"
+            + //
+            "0,16,9,6,6\n"
+            + //
+            "0,16,10,4,4\n"
+            + //
+            "0,16,10,5,5\n"
+            + //
+            "0,16,10,6,6\n"
+            + //
+            "0,17,9,4,4\n"
+            + //
+            "0,17,9,5,5\n"
+            + //
+            "0,17,9,6,6\n"
+            + //
+            "0,17,10,4,4\n"
+            + //
+            "0,17,10,5,5\n"
+            + //
+            "0,17,10,6,6\n"
+            + //
+            "0,18,9,4,4\n"
+            + //
+            "0,18,9,5,5\n"
+            + //
+            "0,18,9,6,6\n"
+            + //
+            "0,18,10,4,4\n"
+            + //
+            "0,18,10,5,5\n"
+            + //
+            "0,18,10,6,6\n"
+            + //
+            "0,19,9,4,4\n"
+            + //
+            "0,19,9,5,5\n"
+            + //
+            "0,19,9,6,6\n"
+            + //
+            "0,19,10,4,4\n"
+            + //
+            "0,19,10,5,5\n"
+            + //
+            "0,19,10,6,6\n";
+    Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
   /**
