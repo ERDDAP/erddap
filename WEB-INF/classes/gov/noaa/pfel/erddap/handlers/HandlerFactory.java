@@ -65,6 +65,9 @@ public class HandlerFactory {
       case "EDDGridLon0360" -> {
         return new EDDGridLon0360Handler(saxHandler, datasetID, completeState, context);
       }
+      case "EDDGridSideBySide" -> {
+        return new EDDGridSideBySideHandler(saxHandler, datasetID, completeState, context);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
