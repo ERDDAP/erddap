@@ -3,20 +3,23 @@ package gov.noaa.pfel.erddap.handlers;
 import com.cohort.array.StringArray;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromDatabase;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiServiceNOS;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromDatabaseHandler extends State {
+public class EDDTableFromAsciiServiceHandler extends State {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
   private State completeState;
+  private String datasetType;
 
-  public EDDTableFromDatabaseHandler(SaxHandler saxHandler, String datasetID, State completeState) {
+  public EDDTableFromAsciiServiceHandler(
+      SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
     super(saxHandler);
     this.datasetID = datasetID;
     this.completeState = completeState;
+    this.datasetType = datasetType;
   }
 
   private com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();
@@ -28,18 +31,10 @@ public class EDDTableFromDatabaseHandler extends State {
   private String tFgdcFile = null;
   private String tIso19115File = null;
   private String tSosOfferingPrefix = null;
-  private String tDataSourceName = null;
   private String tLocalSourceUrl = null;
-  private String tDriverName = null;
-  private String tCatalogName = "";
-  private String tSchemaName = "";
-  private String tTableName = null;
-  private String tColumnNameQuotes = "\"";
-  private String[] tOrderBy = new String[0];
-  private StringArray tConnectionProperties = new StringArray();
-  private boolean tSourceNeedsExpandedFP_EQ = true;
-  private String tSourceCanOrderBy = "no";
-  private String tSourceCanDoDistinct = "no";
+  private String tBeforeData[] = new String[11];
+  private String tAfterData = null;
+  private String tNoData = null;
   private String tDefaultDataQuery = null;
   private String tDefaultGraphQuery = null;
   private String tAddVariablesWhere = null;
@@ -73,20 +68,20 @@ public class EDDTableFromDatabaseHandler extends State {
       case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
       case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
       case "sourceUrl" -> tLocalSourceUrl = contentStr;
-      case "dataSourceName" -> tDataSourceName = contentStr;
-      case "driverName" -> tDriverName = contentStr;
-      case "connectionProperty" -> tConnectionProperties.add(contentStr);
-      case "catalogName" -> tCatalogName = contentStr;
-      case "schemaName" -> tSchemaName = contentStr;
-      case "tableName" -> tTableName = contentStr;
-      case "columnNameQuotes" -> tColumnNameQuotes = contentStr;
-      case "orderBy" -> {
-        if (!contentStr.isEmpty()) tOrderBy = String2.split(contentStr, ',');
-      }
-      case "sourceNeedsExpandedFP_EQ" ->
-          tSourceNeedsExpandedFP_EQ = String2.parseBoolean(contentStr);
-      case "sourceCanOrderBy" -> tSourceCanOrderBy = contentStr;
-      case "sourceCanDoDistinct" -> tSourceCanDoDistinct = contentStr;
+      case "beforeData1",
+              "beforeData2",
+              "beforeData3",
+              "beforeData4",
+              "beforeData5",
+              "beforeData6",
+              "beforeData7",
+              "beforeData8",
+              "beforeData9",
+              "beforeData10" ->
+          tBeforeData[String2.parseInt(localName.substring(10, localName.length() - 1))] =
+              contentStr;
+      case "afterData" -> tAfterData = contentStr;
+      case "noData" -> tNoData = contentStr;
       case "onChange" -> tOnChange.add(contentStr);
       case "fgdcFile" -> tFgdcFile = contentStr;
       case "iso19115File" -> tIso19115File = contentStr;
@@ -101,39 +96,44 @@ public class EDDTableFromDatabaseHandler extends State {
           ttDataVariables[i] = (Object[]) tDataVariables.get(i);
         }
 
-        EDD dataset =
-            new EDDTableFromDatabase(
-                datasetID,
-                tAccessibleTo,
-                tGraphsAccessibleTo,
-                tOnChange,
-                tFgdcFile,
-                tIso19115File,
-                tSosOfferingPrefix,
-                tDefaultDataQuery,
-                tDefaultGraphQuery,
-                tAddVariablesWhere,
-                tGlobalAttributes,
-                ttDataVariables,
-                tReloadEveryNMinutes,
-                tDataSourceName,
-                tLocalSourceUrl,
-                tDriverName,
-                tConnectionProperties.toArray(),
-                tCatalogName,
-                tSchemaName,
-                tTableName,
-                tColumnNameQuotes,
-                tOrderBy,
-                tSourceNeedsExpandedFP_EQ,
-                tSourceCanOrderBy,
-                tSourceCanDoDistinct);
+        EDD dataset = getDataset(ttDataVariables);
 
         this.completeState.handleDataset(dataset);
         saxHandler.setState(this.completeState);
       }
       default -> String2.log("Unexpected end tag: " + localName);
     }
-    content.setLength(0);
+  }
+
+  private EDD getDataset(Object[][] ttDataVariables) throws Throwable {
+    EDD dataset;
+
+    if (datasetType.equals("\"EDDTableFromAsciiServiceNOS\"")) {
+      dataset =
+          new EDDTableFromAsciiServiceNOS(
+              datasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tSosOfferingPrefix,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tAddVariablesWhere,
+              tGlobalAttributes,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tLocalSourceUrl,
+              tBeforeData,
+              tAfterData,
+              tNoData);
+    } else {
+      throw new Exception(
+          "type=\""
+              + datasetType
+              + "\" needs to be added to EDDTableFromAsciiService.fromXml at end.");
+    }
+    return dataset;
   }
 }
