@@ -23,22 +23,22 @@ public class EDDGridFromDapHandler extends State {
     this.completeState = completeState;
   }
 
-  public com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();
-  public String tAccessibleTo = null;
-  public String tGraphsAccessibleTo = null;
-  public boolean tAccessibleViaWMS = true;
-  public StringArray tOnChange = new StringArray();
-  public String tFgdcFile = null;
-  public String tIso19115File = null;
-  public ArrayList tAxisVariables = new ArrayList();
-  public ArrayList tDataVariables = new ArrayList();
-  public int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
-  public int tUpdateEveryNMillis = 0;
-  public String tLocalSourceUrl = null;
-  public String tDefaultDataQuery = null;
-  public String tDefaultGraphQuery = null;
-  public int tnThreads = -1;
-  public boolean tDimensionValuesInMemory = true;
+  private com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();
+  private String tAccessibleTo = null;
+  private String tGraphsAccessibleTo = null;
+  private boolean tAccessibleViaWMS = true;
+  private StringArray tOnChange = new StringArray();
+  private String tFgdcFile = null;
+  private String tIso19115File = null;
+  private ArrayList tAxisVariables = new ArrayList();
+  private ArrayList tDataVariables = new ArrayList();
+  private int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
+  private int tUpdateEveryNMillis = 0;
+  private String tLocalSourceUrl = null;
+  private String tDefaultDataQuery = null;
+  private String tDefaultGraphQuery = null;
+  private int tnThreads = -1;
+  private boolean tDimensionValuesInMemory = true;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {

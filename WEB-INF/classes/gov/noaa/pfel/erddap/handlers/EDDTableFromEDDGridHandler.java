@@ -24,19 +24,19 @@ public class EDDTableFromEDDGridHandler extends State {
     this.context = context;
   }
 
-  public EDDGrid tChildDataset = null;
-  public com.cohort.array.Attributes tAddGlobalAttributes = new com.cohort.array.Attributes();
-  public String tAccessibleTo = null;
-  public String tGraphsAccessibleTo = null;
-  public boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  public StringArray tOnChange = new StringArray();
-  public String tFgdcFile = null;
-  public String tIso19115File = null;
-  public String tSosOfferingPrefix = null;
-  public int tReloadEveryNMinutes = Integer.MAX_VALUE;
-  public String tDefaultDataQuery = null;
-  public String tDefaultGraphQuery = null;
-  public String tAddVariablesWhere = null;
+  private EDDGrid tChildDataset = null;
+  private com.cohort.array.Attributes tAddGlobalAttributes = new com.cohort.array.Attributes();
+  private String tAccessibleTo = null;
+  private String tGraphsAccessibleTo = null;
+  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private StringArray tOnChange = new StringArray();
+  private String tFgdcFile = null;
+  private String tIso19115File = null;
+  private String tSosOfferingPrefix = null;
+  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
+  private String tDefaultDataQuery = null;
+  private String tDefaultGraphQuery = null;
+  private String tAddVariablesWhere = null;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {
