@@ -71,8 +71,14 @@ public class HandlerFactory {
       case "EDDTableAggregateRows" -> {
         return new EDDTableAggregateRowsHandler(saxHandler, datasetID, completeState, context);
       }
-      case "EDDTableCopyHandler" -> {
+      case "EDDTableCopy" -> {
         return new EDDTableCopyHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDTableFromCassandra" -> {
+        return new EDDTableFromCassandraHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromDapSequence" -> {
+        return new EDDTableFromDapSequenceHandler(saxHandler, datasetID, completeState);
       }
       default -> {
         nTry--;
