@@ -68,6 +68,12 @@ public class HandlerFactory {
       case "EDDGridSideBySide" -> {
         return new EDDGridSideBySideHandler(saxHandler, datasetID, completeState, context);
       }
+      case "EDDTableAggregateRows" -> {
+        return new EDDTableAggregateRowsHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDTableCopyHandler" -> {
+        return new EDDTableCopyHandler(saxHandler, datasetID, completeState, context);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
