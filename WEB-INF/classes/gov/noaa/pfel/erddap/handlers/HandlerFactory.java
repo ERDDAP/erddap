@@ -80,6 +80,9 @@ public class HandlerFactory {
       case "EDDTableFromDapSequence" -> {
         return new EDDTableFromDapSequenceHandler(saxHandler, datasetID, completeState);
       }
+      case "EDDTableFromDatabase" -> {
+        return new EDDTableFromDatabaseHandler(saxHandler, datasetID, completeState);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
