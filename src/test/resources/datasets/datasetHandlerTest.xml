@@ -399,4 +399,128 @@
             </addAttributes>
         </dataVariable>
     </dataset>
+    <dataset type="EDDGridSideBySide" datasetID="erdTAssh1day">
+        <dataset type="EDDGridFromDap"    datasetID="erdTAsshl1day">
+            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <addAttributes>
+                <att name="cols">null</att>
+                <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+                <att name="creator_email">erd.data@noaa.gov</att>
+                <att name="creator_name">NOAA NMFS SWFSC ERD</att>
+                <att name="creator_type">institution</att>
+                <att name="creator_url">https://www.pfeg.noaa.gov</att>
+                <att name="cwhdf_version">null</att>
+                <att name="et_affine">null</att>
+                <att name="gctp_datum">null</att>
+                <att name="gctp_parm">null</att>
+                <att name="gctp_sys">null</att>
+                <att name="gctp_zone">null</att>
+                <att name="id">null</att>
+                <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshl_las.html</att>
+                <att name="institution">NOAA NMFS SWFSC ERD</att>
+                <att name="keywords">above, absolute, altitude, archiving, aviso, coast, coastwatch, data, degrees, earth, geodetics, geoid, global, gravity, height, interpretation, level, long, ltm, mean, noaa, node, ocean, oceanography, oceans,
+                    Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,
+                    properties, quality, satellite, science, science quality, sea, sea level, sea_surface_height_above_geoid, solid,
+                    Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,
+                    ssh, surface, TAsshl, term, time, topography, validation, wcn, west</att>
+                <att name="license">[standard]</att>
+                <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
+                <att name="pass_date">null</att>
+                <att name="polygon_latitude">null</att>
+                <att name="polygon_longitude">null</att>
+                <att name="project">CoastWatch (https://coastwatch.noaa.gov/)</att>
+                <att name="publisher_email">erd.data@noaa.gov</att>
+                <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
+                <att name="publisher_type">institution</att>
+                <att name="publisher_url">https://www.pfeg.noaa.gov</att>
+                <att name="references">Aviso: https://www.aviso.altimetry.fr/en/my-aviso.html .</att>
+                <att name="rows">null</att>
+                <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+                <att name="start_time">null</att>
+                <att name="title">Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)</att>
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>altitude</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>TAsshl</sourceName>
+                <destinationName>ssh</destinationName>
+                <addAttributes>
+                    <att name="ioos_category">Sea Level</att>
+                    <att name="long_name">Sea Surface Height</att>
+                    <att name="colorBarMinimum" type="double">-10</att>
+                    <att name="colorBarMaximum" type="double">10</att>
+                    <att name="actual_range" />
+                    <att name="numberOfObservations" />
+                    <att name="percentCoverage" />
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+        <dataset type="EDDGridFromDap" datasetID="erdTAsshd1day">
+            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshd/1day</sourceUrl>
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <addAttributes>
+                <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+                <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+                <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshd_las.html</att>
+                <att name="institution">NOAA CoastWatch, West Coast Node</att>
+                <att name="standard_name_vocabulary">CF-12</att>
+                <att name="title">Sea Surface Height Deviation, Aviso, Global, Science Quality (1 Day Composite)</att>
+                <att name="cwhdf_version" />
+                <att name="cols" />
+                <att name="et_affine" />
+                <att name="gctp_datum" />
+                <att name="gctp_parm" />
+                <att name="gctp_sys" />
+                <att name="gctp_zone" />
+                <att name="id" />
+                <att name="pass_date" />
+                <att name="polygon_latitude" />
+                <att name="polygon_longitude" />
+                <att name="rows" />
+                <att name="start_time" />
+                <att name="time_coverage_end" />
+                <att name="time_coverage_start" />
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>altitude</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>TAsshd</sourceName>
+                <destinationName>sshd</destinationName>
+                <addAttributes>
+                    <att name="ioos_category">Sea Level</att>
+                    <att name="long_name">Sea Surface Height Deviation</att>
+                    <att name="colorBarMinimum" type="double">-0.5</att>
+                    <att name="colorBarMaximum" type="double">0.5</att>
+                    <att name="actual_range" />
+                    <att name="numberOfObservations" />
+                    <att name="percentCoverage" />
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+    </dataset>
 </erddapDatasets>

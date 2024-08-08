@@ -13,27 +13,26 @@ public class EDDTableFromErddapHandler extends State {
   private String datasetID;
   private State completeState;
 
-  public EDDTableFromErddapHandler(
-      SaxHandler saxHandler, String datasetID, State completeState) {
+  public EDDTableFromErddapHandler(SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler);
     this.datasetID = datasetID;
     this.completeState = completeState;
   }
 
-  public int tReloadEveryNMinutes = Integer.MAX_VALUE;
-  public String tAccessibleTo = null;
-  public String tGraphsAccessibleTo = null;
-  public boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  public StringArray tOnChange = new StringArray();
-  public boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
-  public boolean tRedirect = true;
-  public String tFgdcFile = null;
-  public String tIso19115File = null;
-  public String tSosOfferingPrefix = null;
-  public String tLocalSourceUrl = null;
-  public String tDefaultDataQuery = null;
-  public String tDefaultGraphQuery = null;
-  public String tAddVariablesWhere = null;
+  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
+  private String tAccessibleTo = null;
+  private String tGraphsAccessibleTo = null;
+  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private StringArray tOnChange = new StringArray();
+  private boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
+  private boolean tRedirect = true;
+  private String tFgdcFile = null;
+  private String tIso19115File = null;
+  private String tSosOfferingPrefix = null;
+  private String tLocalSourceUrl = null;
+  private String tDefaultDataQuery = null;
+  private String tDefaultGraphQuery = null;
+  private String tAddVariablesWhere = null;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {}

@@ -95,5 +95,9 @@ public class DatasetHandlerTests {
     EDDTableFromAsciiFiles eddTableFromAsciiFiles =
         (EDDTableFromAsciiFiles) context.getErddap().tableDatasetHashMap.get("testTimeAxis");
     assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
+
+    EDDGridSideBySide eddGridSideBySide =
+        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
+    assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
   }
 }

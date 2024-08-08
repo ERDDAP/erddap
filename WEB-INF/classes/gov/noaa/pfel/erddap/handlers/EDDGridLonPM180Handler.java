@@ -23,20 +23,20 @@ public class EDDGridLonPM180Handler extends State {
     this.context = context;
   }
 
-  public EDDGrid tChildDataset = null;
-  public String tAccessibleTo = null;
-  public String tGraphsAccessibleTo = null;
-  public boolean tAccessibleViaWMS = true;
-  public boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  public StringArray tOnChange = new StringArray();
-  public String tFgdcFile = null;
-  public String tIso19115File = null;
-  public String tDefaultDataQuery = null;
-  public String tDefaultGraphQuery = null;
-  public int tReloadEveryNMinutes = Integer.MAX_VALUE;
-  public int tUpdateEveryNMillis = Integer.MAX_VALUE;
-  public int tnThreads = -1;
-  public boolean tDimensionValuesInMemory = true;
+  private EDDGrid tChildDataset = null;
+  private String tAccessibleTo = null;
+  private String tGraphsAccessibleTo = null;
+  private boolean tAccessibleViaWMS = true;
+  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private StringArray tOnChange = new StringArray();
+  private String tFgdcFile = null;
+  private String tIso19115File = null;
+  private String tDefaultDataQuery = null;
+  private String tDefaultGraphQuery = null;
+  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
+  private int tUpdateEveryNMillis = Integer.MAX_VALUE;
+  private int tnThreads = -1;
+  private boolean tDimensionValuesInMemory = true;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)

@@ -65,6 +65,28 @@ public class HandlerFactory {
       case "EDDGridLon0360" -> {
         return new EDDGridLon0360Handler(saxHandler, datasetID, completeState, context);
       }
+      case "EDDGridSideBySide" -> {
+        return new EDDGridSideBySideHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDTableAggregateRows" -> {
+        return new EDDTableAggregateRowsHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDTableCopy" -> {
+        return new EDDTableCopyHandler(saxHandler, datasetID, completeState, context);
+      }
+      case "EDDTableFromCassandra" -> {
+        return new EDDTableFromCassandraHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromDapSequence" -> {
+        return new EDDTableFromDapSequenceHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromDatabase" -> {
+        return new EDDTableFromDatabaseHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromAsciiService" -> {
+        return new EDDTableFromAsciiServiceHandler(
+            saxHandler, datasetID, completeState, datasetType);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
