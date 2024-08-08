@@ -26,7 +26,7 @@ public class EDDGridSideBySideHandler extends State {
     this.context = context;
   }
 
-  private ArrayList tChildDatasets = new ArrayList();
+  private ArrayList<EDDGrid> tChildDatasets = new ArrayList();
   private StringBuilder messages = new StringBuilder();
   private String tAccessibleTo = null;
   private String tGraphsAccessibleTo = null;
@@ -85,9 +85,8 @@ public class EDDGridSideBySideHandler extends State {
       case "dimensionValuesInMemory" -> tDimensionValuesInMemory = String2.parseBoolean(contentStr);
       case "dataset" -> {
         EDDGrid[] tcds = new EDDGrid[tChildDatasets.size()];
-        for (int c = 0; c < tChildDatasets.size(); c++) {
-          tcds[c] = (EDDGrid) tChildDatasets.get(c);
-        }
+        tcds = tChildDatasets.toArray(tcds);
+
         EDD dataset =
             new EDDGridSideBySide(
                 datasetID,
@@ -114,6 +113,6 @@ public class EDDGridSideBySideHandler extends State {
 
   @Override
   public void handleDataset(EDD dataset) {
-    tChildDatasets.add(dataset);
+    tChildDatasets.add((EDDGrid) dataset);
   }
 }

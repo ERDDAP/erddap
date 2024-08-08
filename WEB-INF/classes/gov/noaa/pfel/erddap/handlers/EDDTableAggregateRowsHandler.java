@@ -88,11 +88,8 @@ public class EDDTableAggregateRowsHandler extends State {
       case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
       case "addVariablesWhere" -> tAddVariablesWhere = contentStr;
       case "dataset" -> {
-        int nChildren = tChildren.size();
-        EDDTable[] ttChildren = new EDDTable[nChildren];
-        for (int i = 0; i < nChildren; i++) {
-          ttChildren[i] = tChildren.get(i);
-        }
+        EDDTable[] ttChildren = new EDDTable[tChildren.size()];
+        ttChildren = tChildren.toArray(ttChildren);
 
         EDD dataset =
             new EDDTableAggregateRows(

@@ -36,8 +36,8 @@ public class EDDGridFromEDDTableHandler extends State {
   private StringArray tOnChange = new StringArray();
   private String tFgdcFile = null;
   private String tIso19115File = null;
-  private ArrayList tAxisVariables = new ArrayList();
-  private ArrayList tDataVariables = new ArrayList();
+  private ArrayList<Object[]> tAxisVariables = new ArrayList();
+  private ArrayList<Object[]> tDataVariables = new ArrayList();
   private int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
   private int tUpdateEveryNMillis = 0;
   private String tLocalSourceUrl = null;
@@ -119,14 +119,10 @@ public class EDDGridFromEDDTableHandler extends State {
       case "dataset" -> {
         int nav = tAxisVariables.size();
         Object[][] ttAxisVariables = nav == 0 ? null : new Object[nav][];
-        for (int i = 0; i < tAxisVariables.size(); i++) {
-          ttAxisVariables[i] = (Object[]) tAxisVariables.get(i);
-        }
+        ttAxisVariables = tAxisVariables.toArray(ttAxisVariables);
         int ndv = tDataVariables.size();
         Object[][] ttDataVariables = new Object[ndv][];
-        for (int i = 0; i < tDataVariables.size(); i++) {
-          ttDataVariables[i] = (Object[]) tDataVariables.get(i);
-        }
+        ttDataVariables = tDataVariables.toArray(ttDataVariables);
 
         EDD dataset =
             new EDDGridFromEDDTable(

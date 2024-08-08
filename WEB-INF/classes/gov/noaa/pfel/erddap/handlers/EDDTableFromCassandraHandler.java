@@ -21,7 +21,7 @@ public class EDDTableFromCassandraHandler extends State {
   }
 
   private com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();
-  private ArrayList tDataVariables = new ArrayList();
+  private ArrayList<Object[]> tDataVariables = new ArrayList();
   private int tReloadEveryNMinutes = Integer.MAX_VALUE;
   private String tAccessibleTo = null;
   private String tGraphsAccessibleTo = null;
@@ -92,11 +92,8 @@ public class EDDTableFromCassandraHandler extends State {
       case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
       case "addVariablesWhere" -> tAddVariablesWhere = contentStr;
       case "dataset" -> {
-        int ndv = tDataVariables.size();
-        Object[][] ttDataVariables = new Object[ndv][];
-        for (int i = 0; i < tDataVariables.size(); i++) {
-          ttDataVariables[i] = (Object[]) tDataVariables.get(i);
-        }
+        Object[][] ttDataVariables = new Object[tDataVariables.size()][];
+        ttDataVariables = tDataVariables.toArray(ttDataVariables);
 
         EDD dataset =
             new EDDTableFromCassandra(
