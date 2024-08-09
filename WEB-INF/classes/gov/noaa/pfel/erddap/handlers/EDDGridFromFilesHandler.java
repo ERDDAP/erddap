@@ -6,9 +6,7 @@ import static gov.noaa.pfel.erddap.dataset.EDDGridFromFiles.MF_LAST;
 import com.cohort.array.StringArray;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.dataset.EDD;
-import gov.noaa.pfel.erddap.dataset.EDDGridFromAudioFiles;
-import gov.noaa.pfel.erddap.dataset.EDDGridFromNcFiles;
+import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDVAlt;
 import java.util.ArrayList;
@@ -131,7 +129,7 @@ public class EDDGridFromFilesHandler extends State {
   }
 
   private EDD getDataset(Object[][] ttAxisVariables, Object[][] ttDataVariables) throws Throwable {
-    EDD dataset = null;
+    EDD dataset;
 
     if (datasetType.equals("EDDGridFromAudioFiles")) {
       dataset =
@@ -193,6 +191,69 @@ public class EDDGridFromFilesHandler extends State {
               tCacheFromUrl,
               tCacheSizeGB,
               tCachePartialPathRegex);
+    } else if (datasetType.equals("EDDGridFromNcFilesUnpacked")) {
+      dataset =
+          new EDDGridFromNcFilesUnpacked(
+              datasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+    } else if (datasetType.equals("EDDGridFromMergeIRFiles")) {
+      dataset =
+          new EDDGridFromMergeIRFiles(
+              datasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+    } else {
+      throw new Exception(
+          "type=\"" + datasetType + "\" needs to be added to EDDGridFromFiles.fromXml at end.");
     }
     return dataset;
   }
