@@ -49,7 +49,20 @@ public class HandlerFactory {
       case "EDDGridFromErddap" -> {
         return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
       }
-      case "EDDTableFromAsciiFiles", "EDDTableFromNcFiles" -> {
+      case "EDDTableFromAsciiFiles",
+          "EDDTableFromNcFiles",
+          "EDDTableFromAudioFiles",
+          "EDDTableFromAwsXmlFiles",
+          "EDDTableFromColumnarAsciiFiles",
+          "EDDTableFromHttpGet",
+          "EDDTableFromInvalidCRAFiles",
+          "EDDTableFromJsonlCSVFiles",
+          "EDDTableFromMultidimNcFiles",
+          "EDDTableFromNcCFFiles",
+          "EDDTableFromNccsvFiles",
+          "EDDTableFromHyraxFiles",
+          "EDDTableFromThreddsFiles",
+          "EDDTableFromWFSFiles" -> {
         return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
       case "EDDGridAggregateExistingDimension" -> {

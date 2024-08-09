@@ -298,7 +298,7 @@ public abstract class EDD {
 
   // *********** END OF STATIC DECLARATIONS ***************************
 
-  protected long creationTimeMillis = System.currentTimeMillis();
+  public long creationTimeMillis = System.currentTimeMillis();
 
   /**
    * The constructor must set all of these protected variables (see definitions below in their
