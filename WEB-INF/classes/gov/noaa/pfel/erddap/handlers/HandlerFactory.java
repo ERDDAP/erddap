@@ -96,6 +96,9 @@ public class HandlerFactory {
       case "EDDTableFromFileNames" -> {
         return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
       }
+      case "EDDGridFromAudioFiles, EDDGridFromNcFiles" -> {
+        return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
