@@ -87,6 +87,12 @@ public class HandlerFactory {
         return new EDDTableFromAsciiServiceHandler(
             saxHandler, datasetID, completeState, datasetType);
       }
+      case "EDDTableFromOBIS" -> {
+        return new EDDTableFromOBISHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromSOS" -> {
+        return new EDDTableFromSOSHandler(saxHandler, datasetID, completeState);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
