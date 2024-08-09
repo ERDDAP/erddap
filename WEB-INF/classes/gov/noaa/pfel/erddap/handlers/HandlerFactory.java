@@ -93,6 +93,9 @@ public class HandlerFactory {
       case "EDDTableFromSOS" -> {
         return new EDDTableFromSOSHandler(saxHandler, datasetID, completeState);
       }
+      case "EDDTableFromFileNames" -> {
+        return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
