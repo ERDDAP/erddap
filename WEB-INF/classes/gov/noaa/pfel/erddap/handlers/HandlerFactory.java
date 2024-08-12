@@ -112,6 +112,9 @@ public class HandlerFactory {
       case "EDDGridFromAudioFiles, EDDGridFromNcFiles, EDDGridFromNcFilesUnpacked, EDDGridFromMergeIRFiles" -> {
         return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
+      case "EDDGridFromEtopo" -> {
+        return new EDDGridFromEtopoHandler(saxHandler, datasetID, completeState);
+      }
       default -> {
         nTry--;
         context.getNTryAndDatasets()[0] = nTry;
