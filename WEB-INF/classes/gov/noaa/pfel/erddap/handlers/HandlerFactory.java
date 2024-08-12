@@ -49,7 +49,20 @@ public class HandlerFactory {
       case "EDDGridFromErddap" -> {
         return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
       }
-      case "EDDTableFromAsciiFiles", "EDDTableFromNcFiles" -> {
+      case "EDDTableFromAsciiFiles",
+          "EDDTableFromNcFiles",
+          "EDDTableFromAudioFiles",
+          "EDDTableFromAwsXmlFiles",
+          "EDDTableFromColumnarAsciiFiles",
+          "EDDTableFromHttpGet",
+          "EDDTableFromInvalidCRAFiles",
+          "EDDTableFromJsonlCSVFiles",
+          "EDDTableFromMultidimNcFiles",
+          "EDDTableFromNcCFFiles",
+          "EDDTableFromNccsvFiles",
+          "EDDTableFromHyraxFiles",
+          "EDDTableFromThreddsFiles",
+          "EDDTableFromWFSFiles" -> {
         return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
       case "EDDGridAggregateExistingDimension" -> {
@@ -86,6 +99,21 @@ public class HandlerFactory {
       case "EDDTableFromAsciiService" -> {
         return new EDDTableFromAsciiServiceHandler(
             saxHandler, datasetID, completeState, datasetType);
+      }
+      case "EDDTableFromOBIS" -> {
+        return new EDDTableFromOBISHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromSOS" -> {
+        return new EDDTableFromSOSHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDTableFromFileNames" -> {
+        return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
+      }
+      case "EDDGridFromAudioFiles, EDDGridFromNcFiles, EDDGridFromNcFilesUnpacked, EDDGridFromMergeIRFiles" -> {
+        return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
+      }
+      case "EDDGridFromEtopo" -> {
+        return new EDDGridFromEtopoHandler(saxHandler, datasetID, completeState);
       }
       default -> {
         nTry--;

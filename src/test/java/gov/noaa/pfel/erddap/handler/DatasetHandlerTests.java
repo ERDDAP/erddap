@@ -99,5 +99,9 @@ public class DatasetHandlerTests {
     EDDGridSideBySide eddGridSideBySide =
         (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
     assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
+
+    EDDGridFromEtopo eddGridFromEtopo =
+        (EDDGridFromEtopo) context.getErddap().gridDatasetHashMap.get("etopo180");
+    assertEquals("etopo180", eddGridFromEtopo.datasetID());
   }
 }
