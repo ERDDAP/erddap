@@ -1,22 +1,24 @@
 package gov.noaa.pfel.erddap.handlers;
 
+import static gov.noaa.pfel.erddap.dataset.EDDTableCopy.defaultCheckSourceData;
+
 import com.cohort.array.StringArray;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
-import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromEDDGridHandler extends State {
+public class EDDTableCopyHandler extends State {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
   private State completeState;
   private SaxParsingContext context;
 
-  public EDDTableFromEDDGridHandler(
+  public EDDTableCopyHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
     super(saxHandler);
     this.datasetID = datasetID;
@@ -24,51 +26,39 @@ public class EDDTableFromEDDGridHandler extends State {
     this.context = context;
   }
 
-  private EDDGrid tChildDataset = null;
-  private com.cohort.array.Attributes tAddGlobalAttributes = new com.cohort.array.Attributes();
+  private EDDTable tSourceEdd = null;
+  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
   private String tAccessibleTo = null;
   private String tGraphsAccessibleTo = null;
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
   private StringArray tOnChange = new StringArray();
   private String tFgdcFile = null;
   private String tIso19115File = null;
   private String tSosOfferingPrefix = null;
-  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
+  private String tExtractDestinationNames = "";
+  private String tOrderExtractBy = "";
+  private boolean checkSourceData = defaultCheckSourceData;
+  private boolean tSourceNeedsExpandedFP_EQ = true;
+  private boolean tFileTableInMemory = false;
   private String tDefaultDataQuery = null;
   private String tDefaultGraphQuery = null;
   private String tAddVariablesWhere = null;
+  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private int tStandardizeWhat = Integer.MAX_VALUE;
+  private int tnThreads = -1;
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes) {
-    switch (localName) {
-      case "dataset" -> {
-        if (tChildDataset == null) {
-          String tType = attributes.getValue("type");
-          if (tType == null || !tType.startsWith("EDDGrid")) {
-            throw new SimpleException(
-                "type=\""
-                    + tType
-                    + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. "
-                    + "The type MUST start with \"EDDGrid\".");
-          }
-
-          String active = attributes.getValue("active");
-          String childDatasetID = attributes.getValue("datasetID");
-          State state =
-              HandlerFactory.getHandlerFor(
-                  tType, childDatasetID, active, this, saxHandler, context);
-          saxHandler.setState(state);
-        } else {
-          throw new RuntimeException(
-              "Datasets.xml error: "
-                  + "There can be only one <dataset> defined within an "
-                  + "EDDGridFromEDDTable <dataset>.");
-        }
+  public void startElement(String uri, String localName, String qName, Attributes attributes)
+      throws SAXException {
+    if (localName.equals("dataset")) {
+      if (tSourceEdd != null) {
+        throw new SimpleException("Cannot Have multiple Child datasets for" + datasetID);
       }
-      case "addAttributes" -> {
-        State state = new AddAttributesHandler(saxHandler, tAddGlobalAttributes, this);
-        saxHandler.setState(state);
-      }
+      String tType = attributes.getValue("type");
+      String active = attributes.getValue("active");
+      String childDatasetID = attributes.getValue("datasetID");
+      State state =
+          HandlerFactory.getHandlerFor(tType, childDatasetID, active, this, saxHandler, context);
+      saxHandler.setState(state);
     }
   }
 
@@ -80,26 +70,33 @@ public class EDDTableFromEDDGridHandler extends State {
   @Override
   public void endElement(String uri, String localName, String qName) throws Throwable {
     String contentStr = content.toString().trim();
+
     switch (localName) {
       case "accessibleTo" -> tAccessibleTo = contentStr;
       case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
-      case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
-      case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
       case "onChange" -> tOnChange.add(contentStr);
       case "fgdcFile" -> tFgdcFile = contentStr;
       case "iso19115File" -> tIso19115File = contentStr;
       case "sosOfferingPrefix" -> tSosOfferingPrefix = contentStr;
+      case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
+      case "extractDestinationNames" -> tExtractDestinationNames = contentStr;
+      case "orderExtractBy" -> tOrderExtractBy = contentStr;
+      case "checkSourceData" -> checkSourceData = String2.parseBoolean(contentStr);
+      case "sourceNeedsExpandedFP_EQ" ->
+          tSourceNeedsExpandedFP_EQ = String2.parseBoolean(contentStr);
+      case "fileTableInMemory" -> tFileTableInMemory = String2.parseBoolean(contentStr);
       case "defaultDataQuery" -> tDefaultDataQuery = contentStr;
       case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
       case "addVariablesWhere" -> tAddVariablesWhere = contentStr;
+      case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
+      case "standardizeWhat" -> tStandardizeWhat = String2.parseInt(contentStr);
+      case "nThreads" -> tnThreads = String2.parseInt(contentStr);
       case "dataset" -> {
         EDD dataset =
-            new EDDTableFromEDDGrid(
-                context.getErddap(),
+            new EDDTableCopy(
                 datasetID,
                 tAccessibleTo,
                 tGraphsAccessibleTo,
-                tAccessibleViaFiles,
                 tOnChange,
                 tFgdcFile,
                 tIso19115File,
@@ -107,9 +104,15 @@ public class EDDTableFromEDDGridHandler extends State {
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
                 tAddVariablesWhere,
-                tAddGlobalAttributes,
                 tReloadEveryNMinutes,
-                tChildDataset);
+                tStandardizeWhat,
+                tExtractDestinationNames,
+                tOrderExtractBy,
+                tSourceNeedsExpandedFP_EQ,
+                tSourceEdd,
+                tFileTableInMemory,
+                tAccessibleViaFiles,
+                tnThreads);
 
         this.completeState.handleDataset(dataset);
         saxHandler.setState(this.completeState);
@@ -121,6 +124,6 @@ public class EDDTableFromEDDGridHandler extends State {
 
   @Override
   public void handleDataset(EDD dataset) {
-    tChildDataset = (EDDGrid) dataset;
+    tSourceEdd = (EDDTable) dataset;
   }
 }

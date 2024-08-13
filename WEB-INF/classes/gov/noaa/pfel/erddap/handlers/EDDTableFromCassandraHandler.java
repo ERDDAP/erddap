@@ -1,56 +1,55 @@
 package gov.noaa.pfel.erddap.handlers;
 
-import static gov.noaa.pfel.erddap.dataset.EDD.DEFAULT_RELOAD_EVERY_N_MINUTES;
-
 import com.cohort.array.StringArray;
-import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
-import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
-import gov.noaa.pfel.erddap.variable.EDVAlt;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridFromDapHandler extends State {
+public class EDDTableFromCassandraHandler extends State {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
   private State completeState;
 
-  public EDDGridFromDapHandler(SaxHandler saxHandler, String datasetID, State completeState) {
+  public EDDTableFromCassandraHandler(
+      SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler);
     this.datasetID = datasetID;
     this.completeState = completeState;
   }
 
   private com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();
+  private ArrayList<Object[]> tDataVariables = new ArrayList();
+  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
   private String tAccessibleTo = null;
   private String tGraphsAccessibleTo = null;
-  private boolean tAccessibleViaWMS = true;
   private StringArray tOnChange = new StringArray();
   private String tFgdcFile = null;
   private String tIso19115File = null;
-  private ArrayList<Object[]> tAxisVariables = new ArrayList();
-  private ArrayList<Object[]> tDataVariables = new ArrayList();
-  private int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
-  private int tUpdateEveryNMillis = 0;
+  private String tSosOfferingPrefix = null;
   private String tLocalSourceUrl = null;
+  private String tKeyspace = null;
+  private String tTableName = null;
+  private String tPartitionKeySourceNames = null;
+  private String tClusterColumnSourceNames = null;
+  private String tIndexColumnSourceNames = null;
+  private double tMaxRequestFraction = 1;
+  private String tColumnNameQuotes = "";
+  private StringArray tConnectionProperties = new StringArray();
+  private boolean tSourceNeedsExpandedFP_EQ = true;
   private String tDefaultDataQuery = null;
   private String tDefaultGraphQuery = null;
-  private int tnThreads = -1;
-  private boolean tDimensionValuesInMemory = true;
+  private String tAddVariablesWhere = null;
+  private String tPartitionKeyCSV = null;
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes) {
+  public void startElement(String uri, String localName, String qName, Attributes attributes)
+      throws SAXException {
     switch (localName) {
       case "addAttributes" -> {
         State state = new AddAttributesHandler(saxHandler, tGlobalAttributes, this);
-        saxHandler.setState(state);
-      }
-      case "altitudeMetersPerSourceUnit" ->
-          throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      case "axisVariable" -> {
-        State state = new AxisVariableHandler(saxHandler, tAxisVariables, this);
         saxHandler.setState(state);
       }
       case "dataVariable" -> {
@@ -68,46 +67,60 @@ public class EDDGridFromDapHandler extends State {
   @Override
   public void endElement(String uri, String localName, String qName) throws Throwable {
     String contentStr = content.toString().trim();
+
     switch (localName) {
       case "accessibleTo" -> tAccessibleTo = contentStr;
       case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
-      case "accessibleViaWMS" -> tAccessibleViaWMS = String2.parseBoolean(contentStr);
       case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
-      case "updateEveryNMillis" -> tUpdateEveryNMillis = String2.parseInt(contentStr);
       case "sourceUrl" -> tLocalSourceUrl = contentStr;
+      case "connectionProperty" -> tConnectionProperties.add(contentStr);
+      case "keyspace" -> tKeyspace = contentStr;
+      case "tableName" -> tTableName = contentStr;
+      case "partitionKeySourceNames" -> tPartitionKeySourceNames = contentStr;
+      case "clusterColumnSourceNames" -> tClusterColumnSourceNames = contentStr;
+      case "indexColumnSourceNames" -> tIndexColumnSourceNames = contentStr;
+      case "maxRequestFraction" -> tMaxRequestFraction = String2.parseDouble(contentStr);
+      case "columnNameQuotes" -> tColumnNameQuotes = contentStr;
+      case "partitionKeyCSV" -> tPartitionKeyCSV = contentStr;
+      case "sourceNeedsExpandedFP_EQ" ->
+          tSourceNeedsExpandedFP_EQ = String2.parseBoolean(contentStr);
       case "onChange" -> tOnChange.add(contentStr);
       case "fgdcFile" -> tFgdcFile = contentStr;
       case "iso19115File" -> tIso19115File = contentStr;
+      case "sosOfferingPrefix" -> tSosOfferingPrefix = contentStr;
       case "defaultDataQuery" -> tDefaultDataQuery = contentStr;
       case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
-      case "nThreads" -> tnThreads = String2.parseInt(contentStr);
-      case "dimensionValuesInMemory" -> tDimensionValuesInMemory = String2.parseBoolean(contentStr);
+      case "addVariablesWhere" -> tAddVariablesWhere = contentStr;
       case "dataset" -> {
-        int nav = tAxisVariables.size();
-        Object[][] ttAxisVariables = nav == 0 ? null : new Object[nav][];
-        ttAxisVariables = tAxisVariables.toArray(ttAxisVariables);
         Object[][] ttDataVariables = new Object[tDataVariables.size()][];
         ttDataVariables = tDataVariables.toArray(ttDataVariables);
 
         EDD dataset =
-            new EDDGridFromDap(
+            new EDDTableFromCassandra(
                 datasetID,
                 tAccessibleTo,
                 tGraphsAccessibleTo,
-                tAccessibleViaWMS,
                 tOnChange,
                 tFgdcFile,
                 tIso19115File,
+                tSosOfferingPrefix,
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
+                tAddVariablesWhere,
                 tGlobalAttributes,
-                ttAxisVariables,
                 ttDataVariables,
                 tReloadEveryNMinutes,
-                tUpdateEveryNMillis,
                 tLocalSourceUrl,
-                tnThreads,
-                tDimensionValuesInMemory);
+                tConnectionProperties.toArray(),
+                tKeyspace,
+                tTableName,
+                tPartitionKeySourceNames,
+                tClusterColumnSourceNames,
+                tIndexColumnSourceNames,
+                tPartitionKeyCSV,
+                tMaxRequestFraction,
+                tColumnNameQuotes,
+                tSourceNeedsExpandedFP_EQ);
 
         this.completeState.handleDataset(dataset);
         saxHandler.setState(this.completeState);

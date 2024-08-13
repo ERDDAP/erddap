@@ -1,29 +1,32 @@
 package gov.noaa.pfel.erddap.handlers;
 
+import static gov.noaa.pfel.erddap.dataset.EDDGrid.DEFAULT_MATCH_AXIS_N_DIGITS;
+
 import com.cohort.array.StringArray;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
-import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
+import gov.noaa.pfel.erddap.dataset.EDDGridAggregateExistingDimension;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridLonPM180Handler extends State {
+public class EDDGridAggregateExistingDimensionHandler extends State {
   private StringBuilder content = new StringBuilder();
-  private SaxParsingContext context;
   private State completeState;
   private String datasetID;
+  private SaxParsingContext context;
 
-  public EDDGridLonPM180Handler(
+  public EDDGridAggregateExistingDimensionHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
     super(saxHandler);
-    this.datasetID = datasetID;
     this.completeState = completeState;
+    this.datasetID = datasetID;
     this.context = context;
   }
 
-  private EDDGrid tChildDataset = null;
+  private EDDGrid firstChild = null;
+  private StringArray tLocalSourceUrls = new StringArray();
   private String tAccessibleTo = null;
   private String tGraphsAccessibleTo = null;
   private boolean tAccessibleViaWMS = true;
@@ -31,36 +34,51 @@ public class EDDGridLonPM180Handler extends State {
   private StringArray tOnChange = new StringArray();
   private String tFgdcFile = null;
   private String tIso19115File = null;
+  private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
   private String tDefaultDataQuery = null;
   private String tDefaultGraphQuery = null;
-  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
-  private int tUpdateEveryNMillis = Integer.MAX_VALUE;
-  private int tnThreads = -1;
+  private int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
   private boolean tDimensionValuesInMemory = true;
+
+  private String tSUServerType = null;
+  private String tSURegex = null;
+  private boolean tSURecursive = true;
+  private String tSUPathRegex = ".*";
+  private String tSU = null;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)
       throws SAXException {
-    if (localName.equals("dataset")) {
-      if (tChildDataset == null) {
-        String tType = attributes.getValue("type");
-        if (tType == null || !tType.startsWith("EDDGrid")) {
+    switch (localName) {
+      case "dataset" -> {
+        if (firstChild == null) {
+          String tType = attributes.getValue("type");
+          if (tType == null || !tType.startsWith("EDDGrid")) {
+            throw new RuntimeException(
+                "Datasets.xml error: "
+                    + "The dataset defined in an "
+                    + "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+          }
+
+          String active = attributes.getValue("active");
+          String childDatasetID = attributes.getValue("datasetID");
+          State state =
+              HandlerFactory.getHandlerFor(
+                  tType, childDatasetID, active, this, saxHandler, context);
+          saxHandler.setState(state);
+        } else {
           throw new RuntimeException(
               "Datasets.xml error: "
-                  + "The dataset defined in an "
-                  + "EDDGridLonPM180 must be a subclass of EDDGrid.");
+                  + "There can be only one <dataset> defined within an "
+                  + "EDDGridAggregateExistingDimension <dataset>.");
         }
-
-        String active = attributes.getValue("active");
-        String childDatasetID = attributes.getValue("datasetID");
-        State state =
-            HandlerFactory.getHandlerFor(tType, childDatasetID, active, this, saxHandler, context);
-        saxHandler.setState(state);
-      } else {
-        throw new RuntimeException(
-            "Datasets.xml error: "
-                + "There can be only one <dataset> defined within an "
-                + "EDDGridLonPM180 <dataset>.");
+      }
+      case "sourceUrls" -> {
+        tSUServerType = attributes.getValue("serverType");
+        tSURegex = attributes.getValue("regex");
+        String tr = attributes.getValue("recursive");
+        tSUPathRegex = attributes.getValue("pathRegex");
+        tSURecursive = tr == null || String2.parseBoolean(tr);
       }
     }
   }
@@ -75,8 +93,12 @@ public class EDDGridLonPM180Handler extends State {
     String contentStr = content.toString().trim();
 
     switch (localName) {
-      case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
-      case "updateEveryNMillis" -> tUpdateEveryNMillis = String2.parseInt(contentStr);
+      case "sourceUrl" -> tLocalSourceUrls.add(contentStr);
+      case "sourceUrls" -> tSU = contentStr;
+      case "matchAxisNDigits" ->
+          tMatchAxisNDigits = String2.parseInt(contentStr, DEFAULT_MATCH_AXIS_N_DIGITS);
+      case "ensureAxisValuesAreEqual" ->
+          tMatchAxisNDigits = String2.parseBoolean(contentStr) ? 20 : 0;
       case "accessibleTo" -> tAccessibleTo = contentStr;
       case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
       case "accessibleViaWMS" -> tAccessibleViaWMS = String2.parseBoolean(contentStr);
@@ -90,8 +112,7 @@ public class EDDGridLonPM180Handler extends State {
       case "dimensionValuesInMemory" -> tDimensionValuesInMemory = String2.parseBoolean(contentStr);
       case "dataset" -> {
         EDD dataset =
-            new EDDGridLonPM180(
-                context.getErddap(),
+            new EDDGridAggregateExistingDimension(
                 datasetID,
                 tAccessibleTo,
                 tGraphsAccessibleTo,
@@ -102,9 +123,14 @@ public class EDDGridLonPM180Handler extends State {
                 tIso19115File,
                 tDefaultDataQuery,
                 tDefaultGraphQuery,
-                tReloadEveryNMinutes,
-                tUpdateEveryNMillis,
-                tChildDataset,
+                firstChild,
+                tLocalSourceUrls.toArray(),
+                tSUServerType,
+                tSURegex,
+                tSURecursive,
+                tSUPathRegex,
+                tSU,
+                tMatchAxisNDigits,
                 tnThreads,
                 tDimensionValuesInMemory);
 
@@ -118,6 +144,6 @@ public class EDDGridLonPM180Handler extends State {
 
   @Override
   public void handleDataset(EDD dataset) {
-    tChildDataset = (EDDGrid) dataset;
+    firstChild = (EDDGrid) dataset;
   }
 }
