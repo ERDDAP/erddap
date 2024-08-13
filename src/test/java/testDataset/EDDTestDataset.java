@@ -84041,7 +84041,7 @@ public class EDDTestDataset {
         + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
         + "</fileDir>\n"
         + //
-        "    <fileNameRegex>.*zarr_test_data\\.zarr</fileNameRegex>\n"
+        "    <fileNameRegex>.*zarr_test_data\\.zarr\\.zip</fileNameRegex>\n"
         + //
         "    <recursive>true</recursive>\n"
         + //
@@ -85001,7 +85001,7 @@ public class EDDTestDataset {
         + Path.of(EDDTestDataset.class.getResource("/data/zarr/").toURI()).toString()
         + "</fileDir>\n"
         + //
-        "    <fileNameRegex>zarr_compressed_data\\.zarr</fileNameRegex>\n"
+        "    <fileNameRegex>.*zarr_compressed_data\\.zarr\\.zip</fileNameRegex>\n"
         + //
         "    <recursive>true</recursive>\n"
         + //

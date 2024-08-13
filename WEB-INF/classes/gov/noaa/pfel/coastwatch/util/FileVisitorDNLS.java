@@ -828,10 +828,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
               + " .");
     String cacheFullName = cacheDir + sourceFullName.substring(sourceBaseDir.length());
     int cfnl = cacheFullName.length();
-    if (cacheFullName.endsWith(".tar.gz")) cacheFullName = cacheFullName.substring(0, cfnl - 7);
-    else if (cacheFullName.endsWith(".tar.gzip"))
+    if (cacheFullName.endsWith(".tar.gz")) {
+      cacheFullName = cacheFullName.substring(0, cfnl - 7);
+    } else if (cacheFullName.endsWith(".tar.gzip")) {
       cacheFullName = cacheFullName.substring(0, cfnl - 9);
-    else cacheFullName = File2.removeExtension(cacheFullName); // remove simple extension
+    } else {
+      cacheFullName = File2.removeExtension(cacheFullName); // remove simple extension
+    }
 
     // decompressed file already exists?
     if (!reuseExisting) File2.delete(cacheFullName);
@@ -857,31 +860,36 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return cacheFullName;
       }
 
-      // make dir and decompressed file
       long time = System.currentTimeMillis();
       File2.makeDirectory(File2.getDirectory(cacheFullName));
-      InputStream is = File2.getDecompressedBufferedInputStream(sourceFullName);
-      OutputStream os = null;
-      try {
-        os = new BufferedOutputStream(new FileOutputStream(cacheFullName));
-        if (!File2.copy(is, os)) throw new IOException("Unable to decompress " + sourceFullName);
-        if (verbose)
-          String2.log(
-              "  decompressed "
-                  + sourceFullName
-                  + "  time="
-                  + (System.currentTimeMillis() - time)
-                  + "ms");
-      } finally {
+      // make dir and decompressed file
+      if (sourceFullName.contains("zarr")) {
+        File2.decompressAllFiles(sourceFullName, cacheFullName);
+      } else {
+        InputStream is = File2.getDecompressedBufferedInputStream(sourceFullName);
+        OutputStream os = null;
         try {
-          if (os != null) os.close();
-        } catch (Exception e2) {
-        }
-        try {
-          if (is != null) is.close();
-        } catch (Exception e2) {
+          os = new BufferedOutputStream(new FileOutputStream(cacheFullName));
+          if (!File2.copy(is, os)) throw new IOException("Unable to decompress " + sourceFullName);
+          if (verbose)
+            String2.log(
+                "  decompressed "
+                    + sourceFullName
+                    + "  time="
+                    + (System.currentTimeMillis() - time)
+                    + "ms");
+        } finally {
+          try {
+            if (os != null) os.close();
+          } catch (Exception e2) {
+          }
+          try {
+            if (is != null) is.close();
+          } catch (Exception e2) {
+          }
         }
       }
+
       long cs = incrementPruneCacheDirSize(cacheDir, Math.max(0, File2.length(cacheFullName)));
       if (reallyVerbose)
         String2.log(

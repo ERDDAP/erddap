@@ -822,7 +822,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (filesAreLocal) {
         // Zarr files are actually directories and so their last modified and size
         // will provide inacurate results below.
-        boolean isZarr = tName.contains(".zarr") || tDir.contains(".zarr");
+        boolean isZarr = tName.contains("zarr") || tDir.contains("zarr");
         long lastMod = File2.getLastModified(tDir + tName);
 
         // 0=trouble: unavailable or changed
