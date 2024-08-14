@@ -2499,7 +2499,11 @@ currently recommend
   <br>&nbsp;
 
 <li><strong><a class="selfLink" id="Zarr" href="#Zarr" rel="bookmark">Zarr</a></strong>
-<br>(As of August 2019)
+<br>
+<p>As of version 2.25 ERDDAP™ can read local Zarr files using
+  <a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> and <a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a>.
+
+<p>(As of August 2019)
     We could easily be wrong, but we are not yet convinced that 
     <a rel="help" href="https://github.com/zarr-developers/zarr-python">Zarr<img 
             src="../images/external.png" alt=" (external link)" 
@@ -2507,12 +2511,9 @@ currently recommend
     or similar systems which break data files up into smaller chunks, are great
     solutions to the problem of ERDDAP™ reading data stored in cloud services like Amazon AWS S3. 
     Zarr is a great technology that has shown its usefulness in a variety of situations,
-    we're just not sure that ERDDAP+S3 will be one of those situations.
-    Currently, ERDDAP™ can't read data stored by Zarr, so it is impossible to do tests
-    to know for sure. That will change if/when Unidata adds support for Zarr data sources
-    to netcdf-java.
-    Mostly we're saying: before we rush to make the effort to store all our data in Zarr, 
-    let's do some tests to see if it is actually a better solution.
+    we're just not sure that ERDDAP+S3 will be one of those situations. Mostly we're saying:
+    before we rush to make the effort to store all our data in Zarr, let's do some tests to see
+    if it is actually a better solution.
 
     <p>The problems with accessing data in the cloud are latency (the lag to first get data)
     and file-level access (rather than block-level access).
@@ -4262,11 +4263,15 @@ for general information on how this class works and how to use it.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
 files,
-    <a rel="help" href="#NcML">.ncml</a> files, and 
+    <a rel="help" href="#NcML">.ncml</a> files, 
     <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF (v3 or v4) .nc<img 
         src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a> files.
-This may work with other file types (for example, BUFR), we just haven't tested it -- please send us
+        title="This link to an external website does not constitute an endorsement."></a> files, and
+    <a rel="help" href="https://github.com/zarr-developers/zarr-python">Zarr<img src="../images/external.png"
+        alt=" (external link)" title="This link to an external website does not constitute an endorsement."></a> files
+    (as of version 2.25). Zarr files have slightly different behavior and require either the fileNameRegex or the
+    pathRegex to include "zarr".
+<p>This may work with other file types (for example, BUFR), we just haven't tested it -- please send us
 some sample files.
 
 <ul>
@@ -9705,7 +9710,9 @@ variables:
 <p><a class="selfLink" id="EDDTableFromNcFiles" href="#EDDTableFromNcFiles" rel="bookmark"><strong>EDDTableFromNcFiles</strong></a> 
   aggregates data from NetCDF (v3 or v4) .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
-  files with several variables, each with one shared
+  files and <a rel="help" href="https://github.com/zarr-developers/zarr-python">Zarr<img src="../images/external.png"
+      alt=" (external link)" title="This link to an external website does not constitute an endorsement."></a>
+  files (as of version 2.25) with several variables, each with one shared
   dimension (for example, time) or more than one shared dimensions 
   (for example, time, altitude (or depth), latitude, longitude).
   The files must have the same dimension names.
@@ -9714,6 +9721,9 @@ variables:
   The files may have character variables with an additional dimension (for example, STRING14).
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use it.
+   
+  <p>Zarr files have slightly different behavior and require either the fileNameRegex or the
+  pathRegex to include "zarr".
 
 <ul>
 <li>If the .nc files use one of the  

@@ -1399,7 +1399,6 @@ public class File2 {
         ZipEntry zipEntry = zis.getNextEntry();
         while (zipEntry != null) {
           File newFile = newFile(destDir, zipEntry.getName());
-          String2.log("extracting file: " + newFile.getAbsolutePath());
           if (zipEntry.isDirectory()) {
             if (!newFile.isDirectory() && !newFile.mkdirs()) {
               throw new IOException("Failed to create directory " + newFile);
