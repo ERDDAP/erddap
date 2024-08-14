@@ -97,7 +97,7 @@ public class TaskThread extends Thread {
         lastStartTime = System.currentTimeMillis();
         String2.log(
             "\n%%% TaskThread started task #"
-                + EDStatic.nextTask
+                + EDStatic.nextTask.get()
                 + " of "
                 + (EDStatic.taskList.size() - 1)
                 + " at "
@@ -105,9 +105,9 @@ public class TaskThread extends Thread {
         EDStatic.nextTask.incrementAndGet();
 
         // get the task settings
-        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.decrementAndGet());
+        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
         if (taskOA == null) {
-          String2.log("task #" + EDStatic.nextTask.decrementAndGet() + " was null.");
+          String2.log("task #" + (EDStatic.nextTask.get() - 1) + " was null.");
           continue;
         }
         Integer taskType = (Integer) taskOA[0];
@@ -230,7 +230,7 @@ public class TaskThread extends Thread {
               "TaskThread error: Unknown taskType="
                   + taskType
                   + " for task #"
-                  + EDStatic.nextTask.decrementAndGet()
+                  + (EDStatic.nextTask.get() - 1)
                   + ".");
         }
 
@@ -238,7 +238,7 @@ public class TaskThread extends Thread {
         long tElapsedTime = elapsedTime();
         String2.log(
             "%%% TaskThread task #"
-                + EDStatic.nextTask.decrementAndGet()
+                + (EDStatic.nextTask.get() - 1)
                 + " of "
                 + (EDStatic.taskList.size() - 1)
                 + " succeeded.  elapsedTime = "
@@ -252,7 +252,7 @@ public class TaskThread extends Thread {
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
         String subject =
             "TaskThread error: task #"
-                + EDStatic.nextTask.decrementAndGet()
+                + (EDStatic.nextTask.get() - 1)
                 + " failed after "
                 + Calendar2.elapsedTimeString(tElapsedTime);
         String content = "" + taskSummary + "\n" + MustBe.throwableToString(t);
@@ -262,9 +262,8 @@ public class TaskThread extends Thread {
 
       // whether succeeded or failed
       synchronized (EDStatic.taskList) {
-        EDStatic.lastFinishedTask = EDStatic.nextTask.decrementAndGet();
-        EDStatic.taskList.set(
-            EDStatic.nextTask.decrementAndGet(), null); // throw away the task info (gc)
+        EDStatic.lastFinishedTask = EDStatic.nextTask.get() - 1;
+        EDStatic.taskList.set(EDStatic.nextTask.get() - 1, null); // throw away the task info (gc)
       }
     }
   }

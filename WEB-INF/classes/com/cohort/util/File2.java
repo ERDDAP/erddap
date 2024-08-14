@@ -21,10 +21,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -357,6 +362,10 @@ public class File2 {
    */
   public static void setWebInfParentDirectory() {
     webInfParentDirectory = System.getProperty("user.dir") + "/";
+  }
+
+  public static void setWebInfParentDirectory(String dir) {
+    webInfParentDirectory = dir;
   }
 
   /**
@@ -932,7 +941,7 @@ public class File2 {
         // The problem might be that something needs to be gc'd.
         Math2.gcAndWait(
             "File2.getLastModified (before retry)"); // if trouble getting lastModified: gc
-                                                     // encourages success
+        // encourages success
         File file = new File(fullName);
         return file.lastModified();
       } catch (Exception e2) {
@@ -1283,6 +1292,199 @@ public class File2 {
     return is;
   }
 
+  public static void decompressAllFiles(String sourceFullName, String destDir) throws IOException {
+    String ext = getExtension(sourceFullName); // if e.g., .tar.gz, this returns .gz
+    // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE
+    // !!!
+
+    int bufferSize = 1024;
+
+    // handle .Z (capital Z) specially first
+    // This assumes Z files contain only 1 file.
+    if (ext.equals(".Z")) {
+      FileOutputStream out = null;
+      ZCompressorInputStream zIn = null;
+      try {
+        out = new FileOutputStream(destDir);
+        zIn =
+            new ZCompressorInputStream(
+                new BufferedInputStream(new FileInputStream(sourceFullName)));
+        final byte[] buffer = new byte[1024];
+        int n = 0;
+        while (-1 != (n = zIn.read(buffer))) {
+          out.write(buffer, 0, n);
+        }
+      } catch (Exception e) {
+        throw e;
+      } finally {
+        if (out != null) {
+          out.close();
+        }
+        if (zIn != null) {
+          zIn.close();
+        }
+      }
+    }
+
+    // everything caught below has a z in ext
+    if (ext.indexOf('z') < 0) {
+      return;
+    }
+
+    if (ext.equals(".tgz")
+        || sourceFullName.endsWith(".tar.gz")
+        || sourceFullName.endsWith(".tar.gzip")) {
+      // This can actually have multiple files.
+      GzipCompressorInputStream gzipIn = null;
+      TarArchiveInputStream tarIn = null;
+      try {
+        gzipIn =
+            new GzipCompressorInputStream(
+                new BufferedInputStream(new FileInputStream(sourceFullName)));
+        tarIn = new TarArchiveInputStream(gzipIn);
+        ArchiveEntry entry;
+        while ((entry = tarIn.getNextEntry()) != null) {
+          if (entry.isDirectory()) {
+            File f = newFile(destDir, entry.getName());
+            boolean created = f.mkdir();
+            if (!created) {
+              String2.log(
+                  "Unable to create directory '%s', during extraction of archive contents.\n"
+                      + f.getAbsolutePath());
+            }
+          } else {
+            int count;
+            byte data[] = new byte[bufferSize];
+            FileOutputStream fos = new FileOutputStream(newFile(destDir, entry.getName()), false);
+            try (BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize)) {
+              while ((count = tarIn.read(data, 0, bufferSize)) != -1) {
+                dest.write(data, 0, count);
+              }
+            }
+          }
+        }
+
+      } catch (Exception e) {
+        if (tarIn != null) tarIn.close();
+        else if (gzipIn != null) gzipIn.close();
+        throw e;
+      } finally {
+        if (gzipIn != null) {
+          gzipIn.close();
+        }
+        if (tarIn != null) {
+          tarIn.close();
+        }
+      }
+
+    } else if (ext.equals(".gz") || ext.equals(".gzip")) {
+      try (GZIPInputStream gzipInputStream =
+          new GZIPInputStream(new FileInputStream(sourceFullName))) {
+        File outputFile = new File(destDir, getFileNameWithoutExtension(sourceFullName));
+        try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile)) {
+          byte[] buffer = new byte[1024];
+          int len;
+          while ((len = gzipInputStream.read(buffer)) > 0) {
+            fileOutputStream.write(buffer, 0, len);
+          }
+        }
+      } catch (IOException e) {
+        throw e;
+      }
+    } else if (ext.equals(".zip")) {
+      // This can actually have multiple files.
+      byte[] buffer = new byte[bufferSize];
+      ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceFullName));
+      try {
+        ZipEntry zipEntry = zis.getNextEntry();
+        while (zipEntry != null) {
+          File newFile = newFile(destDir, zipEntry.getName());
+          if (zipEntry.isDirectory()) {
+            if (!newFile.isDirectory() && !newFile.mkdirs()) {
+              throw new IOException("Failed to create directory " + newFile);
+            }
+          } else {
+            // fix for Windows-created archives
+            File parent = newFile.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+              throw new IOException("Failed to create directory " + parent);
+            }
+
+            // write file content
+            FileOutputStream fos = new FileOutputStream(newFile);
+            int len;
+            while ((len = zis.read(buffer)) > 0) {
+              fos.write(buffer, 0, len);
+            }
+            fos.close();
+          }
+          zipEntry = zis.getNextEntry();
+        }
+      } catch (Exception e) {
+        throw e;
+      } finally {
+        zis.closeEntry();
+        zis.close();
+      }
+
+    } else if (ext.equals(".bz2")) {
+      OutputStream out = null;
+      BZip2CompressorInputStream bzIn = null;
+
+      try {
+        out = Files.newOutputStream(Paths.get(destDir));
+        bzIn =
+            new BZip2CompressorInputStream(
+                new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))));
+        final byte[] buffer = new byte[bufferSize];
+        int n = 0;
+        while (-1 != (n = bzIn.read(buffer))) {
+          out.write(buffer, 0, n);
+        }
+      } finally {
+        if (out != null) {
+          out.close();
+        }
+        if (bzIn != null) {
+          bzIn.close();
+        }
+      }
+    }
+    // .7z is possible but different and harder
+
+    // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE
+    // !!!
+
+  }
+
+  private static String getFileNameWithoutExtension(String filePath) {
+    int lastIndexOfDot = filePath.lastIndexOf(".");
+    if (lastIndexOfDot > 0) {
+      return filePath.substring(0, lastIndexOfDot);
+    } else {
+      return filePath;
+    }
+  }
+
+  private static File newFile(String destinationDir, String name) throws IOException {
+    Path destBase = Paths.get(destinationDir);
+    Path namePath = Paths.get(name);
+
+    if (namePath.getName(0).equals(destBase.getName(destBase.getNameCount() - 1))) {
+      namePath = namePath.subpath(1, namePath.getNameCount());
+    }
+    File destFile = new File(destBase.resolve(namePath).toString());
+
+    String destDirPath = destBase.toAbsolutePath().toString();
+    String destFilePath = destFile.getCanonicalPath();
+
+    if (!destFilePath.startsWith(destDirPath + File.separator)) {
+      throw new IOException("Entry is outside of the target dir: " + name);
+    }
+
+    return destFile;
+  }
+
   public static BufferedReader getDecompressedBufferedFileReader88591(String fullFileName)
       throws Exception {
     return getDecompressedBufferedFileReader(fullFileName, ISO_8859_1);
@@ -1445,7 +1647,7 @@ public class File2 {
             if (attempt == 1)
               Math2.gcAndWait(
                   "File2.readFromFile (before retry)"); // trouble! Give OS/Java a time and gc to
-                                                        // deal with trouble
+            // deal with trouble
             else Math2.sleep(1000);
           }
         }

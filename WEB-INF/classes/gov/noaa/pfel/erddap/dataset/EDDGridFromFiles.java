@@ -818,17 +818,33 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
       // ensure file size and lastMod are unchanged (i.e., file is unchanged)
       // and fileDir and fileName match the current settings.
-      if (filesAreLocal) { // should I also do this if files are remote???
+      // should I also do this if files are remote???
+      if (filesAreLocal) {
+        // Zarr files are actually directories and so their last modified and size
+        // will provide inacurate results below.
+        boolean isZarr = tName.contains("zarr") || tDir.contains("zarr");
         long lastMod = File2.getLastModified(tDir + tName);
-        if (lastMod == 0 || ftLastMod.get(i) != lastMod) // 0=trouble: unavailable or changed
-        continue;
+
+        // 0=trouble: unavailable or changed
+        if (!isZarr && (lastMod == 0 || ftLastMod.get(i) != lastMod)) {
+          continue;
+        }
         long size = File2.length(tDir + tName);
-        if (size < 0
-            || size == Long.MAX_VALUE
-            || (filesAreLocal && ftSize.get(i) != size)) // -1=touble: unavailable or changed
-        continue;
-        if (!tDir.startsWith(fileDir)) continue;
-        if (!tName.matches(fileNameRegex)) continue;
+        // -1=touble: unavailable or changed
+        if (!isZarr
+            && (size < 0 || size == Long.MAX_VALUE || (filesAreLocal && ftSize.get(i) != size))) {
+          continue;
+        }
+        if (!tDir.startsWith(fileDir)) {
+          continue;
+        }
+        // Since a zarr file is a directory, it might be entirely in the tDir variable.
+        // Add matching for characters before (the path to the directory) and after (usually
+        // trailing slash).
+        if (!(tName.matches(fileNameRegex)
+            || (isZarr && tDir.matches("(.*)" + fileNameRegex + "(.*)")))) {
+          continue;
+        }
       }
 
       Attributes tSourceGlobalAttributes = new Attributes();
@@ -2126,6 +2142,10 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       String fileDir, String fileNameRegex, boolean recursive, String pathRegex) throws Throwable {
     // String2.log("EDDTableFromFiles getFileInfo");
 
+    boolean includeDirectories =
+        (fileNameRegex != null && fileNameRegex.contains("zarr"))
+            || (pathRegex != null && pathRegex.contains("zarr"));
+
     // if temporary cache system active, make it look like all remote files are in local dir
     if (cacheFromUrl != null && cacheMaxSizeB > 0) {
       Table table =
@@ -2135,13 +2155,13 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               fileNameRegex,
               recursive,
               pathRegex,
-              false); // dirsToo
+              includeDirectories); // dirsToo
       if (table.nRows() == 0) throw new Exception("No matching files at " + cacheFromUrl);
       return table;
     }
 
     return FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
-        fileDir, fileNameRegex, recursive, pathRegex, false); // dirsToo
+        fileDir, fileNameRegex, recursive, pathRegex, includeDirectories); // dirsToo
   }
 
   /**

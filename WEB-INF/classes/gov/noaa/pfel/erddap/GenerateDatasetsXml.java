@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.GregorianCalendar;
 
 /**
@@ -31,8 +32,13 @@ public class GenerateDatasetsXml {
 
   int language = 0;
   Writer outFile = null;
-  static String logFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.log";
-  static String outFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.out";
+  String logFileName = null;
+  String outFileName = null;
+
+  public GenerateDatasetsXml() {
+    logFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.log";
+    outFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.out";
+  }
 
   private void printToBoth(String s) throws IOException {
     String2.log(s);
@@ -877,7 +883,7 @@ public class GenerateDatasetsXml {
                     10,
                     s10,
                     "Remove missing value rows (true|false)"); // siblings: Sorted column source
-                                                               // name");
+            // name");
             s11 = get(args, 11, s11, "Sort files by sourceNames");
             s12 = get(args, 12, s12, "infoUrl");
             s13 = get(args, 13, s13, "institution");
@@ -1308,6 +1314,27 @@ public class GenerateDatasetsXml {
    * @param args if args has values, they are used to answer the questions.
    */
   public static void main(String args[]) throws Throwable {
+
+    String ecd = "erddapContentDirectory";
+    String contentDirectory = System.getProperty(ecd);
+    if (contentDirectory == null) {
+      // Or, it must be sibling of webapps
+      // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
+      // On windows, contentDirectory may have spaces as %20(!)
+      contentDirectory =
+          String2.replaceAll(
+              File2.getClassPath(), // with / separator and / at the end
+              "%20",
+              " ");
+      int po = contentDirectory.indexOf("/webapps/");
+      if (po == -1) {
+        Path userDir = Path.of(System.getProperty("user.dir"));
+        String webInfParentDir = userDir.getParent().toString() + "/";
+        File2.setWebInfParentDirectory(webInfParentDir);
+        System.setProperty(ecd, webInfParentDir + "/development/test/");
+      }
+    }
+
     new GenerateDatasetsXml().doIt(args, true);
     System.exit(0);
   }

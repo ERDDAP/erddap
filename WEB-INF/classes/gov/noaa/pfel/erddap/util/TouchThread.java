@@ -72,11 +72,11 @@ public class TouchThread extends Thread {
           // start to do the touch
           // do these things quickly to keep internal consistency
           EDStatic.nextTouch.incrementAndGet();
-          url = EDStatic.touchList.get(EDStatic.nextTouch.decrementAndGet());
+          url = EDStatic.touchList.get(EDStatic.nextTouch.get() - 1);
           lastStartTime = System.currentTimeMillis();
           String2.log(
               "%%% TouchThread started touch #"
-                  + EDStatic.nextTouch
+                  + EDStatic.nextTouch.get()
                   + " of "
                   + (EDStatic.touchList.size() - 1)
                   + " at "
@@ -91,7 +91,7 @@ public class TouchThread extends Thread {
           long tElapsedTime = elapsedTime();
           String2.log(
               "%%% TouchThread touch #"
-                  + EDStatic.nextTouch.decrementAndGet()
+                  + (EDStatic.nextTouch.get() - 1)
                   + " of "
                   + (EDStatic.touchList.size() - 1)
                   + " succeeded.  elapsedTime="
@@ -109,7 +109,7 @@ public class TouchThread extends Thread {
           long tElapsedTime = elapsedTime();
           String2.log(
               "%%% TouchThread error: touch #"
-                  + EDStatic.nextTouch.decrementAndGet()
+                  + (EDStatic.nextTouch.get() - 1)
                   + " failed after "
                   + tElapsedTime
                   + "ms"
@@ -125,9 +125,9 @@ public class TouchThread extends Thread {
           // whether succeeded or failed
           lastStartTime = -1;
           synchronized (EDStatic.touchList) {
-            EDStatic.lastFinishedTouch = EDStatic.nextTouch.decrementAndGet();
+            EDStatic.lastFinishedTouch = (EDStatic.nextTouch.get() - 1);
             EDStatic.touchList.set(
-                EDStatic.nextTouch.decrementAndGet(), null); // throw away the touch info (gc)
+                (EDStatic.nextTouch.get() - 1), null); // throw away the touch info (gc)
           }
         }
       }
