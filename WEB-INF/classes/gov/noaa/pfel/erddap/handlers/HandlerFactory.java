@@ -109,7 +109,10 @@ public class HandlerFactory {
       case "EDDTableFromFileNames" -> {
         return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
       }
-      case "EDDGridFromAudioFiles, EDDGridFromNcFiles, EDDGridFromNcFilesUnpacked, EDDGridFromMergeIRFiles" -> {
+      case "EDDGridFromAudioFiles",
+          "EDDGridFromNcFiles",
+          "EDDGridFromNcFilesUnpacked",
+          "EDDGridFromMergeIRFiles" -> {
         return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
       case "EDDGridFromEtopo" -> {
