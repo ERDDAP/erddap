@@ -49,7 +49,7 @@ public class EDDGridFromEtopoHandler extends State {
                 tAccessibleViaFiles,
                 tnThreads,
                 tDimensionValuesInMemory);
-        this.handleDataset(dataset);
+        this.completeState.handleDataset(dataset);
         saxHandler.setState(this.completeState);
       }
     }
