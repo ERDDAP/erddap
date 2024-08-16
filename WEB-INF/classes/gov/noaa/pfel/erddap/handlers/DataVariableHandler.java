@@ -5,17 +5,15 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class DataVariableHandler extends State {
+public class DataVariableHandler extends StateWithParent {
   StringBuilder content = new StringBuilder();
   String tSourceName = null, tDestinationName = null, tDataType = null;
   com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   ArrayList tDataVariables;
-  State completeState;
 
   public DataVariableHandler(SaxHandler saxHandler, ArrayList tDataVariables, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.tDataVariables = tDataVariables;
-    this.completeState = completeState;
   }
 
   @Override

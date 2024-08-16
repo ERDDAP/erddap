@@ -22,4 +22,6 @@ public abstract class State {
   public abstract void characters(char[] ch, int start, int length) throws SAXException;
 
   public abstract void endElement(String uri, String localName, String qName) throws Throwable;
+
+  public abstract void popState();
 }

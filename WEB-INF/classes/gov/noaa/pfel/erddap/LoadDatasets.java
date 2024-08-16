@@ -462,7 +462,7 @@ public class LoadDatasets extends Thread {
     factory.setNamespaceAware(true);
 
     SAXParser saxParser = factory.newSAXParser();
-    SaxHandler saxHandler = new SaxHandler();
+    SaxHandler saxHandler = new SaxHandler(context);
 
     TopLevelHandler topLevelHandler = new TopLevelHandler(saxHandler, context);
 

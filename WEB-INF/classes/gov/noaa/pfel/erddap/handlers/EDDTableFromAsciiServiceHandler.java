@@ -8,17 +8,15 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromAsciiServiceHandler extends State {
+public class EDDTableFromAsciiServiceHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
   private String datasetType;
 
   public EDDTableFromAsciiServiceHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
     this.datasetType = datasetType;
   }
 

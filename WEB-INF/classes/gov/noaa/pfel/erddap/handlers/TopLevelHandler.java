@@ -513,4 +513,9 @@ public class TopLevelHandler extends State {
   public void handleDataset(EDD dataset) {
     context.getErddap().processDataset(dataset, context);
   }
+
+  @Override
+  public void popState() {
+    String2.log("Attempt to pop top level handler. Something likely went wrong.");
+  }
 }

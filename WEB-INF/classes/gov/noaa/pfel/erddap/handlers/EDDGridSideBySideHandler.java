@@ -12,15 +12,14 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridSideBySideHandler extends State {
+public class EDDGridSideBySideHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
   private SaxParsingContext context;
 
   public EDDGridSideBySideHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
     this.completeState = completeState;
     this.context = context;

@@ -10,15 +10,13 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridFromErddapHandler extends State {
+public class EDDGridFromErddapHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
 
   public EDDGridFromErddapHandler(SaxHandler saxHandler, String datasetID, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
   }
 
   private int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
