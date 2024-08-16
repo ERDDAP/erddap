@@ -1,6 +1,7 @@
 package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -24,6 +25,7 @@ public class SaxHandler extends DefaultHandler {
       this.state.startElement(uri, localName, qName, attributes);
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
+      context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(" ");
       String2.log(e.getMessage());
       this.state.popState();
     }
@@ -35,6 +37,7 @@ public class SaxHandler extends DefaultHandler {
       this.state.characters(ch, start, length);
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
+      context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(" ");
       String2.log(e.getMessage());
       this.state.popState();
     }
@@ -46,6 +49,7 @@ public class SaxHandler extends DefaultHandler {
       this.state.endElement(uri, localName, qName);
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
+      context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(", ");
       String2.log(e.getMessage());
       this.state.popState();
     }

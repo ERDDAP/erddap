@@ -11,6 +11,7 @@ public class SaxParsingContext {
   private HashSet<String> orphanIDSet;
   private HashSet<String> datasetIDSet;
   private StringArray duplicateDatasetIDs;
+  private StringBuilder datasetsThatFailedToLoadSB;
   private StringBuilder warningsFromLoadDatasets;
   private HashMap tUserHashMap;
   private boolean majorLoad;
@@ -115,5 +116,13 @@ public class SaxParsingContext {
 
   public void setReallyVerbose(boolean reallyVerbose) {
     this.reallyVerbose = reallyVerbose;
+  }
+
+  public StringBuilder getDatasetsThatFailedToLoadSB() {
+    return datasetsThatFailedToLoadSB;
+  }
+
+  public void setDatasetsThatFailedToLoadSB(StringBuilder datasetsThatFailedToLoadSB) {
+    this.datasetsThatFailedToLoadSB = datasetsThatFailedToLoadSB;
   }
 }

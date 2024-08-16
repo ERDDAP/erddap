@@ -209,6 +209,7 @@ public class LoadDatasets extends Thread {
             orphanIDSet,
             datasetIDSet,
             duplicateDatasetIDs,
+            datasetsThatFailedToLoadSB,
             warningsFromLoadDatasets,
             tUserHashMap);
       } else {
@@ -438,6 +439,7 @@ public class LoadDatasets extends Thread {
       HashSet<String> orphanIDSet,
       HashSet<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
+      StringBuilder datasetsThatFailedToLoadSB,
       StringBuilder warningsFromLoadDatasets,
       HashMap tUserHashMap)
       throws ParserConfigurationException, SAXException, IOException {
@@ -449,6 +451,7 @@ public class LoadDatasets extends Thread {
     context.setOrphanIDSet(orphanIDSet);
     context.setDatasetIDSet(datasetIDSet);
     context.setDuplicateDatasetIDs(duplicateDatasetIDs);
+    context.setDatasetsThatFailedToLoadSB(datasetsThatFailedToLoadSB);
     context.setWarningsFromLoadDatasets(warningsFromLoadDatasets);
     context.settUserHashMap(tUserHashMap);
     context.setMajorLoad(majorLoad);
