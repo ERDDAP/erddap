@@ -36,6 +36,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -523,23 +524,32 @@ public abstract class EDD {
    */
   public static EDD oneFromXml(Erddap erddap, String xml) throws Throwable {
     String2.log("\nEDD.oneFromXml...");
-    SimpleXMLReader xmlReader =
-        new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(xml)), "erddapDatasets");
-    try {
-      while (true) {
-        xmlReader.nextTag();
-        String tags = xmlReader.allTags();
-        if (tags.equals("</erddapDatasets>")) {
-          throw new IllegalArgumentException("No <dataset> tag in xml.");
-        } else if (tags.equals("<erddapDatasets><dataset>")) {
-          EDD edd = fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-          return edd;
-        } else {
-          xmlReader.unexpectedTagException();
+    if (EDStatic.useSaxParser) {
+      EDD edd =
+          SaxHandler.parseOneDataset(
+              new ByteArrayInputStream(String2.toByteArray(xml)),
+              ".*" /* dataset id, but this xml is supposed to have only one dataset */,
+              null);
+      return edd;
+    } else {
+      SimpleXMLReader xmlReader =
+          new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(xml)), "erddapDatasets");
+      try {
+        while (true) {
+          xmlReader.nextTag();
+          String tags = xmlReader.allTags();
+          if (tags.equals("</erddapDatasets>")) {
+            throw new IllegalArgumentException("No <dataset> tag in xml.");
+          } else if (tags.equals("<erddapDatasets><dataset>")) {
+            EDD edd = fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+            return edd;
+          } else {
+            xmlReader.unexpectedTagException();
+          }
         }
+      } finally {
+        xmlReader.close();
       }
-    } finally {
-      xmlReader.close();
     }
   }
 
@@ -552,6 +562,7 @@ public abstract class EDD {
   public static EDD oneFromXmlFragment(Erddap erddap, String xmlFragment) throws Throwable {
     String xml =
         "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
+            + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
             + "<erddapDatasets>\n"
             + xmlFragment
             + "</erddapDatasets>\n";
@@ -570,125 +581,139 @@ public abstract class EDD {
   public static EDD oneFromDatasetsXml(Erddap erddap, String tDatasetID) throws Throwable {
     String2.log("\nEDD.oneFromDatasetsXml(" + tDatasetID + ")...");
 
-    SimpleXMLReader xmlReader =
-        new SimpleXMLReader(
-            File2.getBufferedInputStream(
-                EDStatic.contentDirectory
-                    + // not File2.getDecompressedBufferedInputStream(). Read file as is.
-                    "datasets"
-                    + (EDStatic.developmentMode ? "2" : "")
-                    + ".xml"),
-            "erddapDatasets");
-    try {
-      while (true) {
-        xmlReader.nextTag();
-        String tags = xmlReader.allTags();
-        if (tags.equals("</erddapDatasets>")) {
-          throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
-        } else if (tags.equals("<erddapDatasets><dataset>")) {
-          if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
-            EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            return edd;
-          } else {
-            // skip to </dataset> tag
-            while (!tags.equals("<erddapDatasets></dataset>")) {
-              xmlReader.nextTag();
-              tags = xmlReader.allTags();
+    if (EDStatic.useSaxParser) {
+      EDD edd =
+          SaxHandler.parseOneDataset(
+              File2.getBufferedInputStream(
+                  EDStatic.contentDirectory
+                      + // not File2.getDecompressedBufferedInputStream(). Read file as is.
+                      "datasets"
+                      + (EDStatic.developmentMode ? "2" : "")
+                      + ".xml"),
+              tDatasetID,
+              null);
+      return edd;
+    } else {
+      SimpleXMLReader xmlReader =
+          new SimpleXMLReader(
+              File2.getBufferedInputStream(
+                  EDStatic.contentDirectory
+                      + // not File2.getDecompressedBufferedInputStream(). Read file as is.
+                      "datasets"
+                      + (EDStatic.developmentMode ? "2" : "")
+                      + ".xml"),
+              "erddapDatasets");
+      try {
+        while (true) {
+          xmlReader.nextTag();
+          String tags = xmlReader.allTags();
+          if (tags.equals("</erddapDatasets>")) {
+            throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
+          } else if (tags.equals("<erddapDatasets><dataset>")) {
+            if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
+              EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              return edd;
+            } else {
+              // skip to </dataset> tag
+              while (!tags.equals("<erddapDatasets></dataset>")) {
+                xmlReader.nextTag();
+                tags = xmlReader.allTags();
+              }
             }
+
+          } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
+            String tFrom = xmlReader.attributeValue("from");
+            String tTo = xmlReader.attributeValue("to");
+            int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
+            if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
+              EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
+          } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
+
+          } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
+          } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
+          } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
+          } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
+          } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
+          } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
+          } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
+          } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
+          } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
+          } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
+          } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
+          } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
+          } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
+          } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
+          } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
+          } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
+          } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
+          } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
+          } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
+          } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
+          } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
+          } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
+          } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
+          } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
+          } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
+          } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
+          } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
+          } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
+          } else if (tags.equals("<erddapDatasets><logLevel>")) {
+          } else if (tags.equals("<erddapDatasets></logLevel>")) {
+          } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
+          } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
+          } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
+          } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
+          } else if (tags.equals("<erddapDatasets><palettes>")) {
+          } else if (tags.equals("<erddapDatasets></palettes>")) {
+          } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
+          } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
+          } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
+          } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
+          } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
+          } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
+          } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
+          } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
+          } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
+          } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
+          } else if (tags.equals("<erddapDatasets><standardLicense>")) {
+          } else if (tags.equals("<erddapDatasets></standardLicense>")) {
+          } else if (tags.equals("<erddapDatasets><standardContact>")) {
+          } else if (tags.equals("<erddapDatasets></standardContact>")) {
+          } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
+          } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
+          } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
+          } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
+          } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
+          } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
+          } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
+          } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
+          } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
+          } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
+          } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
+          } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
+          } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
+          } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
+          } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
+          } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
+          } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
+          } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
+          } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
+          } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
+          } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
+          } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
+          } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
+          } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
+          } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
+          } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
+          } else if (tags.equals("<erddapDatasets><user>")) {
+          } else if (tags.equals("<erddapDatasets></user>")) {
+          } else {
+            xmlReader.unexpectedTagException();
           }
-
-        } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
-          String tFrom = xmlReader.attributeValue("from");
-          String tTo = xmlReader.attributeValue("to");
-          int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
-          if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
-            EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
-        } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
-
-        } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
-        } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
-        } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
-        } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
-        } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
-        } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
-        } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
-        } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
-        } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
-        } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
-        } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
-        } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
-        } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
-        } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
-        } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
-        } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
-        } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
-        } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
-        } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
-        } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
-        } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
-        } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
-        } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
-        } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
-        } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
-        } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
-        } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
-        } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
-        } else if (tags.equals("<erddapDatasets><logLevel>")) {
-        } else if (tags.equals("<erddapDatasets></logLevel>")) {
-        } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
-        } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
-        } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
-        } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
-        } else if (tags.equals("<erddapDatasets><palettes>")) {
-        } else if (tags.equals("<erddapDatasets></palettes>")) {
-        } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
-        } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
-        } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
-        } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
-        } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
-        } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
-        } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
-        } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
-        } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
-        } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
-        } else if (tags.equals("<erddapDatasets><standardLicense>")) {
-        } else if (tags.equals("<erddapDatasets></standardLicense>")) {
-        } else if (tags.equals("<erddapDatasets><standardContact>")) {
-        } else if (tags.equals("<erddapDatasets></standardContact>")) {
-        } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
-        } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
-        } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
-        } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
-        } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
-        } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
-        } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
-        } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
-        } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
-        } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
-        } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
-        } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
-        } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
-        } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
-        } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
-        } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
-        } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
-        } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
-        } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
-        } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
-        } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
-        } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
-        } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
-        } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
-        } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
-        } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
-        } else if (tags.equals("<erddapDatasets><user>")) {
-        } else if (tags.equals("<erddapDatasets></user>")) {
-        } else {
-          xmlReader.unexpectedTagException();
         }
+      } finally {
+        xmlReader.close();
       }
-    } finally {
-      xmlReader.close();
     }
   }
 

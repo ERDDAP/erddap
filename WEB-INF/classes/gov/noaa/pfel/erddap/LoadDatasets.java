@@ -18,13 +18,10 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
-import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.awt.Color;
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -36,10 +33,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.SAXException;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP. !!!A lot of possible thread
@@ -203,15 +196,21 @@ public class LoadDatasets extends Thread {
       boolean useSaxParser = EDStatic.useSaxParser;
       int[] nTryAndDatasets = new int[2];
       if (useSaxParser) {
-        parseUsingSAX(
+        SaxHandler.parse(
+            inputStream,
             nTryAndDatasets,
             changedDatasetIDs,
             orphanIDSet,
             datasetIDSet,
             duplicateDatasetIDs,
             datasetsThatFailedToLoadSB,
-            warningsFromLoadDatasets,
-            tUserHashMap);
+            datasetsThatFailedToLoadSB,
+            tUserHashMap,
+            majorLoad,
+            erddap,
+            lastLuceneUpdate,
+            datasetsRegex,
+            reallyVerbose);
       } else {
         parseUsingSimpleXmlReader(
             nTryAndDatasets,
@@ -428,49 +427,10 @@ public class LoadDatasets extends Thread {
 
     } catch (Exception e) {
       String2.log(e.toString());
+      e.printStackTrace();
     } finally {
       EDStatic.suggestAddFillValueCSV.setLength(0);
     }
-  }
-
-  private void parseUsingSAX(
-      int[] nTryAndDatasets,
-      StringArray changedDatasetIDs,
-      HashSet<String> orphanIDSet,
-      HashSet<String> datasetIDSet,
-      StringArray duplicateDatasetIDs,
-      StringBuilder datasetsThatFailedToLoadSB,
-      StringBuilder warningsFromLoadDatasets,
-      HashMap tUserHashMap)
-      throws ParserConfigurationException, SAXException, IOException {
-
-    var context = new SaxParsingContext();
-
-    context.setNTryAndDatasets(nTryAndDatasets);
-    context.setChangedDatasetIDs(changedDatasetIDs);
-    context.setOrphanIDSet(orphanIDSet);
-    context.setDatasetIDSet(datasetIDSet);
-    context.setDuplicateDatasetIDs(duplicateDatasetIDs);
-    context.setDatasetsThatFailedToLoadSB(datasetsThatFailedToLoadSB);
-    context.setWarningsFromLoadDatasets(warningsFromLoadDatasets);
-    context.settUserHashMap(tUserHashMap);
-    context.setMajorLoad(majorLoad);
-    context.setErddap(erddap);
-    context.setLastLuceneUpdate(lastLuceneUpdate);
-    context.setDatasetsRegex(datasetsRegex);
-    context.setReallyVerbose(reallyVerbose);
-
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    factory.setXIncludeAware(true);
-    factory.setNamespaceAware(true);
-
-    SAXParser saxParser = factory.newSAXParser();
-    SaxHandler saxHandler = new SaxHandler(context);
-
-    TopLevelHandler topLevelHandler = new TopLevelHandler(saxHandler, context);
-
-    saxHandler.setState(topLevelHandler);
-    saxParser.parse(inputStream, saxHandler);
   }
 
   private void parseUsingSimpleXmlReader(
