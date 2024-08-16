@@ -8,16 +8,14 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromDapSequenceHandler extends State {
+public class EDDTableFromDapSequenceHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
 
   public EDDTableFromDapSequenceHandler(
       SaxHandler saxHandler, String datasetID, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
   }
 
   private com.cohort.array.Attributes tGlobalAttributes = new com.cohort.array.Attributes();

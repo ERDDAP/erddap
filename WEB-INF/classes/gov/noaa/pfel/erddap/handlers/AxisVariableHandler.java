@@ -7,18 +7,16 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class AxisVariableHandler extends State {
+public class AxisVariableHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private ArrayList tAxisVariables;
   private String tSourceName = null, tDestinationName = null;
   private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   private PrimitiveArray tValuesPA = null;
-  private State completeState;
 
   public AxisVariableHandler(SaxHandler saxHandler, ArrayList tAxisVariables, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.tAxisVariables = tAxisVariables;
-    this.completeState = completeState;
   }
 
   @Override
@@ -81,5 +79,10 @@ public class AxisVariableHandler extends State {
       default -> String2.log("Unexpected end tag: " + localName);
     }
     content.setLength(0);
+  }
+
+  @Override
+  public void popState() {
+    saxHandler.setState(this.completeState);
   }
 }

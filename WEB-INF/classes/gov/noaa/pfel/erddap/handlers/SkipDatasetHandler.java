@@ -3,12 +3,10 @@ package gov.noaa.pfel.erddap.handlers;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class SkipDatasetHandler extends State {
-  private State completeState;
+public class SkipDatasetHandler extends StateWithParent {
 
   public SkipDatasetHandler(SaxHandler saxHandler, State completeState) {
-    super(saxHandler);
-    this.completeState = completeState;
+    super(saxHandler, completeState);
   }
 
   @Override

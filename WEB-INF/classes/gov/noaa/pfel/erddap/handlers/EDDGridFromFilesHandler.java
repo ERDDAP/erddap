@@ -13,17 +13,15 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridFromFilesHandler extends State {
+public class EDDGridFromFilesHandler extends StateWithParent {
   private String datasetID;
-  private State completeState;
   private StringBuilder content = new StringBuilder();
   private String datasetType;
 
   public EDDGridFromFilesHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
     this.datasetType = datasetType;
   }
 

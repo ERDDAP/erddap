@@ -9,17 +9,15 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridLon0360Handler extends State {
+public class EDDGridLon0360Handler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private SaxParsingContext context;
-  private State completeState;
   private String datasetID;
 
   public EDDGridLon0360Handler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
     this.context = context;
   }
 

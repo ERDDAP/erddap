@@ -8,17 +8,15 @@ import com.cohort.util.String2;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class AddAttributesHandler extends State {
+public class AddAttributesHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private com.cohort.array.Attributes tAttributes;
   private String tName = null, tType = null;
-  private State completeState;
 
   public AddAttributesHandler(
       SaxHandler saxHandler, com.cohort.array.Attributes tAttributes, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.tAttributes = tAttributes;
-    this.completeState = completeState;
   }
 
   @Override

@@ -48,7 +48,7 @@ public class DatasetHandlerTests {
     factory.setNamespaceAware(true);
     factory.setXIncludeAware(true);
     saxParser = factory.newSAXParser();
-    saxHandler = new SaxHandler();
+    saxHandler = new SaxHandler(context);
     topLevelHandler = new TopLevelHandler(saxHandler, context);
     saxHandler.setState(topLevelHandler);
 
