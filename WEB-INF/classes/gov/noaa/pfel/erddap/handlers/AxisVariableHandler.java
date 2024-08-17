@@ -80,9 +80,4 @@ public class AxisVariableHandler extends StateWithParent {
     }
     content.setLength(0);
   }
-
-  @Override
-  public void popState() {
-    saxHandler.setState(this.completeState);
-  }
 }

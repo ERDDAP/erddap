@@ -120,9 +120,4 @@ public class EDDGridCopyHandler extends StateWithParent {
   public void handleDataset(EDD dataset) {
     tSourceEdd = (EDDGrid) dataset;
   }
-
-  @Override
-  public void popState() {
-    saxHandler.setState(this.completeState);
-  }
 }

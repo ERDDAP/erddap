@@ -137,6 +137,11 @@ public class HandlerFactory {
     long lastLuceneUpdate = context.getLastLuceneUpdate();
     StringArray changedDatasetIDs = context.getChangedDatasetIDs();
 
+    // erddap == null implies we are in a load one dataset situation, only check the regex.
+    if (erddap == null) {
+      return !datasetID.matches(datasetsRegex);
+    }
+
     if (majorLoad) {
       orphanIDSet.remove(datasetID);
     }
