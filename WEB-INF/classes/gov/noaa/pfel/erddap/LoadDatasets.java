@@ -204,7 +204,7 @@ public class LoadDatasets extends Thread {
             datasetIDSet,
             duplicateDatasetIDs,
             datasetsThatFailedToLoadSB,
-            datasetsThatFailedToLoadSB,
+            warningsFromLoadDatasets,
             tUserHashMap,
             majorLoad,
             erddap,
