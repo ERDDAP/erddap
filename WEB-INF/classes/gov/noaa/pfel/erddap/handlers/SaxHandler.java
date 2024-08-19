@@ -36,6 +36,12 @@ public class SaxHandler extends DefaultHandler {
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
       context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(" ");
+      context
+          .getFailedDatasetsWithErrorsSB()
+          .append(EDStatic.cldDatasetID)
+          .append(": ")
+          .append(e.getMessage())
+          .append("\n");
       String2.log(e.getMessage());
       this.state.popState();
     }
@@ -48,6 +54,12 @@ public class SaxHandler extends DefaultHandler {
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
       context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(" ");
+      context
+          .getFailedDatasetsWithErrorsSB()
+          .append(EDStatic.cldDatasetID)
+          .append(": ")
+          .append(e.getMessage())
+          .append("\n");
       String2.log(e.getMessage());
       this.state.popState();
     }
@@ -60,6 +72,12 @@ public class SaxHandler extends DefaultHandler {
     } catch (Throwable e) {
       context.getWarningsFromLoadDatasets().append(e.getMessage());
       context.getDatasetsThatFailedToLoadSB().append(EDStatic.cldDatasetID).append(", ");
+      context
+          .getFailedDatasetsWithErrorsSB()
+          .append(EDStatic.cldDatasetID)
+          .append(": ")
+          .append(e.getMessage())
+          .append("\n");
       String2.log(e.getMessage());
       this.state.popState();
     }
@@ -106,6 +124,7 @@ public class SaxHandler extends DefaultHandler {
       HashSet<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
+      StringBuilder failedDatasetsWithErrors,
       StringBuilder warningsFromLoadDatasets,
       HashMap tUserHashMap,
       boolean majorLoad,
@@ -123,6 +142,7 @@ public class SaxHandler extends DefaultHandler {
     context.setDatasetIDSet(datasetIDSet);
     context.setDuplicateDatasetIDs(duplicateDatasetIDs);
     context.setDatasetsThatFailedToLoadSB(datasetsThatFailedToLoadSB);
+    context.setFailedDatasetsWithErrorsSB(failedDatasetsWithErrors);
     context.setWarningsFromLoadDatasets(warningsFromLoadDatasets);
     context.settUserHashMap(tUserHashMap);
     context.setMajorLoad(majorLoad);

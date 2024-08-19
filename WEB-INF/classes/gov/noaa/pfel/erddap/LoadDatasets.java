@@ -167,6 +167,7 @@ public class LoadDatasets extends Thread {
           new HashMap(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
+      StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();
       HashSet<String> datasetIDSet =
           new HashSet(); // to detect duplicates, just local use, no need for thread-safe
       StringArray duplicateDatasetIDs = new StringArray(); // list of duplicates
@@ -204,6 +205,7 @@ public class LoadDatasets extends Thread {
             datasetIDSet,
             duplicateDatasetIDs,
             datasetsThatFailedToLoadSB,
+            failedDatasetsWithErrorsSB,
             warningsFromLoadDatasets,
             tUserHashMap,
             majorLoad,
@@ -219,6 +221,7 @@ public class LoadDatasets extends Thread {
             datasetIDSet,
             duplicateDatasetIDs,
             datasetsThatFailedToLoadSB,
+            failedDatasetsWithErrorsSB,
             tUserHashMap);
       }
       int nTry = nTryAndDatasets[0];
@@ -248,6 +251,8 @@ public class LoadDatasets extends Thread {
                   + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
                   + "\n"
               : "";
+      String failedDatasetsWithErrors =
+          "Reasons for failing to load datasets: \n" + failedDatasetsWithErrorsSB;
       if (majorLoad && orphanIDSet.size() > 0) {
         // unload them
         emailOrphanDatasetsRemoved(orphanIDSet, changedDatasetIDs, errorsDuringMajorReload);
@@ -356,6 +361,7 @@ public class LoadDatasets extends Thread {
         if (EDStatic.initialLoadDatasets()) handleAfva();
 
         EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; // swap into place
+        EDStatic.failedDatasetsWithErrors = failedDatasetsWithErrors;
         EDStatic.errorsDuringMajorReload = errorsDuringMajorReload; // swap into place
         EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
             0, // header in EDStatic
@@ -440,6 +446,7 @@ public class LoadDatasets extends Thread {
       HashSet<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
+      StringBuilder failedDatasetsWithErrorsSB,
       HashMap tUserHashMap) {
     SimpleXMLReader xmlReader = null;
     int nTry = 0, nDatasets = 0;
@@ -697,6 +704,7 @@ public class LoadDatasets extends Thread {
               String2.log(tError);
               warningsFromLoadDatasets.append(tError + "\n\n");
               datasetsThatFailedToLoadSB.append(tId + ", ");
+              failedDatasetsWithErrorsSB.append(tId).append(": ").append(tError).append("\n");
 
               // stop???
               if (!xmlReader.isOpen()) { // error was really serious

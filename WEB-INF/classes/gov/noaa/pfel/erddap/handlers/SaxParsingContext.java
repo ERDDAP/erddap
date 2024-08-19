@@ -19,6 +19,7 @@ public class SaxParsingContext {
   private long lastLuceneUpdate;
   private String datasetsRegex;
   private boolean reallyVerbose;
+  private StringBuilder failedDatasetsWithErrorsSB;
 
   public SaxParsingContext() {}
 
@@ -124,5 +125,13 @@ public class SaxParsingContext {
 
   public void setDatasetsThatFailedToLoadSB(StringBuilder datasetsThatFailedToLoadSB) {
     this.datasetsThatFailedToLoadSB = datasetsThatFailedToLoadSB;
+  }
+
+  public StringBuilder getFailedDatasetsWithErrorsSB() {
+    return failedDatasetsWithErrorsSB;
+  }
+
+  public void setFailedDatasetsWithErrorsSB(StringBuilder failedDatasetsWithErrors) {
+    this.failedDatasetsWithErrorsSB = failedDatasetsWithErrors;
   }
 }
