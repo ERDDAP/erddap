@@ -263,6 +263,7 @@ public class EDStatic {
   // doesn't need to be
 
   public static String datasetsThatFailedToLoad = "";
+  public static String failedDatasetsWithErrors = "";
   public static String errorsDuringMajorReload = "";
   public static StringBuffer majorLoadDatasetsTimeSeriesSB =
       new StringBuffer(""); // thread-safe (1 thread writes but others may read)
@@ -5134,6 +5135,7 @@ public class EDStatic {
     sb.append("nTableDatasets = " + tnTableDatasets + "\n");
     sb.append("nTotalDatasets = " + (tnGridDatasets + tnTableDatasets) + "\n");
     sb.append(datasetsThatFailedToLoad);
+    sb.append(failedDatasetsWithErrors);
     sb.append(errorsDuringMajorReload);
     sb.append(
         "Unique users (since startup)                            n = "
