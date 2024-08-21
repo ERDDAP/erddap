@@ -52,7 +52,8 @@ public class EDDGridLon0360Handler extends StateWithParent {
         String active = attributes.getValue("active");
         String childDatasetID = attributes.getValue("datasetID");
         State state =
-            HandlerFactory.getHandlerFor(tType, childDatasetID, active, this, saxHandler, context);
+            HandlerFactory.getHandlerFor(
+                tType, childDatasetID, active, this, saxHandler, context, false);
         saxHandler.setState(state);
       } else {
         throw new RuntimeException(

@@ -976,6 +976,7 @@ class EDDTableFromNcFilesTests {
             + "    String cf_role \"timeseries_id\";\n"
             + "    String ioos_category \"Identifier\";\n"
             + "    String long_name \"Station Identifier\";\n"
+            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  longitude {\n"
             + "    String _CoordinateAxisType \"Lon\";\n"
@@ -1027,10 +1028,12 @@ class EDDTableFromNcFilesTests {
             + "  common_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Common Name\";\n"
+            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  species_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Species Name\";\n"
+            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  size {\n"
             + "    Int16 _FillValue 32767;\n"
@@ -1086,6 +1089,7 @@ class EDDTableFromNcFilesTests {
     // today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     expected =
         "/tabledap/erdCinpKfmSFNH.das\";\n"
+            + (EDStatic.useSaxParser ? "    String id \"KFMSizeFrequencyNaturalHabitat\";\n" : "")
             + "    String infoUrl \"https://www.nps.gov/chis/naturescience/index.htm\";\n"
             + "    String institution \"CINP\";\n"
             + "    String keywords \"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n"
@@ -1148,7 +1152,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
@@ -1179,7 +1185,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
@@ -1204,7 +1212,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n"
@@ -1231,7 +1241,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
@@ -1258,7 +1270,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1278,7 +1292,9 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "longitude,latitude,depth,time,id,species_name,size\n"
-            + "degrees_east,degrees_north,m,UTC,,,mm\n"
+            + (EDStatic.useSaxParser
+                ? "degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
+                : "degrees_east,degrees_north,m,UTC,,,mm\n")
             + "-120.35,34.05,5.0,2005-07-01T00:00:00Z,San Miguel (Hare Rock),Haliotis rufescens,13\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }

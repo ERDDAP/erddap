@@ -118,7 +118,8 @@ public class TopLevelHandler extends State {
         String active = attributes.getValue("active");
 
         State state =
-            HandlerFactory.getHandlerFor(datasetType, datasetID, active, this, saxHandler, context);
+            HandlerFactory.getHandlerFor(
+                datasetType, datasetID, active, this, saxHandler, context, true);
         saxHandler.setState(state);
       }
     }

@@ -23967,8 +23967,6 @@ public class EDDTestDataset {
         + //
         "    <fileTableInMemory>true</fileTableInMemory>\n"
         + //
-        "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
-        + //
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles\">\n"
         + //
         "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
@@ -43577,25 +43575,17 @@ public class EDDTestDataset {
         + //
         "            <att name=\"coordinates\">null</att>\n"
         + //
-        "            <att name=\"Intercept\">null</att>\\n"
-        + //
-        "\" \n"
+        "            <att name=\"Intercept\">null</att>\n"
         + //
         "            <att name=\"ioos_category\">Temperature</att>\n"
         + //
         "            <att name=\"long_name\">Sea Surface Temperature</att>\n"
         + //
-        "            <att name=\"Scaling\">null</att>\\n"
+        "            <att name=\"Scaling\">null</att>\n"
         + //
-        "\" \n"
+        "            <att name=\"Scaling_Equation\">null</att>\n"
         + //
-        "            <att name=\"Scaling_Equation\">null</att>\\n"
-        + //
-        "\" \n"
-        + //
-        "            <att name=\"Slope\">null</att>\\n"
-        + //
-        "\" \n"
+        "            <att name=\"Slope\">null</att>\n"
         + //
         "            <att name=\"standard_name\">sea_surface_temperature</att>\n"
         + //
@@ -50912,8 +50902,6 @@ public class EDDTestDataset {
         + //
         "   <fileTableInMemory>true</fileTableInMemory>\n"
         + //
-        "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
-        + //
         "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testCopy\"> <!-- identical to erdGlobecBottle -->\n"
         + //
         "    <fileDir>"
@@ -51669,7 +51657,6 @@ public class EDDTestDataset {
         "    </dataVariable>\n"
         + //
         "</dataset>\n"
-        + "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
         + //
         "</dataset>\n";
   }
