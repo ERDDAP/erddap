@@ -11310,8 +11310,10 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11338,7 +11340,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11491,8 +11495,10 @@ class JettyTests {
     tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11530,7 +11536,9 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11734,9 +11742,18 @@ class JettyTests {
             + "    Float64 actual_range 5.01, 5375.0;\n"
             + // 2014-01-17 was 5.0, 5374.0
             "    String axis \"Z\";\n"
+            + (EDStatic.useSaxParser
+                ? "    String grads_dim \"z\";\n" + "    String grads_mapping \"levels\";\n"
+                : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
+            + (EDStatic.useSaxParser
+                ? "    Float64 maximum 5375.0;\n"
+                    + "    Float64 minimum 5.01;\n"
+                    + "    String name \"Depth\";\n"
+                : "")
             + "    String positive \"down\";\n"
+            + (EDStatic.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";
@@ -12380,11 +12397,23 @@ class JettyTests {
               + //
               "      :axis = \"T\";\n"
               + //
-              "      :ioos_category = \"Time\";\n"
+              (EDStatic.useSaxParser
+                  ? "      :grads_dim = \"t\";\n"
+                      + //
+                      "      :grads_mapping = \"linear\";\n"
+                      + "      :grads_min = \"00z15jan1871\";\n"
+                      + "      :grads_size = \"1680\";\n"
+                      + "      :grads_step = \"1mo\";\n"
+                  : "")
+              + "      :ioos_category = \"Time\";\n"
               + //
               "      :long_name = \"Centered Time\";\n"
-              + //
-              "      :standard_name = \"time\";\n"
+              + (EDStatic.useSaxParser
+                  ? "      :maximum = \"00z15dec2010\";\n"
+                      + "      :minimum = \"00z15jan1871\";\n"
+                      + "      :resolution = 30.43657f; // float\n"
+                  : "")
+              + "      :standard_name = \"time\";\n"
               + //
               "      :time_origin = \"01-JAN-1970 00:00:00\";\n"
               + //
@@ -12402,13 +12431,19 @@ class JettyTests {
               + //
               "      :axis = \"Z\";\n"
               + //
-              "      :ioos_category = \"Location\";\n"
-              + //
-              "      :long_name = \"Depth\";\n"
-              + //
-              "      :positive = \"down\";\n"
-              + //
-              "      :standard_name = \"depth\";\n"
+              (EDStatic.useSaxParser
+                  ? "      :grads_dim = \"z\";\n" + "      :grads_mapping = \"levels\";\n"
+                  : "")
+              + "      :ioos_category = \"Location\";\n"
+              + "      :long_name = \"Depth\";\n"
+              + (EDStatic.useSaxParser
+                  ? "      :maximum = 5375.0; // double\n"
+                      + "      :minimum = 5.01; // double\n"
+                      + "      :name = \"Depth\";\n"
+                  : "")
+              + "      :positive = \"down\";\n"
+              + (EDStatic.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
+              + "      :standard_name = \"depth\";\n"
               + //
               "      :units = \"m\";\n"
               + //
@@ -12422,11 +12457,19 @@ class JettyTests {
               + //
               "      :axis = \"Y\";\n"
               + //
-              "      :ioos_category = \"Location\";\n"
-              + //
-              "      :long_name = \"Latitude\";\n"
-              + //
-              "      :standard_name = \"latitude\";\n"
+              (EDStatic.useSaxParser
+                  ? "      :grads_dim = \"y\";\n"
+                      + "      :grads_mapping = \"linear\";\n"
+                      + "      :grads_size = \"330\";\n"
+                  : "")
+              + "      :ioos_category = \"Location\";\n"
+              + "      :long_name = \"Latitude\";\n"
+              + (EDStatic.useSaxParser
+                  ? "      :maximum = 89.25; // double\n"
+                      + "      :minimum = -75.25; // double\n"
+                      + "      :resolution = 0.5f; // float\n"
+                  : "")
+              + "      :standard_name = \"latitude\";\n"
               + //
               "      :units = \"degrees_north\";\n"
               + //
@@ -12440,9 +12483,18 @@ class JettyTests {
               + //
               "      :axis = \"X\";\n"
               + //
-              "      :ioos_category = \"Location\";\n"
-              + //
-              "      :long_name = \"Longitude\";\n"
+              (EDStatic.useSaxParser
+                  ? "      :grads_dim = \"x\";\n"
+                      + "      :grads_mapping = \"linear\";\n"
+                      + "      :grads_size = \"720\";\n"
+                  : "")
+              + "      :ioos_category = \"Location\";\n"
+              + "      :long_name = \"Longitude\";\n"
+              + (EDStatic.useSaxParser
+                  ? "      :maximum = 359.75; // double\n"
+                      + "      :minimum = 0.25; // double\n"
+                      + "      :resolution = 0.5f; // float\n"
+                  : "")
               + //
               "      :standard_name = \"longitude\";\n"
               + //
@@ -15569,18 +15621,20 @@ class JettyTests {
     String name, tName, userDapQuery, results, expected, error;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
-    EDDGrid eddGrid;
+    EDDGrid eddGrid = null;
 
     // test notApplicable (dataset maxLon already <180)
     try {
       eddGrid = (EDDGrid) EDDTestDataset.getnotApplicable_LonPM180();
-      throw new RuntimeException("shouldn't get here");
     } catch (Throwable t) {
       String msg = MustBe.throwableToString(t);
       if (msg.indexOf(
               "Error in EDDGridLonPM180(notApplicable_LonPM180) constructor:\n"
                   + "The child longitude axis has no values >180 (max=179.9792)!")
           < 0) throw t;
+    }
+    if (EDStatic.useSaxParser) {
+      Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
     }
 
     // test120 to 320

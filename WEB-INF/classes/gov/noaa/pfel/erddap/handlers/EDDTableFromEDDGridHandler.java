@@ -54,7 +54,7 @@ public class EDDTableFromEDDGridHandler extends StateWithParent {
           String childDatasetID = attributes.getValue("datasetID");
           State state =
               HandlerFactory.getHandlerFor(
-                  tType, childDatasetID, active, this, saxHandler, context);
+                  tType, childDatasetID, active, this, saxHandler, context, false);
           saxHandler.setState(state);
         } else {
           throw new RuntimeException(

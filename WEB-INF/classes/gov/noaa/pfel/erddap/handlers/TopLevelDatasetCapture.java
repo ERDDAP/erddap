@@ -33,7 +33,8 @@ public class TopLevelDatasetCapture extends State {
         String active = attributes.getValue("active");
 
         State state =
-            HandlerFactory.getHandlerFor(datasetType, datasetID, active, this, saxHandler, context);
+            HandlerFactory.getHandlerFor(
+                datasetType, datasetID, active, this, saxHandler, context, true);
         saxHandler.setState(state);
       }
     }
@@ -47,7 +48,10 @@ public class TopLevelDatasetCapture extends State {
 
   @Override
   public void handleDataset(EDD dataset) {
-    this.dataset = dataset;
+    // Only capture the first dataset
+    if (this.dataset == null) {
+      this.dataset = dataset;
+    }
   }
 
   public EDD getDataset() {

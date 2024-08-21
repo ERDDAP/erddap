@@ -3027,7 +3027,7 @@ class EDDGridFromDapTests {
         "Unexpected results from GenerateDatasetsXml.doIt.");
 
     // ensure it is ready-to-use by making a dataset from it
-    String tDatasetID = "hawaii_soest_82a3_7247_c8d7";
+    String tDatasetID = suggDatasetID;
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd =
         EDDGridFromDap.oneFromXmlFragment(
@@ -5561,13 +5561,22 @@ class EDDGridFromDapTests {
     expected =
         "depth {\n"
             + "    String _CoordinateAxisType \"Height\";\n"
-            + "    String _CoordinateZisPositive \"down\";\n"
-            + "    Float64 actual_range 5.01, 5375.0;\n"
-            + // 2014-01-17 was 5.0, 5374.0
+            + //
+            "    String _CoordinateZisPositive \"down\";\n"
+            + //
+            "    Float64 actual_range 5.01, 5375.0;\n"
+            + //
             "    String axis \"Z\";\n"
+            + //
+            (EDStatic.useSaxParser ? "    String grads_dim \"z\";\n" : "")
+            + (EDStatic.useSaxParser ? "    String grads_mapping \"levels\";\n" : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
+            + (EDStatic.useSaxParser ? "    Float64 maximum 5375.0;\n" : "")
+            + (EDStatic.useSaxParser ? "    Float64 minimum 5.01;\n" : "")
+            + (EDStatic.useSaxParser ? "    String name \"Depth\";\n" : "")
             + "    String positive \"down\";\n"
+            + (EDStatic.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";

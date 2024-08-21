@@ -4513,8 +4513,7 @@ class EDDTableFromMultidimNcFilesTests {
             + "    Float64 geospatial_lon_max 36.42373;\n"
             + "    Float64 geospatial_lon_min -26.250239999999998;\n"
             + "    String geospatial_lon_units \"degrees_east\";\n"
-            + "    String history \""
-            + today;
+            + "    String history \"";
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 

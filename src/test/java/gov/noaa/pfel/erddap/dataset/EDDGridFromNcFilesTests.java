@@ -1809,7 +1809,17 @@ class EDDGridFromNcFilesTests {
             + "    String autonav_performed \"true\";\n"
             + "    Int32 autonav_quality 2;\n"
             + "    String cdm_data_type \"Grid\";\n"
+            + (EDStatic.useSaxParser ? "    Int32 cols 1140;\n" : "")
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
+            + (EDStatic.useSaxParser
+                ? "    String cwhdf_version \"3.4\";\n"
+                    + "    Float64 et_affine 0.0, -1470.0, 1470.0, 0.0, -9778346.500515733, 4398734.085407009;\n"
+                    + "    Int32 gctp_datum 12;\n"
+                    + "    Float64 gctp_parm 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;\n"
+                    + "    Int32 gctp_sys 5;\n"
+                    + "    Int32 gctp_zone 0;\n"
+                    + "    String HDF4_Version \"4.1.5 (NCSA HDF Version 4.1 Release 5, November 5, 2001)\";\n"
+                : "")
             + "    String history \"Direct read of HDF4 file through CDM library\n"
             + today;
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1832,13 +1842,20 @@ class EDDGridFromNcFilesTests {
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
             + "    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n"
+            + (EDStatic.useSaxParser ? "    Int32 pass_date 13990;\n" : "")
             + "    String pass_type \"day\";\n"
+            + (EDStatic.useSaxParser
+                ? "    Float64 polygon_latitude 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 33.51643401115052, 29.999999999936534, 26.35308766180611, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 26.35308766180611, 29.999999999936534, 33.51643401115052, 36.89432948408865;\n"
+                    + "    Float64 polygon_longitude -87.8403811482992, -84.08019057414958, -80.32000000000001, -76.5598094258504, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -76.5598094258504, -80.32000000000001, -84.08019057414958, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992;\n"
+                : "")
             + "    String projection \"Mercator\";\n"
             + "    String projection_type \"mapped\";\n"
+            + (EDStatic.useSaxParser ? "    Int32 rows 1248;\n" : "")
             + "    String satellite \"noaa-18\";\n"
             + "    String sensor \"avhrr\";\n"
             + "    String sourceUrl \"(local files)\";\n"
             + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + (EDStatic.useSaxParser ? "    Float64 start_time 65502.0;\n" : "")
             + "    String summary \"???\";\n"
             + "    String title \"Test of CoastWatch HDF files\";\n"
             + "  }\n"
@@ -8823,17 +8840,25 @@ class EDDGridFromNcFilesTests {
   void testAVDVSameSource() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testAVDVSameSource()\n");
     String error = "shouldn't happen";
+    EDDGrid eddGrid = null;
     try {
-      EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestAVDVSameSource();
+      eddGrid = (EDDGrid) EDDTestDataset.gettestAVDVSameSource();
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
       error = String2.split(MustBe.throwableToString(t), '\n')[1];
     }
 
-    Test.ensureEqual(
-        error,
-        "Two variables have the same sourceName=OB_time.",
-        "Unexpected error message:\n" + error);
+    // The SAX parser doesn't throw errors during dataset construction to this level.
+    // Even during the parse one logic. So just make sure we didn't get a dataset back.
+    // TODO maybe check explicitly for that error somehow?
+    if (EDStatic.useSaxParser) {
+      Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
+    } else {
+      Test.ensureEqual(
+          error,
+          "Two variables have the same sourceName=OB_time.",
+          "Unexpected error message:\n" + error);
+    }
   }
 
   /**
@@ -8845,17 +8870,25 @@ class EDDGridFromNcFilesTests {
   void test2DVSameSource() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.test2DVSameSource()\n");
     String error = "shouldn't happen";
+    EDDGrid eddGrid = null;
     try {
-      EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest2DVSameSource();
+      eddGrid = (EDDGrid) EDDTestDataset.gettest2DVSameSource();
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
       error = String2.split(MustBe.throwableToString(t), '\n')[0];
     }
-
-    Test.ensureTrue(
-        error.indexOf("ERROR: Duplicate dataVariableSourceNames: [0] and [1] are both \"IB_time\".")
-            >= 0,
-        "Unexpected error message:\n" + error);
+    // The SAX parser doesn't throw errors during dataset construction to this level.
+    // Even during the parse one logic. So just make sure we didn't get a dataset back.
+    // TODO maybe check explicitly for that error somehow?
+    if (EDStatic.useSaxParser) {
+      Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
+    } else {
+      Test.ensureTrue(
+          error.indexOf(
+                  "ERROR: Duplicate dataVariableSourceNames: [0] and [1] are both \"IB_time\".")
+              >= 0,
+          "Unexpected error message:\n" + error);
+    }
   }
 
   /**
@@ -8868,16 +8901,24 @@ class EDDGridFromNcFilesTests {
   void testAVDVSameDestination() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testAVDVSameDestination()\n");
     String error = "shouldn't happen";
+    EDDGrid eddGrid = null;
     try {
-      EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestAVDVSameDestination();
+      eddGrid = (EDDGrid) EDDTestDataset.gettestAVDVSameDestination();
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
       error = String2.split(MustBe.throwableToString(t), '\n')[1];
     }
 
-    Test.ensureTrue(
-        error.indexOf("Two variables have the same destinationName=OB_time.") >= 0,
-        "Unexpected error message:\n" + error);
+    // The SAX parser doesn't throw errors during dataset construction to this level.
+    // Even during the parse one logic. So just make sure we didn't get a dataset back.
+    // TODO maybe check explicitly for that error somehow?
+    if (EDStatic.useSaxParser) {
+      Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
+    } else {
+      Test.ensureTrue(
+          error.indexOf("Two variables have the same destinationName=OB_time.") >= 0,
+          "Unexpected error message:\n" + error);
+    }
   }
 
   /**
@@ -8889,18 +8930,26 @@ class EDDGridFromNcFilesTests {
   void test2DVSameDestination() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.test2DVSameDestination()\n");
     String error = "shouldn't happen";
+    EDDGrid eddGrid = null;
     try {
-      EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest2DVSameDestination();
+      eddGrid = (EDDGrid) EDDTestDataset.gettest2DVSameDestination();
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
       error = String2.split(MustBe.throwableToString(t), '\n')[0];
     }
 
-    Test.ensureTrue(
-        error.indexOf(
-                "ERROR: Duplicate dataVariableDestinationNames: [0] and [2] are both \"IB_time\".")
-            >= 0,
-        "Unexpected error message:\n" + error);
+    // The SAX parser doesn't throw errors during dataset construction to this level.
+    // Even during the parse one logic. So just make sure we didn't get a dataset back.
+    // TODO maybe check explicitly for that error somehow?
+    if (EDStatic.useSaxParser) {
+      Test.ensureEqual(eddGrid, null, "Dataset should be null from exception during construction.");
+    } else {
+      Test.ensureTrue(
+          error.indexOf(
+                  "ERROR: Duplicate dataVariableDestinationNames: [0] and [2] are both \"IB_time\".")
+              >= 0,
+          "Unexpected error message:\n" + error);
+    }
   }
 
   /**

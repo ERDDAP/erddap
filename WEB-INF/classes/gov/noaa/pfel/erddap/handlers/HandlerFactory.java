@@ -21,8 +21,9 @@ public class HandlerFactory {
       String active,
       State completeState,
       SaxHandler saxHandler,
-      SaxParsingContext context) {
-    if (skipDataset(datasetID, active, context)) {
+      SaxParsingContext context,
+      boolean isTopLevelDataset) {
+    if (skipDataset(datasetID, active, context, isTopLevelDataset)) {
       return new SkipDatasetHandler(saxHandler, completeState);
     }
 
@@ -126,7 +127,8 @@ public class HandlerFactory {
     }
   }
 
-  public static boolean skipDataset(String datasetID, String active, SaxParsingContext context) {
+  public static boolean skipDataset(
+      String datasetID, String active, SaxParsingContext context, boolean isTopLevelDataset) {
     boolean majorLoad = context.getMajorLoad();
     HashSet<String> orphanIDSet = context.getOrphanIDSet();
     HashSet<String> datasetIDSet = context.getDatasetIDSet();
@@ -147,12 +149,14 @@ public class HandlerFactory {
     }
 
     boolean skip = false;
-    boolean isDuplicate = !datasetIDSet.add(datasetID);
-    if (isDuplicate) {
-      skip = true;
-      duplicateDatasetIDs.add(datasetID);
-      if (reallyVerbose) {
-        String2.log("*** skipping datasetID=" + datasetID + " because it's a duplicate.");
+    if (isTopLevelDataset) {
+      boolean isDuplicate = !datasetIDSet.add(datasetID);
+      if (isDuplicate) {
+        skip = true;
+        duplicateDatasetIDs.add(datasetID);
+        if (reallyVerbose) {
+          String2.log("*** skipping datasetID=" + datasetID + " because it's a duplicate.");
+        }
       }
     }
 

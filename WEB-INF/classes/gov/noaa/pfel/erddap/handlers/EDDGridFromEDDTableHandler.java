@@ -70,7 +70,8 @@ public class EDDGridFromEDDTableHandler extends StateWithParent {
         }
         String active = attributes.getValue("active");
         State state =
-            HandlerFactory.getHandlerFor(tType, tableDatasetID, active, this, saxHandler, context);
+            HandlerFactory.getHandlerFor(
+                tType, tableDatasetID, active, this, saxHandler, context, false);
         saxHandler.setState(state);
       }
       case "addAttributes" -> {
