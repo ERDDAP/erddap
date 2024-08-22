@@ -1,6 +1,7 @@
 package testDataset;
 
 import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
@@ -11,8 +12,8 @@ public class EDDTestDataset {
     try (PrintWriter datasetsXml = new PrintWriter("development/test/datasets.xml")) {
       datasetsXml.append(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
-              + //
-              "<erddapDatasets>\n");
+              + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
+              + "<erddapDatasets>\n");
 
       datasetsXml.append(xmlFragment_testZarr_compressedData());
       datasetsXml.append(xmlFragment_testZarr_fillValues());
@@ -4480,7 +4481,7 @@ public class EDDTestDataset {
         + //
         "        <dataType>double</dataType>\n"
         + //
-        "        <!-- sourceAttributes>\n"
+        "        <!- - sourceAttributes>\n"
         + //
         "            <att name=\"_ChunkSize\" type=\"intList\">1 540 540</att>\n"
         + //
@@ -4766,11 +4767,11 @@ public class EDDTestDataset {
         + //
         "            <!-- att name=\"location\">32.27 N 75.42 W</att-->\n"
         + //
-        "            <!-- att name=\"quality\">Automated QC checks with manual editing and comprehensive monthly QC</att -- >\n"
+        "            <!-- att name=\"quality\">Automated QC checks with manual editing and comprehensive monthly QC</att - - >\n"
         + //
         "            <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
         + //
-        "            <!-- att name=\"station\">41002</att -->\n"
+        "            <!- - att name=\"station\">41002</att -->\n"
         + //
         "            <att name=\"summary\">These continuous wind measurements from the NOAA National Data Buoy Center (NDBC) stations are 10-minute average values of wind speed (in m/s) and direction (in degrees clockwise from North).</att>\n"
         + //
@@ -23966,8 +23967,6 @@ public class EDDTestDataset {
         + //
         "    <fileTableInMemory>true</fileTableInMemory>\n"
         + //
-        "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
-        + //
         "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles\">\n"
         + //
         "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
@@ -37163,7 +37162,7 @@ public class EDDTestDataset {
         + //
         "        <sourceName>Wind_speed</sourceName> <!-- netcdf-all 4.2 -->\n"
         + //
-        "        <!--sourceName>Wind_speed_height_above_ground</sourceName> <!-- netcdf-all 4.3.8+ -->\n"
+        "        <!--sourceName>Wind_speed_height_above_ground</sourceName> <!- - netcdf-all 4.3.8+ -->\n"
         + //
         "        <destinationName>wind_speed</destinationName>\n"
         + //
@@ -43576,25 +43575,17 @@ public class EDDTestDataset {
         + //
         "            <att name=\"coordinates\">null</att>\n"
         + //
-        "            <att name=\"Intercept\">null</att>\\n"
-        + //
-        "\" \n"
+        "            <att name=\"Intercept\">null</att>\n"
         + //
         "            <att name=\"ioos_category\">Temperature</att>\n"
         + //
         "            <att name=\"long_name\">Sea Surface Temperature</att>\n"
         + //
-        "            <att name=\"Scaling\">null</att>\\n"
+        "            <att name=\"Scaling\">null</att>\n"
         + //
-        "\" \n"
+        "            <att name=\"Scaling_Equation\">null</att>\n"
         + //
-        "            <att name=\"Scaling_Equation\">null</att>\\n"
-        + //
-        "\" \n"
-        + //
-        "            <att name=\"Slope\">null</att>\\n"
-        + //
-        "\" \n"
+        "            <att name=\"Slope\">null</att>\n"
         + //
         "            <att name=\"standard_name\">sea_surface_temperature</att>\n"
         + //
@@ -47686,7 +47677,7 @@ public class EDDTestDataset {
         + //
         "        <dataType>byte</dataType>\n"
         + //
-        "        <!-- sourceAttributes>\n"
+        "        <!- - sourceAttributes>\n"
         + //
         "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n"
         + //
@@ -47716,7 +47707,7 @@ public class EDDTestDataset {
         + //
         "            <att name=\"valid_min\" type=\"byte\">-127</att>\n"
         + //
-        "        </sourceAttributes -- >\n"
+        "        </sourceAttributes - - >\n"
         + //
         "        <addAttributes>\n"
         + //
@@ -48711,7 +48702,7 @@ public class EDDTestDataset {
         + //
         "        <dataType>byte</dataType>\n"
         + //
-        "        <!-- sourceAttributes>\n"
+        "        <!- - sourceAttributes>\n"
         + //
         "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n"
         + //
@@ -48741,7 +48732,7 @@ public class EDDTestDataset {
         + //
         "            <att name=\"valid_min\" type=\"byte\">-127</att>\n"
         + //
-        "        </sourceAttributes -- >\n"
+        "        </sourceAttributes - - >\n"
         + //
         "        <addAttributes>\n"
         + //
@@ -49343,7 +49334,7 @@ public class EDDTestDataset {
         + //
         "            <att name=\"long_name\">Palette</att>\n"
         + //
-        "            <!-- att name=\"mayHaveMissingValues\">false</att> <!-- important test of mayHaveMissingValues -->\n"
+        "            <!-- att name=\"mayHaveMissingValues\">false</att> <!- - important test of mayHaveMissingValues -->\n"
         + //
         "        </addAttributes>\n"
         + //
@@ -50911,8 +50902,6 @@ public class EDDTestDataset {
         + //
         "   <fileTableInMemory>true</fileTableInMemory>\n"
         + //
-        "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
-        + //
         "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testCopy\"> <!-- identical to erdGlobecBottle -->\n"
         + //
         "    <fileDir>"
@@ -51668,7 +51657,6 @@ public class EDDTestDataset {
         "    </dataVariable>\n"
         + //
         "</dataset>\n"
-        + "<dataset type=\"in.valid\" datasetID=\"a.test\" active=\"false\"> <test> </test> </dataset>\n"
         + //
         "</dataset>\n";
   }
@@ -53880,7 +53868,7 @@ public class EDDTestDataset {
         + //
         "        <dataType>byte</dataType>\n"
         + //
-        "        <!-- sourceAttributes>\n"
+        "        <!- - sourceAttributes>\n"
         + //
         "            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n"
         + //
@@ -53910,7 +53898,7 @@ public class EDDTestDataset {
         + //
         "            <att name=\"valid_min\" type=\"byte\">-127</att>\n"
         + //
-        "        </sourceAttributes -- >\n"
+        "        </sourceAttributes - - >\n"
         + //
         "        <addAttributes>\n"
         + //

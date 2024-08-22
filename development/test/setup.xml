@@ -389,7 +389,7 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 
 <useSharedWatchService>true</useSharedWatchService>
 
-<useSaxParser>false</useSaxParser>
+<useSaxParser>true</useSaxParser>
 
 </erddapSetup>
 

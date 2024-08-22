@@ -8,15 +8,13 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromErddapHandler extends State {
+public class EDDTableFromErddapHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
 
   public EDDTableFromErddapHandler(SaxHandler saxHandler, String datasetID, State completeState) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
   }
 
   private int tReloadEveryNMinutes = Integer.MAX_VALUE;

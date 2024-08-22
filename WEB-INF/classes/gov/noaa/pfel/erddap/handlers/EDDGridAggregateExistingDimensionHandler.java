@@ -11,16 +11,14 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridAggregateExistingDimensionHandler extends State {
+public class EDDGridAggregateExistingDimensionHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
-  private State completeState;
   private String datasetID;
   private SaxParsingContext context;
 
   public EDDGridAggregateExistingDimensionHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler);
-    this.completeState = completeState;
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
     this.context = context;
   }
@@ -64,7 +62,7 @@ public class EDDGridAggregateExistingDimensionHandler extends State {
           String childDatasetID = attributes.getValue("datasetID");
           State state =
               HandlerFactory.getHandlerFor(
-                  tType, childDatasetID, active, this, saxHandler, context);
+                  tType, childDatasetID, active, this, saxHandler, context, false);
           saxHandler.setState(state);
         } else {
           throw new RuntimeException(

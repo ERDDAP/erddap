@@ -18,13 +18,10 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
-import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.awt.Color;
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -36,10 +33,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.SAXException;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP. !!!A lot of possible thread
@@ -174,6 +167,7 @@ public class LoadDatasets extends Thread {
           new HashMap(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
+      StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();
       HashSet<String> datasetIDSet =
           new HashSet(); // to detect duplicates, just local use, no need for thread-safe
       StringArray duplicateDatasetIDs = new StringArray(); // list of duplicates
@@ -203,14 +197,22 @@ public class LoadDatasets extends Thread {
       boolean useSaxParser = EDStatic.useSaxParser;
       int[] nTryAndDatasets = new int[2];
       if (useSaxParser) {
-        parseUsingSAX(
+        SaxHandler.parse(
+            inputStream,
             nTryAndDatasets,
             changedDatasetIDs,
             orphanIDSet,
             datasetIDSet,
             duplicateDatasetIDs,
+            datasetsThatFailedToLoadSB,
+            failedDatasetsWithErrorsSB,
             warningsFromLoadDatasets,
-            tUserHashMap);
+            tUserHashMap,
+            majorLoad,
+            erddap,
+            lastLuceneUpdate,
+            datasetsRegex,
+            reallyVerbose);
       } else {
         parseUsingSimpleXmlReader(
             nTryAndDatasets,
@@ -219,6 +221,7 @@ public class LoadDatasets extends Thread {
             datasetIDSet,
             duplicateDatasetIDs,
             datasetsThatFailedToLoadSB,
+            failedDatasetsWithErrorsSB,
             tUserHashMap);
       }
       int nTry = nTryAndDatasets[0];
@@ -248,6 +251,8 @@ public class LoadDatasets extends Thread {
                   + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
                   + "\n"
               : "";
+      String failedDatasetsWithErrors =
+          "Reasons for failing to load datasets: \n" + failedDatasetsWithErrorsSB;
       if (majorLoad && orphanIDSet.size() > 0) {
         // unload them
         emailOrphanDatasetsRemoved(orphanIDSet, changedDatasetIDs, errorsDuringMajorReload);
@@ -356,6 +361,7 @@ public class LoadDatasets extends Thread {
         if (EDStatic.initialLoadDatasets()) handleAfva();
 
         EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; // swap into place
+        EDStatic.failedDatasetsWithErrors = failedDatasetsWithErrors;
         EDStatic.errorsDuringMajorReload = errorsDuringMajorReload; // swap into place
         EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
             0, // header in EDStatic
@@ -427,47 +433,10 @@ public class LoadDatasets extends Thread {
 
     } catch (Exception e) {
       String2.log(e.toString());
+      e.printStackTrace();
     } finally {
       EDStatic.suggestAddFillValueCSV.setLength(0);
     }
-  }
-
-  private void parseUsingSAX(
-      int[] nTryAndDatasets,
-      StringArray changedDatasetIDs,
-      HashSet<String> orphanIDSet,
-      HashSet<String> datasetIDSet,
-      StringArray duplicateDatasetIDs,
-      StringBuilder warningsFromLoadDatasets,
-      HashMap tUserHashMap)
-      throws ParserConfigurationException, SAXException, IOException {
-
-    var context = new SaxParsingContext();
-
-    context.setNTryAndDatasets(nTryAndDatasets);
-    context.setChangedDatasetIDs(changedDatasetIDs);
-    context.setOrphanIDSet(orphanIDSet);
-    context.setDatasetIDSet(datasetIDSet);
-    context.setDuplicateDatasetIDs(duplicateDatasetIDs);
-    context.setWarningsFromLoadDatasets(warningsFromLoadDatasets);
-    context.settUserHashMap(tUserHashMap);
-    context.setMajorLoad(majorLoad);
-    context.setErddap(erddap);
-    context.setLastLuceneUpdate(lastLuceneUpdate);
-    context.setDatasetsRegex(datasetsRegex);
-    context.setReallyVerbose(reallyVerbose);
-
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    factory.setXIncludeAware(true);
-    factory.setNamespaceAware(true);
-
-    SAXParser saxParser = factory.newSAXParser();
-    SaxHandler saxHandler = new SaxHandler();
-
-    TopLevelHandler topLevelHandler = new TopLevelHandler(saxHandler, context);
-
-    saxHandler.setState(topLevelHandler);
-    saxParser.parse(inputStream, saxHandler);
   }
 
   private void parseUsingSimpleXmlReader(
@@ -477,6 +446,7 @@ public class LoadDatasets extends Thread {
       HashSet<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
+      StringBuilder failedDatasetsWithErrorsSB,
       HashMap tUserHashMap) {
     SimpleXMLReader xmlReader = null;
     int nTry = 0, nDatasets = 0;
@@ -734,6 +704,7 @@ public class LoadDatasets extends Thread {
               String2.log(tError);
               warningsFromLoadDatasets.append(tError + "\n\n");
               datasetsThatFailedToLoadSB.append(tId + ", ");
+              failedDatasetsWithErrorsSB.append(tId).append(": ").append(tError).append("\n");
 
               // stop???
               if (!xmlReader.isOpen()) { // error was really serious

@@ -21,8 +21,9 @@ public class HandlerFactory {
       String active,
       State completeState,
       SaxHandler saxHandler,
-      SaxParsingContext context) {
-    if (skipDataset(datasetID, active, context)) {
+      SaxParsingContext context,
+      boolean isTopLevelDataset) {
+    if (skipDataset(datasetID, active, context, isTopLevelDataset)) {
       return new SkipDatasetHandler(saxHandler, completeState);
     }
 
@@ -109,7 +110,10 @@ public class HandlerFactory {
       case "EDDTableFromFileNames" -> {
         return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
       }
-      case "EDDGridFromAudioFiles, EDDGridFromNcFiles, EDDGridFromNcFilesUnpacked, EDDGridFromMergeIRFiles" -> {
+      case "EDDGridFromAudioFiles",
+          "EDDGridFromNcFiles",
+          "EDDGridFromNcFilesUnpacked",
+          "EDDGridFromMergeIRFiles" -> {
         return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
       }
       case "EDDGridFromEtopo" -> {
@@ -123,7 +127,8 @@ public class HandlerFactory {
     }
   }
 
-  public static boolean skipDataset(String datasetID, String active, SaxParsingContext context) {
+  public static boolean skipDataset(
+      String datasetID, String active, SaxParsingContext context, boolean isTopLevelDataset) {
     boolean majorLoad = context.getMajorLoad();
     HashSet<String> orphanIDSet = context.getOrphanIDSet();
     HashSet<String> datasetIDSet = context.getDatasetIDSet();
@@ -134,17 +139,24 @@ public class HandlerFactory {
     long lastLuceneUpdate = context.getLastLuceneUpdate();
     StringArray changedDatasetIDs = context.getChangedDatasetIDs();
 
+    // erddap == null implies we are in a load one dataset situation, only check the regex.
+    if (erddap == null) {
+      return !datasetID.matches(datasetsRegex);
+    }
+
     if (majorLoad) {
       orphanIDSet.remove(datasetID);
     }
 
     boolean skip = false;
-    boolean isDuplicate = !datasetIDSet.add(datasetID);
-    if (isDuplicate) {
-      skip = true;
-      duplicateDatasetIDs.add(datasetID);
-      if (reallyVerbose) {
-        String2.log("*** skipping datasetID=" + datasetID + " because it's a duplicate.");
+    if (isTopLevelDataset) {
+      boolean isDuplicate = !datasetIDSet.add(datasetID);
+      if (isDuplicate) {
+        skip = true;
+        duplicateDatasetIDs.add(datasetID);
+        if (reallyVerbose) {
+          String2.log("*** skipping datasetID=" + datasetID + " because it's a duplicate.");
+        }
       }
     }
 

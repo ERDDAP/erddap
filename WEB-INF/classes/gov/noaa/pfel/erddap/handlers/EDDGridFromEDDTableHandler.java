@@ -14,16 +14,14 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridFromEDDTableHandler extends State {
+public class EDDGridFromEDDTableHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private SaxParsingContext context;
-  private State completeState;
   private String datasetID;
 
   public EDDGridFromEDDTableHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler);
-    this.completeState = completeState;
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
     this.context = context;
   }
@@ -72,7 +70,8 @@ public class EDDGridFromEDDTableHandler extends State {
         }
         String active = attributes.getValue("active");
         State state =
-            HandlerFactory.getHandlerFor(tType, tableDatasetID, active, this, saxHandler, context);
+            HandlerFactory.getHandlerFor(
+                tType, tableDatasetID, active, this, saxHandler, context, false);
         saxHandler.setState(state);
       }
       case "addAttributes" -> {

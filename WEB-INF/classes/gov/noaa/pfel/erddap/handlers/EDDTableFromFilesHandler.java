@@ -15,17 +15,15 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableFromFilesHandler extends State {
+public class EDDTableFromFilesHandler extends StateWithParent {
   private String datasetID;
-  private State completeState;
   private StringBuilder content = new StringBuilder();
   private String datasetType;
 
   public EDDTableFromFilesHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
     this.datasetType = datasetType;
   }
 

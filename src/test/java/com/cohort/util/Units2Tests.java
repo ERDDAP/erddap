@@ -2348,12 +2348,12 @@ class Units2Tests {
     // test of <ucumToUdunits> and <udunitsToUcum> in messages.xml
     Test.ensureEqual(
         Units2.ucumToUdunits("deg north"),
-        "degree north",
+        "degrees_north",
         ""); // this also tests that last triplet is
     // read
     Test.ensureEqual(
         Units2.udunitsToUcum("degrees north"),
-        "deg.{north}",
+        "deg{north}",
         ""); // this also tests that last triplet
     // is
     // read

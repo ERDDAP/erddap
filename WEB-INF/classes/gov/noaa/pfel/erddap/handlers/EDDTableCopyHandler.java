@@ -12,17 +12,15 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDTableCopyHandler extends State {
+public class EDDTableCopyHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
   private String datasetID;
-  private State completeState;
   private SaxParsingContext context;
 
   public EDDTableCopyHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler);
+    super(saxHandler, completeState);
     this.datasetID = datasetID;
-    this.completeState = completeState;
     this.context = context;
   }
 
@@ -57,7 +55,8 @@ public class EDDTableCopyHandler extends State {
       String active = attributes.getValue("active");
       String childDatasetID = attributes.getValue("datasetID");
       State state =
-          HandlerFactory.getHandlerFor(tType, childDatasetID, active, this, saxHandler, context);
+          HandlerFactory.getHandlerFor(
+              tType, childDatasetID, active, this, saxHandler, context, false);
       saxHandler.setState(state);
     }
   }
