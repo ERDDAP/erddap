@@ -507,6 +507,15 @@ public class TopLevelHandler extends State {
           String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
         }
       }
+      case "unusualActivityFailPercent" -> {
+        int tnt = String2.parseInt(data.toString());
+        EDStatic.unusualActivityFailPercent =
+            tnt < 0 || tnt == Integer.MAX_VALUE ? EDStatic.DEFAULT_unusualActivityFailPercent : tnt;
+
+        if (reallyVerbose) {
+          String2.log("unusualActivityFailPercent" + EDStatic.unusualActivityFailPercent);
+        }
+      }
     }
   }
 
