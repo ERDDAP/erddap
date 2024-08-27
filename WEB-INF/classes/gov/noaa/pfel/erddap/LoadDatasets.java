@@ -1075,7 +1075,7 @@ public class LoadDatasets extends Thread {
         } else if (tags.equals("<erddapDatasets></unusualActivityFailPercent>")) {
           int tnt = String2.parseInt(xmlReader.content());
           EDStatic.unusualActivityFailPercent =
-              tnt < 0 || tnt == Integer.MAX_VALUE
+              tnt < 0 || tnt > 100 || tnt == Integer.MAX_VALUE
                   ? EDStatic.DEFAULT_unusualActivityFailPercent
                   : tnt;
           String2.log("unusualActivityFailPercent=" + EDStatic.unusualActivityFailPercent);
