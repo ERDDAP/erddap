@@ -384,7 +384,7 @@ public class EDStatic {
   public static final int DEFAULT_slowDownTroubleMillis = 1000;
   public static final int DEFAULT_unusualActivity = 10000;
   public static final int DEFAULT_updateMaxEvents = 10;
-  public static final int DEFAULT_unusualActivityFailPercent = -1;
+  public static final int DEFAULT_unusualActivityFailPercent = 25;
   public static long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public static String drawLandMask = DEFAULT_drawLandMask;
   public static boolean emailDiagnosticsToErdData = true;
