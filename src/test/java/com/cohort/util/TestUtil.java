@@ -26,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import tags.TagFlaky;
 import tags.TagIncompleteTest;
+import tags.TagSlowTests;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
 @Isolated
@@ -1240,6 +1241,7 @@ class TestUtil {
 
   /** Test the methods in String2. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2() throws Throwable {
     String2.log("\n*** TestUtil.testString2()");
     String sar[];
@@ -5846,7 +5848,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringT3Z(
             Calendar2.formattedStringToMillis( // {}# are reserved
                     "12 Jan 1985 !@(10~20$30%5555&*_=|\";:<>,) UTC", // other punctuation are
-                                                                     // literal
+                    // literal
                     "dd MMM yyyy !@(HH~mm$ss%SSSS&*_=|\";:<>,)[ <>,]'UTC'", null)
                 / 1000.0),
         "1985-01-12T10:20:30.555Z",
@@ -5909,7 +5911,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.formattedStringToMillis(
                     "12 jan 1985 12:20:30.555 am", // am hour of am/pm 0-11, out-of-range->rolls to
-                                                   // 12
+                    // 12
                     "d MMM yyyy K:m:s.S a",
                     null)
                 / 1000.0), // h a
@@ -5919,7 +5921,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.formattedStringToMillis(
                     "12 jan 1985 12:20:30.555 pm", // am hour of am/pm 0-11 out-of-range->rolls to
-                                                   // 12
+                    // 12
                     "d MMM yyyy K:m:s.S a",
                     null)
                 / 1000.0), // h a
@@ -8468,6 +8470,7 @@ class TestUtil {
 
   /** This tests String2.utf8 methods. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2utf8() throws Exception {
     String2.log("\n*** TestUtil.testString2utf8()");
     int n = 1000000;
@@ -8534,6 +8537,7 @@ class TestUtil {
 
   /** This tests String2.canonical(). */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2canonical() throws Exception {
     String2.log("\n*** TestUtil.testString2canonical()");
     // find a way to make != strings (for tests below)
@@ -8644,6 +8648,7 @@ class TestUtil {
 
   /** This tests String2.canonicalStringHolder(). */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2canonicalStringHolder() throws Exception {
     String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
     // find a way to make != strings (for tests below)

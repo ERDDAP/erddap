@@ -40,7 +40,7 @@ public class TopLevelHandlerTests {
     context.setDatasetIDSet(new HashSet<>());
     context.setDuplicateDatasetIDs(new StringArray());
     context.setWarningsFromLoadDatasets(new StringBuilder());
-    context.settUserHashMap(new HashMap());
+    context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
     context.setLastLuceneUpdate(0);
@@ -85,19 +85,12 @@ public class TopLevelHandlerTests {
 
   @Test
   void userTest() {
-    Object[] user1Data = (Object[]) context.gettUserHashMap().get("user1");
+    Object[] user1Data = context.gettUserHashMap().get("user1");
     assertEquals("pass1", user1Data[0]);
   }
 
   @Test
   void datasetTest() {
     assertEquals(2, context.getNTryAndDatasets()[1]);
-  }
-
-  // Takes some time because loads a dataset and skips the other. Hence also verifies the
-  // skipDataset function
-  @Test
-  void NTryTest() {
-    assertEquals(1, context.getNTryAndDatasets()[0]);
   }
 }

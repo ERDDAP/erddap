@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -194,6 +195,7 @@ class EDDTableFromAudioFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
+  @TagSlowTests
   void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromAudioFiles.testBasic()
     // *****************\n");

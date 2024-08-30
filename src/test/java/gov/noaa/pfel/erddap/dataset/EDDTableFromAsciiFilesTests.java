@@ -20,6 +20,7 @@ import tags.TagAWS;
 import tags.TagExternalERDDAP;
 import tags.TagImageComparison;
 import tags.TagLocalERDDAP;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -1212,6 +1213,7 @@ class EDDTableFromAsciiFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testNThreads() throws Throwable {
     // String2.log("\n*** EDDTableFromAsciiFiles.testNThreads()\n");
 

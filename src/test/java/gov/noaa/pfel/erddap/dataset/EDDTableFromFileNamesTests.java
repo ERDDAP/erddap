@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagAWS;
 import tags.TagLocalERDDAP;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -397,6 +398,7 @@ class EDDTableFromFileNamesTests {
 
   /** testGenerateDatasetsXmlFromFiles */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testGenerateDatasetsXmlFromFiles() throws Throwable {
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles()");
@@ -1002,12 +1004,14 @@ class EDDTableFromFileNamesTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testgoes17all() throws Throwable {
     testAccessibleViaFilesFileTable(false, true);
   }
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
+  @TagSlowTests
   void testgoes17partial(boolean deleteCachedInfo) throws Throwable {
     testAccessibleViaFilesFileTable(deleteCachedInfo, false);
   }
@@ -1401,7 +1405,7 @@ class EDDTableFromFileNamesTests {
       expected =
           "Name,Last modified,Size,Description\n"
               + "index.html,1632772095000,32357,\n"; // last modified is millis (stored as long),
-                                                     // changes sometimes
+      // changes sometimes
       Test.ensureEqual(
           results,
           expected,

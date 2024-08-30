@@ -13,7 +13,7 @@ public class SaxParsingContext {
   private StringArray duplicateDatasetIDs;
   private StringBuilder datasetsThatFailedToLoadSB;
   private StringBuilder warningsFromLoadDatasets;
-  private HashMap tUserHashMap;
+  private HashMap<String, Object[]> tUserHashMap;
   private boolean majorLoad;
   private Erddap erddap;
   private long lastLuceneUpdate;
@@ -71,11 +71,11 @@ public class SaxParsingContext {
     this.warningsFromLoadDatasets = warningsFromLoadDatasets;
   }
 
-  public HashMap gettUserHashMap() {
+  public HashMap<String, Object[]> gettUserHashMap() {
     return tUserHashMap;
   }
 
-  public void settUserHashMap(HashMap tUserHashMap) {
+  public void settUserHashMap(HashMap<String, Object[]> tUserHashMap) {
     this.tUserHashMap = tUserHashMap;
   }
 

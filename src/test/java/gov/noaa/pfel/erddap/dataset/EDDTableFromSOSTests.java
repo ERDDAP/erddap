@@ -322,6 +322,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosBPres() throws Throwable {
     // testVerboseOn();
 
@@ -514,6 +515,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosCond() throws Throwable {
     // testVerboseOn();
 
@@ -734,7 +736,7 @@ class EDDTableFromSOSTests {
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:lc0301\""
                 + "&time>=2013-09-01T00:03&time<=2013-09-01T00:03", // It was hard to find a request
-                                                                    // that had data
+            // that had data
             EDStatic.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCurrents",
             ".csv");
@@ -1083,6 +1085,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosSalinity() throws Throwable {
     // testVerboseOn();
 
@@ -1762,6 +1765,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosWTemp() throws Throwable {
     // testVerboseOn();
 
@@ -5874,7 +5878,7 @@ class EDDTableFromSOSTests {
           "longitude,latitude,altitude,station_id,wvht,dpd,wtmp,dewp"
               + // no "time" here
               "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01"; // "time"
-                                                                                        // here
+      // here
       tName =
           eddTable.makeNewFileForDapQuery(
               language,

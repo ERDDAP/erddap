@@ -44,6 +44,7 @@ import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagMissingFile;
 import tags.TagPassword;
+import tags.TagSlowTests;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
@@ -344,6 +345,7 @@ public class TableTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
+  @TagSlowTests
   void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
     // String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" +
     // readAsNcCF);
@@ -1312,6 +1314,7 @@ public class TableTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testHtml() throws Exception {
     // String2.log("\n***** Table.testHtml");
     // Table.verbose = true;
@@ -2301,7 +2304,7 @@ public class TableTests {
             "time,other\n" + "3,90\n",
             "time,other\n"
                 + "1,91\n", // for ties, the one that is picked isn't specified. unsort above causes
-                            // 91 to
+            // 91 to
             // be first.
             "time,other\n"
                 + "1,91\n"
@@ -17197,6 +17200,7 @@ public class TableTests {
    * from gz file (was ~420s before).
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testBigAscii() throws Exception {
     // PrimitiveArray.reallyVerbose = true;
     Math2.gcAndWait("Table (between tests)");
@@ -17295,6 +17299,7 @@ public class TableTests {
    * {nc.close()}
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testNcCloseTryWithResources() throws Throwable {
     // String2.log("\n*** Table.testNcCloseTryWithResources()");
 

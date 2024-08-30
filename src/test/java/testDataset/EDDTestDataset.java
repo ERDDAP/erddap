@@ -15,6 +15,7 @@ public class EDDTestDataset {
               + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
               + "<erddapDatasets>\n");
 
+      datasetsXml.append(xmlFragment_test_chars());
       datasetsXml.append(xmlFragment_testZarr_compressedData());
       datasetsXml.append(xmlFragment_testZarr_fillValues());
       datasetsXml.append(xmlFragment_testZarr_testData());
@@ -85510,6 +85511,133 @@ public class EDDTestDataset {
         "            <att name=\"ioos_category\">Unknown</att>\n"
         + //
         "            <att name=\"long_name\">Group With Dims/var4 D</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "</dataset>\n";
+  }
+
+  public static EDD gettest_chars() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_test_chars());
+  }
+
+  private static String xmlFragment_test_chars() throws URISyntaxException {
+    return "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n"
+        + //
+        "  below, notably 'units' for each of the dataVariables. -->\n"
+        + //
+        "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"test_chars_e886_d14c_7d71\" active=\"true\">\n"
+        + //
+        "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + //
+        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + //
+        "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/datasets/").toURI()).toString()
+        + "</fileDir>\n"
+        + "    <fileNameRegex>test_chars\\.csv</fileNameRegex>\n"
+        + //
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <pathRegex>.*</pathRegex>\n"
+        + //
+        "    <metadataFrom>last</metadataFrom>\n"
+        + //
+        "    <standardizeWhat>0</standardizeWhat>\n"
+        + //
+        "    <charset>UTF-8</charset>\n"
+        + //
+        "    <columnSeparator>;</columnSeparator>\n"
+        + //
+        "    <columnNamesRow>1</columnNamesRow>\n"
+        + //
+        "    <firstDataRow>2</firstDataRow>\n"
+        + //
+        "    <sortedColumnSourceName></sortedColumnSourceName>\n"
+        + //
+        "    <sortFilesBySourceNames></sortFilesBySourceNames>\n"
+        + //
+        "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + //
+        "    <!-- sourceAttributes>\n"
+        + //
+        "    </sourceAttributes -->\n"
+        + //
+        "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n"
+        + //
+        "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n"
+        + //
+        "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n"
+        + //
+        "    -->\n"
+        + //
+        "    <addAttributes>\n"
+        + //
+        "        <att name=\"cdm_data_type\">Other</att>\n"
+        + //
+        "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"infoUrl\">???</att>\n"
+        + //
+        "        <att name=\"institution\">???</att>\n"
+        + //
+        "        <att name=\"keywords\">characters, data, local, row, source</att>\n"
+        + //
+        "        <att name=\"license\">[standard]</att>\n"
+        + //
+        "        <att name=\"sourceUrl\">(local files)</att>\n"
+        + //
+        "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + //
+        "        <att name=\"summary\">Data from a local source.</att>\n"
+        + //
+        "        <att name=\"title\">Data from a local source.</att>\n"
+        + //
+        "    </addAttributes>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>row</sourceName>\n"
+        + //
+        "        <destinationName>row</destinationName>\n"
+        + //
+        "        <dataType>byte</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"_FillValue\" type=\"byte\">127</att>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Row</att>\n"
+        + //
+        "        </addAttributes>\n"
+        + //
+        "    </dataVariable>\n"
+        + //
+        "    <dataVariable>\n"
+        + //
+        "        <sourceName>characters</sourceName>\n"
+        + //
+        "        <destinationName>characters</destinationName>\n"
+        + //
+        "        <dataType>String</dataType>\n"
+        + //
+        "        <!-- sourceAttributes>\n"
+        + //
+        "        </sourceAttributes -->\n"
+        + //
+        "        <addAttributes>\n"
+        + //
+        "            <att name=\"ioos_category\">Unknown</att>\n"
+        + //
+        "            <att name=\"long_name\">Characters</att>\n"
         + //
         "        </addAttributes>\n"
         + //
