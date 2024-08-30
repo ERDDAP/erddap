@@ -207,9 +207,8 @@ public class EmailThread extends Thread {
         } catch (Throwable t) {
         }
         try {
-          SSR.emailLock
-              .unlock(); // This should be locked.  If not, this throws an
-                         // IllegaMonitorStateException.
+          SSR.emailLock.unlock(); // This should be locked.  If not, this throws an
+          // IllegaMonitorStateException.
         } catch (Throwable t) {
         }
 

@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.coastwatch.hdf;
 
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 

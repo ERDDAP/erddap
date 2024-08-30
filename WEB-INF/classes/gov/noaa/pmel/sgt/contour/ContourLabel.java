@@ -15,8 +15,7 @@ package gov.noaa.pmel.sgt.contour;
 import gov.noaa.pmel.sgt.SGLabel;
 
 /**
- * Container for information about where labels should
- * be inserted on a ContourLine.
+ * Container for information about where labels should be inserted on a ContourLine.
  *
  * @author D. W. Denbo
  * @version $Revision: 1.3 $, $Date: 2001/02/02 20:27:37 $
@@ -27,10 +26,11 @@ class ContourLabel {
 
   /**
    * @label label
-   * @link aggregationByValue 
+   * @link aggregationByValue
    * @supplierCardinality 1
    */
   SGLabel label;
+
   double width;
   double height;
 
@@ -40,15 +40,19 @@ class ContourLabel {
     width = wid;
     height = hgt;
   }
+
   public SGLabel getLabel() {
     return label;
   }
+
   public int getIndex() {
     return index;
   }
+
   public double getWidth() {
     return width;
   }
+
   public double getHeight() {
     return height;
   }

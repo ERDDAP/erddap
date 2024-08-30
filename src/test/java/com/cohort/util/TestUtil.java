@@ -5846,7 +5846,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringT3Z(
             Calendar2.formattedStringToMillis( // {}# are reserved
                     "12 Jan 1985 !@(10~20$30%5555&*_=|\";:<>,) UTC", // other punctuation are
-                                                                     // literal
+                    // literal
                     "dd MMM yyyy !@(HH~mm$ss%SSSS&*_=|\";:<>,)[ <>,]'UTC'", null)
                 / 1000.0),
         "1985-01-12T10:20:30.555Z",
@@ -5909,7 +5909,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.formattedStringToMillis(
                     "12 jan 1985 12:20:30.555 am", // am hour of am/pm 0-11, out-of-range->rolls to
-                                                   // 12
+                    // 12
                     "d MMM yyyy K:m:s.S a",
                     null)
                 / 1000.0), // h a
@@ -5919,7 +5919,7 @@ class TestUtil {
         Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.formattedStringToMillis(
                     "12 jan 1985 12:20:30.555 pm", // am hour of am/pm 0-11 out-of-range->rolls to
-                                                   // 12
+                    // 12
                     "d MMM yyyy K:m:s.S a",
                     null)
                 / 1000.0), // h a

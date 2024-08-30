@@ -941,7 +941,7 @@ class EDDTableFromThreddsFilesTests {
                 // I could do wcos/catalog.xml but very slow because lots of files
                 "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
                 ".*MTBD.*\\.nc", // ADCP files have different vars and diff metadata, e.g.,
-                                 // _FillValue
+                // _FillValue
                 "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
                 1440,
                 "",

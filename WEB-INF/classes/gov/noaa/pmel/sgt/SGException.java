@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Base class for gov.noaa.pmel.sgt exceptions.
@@ -22,6 +22,7 @@ public class SGException extends java.lang.Exception {
   public SGException() {
     super();
   }
+
   public SGException(String s) {
     super(s);
   }

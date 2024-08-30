@@ -6,8 +6,7 @@ class LRUCacheTests {
   void basicTest() {
     String2.log("\n*** LRUCache.basicTest");
     LRUCache cache = new LRUCache(5);
-    for (int i = 0; i < 5; i++)
-      cache.put("" + i, "" + (11 * i));
+    for (int i = 0; i < 5; i++) cache.put("" + i, "" + (11 * i));
     Test.ensureEqual(cache.size(), 5, "");
     Test.ensureNotNull(cache.get("0"), ""); // 0 was eldest. Now accessed so 1 is eldest
 
@@ -25,5 +24,4 @@ class LRUCacheTests {
 
     String2.log("LRUCache.basicTest finished");
   }
-
 }

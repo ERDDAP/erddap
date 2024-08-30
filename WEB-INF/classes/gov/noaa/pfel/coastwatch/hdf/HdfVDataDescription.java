@@ -154,9 +154,8 @@ public class HdfVDataDescription extends HdfTag {
     stream.writeShort(nfields); // Number of fields per entry in the Vdata (16-bit integer)
     for (int i = 0; i < nfields; i++) {
       stream.writeShort(
-          type_n[
-              i]); // Constant indicating the data type of the nth field of the Vdata (16-bit
-                   // integer)
+          type_n[i]); // Constant indicating the data type of the nth field of the Vdata (16-bit
+      // integer)
       stream.writeShort(isize_n[i]); // Size in bytes of the nth field of the Vdata (16-bit integer)
       stream.writeShort(offset_n[i]); // Offset of the nth field within the Vdata (16-bit integer)
       stream.writeShort(order_n[i]); // Order of the nth field of the Vdata (16-bit integer)
@@ -164,9 +163,8 @@ public class HdfVDataDescription extends HdfTag {
           fldnm_n[i].length()); // Length of the nth field name string (16-bit integer)
       stream.write(
           String2.toByteArray(
-              fldnm_n[
-                  i])); // Non-null terminated ASCII string (length given by corresponding
-                        // fldnmlen_n)
+              fldnm_n[i])); // Non-null terminated ASCII string (length given by corresponding
+      // fldnmlen_n)
     }
     stream.writeShort(name.length()); // Length of the name field (16-bit integer)
     stream.write(
@@ -207,9 +205,8 @@ public class HdfVDataDescription extends HdfTag {
     fldnm_n = new String[nfields];
     for (int i = 0; i < nfields; i++) {
       type_n[i] =
-          stream
-              .readShort(); // Constant indicating the data type of the nth field of the Vdata
-                            // (16-bit integer)
+          stream.readShort(); // Constant indicating the data type of the nth field of the Vdata
+      // (16-bit integer)
       isize_n[i] =
           stream.readShort(); // Size in bytes of the nth field of the Vdata (16-bit integer)
       offset_n[i] = stream.readShort(); // Offset of the nth field within the Vdata (16-bit integer)
@@ -220,7 +217,7 @@ public class HdfVDataDescription extends HdfTag {
               File2.readFully(
                   stream,
                   length)); // Non-null terminated ASCII string (length given by corresponding
-                            // fldnmlen_n)
+      // fldnmlen_n)
     }
     length = stream.readShort(); // Length of the name field (16-bit integer)
     name =

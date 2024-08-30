@@ -1401,7 +1401,7 @@ class EDDTableFromFileNamesTests {
       expected =
           "Name,Last modified,Size,Description\n"
               + "index.html,1632772095000,32357,\n"; // last modified is millis (stored as long),
-                                                     // changes sometimes
+      // changes sometimes
       Test.ensureEqual(
           results,
           expected,

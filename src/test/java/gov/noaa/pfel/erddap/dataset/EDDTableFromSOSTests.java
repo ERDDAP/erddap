@@ -734,7 +734,7 @@ class EDDTableFromSOSTests {
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:lc0301\""
                 + "&time>=2013-09-01T00:03&time<=2013-09-01T00:03", // It was hard to find a request
-                                                                    // that had data
+            // that had data
             EDStatic.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCurrents",
             ".csv");
@@ -5874,7 +5874,7 @@ class EDDTableFromSOSTests {
           "longitude,latitude,altitude,station_id,wvht,dpd,wtmp,dewp"
               + // no "time" here
               "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01"; // "time"
-                                                                                        // here
+      // here
       tName =
           eddTable.makeNewFileForDapQuery(
               language,

@@ -12,7 +12,6 @@
 
 package gov.noaa.pmel.sgt;
 
-
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.SoTRange;

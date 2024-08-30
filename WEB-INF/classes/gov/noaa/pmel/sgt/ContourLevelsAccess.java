@@ -11,9 +11,9 @@
  */
 
 package gov.noaa.pmel.sgt;
+
 /**
- * Defines the functionality for accessing contour level information
- * for color maps.
+ * Defines the functionality for accessing contour level information for color maps.
  *
  * @author Donald Denbo
  * @version $Revision: 1.2 $, $Date: 2001/01/31 23:41:03 $

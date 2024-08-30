@@ -1,28 +1,27 @@
 package gov.noaa.pfel.coastwatch.util;
 
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.util.ArrayList;
-
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.util.ArrayList;
 import tags.TagIncompleteTest;
 
 class WatchDirectoryTests {
-  /**
-   * This tests this class.
-   */
+  /** This tests this class. */
   @org.junit.jupiter.api.Test
   void basicTest() throws Throwable {
     // String2.log("\n*** WatchDirectory.basicTest");
     // verbose = true;
     ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
     StringArray contexts = new StringArray();
-    String testDataDir = Path.of(WatchDirectoryTests.class.getResource("/data/").toURI()).toString().replace('\\', '/');
+    String testDataDir =
+        Path.of(WatchDirectoryTests.class.getResource("/data/").toURI())
+            .toString()
+            .replace('\\', '/');
     String sourceDir = testDataDir;
     String watchDir = testDataDir + "/watchService";
     String subDirNS = testDataDir + "/watchService/watchSub";
@@ -42,7 +41,8 @@ class WatchDirectoryTests {
 
     }
     Math2.sleep(sleep);
-    WatchDirectory wd = WatchDirectory.watchDirectoryAll(watchDir, false, null); // recursive, pathRegex
+    WatchDirectory wd =
+        WatchDirectory.watchDirectoryAll(watchDir, false, null); // recursive, pathRegex
 
     // programmatic test: copy files into dirs
     File2.copy(sourceDir + file1, watchDir + file1);
@@ -54,13 +54,16 @@ class WatchDirectoryTests {
       results = kind + " " + contexts.get(i);
       String2.log("results i=" + i + "=\n" + results);
       Test.ensureTrue(
-          results.equals(WatchDirectory.CREATE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.DELETE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS), // !
+          results.equals(WatchDirectory.CREATE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + watchDir + file1)
+              || results.equals(WatchDirectory.DELETE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS), // !
           "");
       // ensure testing via '==' works
-      Test.ensureTrue(kind == WatchDirectory.CREATE || kind == WatchDirectory.MODIFY || kind == WatchDirectory.DELETE,
+      Test.ensureTrue(
+          kind == WatchDirectory.CREATE
+              || kind == WatchDirectory.MODIFY
+              || kind == WatchDirectory.DELETE,
           "kind=" + kind);
     }
     Test.ensureBetween(n, 1, 4, ""); // sometimes the dir event isn't caught
@@ -75,15 +78,21 @@ class WatchDirectoryTests {
       results = kind + " " + contexts.get(i);
       String2.log("results i=" + i + "=\n" + results);
       Test.ensureTrue(
-          results.equals(WatchDirectory.DELETE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS),
+          results.equals(WatchDirectory.DELETE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS),
           "");
       // ensure testing via '==' works
-      Test.ensureTrue(kind == WatchDirectory.CREATE || kind == WatchDirectory.MODIFY || kind == WatchDirectory.DELETE,
+      Test.ensureTrue(
+          kind == WatchDirectory.CREATE
+              || kind == WatchDirectory.MODIFY
+              || kind == WatchDirectory.DELETE,
           "kind=" + kind);
     }
-    Test.ensureBetween(n, 1, 3,
+    Test.ensureBetween(
+        n,
+        1,
+        3,
         "*** KNOWN PROBLEM: Sometimes nEvents=0 because the dir events weren't caught (because computer busy?).");
 
     // *** test recursive
@@ -101,12 +110,12 @@ class WatchDirectoryTests {
       results = eventKinds.get(i) + " " + contexts.get(i);
       String2.log("results i=" + i + "=\n" + results);
       Test.ensureTrue(
-          results.equals(WatchDirectory.CREATE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.DELETE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.CREATE + " " + subDirNS + file2) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS + file2) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS),
+          results.equals(WatchDirectory.CREATE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + watchDir + file1)
+              || results.equals(WatchDirectory.DELETE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.CREATE + " " + subDirNS + file2)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS + file2)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS),
           "");
     }
     Test.ensureBetween(n, 4, 5, ""); // sometimes the dir event isn't caught
@@ -120,11 +129,11 @@ class WatchDirectoryTests {
       results = eventKinds.get(i) + " " + contexts.get(i);
       String2.log("results i=" + i + "=\n" + results);
       Test.ensureTrue(
-          results.equals(WatchDirectory.DELETE + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.MODIFY + " " + watchDir + file1) ||
-              results.equals(WatchDirectory.DELETE + " " + subDirNS + file2) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS + file2) ||
-              results.equals(WatchDirectory.MODIFY + " " + subDirNS),
+          results.equals(WatchDirectory.DELETE + " " + watchDir + file1)
+              || results.equals(WatchDirectory.MODIFY + " " + watchDir + file1)
+              || results.equals(WatchDirectory.DELETE + " " + subDirNS + file2)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS + file2)
+              || results.equals(WatchDirectory.MODIFY + " " + subDirNS),
           "");
     }
     // on linux modify events are not created during this delete
@@ -172,9 +181,7 @@ class WatchDirectoryTests {
     // }
   }
 
-  /**
-   * This tests this class.
-   */
+  /** This tests this class. */
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
   void interactiveTest() throws Throwable {
@@ -196,14 +203,16 @@ class WatchDirectoryTests {
     // *** interactive test
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
     Math2.sleep(sleep);
-    WatchDirectory wd = WatchDirectory.watchDirectoryAll(watchDir, true, ""); // recursive, pathRegex
+    WatchDirectory wd =
+        WatchDirectory.watchDirectoryAll(watchDir, true, ""); // recursive, pathRegex
     while (true) {
-      String s = String2.getStringFromSystemIn(
-          "WatchDirectory interactive test (recursive):\n" +
-              "  Enter '' to see events in " + watchDir +
-              ", 'exit' to exit this loop, or ^C...");
-      if ("exit".equals(s))
-        break;
+      String s =
+          String2.getStringFromSystemIn(
+              "WatchDirectory interactive test (recursive):\n"
+                  + "  Enter '' to see events in "
+                  + watchDir
+                  + ", 'exit' to exit this loop, or ^C...");
+      if ("exit".equals(s)) break;
 
       n = wd.getEvents(eventKinds, contexts);
       for (int i = 0; i < n; i++) {
@@ -211,8 +220,10 @@ class WatchDirectoryTests {
         String2.log("results i=" + i + "=\n" + kind + " " + contexts.get(i));
         // ensure testing via '==' works
         Test.ensureTrue(
-            kind == WatchDirectory.CREATE || kind == WatchDirectory.MODIFY || kind == WatchDirectory.DELETE ||
-                kind == WatchDirectory.OVERFLOW,
+            kind == WatchDirectory.CREATE
+                || kind == WatchDirectory.MODIFY
+                || kind == WatchDirectory.DELETE
+                || kind == WatchDirectory.OVERFLOW,
             "kind=" + kind);
       }
     }

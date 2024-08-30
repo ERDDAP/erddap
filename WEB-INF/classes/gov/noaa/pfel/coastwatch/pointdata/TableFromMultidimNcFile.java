@@ -1,13 +1,5 @@
 package gov.noaa.pfel.coastwatch.pointdata;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.cohort.array.Attributes;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
@@ -19,8 +11,13 @@ import com.cohort.array.ULongArray;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFile;
@@ -48,13 +45,15 @@ public class TableFromMultidimNcFile {
 
     private void loadDims(TableFromMultidimNcFile tableMultidim, Variable tVar) {
       dims = tVar.getDimensions();
-      isCharArray = tVar.getDataType() == DataType.CHAR &&
-          dims.size() > 0 &&
-          !tableMultidim.notStringLengthDims.contains(dims.get(dims.size() - 1));
+      isCharArray =
+          tVar.getDataType() == DataType.CHAR
+              && dims.size() > 0
+              && !tableMultidim.notStringLengthDims.contains(dims.get(dims.size() - 1));
       nDims = dims.size() - (isCharArray ? 1 : 0);
     }
 
-    private void loadArrayAndAttributes(TableFromMultidimNcFile tableMultidim, Variable tVar) throws Exception {
+    private void loadArrayAndAttributes(TableFromMultidimNcFile tableMultidim, Variable tVar)
+        throws Exception {
       pa = NcHelper.getPrimitiveArray(tVar, isCharArray);
       if (pa instanceof StringArray t) {
         t.trimEndAll();
@@ -70,8 +69,9 @@ public class TableFromMultidimNcFile {
       return data;
     }
 
-    public static VarData fromVariableIfDimsMatch(TableFromMultidimNcFile tableMultidim, Variable tVar, VarData other,
-        int nd0) throws Exception {
+    public static VarData fromVariableIfDimsMatch(
+        TableFromMultidimNcFile tableMultidim, Variable tVar, VarData other, int nd0)
+        throws Exception {
       int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
       if (index > -1 && tableMultidim.cachedVarData[index] != null) {
         VarData data = tableMultidim.cachedVarData[index];
@@ -93,7 +93,8 @@ public class TableFromMultidimNcFile {
       return data;
     }
 
-    public static VarData fromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar) throws Exception {
+    public static VarData fromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar)
+        throws Exception {
       int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
       if (index > -1 && tableMultidim.cachedVarData[index] != null) {
         return tableMultidim.cachedVarData[index];
@@ -113,115 +114,80 @@ public class TableFromMultidimNcFile {
   }
 
   /**
-   * This reads and flattens a group of variables which share dimensions
-   * from a multidimensional .nc file. (A new alternative to readNDNc().)
-   * One difference between using this and readNcCF: this doesn't require/expect
-   * that the file follows the nc CF DSG MA standard.
-   * <br>
-   * This does not unpack the values or convert to standardMissingValues.
-   * <br>
+   * This reads and flattens a group of variables which share dimensions from a multidimensional .nc
+   * file. (A new alternative to readNDNc().) One difference between using this and readNcCF: this
+   * doesn't require/expect that the file follows the nc CF DSG MA standard. <br>
+   * This does not unpack the values or convert to standardMissingValues. <br>
    * For strings, this always calls String2.trimEnd(s)
-   * 
-   * @param fullName          This may be a local file name, an "http:" address of
-   *                          a
-   *                          .nc file, an .ncml file (which must end with
-   *                          ".ncml"), or an opendap url.
-   *                          <p>
-   *                          If the fullName is an http address, the name needs
-   *                          to start with "http://"
-   *                          or "https://" (upper or lower case) and the server
-   *                          needs to support "byte ranges"
-   *                          (see ucar.nc2.NetcdfFile documentation).
-   *                          But this is very slow, so not recommended.
-   * @param loadVarNames
-   *                          If loadVarNames is specified, those variables will
-   *                          be loaded.
-   *                          If loadVarNames isn't specified, this method reads
-   *                          vars which use
-   *                          the specified loadDimNames and scalar vars.
-   *                          <br>
-   *                          If a specified var isn't in the file, there won't be
-   *                          a column
-   *                          in the results table for it and it isn't an error.
-   * @param loadDimNames.     If loadVarNames is specified, this is ignored.
-   *                          If loadDimNames is used, all variables using any of
-   *                          these dimensions
-   *                          (and dimension-less variables) will be loaded, plus
-   *                          all scalar vars.
-   *                          Don't include string-length dimensions.
-   *                          Just include the last treatDimensionsAs dimension
-   *                          (if any).
-   *                          Almost always, there will be 1+ variables which use
-   *                          all of these dimensions.
-   *                          If a given dimension isn't it the file, it is
-   *                          removed from the list.
-   *                          If loadDimNames isn't specified (or size=0), this
-   *                          method finds the var which uses
-   *                          the most dimensions, and uses for loadDimNames.
-   *                          So if you want to get just the scalar vars, request
-   *                          a nonexistent
-   *                          dimension (e.g., ZZTOP).
-   * @param treatDimensionsAs Lists of dimension names that
-   *                          should be treated as another dimension (the last in
-   *                          each list).
-   *                          Within a list, all dimensions that are in the file
-   *                          must be the same length.
-   *                          E.g. "Lat,Lon,Time" says to treat Lat and Lon as if
-   *                          they were Time.
-   * @param getMetadata       if true, global and variable metadata is read
-   * @param standardizeWhat   see Attributes.unpackVariable's standardizeWhat
-   * @param removeMVRows      This removes any block of rows at the
-   *                          end of a group where all the values are
-   *                          missing_value, _FillValue,
-   *                          or the CoHort ...Array native missing value (or
-   *                          char=#32 for CharArrays).
-   *                          This is for the CF DSG Multidimensional Array file
-   *                          type and similar files.
-   *                          If true, this does the proper test and so always
-   *                          loads all the
-   *                          max dim variables, so it may take extra time.
-   * @param conVars           the names of the constraint variables. May be null.
-   *                          It is up to this method how much they will be used.
-   *                          Currently, the constraints are just used for *quick*
-   *                          tests to see if the
-   *                          file has no matching data.
-   *                          If a conVar isn't in the loadVarNames (provided or
-   *                          derived),
-   *                          then the constraint isn't used.
-   *                          If standardizeWhat != 0, the constraints are applied
-   *                          to the unpacked variables.
-   * @param conOps            the operators for the constraints.
-   *                          All ERDDAP ops are supported. May be null.
-   * @param conVals           the values of the constraints. May be null.
-   * @throws Exception if unexpected trouble.
-   *                   But if none of the specified loadVariableNames are present
-   *                   or a requested dimension's size=0,
-   *                   it is not an error and it returns an empty table.
+   *
+   * @param fullName This may be a local file name, an "http:" address of a .nc file, an .ncml file
+   *     (which must end with ".ncml"), or an opendap url.
+   *     <p>If the fullName is an http address, the name needs to start with "http://" or "https://"
+   *     (upper or lower case) and the server needs to support "byte ranges" (see
+   *     ucar.nc2.NetcdfFile documentation). But this is very slow, so not recommended.
+   * @param loadVarNames If loadVarNames is specified, those variables will be loaded. If
+   *     loadVarNames isn't specified, this method reads vars which use the specified loadDimNames
+   *     and scalar vars. <br>
+   *     If a specified var isn't in the file, there won't be a column in the results table for it
+   *     and it isn't an error.
+   * @param loadDimNames. If loadVarNames is specified, this is ignored. If loadDimNames is used,
+   *     all variables using any of these dimensions (and dimension-less variables) will be loaded,
+   *     plus all scalar vars. Don't include string-length dimensions. Just include the last
+   *     treatDimensionsAs dimension (if any). Almost always, there will be 1+ variables which use
+   *     all of these dimensions. If a given dimension isn't it the file, it is removed from the
+   *     list. If loadDimNames isn't specified (or size=0), this method finds the var which uses the
+   *     most dimensions, and uses for loadDimNames. So if you want to get just the scalar vars,
+   *     request a nonexistent dimension (e.g., ZZTOP).
+   * @param treatDimensionsAs Lists of dimension names that should be treated as another dimension
+   *     (the last in each list). Within a list, all dimensions that are in the file must be the
+   *     same length. E.g. "Lat,Lon,Time" says to treat Lat and Lon as if they were Time.
+   * @param getMetadata if true, global and variable metadata is read
+   * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+   * @param removeMVRows This removes any block of rows at the end of a group where all the values
+   *     are missing_value, _FillValue, or the CoHort ...Array native missing value (or char=#32 for
+   *     CharArrays). This is for the CF DSG Multidimensional Array file type and similar files. If
+   *     true, this does the proper test and so always loads all the max dim variables, so it may
+   *     take extra time.
+   * @param conVars the names of the constraint variables. May be null. It is up to this method how
+   *     much they will be used. Currently, the constraints are just used for *quick* tests to see
+   *     if the file has no matching data. If a conVar isn't in the loadVarNames (provided or
+   *     derived), then the constraint isn't used. If standardizeWhat != 0, the constraints are
+   *     applied to the unpacked variables.
+   * @param conOps the operators for the constraints. All ERDDAP ops are supported. May be null.
+   * @param conVals the values of the constraints. May be null.
+   * @throws Exception if unexpected trouble. But if none of the specified loadVariableNames are
+   *     present or a requested dimension's size=0, it is not an error and it returns an empty
+   *     table.
    */
-  public void readMultidimNc(String fullName,
+  public void readMultidimNc(
+      String fullName,
       StringArray loadVarNames,
       StringArray loadDimNames,
       String treatDimensionsAs[][], // will be null if not used
-      boolean getMetadata, // before 2016-11-29, this had a boolean trimStrings parameter, now it always
-                           // trimEnd's all strings
+      boolean
+          getMetadata, // before 2016-11-29, this had a boolean trimStrings parameter, now it always
+      // trimEnd's all strings
       int standardizeWhat,
       boolean removeMVRows,
-      StringArray conVars, StringArray conOps, StringArray conVals) throws Exception {
+      StringArray conVars,
+      StringArray conOps,
+      StringArray conVals)
+      throws Exception {
 
     // clear the table
     this.table.clear();
-    if (loadVarNames == null)
-      loadVarNames = new StringArray();
-    if (loadDimNames == null)
-      loadDimNames = new StringArray();
-    if (standardizeWhat != 0 || removeMVRows)
-      getMetadata = true;
+    if (loadVarNames == null) loadVarNames = new StringArray();
+    if (loadDimNames == null) loadDimNames = new StringArray();
+    if (standardizeWhat != 0 || removeMVRows) getMetadata = true;
     warningInMethod = "TableFromMultidimNcFile.readMultidimNc read " + fullName + ":\n";
-    haveConstraints = conVars != null && conVars.size() > 0 &&
-        conOps != null && conOps.size() == conVars.size() &&
-        conVals != null && conVals.size() == conVars.size();
-    if (treatDimensionsAs == null || treatDimensionsAs.length == 0)
-      treatDimensionsAs = null;
+    haveConstraints =
+        conVars != null
+            && conVars.size() > 0
+            && conOps != null
+            && conOps.size() == conVars.size()
+            && conVals != null
+            && conVals.size() == conVars.size();
+    if (treatDimensionsAs == null || treatDimensionsAs.length == 0) treatDimensionsAs = null;
     int nd0 = treatDimensionsAs == null ? 0 : treatDimensionsAs.length;
     if (nd0 > 0) {
       validateTreatDimensionsAs(treatDimensionsAs, nd0);
@@ -270,8 +236,7 @@ public class TableFromMultidimNcFile {
           // is there at least 1 constraint of this var?
           String varName = loadVarNames.get(v);
           int con1 = conVars.indexOf(varName);
-          if (con1 < 0)
-            continue;
+          if (con1 < 0) continue;
 
           // is this a 0D or 1D var?
           Variable tVar = loadVars.get(v);
@@ -286,10 +251,13 @@ public class TableFromMultidimNcFile {
           BitSet keep = getKeepForVar(data, nd0, varToKeep);
           // test constraints
           for (int con = con1; con < nCons; con++) {
-            if (!conVars.get(con).equals(varName))
-              continue;
-            if (data.pa.applyConstraint(false, // less precise, so more likely to pass the test
-                keep, conOps.get(con), conVals.get(con)) == 0) {
+            if (!conVars.get(con).equals(varName)) continue;
+            if (data.pa.applyConstraint(
+                    false, // less precise, so more likely to pass the test
+                    keep,
+                    conOps.get(con),
+                    conVals.get(con))
+                == 0) {
               // if (verbose) String2.log(warningInMethod +
               // "Returning an empty table because var=" + varName +
               // " failed its constraints, including " +
@@ -345,8 +313,17 @@ public class TableFromMultidimNcFile {
         break;
       }
       if (firstVar != null) {
-        loadDimMatchedVars(loadVarNames, standardizeWhat, nd0, loadVars, loadDims, nLoadVars, loaded,
-            this.table, firstVar, getMetadata);
+        loadDimMatchedVars(
+            loadVarNames,
+            standardizeWhat,
+            nd0,
+            loadVars,
+            loadDims,
+            nLoadVars,
+            loaded,
+            this.table,
+            firstVar,
+            getMetadata);
       }
       // if (debugMode) String2.log(Math2.memoryString() + "\n" +
       // ">> this table after load varsWithAllDims:\n" +
@@ -425,7 +402,9 @@ public class TableFromMultidimNcFile {
         // move all the allIndices columns into the main table
         int nLoadDims = loadDims.size();
         for (int d = 0; d < nLoadDims; d++)
-          this.table.addColumn(d, allIndicesTable.getColumnName(d),
+          this.table.addColumn(
+              d,
+              allIndicesTable.getColumnName(d),
               allIndicesTable.getColumn(d),
               allIndicesTable.columnAttributes(d));
         int nColumns = this.table.nColumns(); // including indicesColumns
@@ -446,8 +425,7 @@ public class TableFromMultidimNcFile {
         long longFvs[] = new long[nColumns];
         for (int c = nLoadDims; c < nColumns; c++) {
           PrimitiveArray pa = this.table.columns.get(c);
-          isDouble[c] = pa instanceof FloatArray ||
-              pa instanceof DoubleArray;
+          isDouble[c] = pa instanceof FloatArray || pa instanceof DoubleArray;
           isULong[c] = pa instanceof ULongArray;
           isLong[c] = pa.isIntegerType() && !(pa instanceof ULongArray);
           isChar[c] = pa instanceof CharArray;
@@ -475,36 +453,36 @@ public class TableFromMultidimNcFile {
             // " val=" + columns.get(c).getString(row));
             if (isDouble[c]) {
               double d = this.table.columns.get(c).getDouble(row);
-              if (Double.isNaN(d) ||
-                  Math2.almostEqual(5, d, doubleMvs[c]) ||
-                  Math2.almostEqual(5, d, doubleFvs[c])) {
+              if (Double.isNaN(d)
+                  || Math2.almostEqual(5, d, doubleMvs[c])
+                  || Math2.almostEqual(5, d, doubleFvs[c])) {
               } else {
                 hasData = true;
                 break;
               }
             } else if (isULong[c]) {
               BigInteger ul = this.table.columns.get(c).getULong(row);
-              if (ul.equals(ULongArray.MAX_VALUE) || // trouble: should test maxIsMV
-                  ul.equals(ulongMvs[c]) ||
-                  ul.equals(ulongFvs[c])) {
+              if (ul.equals(ULongArray.MAX_VALUE)
+                  || // trouble: should test maxIsMV
+                  ul.equals(ulongMvs[c])
+                  || ul.equals(ulongFvs[c])) {
               } else {
                 hasData = true;
                 break;
               }
             } else if (isLong[c]) {
               long tl = this.table.columns.get(c).getLong(row);
-              if (tl == Long.MAX_VALUE || // trouble: should test maxIsMV
-                  tl == longMvs[c] ||
-                  tl == longFvs[c]) {
+              if (tl == Long.MAX_VALUE
+                  || // trouble: should test maxIsMV
+                  tl == longMvs[c]
+                  || tl == longFvs[c]) {
               } else {
                 hasData = true;
                 break;
               }
             } else if (isChar[c]) {
               int tc = this.table.columns.get(c).getInt(row);
-              if (tc == 0 ||
-                  tc == 32 ||
-                  tc == Integer.MAX_VALUE) { // trouble: should test maxIsMV
+              if (tc == 0 || tc == 32 || tc == Integer.MAX_VALUE) { // trouble: should test maxIsMV
               } else {
                 hasData = true;
                 break;
@@ -520,8 +498,7 @@ public class TableFromMultidimNcFile {
           }
           if (hasData) {
             // jump to next group
-            while (lastDimCol.getInt(row) > 0)
-              row--; // the loop's row-- will get to next group
+            while (lastDimCol.getInt(row) > 0) row--; // the loop's row-- will get to next group
           } else {
             keep.clear(row);
           }
@@ -582,9 +559,19 @@ public class TableFromMultidimNcFile {
           }
           Variable tVar = loadVars.get(v);
           VarData data = VarData.fromVariable(this, tVar);
-          addVarAndIndicies(nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, data, v, tVar);
-          loadDimMatchedVars(loadVarNames, standardizeWhat, nd0, loadVars, loadDims, nLoadVars, loaded,
-              lut, data, getMetadata);
+          addVarAndIndicies(
+              nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, data, v, tVar);
+          loadDimMatchedVars(
+              loadVarNames,
+              standardizeWhat,
+              nd0,
+              loadVars,
+              loadDims,
+              nLoadVars,
+              loaded,
+              lut,
+              data,
+              getMetadata);
 
           // If we ran constraints on this var earlier, load it.
           BitSet lutkeep = getKeepForVar(data, nd0, varToKeep);
@@ -610,11 +597,30 @@ public class TableFromMultidimNcFile {
       }
       while (loaded.cardinality() < nLoadVars) {
         Table lut = new Table(); // look up table which will be JOINed into main table
-        VarData varData = findVarToLoad(loadVarNames, standardizeWhat, nd0, loadVars, loadDims, nLoadVars, loaded,
-            allIndicesTable, lut, getMetadata);
+        VarData varData =
+            findVarToLoad(
+                loadVarNames,
+                standardizeWhat,
+                nd0,
+                loadVars,
+                loadDims,
+                nLoadVars,
+                loaded,
+                allIndicesTable,
+                lut,
+                getMetadata);
 
-        loadDimMatchedVars(loadVarNames, standardizeWhat, nd0, loadVars, loadDims, nLoadVars, loaded,
-            lut, varData, getMetadata);
+        loadDimMatchedVars(
+            loadVarNames,
+            standardizeWhat,
+            nd0,
+            loadVars,
+            loadDims,
+            nLoadVars,
+            loaded,
+            lut,
+            varData,
+            getMetadata);
 
         // all constraints checked above so we just need to join this data in.
         joinLutToTable(lut, varData, allIndicesTable);
@@ -633,8 +639,7 @@ public class TableFromMultidimNcFile {
       // " time=" + (System.currentTimeMillis() - time) + "ms");
     } finally {
       try {
-        if (ncFile != null)
-          ncFile.close();
+        if (ncFile != null) ncFile.close();
       } catch (Exception e9) {
       }
     }
@@ -675,16 +680,14 @@ public class TableFromMultidimNcFile {
     return keep;
   }
 
-  private void addColumnToTable(boolean getMetadata, BitSet loaded, VarData varData,
-      int v, Variable tVar, Table table) {
+  private void addColumnToTable(
+      boolean getMetadata, BitSet loaded, VarData varData, int v, Variable tVar, Table table) {
     loaded.set(v);
     table.addColumn(table.nColumns(), tVar.getFullName(), varData.pa, varData.atts);
     // does this var point to the pseudo-data var with CF grid_mapping (projection)
     // information?
-    if (getMetadata &&
-        gridMappingAtts == null) {
-      gridMappingAtts = NcHelper.getGridMappingAtts(ncFile,
-          varData.atts.getString("grid_mapping"));
+    if (getMetadata && gridMappingAtts == null) {
+      gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, varData.atts.getString("grid_mapping"));
       if (gridMappingAtts != null) {
         table.globalAttributes.add(gridMappingAtts);
       }
@@ -702,13 +705,21 @@ public class TableFromMultidimNcFile {
     return dim;
   }
 
-  private VarData findVarToLoad(StringArray loadVarNames, int standardizeWhat, int nd0, ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims, int nLoadVars, BitSet loaded, Table allIndicesTable, Table lut,
-      boolean getMetadata) throws Exception {
+  private VarData findVarToLoad(
+      StringArray loadVarNames,
+      int standardizeWhat,
+      int nd0,
+      ArrayList<Variable> loadVars,
+      ArrayList<Dimension> loadDims,
+      int nLoadVars,
+      BitSet loaded,
+      Table allIndicesTable,
+      Table lut,
+      boolean getMetadata)
+      throws Exception {
     VarData varData = null;
     for (int v = 0; v < nLoadVars; v++) {
-      if (loaded.get(v))
-        continue;
+      if (loaded.get(v)) continue;
       // if (debugMode) {
       // String2.log(">> v=" + v + " cDims==null?" + (cDims==null) +
       // " lut: nCols=" + lut.nColumns() + " nRows=" + lut.nRows());
@@ -726,9 +737,16 @@ public class TableFromMultidimNcFile {
     return varData;
   }
 
-  private void addVarAndIndicies(int nd0, ArrayList<Dimension> loadDims, BitSet loaded, Table allIndicesTable,
+  private void addVarAndIndicies(
+      int nd0,
+      ArrayList<Dimension> loadDims,
+      BitSet loaded,
+      Table allIndicesTable,
       Table lut,
-      boolean getMetadata, VarData varData, int v, Variable tVar) {
+      boolean getMetadata,
+      VarData varData,
+      int v,
+      Variable tVar) {
     int cShape[] = new int[varData.nDims];
     for (int d = 0; d < varData.nDims; d++) {
       // which dim is it in loadDims?
@@ -737,7 +755,9 @@ public class TableFromMultidimNcFile {
       cShape[d] = cDim.getLength();
       int whichDim = loadDims.indexOf(cDim);
       // insert that index in main table
-      this.table.addColumn(d, "_index_" + whichDim,
+      this.table.addColumn(
+          d,
+          "_index_" + whichDim,
           allIndicesTable.getColumn(whichDim)); // will throw error if whichDim=-1
     }
 
@@ -745,8 +765,7 @@ public class TableFromMultidimNcFile {
     if (varData.nDims == 0) {
       // if scalar vars, make key columns with 0's
       // in lut
-      lut.addColumn(0, "_scalar_", new IntArray(new int[] { 0 }),
-          new Attributes());
+      lut.addColumn(0, "_scalar_", new IntArray(new int[] {0}), new Attributes());
       // and in main table
       IntArray ia = new IntArray(this.table.nRows(), false);
       ia.addN(this.table.nRows(), 0);
@@ -762,13 +781,21 @@ public class TableFromMultidimNcFile {
     addColumnToTable(getMetadata, loaded, varData, v, tVar, lut);
   }
 
-  private void loadDimMatchedVars(StringArray loadVarNames, int standardizeWhat, int nd0, ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims, int nLoadVars, BitSet loaded, Table table,
-      VarData matchDims, boolean getMetadata) throws Exception {
+  private void loadDimMatchedVars(
+      StringArray loadVarNames,
+      int standardizeWhat,
+      int nd0,
+      ArrayList<Variable> loadVars,
+      ArrayList<Dimension> loadDims,
+      int nLoadVars,
+      BitSet loaded,
+      Table table,
+      VarData matchDims,
+      boolean getMetadata)
+      throws Exception {
     // extra check on loaded?? verify this isn't a problem
     for (int v = 0; v < nLoadVars; v++) {
-      if (loaded.get(v))
-        continue;
+      if (loaded.get(v)) continue;
       // if (debugMode) {
       // String2.log(">> v=" + v + " cDims==null?" + (cDims==null) +
       // " lut: nCols=" + lut.nColumns() + " nRows=" + lut.nRows());
@@ -786,7 +813,8 @@ public class TableFromMultidimNcFile {
     }
   }
 
-  private boolean doDimsMatch(int nd0, int ntDims, List<Dimension> tDims, int ncDims, List<Dimension> cDims) {
+  private boolean doDimsMatch(
+      int nd0, int ntDims, List<Dimension> tDims, int ncDims, List<Dimension> cDims) {
     // does this var have the exact same dimensions, in same order?
     if (ntDims != ncDims) {
       return false;
@@ -809,10 +837,8 @@ public class TableFromMultidimNcFile {
       int tnDims = tDims.size();
       // here, assume the last dim of any multiDim char var
       // is the string length dimension, so skip it
-      if (tVar.getDataType() == DataType.CHAR)
-        tnDims--;
-      for (int d = 0; d < tnDims; d++)
-        notStringLengthDims.add(tDims.get(d));
+      if (tVar.getDataType() == DataType.CHAR) tnDims--;
+      for (int d = 0; d < tnDims; d++) notStringLengthDims.add(tDims.get(d));
     }
     return notStringLengthDims;
   }
@@ -829,22 +855,33 @@ public class TableFromMultidimNcFile {
         for (int d1 = 0; d1 < nd1; d1++) {
           tDimsAs[d0][d1] = ncFile.findDimension(treatDimensionsAs[d0][d1]);
           if (tDimsAs[d0][d1] == null) {
-            msg = warningInMethod +
-                "treatDimensionAs[" + d0 + "][" + d1 + "]=" + treatDimensionsAs[d0][d1] +
-                " isn't in the file.";
+            msg =
+                warningInMethod
+                    + "treatDimensionAs["
+                    + d0
+                    + "]["
+                    + d1
+                    + "]="
+                    + treatDimensionsAs[d0][d1]
+                    + " isn't in the file.";
             if (d1 == nd1 - 1) // the 'to' dim must be in the file
-              throw new RuntimeException(msg);
+            throw new RuntimeException(msg);
             // if (debugMode) String2.log(msg);
             continue;
           }
-          if (tDimsSize < 0)
-            tDimsSize = tDimsAs[d0][d1].getLength();
+          if (tDimsSize < 0) tDimsSize = tDimsAs[d0][d1].getLength();
           else
-            Test.ensureEqual(tDimsAs[d0][d1].getLength(), tDimsSize,
-                warningInMethod +
-                    "All of the treatDimensionsAs dimensions (" +
-                    String2.toCSSVString(treatDimensionsAs[d0]) +
-                    ") must be the same length ([" + d0 + "][" + d1 + "]).");
+            Test.ensureEqual(
+                tDimsAs[d0][d1].getLength(),
+                tDimsSize,
+                warningInMethod
+                    + "All of the treatDimensionsAs dimensions ("
+                    + String2.toCSSVString(treatDimensionsAs[d0])
+                    + ") must be the same length (["
+                    + d0
+                    + "]["
+                    + d1
+                    + "]).");
         }
       }
     }
@@ -854,21 +891,30 @@ public class TableFromMultidimNcFile {
   private void validateTreatDimensionsAs(String[][] treatDimensionsAs, int nd0) {
     for (int d0 = 0; d0 < nd0; d0++) {
       if (treatDimensionsAs[d0] == null)
-        throw new RuntimeException(warningInMethod +
-            "treatDimensionAs[" + d0 + "] is null!");
+        throw new RuntimeException(warningInMethod + "treatDimensionAs[" + d0 + "] is null!");
       else if (treatDimensionsAs[d0].length < 2)
-        throw new RuntimeException(warningInMethod +
-            "treatDimensionAs[" + d0 + "].length=" +
-            treatDimensionsAs[d0].length + " must be >1: " +
-            String2.toCSSVString(treatDimensionsAs[d0]));
+        throw new RuntimeException(
+            warningInMethod
+                + "treatDimensionAs["
+                + d0
+                + "].length="
+                + treatDimensionsAs[d0].length
+                + " must be >1: "
+                + String2.toCSSVString(treatDimensionsAs[d0]));
       // if (debugMode)
       // msg +=" treatDimensionsAs[" + d0 + "]=" +
       // String2.toCSSVString(treatDimensionsAs[d0]);
     }
   }
 
-  private void loadVars(StringArray loadVarNames, StringArray loadDimNames, ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims, int nd0, int nAllVars, List<Variable> allVars) {
+  private void loadVars(
+      StringArray loadVarNames,
+      StringArray loadDimNames,
+      ArrayList<Variable> loadVars,
+      ArrayList<Dimension> loadDims,
+      int nd0,
+      int nAllVars,
+      List<Variable> allVars) {
     if (loadVarNames.size() > 0) {
       // loadVarNames was specified
 
@@ -909,7 +955,8 @@ public class TableFromMultidimNcFile {
 
         // find var(s) that use the most dimensions
         try {
-          Variable tVars[] = NcHelper.findMaxDVariables(ncFile, ""); // throws Exception if no vars with dimensions
+          Variable tVars[] =
+              NcHelper.findMaxDVariables(ncFile, ""); // throws Exception if no vars with dimensions
 
           // gather loadDims from the first of those vars
           // (so it won't include aliases)
@@ -946,7 +993,8 @@ public class TableFromMultidimNcFile {
       // find vars that use any subset of loadDims (and no others)
       // including scalar vars
       boolean dimUsed[] = new boolean[loadDims.size()];
-      LOADVARS_V: for (int v = 0; v < nAllVars; v++) {
+      LOADVARS_V:
+      for (int v = 0; v < nAllVars; v++) {
         Variable var = allVars.get(v);
         VarData data = VarData.dimsFromVariable(this, var);
         for (int d = 0; d < data.nDims; d++) {
@@ -958,13 +1006,11 @@ public class TableFromMultidimNcFile {
               if (String2.indexOfObject(tDimsAs[d0], tDim) >= 0) {
                 // change to the 'as' dimension?
                 whichDim = loadDims.indexOf(tDimsAs[d0][tDimsAs[d0].length - 1]);
-                if (whichDim >= 0)
-                  break;
+                if (whichDim >= 0) break;
               }
             }
           }
-          if (whichDim < 0)
-            continue LOADVARS_V;
+          if (whichDim < 0) continue LOADVARS_V;
           dimUsed[whichDim] = true;
         }
         loadVars.add(var);
@@ -981,11 +1027,9 @@ public class TableFromMultidimNcFile {
 
       // remove unused dimensions
       for (int d = loadDims.size() - 1; d >= 0; d--) { // backwards since may delete
-        if (!dimUsed[d])
-          loadDims.remove(d);
+        if (!dimUsed[d]) loadDims.remove(d);
       }
-      if (loadDims.size() == 0)
-        String2.log("After analysis, loadDims.size is now 0!");
+      if (loadDims.size() == 0) String2.log("After analysis, loadDims.size is now 0!");
     }
   }
 }

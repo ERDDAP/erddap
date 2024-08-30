@@ -520,9 +520,9 @@ class EDDTableFromJsonlCSVFilesTests {
         String2.replaceAll(
             results,
             "http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental", // '?'
-                                                                                            // img
-                                                                                            // file
-                                                                                            // reference
+            // img
+            // file
+            // reference
             "https://coastwatch.pfeg.noaa.gov/erddap");
     // write changes back to file so displayInBrowser works below
     File2.writeToFileUtf8(dir + tName, results);

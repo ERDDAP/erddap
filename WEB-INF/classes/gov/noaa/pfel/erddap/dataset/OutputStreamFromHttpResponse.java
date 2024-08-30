@@ -162,8 +162,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
       headerMap.put(
           "Content-Description",
           "dods-das"); // DAP 2.0, 7.1.1  ???!!!DConnect (that's JPL -- ignore it) has 'c' 'd', BUT
-                       // spec (follow the spec) and THREDDS have 'C' 'D'-- but HTTP header names
-                       // are case-insensitive
+      // spec (follow the spec) and THREDDS have 'C' 'D'-- but HTTP header names
+      // are case-insensitive
       // until ERDDAP v1.84, was "content-description", "dods_das": c d _ !
 
     } else if (extension.equals(".dds")) {
@@ -249,7 +249,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
               ? // pseudo fileType
               "application/javascript"
               : // see
-                // https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
+              // https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
               fileType.equals(".jsonText")
                   ? "text/plain"
                   : // ESRI Geoservices REST uses this
@@ -261,10 +261,10 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
               ? // pseudo fileType
               "application/javascript"
               : // see
-                // https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
+              // https://stackoverflow.com/questions/477816/what-is-the-correct-json-content-type
               "application/x-jsonlines"; // no definitive answer.
-                                         // https://github.com/wardi/jsonlines/issues/9  I like
-                                         // x-jsonlines because it is descriptive.
+      // https://github.com/wardi/jsonlines/issues/9  I like
+      // x-jsonlines because it is descriptive.
 
     } else if (extension.equals(".kml")) {
       // see https://developers.google.com/kml/documentation/kml_tut

@@ -8,7 +8,8 @@ class CartesianProjectionTests {
   /** This tests this class. */
   @org.junit.jupiter.api.Test
   void basicTest() {
-    CartesianProjection cp = new CartesianProjection(100, 200, 10, 20, 30, 50, 120, 80, false, false);
+    CartesianProjection cp =
+        new CartesianProjection(100, 200, 10, 20, 30, 50, 120, 80, false, false);
     String2.log("\nTest CartesianProjection\n" + cp);
     DoubleObject dox = new DoubleObject(0);
     DoubleObject doy = new DoubleObject(0);
@@ -28,5 +29,4 @@ class CartesianProjectionTests {
     Test.ensureEqual(cp.graphToDeviceXDistance(25), 5, "");
     Test.ensureEqual(cp.graphToDeviceYDistance(2.5), 10, "");
   }
-
 }

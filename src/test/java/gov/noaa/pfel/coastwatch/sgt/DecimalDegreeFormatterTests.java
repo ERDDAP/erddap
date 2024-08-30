@@ -23,5 +23,4 @@ class DecimalDegreeFormatterTests {
     Test.ensureEqual(ddf.format(-0.251), "-0.251°", "d");
     Test.ensureEqual(ddf.format(-0.00125), "-1.25E-3°", "e");
   }
-
 }

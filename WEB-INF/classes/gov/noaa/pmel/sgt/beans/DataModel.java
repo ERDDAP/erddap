@@ -12,31 +12,29 @@
 
 package gov.noaa.pmel.sgt.beans;
 
+import gov.noaa.pmel.sgt.Attribute;
+import gov.noaa.pmel.sgt.dm.SGTData;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.Iterator;
-
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import gov.noaa.pmel.sgt.dm.SGTData;
-import gov.noaa.pmel.sgt.Attribute;
 
 /**
- * A model that supplies the relationship between <code>SGTData</code> objects,
- * its <code>Attribute</code> and the
- * <code>Panel</code> and <code>DataGroup</code> in which it is displayed and the
+ * A model that supplies the relationship between <code>SGTData</code> objects, its <code>Attribute
+ * </code> and the <code>Panel</code> and <code>DataGroup</code> in which it is displayed and the
  * <code>Legend</code>.
- * <p> Some classes have been omitted for display purposes.
- * <p style="text-align:center;"><img src="images/DataModelSimple.png" style="vertical-align:bottom; border:0;">
-
+ *
+ * <p>Some classes have been omitted for display purposes.
+ *
+ * <p style="text-align:center;"><img src="images/DataModelSimple.png" style="vertical-align:bottom;
+ * border:0;">
  *
  * @author Donald Denbo
  * @version $Revision: 1.3 $, $Date: 2003/09/17 23:16:45 $
  * @since 3.0
  * @stereotype bean
- **/
+ */
 public class DataModel {
   private PropertyChangeSupport support_ = new PropertyChangeSupport(this);
   private List dataList_;
@@ -46,37 +44,37 @@ public class DataModel {
    */
   private Page page;
 
-  /** @link aggregation
+  /**
+   * @link aggregation
    * @supplierCardinality 1..*
-   * @label dataList*/
+   * @label dataList
+   */
   /*#DataHolder lnkDataHolder;*/
 
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public DataModel() {
     dataList_ = new Vector();
   }
 
   /**
-   * Add data to the <code>DataModel</code>.  Throws a "addData" property change.
+   * Add data to the <code>DataModel</code>. Throws a "addData" property change.
+   *
    * @param data SGTData
    * @param attr Attribute for data
    * @param pHolder PanelHolder
    * @param dataGroup DataGroup
    * @param legend Legend
    */
-  public void addData(SGTData data, Attribute attr,
-                      PanelHolder pHolder, DataGroup dataGroup,
-                      Legend legend) {
-    DataHolder dh = new DataHolder(this, data, attr, pHolder,
-                                   dataGroup, legend);
+  public void addData(
+      SGTData data, Attribute attr, PanelHolder pHolder, DataGroup dataGroup, Legend legend) {
+    DataHolder dh = new DataHolder(this, data, attr, pHolder, dataGroup, legend);
     dataList_.add(dh);
     support_.firePropertyChange("addData", null, dh);
   }
 
   /**
    * Get <code>Iterator</code> of the <code>DataHolder</code> objects.
+   *
    * @return
    */
   public Iterator dataIterator() {
@@ -85,6 +83,7 @@ public class DataModel {
 
   /**
    * Add property change listener.
+   *
    * @param l property change listener
    */
   public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -93,6 +92,7 @@ public class DataModel {
 
   /**
    * Listen for specific property change.
+   *
    * @param name property name
    * @param l property change listner
    */
@@ -102,6 +102,7 @@ public class DataModel {
 
   /**
    * Remove property change listener.
+   *
    * @param l property change listener
    */
   public void removePropertyChangeListener(PropertyChangeListener l) {
@@ -110,6 +111,7 @@ public class DataModel {
 
   /**
    * Remove specific property change listener
+   *
    * @param name property name
    * @param l property change listener
    */
@@ -119,6 +121,7 @@ public class DataModel {
 
   /**
    * Set <code>Page</code>.
+   *
    * @param page Page
    */
   public void setPage(Page page) {
@@ -127,6 +130,7 @@ public class DataModel {
 
   /**
    * Get Page.
+   *
    * @return Page
    */
   public Page getPage() {

@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;

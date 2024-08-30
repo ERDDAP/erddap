@@ -14,8 +14,7 @@ package gov.noaa.pmel.sgt;
 import gov.noaa.pmel.util.Range2D;
 
 /**
- * Interface indicates that the color map uses a transform to map
- * levels.
+ * Interface indicates that the color map uses a transform to map levels.
  *
  * @author Donald Denbo
  * @version $Revision: 1.3 $, $Date: 2001/02/01 17:22:32 $

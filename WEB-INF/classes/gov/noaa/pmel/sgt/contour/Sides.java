@@ -13,12 +13,10 @@
 package gov.noaa.pmel.sgt.contour;
 
 import gov.noaa.pmel.util.Debug;
-
 import java.util.BitSet;
 
 /**
- * Used to keep track of which sides have been used during the contour
- * line generation process.
+ * Used to keep track of which sides have been used during the contour line generation process.
  *
  * @author D. W. Denbo
  * @version $Revision: 1.5 $, $Date: 2001/02/02 20:27:37 $
@@ -33,15 +31,15 @@ class Sides {
   public Sides(int nx, int ny) {
     nx_ = nx;
     ny_ = ny;
-    ny2_ = ny_*2;
-    sides_ = new BitSet(ny2_*nx_);
+    ny2_ = ny_ * 2;
+    sides_ = new BitSet(ny2_ * nx_);
   }
 
   public boolean isSideUsed(int i, int j, int side) {
-    int ind = index(i,j,side);
-    if(ind < 0 || ind > ny2_*nx_-1) {
-      if(Debug.CONTOUR) {
-	System.out.println("Sides.isSideUsed(): (i,j,side) = " + i + ", " + j + ", " + side);
+    int ind = index(i, j, side);
+    if (ind < 0 || ind > ny2_ * nx_ - 1) {
+      if (Debug.CONTOUR) {
+        System.out.println("Sides.isSideUsed(): (i,j,side) = " + i + ", " + j + ", " + side);
       }
       return false;
     }
@@ -49,13 +47,13 @@ class Sides {
   }
 
   public void setSideUsed(int i, int j, int side, boolean set) {
-    int ind = index(i,j,side);
-    if(Debug.CONTOUR) {
-      if(ind < 0 || ind > ny2_*nx_-1) {
-	System.out.println("Sides.setSideUsed(): (i,j,side) = " + i + ", " + j + ", " + side);
+    int ind = index(i, j, side);
+    if (Debug.CONTOUR) {
+      if (ind < 0 || ind > ny2_ * nx_ - 1) {
+        System.out.println("Sides.setSideUsed(): (i,j,side) = " + i + ", " + j + ", " + side);
       }
     }
-    if(set) {
+    if (set) {
       sides_.set(ind);
     } else {
       sides_.clear(ind);
@@ -63,30 +61,35 @@ class Sides {
   }
 
   public int getSide(int i, int j, int side) {
-    int ind = index(i,j,side);
-    if(ind < 0 || ind > ny2_*nx_-1) {
-      if(Debug.CONTOUR) {
-	System.out.println("Sides.getSide(): (i,j,side) = " + i + ", " + j + ", " + side);
+    int ind = index(i, j, side);
+    if (ind < 0 || ind > ny2_ * nx_ - 1) {
+      if (Debug.CONTOUR) {
+        System.out.println("Sides.getSide(): (i,j,side) = " + i + ", " + j + ", " + side);
       }
       return 0;
     }
-    return sides_.get(ind)?1:0;
+    return sides_.get(ind) ? 1 : 0;
   }
 
   int index(int i, int j, int side) {
     int index = -10;
-    if(side == 1) { /* i+1,j  right */
-      index = 1 + j*2 + (i+1)*ny2_;
-    } else if(side == 2) { /* i,j+1  top */
-      index = (j+1)*2 + i*ny2_;
-    } else if(side == 0) { /* i,j  bottom */
-      index = j*2 + i*ny2_;
-    } else if(side == 3) { /* i,j  left */
-      index = 1 + j*2 + i*ny2_;
+    if (side == 1) {
+      /* i+1,j  right */
+      index = 1 + j * 2 + (i + 1) * ny2_;
+    } else if (side == 2) {
+      /* i,j+1  top */
+      index = (j + 1) * 2 + i * ny2_;
+    } else if (side == 0) {
+      /* i,j  bottom */
+      index = j * 2 + i * ny2_;
+    } else if (side == 3) {
+      /* i,j  left */
+      index = 1 + j * 2 + i * ny2_;
     }
     return index;
   }
+
   public void clear() {
-    sides_ = new BitSet(ny2_*nx_);
+    sides_ = new BitSet(ny2_ * nx_);
   }
 }

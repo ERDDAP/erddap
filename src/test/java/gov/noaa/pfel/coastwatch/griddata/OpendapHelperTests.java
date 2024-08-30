@@ -503,9 +503,8 @@ class OpendapHelperTests {
     // tdsUrl was
     // "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/";
     // //+e.g., point/KachemakBay.nc";
-    String tdsUrl =
-        "https://www.ncei.noaa.gov/thredds-ocean/dodsC/example/v1.0/"; // +e.g.,
-                                                                       // point/KachemakBay.nc";
+    String tdsUrl = "https://www.ncei.noaa.gov/thredds-ocean/dodsC/example/v1.0/"; // +e.g.,
+    // point/KachemakBay.nc";
     String fileName;
     String url, results, expected;
 

@@ -15,6 +15,7 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * A class for wrapping local and remote property change events for attributes.
+ *
  * @author Donald Denbo
  * @version $Revision: 1.3 $
  * @since 3.0
@@ -22,18 +23,13 @@ import java.beans.PropertyChangeEvent;
 public class AttributeChangeEvent extends PropertyChangeEvent {
   private boolean local_ = true;
 
-  public AttributeChangeEvent(Object source,
-                              String propertyName,
-                              Object oldValue,
-                              Object newValue) {
+  public AttributeChangeEvent(
+      Object source, String propertyName, Object oldValue, Object newValue) {
     this(source, propertyName, oldValue, newValue, true);
   }
 
-  public AttributeChangeEvent(Object source,
-                              String propertyName,
-                              Object oldValue,
-                              Object newValue,
-                              boolean local) {
+  public AttributeChangeEvent(
+      Object source, String propertyName, Object oldValue, Object newValue, boolean local) {
     super(source, propertyName, oldValue, newValue);
     local_ = local;
   }

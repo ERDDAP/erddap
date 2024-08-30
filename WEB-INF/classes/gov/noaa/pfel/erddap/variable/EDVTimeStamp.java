@@ -382,7 +382,7 @@ public class EDVTimeStamp extends EDV {
     return destinationToString(
         destinationMin
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
-                           // double
+    // double
   }
 
   /**
@@ -396,7 +396,7 @@ public class EDVTimeStamp extends EDV {
     return destinationToString(
         destinationMax
             .getDouble()); // time always full precision, not "niceDouble", but it is already a
-                           // double
+    // double
   }
 
   /**

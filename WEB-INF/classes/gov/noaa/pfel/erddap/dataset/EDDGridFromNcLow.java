@@ -412,7 +412,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                   NcHelper.unpackPA(
                       var, paa[dvi], true,
                       true); // lookForStringTime, lookForUnsigned (which changes type, eg unsigned
-                             // byte to signed short)
+            // byte to signed short)
 
             nValues = paa[dvi].size();
           }
@@ -595,7 +595,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             NcHelper.findMaxDVariables(
                 ncFile,
                 tGroup); // handles "[root]". throws exception if no such group or no vars with
-                         // dimensions
+        // dimensions
         useDims = maxDVariables[0].getDimensions(); // what is getDimensionsAll()?
         if (!String2.isSomething(tGroup)) {
           // look for a group (so global atts includes that group below)
@@ -631,9 +631,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         Attributes sourceAtts = new Attributes();
         if (String2.isSomething(dimName)) { // dimName, not axisName which is always something
           Variable axisVar = ncFile.findVariable(axisName);
-          if (axisVar
-              != null) { // it will be null for dimension without same-named coordinate axis
-                         // variable
+          if (axisVar != null) { // it will be null for dimension without same-named coordinate axis
+            // variable
             NcHelper.getVariableAttributes(axisVar, sourceAtts);
             if (tUnpack)
               Units2.unpackVariableAttributes(
@@ -695,7 +694,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
           int nDim =
               dimensions
                   .size(); // assume no Char->String in nc4 files   // - (tPAType == PAType.CHAR? 1
-                           // : 0);
+          // : 0);
           if (nDim > 1) // don't skip if nDim==1, since dataset might serve it.
           nGridsAtSource++;
           if (nDim != nUseDims) continue;

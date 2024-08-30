@@ -10,16 +10,15 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.util;
+package gov.noaa.pmel.util;
 
-import java.util.Date;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
- * <code>GeoDateArray</code> creates an efficient storage of
- * <code>GeoDate</code> objects.  This is accomplished by using an
- * internal storage of <code>long</code> for the number of
- * milliseconds since January 1, 1970, 00:00:00 GMT.
+ * <code>GeoDateArray</code> creates an efficient storage of <code>GeoDate</code> objects. This is
+ * accomplished by using an internal storage of <code>long</code> for the number of milliseconds
+ * since January 1, 1970, 00:00:00 GMT.
  *
  * @author Donald Denbo
  * @version $Revision: 1.5 $, $Date: 2003/08/22 23:02:40 $
@@ -29,15 +28,14 @@ public class GeoDateArray implements Serializable {
   private long[] date_;
 
   /**
-   * Construct a new <code>GeoDateArray</code> from an array of
-   * <code>GeoDate</code>s.
+   * Construct a new <code>GeoDateArray</code> from an array of <code>GeoDate</code>s.
    *
    * @param dates an array of <code>GeoDate</code>s.
    */
   public GeoDateArray(GeoDate[] dates) {
     date_ = new long[dates.length];
-    for(int i=0; i < dates.length; i++) {
-      if(!(dates[i] == null || dates[i].isMissing())) {
+    for (int i = 0; i < dates.length; i++) {
+      if (!(dates[i] == null || dates[i].isMissing())) {
         date_[i] = dates[i].getTime();
       } else {
         date_[i] = Long.MAX_VALUE;
@@ -46,15 +44,14 @@ public class GeoDateArray implements Serializable {
   }
 
   /**
-   * Construct a new <code>GeoDateArray</code> from an array of
-   * <code>Date</code>s.
+   * Construct a new <code>GeoDateArray</code> from an array of <code>Date</code>s.
    *
    * @param dates an array of <code>Date</code>s.
    */
   public GeoDateArray(Date[] dates) {
     date_ = new long[dates.length];
-    for(int i=0; i < dates.length; i++) {
-      if(!(dates[i] == null)) {
+    for (int i = 0; i < dates.length; i++) {
+      if (!(dates[i] == null)) {
         date_[i] = dates[i].getTime();
       } else {
         date_[i] = Long.MAX_VALUE;
@@ -63,10 +60,9 @@ public class GeoDateArray implements Serializable {
   }
 
   /**
-   * Construct a new <code>GeoDateArray</code> from an array of
-   * <code>long</code>s that represent the number of
-   * milliseconds since January 1, 1970, 00:00:00 GMT.  Missing value
-   * for date is <code>Long.MAX_VALUE</code>.
+   * Construct a new <code>GeoDateArray</code> from an array of <code>long</code>s that represent
+   * the number of milliseconds since January 1, 1970, 00:00:00 GMT. Missing value for date is
+   * <code>Long.MAX_VALUE</code>.
    *
    * @param dates an array of <code>long</code>s.
    */
@@ -79,22 +75,23 @@ public class GeoDateArray implements Serializable {
   }
 
   public long getTime(int index) {
-    if(index < 0 || index >= date_.length) return Long.MAX_VALUE;
+    if (index < 0 || index >= date_.length) return Long.MAX_VALUE;
     return date_[index];
   }
 
   public GeoDate getGeoDate(int index) {
-    if(index < 0 || index >= date_.length) return null;
+    if (index < 0 || index >= date_.length) return null;
     return new GeoDate(date_[index]);
   }
 
   public GeoDate[] getGeoDate() {
     GeoDate[] gd = new GeoDate[date_.length];
-    for(int i=0; i < date_.length; i++) {
+    for (int i = 0; i < date_.length; i++) {
       gd[i] = new GeoDate(date_[i]);
     }
     return gd;
   }
+
   /**
    * Time offset for reference <code>GeoDate</code>.
    *
@@ -102,8 +99,8 @@ public class GeoDateArray implements Serializable {
    * @return offset in days
    */
   public double getOffset(int index, GeoDate ref) {
-    if(index < 0 || index >= date_.length) return Double.NaN;
-    return ((double)(date_[index] - ref.getTime()))/86400000.0;
+    if (index < 0 || index >= date_.length) return Double.NaN;
+    return ((double) (date_[index] - ref.getTime())) / 86400000.0;
   }
 
   /**
@@ -115,11 +112,12 @@ public class GeoDateArray implements Serializable {
   public double[] getOffset(GeoDate ref) {
     long refgd = ref.getTime();
     double[] off = new double[date_.length];
-    for(int i=0; i < date_.length; i++) {
-      off[i] = ((double)(date_[i] - refgd))/86400000.0;
+    for (int i = 0; i < date_.length; i++) {
+      off[i] = ((double) (date_[i] - refgd)) / 86400000.0;
     }
     return off;
   }
+
   /**
    * Time offset for reference <code>GeoDate</code>.
    *
@@ -127,7 +125,7 @@ public class GeoDateArray implements Serializable {
    * @return offset in milliseconds
    */
   public long getOffsetTime(int index, GeoDate ref) {
-    if(index < 0 || index >= date_.length) return Long.MAX_VALUE;
+    if (index < 0 || index >= date_.length) return Long.MAX_VALUE;
     return date_[index] - ref.getTime();
   }
 
@@ -140,32 +138,27 @@ public class GeoDateArray implements Serializable {
   public long[] getOffsetTime(GeoDate ref) {
     long refgd = ref.getTime();
     long[] off = new long[date_.length];
-    for(int i=0; i < date_.length; i++) {
+    for (int i = 0; i < date_.length; i++) {
       off[i] = date_[i] - refgd;
     }
     return off;
   }
-  /**
-   * Add offset to all dates.
-   */
+
+  /** Add offset to all dates. */
   public void addOffset(long offset) {
-    for(int i=0; i < date_.length; i++) {
+    for (int i = 0; i < date_.length; i++) {
       date_[i] += offset;
     }
   }
-   /**
-    * Add offset to single date.
-    */
+
+  /** Add offset to single date. */
   public void addOffset(int index, long offset) {
-    if(index < 0 || index >= date_.length) return;
+    if (index < 0 || index >= date_.length) return;
     date_[index] += offset;
   }
-  /**
-   * Get length of array.
-   */
+
+  /** Get length of array. */
   public int getLength() {
     return date_.length;
   }
 }
-
-

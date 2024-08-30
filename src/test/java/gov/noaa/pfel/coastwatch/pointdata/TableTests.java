@@ -2301,7 +2301,7 @@ public class TableTests {
             "time,other\n" + "3,90\n",
             "time,other\n"
                 + "1,91\n", // for ties, the one that is picked isn't specified. unsort above causes
-                            // 91 to
+            // 91 to
             // be first.
             "time,other\n"
                 + "1,91\n"

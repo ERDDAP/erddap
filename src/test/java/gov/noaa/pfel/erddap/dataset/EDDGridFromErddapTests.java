@@ -2,7 +2,6 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-
 import tags.TagExternalERDDAP;
 import testDataset.EDDTestDataset;
 
@@ -18,10 +17,7 @@ class EDDGridFromErddapTests {
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
   }
 
-  /**
-   * This tests dealing with remote not having ioos_category, but local requiring
-   * it.
-   */
+  /** This tests dealing with remote not having ioos_category, but local requiring it. */
   @org.junit.jupiter.api.Test
   void testGridNoIoosCat() throws Throwable {
     String2.log("\n*** EDDGridFromErddap.testGridNoIoosCat");

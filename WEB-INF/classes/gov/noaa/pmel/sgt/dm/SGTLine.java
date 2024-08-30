@@ -16,15 +16,13 @@ import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.GeoDateArray;
 
 /**
- * Defines a data object to be of Line type. Interpretation
- * of X and Y is determined by the <code>CoordinateSystem</code>.  For
- * <code>Cartesian</code>, X and Y are the Cartesian coordinates. For
- * <code>Polar</code>,
- * X and Y are R (radius) and Theta (angle), respectively.
+ * Defines a data object to be of Line type. Interpretation of X and Y is determined by the <code>
+ * CoordinateSystem</code>. For <code>Cartesian</code>, X and Y are the Cartesian coordinates. For
+ * <code>Polar</code>, X and Y are R (radius) and Theta (angle), respectively.
  *
- * The <code>SGTLine</code> interfaces only specifies the methods required
- * to access information. The methods used to construct an
- * object that implements <code>SGTLine</code> is left to the developer.
+ * <p>The <code>SGTLine</code> interfaces only specifies the methods required to access information.
+ * The methods used to construct an object that implements <code>SGTLine</code> is left to the
+ * developer.
  *
  * @author Donald Denbo
  * @version $Revision: 1.7 $, $Date: 2003/08/22 23:02:38 $
@@ -36,32 +34,28 @@ import gov.noaa.pmel.util.GeoDateArray;
  * @see SimpleLine
  */
 public interface SGTLine extends SGTData {
-  /**
-   * Get the array of X values.
-   */
+  /** Get the array of X values. */
   public double[] getXArray();
-  /**
-   * Get the array of Y values.
-   */
+
+  /** Get the array of Y values. */
   public double[] getYArray();
-  /**
-   * Get the array of Time values.
-   */
+
+  /** Get the array of Time values. */
   public GeoDate[] getTimeArray();
+
   /**
    * Get the <code>GeoDateArray</code> object.
    *
    * @since 3.0
    */
   public GeoDateArray getGeoDateArray();
+
   /**
-   * Get the associated data. The associated data must
-   * be of the same type (SGTLine) and length. The Y
-   * array will be used.
+   * Get the associated data. The associated data must be of the same type (SGTLine) and length. The
+   * Y array will be used.
    */
   public SGTLine getAssociatedData();
-  /**
-   * Is there associated data available?
-   */
+
+  /** Is there associated data available? */
   public boolean hasAssociatedData();
 }

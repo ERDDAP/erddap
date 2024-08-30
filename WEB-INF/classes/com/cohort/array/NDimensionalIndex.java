@@ -267,9 +267,8 @@ public class NDimensionalIndex {
       current[i] =
           (int)
               (tIndex
-                  / factors[
-                      i]); // safe since tIndex is valid, this will be valid int since each
-                           // dimension size < Integer.MAX_VALUE
+                  / factors[i]); // safe since tIndex is valid, this will be valid int since each
+      // dimension size < Integer.MAX_VALUE
       tIndex %= factors[i];
     }
     return current;

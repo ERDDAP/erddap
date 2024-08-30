@@ -1940,10 +1940,10 @@ class EDDTableFromHttpGetTests {
             + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"
             + "station1,2016-05-29T01:00:00Z,10.2,-150.3,14.1,15.1,.{24},JohnSmith,0\n"
             + "station1,2016-05-29T01:00:00Z,10.2,-150.3,22.1,23.1,.{24},JohnSmith,0\n"; // so 22.1
-                                                                                         // is
-                                                                                         // visible
-                                                                                         // above,
-                                                                                         // not 14.1
+    // is
+    // visible
+    // above,
+    // not 14.1
     Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
     // e.g., max(timestamp)-0.001 -> 2020-10-09T19:29:31.667Z

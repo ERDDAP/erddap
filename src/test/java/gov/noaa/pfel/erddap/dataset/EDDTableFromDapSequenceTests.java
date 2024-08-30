@@ -291,7 +291,7 @@ class EDDTableFromDapSequenceTests {
 
       String tUrl =
           "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar11.html"; // test that it
-                                                                                  // removes
+      // removes
       // .html
       String results = EDDTableFromDapSequence.generateDatasetsXml(tUrl, 1440, null) + "\n";
 

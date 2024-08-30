@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Graph could not be produced because no data has been assigned.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class DataNotAssignedException extends SGException {
   public DataNotAssignedException() {
     super();
-}
+  }
+
   public DataNotAssignedException(String s) {
     super(s);
   }

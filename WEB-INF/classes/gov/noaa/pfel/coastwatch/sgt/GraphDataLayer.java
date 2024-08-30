@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
-
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pmel.sgt.ColorMap;
