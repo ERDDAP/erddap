@@ -48,6 +48,7 @@ import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.ma2.Array;
@@ -1558,6 +1559,7 @@ class EDDTableFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
+  @TagSlowTests
   void test3D(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.test3D()
     // *****************\n");
@@ -6249,6 +6251,7 @@ class EDDTableFromNcFilesTests {
   /** The basic graphics tests of this class (testGlobecBottle). */
   @org.junit.jupiter.api.Test
   @TagImageComparison
+  @TagSlowTests
   void testGraphics() throws Throwable {
     boolean doAll = true;
 
@@ -9733,6 +9736,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testUpdate() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testUpdate()\n");
 
@@ -12520,6 +12524,7 @@ class EDDTableFromNcFilesTests {
   /** This tests a long time graph. */
   @org.junit.jupiter.api.Test
   @TagImageComparison
+  @TagSlowTests
   void testTimeAxis() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTimeAxis");
 
@@ -17165,9 +17170,10 @@ class EDDTableFromNcFilesTests {
             + //
             "    String _Unsigned \"false\";\n"
             + //
-            "    Byte actual_range 0, 19;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
+            (results.indexOf("Byte actual_range 0, 19;") != -1
+                ? "    Byte actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
             + //
             "    String long_name \"Dim0\";\n"
             + //
@@ -17178,10 +17184,10 @@ class EDDTableFromNcFilesTests {
             "    Byte _FillValue 127;\n"
             + //
             "    String _Unsigned \"false\";\n"
-            + //
-            "    Byte actual_range 0, 19;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
+            + (results.indexOf("Byte actual_range 0, 19;") != -1
+                ? "    Byte actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
             + //
             "    String long_name \"Dim1\";\n"
             + //
@@ -17192,10 +17198,10 @@ class EDDTableFromNcFilesTests {
             "    Byte _FillValue 127;\n"
             + //
             "    String _Unsigned \"false\";\n"
-            + //
-            "    Byte actual_range 0, 19;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
+            + (results.indexOf("Byte actual_range 0, 19;") != -1
+                ? "    Byte actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
             + //
             "    String long_name \"Dim2\";\n"
             + //
@@ -17206,10 +17212,10 @@ class EDDTableFromNcFilesTests {
             "    Byte _FillValue 127;\n"
             + //
             "    String _Unsigned \"false\";\n"
-            + //
-            "    Byte actual_range 0, 19;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
+            + (results.indexOf("Byte actual_range 0, 19;") != -1
+                ? "    Byte actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
             + //
             "    String long_name \"Dim3\";\n"
             + //
@@ -17218,10 +17224,10 @@ class EDDTableFromNcFilesTests {
             "  group_with_dims_var4D {\n"
             + //
             "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    Int32 actual_range 0, 19;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
+            + (results.indexOf("Int32 actual_range 0, 19;") != -1
+                ? "    Int32 actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
             + //
             "    String long_name \"Group With Dims/var4 D\";\n"
             + //

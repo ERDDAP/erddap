@@ -93,8 +93,9 @@ public class SaxHandler extends DefaultHandler {
     context.setDatasetIDSet(new HashSet<>());
     context.setDuplicateDatasetIDs(new StringArray());
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
+    context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
-    context.settUserHashMap(new HashMap<>());
+    context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(erddap);
     context.setLastLuceneUpdate(System.currentTimeMillis());
@@ -126,7 +127,7 @@ public class SaxHandler extends DefaultHandler {
       StringBuilder datasetsThatFailedToLoadSB,
       StringBuilder failedDatasetsWithErrors,
       StringBuilder warningsFromLoadDatasets,
-      HashMap tUserHashMap,
+      HashMap<String, Object[]> tUserHashMap,
       boolean majorLoad,
       Erddap erddap,
       long lastLuceneUpdate,

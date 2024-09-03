@@ -163,8 +163,10 @@ public class LoadDatasets extends Thread {
       }
       EDStatic.cldMajor = majorLoad;
       EDStatic.cldNTry = 0; // that alone says none is currently active
-      HashMap tUserHashMap =
-          new HashMap(); // no need for thread-safe, all puts are here (1 thread); future gets are
+      HashMap<String, Object[]> tUserHashMap =
+          new HashMap<
+              String,
+              Object[]>(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
       StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();

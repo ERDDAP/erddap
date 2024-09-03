@@ -322,14 +322,6 @@
             <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1cflh1day</sourceUrl>
         </dataset>
     </dataset>
-    <dataset type="EDDGridLonPM180" datasetID="erdTAssh1day_LonPM180" active="true">
-        <accessibleTo>person1</accessibleTo>
-        <dataset type="EDDGridFromErddap" datasetID="erdTAssh1day_LonPM180Child">
-            <!-- Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)
-                 minLon=0.0 maxLon=359.75 -->
-            <sourceUrl>http://localhost:8080/erddap/griddap/erdTAssh1day</sourceUrl>
-        </dataset>
-    </dataset>
     <dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true">
         <!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily -->
         <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41</sourceUrl>
@@ -524,4 +516,12 @@
         </dataset>
     </dataset>
     <dataset type="EDDGridFromEtopo" datasetID="etopo180" />
+     <dataset type="EDDGridLonPM180" datasetID="erdTAssh1day_LonPM180" active="true">
+        <accessibleTo>person1</accessibleTo>
+        <dataset type="EDDGridFromErddap" datasetID="erdTAssh1day_LonPM180Child">
+            <!-- Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)
+                 minLon=0.0 maxLon=359.75 -->
+            <sourceUrl>http://localhost:8080/erddap/griddap/erdTAssh1day</sourceUrl>
+        </dataset>
+    </dataset>
 </erddapDatasets>

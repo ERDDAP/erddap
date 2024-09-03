@@ -8,6 +8,7 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import tags.TagSlowTests;
 
 class SharedWatchServiceTests {
 
@@ -34,6 +35,7 @@ class SharedWatchServiceTests {
 
   /** This tests this class. */
   @Test
+  @TagSlowTests
   void basicTest() throws Throwable {
     EventHandler eventHandler = new EventHandler();
 
