@@ -10,6 +10,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -606,6 +607,7 @@ class EDDTableFromInvalidCRAFilesTests {
    * doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // debugMode = true;

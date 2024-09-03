@@ -26,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import tags.TagFlaky;
 import tags.TagIncompleteTest;
+import tags.TagSlowTests;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
 @Isolated
@@ -1240,6 +1241,7 @@ class TestUtil {
 
   /** Test the methods in String2. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2() throws Throwable {
     String2.log("\n*** TestUtil.testString2()");
     String sar[];
@@ -8468,6 +8470,7 @@ class TestUtil {
 
   /** This tests String2.utf8 methods. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2utf8() throws Exception {
     String2.log("\n*** TestUtil.testString2utf8()");
     int n = 1000000;
@@ -8534,6 +8537,7 @@ class TestUtil {
 
   /** This tests String2.canonical(). */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2canonical() throws Exception {
     String2.log("\n*** TestUtil.testString2canonical()");
     // find a way to make != strings (for tests below)
@@ -8644,6 +8648,7 @@ class TestUtil {
 
   /** This tests String2.canonicalStringHolder(). */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testString2canonicalStringHolder() throws Exception {
     String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
     // find a way to make != strings (for tests below)

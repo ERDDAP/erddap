@@ -1,5 +1,7 @@
 package jetty;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cohort.array.Attributes;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
@@ -31,12 +33,18 @@ import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
 import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromEtopo;
 import gov.noaa.pfel.erddap.dataset.EDDGridLon0360;
 import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
+import gov.noaa.pfel.erddap.dataset.EDDGridSideBySide;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
+import gov.noaa.pfel.erddap.handlers.SaxHandler;
+import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
@@ -46,8 +54,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Pattern;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
@@ -57,6 +68,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagJetty;
 import testDataset.EDDTestDataset;
@@ -66,6 +78,7 @@ import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
+@TagJetty
 class JettyTests {
 
   @TempDir private static Path TEMP_DIR;
@@ -6920,21 +6933,7 @@ class JettyTests {
 
         String ttUrl = XML.decodeEntities(urls[urli]);
         if (String2.indexOf(skip, ttUrl) >= 0) continue;
-        String msg = null;
-        try {
-          Object[] o3 =
-              SSR.getUrlConnBufferedInputStream(
-                  ttUrl, 20000, false, true); // timeOutMillis, requestCompression, touchMode
-          if (o3[0] == null) {
-            ((InputStream) o3[1]).close();
-            throw new IOException("The URL for SSR.testForBrokenLinks can't be an AWS S3 URL.");
-          }
-          HttpURLConnection conn = (HttpURLConnection) o3[0];
-          int code = conn.getResponseCode();
-          if (code != 200) msg = " code=" + code + " " + ttUrl;
-        } catch (Exception e) {
-          msg = " code=ERR " + ttUrl + " error=\n" + e.toString() + "\n";
-        }
+        String msg = attemptUrlConnectionWithRetry(ttUrl);
         if (msg != null) {
           String fullMsg = "#" + ++errorCount + " line=" + String2.left("" + (linei + 1), 4) + msg;
           String2.log(fullMsg);
@@ -6947,12 +6946,45 @@ class JettyTests {
           "\nSSR.testForBrokenLinks(" + tUrl + ") found:\n" + log.toString());
   }
 
+  private String attemptUrlConnectionWithRetry(String ttUrl) {
+    String msg = null;
+    int RETRY_ATTEMPTS = 5;
+    for (int i = 0; i <= RETRY_ATTEMPTS; i++) {
+      try {
+        Object[] o3 =
+            SSR.getUrlConnBufferedInputStream(
+                ttUrl, 20000, false, true); // timeOutMillis, requestCompression, touchMode
+        if (o3[0] == null) {
+          ((InputStream) o3[1]).close();
+          throw new IOException("The URL for SSR.testForBrokenLinks can't be an AWS S3 URL.");
+        }
+        HttpURLConnection conn = (HttpURLConnection) o3[0];
+        int code = conn.getResponseCode();
+        if (code != 200) msg = " code=" + code + " " + ttUrl;
+      } catch (Exception e) {
+        msg = " code=ERR " + ttUrl + " error=\n" + e.toString() + "\n";
+      }
+      if (msg == null || i == RETRY_ATTEMPTS) {
+        continue;
+      } else {
+        try {
+          Thread.sleep(1000 * (i + 1) * (i + 1));
+          msg = null;
+        } catch (InterruptedException e) {
+          return msg;
+        }
+      }
+    }
+    return msg;
+  }
+
   @org.junit.jupiter.api.Test
   @TagJetty
   void testForBrokenLinks() throws Exception {
     this.testForBrokenLinks(
         "http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericAcronyms.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/fipscounty.html");
+    // At least one server linked to seems to go down frequently, so commenting out for now.
+    // this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/fipscounty.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/keywords.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/time.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/convert/units.html");
@@ -6966,9 +6998,7 @@ class JettyTests {
     // "/erddap/download/changes.html"); // todo re-enable, a couple links seem to
     // be broken, needs more investigation
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/EDDTableFromEML.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/grids.html"); // todo re-enable, link to storage mojo about
-    // google might be gone
+    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV.html");
     this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV_1.00.html");
     // this.testForBrokenLinks("http://localhost:" + PORT +
@@ -10240,6 +10270,8 @@ class JettyTests {
   /** This tests makeCopyFileTasks. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // This is flaky. Specifically for the check after the files are supposed to be
+            // downloaded.
   void testMakeCopyFileTasks() throws Exception {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
@@ -16600,6 +16632,7 @@ class JettyTests {
 
   /** EDDTests */
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testInPortXml() throws Throwable {
     String dir = EDStatic.fullTestCacheDirectory;
     String gridTable = "grid"; // grid or table
@@ -17460,5 +17493,94 @@ class JettyTests {
 
     /* */
     String2.log("\n*** OpendapHelper.testFindAllScalarOrMultiDimVars finished.");
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void parserAllDatasetsTest() throws Throwable {
+
+    TopLevelHandler topLevelHandler;
+    SAXParserFactory factory;
+    SAXParser saxParser;
+    InputStream inputStream;
+    SaxHandler saxHandler;
+    SaxParsingContext context;
+
+    context = new SaxParsingContext();
+
+    context.setNTryAndDatasets(new int[2]);
+    context.setChangedDatasetIDs(new StringArray());
+    context.setOrphanIDSet(new HashSet<>());
+    context.setDatasetIDSet(new HashSet<>());
+    context.setDuplicateDatasetIDs(new StringArray());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
+    context.setFailedDatasetsWithErrorsSB(new StringBuilder());
+    context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.settUserHashMap(new HashMap<String, Object[]>());
+    context.setMajorLoad(false);
+    context.setErddap(new Erddap());
+    context.setLastLuceneUpdate(0);
+    context.setDatasetsRegex(EDStatic.datasetsRegex);
+    context.setReallyVerbose(false);
+
+    factory = SAXParserFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setXIncludeAware(true);
+    saxParser = factory.newSAXParser();
+    saxHandler = new SaxHandler(context);
+    topLevelHandler = new TopLevelHandler(saxHandler, context);
+    saxHandler.setState(topLevelHandler);
+
+    inputStream = JettyTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
+    if (inputStream == null) {
+      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
+    }
+    saxParser.parse(inputStream, saxHandler);
+
+    EDDTableFromErddap eddTableFromErddap =
+        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
+    assertEquals(
+        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
+        eddTableFromErddap.localSourceUrl());
+
+    // TODO erdMH1cflh1day is not in the jetty test datasets, update this to be something that is
+    //   EDDTableFromEDDGrid eddTableFromEDDGrid = (EDDTableFromEDDGrid)
+    // context.getErddap().tableDatasetHashMap.get("erdMH1cflh1day_AsATable");
+    //   assertEquals(
+    //   "http://localhost:8080/erddap/griddap/erdMH1cflh1day",
+    //   eddTableFromEDDGrid.localSourceUrl());
+
+    EDDGridFromDap eddGridFromDap =
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
+    assertEquals(
+        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
+        eddGridFromDap.localSourceUrl());
+
+    EDDGridLonPM180 eddGridLonPM180 =
+        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
+    assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+
+    // TODO jplMURSST41 is not in the jetty test datasets, update this to be
+    // something that is
+    //   EDDGridFromErddap eddGridFromErddap = (EDDGridFromErddap)
+    // context.getErddap().gridDatasetHashMap
+    //           .get("jplMURSST41");
+    //   assertEquals(
+    //           "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
+    //           eddGridFromErddap.localSourceUrl());
+
+    // TODO testTimeAxis is not in the jetty test datasets, update this to be
+    //   EDDTableFromAsciiFiles eddTableFromAsciiFiles = (EDDTableFromAsciiFiles)
+    // context.getErddap().tableDatasetHashMap
+    //           .get("testTimeAxis");
+    //   assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
+
+    EDDGridSideBySide eddGridSideBySide =
+        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
+    assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
+
+    EDDGridFromEtopo eddGridFromEtopo =
+        (EDDGridFromEtopo) context.getErddap().gridDatasetHashMap.get("etopo180");
+    assertEquals("etopo180", eddGridFromEtopo.datasetID());
   }
 }

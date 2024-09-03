@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -4852,6 +4853,7 @@ class EDDTableFromMultidimNcFilesTests {
   }
 
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testScriptOnlyRequest() throws Throwable {
 
     EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles) EDDTestDataset.getTS_ATMP_AAD();

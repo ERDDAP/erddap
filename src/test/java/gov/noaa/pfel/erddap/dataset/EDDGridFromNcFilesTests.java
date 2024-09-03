@@ -29,6 +29,7 @@ import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
 import tags.TagLocalERDDAP;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -1063,6 +1064,7 @@ class EDDGridFromNcFilesTests {
 
   /** This looks for resource leaks from repeated attempts to read an invalid nc file. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testBadNcFile() throws Throwable {
     boolean runIncrediblySlowTest = false;
     // String2.log("\n*** EDDGridFromNcFiles.testBadNcFile()\n");
@@ -13828,6 +13830,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {3})
+  @TagSlowTests
   void testNThreads(int maxNThreads) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNThreads()
     // *****************\n");
@@ -14173,6 +14176,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testUpdate() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testUpdate()\n");
     EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
@@ -15512,6 +15516,7 @@ class EDDGridFromNcFilesTests {
    * @param extectedTimeS the expected time in seconds
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testBigRequestSpeed() throws Throwable {
     int nTimePoints = 3;
     String fileType = ".dods";

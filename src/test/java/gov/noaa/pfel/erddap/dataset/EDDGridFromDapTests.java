@@ -34,6 +34,7 @@ import tags.TagExternalOther;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -5041,6 +5042,7 @@ class EDDGridFromDapTests {
    * .mat files that had already been fixed but not released.
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testScaleFactor() throws Throwable {
     // testVerboseOn();
     int language = 0;

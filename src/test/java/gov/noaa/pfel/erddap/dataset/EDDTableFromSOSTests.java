@@ -322,6 +322,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosBPres() throws Throwable {
     // testVerboseOn();
 
@@ -514,6 +515,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosCond() throws Throwable {
     // testVerboseOn();
 
@@ -1083,6 +1085,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosSalinity() throws Throwable {
     // testVerboseOn();
 
@@ -1762,6 +1765,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosWTemp() throws Throwable {
     // testVerboseOn();
 

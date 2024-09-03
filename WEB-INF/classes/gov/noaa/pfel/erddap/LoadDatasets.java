@@ -163,8 +163,10 @@ public class LoadDatasets extends Thread {
       }
       EDStatic.cldMajor = majorLoad;
       EDStatic.cldNTry = 0; // that alone says none is currently active
-      HashMap tUserHashMap =
-          new HashMap(); // no need for thread-safe, all puts are here (1 thread); future gets are
+      HashMap<String, Object[]> tUserHashMap =
+          new HashMap<
+              String,
+              Object[]>(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
       StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();
@@ -416,7 +418,9 @@ public class LoadDatasets extends Thread {
           emailDailyReport(threadSummary, threadList, reportDate);
         } else {
           // major load, but not daily report
-          emailUnusualActivity(threadSummary, threadList);
+          if (EDStatic.unusualActivityFailPercent != -1) {
+            emailUnusualActivity(threadSummary, threadList);
+          }
         }
 
         // after every major loadDatasets
@@ -1069,6 +1073,15 @@ public class LoadDatasets extends Thread {
               tnt < 1 || tnt == Integer.MAX_VALUE ? EDStatic.DEFAULT_unusualActivity : tnt;
           String2.log("unusualActivity=" + EDStatic.unusualActivity);
 
+        } else if (tags.equals("<erddapDatasets><unusualActivityFailPercent>")) {
+        } else if (tags.equals("<erddapDatasets></unusualActivityFailPercent>")) {
+          int tnt = String2.parseInt(xmlReader.content());
+          EDStatic.unusualActivityFailPercent =
+              tnt < 0 || tnt > 100 || tnt == Integer.MAX_VALUE
+                  ? EDStatic.DEFAULT_unusualActivityFailPercent
+                  : tnt;
+          String2.log("unusualActivityFailPercent=" + EDStatic.unusualActivityFailPercent);
+
         } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
         } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
           int tnt = String2.parseInt(xmlReader.content());
@@ -1249,14 +1262,17 @@ public class LoadDatasets extends Thread {
     // email if some threshold is surpassed???
     int nFailed = String2.getTimeDistributionN(EDStatic.failureTimesDistributionLoadDatasets);
     int nSucceeded = String2.getTimeDistributionN(EDStatic.responseTimesDistributionLoadDatasets);
-    if (nFailed + nSucceeded > EDStatic.unusualActivity) // high activity level
-    EDStatic.email(
+    if (nFailed + nSucceeded > EDStatic.unusualActivity) { // high activity level
+      EDStatic.email(
           EDStatic.emailEverythingToCsv, "Unusual Activity: lots of requests", sb.toString());
-    else if (nFailed > 10 && nFailed > nSucceeded / 4) // >25% of requests fail
-    EDStatic.email(
+    } else if (nFailed > 10
+        && nFailed
+            > nSucceeded * (EDStatic.unusualActivityFailPercent) / 100) { // >25% of requests fail
+      EDStatic.email(
           EDStatic.emailEverythingToCsv,
-          "Unusual Activity: >25% of requests failed",
+          "Unusual Activity: >" + EDStatic.unusualActivityFailPercent + "% of requests failed",
           sb.toString());
+    }
   }
 
   private void emailDailyReport(String threadSummary, String threadList, String reportDate) {

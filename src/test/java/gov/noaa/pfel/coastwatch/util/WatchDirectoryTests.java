@@ -9,10 +9,12 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import tags.TagIncompleteTest;
+import tags.TagSlowTests;
 
 class WatchDirectoryTests {
   /** This tests this class. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void basicTest() throws Throwable {
     // String2.log("\n*** WatchDirectory.basicTest");
     // verbose = true;

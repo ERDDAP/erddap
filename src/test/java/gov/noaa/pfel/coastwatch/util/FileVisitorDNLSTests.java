@@ -15,6 +15,7 @@ import tags.TagAWS;
 import tags.TagExternalOther;
 import tags.TagLargeFiles;
 import tags.TagMissingFile;
+import tags.TagSlowTests;
 import tags.TagThredds;
 
 class FileVisitorDNLSTests {
@@ -977,6 +978,7 @@ class FileVisitorDNLSTests {
 
   /** This tests GPCP. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testGpcp() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testGpcp()\n");
 

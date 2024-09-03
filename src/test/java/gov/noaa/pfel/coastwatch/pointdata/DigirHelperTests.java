@@ -9,6 +9,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import tags.TagExternalOther;
+import tags.TagSlowTests;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
@@ -19,6 +20,7 @@ class DigirHelperTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void basicTest() throws Exception {
 
     String2.log("\n***** DigirHelper.basicTest");
@@ -351,6 +353,7 @@ class DigirHelperTests {
 
   /** This tests searchBmde. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testBmde() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
