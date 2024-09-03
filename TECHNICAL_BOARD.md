@@ -55,3 +55,5 @@ If you would like to add an item to the Technical Board Agenda for discussion or
 ## Members
 
 Chris John
+Seth Champagne
+Shane St Savage
