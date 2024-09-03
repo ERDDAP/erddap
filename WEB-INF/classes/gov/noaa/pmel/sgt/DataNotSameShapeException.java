@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Operation could not be completed since grids are not the same shape.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class DataNotSameShapeException extends SGException {
   public DataNotSameShapeException() {
     super();
-}
+  }
+
   public DataNotSameShapeException(String s) {
     super(s);
   }

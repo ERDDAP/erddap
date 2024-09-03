@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Contour level does not exist.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class ContourLevelNotFoundException extends SGException {
   public ContourLevelNotFoundException() {
     super();
-}
+  }
+
   public ContourLevelNotFoundException(String s) {
     super(s);
   }

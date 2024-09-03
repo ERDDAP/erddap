@@ -11,29 +11,31 @@
 
 package dods.dap;
 
-/** Thrown when an attempt is made to access a function that does not exist.
-    @version $Revision: 1.3 $
-    @author jhrg */
-
+/**
+ * Thrown when an attempt is made to access a function that does not exist.
+ *
+ * @version $Revision: 1.3 $
+ * @author jhrg
+ */
 public class NoSuchFunctionException extends DDSException {
 
-  /** Construct a <code>NoSuchFunctionException</code> with the specified
-   * message.
-   * @param s the detail message. */
-
-   public NoSuchFunctionException(String s) {
-       super(DODSException.MALFORMED_EXPR,s);
-   }
-
+  /**
+   * Construct a <code>NoSuchFunctionException</code> with the specified message.
+   *
+   * @param s the detail message.
+   */
+  public NoSuchFunctionException(String s) {
+    super(DODSException.MALFORMED_EXPR, s);
+  }
 
   /**
-   * Construct a <code>NoSuchFunctionException</code> with the specified
-   * message and DODS error code see (<code>DODSException</code>).
+   * Construct a <code>NoSuchFunctionException</code> with the specified message and DODS error code
+   * see (<code>DODSException</code>).
    *
    * @param err the DODS error code.
    * @param s the detail message.
    */
   public NoSuchFunctionException(int err, String s) {
-    super(err,s);
+    super(err, s);
   }
 }

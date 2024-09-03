@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import java.util.HashSet;

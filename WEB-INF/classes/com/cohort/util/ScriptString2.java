@@ -3,7 +3,6 @@
  */
 package com.cohort.util;
 
-
 /**
  * This class makes about half of the static methods in com.cohort.String2 accessible to JexlScript
  * scripts as "String2.<i>name</i>()" methods. All of the constants and methods related to files,

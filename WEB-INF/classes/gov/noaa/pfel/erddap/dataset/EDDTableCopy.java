@@ -462,7 +462,7 @@ public class EDDTableCopy extends EDDTable {
         EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
-                                                  // checking on it
+        // checking on it
       }
     }
 
@@ -567,7 +567,7 @@ public class EDDTableCopy extends EDDTable {
             1,
             2,
             "", // columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid
-                // values
+            // values
             null,
             null,
             null,
@@ -589,9 +589,8 @@ public class EDDTableCopy extends EDDTable {
     sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
     addGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        localEdd
-            .combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
-                                       // sourceGlobalAttributes); //order is important
+        localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
+    // sourceGlobalAttributes); //order is important
 
     // copy data variables
     dataVariables = localEdd.dataVariables;

@@ -88,7 +88,7 @@ public class TableWriterDodsAscii extends TableWriter {
       writer =
           File2.getBufferedWriter88591(
               outputStream); // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for
-                             // compatible common 8bit
+      // compatible common 8bit
       writer.write(
           "---------------------------------------------"
               + OpendapHelper.EOL); // this exactly mimics the example

@@ -12,17 +12,17 @@
 
 package gov.noaa.pmel.sgt.beans;
 
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.Attribute;
+import gov.noaa.pmel.sgt.dm.SGTData;
 
 /**
- * Object to associate <code>SGTData</code>, <code>Attribute</code>,
- * <code>Panel</code>, and <code>DataGroup</code>.
+ * Object to associate <code>SGTData</code>, <code>Attribute</code>, <code>Panel</code>, and <code>
+ * DataGroup</code>.
  *
  * @author Donald Denbo
  * @version $Revision: 1.2 $, $Date: 2003/08/22 23:02:34 $
  * @since 3.0
- **/
+ */
 class DataHolder {
   /**
    * @undirected
@@ -48,7 +48,8 @@ class DataHolder {
 
   /**
    * @supplierCardinality 1
-   * @label dataGroup */
+   * @label dataGroup
+   */
   private DataGroup dataGroup_;
 
   /**
@@ -57,13 +58,17 @@ class DataHolder {
   private Legend legend_;
 
   /**
-   * @label dModel 
+   * @label dModel
    */
   private DataModel dModel_;
 
-  public DataHolder(DataModel model, SGTData data, Attribute attr,
-                    PanelHolder pHolder, DataGroup dataGroup,
-                    Legend legend) {
+  public DataHolder(
+      DataModel model,
+      SGTData data,
+      Attribute attr,
+      PanelHolder pHolder,
+      DataGroup dataGroup,
+      Legend legend) {
     dModel_ = model;
     data_ = data;
     attr_ = attr;

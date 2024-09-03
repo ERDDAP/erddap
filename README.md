@@ -36,6 +36,17 @@ Note that by default tests that do an image comparison are enabled. To disable t
 
 If you'd like to skip the tests while building use `mvn package -DskipTests`. You can use the skipTests flags with other maven commands.
 
+### Running the code formatter
+
+To format code locally you can run:
+
+(Windows)
+`mvn git-code-format:format-code -D"gcf.globPattern=**/*"`
+
+(Other)
+`mvn git-code-format:format-code -Dgcf.globPattern=**/*`
+
+Code should be automatically formatted during a git pre-commit step to simplify reviews. It can still be useful sometimes to format code before making a git commit.
 
 ## Contributing Code to ERDDAP&trade;
 

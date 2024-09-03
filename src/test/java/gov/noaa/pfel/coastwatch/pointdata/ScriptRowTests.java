@@ -1,22 +1,21 @@
 package gov.noaa.pfel.coastwatch.pointdata;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlScript;
-import org.apache.commons.jexl3.MapContext;
-
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Script2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.MapContext;
 
 class ScriptRowTests {
   /**
-   * This tests Jexl scripts, including working with a table.
-   * Only the controller (ERDDAP) should call this. Scripts shouldn't call this.
+   * This tests Jexl scripts, including working with a table. Only the controller (ERDDAP) should
+   * call this. Scripts shouldn't call this.
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
@@ -26,7 +25,12 @@ class ScriptRowTests {
     // if !silent, it throws exception if trouble
     // if strict, it requires variables, methods and functions to be defined
     // (instead of treating unknowns as null, like javascript)
-    JexlEngine jengine = new JexlBuilder().permissions(Script2.permissions).silent(false).strict(true).create(); // see better/safer constructor below
+    JexlEngine jengine =
+        new JexlBuilder()
+            .permissions(Script2.permissions)
+            .silent(false)
+            .strict(true)
+            .create(); // see better/safer constructor below
     JexlScript jscript; // multiple statements. Has support for if/for/while/var/{} etc.
     JexlContext jcontext;
     Object o;
@@ -81,11 +85,10 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = "Caught: " + e.toString();
     }
-    expected = "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand";
+    expected =
+        "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand";
     results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
-    Test.ensureEqual(results.substring(0, expected.length()),
-        expected,
-        "results=\n" + results);
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // ensure script can't easily access other classes unless explicitly added
     jscript = jengine.createScript("String2.zeroPad(\"a\", 3)");
@@ -95,7 +98,8 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = "Caught: " + e.toString();
     }
-    Test.ensureEqual(results,
+    Test.ensureEqual(
+        results,
         "Caught: java.lang.NullPointerException: Cannot invoke \"Object.toString()\" because the return value of \"org.apache.commons.jexl3.JexlScript.execute(org.apache.commons.jexl3.JexlContext)\" is null",
         // 2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable:
         // gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable
@@ -103,13 +107,15 @@ class ScriptRowTests {
         "results=\n" + results);
 
     // Verify Jexl permissions restrict sensitive access.
-    jscript = jengine.createScript("\"\".class.forName(\"java.lang.System\").getProperty(\"os.name\")");
+    jscript =
+        jengine.createScript("\"\".class.forName(\"java.lang.System\").getProperty(\"os.name\")");
     jcontext = new MapContext();
     o = jscript.execute(jcontext);
     Test.ensureEqual(o, null, "Jexl should return null due to permission restrictions");
 
     // a user can instantiate ANY class...
-    jscript = jengine.createScript("new('" + StringBuilder.class.getName() + "', 'contents of sb')");
+    jscript =
+        jengine.createScript("new('" + StringBuilder.class.getName() + "', 'contents of sb')");
     jcontext = new MapContext();
     o = jscript.execute(jcontext);
     Test.ensureEqual(o.getClass().getSimpleName(), "StringBuilder", "");
@@ -120,13 +126,17 @@ class ScriptRowTests {
     expected = "";
     Test.ensureEqual(results, expected, "");
 
-    results = String2.toCSSVString(Script2.jexlScriptNeedsColumns(
-        "=var wt=row.columnFloat(\"Water Temperature (Celsius)\"); return wt&lt;-10? NaN : wt*9/5+32;"));
+    results =
+        String2.toCSSVString(
+            Script2.jexlScriptNeedsColumns(
+                "=var wt=row.columnFloat(\"Water Temperature (Celsius)\"); return wt&lt;-10? NaN : wt*9/5+32;"));
     expected = "Water Temperature (Celsius)";
     Test.ensureEqual(results, expected, "");
 
-    results = String2.toCSSVString(Script2.jexlScriptNeedsColumns(
-        "=row.columnFloat(\"abc\"); row.columnString(\"def\"); row.columnInt(\"g h\")"));
+    results =
+        String2.toCSSVString(
+            Script2.jexlScriptNeedsColumns(
+                "=row.columnFloat(\"abc\"); row.columnString(\"def\"); row.columnInt(\"g h\")"));
     expected = "abc, def, g h";
     Test.ensureEqual(results, expected, "");
 
@@ -139,14 +149,16 @@ class ScriptRowTests {
     // With sandbox, user can't call System class' methods.
     // https://issues.apache.org/jira/browse/JEXL-140
     try {
-      jscript = jengine.createScript("\"\".class.forName(\"java.lang.System\").getProperty(\"os.name\")");
+      jscript =
+          jengine.createScript("\"\".class.forName(\"java.lang.System\").getProperty(\"os.name\")");
       jcontext = Script2.jexlMapContext();
       o = jscript.execute(jcontext);
       results = o.getClass().getSimpleName();
     } catch (Exception e) {
       results = "Caught: " + e.toString();
     }
-    Test.ensureEqual(results,
+    Test.ensureEqual(
+        results,
         "Caught: java.lang.NullPointerException: Cannot invoke \"Object.getClass()\" because \"o\" is null",
         // 2021-07-02 was "org.apache.commons.jexl3.JexlException$Method:
         // gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:37 unsolvable
@@ -156,7 +168,8 @@ class ScriptRowTests {
     // test a user can instantiate any class: now it fails (as desired)
     // With sandbox, user can't create StringBuilder object.
     try {
-      jscript = jengine.createScript("new('" + StringBuilder.class.getName() + "', 'contents of sb')");
+      jscript =
+          jengine.createScript("new('" + StringBuilder.class.getName() + "', 'contents of sb')");
       jcontext = Script2.jexlMapContext();
       o = jscript.execute(jcontext);
       results = o.getClass().getSimpleName();
@@ -164,9 +177,10 @@ class ScriptRowTests {
       results = e.toString();
     }
     results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
-    Test.ensureEqual(results,
-        "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION unsolvable function/method 'java.lang.StringBuilder(String)'",
+    Test.ensureEqual(
+        results,
+        "org.apache.commons.jexl3.JexlException$Method: "
+            + "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION unsolvable function/method 'java.lang.StringBuilder(String)'",
         "");
 
     // work with static functions by making a shell class (ScriptMath) that can be
@@ -219,7 +233,8 @@ class ScriptRowTests {
       results = e.toString();
     }
     results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
-    Test.ensureEqual(results,
+    Test.ensureEqual(
+        results,
         "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand",
         "");
 
@@ -241,7 +256,8 @@ class ScriptRowTests {
     } catch (Exception e) {
       results = "Caught: " + e.toString();
     }
-    Test.ensureEqual(results,
+    Test.ensureEqual(
+        results,
         "Caught: java.lang.NullPointerException: Cannot invoke \"Object.toString()\" because the return value of \"org.apache.commons.jexl3.JexlScript.execute(org.apache.commons.jexl3.JexlContext)\" is null",
         // 2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable:
         // gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable
@@ -258,9 +274,9 @@ class ScriptRowTests {
 
     // work with row (in a table)
     Table table = new Table();
-    table.addColumn("ints", new IntArray(new int[] { 0, 10, 20 }));
-    table.addColumn("doubles", new DoubleArray(new double[] { 0, 1.1, 2.2 }));
-    table.addColumn("Strings", new StringArray(new String[] { "a", "bb", "ccc" }));
+    table.addColumn("ints", new IntArray(new int[] {0, 10, 20}));
+    table.addColumn("doubles", new DoubleArray(new double[] {0, 1.1, 2.2}));
+    table.addColumn("Strings", new StringArray(new String[] {"a", "bb", "ccc"}));
     ScriptRow row = new ScriptRow("/dir1/dir2/fileName.ext", table);
     Test.ensureEqual(row.getFullFileName(), "/dir1/dir2/fileName.ext", "");
     Test.ensureEqual(row.getFileName(), "fileName.ext", "");
@@ -276,8 +292,10 @@ class ScriptRowTests {
         Test.ensureEqual(d, i * 11.1, "");
       }
     }
-    String2
-        .log("native time for 1,000,000,000 evaluations=" + (System.currentTimeMillis() - time) + "ms (expected: 34)");
+    String2.log(
+        "native time for 1,000,000,000 evaluations="
+            + (System.currentTimeMillis() - time)
+            + "ms (expected: 34)");
 
     // test jexl time
     time = System.currentTimeMillis();
@@ -294,8 +312,9 @@ class ScriptRowTests {
         Test.ensureEqual(((Double) o).doubleValue(), i * 11.1, "");
       }
     }
-    String2
-        .log("jexl   time for 1,000,000,000 evaluations=" + (System.currentTimeMillis() - time) + "ms (expected: 137)");
+    String2.log(
+        "jexl   time for 1,000,000,000 evaluations="
+            + (System.currentTimeMillis() - time)
+            + "ms (expected: 137)");
   }
-
 }

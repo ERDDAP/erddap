@@ -11,7 +11,6 @@
 // RCS $Id: LogTransform.java,v 1.8 2003/08/22 23:02:32 dwd Exp $
 package gov.noaa.pmel.sgt;
 
-
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.SoTRange;

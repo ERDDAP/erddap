@@ -136,10 +136,11 @@ public class Calendar2 {
   public static final String ISO8601T3_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
   public static final String ISO8601T6_FORMAT =
       "yyyy-MM-dd'T'HH:mm:ss.SSS000"; // WARNING: only useful if S digits 4-6 are '0'. gc doesn't
-                                      // support microseconds.
+  // support microseconds.
   public static final String ISO8601T9_FORMAT =
       "yyyy-MM-dd'T'HH:mm:ss.SSS000000"; // WARNING: only useful if S digits 4-9 are '0'. gc doesn't
-                                         // support nanoseconds.
+
+  // support nanoseconds.
 
   /** special case format supports suffix 'Z' or +/-HH:MM. For format() use 'Z' to get 'Z'. */
   public static final String ISO8601TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
@@ -147,10 +148,10 @@ public class Calendar2 {
   public static final String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
   public static final String ISO8601T6Z_FORMAT =
       "yyyy-MM-dd'T'HH:mm:ss.SSS000Z"; // WARNING: only useful if S digits 4-6 are '0'. gc doesn't
-                                       // support microseconds.
+  // support microseconds.
   public static final String ISO8601T9Z_FORMAT =
       "yyyy-MM-dd'T'HH:mm:ss.SSS000000Z"; // WARNING: only useful if S digits 4-9 are '0'. gc
-                                          // doesn't support nanoseconds.
+  // doesn't support nanoseconds.
   public static final DateTimeFormatter ISO_OFFSET_LOCAL_FORMATTER =
       // since this is formatter (not parser), bypass stuff in makeDateTimeFormatter
       DateTimeFormatter.ofPattern(
@@ -189,12 +190,12 @@ public class Calendar2 {
 
           // yyyy-DDD   check for day-of-year (3 digit date) before ISO 8601 format.
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{7,9} UTC", // in
-                                                                                      // practice, I
-                                                                                      // have only
-                                                                                      // seen " UTC"
+              // practice, I
+              // have only
+              // seen " UTC"
               "yyyy-DDD'T'HH:mm:ss,SSS000000 'UTC'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{7,9} GMT", // GMT is
-                                                                                      // rarely used
+              // rarely used
               "yyyy-DDD'T'HH:mm:ss,SSS000000 'GMT'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{7,9}UTC",
               "yyyy-DDD'T'HH:mm:ss,SSS000000'UTC'",
@@ -235,12 +236,12 @@ public class Calendar2 {
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]{7,9}",
               "yyyy-DDD'T'HH:mm:ss.SSS000000",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{4,6} UTC", // in
-                                                                                      // practice, I
-                                                                                      // have only
-                                                                                      // seen " UTC"
+              // practice, I
+              // have only
+              // seen " UTC"
               "yyyy-DDD'T'HH:mm:ss,SSS000 'UTC'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{4,6} GMT", // GMT is
-                                                                                      // rarely used
+              // rarely used
               "yyyy-DDD'T'HH:mm:ss,SSS000 'GMT'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{4,6}UTC",
               "yyyy-DDD'T'HH:mm:ss,SSS000'UTC'",
@@ -281,12 +282,12 @@ public class Calendar2 {
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]{4,6}",
               "yyyy-DDD'T'HH:mm:ss.SSS000",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{1,3} UTC", // in
-                                                                                      // practice, I
-                                                                                      // have only
-                                                                                      // seen " UTC"
+              // practice, I
+              // have only
+              // seen " UTC"
               "yyyy-DDD'T'HH:mm:ss,SSS 'UTC'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{1,3} GMT", // GMT is
-                                                                                      // rarely used
+              // rarely used
               "yyyy-DDD'T'HH:mm:ss,SSS 'GMT'",
           "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{1,3}UTC",
               "yyyy-DDD'T'HH:mm:ss,SSS'UTC'",
@@ -2207,7 +2208,7 @@ public class Calendar2 {
           "EEE, d MMM yyyy HH:mm:ss",
           // Tue Dec 6 17:36:16 2017  some variety in how single digit date and hour are written
           "[a-zA-Z]{3} [a-zA-Z]{3} [ 0123][0-9] [ 012][0-9]:[0-5][0-9]:[0-5][0-9] [0-9]{4}", // 2
-                                                                                             // digits
+          // digits
           "EEE MMM dd HH:mm:ss yyyy",
           "[a-zA-Z]{3} [a-zA-Z]{3} [0123]?[0-9] [012]?[0-9]:[0-5][0-9]:[0-5][0-9] [0-9]{4}", // variable nDigits
           "EEE MMM d H:mm:ss yyyy",
@@ -5597,10 +5598,9 @@ public class Calendar2 {
       someDateTimeString = someDateTimeString.substring(0, spo).trim();
       if (someDateTimeString.length() == 0) return "";
     }
-    if (someDateTimeString.endsWith(
-        " (original)")) // e.g.,
-                        // https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mon.ltm.nc
-    someDateTimeString = someDateTimeString.substring(0, someDateTimeString.length() - 11);
+    if (someDateTimeString.endsWith(" (original)")) // e.g.,
+      // https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mon.ltm.nc
+      someDateTimeString = someDateTimeString.substring(0, someDateTimeString.length() - 11);
 
     // catch some non-standard formats that aren't caught below
     char ch = someDateTimeString.charAt(0);
@@ -5648,10 +5648,9 @@ public class Calendar2 {
       someDateTimeString = someDateTimeString.substring(0, spo).trim();
       if (someDateTimeString.length() == 0) return "";
     }
-    if (someDateTimeString.endsWith(
-        " (original)")) // e.g.,
-                        // https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mon.ltm.nc
-    someDateTimeString = someDateTimeString.substring(0, someDateTimeString.length() - 11);
+    if (someDateTimeString.endsWith(" (original)")) // e.g.,
+      // https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/noaa.ersst.v5/sst.mon.ltm.nc
+      someDateTimeString = someDateTimeString.substring(0, someDateTimeString.length() - 11);
 
     // catch some non-standard formats that aren't caught below
     char ch = someDateTimeString.charAt(0);

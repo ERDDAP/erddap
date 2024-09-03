@@ -450,7 +450,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
         language,
         userDapQuery,
         resultsVariables, // doesn't catch constraintVariables that aren't in users requested
-                          // results
+        // results
         constraintVariables,
         constraintOps,
         constraintValues,
@@ -506,9 +506,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                   avIsTimeStamp
                       ? conValD == destVal
                       : // exact
-                      Math2.almostEqual(
-                          5, conValD,
-                          destVal); // fuzzy, biased towards passing
+                      Math2.almostEqual(5, conValD, destVal); // fuzzy, biased towards passing
               avMin[av] = Math.max(avMin[av], conValD);
               avMax[av] = Math.min(avMax[av], conValD);
             }

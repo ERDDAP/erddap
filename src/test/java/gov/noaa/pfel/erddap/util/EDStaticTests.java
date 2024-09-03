@@ -17,10 +17,12 @@ class EDStaticTests {
     add.set("sourceUrl", "http://coastwatch.pfel.noaa.gov"); // purposely out-of-date
     EDStatic.updateUrls(source, add);
     String results = add.toString();
-    String expected = "    a=https://coastwatch.pfeg.noaa.gov\n" +
-        "    b=https://www.whoi.edu\n" +
-        "    sourceUrl=http://coastwatch.pfel.noaa.gov\n" + // unchanged
-        "    ten=10.0d\n";
+    String expected =
+        "    a=https://coastwatch.pfeg.noaa.gov\n"
+            + "    b=https://www.whoi.edu\n"
+            + "    sourceUrl=http://coastwatch.pfel.noaa.gov\n"
+            + // unchanged
+            "    ten=10.0d\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     source = new Attributes();
@@ -31,10 +33,11 @@ class EDStaticTests {
     add.set("sourceUrl", "http://coastwatch.pfel.noaa.gov");
     EDStatic.updateUrls(null, add);
     results = add.toString();
-    expected = "    a=https://coastwatch.pfeg.noaa.gov\n" +
-        "    b=https://www.whoi.edu\n" +
-        "    nine=9.0d\n" +
-        "    sourceUrl=http://coastwatch.pfel.noaa.gov\n"; // unchanged
+    expected =
+        "    a=https://coastwatch.pfeg.noaa.gov\n"
+            + "    b=https://www.whoi.edu\n"
+            + "    nine=9.0d\n"
+            + "    sourceUrl=http://coastwatch.pfel.noaa.gov\n"; // unchanged
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 }

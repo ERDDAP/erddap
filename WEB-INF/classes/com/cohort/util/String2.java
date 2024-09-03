@@ -181,7 +181,8 @@ public class String2 {
   public static final Pattern NCCSV_LLA_NUMBER_PATTERN =
       Pattern.compile(
           "(-?\\d[0-9.eE+-]*|NaN)(b|s|L|f|ub|us|ui|uL|)"); // Java always writes a leading digit,
-                                                           // e.g., 0.1, not .1
+
+  // e.g., 0.1, not .1
 
   /**
    * These are NOT thread-safe. Always use them in synchronized blocks ("synchronized(gen....) {}").
@@ -212,7 +213,8 @@ public class String2 {
   private static Map canonicalLockMap = new WeakHashMap();
   public static int longTimeoutSeconds =
       300; // 5 minutes. This is >= other timeouts in the system. This is used in places that
-           // previously waited forever.
+
+  // previously waited forever.
 
   /**
    * This returns the string which sorts higher. null sorts low.
@@ -2292,8 +2294,8 @@ public class String2 {
         NCCSV_LLA_NUMBER_PATTERN
             .matcher(s)
             .matches()) // Looks Like A Number (It looks like a number so it needs "'s to force it
-                        // to be seen as a String.)
-    return "\"" + sb.toString() + "\"";
+      // to be seen as a String.)
+      return "\"" + sb.toString() + "\"";
     return sb.toString();
   }
 
@@ -2323,8 +2325,8 @@ public class String2 {
         NCCSV_LLA_NUMBER_PATTERN
             .matcher(s)
             .matches()) // Looks Like A number (It looks like a number so it needs "'s to force it
-                        // to be seen as a String.)
-    return "\"" + sb.toString() + "\"";
+      // to be seen as a String.)
+      return "\"" + sb.toString() + "\"";
     return sb.toString();
   }
 
@@ -5553,7 +5555,7 @@ public class String2 {
     InputStream fis =
         File2.getBufferedInputStream(
             fullFileName); // not File2.getDecompressedBufferedInputStream() because we want file
-                           // digest of archive
+    // digest of archive
     try {
       byte buffer[] = new byte[8192];
       int nBytes;
@@ -5967,7 +5969,7 @@ public class String2 {
         canonicalMap[
             Math.abs(s.hashCode() ^ s.length())
                 % nCanonicalMaps]; // ^length makes it different, so not lots of collisions within
-                                   // tCanonicalMap[i]
+    // tCanonicalMap[i]
     // see stats at end of Table.testBigAscii();
 
     // faster and logically better to use synchronized(canonicalMap) once
@@ -6012,7 +6014,7 @@ public class String2 {
         canonicalStringHolderMap[
             Math.abs(sh.hashCode() ^ sh.length())
                 % nCanonicalMaps]; // ^length makes it different, so not lots of collisions within
-                                   // tCanonicalStringHolderMap[i]
+    // tCanonicalStringHolderMap[i]
     // see stats at end of Table.testBigAscii();
 
     // faster and logically better to use synchronized(canonicalStringHolderMap) once

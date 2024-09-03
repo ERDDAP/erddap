@@ -10,15 +10,13 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import java.awt.*;
 
-
 /**
- * Defines the methods that implement stroke drawing in sgt. This
- * interface is necessary since sgt v2.0 will use Java2D functionality
- * to draw strokes if it is available.
+ * Defines the methods that implement stroke drawing in sgt. This interface is necessary since sgt
+ * v2.0 will use Java2D functionality to draw strokes if it is available.
  *
  * @author Donald Denbo
  * @version $Revision: 1.3 $, $Date: 2001/12/11 23:50:10 $
@@ -26,26 +24,11 @@ import java.awt.*;
  */
 public interface StrokeDrawer {
 
-  public void drawHeavy(Graphics g, int[] xout, int[] yout, int size,
-                        LineAttribute attr);
+  public void drawHeavy(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr);
 
-  public void drawDashed(Graphics g, int[] xout, int[] yout, int size,
-                         LineAttribute attr);
+  public void drawDashed(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr);
 
-  public void drawStroke(Graphics g, int[] xout, int[] yout, int size,
-                         LineAttribute attr);
+  public void drawStroke(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr);
 
-  public void drawHighlight(Graphics g, int[] xout, int[] yout, int size,
-			    LineAttribute attr);
+  public void drawHighlight(Graphics g, int[] xout, int[] yout, int size, LineAttribute attr);
 }
-
-
-
-
-
-
-
-
-
-
-

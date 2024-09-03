@@ -12,7 +12,6 @@
 
 package gov.noaa.pmel.sgt.beans;
 
-
 import gov.noaa.pmel.util.SoTRange;
 import java.beans.*;
 import java.io.*;

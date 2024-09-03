@@ -20,25 +20,26 @@ import javax.swing.UIManager;
  * @author Donald Denbo
  * @version $Revision: 1.3 $, $Date: 2003/09/15 16:48:49 $
  * @since 3.0
- **/
+ */
 public class MRJUtil {
 
-  public MRJUtil() {
-  }
-/**
- * MacOS Look and feel test
- * @return true if using Aqua Look n' Feel
- */
-  public static boolean isAquaLookAndFeel() {
-    return System.getProperty("mrj.version") != null &&
-        UIManager.getSystemLookAndFeelClassName().equals(UIManager.getLookAndFeel().getClass().getName());
-  }
+  public MRJUtil() {}
+
   /**
-   * MacOS Java version test
+   * MacOS Look and feel test
+   *
+   * @return true if using Aqua Look n' Feel
    */
+  public static boolean isAquaLookAndFeel() {
+    return System.getProperty("mrj.version") != null
+        && UIManager.getSystemLookAndFeelClassName()
+            .equals(UIManager.getLookAndFeel().getClass().getName());
+  }
+
+  /** MacOS Java version test */
   public static boolean fixFontMetrics() {
     String rtVer = System.getProperty("java.runtime.version");
-    return System.getProperty("mrj.version") != null &&
-        (rtVer.equals("1.4.1_01-39") || rtVer.equals("1.4.1_01-69.1"));
+    return System.getProperty("mrj.version") != null
+        && (rtVer.equals("1.4.1_01-39") || rtVer.equals("1.4.1_01-69.1"));
   }
 }

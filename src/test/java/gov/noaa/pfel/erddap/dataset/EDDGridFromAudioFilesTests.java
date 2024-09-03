@@ -585,9 +585,8 @@ class EDDGridFromAudioFilesTests {
     int timeOutSeconds = 120;
     String reqBase = "curl http://localhost:8080/cwexperimental/";
     String req =
-        reqBase
-            + "files/testGridWav/aco_acoustic.20141119_001500.wav -i "; // -i includes header in
-                                                                        // response
+        reqBase + "files/testGridWav/aco_acoustic.20141119_001500.wav -i "; // -i includes header in
+    // response
 
     // * request no byte range
     al = SSR.dosShell(req, timeOutSeconds);

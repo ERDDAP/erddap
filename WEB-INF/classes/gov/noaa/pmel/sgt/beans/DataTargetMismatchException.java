@@ -13,14 +13,14 @@
 package gov.noaa.pmel.sgt.beans;
 
 /**
- * <code>SGTData</code> does not match the target of <code>Panel</code> and
- * <code>DataGroup</code> or <code>Legend</code> type.
+ * <code>SGTData</code> does not match the target of <code>Panel</code> and <code>DataGroup</code>
+ * or <code>Legend</code> type.
  *
  * @author Donald Denbo
  * @version $Revision: 1.2 $, $Date: 2003/08/22 23:02:34 $
  * @since 3.0
  * @stereotype bean
- **/
+ */
 public class DataTargetMismatchException extends Exception {
 
   public DataTargetMismatchException() {

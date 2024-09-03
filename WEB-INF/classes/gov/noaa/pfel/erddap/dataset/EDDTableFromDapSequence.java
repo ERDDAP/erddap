@@ -910,7 +910,7 @@ public class EDDTableFromDapSequence extends EDDTable {
                       (PrimitiveArray)
                           sourcePA
                               .clone(); // !This doesn't handle change in type from scale_factor,
-                                        // add_offset
+                  // add_offset
                   dataSourceTable.addColumn(
                       dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
                   dataAddTable.addColumn(
@@ -946,9 +946,8 @@ public class EDDTableFromDapSequence extends EDDTable {
               sourcePA = sourcePA.makeUnsignedPA();
             PrimitiveArray destPA =
                 (PrimitiveArray)
-                    sourcePA
-                        .clone(); // !This doesn't handle change in type from scale_factor,
-                                  // add_offset
+                    sourcePA.clone(); // !This doesn't handle change in type from scale_factor,
+            // add_offset
             Attributes addAtts =
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(),

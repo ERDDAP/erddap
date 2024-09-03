@@ -88,7 +88,7 @@ public class DecadeAxis implements TimeAxisStyle {
   @Override
   public boolean isStartOfMinor(GeoDate time) {
     return false; // i.e., never draw thick tick    was (time.getGMTYear() %
-                  // defaultMinorLabelInterval_) == 0;
+    // defaultMinorLabelInterval_) == 0;
   }
 
   @Override

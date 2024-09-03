@@ -475,8 +475,8 @@ class EDDTableFromEDDGridTests {
     query =
         "longitude,latitude&latitude>20&latitude<=20.1"
             + "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; // time constraint is
-                                                                        // ignored (since it's
-                                                                        // valid)
+    // ignored (since it's
+    // valid)
     tName =
         tedd.makeNewFileForDapQuery(
             language, null, null, query, dir, tedd.className() + "2axes", ".csv");
@@ -1151,8 +1151,8 @@ class EDDTableFromEDDGridTests {
                 // "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""); //time constraint
                 // is ignored (since it's valid)
                 "&longitude%3E=215&longitude%3C215.1&time=%222008-02-15T12%22"); // time constraint
-                                                                                 // is ignored
-                                                                                 // (since it's
+    // is ignored
+    // (since it's
     // valid)
     expected =
         "longitude,latitude\n"

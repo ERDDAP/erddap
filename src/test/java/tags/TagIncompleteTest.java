@@ -1,17 +1,15 @@
 package tags;
 
-import org.junit.jupiter.api.Tag;
- 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
- 
+import org.junit.jupiter.api.Tag;
+
 /** TODO: Make tests with this tag runnable. */
-@Target({ ElementType.TYPE, ElementType.METHOD })
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Tag("IncompleteTest")
-public @interface TagIncompleteTest {
-}
+public @interface TagIncompleteTest {}

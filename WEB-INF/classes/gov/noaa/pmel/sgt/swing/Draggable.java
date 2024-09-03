@@ -13,11 +13,11 @@
 package gov.noaa.pmel.sgt.swing;
 
 import java.awt.Point;
+
 /**
- * <code>Draggable</code> defines an interface to allow classes to be
- *  imaged separately in a <code>Layer</code> from other classes.
- *  The interface is sufficient to allow dragging in a
- * <code>JLayeredPane</code>  (<code>JPane</code>).
+ * <code>Draggable</code> defines an interface to allow classes to be imaged separately in a <code>
+ * Layer</code> from other classes. The interface is sufficient to allow dragging in a <code>
+ * JLayeredPane</code> (<code>JPane</code>).
  *
  * @author Donald Denbo
  * @version $Revision: 1.7 $, $Date: 2002/06/20 16:33:21 $
@@ -25,19 +25,18 @@ import java.awt.Point;
  */
 public interface Draggable {
   /**
-   * Set the location of the <code>Draggable</code> object. Change in
-   * location will not be vetoed.
+   * Set the location of the <code>Draggable</code> object. Change in location will not be vetoed.
    */
   public void setLocationNoVeto(int x, int y);
-  /**
-   * Set the location of the <code>Draggable</code> object.
-   */
+
+  /** Set the location of the <code>Draggable</code> object. */
   public void setLocation(Point loc);
+
   /**
-   * Set the location of the <code>Draggable</code> object and optionally don't
-   * fire a <code>PropertyChangeEvent</code>
+   * Set the location of the <code>Draggable</code> object and optionally don't fire a <code>
+   * PropertyChangeEvent</code>
    *
    * @since 3.0
    */
-   public void setLocation(Point loc, boolean fireEvent);
+  public void setLocation(Point loc, boolean fireEvent);
 }

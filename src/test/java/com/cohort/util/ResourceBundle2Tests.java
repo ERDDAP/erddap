@@ -12,20 +12,24 @@ class ResourceBundle2Tests {
   void basicTest() throws Exception {
     String2.log("\n*** ResourceBundle2.basicTest");
 
-    ResourceBundle2 rb2 = ResourceBundle2.fromXml(XML.parseXml(new StringReader(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<testr>\n" +
-            "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment < > -->text  \n" +
-            "  </level1>\n" +
-            "  <levela />\n" + // "empty tag" appears as two tags, begin and end
-            "  <levelb> 16</levelb>\n" +
-            "  <bool> true</bool>\n" +
-            "  <dbl> 17.1</dbl>\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "</testr>"),
-        false));
+    ResourceBundle2 rb2 =
+        ResourceBundle2.fromXml(
+            XML.parseXml(
+                new StringReader(
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+                        + "<testr>\n"
+                        + "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment < > -->text  \n"
+                        + "  </level1>\n"
+                        + "  <levela />\n"
+                        + // "empty tag" appears as two tags, begin and end
+                        "  <levelb> 16</levelb>\n"
+                        + "  <bool> true</bool>\n"
+                        + "  <dbl> 17.1</dbl>\n"
+                        + "\n"
+                        + "\n"
+                        + "\n"
+                        + "</testr>"),
+                false));
     Test.ensureEqual(rb2.getString("level1", ""), "level 1 & text", "");
     Test.ensureEqual(rb2.getString("levela", ""), "", "");
     Test.ensureEqual(rb2.getBoolean("bool", false), true, "");

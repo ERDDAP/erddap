@@ -101,7 +101,8 @@ public class Gif89Encoder {
   public static final int DITHERED_WEB216_PALETTE =
       GifColorTable
           .DITHERED_WEB216_PALETTE; // find nearest colors in standard web 216 color palette, using
-                                    // dithering
+
+  // dithering
 
   // ----------------------------------------------------------------------------
   /**

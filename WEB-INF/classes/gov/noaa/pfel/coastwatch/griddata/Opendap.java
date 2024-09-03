@@ -754,7 +754,7 @@ public class Opendap {
               String2.ERROR
                   + ":\n"
                   + WAIT_THEN_TRY_AGAIN); // this message encourages getting new Shared in
-                                          // Browser.java
+          // Browser.java
         }
 
         minIndex[gridTimeDimension] = newIndex;

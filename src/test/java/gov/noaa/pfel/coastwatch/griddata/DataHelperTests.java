@@ -6,9 +6,7 @@ import com.cohort.util.Test;
 
 class DataHelperTests {
 
-  /**
-   * This tests the methods in this class.
-   */
+  /** This tests the methods in this class. */
   @org.junit.jupiter.api.Test
   void basicTest() {
     String2.log("\n*** DataHelper.basicTest...");
@@ -17,31 +15,40 @@ class DataHelperTests {
     // double
     Test.ensureTrue(-9999999f == -9999999.0, "");
     // 8 9's fails
-    Test.ensureTrue((float) DataHelper.FAKE_MISSING_VALUE == (double) DataHelper.FAKE_MISSING_VALUE, "");
+    Test.ensureTrue(
+        (float) DataHelper.FAKE_MISSING_VALUE == (double) DataHelper.FAKE_MISSING_VALUE, "");
 
     // copy(double dar[], int start, int end, int stride) {
-    double dar[] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5 };
+    double dar[] = {0, 0.1, 0.2, 0.3, 0.4, 0.5};
     Test.ensureEqual(DataHelper.copy(dar, 0, 5, 1), dar, "copy a");
-    Test.ensureEqual(DataHelper.copy(dar, 0, 5, 2), new double[] { 0, 0.2, 0.4 }, "copy b");
-    Test.ensureEqual(DataHelper.copy(dar, 1, 4, 2), new double[] { 0.1, 0.3 }, "copy c");
+    Test.ensureEqual(DataHelper.copy(dar, 0, 5, 2), new double[] {0, 0.2, 0.4}, "copy b");
+    Test.ensureEqual(DataHelper.copy(dar, 1, 4, 2), new double[] {0.1, 0.3}, "copy c");
 
     // binaryFindClosestIndex(double dar[], double end) {
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, -.06), -1, "binaryFindClosestIndex a1"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, -.06), -1, "binaryFindClosestIndex a1"); // important
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, -.05), 0, "binaryFindClosestIndex a2");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, -.00000001), 0, "binaryFindClosestIndex a");
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, -.00000001), 0, "binaryFindClosestIndex a");
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0), 0, "binaryFindClosestIndex b");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, .00000001), 0, "binaryFindClosestIndex c");
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, .00000001), 0, "binaryFindClosestIndex c");
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.01), 0, "binaryFindClosestIndex d");
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.09), 1, "binaryFindClosestIndex e");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.4999999), 5, "binaryFindClosestIndex f");
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, 0.4999999), 5, "binaryFindClosestIndex f");
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.5), 5, "binaryFindClosestIndex g");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.50000001), 5, "binaryFindClosestIndex h");
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, 0.50000001), 5, "binaryFindClosestIndex h");
     Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.55), 5, "binaryFindClosestIndex j");
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, 0.56), -1, "binaryFindClosestIndex j2"); // important
-    Test.ensureEqual(DataHelper.binaryFindClosestIndex(dar, Double.NaN), -1, "binaryFindClosestIndex m");
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, 0.56), -1, "binaryFindClosestIndex j2"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindClosestIndex(dar, Double.NaN), -1, "binaryFindClosestIndex m");
 
     // binaryFindStartIndex(double dar[], double end) {
-    Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, -.06), 0, "binaryFindStartIndex a1"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindStartIndex(dar, -.06), 0, "binaryFindStartIndex a1"); // important
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, -.05), 0, "binaryFindStartIndex a2");
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, -.00000001), 0, "binaryFindStartIndex a");
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, 0), 0, "binaryFindStartIndex b");
@@ -52,11 +59,13 @@ class DataHelperTests {
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, 0.5), 5, "binaryFindStartIndex g");
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, 0.50000001), 5, "binaryFindStartIndex h");
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, 0.55), 5, "binaryFindStartIndex j");
-    Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, 0.56), -1, "binaryFindStartIndex j2"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindStartIndex(dar, 0.56), -1, "binaryFindStartIndex j2"); // important
     Test.ensureEqual(DataHelper.binaryFindStartIndex(dar, Double.NaN), 0, "binaryFindStartIndex l");
 
     // binaryFindEndIndex(double dar[], double end) {
-    Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, -.06), -1, "binaryFindEndIndex a1"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindEndIndex(dar, -.06), -1, "binaryFindEndIndex a1"); // important
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, -.05), 0, "binaryFindEndIndex a2");
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, -.00000001), 0, "binaryFindEndIndex a");
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, 0), 0, "binaryFindEndIndex b");
@@ -67,7 +76,8 @@ class DataHelperTests {
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, 0.5), 5, "binaryFindEndIndex g");
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, 0.50000001), 5, "binaryFindEndIndex h");
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, 0.55), 5, "binaryFindEndIndex j");
-    Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, 0.56), 5, "binaryFindEndIndex j2"); // important
+    Test.ensureEqual(
+        DataHelper.binaryFindEndIndex(dar, 0.56), 5, "binaryFindEndIndex j2"); // important
     Test.ensureEqual(DataHelper.binaryFindEndIndex(dar, Double.NaN), 5, "binaryFindEndIndex l");
 
     Test.ensureEqual(DataHelper.findStride(7, 1000), 1, "findStride a");
@@ -105,20 +115,31 @@ class DataHelperTests {
     // getRegularArray(int n, double min, double spacing) {
     Test.ensureEqual(
         DataHelper.getRegularArray(5, 2, 0.1),
-        new double[] { 2, 2.1, 2.2, 2.3, 2.4 }, "getRegularArray");
+        new double[] {2, 2.1, 2.2, 2.3, 2.4},
+        "getRegularArray");
 
     // addExponentToUnits
-    Test.ensureEqual(DataHelper.makeUdUnitsReadable("-1 degree_C m-2 s-33 m2 s33 chl-a -"),
-        "-1 degree C m^-2 s^-33 m^2 s^33 chl-a -", ""); // not initial -
-    Test.ensureEqual(DataHelper.makeUdUnitsReadable("1 degree_C m-2 s-33 m2 s33 chl-a 2"),
-        "1 degree C m^-2 s^-33 m^2 s^33 chl-a 2", ""); // not initial digit
+    Test.ensureEqual(
+        DataHelper.makeUdUnitsReadable("-1 degree_C m-2 s-33 m2 s33 chl-a -"),
+        "-1 degree C m^-2 s^-33 m^2 s^33 chl-a -",
+        ""); // not initial -
+    Test.ensureEqual(
+        DataHelper.makeUdUnitsReadable("1 degree_C m-2 s-33 m2 s33 chl-a 2"),
+        "1 degree C m^-2 s^-33 m^2 s^33 chl-a 2",
+        ""); // not initial digit
 
     // centerOfStartDateAndInclusiveEndDate
-    Test.ensureEqual(DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-22"), "2004-08-22 12:00:00",
+    Test.ensureEqual(
+        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-22"),
+        "2004-08-22 12:00:00",
         "a"); // 1 day
-    Test.ensureEqual(DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-24"), "2004-08-23 12:00:00",
+    Test.ensureEqual(
+        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-24"),
+        "2004-08-23 12:00:00",
         "b"); // 3 day
-    Test.ensureEqual(DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-25"), "2004-08-24 00:00:00",
+    Test.ensureEqual(
+        DataHelper.centerOfStartDateAndInclusiveEndDate("2004-08-22", "2004-08-25"),
+        "2004-08-24 00:00:00",
         "c"); // 4 day
 
     // adjustNPointsNeeded n, oldRange, newRange
@@ -131,5 +152,4 @@ class DataHelperTests {
     String2.log("\n***** DataHelper.test finished successfully");
     Math2.incgc("DataHelper (between tests)", 2000); // in a test
   }
-
 }

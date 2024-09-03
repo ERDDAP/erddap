@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Operation failed because the layer was not found.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class PaneNotFoundException extends SGException {
   public PaneNotFoundException() {
     super();
-}
+  }
+
   public PaneNotFoundException(String s) {
     super(s);
   }

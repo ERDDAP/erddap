@@ -63,7 +63,8 @@ public class SgtMap {
   /** The font family to use. */
   public static String fontFamily =
       "DejaVu Sans"; // "DejaVu Sans" "Bitstream Vera Sans"; //"LucidaSansRegular", //"Luxi Sans",
-                     // //"Dialog"; //"Lucida Sans"; //"SansSerif";
+
+  // //"Dialog"; //"Lucida Sans"; //"SansSerif";
 
   public static String fullPrivateDirectory = SSR.getTempDirectory();
   public static double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
@@ -2515,8 +2516,7 @@ public class SgtMap {
     // globalAttributes.set("start_time",         new
     // DoubleArray(fileNameUtility.getStartTime(name))); //float64[nDays]
     globalAttributes.set("origin", BATHYMETRY_COURTESY); // string
-    globalAttributes.set(
-        "history", DataHelper.addBrowserToHistory(BATHYMETRY_COURTESY)); // string
+    globalAttributes.set("history", DataHelper.addBrowserToHistory(BATHYMETRY_COURTESY)); // string
 
     // write map projection data
     globalAttributes.set("projection_type", "mapped"); // string

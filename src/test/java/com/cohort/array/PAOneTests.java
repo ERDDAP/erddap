@@ -1,21 +1,18 @@
 package com.cohort.array;
 
-import java.io.RandomAccessFile;
-
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import java.io.RandomAccessFile;
 
 class PAOneTests {
-  /**
-   * This tests the methods in this class.
-   */
+  /** This tests the methods in this class. */
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
     String2.log("\n*** PAOne.basicTest()");
 
-    ByteArray ba = new ByteArray(new byte[] { -128, 0, 127 });
-    ShortArray sa = new ShortArray(new short[] { -32768, 0, 32767 });
+    ByteArray ba = new ByteArray(new byte[] {-128, 0, 127});
+    ShortArray sa = new ShortArray(new short[] {-32768, 0, 32767});
     PAOne bo = new PAOne(sa, 0);
     Test.ensureEqual(bo.toString(), "-32768", "");
     Test.ensureEqual(bo.compareTo(ba, 0), -1, "");

@@ -11,7 +11,6 @@
 
 package dods.dap;
 
-
 /**
  * This class implements a simple list of DODS data types. A list is a simple sequence of data
  * items, without the sophisticated subsetting and array indexing features of an Array.

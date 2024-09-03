@@ -92,9 +92,8 @@ public class EDDTableFromAllDatasets extends EDDTable {
                 colName,
                 atts,
                 null, // sourceAtts, addAtts
-                pa
-                    .elementTypeString()); // this constructor gets source / sets destination
-                                           // actual_range
+                pa.elementTypeString()); // this constructor gets source / sets destination
+        // actual_range
       } else {
         dataVariables[dv] =
             new EDV(

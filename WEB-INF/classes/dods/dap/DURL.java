@@ -11,7 +11,6 @@
 
 package dods.dap;
 
-
 /**
  * Holds a DODS <code>URL</code> value.
  *

@@ -396,7 +396,7 @@ public class EDDGridCopy extends EDDGrid {
         EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
-                                                  // checking on it
+        // checking on it
       }
     }
 
@@ -540,9 +540,8 @@ public class EDDGridCopy extends EDDGrid {
     sourceGlobalAttributes = localEdd.combinedGlobalAttributes;
     addGlobalAttributes = new Attributes();
     combinedGlobalAttributes =
-        localEdd
-            .combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
-                                       // sourceGlobalAttributes); //order is important
+        localEdd.combinedGlobalAttributes; // new Attributes(addGlobalAttributes,
+    // sourceGlobalAttributes); //order is important
 
     // data variables
     axisVariables = localEdd.axisVariables;
