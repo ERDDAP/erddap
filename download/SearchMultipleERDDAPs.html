@@ -6,12 +6,62 @@
 <link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
 <link href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This isn't ideal, CSP should be managed by the server, not hardcoded here, but since this page makes calls to many servers that are likely 
+ not needed elsewhere, include the list of servers here. -->
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'
+    https://coastwatch.pfeg.noaa.gov/erddap/
+    https://apdrc.soest.hawaii.edu/erddap/
+    https://www.ncei.noaa.gov/erddap/
+    https://erddap.bco-dmo.org/erddap/
+    https://erddap.emodnet-physics.eu/erddap/
+    https://erddap.marine.ie/erddap/
+    https://cwcgom.aoml.noaa.gov/erddap/
+    https://erddap.sensors.ioos.us/erddap/
+    https://erddap.axiomdatascience.com/erddap/
+    https://oceanview.pfeg.noaa.gov/erddap/
+    http://www.neracoos.org/erddap/
+    https://data.ioos.us/gliders/erddap/
+    https://pae-paha.pacioos.hawaii.edu/erddap/
+    https://catalogue.hakai.org/erddap/
+    https://sccoos.org/erddap/  
+    https://erddap.secoora.org/erddap/
+    https://ecowatch.ncddc.noaa.gov/erddap/
+    http://osmc.noaa.gov/erddap/
+    https://coastwatch.noaa.gov//erddap/
+    http://dap.onc.uvic.ca/erddap/
+    https://oceanwatch.pifsc.noaa.gov/erddap/
+    https://erddap-goldcopy.dataexplorer.oceanobservatories.org/erddap/
+    https://members.oceantrack.org/erddap/
+    https://erddap.oa.iode.org/erddap/
+    http://www.myroms.org:8080/erddap/
+    http://tds.marine.rutgers.edu/erddap/
+    https://comet.nefsc.noaa.gov/erddap/
+    https://opendap.co-ops.nos.noaa.gov/erddap/
+    https://gcoos5.geos.tamu.edu/erddap/
+    https://gcoos4.tamu.edu/erddap/
+    https://erddap.gcoos.org/erddap/
+    https://coastwatch.glerl.noaa.gov/erddap/
+    https://spraydata.ucsd.edu/erddap/
+    https://salishsea.eos.ubc.ca/erddap/
+    https://erddap.ichec.ie/erddap/
+    https://canwinerddap.ad.umanitoba.ca/erddap/
+    https://erddap.incois.gov.in/erddap/
+    https://www.smartatlantic.ca/erddap/
+    https://erddap.griidc.org/erddap/
+    https://geoport.usgs.esipfed.org/erddap/
+    https://upwell.pfeg.noaa.gov/erddap/ 
+    https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/
+    https://gliders.ioos.us/erddap/
+    https://erddap.sccoos.org/erddap/
+    https://apps.glerl.noaa.gov/erddap/;
+font-src 'self' https://fonts.googleapis.com https://stackpath.bootstrapcdn.com;" />
 </head>
 
 <body>
 
 <script>
   //you can add, comment out, or remove ERDDAP™ URLs from this list
+  // Any changes to this list should be reflected in the above CSP list.
   var urls = [
     "https://coastwatch.pfeg.noaa.gov/erddap/",
     "https://apdrc.soest.hawaii.edu/erddap/",
