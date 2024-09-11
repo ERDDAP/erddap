@@ -58,6 +58,8 @@ import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -215,7 +217,7 @@ public class EDStatic {
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
   /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-  private static String webInfParentDirectory = File2.webInfParentDirectory(); // with / separator and / at the end
+  private static String webInfParentDirectory = File2.lookupWebInfParentDirectory();
   // fgdc and iso19115XmlDirectory are used for virtual URLs.
   public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
   public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
@@ -2390,10 +2392,10 @@ public class EDStatic {
       for (int tl = 1; tl < nLanguages; tl++) {
         String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
-        URL messageFile = TranslateMessages.translatedMessagesDir.toURI().resolve(tName).toURL();
+        URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
         messagesAr[tl] =
             ResourceBundle2.fromXml(
-                XML.parseXml(TranslateMessages.translatedMessagesDir + tName, false));
+                XML.parseXml(messageFile, false));
       }
 
       // read all the static Strings from messages.xml

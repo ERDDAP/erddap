@@ -357,13 +357,6 @@ public class Erddap extends HttpServlet {
             + "ms");
   }
 
-  @Override
-  public void init(final ServletConfig config) throws ServletException {
-    ServletContext context = config.getServletContext();
-    String webInfPath = context.getRealPath("/WEB-INF/");
-    String2.log(webInfPath);
-  }
-
   /**
    * destroy() is called by Tomcat whenever the servlet is removed from service. See example at [was
    * http://classes.eclab.byu.edu/462/demos/PrimeSearcher.java ]
@@ -20621,7 +20614,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * param) to facilitate testing.
    *
    * @param language the index of the selected language
-   * @param gridDatasetHashMap
+   * @param tGridDatasetHashMap
    * @param TLLTable ASCII text with table with latitude,longitude,time columns
    * @param requestCSV the CSV list of desired datasetID/variable/algorithm/nearby settings
    * @return a table with latitude,longitude,time and requested datasetID/variable columns

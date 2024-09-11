@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -296,6 +297,45 @@ public class File2 {
       new ConcurrentHashMap<String, S3Client>();
 
   /**
+   * This returns the directory that is the tomcat application's root (with forward slashes and a
+   * trailing slash, e.g., c:/programs/_tomcat/webapps/cwexperimental/). Tomcat calls this the
+   * ContextDirectory. This only works if these classes are installed underneath Tomcat (with
+   * "WEB-INF/" the start of things to be removed from classPath).
+   *
+   * @return the parent directory of WEB-INF (with / separator and / at the end) or "ERROR if
+   *     trouble
+   * @throws RuntimeException if trouble
+   */
+  public static String lookupWebInfParentDirectory() {
+    String find = "/com/cohort/util/String2.class";
+    // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
+    String classPath = String2.class.getResource(find).getFile();
+    int po = classPath.indexOf(find);
+    classPath = classPath.substring(0, po + 1);
+
+    // on windows, remove the troublesome leading "/"
+    if (String2.OSIsWindows
+            && classPath.length() > 2
+            && classPath.charAt(0) == '/'
+            && classPath.charAt(2) == ':') classPath = classPath.substring(1);
+
+    // classPath is a URL! so spaces are encoded as %20 on Windows!
+    // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
+    try {
+      classPath = URLDecoder.decode(classPath, StandardCharsets.UTF_8);
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+    }
+
+    po = classPath.indexOf("/WEB-INF/");
+    if (po < 0)
+      throw new RuntimeException(
+              String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+    String path = Paths.get(URI.create(classPath.substring(0, po + 1))).toAbsolutePath().toString();
+    return path.replace("\\", "/") + "/";
+  }
+
+  /**
    * Access a classpath resource via a filesystem path.
    * NOTE: this will not work unless resource is exploded.
    *
@@ -307,8 +347,8 @@ public class File2 {
     return Paths.get(Resources.getResource(resourcePath).toURI()).toString();
   }
 
-//  public static String getClassPath() { return webInfParentDirectory() + "WEB-INF/classes/"; }
-//  public static String webInfParentDirectory() { return Paths.get("erddap/").toAbsolutePath().toString().replace("\\", "/") + "/"; }
+  public static String getClassPath() { return webInfParentDirectory() + "WEB-INF/classes/"; }
+  public static String webInfParentDirectory() { return Paths.get("erddap/").toAbsolutePath().toString().replace("\\", "/") + "/"; }
 
   /**
    * This indicates if the named file is indeed an existing local file. AWS S3 files don't count as
