@@ -17,7 +17,7 @@
       src="../images/noaab.png" alt="NOAA"
       style="vertical-align:middle;"></a></td> 
     <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
-      <strong>ERDDAP</strong>
+      <strong>ERDDAP™</strong>
       <br><small><small><small>Easier access to scientific data</small></small></small>
       </td> 
     <td style="text-align:right; font-size:small;"> 
@@ -40,28 +40,28 @@
 
 &nbsp;
 
-<h1 style="text-align:center;">Access to Private Datasets in ERDDAP</h1>
+<h1 style="text-align:center;">Access to Private Datasets in ERDDAP™</h1>
 
-<p>Many ERDDAP installations don't have authentication enabled and thus 
+<p>Many ERDDAP™ installations don't have authentication enabled and thus 
 don't provide any way for users to login, nor do they have any private datasets. 
 
-<p>Some ERDDAP installations do have authentication enabled. 
-Currently, ERDDAP only supports authentication via Google-managed email accounts,
+<p>Some ERDDAP™ installations do have authentication enabled. 
+Currently, ERDDAP™ only supports authentication via Google-managed email accounts,
 which includes email accounts at NOAA and many universities.
-If an ERDDAP has authentication enabled, anyone with a Google-managed email account
+If an ERDDAP™ has authentication enabled, anyone with a Google-managed email account
 can log in, but they will only have access to the private datasets
-that the ERDDAP administrator has explicitly authorized them to access.
+that the ERDDAP™ administrator has explicitly authorized them to access.
 
 
 <h2>Humans With Browsers</h2>
 
-Human users of ERDDAP can log into ERDDAP in a browser in order to gain access
+Human users of ERDDAP™ can log into ERDDAP™ in a browser in order to gain access
 to private datasets that they are authorized to access.
 
 <p>To log in:
 <ol>
-<li>Click on the <kbd>log in</kbd> link in the upper left of any ERDDAP web page.
-  <br>If there is no <kbd>log in</kbd> link, the ERDDAP installation
+<li>Click on the <kbd>log in</kbd> link in the upper left of any ERDDAP™ web page.
+  <br>If there is no <kbd>log in</kbd> link, the ERDDAP™ installation
     doesn't have authentication enabled and there are no private datasets. 
   <br>&nbsp;
 <li>Click on the <kbd>Sign in</kbd> button to sign into your Google account.
@@ -74,7 +74,7 @@ to private datasets that they are authorized to access.
   <br>&nbsp;
 <li>Don't use your browser's Back button. 
   Use the "ERDDAP" link at the top of the above, 
-  then use other links to go to ERDDAP pages you are interested in. 
+  then use other links to go to ERDDAP™ pages you are interested in. 
   If a cached web page says you aren't logged in, reload the page.
   <br>&nbsp;
 </ol>
@@ -85,7 +85,7 @@ to private datasets that they are authorized to access.
 job of figuring this out. Lynn, thank you very much!
 <br>If you have corrections or suggestions, please email erd.data @ noaa.gov .]
 
-<p>It is also possible to log in to ERDDAP and access private datasets via 
+<p>It is also possible to log in to ERDDAP™ and access private datasets via 
 a script.  Here is an example which uses curl:
 
 <ol>
@@ -95,14 +95,14 @@ has 2-factor authentication turned on, consider creating another
 gmail address with 2-factor authentication turned off.
   <br>&nbsp;
 
-<li> Log in to ERDDAP manually with the gmail address you want use in your 
+<li> Log in to ERDDAP™ manually with the gmail address you want use in your 
 script and accept any permissions required, then log completely back out.
   <br>&nbsp;
 
 <li> Open the browser Developer Tools, and go to the Network tab.
   <br>&nbsp;
 
-<li> Click on the ERDDAP "log in" link, then the "Sign in" button and choose
+<li> Click on the ERDDAP™ "log in" link, then the "Sign in" button and choose
 the appropriate email address if prompted.
   <br>&nbsp;
 
@@ -121,7 +121,7 @@ these urls and paste them into a plain text editor
   <br>&nbsp;
 
 <li> In the text file, you will now have 3 lines like the following, 
-where you have logged into an erddap server at '<i>https://host.somewhere.com/erddap</i>'.  
+where you have logged into an ERDDAP™ server at '<i>https://host.somewhere.com/erddap</i>'.  
 The first curl command gets your user profile in "login_hint" and generates an "id_token".  
 The second uses the id_token to log into Google, and the third then logs in to ERDDAP.
 
@@ -166,7 +166,7 @@ $glcurlstuff="curl 'https://host.somewhere.com/erddap/loginGoogle.html' -H 'Host
 exec($glcurlstuff,$output1,$status);
 </textarea>
 
-<p>Log in to ERDDAP, again removing the "-H 'Cookie: stuff'" parameter, and 
+<p>Log in to ERDDAP™, again removing the "-H 'Cookie: stuff'" parameter, and 
 using the previously written cookie:
 
 <p><textarea rows="8" cols="80">
@@ -190,7 +190,7 @@ exec($curlstuff,$output3,$status);
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 Questions, comments, suggestions?  Please send an email to 
   <kbd>erd dot data at noaa dot gov</kbd>
-and include the ERDDAP URL directly related to your question or comment.
+and include the ERDDAP™ URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+    <convertToPublicSourceUrl from="http://example.com/" to="http://public.example.com/">
+        content for convertToPublicSourceUrl
+    </convertToPublicSourceUrl>
+    <angularDegreeUnits>
+        content, for, angular, degree, units
+    </angularDegreeUnits>
+    <unusualActivity>
+        25
+    </unusualActivity>
+    <user username="user1" password="pass1" roles="admin">
+        Test User
+    </user>
+    <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
+    </dataset>
+    <dataset type="EDDTableFromErddap" datasetID="erdGtsppBest" active="false">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest</sourceUrl>
+    </dataset>
+</erddapDatasets>

@@ -10,52 +10,56 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-
 import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Rectangle2D;
-import gov.noaa.pmel.util.Debug;
-
-import java.util.Vector;
-import java.util.Enumeration;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.Point;
-
-import java.beans.PropertyChangeListener;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Enumeration;
+import java.util.Vector;
 
 // jdk1.2
-//import java.awt.geom.Point2D;
+// import java.awt.geom.Point2D;
 
 /**
- * <code>LineKey</code> is used to create a key for the
- * <code>LineCartesianRenderer</code>. Multiple
+ * <code>LineKey</code> is used to create a key for the <code>LineCartesianRenderer</code>. Multiple
  * lines can be included in the key.
  *
  * @author Donald Denbo
  * @version $Revision: 1.16 $, $Date: 2003/08/22 23:02:32 $
  * @since 1.0
-**/
-public class LineKey implements Cloneable,
-        DataKey, Moveable, PropertyChangeListener {
+ */
+public class LineKey implements Cloneable, DataKey, Moveable, PropertyChangeListener {
   private String ident_;
-/** @directed */
+
+  /**
+   * @directed
+   */
   private Layer layer_;
-  /** @link aggregation
+
+  /**
+   * @link aggregation
    * @supplierCardinality *
-   * @label line*/
+   * @label line
+   */
   /*#LineCartesianRenderer lnkLineCartesianRenderer;*/
   private Vector line_;
-  /** @link aggregation
+
+  /**
+   * @link aggregation
    * @supplierCardinality *
-   * @label label*/
+   * @label label
+   */
   /*#SGLabel lnkSGLabel;*/
   private Vector label_;
+
   private int columns_;
   private int style_;
   private int valign_;
@@ -75,77 +79,62 @@ public class LineKey implements Cloneable,
   private static final int COLUMN_SPACE_ = 10;
   private static final int ROW_SPACE_ = 3;
   private static final int LABEL_SPACE_ = 15;
-  /**
-   * Use plain line border.
-   */
+
+  /** Use plain line border. */
   public static final int PLAIN_LINE = 0;
-  /**
-   * Use raised border.
-   */
+
+  /** Use raised border. */
   public static final int RAISED = 1;
-  /**
-   * Do not draw a border.
-   */
+
+  /** Do not draw a border. */
   public static final int NO_BORDER = 2;
-  /**
-   * Align to top of key.
-   */
+
+  /** Align to top of key. */
   public static final int TOP = 0;
-  /**
-   * Align to middle of key.
-   */
+
+  /** Align to middle of key. */
   public static final int MIDDLE = 1;
-  /**
-   * Align to bottom of key.
-   */
+
+  /** Align to bottom of key. */
   public static final int BOTTOM = 2;
-  /**
-   * Align to left of key.
-   */
+
+  /** Align to left of key. */
   public static final int LEFT = 0;
-  /**
-   * Align to center of key.
-   */
+
+  /** Align to center of key. */
   public static final int CENTER = 1;
-  /**
-   * Align to right of key.
-   */
+
+  /** Align to right of key. */
   public static final int RIGHT = 2;
 
-    /** 
-     * Bob Simons added this to avoid memory leak problems.
-     */
-    public void releaseResources() throws Exception {
-        try {  
-            layer_ = null;
-            line_ = null;
-            label_ = null;
-            stroke_ = null;
-            changes_ = null;
-            if (JPane.debug) String2.log("sgt.LineKey.releaseResources() finished");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            if (JPane.debug) 
-                String2.pressEnterToContinue(); 
-        }
+  /** Bob Simons added this to avoid memory leak problems. */
+  @Override
+  public void releaseResources() throws Exception {
+    try {
+      layer_ = null;
+      line_ = null;
+      label_ = null;
+      stroke_ = null;
+      changes_ = null;
+      if (JPane.debug) String2.log("sgt.LineKey.releaseResources() finished");
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+      if (JPane.debug) String2.pressEnterToContinue();
     }
+  }
 
-
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public LineKey() {
     this(new Point2D.Double(0.0, 0.0), BOTTOM, LEFT);
   }
-  /**
-   *
-   */
-  public LineKey(Point2D.Double loc,int valign,int halign) {
+
+  /** */
+  public LineKey(Point2D.Double loc, int valign, int halign) {
     porigin_ = loc;
     valign_ = valign;
     halign_ = halign;
-    line_ = new Vector(2,2);
-    label_ = new Vector(2,2);
+    line_ = new Vector(2, 2);
+    label_ = new Vector(2, 2);
     //
     // set defaults
     //
@@ -159,90 +148,114 @@ public class LineKey implements Cloneable,
     moveable_ = true;
     stroke_ = PaneProxy.strokeDrawer;
   }
-  /**
-   * Create of copy of LineKey.
-   */
+
+  /** Create of copy of LineKey. */
+  @Override
   public LayerChild copy() {
     LineKey newKey;
     try {
-      newKey = (LineKey)clone();
+      newKey = (LineKey) clone();
     } catch (CloneNotSupportedException e) {
       newKey = new LineKey();
     }
-    newKey.line_ = new Vector(2,2);
-    newKey.label_ = new Vector(2,2);
+    newKey.line_ = new Vector(2, 2);
+    newKey.label_ = new Vector(2, 2);
     return newKey;
   }
+
+  @Override
   public void setSelected(boolean sel) {
     selected_ = sel;
   }
+
+  @Override
   public boolean isSelected() {
     return selected_;
   }
+
+  @Override
   public void setSelectable(boolean select) {
     selectable_ = select;
   }
+
+  @Override
   public boolean isSelectable() {
     return selectable_;
   }
+
+  @Override
   public boolean isMoveable() {
     return moveable_;
   }
+
+  @Override
   public void setMoveable(boolean moveable) {
     moveable_ = moveable;
   }
+
   /**
    * Set parent layer.
    *
    * @param l parent layer
    */
+  @Override
   public void setLayer(Layer l) {
     layer_ = l;
   }
+
   /**
    * Get layer.
    *
    * @return layer
    */
+  @Override
   public Layer getLayer() {
     return layer_;
   }
 
+  @Override
   public AbstractPane getPane() {
     return layer_.getPane();
   }
 
+  @Override
   public void modified(String mess) {
-    if(layer_ != null)
-      layer_.modified(mess);
+    if (layer_ != null) layer_.modified(mess);
   }
+
   /**
    * Set LineKey identifier.
    *
    * @param id key identifier
    */
+  @Override
   public void setId(String id) {
     ident_ = id;
   }
+
   /**
    * Get LineKey identifier
    *
    * @return identifier
    */
+  @Override
   public String getId() {
     return ident_;
   }
+
   /**
    * Set line length.
    *
    * @param len line length
    */
+  @Override
   public void setLineLengthP(double len) {
-    if(lineLengthP_ != len) {
+    if (lineLengthP_ != len) {
       lineLengthP_ = len;
       modified("LineKey: setLineLengthP()");
     }
   }
+
   /**
    * Get line length
    *
@@ -251,17 +264,20 @@ public class LineKey implements Cloneable,
   public double getLineLengthP() {
     return lineLengthP_;
   }
+
   /**
    * Set the number of columns.
    *
    * @param col number of columns
    */
+  @Override
   public void setColumns(int col) {
-    if(columns_ != col) {
+    if (columns_ != col) {
       columns_ = col;
       modified("LineKey: setColumms()");
     }
   }
+
   /**
    * Get the number of columns.
    *
@@ -270,6 +286,7 @@ public class LineKey implements Cloneable,
   public int getColumns() {
     return columns_;
   }
+
   /**
    * Set border style.
    *
@@ -278,12 +295,14 @@ public class LineKey implements Cloneable,
    * @see #RAISED
    * @see #NO_BORDER
    */
+  @Override
   public void setBorderStyle(int style) {
-    if(style_ != style) {
+    if (style_ != style) {
       style_ = style;
       modified("LineKey: setBorderStyle()");
     }
   }
+
   /**
    * Get border style.
    *
@@ -292,41 +311,48 @@ public class LineKey implements Cloneable,
   public int getBorderStyle() {
     return style_;
   }
+
   /**
    * Set alignment.
    *
    * @param vert vertical alignment
    * @param horz horizontal alignment
    */
-  public void setAlign(int vert,int horz) {
-    if(valign_ != vert || halign_ != horz) {
+  @Override
+  public void setAlign(int vert, int horz) {
+    if (valign_ != vert || halign_ != horz) {
       valign_ = vert;
       halign_ = horz;
       modified("LineKey: setAlign()");
     }
   }
+
   /**
    * Set vertical alignment
    *
    * @param vert vertical alignment
    */
+  @Override
   public void setVAlign(int vert) {
-    if(valign_ != vert) {
+    if (valign_ != vert) {
       valign_ = vert;
       modified("LineKey: setVAlign()");
     }
   }
+
   /**
    * Set horizontal alignment
    *
    * @param horz horizontal alignment
    */
+  @Override
   public void setHAlign(int horz) {
-    if(halign_ != horz) {
+    if (halign_ != horz) {
       halign_ = horz;
       modified("LineKey: setHAlign()");
     }
   }
+
   /**
    * Get vertical alignment
    *
@@ -335,6 +361,7 @@ public class LineKey implements Cloneable,
   public int getVAlign() {
     return valign_;
   }
+
   /**
    * Get horizontal alignment
    *
@@ -343,35 +370,34 @@ public class LineKey implements Cloneable,
   public int getHAlign() {
     return halign_;
   }
+
   /**
-   * Set location of key
-   * <BR><strong>Property Change:</strong> <code>location</code>.
+   * Set location of key <br>
+   * <strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc key location
    */
+  @Override
   public void setLocationP(Point2D.Double loc) {
-    if(porigin_ == null || !porigin_.equals(loc)) {
+    if (porigin_ == null || !porigin_.equals(loc)) {
       Point2D.Double temp = porigin_;
       porigin_ = loc;
-      changes_.firePropertyChange("location",
-          temp,
-          porigin_);
+      changes_.firePropertyChange("location", temp, porigin_);
       modified("LineKey: setLocationP()");
     }
   }
-  /**
-   * Set the bounds of the <code>LineKey</code> in physical units.
-   */
+
+  /** Set the bounds of the <code>LineKey</code> in physical units. */
+  @Override
   public void setBoundsP(Rectangle2D.Double r) {
     setLocationP(new Point2D.Double(r.x, r.y));
   }
-  /**
-   * Get key bounds in physical coordinates.
-   * Not presently implemented.
-   */
+
+  /** Get key bounds in physical coordinates. Not presently implemented. */
   public Rectangle2D.Double getBoundsP() {
     throw new MethodNotImplementedError();
   }
+
   /**
    * Get location of key.
    *
@@ -380,6 +406,7 @@ public class LineKey implements Cloneable,
   public Point2D.Double getLocationP() {
     return porigin_;
   }
+
   /**
    * Add a LineCartesianRenderer and label to the LineKey.
    *
@@ -392,9 +419,10 @@ public class LineKey implements Cloneable,
     label.setMoveable(false);
     label.setSelectable(false);
     label_.addElement(label);
-    ((LineAttribute)line.getAttribute()).addPropertyChangeListener(this);
+    ((LineAttribute) line.getAttribute()).addPropertyChangeListener(this);
     modified("LineKey: addLineGraph()");
   }
+
   /**
    * Add a LineCartesianRenderer and label to the LineKey.
    *
@@ -402,64 +430,58 @@ public class LineKey implements Cloneable,
    * @param label descriptive label
    * @since 3.0
    */
-  public void addGraph(CartesianRenderer rend, SGLabel label)
-      throws IllegalArgumentException {
-    if(!(rend instanceof LineCartesianRenderer))
+  @Override
+  public void addGraph(CartesianRenderer rend, SGLabel label) throws IllegalArgumentException {
+    if (!(rend instanceof LineCartesianRenderer))
       throw new IllegalArgumentException("Renderer is not a LineCartesianRenderer");
-    addLineGraph((LineCartesianRenderer)rend, label);
+    addLineGraph((LineCartesianRenderer) rend, label);
   }
-  /**
-   * Remove a line from the LineKey.
-   *
-   */
-  public void removeLineGraph(SGLabel label) {
-  }
-  /**
-   * Remove a line from the LineKey.
-   *
-   */
-  public void removeLineRenderer(LineCartesianRenderer line) {
-  }
-  /**
-   * Remove a line from the LineKey.
-   *
-   */
-  public void removeLineGraph(String ident) {
-  }
-  /**
-   * Remove all lines from the LineKey.
-   */
+
+  /** Remove a line from the LineKey. */
+  public void removeLineGraph(SGLabel label) {}
+
+  /** Remove a line from the LineKey. */
+  public void removeLineRenderer(LineCartesianRenderer line) {}
+
+  /** Remove a line from the LineKey. */
+  public void removeLineGraph(String ident) {}
+
+  /** Remove all lines from the LineKey. */
   public void clearAll() {
     LineAttribute attr;
-    for(Enumeration e = line_.elements(); e.hasMoreElements(); ) {
-      attr = (LineAttribute)((LineCartesianRenderer)e.nextElement()).getAttribute();
+    for (Enumeration e = line_.elements(); e.hasMoreElements(); ) {
+      attr = (LineAttribute) ((LineCartesianRenderer) e.nextElement()).getAttribute();
       attr.removePropertyChangeListener(this);
     }
     line_.removeAllElements();
     label_.removeAllElements();
     modified("LineKey: clearAll()");
   }
+
   /**
    * Remove line associated with data id from LineKey.
+   *
    * @since 2.0
    */
   public void clear(String data_id) {
     LineCartesianRenderer lcr;
     int indx = -1;
-    for(Enumeration it = line_.elements(); it.hasMoreElements();) {
-        indx++;
-        lcr = (LineCartesianRenderer)it.nextElement();
-        if(lcr.getLine().getId().equals(data_id)) {
-    lcr.getAttribute().removePropertyChangeListener(this);
-            line_.removeElement(lcr);
-            label_.removeElementAt(indx);
-      modified("LineKey: clear()");
-            break;
-        }
+    for (Enumeration it = line_.elements(); it.hasMoreElements(); ) {
+      indx++;
+      lcr = (LineCartesianRenderer) it.nextElement();
+      if (lcr.getLine().getId().equals(data_id)) {
+        lcr.getAttribute().removePropertyChangeListener(this);
+        line_.removeElement(lcr);
+        label_.removeElementAt(indx);
+        modified("LineKey: clear()");
+        break;
+      }
     }
   }
+
   /**
    * Return rowheight of key in pixels.
+   *
    * @since 2.0
    */
   public int getRowHeight() {
@@ -467,9 +489,9 @@ public class LineKey implements Cloneable,
     bounds = getBounds();
     return ROW_SPACE_ + maxLabelHeight_;
   }
-  /**
-   * Draw the Key.
-   */
+
+  /** Draw the Key. */
+  @Override
   public void draw(Graphics g) {
     double maxLabelLength, maxLabelHeight;
     int numLines, numRows, i, lineLength;
@@ -484,10 +506,10 @@ public class LineKey implements Cloneable,
     LineAttribute attr = null;
     //
     numLines = line_.size();
-    if((numLines <= 0) || !visible_) return;
+    if ((numLines <= 0) || !visible_) return;
 
-    numRows = numLines/columns_;
-    if(numLines%columns_ != 0) numRows++;
+    numRows = numLines / columns_;
+    if (numLines % columns_ != 0) numRows++;
 
     xp = new double[columns_];
     xd = new int[columns_];
@@ -506,14 +528,14 @@ public class LineKey implements Cloneable,
     //
     yd[0] = bounds.y + VERTICAL_BORDER_ + maxLabelHeight_;
     yp[0] = layer_.getYDtoP(yd[0]);
-    for(i=1; i < numRows; i++) {
-      yd[i] = yd[i-1] + ROW_SPACE_ + maxLabelHeight_;
+    for (i = 1; i < numRows; i++) {
+      yd[i] = yd[i - 1] + ROW_SPACE_ + maxLabelHeight_;
       yp[i] = layer_.getYDtoP(yd[i]);
     }
     xd[0] = bounds.x + HORIZONTAL_BORDER_;
     xp[0] = layer_.getXDtoP(xd[0]);
-    for(i=1; i < columns_; i++) {
-      xd[i] = xd[i-1] + COLUMN_SPACE_ + lineLength + LABEL_SPACE_ + maxLabelLength_;
+    for (i = 1; i < columns_; i++) {
+      xd[i] = xd[i - 1] + COLUMN_SPACE_ + lineLength + LABEL_SPACE_ + maxLabelLength_;
       xp[i] = layer_.getXDtoP(xd[i]);
     }
     //
@@ -521,159 +543,168 @@ public class LineKey implements Cloneable,
     col = 0;
     Object obj;
     Enumeration labelIt = label_.elements();
-    for(Enumeration lineIt = line_.elements(); lineIt.hasMoreElements();) {
+    for (Enumeration lineIt = line_.elements(); lineIt.hasMoreElements(); ) {
       obj = lineIt.nextElement();
-      render = (LineCartesianRenderer)obj;
-      attr = (LineAttribute)render.getAttribute();
-      label = (SGLabel)labelIt.nextElement();
+      render = (LineCartesianRenderer) obj;
+      attr = (LineAttribute) render.getAttribute();
+      label = (SGLabel) labelIt.nextElement();
       //
       // draw line
       //
       g.setColor(attr.getColor());
       xout[0] = xd[col];
       xout[1] = xout[0] + lineLength;
-      yout[0] = yd[row] - maxLabelHeight_/2;
+      yout[0] = yd[row] - maxLabelHeight_ / 2;
       yout[1] = yout[0];
-      switch(attr.getStyle()) {
-      case LineAttribute.MARK:
-        render.drawMark(g, xout, yout, 2, attr);
-        break;
-      case LineAttribute.HIGHLIGHT:
-        stroke_.drawHighlight(g, xout, yout, 2, attr);
-        break;
-      case LineAttribute.HEAVY:
-        stroke_.drawHeavy(g, xout, yout, 2, attr);
-        break;
-      case LineAttribute.DASHED:
-        stroke_.drawDashed(g, xout, yout, 2, attr);
-        break;
-      case LineAttribute.STROKE:
-        stroke_.drawStroke(g, xout, yout , 2, attr);
-        break;
-      case LineAttribute.MARK_LINE:
-        render.drawMark(g, xout, yout, 2, attr);
-      default:
-      case LineAttribute.SOLID:
-        g.drawLine(xout[0], yout[0], xout[1], yout[1]);
+      switch (attr.getStyle()) {
+        case LineAttribute.MARK:
+          render.drawMark(g, xout, yout, 2, attr);
+          break;
+        case LineAttribute.HIGHLIGHT:
+          stroke_.drawHighlight(g, xout, yout, 2, attr);
+          break;
+        case LineAttribute.HEAVY:
+          stroke_.drawHeavy(g, xout, yout, 2, attr);
+          break;
+        case LineAttribute.DASHED:
+          stroke_.drawDashed(g, xout, yout, 2, attr);
+          break;
+        case LineAttribute.STROKE:
+          stroke_.drawStroke(g, xout, yout, 2, attr);
+          break;
+        case LineAttribute.MARK_LINE:
+          render.drawMark(g, xout, yout, 2, attr);
+          // fall through
+        default:
+        case LineAttribute.SOLID:
+          g.drawLine(xout[0], yout[0], xout[1], yout[1]);
       }
       //
       xloc = xp[col] + lineLengthP_ + labelSpace;
       label.setLocationP(new Point2D.Double(xloc, yp[row]));
       try {
         label.draw(g);
-      } catch (SGException e) {}
+      } catch (SGException e) {
+      }
       //
       col++;
-      if(col >= columns_) {
+      if (col >= columns_) {
         col = 0;
         row++;
       }
     }
-    switch(style_) {
-    case PLAIN_LINE:
-      g.drawRect(bounds.x, bounds.y, bounds.width-1, bounds.height-1);
-      break;
-    case RAISED:
-      break;
-    default:
-    case NO_BORDER:
+    switch (style_) {
+      case PLAIN_LINE:
+        g.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
+        break;
+      case RAISED:
+        break;
+      default:
+      case NO_BORDER:
     }
   }
+
   /**
    * Get the bounding rectangle.
    *
    * @return bounding rectangle
    */
+  @Override
   public Rectangle getBounds() {
     int lineLength;
     int numLines, rows;
     int x, y, height, width;
 
     numLines = line_.size();
-    if(numLines <= 0) return new Rectangle(0, 0, 0, 0);
+    if (numLines <= 0) return new Rectangle(0, 0, 0, 0);
     //
     // find longest label
     //
     maxLabelLength_ = 0;
     maxLabelHeight_ = 0;
     SGLabel label;
-    for(Enumeration it = label_.elements(); it.hasMoreElements();) {
-      label = (SGLabel)it.nextElement();
+    for (Enumeration it = label_.elements(); it.hasMoreElements(); ) {
+      label = (SGLabel) it.nextElement();
       Rectangle sz = label.getBounds();
       maxLabelLength_ = Math.max(maxLabelLength_, sz.width);
       maxLabelHeight_ = Math.max(maxLabelHeight_, sz.height);
     }
     //
-    rows = numLines/columns_;
-    if(numLines%columns_ != 0) rows++;
+    rows = numLines / columns_;
+    if (numLines % columns_ != 0) rows++;
     lineLength = layer_.getXPtoD(lineLengthP_) - layer_.getXPtoD(0.0f);
-    width = 2*HORIZONTAL_BORDER_ + columns_*(lineLength + LABEL_SPACE_ + maxLabelLength_)
-      + (columns_ - 1)*COLUMN_SPACE_;
-    height = 2*VERTICAL_BORDER_ + rows*maxLabelHeight_ + (rows-1)*ROW_SPACE_;
+    width =
+        2 * HORIZONTAL_BORDER_
+            + columns_ * (lineLength + LABEL_SPACE_ + maxLabelLength_)
+            + (columns_ - 1) * COLUMN_SPACE_;
+    height = 2 * VERTICAL_BORDER_ + rows * maxLabelHeight_ + (rows - 1) * ROW_SPACE_;
     //
     x = layer_.getXPtoD(porigin_.x);
     y = layer_.getYPtoD(porigin_.y);
-    switch(halign_) {
-    case RIGHT:
-      x = x - width;
-      break;
-    case CENTER:
-      x = x - width/2;
+    switch (halign_) {
+      case RIGHT:
+        x = x - width;
+        break;
+      case CENTER:
+        x = x - width / 2;
     }
-    switch(valign_) {
-    case BOTTOM:
-      y = y - height;
-      break;
-    case MIDDLE:
-      y = y - height/2;
+    switch (valign_) {
+      case BOTTOM:
+        y = y - height;
+        break;
+      case MIDDLE:
+        y = y - height / 2;
     }
     return new Rectangle(x, y, width, height);
   }
+
+  @Override
   public Point getLocation() {
     Rectangle bnds = getBounds();
     return new Point(bnds.x, bnds.y);
   }
+
+  @Override
   public void setLocation(Point loc) {
     Rectangle bnds = getBounds();
     setBounds(loc.x, loc.y, bnds.width, bnds.height);
   }
-  /**
-   * Set the bounds of the <code>LineKey</code>.
-   */
+
+  /** Set the bounds of the <code>LineKey</code>. */
   public void setBounds(Rectangle r) {
     setBounds(r.x, r.y, r.width, r.height);
   }
+
   /**
-   * Set the bounds of the <code>LineKey</code>.
-   * <BR><strong>Property Change:</strong> <code>location</code>.
+   * Set the bounds of the <code>LineKey</code>. <br>
+   * <strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
-    switch(halign_) {
-    case RIGHT:
-      x = x + width;
-      break;
-    case CENTER:
-      x = x + width/2;
+    switch (halign_) {
+      case RIGHT:
+        x = x + width;
+        break;
+      case CENTER:
+        x = x + width / 2;
     }
-    switch(valign_) {
-    case BOTTOM:
-      y = y + height;
-      break;
-    case MIDDLE:
-      y = y + height/2;
+    switch (valign_) {
+      case BOTTOM:
+        y = y + height;
+        break;
+      case MIDDLE:
+        y = y + height / 2;
     }
     double xp = layer_.getXDtoP(x);
     double yp = layer_.getYDtoP(y);
-    if(porigin_.x != xp || porigin_.y != yp) {
+    if (porigin_.x != xp || porigin_.y != yp) {
       Point2D.Double temp = porigin_;
       porigin_.x = xp;
       porigin_.y = yp;
-      changes_.firePropertyChange("location",
-          temp,
-          new Point2D.Double(xp, yp));
+      changes_.firePropertyChange("location", temp, new Point2D.Double(xp, yp));
       modified("LineKey: setBounds()");
     }
   }
+
   Object getObjectAt(Point pt) {
     Rectangle lbnds;
     Rectangle bounds;
@@ -686,10 +717,10 @@ public class LineKey implements Cloneable,
     int i;
 
     numLines = line_.size();
-    if(numLines <= 0) return null;
+    if (numLines <= 0) return null;
 
-    numRows = numLines/columns_;
-    if(numLines%columns_ != 0) numRows++;
+    numRows = numLines / columns_;
+    if (numLines % columns_ != 0) numRows++;
 
     xd = new int[columns_];
     yd = new int[numRows];
@@ -703,66 +734,80 @@ public class LineKey implements Cloneable,
     labelSpace = layer_.getXDtoP(LABEL_SPACE_) - layer_.getXDtoP(0);
     //
     yd[0] = bounds.y + VERTICAL_BORDER_ + maxLabelHeight_;
-    for(i=1; i < numRows; i++) {
-      yd[i] = yd[i-1] + ROW_SPACE_ + maxLabelHeight_;
+    for (i = 1; i < numRows; i++) {
+      yd[i] = yd[i - 1] + ROW_SPACE_ + maxLabelHeight_;
     }
     xd[0] = bounds.x + HORIZONTAL_BORDER_;
-    for(i=1; i < columns_; i++) {
-      xd[i] = xd[i-1] + COLUMN_SPACE_ + lineLength + LABEL_SPACE_ + maxLabelLength_;
+    for (i = 1; i < columns_; i++) {
+      xd[i] = xd[i - 1] + COLUMN_SPACE_ + lineLength + LABEL_SPACE_ + maxLabelLength_;
     }
     // loop over all the lines
     int row = 0;
     int col = 0;
-    for(Enumeration lineIt = line_.elements(); lineIt.hasMoreElements();) {
-      line = (LineCartesianRenderer)lineIt.nextElement();
+    for (Enumeration lineIt = line_.elements(); lineIt.hasMoreElements(); ) {
+      line = (LineCartesianRenderer) lineIt.nextElement();
       xout[0] = xd[col];
       xout[1] = xout[0] + lineLength + LABEL_SPACE_ + maxLabelLength_;
-//        xout[1] = xout[0] + lineLength + LABEL_SPACE_;
+      //        xout[1] = xout[0] + lineLength + LABEL_SPACE_;
       yout[0] = yd[row] - maxLabelHeight_;
       yout[1] = yd[row];
-      lbnds = new Rectangle(xout[0], yout[0],
-                            xout[1] - xout[0],
-                            yout[1] - yout[0]);
-      if(lbnds.contains(pt)) {
+      lbnds = new Rectangle(xout[0], yout[0], xout[1] - xout[0], yout[1] - yout[0]);
+      if (lbnds.contains(pt)) {
         return line;
       }
       //
       col++;
-      if(col >= columns_) {
+      if (col >= columns_) {
         col = 0;
         row++;
       }
     }
-    if(bounds.contains(pt)) {
+    if (bounds.contains(pt)) {
       return this;
     }
     return null;
   }
+
+  @Override
   public String toString() {
     String name = getClass().getName();
-    return name.substring(name.lastIndexOf(".")+1) + ": " + ident_;
+    return name.substring(name.lastIndexOf(".") + 1) + ": " + ident_;
   }
+
+  @Override
   public boolean isVisible() {
     return visible_;
   }
+
+  @Override
   public void setVisible(boolean visible) {
-    if(visible_ != visible) {
+    if (visible_ != visible) {
       visible_ = visible;
       modified("LineKey: setVisible()");
     }
   }
+
+  @Override
   public void propertyChange(PropertyChangeEvent evt) {
-//      if(Debug.EVENT) {
-//        System.out.println("LineKey: " + evt);
-//        System.out.println("         " + evt.getPropertyName());
-//      }
-    modified("LineKey: propertyChange(" +
-       evt.getSource().toString() + "[" +
-       evt.getPropertyName() + "]" + ")");
+    //      if(Debug.EVENT) {
+    //        System.out.println("LineKey: " + evt);
+    //        System.out.println("         " + evt.getPropertyName());
+    //      }
+    modified(
+        "LineKey: propertyChange("
+            + evt.getSource().toString()
+            + "["
+            + evt.getPropertyName()
+            + "]"
+            + ")");
   }
+
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     changes_.addPropertyChangeListener(l);
   }
+
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     changes_.removePropertyChangeListener(l);
   }

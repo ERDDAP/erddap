@@ -17,7 +17,7 @@
       src="../images/noaab.png" alt="NOAA"
       style="vertical-align:middle;"></a></td> 
     <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
-      <strong>ERDDAP</strong>
+      <strong>ERDDAP™</strong>
       <br><small><small><small>Easier access to scientific data</small></small></small>
       </td> 
     <td style="text-align:right; font-size:small;"> 
@@ -43,32 +43,32 @@
 <h1 style="text-align:center">The EDDTableFromEML and EDDTableFromEMLBatch Options in GenerateDatasetsXml</h1>
 
 
-[This web page will only be of interest to ERDDAP administrators who work
+[This web page will only be of interest to ERDDAP™ administrators who work
 with EML files.
 <br>This document was originally created in 2016. It was last edited on 2020-11-30. ]
 
 <p><a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"><strong>ERDDAP</strong></a>
+href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"><strong>ERDDAP™</strong></a>
 is a data server that gives users a simple, consistent way to download 
 subsets of gridded and tabular scientific datasets in common file formats 
-and make graphs and maps. ERDDAP works with a given dataset as either
+and make graphs and maps. ERDDAP™ works with a given dataset as either
 a group of multidimensional gridded variables (e.g., satellite or model data)
 or as a database-like table (with a column for each type of information
-and a row for each observation). ERDDAP is Free and Open Source Software, 
+and a row for each observation). ERDDAP™ is Free and Open Source Software, 
 so anyone can 
 <a rel="help" 
 href="https://erddap.github.io/setup.html"
->download and install ERDDAP</a> 
+>download and install ERDDAP™</a> 
 to serve their data.
 
-<p>To add a dataset to an ERDDAP installation, the ERDDAP administrator must add a
+<p>To add a dataset to an ERDDAP™ installation, the ERDDAP™ administrator must add a
 chunk of XML describing the dataset to a file called datasets.xml.
 (There is  
 <a rel="help" 
 href="https://erddap.github.io/setupDatasetsXml.html"
 >thorough documentation for datasets.xml</a>.)
 Although it is possible to generate the chunk of XML for datasets.xml entirely 
-by hand, ERDDAP comes with a tool called
+by hand, ERDDAP™ comes with a tool called
 <a rel="help" 
 href="https://erddap.github.io/setupDatasetsXml.html#Tools"
 ><strong>GenerateDatasetsXml</strong></a> which can generate the rough draft of the chunk
@@ -147,7 +147,7 @@ or a batch of EML files:
 </ul>
 
 
-<p>EML plus ERDDAP is a great combination, since ERDDAP can
+<p>EML plus ERDDAP™ is a great combination, since ERDDAP™ can
 give users more direct access to the wealth of 
 <a rel="help"
   href="https://knb.ecoinformatics.org/"
@@ -165,7 +165,7 @@ data and help those projects meet the US government's
   href="https://nosc.noaa.gov/EDMC/PD.DSP.php"
   >Public Access to Research Results (PARR) requirements</a>
 by making the data available via a web service.
-Also, EML plus ERDDAP seems like a great bridge between scientists in 
+Also, EML plus ERDDAP™ seems like a great bridge between scientists in 
 the academic / NSF-funded realm and scientists in the federal agency (NOAA, NASA, USGS) realm.
 
 <p>If you have questions, comments, suggestions, or need help, please send an email to 
@@ -176,22 +176,22 @@ the academic / NSF-funded realm and scientists in the federal agency (NOAA, NASA
 <h2><a class="selfLink" id="designDetails" href="#designDetails" rel="bookmark">Design Details</a></h2>
 
 Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml.
-<br>Some are related to differences in how EML and ERDDAP do things and how  
+<br>Some are related to differences in how EML and ERDDAP™ do things and how  
   GenerateDatasetsXml deals with these problems.
 
 <ul>
-<li><a class="selfLink" id="oneDataTable" href="#oneDataTable" rel="bookmark">One dataTable Becomes One ERDDAP Dataset</a>
-  <br>One EML file may have multiple &lt;dataTable&gt;s. ERDDAP makes
-  one ERDDAP dataset per EML dataTable. The datasetID for the dataset is 
+<li><a class="selfLink" id="oneDataTable" href="#oneDataTable" rel="bookmark">One dataTable Becomes One ERDDAP™ Dataset</a>
+  <br>One EML file may have multiple &lt;dataTable&gt;s. ERDDAP™ makes
+  one ERDDAP™ dataset per EML dataTable. The datasetID for the dataset is 
   <br><kbd><i>EMLName</i>_t<i>tableNumber</i></kbd> (when EMLname is text) or
   <br><kbd><i>system_EMLName</i>_t<i>tableNumber</i></kbd> (when EMLname is a number). 
   <br>For example, table #1 in the file knb-lter-sbc.28, 
-  becomes ERDDAP datasetID=knb_lter_sbc_28_t1,
+  becomes ERDDAP™ datasetID=knb_lter_sbc_28_t1,
   <br>&nbsp;
 
 <li><a class="selfLink" id="emlVsCfAcdd" href="#emlVsCfAcdd" rel="bookmark">EML versus CF+ACDD</a>
   <br>Almost all of the metadata in the EML files gets into ERDDAP,
-  but in a different format. ERDDAP uses the  
+  but in a different format. ERDDAP™ uses the  
   <a rel="help"
   href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
   src="../images/external.png" alt=" (external link)" 
@@ -211,9 +211,9 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   <br>&nbsp;
 
 <li><a class="selfLink" id="smallChanges" href="#smallChanges" rel="bookmark">Small Changes</a>
-  <br>ERDDAP makes a lot of small changes. For example, ERDDAP uses the 
+  <br>ERDDAP™ makes a lot of small changes. For example, ERDDAP™ uses the 
   EML non-DOI <kbd>alternateIdentifier</kbd> plus a dataTable number as the 
-  ERDDAP datasetID, but slightly changes <kbd>alternateIdentifier</kbd> to make 
+  ERDDAP™ datasetID, but slightly changes <kbd>alternateIdentifier</kbd> to make 
   it a valid variable name in most computer languages,
   e.g., knb-lter-sbc.33 dataTable #1 becomes knb_lter_sbc_33_t1.
   <br>&nbsp;
@@ -243,19 +243,19 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
 
 <li><a class="selfLink" id="zipDataFiles" href="#zipDataFiles" rel="bookmark">.zip'd Data Files</a>
   <br>If the referenced data file is a .zip file, it must contain just
-  one file. That file will be used for the ERDDAP dataset.
-  If there is more than 1 file. ERDDAP will reject that dataset.
+  one file. That file will be used for the ERDDAP™ dataset.
+  If there is more than 1 file. ERDDAP™ will reject that dataset.
   If needed, this could be modified.
   (In practice, all SBC LTER zip files have just one data file.)
   <br>&nbsp;
 
 <li><a class="selfLink" id="storageType" href="#storageType" rel="bookmark">StorageType</a>
-  <br>If a column's storageType isn't specified, ERDDAP uses its best guess
+  <br>If a column's storageType isn't specified, ERDDAP™ uses its best guess
   based on the data in the data file. This works pretty well.
   <br>&nbsp;
 
 <li><a class="selfLink" id="units" href="#units" rel="bookmark">Units</a>
-  <br>ERDDAP uses 
+  <br>ERDDAP™ uses 
   <a rel="help" href="https://www.unidata.ucar.edu/software/udunits/"
   >UDUNITS formatting for units<img 
         src="../images/external.png" alt=" (external link)" 
@@ -274,7 +274,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
 <li><a class="selfLink" id="EML211" href="#EML211" rel="bookmark">EML version 2.1.1</a>
   <br>This support for EML v2.1.1 files was added to GenerateDatasetsXml in 2016 with the 
   hope that there would be some uptake in the EML community. As of 2020, that has not happened.
-  The ERDDAP developers would be happy to add support for more recent versions of EML, but only 
+  The ERDDAP™ developers would be happy to add support for more recent versions of EML, but only 
   if the new features will actually be used. Please email
   erd.data at noaa.gov if you want support for more recent versions of EML 
   and will actually use this feature.
@@ -311,8 +311,8 @@ unified date+time column.
 Currently, GenerateDatasetsXml creates a dataset with these separate columns,
 but it isn't ideal because: 
 <ul>
-<li>It is best if datasets in ERDDAP have a combined date+time column called "time".
-<li>Often the dataset won't load in ERDDAP because the "time" column doesn't have date+time data.
+<li>It is best if datasets in ERDDAP™ have a combined date+time column called "time".
+<li>Often the dataset won't load in ERDDAP™ because the "time" column doesn't have date+time data.
 </ul>
 There are two possible solutions:
 <ol>
@@ -321,7 +321,7 @@ There are two possible solutions:
   so it finds the new column.
 <li>Use the <a rel="help" 
   href="https://erddap.github.io/setupDatasetsXml.html#scriptSourceNames"
-  >Derived Variables</a> feature in ERDDAP to define a new variable in datasets.xml
+  >Derived Variables</a> feature in ERDDAP™ to define a new variable in datasets.xml
   which is created by concatenating the date and the time columns. One of the examples
   deals specifically with this situation.
   <br>&nbsp;
@@ -355,7 +355,7 @@ to match the column names in the data file.
   datasetID=knb_lter_sbc_17_t1
   dataFile=all_fish_all_years_20140903.csv
   The data file and EML file have different column names.
-  ERDDAP would like to equate these pairs of names:
+  ERDDAP™ would like to equate these pairs of names:
     SURVEY_TIMING        = notes
     NOTES                = survey_timing
   --&gt;</pre>
@@ -368,7 +368,7 @@ to match the column names in the data file.
 
 <li><a class="selfLink" id="incorrectNumHeaderLines" href="#incorrectNumHeaderLines" rel="bookmark">Incorrect numHeaderLines</a>
 <br>Several dataTables incorrectly state numHeaderLines=1, e.g., ...sbc.4011. 
-  This causes ERDDAP to read the first line of data as the column names.
+  This causes ERDDAP™ to read the first line of data as the column names.
   I tried to manually SKIP all of these dataTables.
   They are obvious because the unmatched source col names are all data values.
   And if there are files that incorrectly have numHeaderLines=0,
@@ -380,7 +380,7 @@ to match the column names in the data file.
    datasetID=knb_lter_sbc_3017_t1
   dataFile=MC06_allyears_2012-03-03.txt
   The data file and EML file have different column names.
-  ERDDAP would like to equate these pairs of names:
+  ERDDAP™ would like to equate these pairs of names:
     2008-10-01T00:00     = timestamp_local
     2008-10-01T07:00     = timestamp_UTC
     2.27                 = discharge_lps
@@ -394,7 +394,7 @@ to match the column names in the data file.
   <p>It would be nice if the EML checker checked the numHeaderLines value.
 
 <li><a class="selfLink" id="numHeaderLines0" href="#numHeaderLines0" rel="bookmark">numHeaderLines = 0</a>
-<br>Some source files don't have column names. ERDDAP accepts that
+<br>Some source files don't have column names. ERDDAP™ accepts that
   if the EML describes the same number of columns. 
 
   <p>In my opinion: this seems very dangerous. There could be columns 
@@ -422,7 +422,7 @@ to match the column names in the data file.
   formats in the EML files into 
   <br><a rel="help" 
     href="https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits"
-    >the date/time format that ERDDAP requires</a>, which is almost
+    >the date/time format that ERDDAP™ requires</a>, which is almost
   identical to for Java/Joda time format specification, but is slightly more forgiving.
 
   <p>It would be nice if the EML checker required strict adherence to the 
@@ -454,17 +454,17 @@ to match the column names in the data file.
   <p>Other comments:
   <br>If there is a good date+time with time zone column, 
   that column will be named "time" in ERDDAP.
-  ERDDAP requires that time column data be understandable/convertible to 
+  ERDDAP™ requires that time column data be understandable/convertible to 
   Zulu/UTC/GMT time zone dateTimes.
   [My belief is: using local times and different date/time formats
   (2-digit years! mm/dd/yy vs dd/mm/yy vs ... ) in data files forces 
   the end user to do complicated conversions to Zulu time in order to 
   compare data from one dataset with data from another. 
-  So ERDDAP standardizes all time data:
-  For string times, ERDDAP always uses the ISO 8601:2004(E) standard format,
+  So ERDDAP™ standardizes all time data:
+  For string times, ERDDAP™ always uses the ISO 8601:2004(E) standard format,
   for example, 1985-01-02T00:00:00Z. 
-  For numeric times, ERDDAP always uses "seconds since 1970-01-01T00:00:00Z". 
-  ERDDAP always uses the Zulu (UTC, GMT) time zone to remove the 
+  For numeric times, ERDDAP™ always uses "seconds since 1970-01-01T00:00:00Z". 
+  ERDDAP™ always uses the Zulu (UTC, GMT) time zone to remove the 
   difficulties of working with different time zones and standard time 
   versus daylight saving time. 
   So GenerateDatasetsXml seeks an EML dataTable column with date+time Zulu.
@@ -530,7 +530,7 @@ to match the column names in the data file.
   These are probably characters from the Windows charset that
   were incorrectly copied and pasted into the UTF-8 EML files.
   GenerateDatasetsXml sanitizes these characters to e.g., [#128], 
-  so they are easy to search for in the ERDDAP datasets.xml file.
+  so they are easy to search for in the ERDDAP™ datasets.xml file.
 
   <p>It would be nice if the EML checker checked for this.
   It is easy to find and easy to fix.
@@ -549,7 +549,7 @@ to match the column names in the data file.
    datasetID=knb_lter_sbc_3_t1
   dataFile=SBCFC_Precip_Daily_active_logger.csv
   The data file and EML file have different column names.
-  ERDDAP would like to equate these pairs of names:
+  ERDDAP™ would like to equate these pairs of names:
     Daily_Precipitation_Total_mm = Daily_Precipitation_Total_inch
     Flag_Daily_Precipitation_Total_mm = Flag_Daily_Precipitation_Total_inch
   --&gt;</pre>
@@ -584,7 +584,7 @@ to match the column names in the data file.
   "unexpected number of items on line #120 (observed=52, expected=50)"
   An error message like this means that a line in the datafile 
   had a different number of values than the other lines.
-  It may be a problem in ERDDAP (e.g., not parsing the file correctly)
+  It may be a problem in ERDDAP™ (e.g., not parsing the file correctly)
   or in the file. 
   EXAMPLE from SBC LTER:   
   <br><a rel="help"
@@ -606,7 +606,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.23
+<p>ERDDAP, Version 2.24
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

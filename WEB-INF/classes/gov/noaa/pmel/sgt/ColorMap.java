@@ -11,98 +11,92 @@
  */
 package gov.noaa.pmel.sgt;
 
-import gov.noaa.pmel.util.Range2D;
 import gov.noaa.pmel.util.Debug;
-
+import gov.noaa.pmel.util.Range2D;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeEvent;
 import java.io.Serializable;
 
 /**
- * <code>ColorMap</code> provides a mapping from an index or
- * value to a <code>Color</code>. Several methods of mapping an
- * index or value to a <code>Color</code> are summarized below. <br>
+ * <code>ColorMap</code> provides a mapping from an index or value to a <code>Color</code>. Several
+ * methods of mapping an index or value to a <code>Color</code> are summarized below. <br>
  *
  * <DL>
- *   <DT><CODE>IndexedColorMap</CODE></DT>
- *     <DD><CODE>Color</CODE> is determined from an array,
- *         the index computed from a <CODE>Transform</CODE>.
- *   <DT><CODE>TransformColorMap</CODE></DT>
- *	 <DD>Red, green, blue <CODE>Color</CODE> components
- *         are computed from <CODE>Transform</CODE>s.
- *   <DT><CODE>CLIndexedColorMap</CODE></DT>
- *	 <DD><CODE>Color</CODE> is determined from and array,
- *         the index computed from a <CODE>ContourLevels</CODE> object.
- *   <DT><CODE>CLTransformColorMap</CODE></DT>
- *	 <DD>Red, green, blue <CODE>Color</CODE> components
- *         are computed from <CODE>Transform</CODE>s, using
- *         the index computed from a <CODE>ContourLevels</CODE>
- *         object divided by the maximum index value.
+ *   <DT><CODE>IndexedColorMap</CODE>
+ *   <DD><CODE>Color</CODE> is determined from an array, the index computed from a <CODE>Transform
+ *       </CODE>.
+ *   <DT><CODE>TransformColorMap</CODE>
+ *   <DD>Red, green, blue <CODE>Color</CODE> components are computed from <CODE>Transform</CODE>s.
+ *   <DT><CODE>CLIndexedColorMap</CODE>
+ *   <DD><CODE>Color</CODE> is determined from and array, the index computed from a <CODE>
+ *       ContourLevels</CODE> object.
+ *   <DT><CODE>CLTransformColorMap</CODE>
+ *   <DD>Red, green, blue <CODE>Color</CODE> components are computed from <CODE>Transform</CODE>s,
+ *       using the index computed from a <CODE>ContourLevels</CODE> object divided by the maximum
+ *       index value.
  * </DL>
- *
  *
  * @author Donald Denbo
  * @version $Revision: 1.14 $, $Date: 2002/06/14 17:12:25 $
  * @since 1.0
  */
-abstract public class ColorMap implements Cloneable, PropertyChangeListener, Serializable {
+public abstract class ColorMap implements Cloneable, PropertyChangeListener, Serializable {
   private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   protected boolean batch_ = false;
   protected boolean local_ = true;
   protected boolean modified_ = false;
-  abstract public ColorMap copy();
+
+  public abstract ColorMap copy();
+
   /**
    * Get a <code>Color</code>.
    *
    * @param val Value
    * @return Color
-   *
    */
-  abstract public Color getColor(double val);
+  public abstract Color getColor(double val);
 
   /**
-   * Get the current user range for the <code>Transform</code>s or
-   * <code>ContourLevel</code>.
+   * Get the current user range for the <code>Transform</code>s or <code>ContourLevel</code>.
    *
    * @return user range
    */
-  abstract public Range2D getRange();
-  /**
-   * Test for equality of color maps.
-   */
-  abstract public boolean equals(ColorMap cm);
-  /**
-   * Add listener to changes in <code>ColorMap</code> properties.
-   */
+  public abstract Range2D getRange();
+
+  /** Test for equality of color maps. */
+  @Override
+  public abstract boolean equals(Object cm);
+
+  @Override
+  public abstract int hashCode();
+
+  /** Add listener to changes in <code>ColorMap</code> properties. */
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     changes_.addPropertyChangeListener(listener);
   }
-  /**
-   * Remove listener.
-   */
+
+  /** Remove listener. */
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
+
+  @Override
   public void propertyChange(PropertyChangeEvent evt) {
-    if(Debug.EVENT) {
+    if (Debug.EVENT) {
       System.out.println("ColorMap: " + evt);
       System.out.println("          " + evt.getPropertyName());
     }
-    firePropertyChange(evt.getPropertyName(),
-                       evt.getOldValue(),
-                       evt.getNewValue());
+    firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
   }
 
   protected void firePropertyChange(String name, Object oldValue, Object newValue) {
-    if(batch_) {
+    if (batch_) {
       modified_ = true;
       return;
     }
-    AttributeChangeEvent ace = new AttributeChangeEvent(this, name,
-                                                        oldValue, newValue,
-                                                        local_);
+    AttributeChangeEvent ace = new AttributeChangeEvent(this, name, oldValue, newValue, local_);
     changes_.firePropertyChange(ace);
     modified_ = false;
   }
@@ -115,17 +109,19 @@ abstract public class ColorMap implements Cloneable, PropertyChangeListener, Ser
   public void setBatch(boolean batch) {
     setBatch(batch, true);
   }
+
   /**
-   * Batch the changes to the ColorMap and set local flag.
-   * Determines whether <code>AttributeChangeEvent</code> will be set local.
+   * Batch the changes to the ColorMap and set local flag. Determines whether <code>
+   * AttributeChangeEvent</code> will be set local.
    *
    * @since 3.0
    */
   public void setBatch(boolean batch, boolean local) {
     local_ = local;
     batch_ = batch;
-    if(!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
+    if (!batch && modified_) firePropertyChange("batch", Boolean.TRUE, Boolean.FALSE);
   }
+
   /**
    * Is the attribute in batch mode?
    *

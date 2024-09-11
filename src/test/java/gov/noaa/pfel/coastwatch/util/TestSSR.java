@@ -1,4 +1,4 @@
-/* 
+/*
  * TestSSR Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
@@ -9,28 +9,24 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-
-import tags.TagAWS;
-import tags.TagLocalERDDAP;
-import tags.TagPassword;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import tags.TagAWS;
+import tags.TagIncompleteTest;
+import tags.TagPassword;
 
 /**
  * This is a Java program to test all of the methods in SSR.
  *
- * @author Robert Simons was bob.simons@noaa.gov, now BobSimons2.00@gmail.com
- *         January 2005
+ * @author Robert Simons was bob.simons@noaa.gov, now BobSimons2.00@gmail.com January 2005
  */
 public class TestSSR {
 
   static String classPath = File2.getClassPath(); // with / separator and / at the end
 
-  /**
-   * Run all of the tests which are operating system independent.
-   */
+  /** Run all of the tests which are operating system independent. */
   @org.junit.jupiter.api.Test
   @TagPassword
   void runNonUnixTests() throws Throwable {
@@ -55,40 +51,35 @@ public class TestSSR {
 
     // percentDecode(String query)
     String s = "~`!@#$%^&*()_-+=|\\{[}]:;\"'<,>.?/ a\nA°1"; // after A is degree #176/B0
-    Test.ensureEqual(SSR.percentEncode(s), // it is utf-8'd then % encoded
+    Test.ensureEqual(
+        SSR.percentEncode(s), // it is utf-8'd then % encoded
         // note that I modified Java code so ' ' becomes %20, not +
         "%7E%60%21%40%23%24%25%5E%26*%28%29_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01",
         ""); // It encodes ~!*()'
-    Test.ensureEqual(SSR.minimalPercentEncode(s), //
-        "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01", "");
+    Test.ensureEqual(
+        SSR.minimalPercentEncode(s), //
+        "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01",
+        "");
     Test.ensureEqual(SSR.percentDecode("%2B%20%3Aq*~%3F%3D%26%25"), "+ :q*~?=&%", "");
 
     s = "AZaz09 \t\r\n`";
-    Test.ensureEqual(SSR.minimalPercentEncode(s),
-        "AZaz09%20%09%0D%0A%60", "");
-    Test.ensureEqual(SSR.percentEncode(s),
-        "AZaz09%20%09%0D%0A%60", "");
+    Test.ensureEqual(SSR.minimalPercentEncode(s), "AZaz09%20%09%0D%0A%60", "");
+    Test.ensureEqual(SSR.percentEncode(s), "AZaz09%20%09%0D%0A%60", "");
     Test.ensureEqual(SSR.percentDecode("AZaz09%20%09%0D%0A%60"), s, "");
 
     s = "~!@#$%^&*()";
-    Test.ensureEqual(SSR.minimalPercentEncode(s),
-        "~!%40%23%24%25%5E%26*()", "");
-    Test.ensureEqual(SSR.percentEncode(s),
-        "%7E%21%40%23%24%25%5E%26*%28%29", "");
+    Test.ensureEqual(SSR.minimalPercentEncode(s), "~!%40%23%24%25%5E%26*()", "");
+    Test.ensureEqual(SSR.percentEncode(s), "%7E%21%40%23%24%25%5E%26*%28%29", "");
     Test.ensureEqual(SSR.percentDecode("%7E%21%40%23%24%25%5E%26*%28%29"), s, "");
 
     s = "-_=+\\|[{]};";
-    Test.ensureEqual(SSR.minimalPercentEncode(s),
-        "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
-    Test.ensureEqual(SSR.percentEncode(s),
-        "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
+    Test.ensureEqual(SSR.minimalPercentEncode(s), "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
+    Test.ensureEqual(SSR.percentEncode(s), "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
     Test.ensureEqual(SSR.percentDecode("-_%3D%2B%5C%7C%5B%7B%5D%7D%3B"), s, "");
 
     s = ":'\",<.>/?";
-    Test.ensureEqual(SSR.minimalPercentEncode(s),
-        "%3A%27%22%2C%3C.%3E%2F%3F", "");
-    Test.ensureEqual(SSR.percentEncode(s),
-        "%3A%27%22%2C%3C.%3E%2F%3F", "");
+    Test.ensureEqual(SSR.minimalPercentEncode(s), "%3A%27%22%2C%3C.%3E%2F%3F", "");
+    Test.ensureEqual(SSR.percentEncode(s), "%3A%27%22%2C%3C.%3E%2F%3F", "");
     Test.ensureEqual(SSR.percentDecode("%3A%27%22%2C%3C.%3E%2F%3F"), s, "");
 
     /*
@@ -123,23 +114,28 @@ public class TestSSR {
 
     // dosShell
     String2.log("test dosShell");
-    String tempGif = File2.webInfParentDirectory() + // with / separator and / at the end
-        "images/temp.gif";
+    String tempGif =
+        File2.webInfParentDirectory()
+            + // with / separator and / at the end
+            "images/temp.gif";
     File2.delete(tempGif);
     try {
       Test.ensureEqual(
-          String2.toNewlineString(SSR.dosShell(
-              "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" " +
-                  File2.webInfParentDirectory() + // with / separator and / at the end
-                  "images/subtitle.jpg " +
-                  tempGif,
-              10).toArray()),
-          "", "dosShell a");
+          String2.toNewlineString(
+              SSR.dosShell(
+                      "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
+                          + File2.webInfParentDirectory()
+                          + // with / separator and / at the end
+                          "images/subtitle.jpg "
+                          + tempGif,
+                      10)
+                  .toArray()),
+          "",
+          "dosShell a");
       Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
     } catch (Exception e) {
       Test.knownProblem(
-          "IMAGEMAGICK NOT SET UP ON BOB'S DELL M4700 or Lenovo.",
-          MustBe.throwableToString(e));
+          "IMAGEMAGICK NOT SET UP ON BOB'S DELL M4700 or Lenovo.", MustBe.throwableToString(e));
     }
     File2.delete(tempGif);
 
@@ -179,19 +175,24 @@ public class TestSSR {
     // make the zip file
     File2.delete(zipDir + zipName);
     long time1 = System.currentTimeMillis();
-    SSR.zip(zipDir + zipName, new String[] { zipDir + fileName }, 10);
+    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10);
     time1 = System.currentTimeMillis() - time1;
     File2.delete(zipDir + fileName);
     // unzip the zip file
     long time2 = System.currentTimeMillis();
-    SSR.unzip(zipDir + zipName, zipDir, // note: extract to zipDir, since it doesn't include dir
-        false, 10, null); // false 'ignoreDirectoryInfo', but there is none
+    SSR.unzip(
+        zipDir + zipName,
+        zipDir, // note: extract to zipDir, since it doesn't include dir
+        false,
+        10,
+        null); // false 'ignoreDirectoryInfo', but there is none
     time2 = System.currentTimeMillis() - time2;
     // ensure results are as expected
     String[] results = File2.readFromFile88591(zipDir + fileName);
     Test.ensureEqual(results[0], "", "SSR.zip b");
     Test.ensureEqual(results[1], longText, "SSR.zip c");
-    String2.log("zip+unzip time=" + (time1 + time2) + "ms  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
+    String2.log(
+        "zip+unzip time=" + (time1 + time2) + "ms  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
     File2.delete(zipDir + zipName);
     File2.delete(zipDir + fileName);
 
@@ -202,20 +203,26 @@ public class TestSSR {
     // make the zip file
     File2.delete(zipDir + zipName);
     time1 = System.currentTimeMillis();
-    SSR.zip(zipDir + zipName, new String[] { zipDir + fileName }, 10, classPath);
+    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10, classPath);
     time1 = System.currentTimeMillis() - time1;
     File2.delete(zipDir + fileName);
     // unzip the zip file
     time2 = System.currentTimeMillis();
-    SSR.unzip(zipDir + zipName, classPath, // note: extract to classPath, since includes dir
-        false, 10, null); // false 'ignoreDirectoryInfo'
+    SSR.unzip(
+        zipDir + zipName,
+        classPath, // note: extract to classPath, since includes dir
+        false,
+        10,
+        null); // false 'ignoreDirectoryInfo'
     time2 = System.currentTimeMillis() - time2;
     // ensure results are as expected
     results = File2.readFromFile88591(zipDir + fileName);
     Test.ensureEqual(results[0], "", "SSR.zip b");
     Test.ensureEqual(results[1], longText, "SSR.zip c");
-    String2.log("zip+unzip (w directory info) time=" + (time1 + time2) +
-        "ms  (Java 1.7M4700 937, 1.6 ~4000-11000ms)");
+    String2.log(
+        "zip+unzip (w directory info) time="
+            + (time1 + time2)
+            + "ms  (Java 1.7M4700 937, 1.6 ~4000-11000ms)");
     File2.delete(zipDir + zipName);
     File2.delete(zipDir + fileName);
 
@@ -231,20 +238,25 @@ public class TestSSR {
       // make the gzip file
       File2.delete(gzipDir + gzipName);
       time1 = System.currentTimeMillis();
-      SSR.gzip(gzipDir + gzipName, new String[] { gzipDir + fileName }, 10); // don't include dir info
+      SSR.gzip(gzipDir + gzipName, new String[] {gzipDir + fileName}, 10); // don't include dir info
       time1 = System.currentTimeMillis() - time1;
       File2.delete(gzipDir + fileName);
       // unzip the gzip file
       time2 = System.currentTimeMillis();
-      SSR.unGzip(gzipDir + gzipName, gzipDir, // note: extract to classPath, since doesn't include dir
-          true, 10); // false 'ignoreDirectoryInfo'
+      SSR.unGzip(
+          gzipDir + gzipName,
+          gzipDir, // note: extract to classPath, since doesn't include dir
+          true,
+          10); // false 'ignoreDirectoryInfo'
       time2 = System.currentTimeMillis() - time2;
       // ensure results are as expected
       results = File2.readFromFile88591(gzipDir + fileName);
       Test.ensureEqual(results[0], "", "SSR.gz b");
       Test.ensureEqual(results[1], longText, "SSR.z c");
-      String2.log("gzip+ungzip time=" + (time1 + time2) +
-          "ms  (Java 1.7M4700 780-880ms, 1.6 ~4000-11000ms)");
+      String2.log(
+          "gzip+ungzip time="
+              + (time1 + time2)
+              + "ms  (Java 1.7M4700 780-880ms, 1.6 ~4000-11000ms)");
       File2.delete(gzipDir + gzipName);
       File2.delete(gzipDir + fileName);
     }
@@ -255,9 +267,11 @@ public class TestSSR {
     try {
       sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/erddap/index.html");
       Test.ensureEqual(
-          String2.lineContaining(sar,
-              "ERDDAP is a data server that gives you a simple, consistent way") == -1,
-          false, "Response=" + String2.toNewlineString(sar));
+          String2.lineContaining(
+                  sar, "ERDDAP is a data server that gives you a simple, consistent way")
+              == -1,
+          false,
+          "Response=" + String2.toNewlineString(sar));
     } catch (Exception e) {
       String2.log(MustBe.throwableToString(e));
       String2.pressEnterToContinue("\nRecover from failure?");
@@ -269,7 +283,10 @@ public class TestSSR {
       sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/zzz.html");
       throw new Throwable("shouldn't get here.");
     } catch (Exception e) { // not throwable
-      String2.log("SSR.getUrlResponse for non existent url time=" + (System.currentTimeMillis() - rTime) + "ms");
+      String2.log(
+          "SSR.getUrlResponse for non existent url time="
+              + (System.currentTimeMillis() - rTime)
+              + "ms");
       // String2.pressEnterToContinue();
     } catch (Throwable t) {
       Test.error(t.toString()); // converts it to Exception and stops the testing
@@ -278,7 +295,9 @@ public class TestSSR {
     // note there is no continuity (session cookie isn't being sent)
     // but you can put as many params on one line as needed (from any screen)
     // and put edit=... to determine which screen gets returned
-    sar = SSR.getUrlResponseLines("https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
+    sar =
+        SSR.getUrlResponseLines(
+            "https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
     String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
     Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
 
@@ -310,31 +329,43 @@ public class TestSSR {
     String2.log("test getFirstLineStartsWith");
     String tFileName = classPath + "testSSR.txt";
     File2.writeToFile88591(tFileName, "This is\na file\nwith a few lines.");
-    Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
+    Test.ensureEqual(
+        SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
     Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "hi "), null, "b");
 
     // getFirstLineMatching
     String2.log("test getFirstLineMatching");
-    Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?i.*"), "This is", "a"); // find first
-                                                                                                       // of many
-                                                                                                       // matches
-    Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "^a.*"), "a file", "b"); // start of line
-    Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?\\sfew\\s.*"), "with a few lines.",
+    Test.ensureEqual(
+        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?i.*"),
+        "This is",
+        "a"); // find first
+    // of many
+    // matches
+    Test.ensureEqual(
+        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "^a.*"),
+        "a file",
+        "b"); // start of line
+    Test.ensureEqual(
+        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?\\sfew\\s.*"),
+        "with a few lines.",
         "c"); // containing
-    Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"), null, "d"); // no match
+    Test.ensureEqual(
+        SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"), null, "d"); // no match
 
     Test.ensureTrue(File2.delete(tFileName), "delete " + tFileName);
 
     // getContextDirectory
-    String2.log("test getContextDirectory current=" +
-        File2.webInfParentDirectory()); // with / separator and / at the end
+    String2.log(
+        "test getContextDirectory current="
+            + File2.webInfParentDirectory()); // with / separator and / at the end
     // there is no way to test this and have it work with different installations
     // test for my computer (comment out on other computers):
     // ensureEqual(String2.getContextDirectory(), //with / separator and / at the
     // end
     // "C:/programs/_tomcat/webapps/cwexperimental/", "a");
     // wimpy test, but works on all computers
-    Test.ensureNotNull(File2.webInfParentDirectory(), // with / separator and / at the end
+    Test.ensureNotNull(
+        File2.webInfParentDirectory(), // with / separator and / at the end
         "contextDirectory");
 
     // getTempDirectory
@@ -344,59 +375,63 @@ public class TestSSR {
 
     // done
     String2.log("\nDone. All non-Unix tests passed!");
-
   }
 
   /**
-   * If this fails with "Connection refused" error, make sure McAffee "Virus Scan
-   * Console :
-   * Access Protection Properties : Anti Virus Standard Protections :
-   * Prevent mass mailing worms from sending mail" is un-checked.
+   * If this fails with "Connection refused" error, make sure McAffee "Virus Scan Console : Access
+   * Protection Properties : Anti Virus Standard Protections : Prevent mass mailing worms from
+   * sending mail" is un-checked.
    */
   @org.junit.jupiter.api.Test
   @TagPassword
   void testEmail() throws Exception {
 
-    String emailServer, emailPort, emailProperties, emailUser,
-        emailPassword, emailReplyToAddress, emailToAddresses;
+    String emailServer,
+        emailPort,
+        emailProperties,
+        emailUser,
+        emailPassword,
+        emailReplyToAddress,
+        emailToAddresses;
     SSR.debugMode = true;
 
     // *** sendEmail via Google uses starttls authentication
-    emailServer = String2.getStringFromSystemIn(
-        "\n\n***gmail email server (e.g., smtp.gmail.com)? ");
-    if (emailServer.length() == 0)
-      emailServer = "smtp.gmail.com";
+    emailServer =
+        String2.getStringFromSystemIn("\n\n***gmail email server (e.g., smtp.gmail.com)? ");
+    if (emailServer.length() == 0) emailServer = "smtp.gmail.com";
 
-    emailPort = String2.getStringFromSystemIn(
-        "gmail email port (e.g., 465 or 587 (default))? ");
-    if (emailPort.length() == 0)
-      emailPort = "587";
+    emailPort = String2.getStringFromSystemIn("gmail email port (e.g., 465 or 587 (default))? ");
+    if (emailPort.length() == 0) emailPort = "587";
 
-    emailUser = String2.getStringFromSystemIn(
-        "gmail email user (e.g., erd.data@noaa.gov)? ");
-    if (emailUser.length() == 0)
-      emailUser = "erd.data@noaa.gov";
+    emailUser = String2.getStringFromSystemIn("gmail email user (e.g., erd.data@noaa.gov)? ");
+    if (emailUser.length() == 0) emailUser = "erd.data@noaa.gov";
 
-    emailPassword = String2.getPasswordFromSystemIn(
-        "gmail email password\n" +
-            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
+    emailPassword =
+        String2.getPasswordFromSystemIn(
+            "gmail email password\n"
+                + "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
 
     if (emailPassword.length() > 0) {
-      emailReplyToAddress = String2.getStringFromSystemIn(
-          "gmail email Reply To address (e.g., erd.data@noaa.gov)? ");
-      if (emailReplyToAddress.length() == 0)
-        emailReplyToAddress = "erd.data@noaa.gov";
+      emailReplyToAddress =
+          String2.getStringFromSystemIn("gmail email Reply To address (e.g., erd.data@noaa.gov)? ");
+      if (emailReplyToAddress.length() == 0) emailReplyToAddress = "erd.data@noaa.gov";
 
-      emailToAddresses = String2.getStringFromSystemIn(
-          "1+ email To addresses (e.g., BobSimons2.00@gmail.com,CoHortSoftware@gmail.com)? ");
+      emailToAddresses =
+          String2.getStringFromSystemIn(
+              "1+ email To addresses (e.g., BobSimons2.00@gmail.com,CoHortSoftware@gmail.com)? ");
       if (emailToAddresses.length() == 0)
         emailToAddresses = "BobSimons2.00@gmail.com,CoHortSoftware@gmail.com";
 
       try {
         String2.log("test gmail email " + emailToAddresses);
-        SSR.sendEmail(emailServer, String2.parseInt(emailPort), emailUser, emailPassword,
+        SSR.sendEmail(
+            emailServer,
+            String2.parseInt(emailPort),
+            emailUser,
+            emailPassword,
             "mail.smtp.starttls.enable|true",
-            emailReplyToAddress, emailToAddresses,
+            emailReplyToAddress,
+            emailToAddresses,
             "gmail email test", // Euro
             "This is a gmail email test from TestSSR with embedded special characters < > & û \u20ac .\nSecond line.");
       } catch (Exception e) {
@@ -407,14 +442,13 @@ public class TestSSR {
   }
 
   /**
-   * Test email.
-   * If this fails with "Connection refused" error, make sure McAffee "Virus Scan
-   * Console :
-   * Access Protection Properties : Anti Virus Standard Protections :
-   * Prevent mass mailing worms from sending mail" is un-checked.
-   * 
+   * Test email. If this fails with "Connection refused" error, make sure McAffee "Virus Scan
+   * Console : Access Protection Properties : Anti Virus Standard Protections : Prevent mass mailing
+   * worms from sending mail" is un-checked.
    */
-  public static void testEmail(String emailUser, String password) throws Exception {
+  @org.junit.jupiter.api.Test
+  @TagIncompleteTest
+  void testEmail(String emailUser, String password) throws Exception {
 
     String title = "Email Test from TestSSR";
     String content = "This is an email test (local) from user=" + emailUser + " in TestSSR.";
@@ -425,55 +459,21 @@ public class TestSSR {
       // Thunderbird used 465. 587 is what we're supposed to use. Dave Nordello opened
       // it up.
       int emailPort = 587;
-      SSR.sendEmail(emailServer, emailPort, emailUser, password,
+      SSR.sendEmail(
+          emailServer,
+          emailPort,
+          emailUser,
+          password,
           "mail.smtp.starttls.enable|true",
-          emailUser, "erd.data@noaa.gov,CoHortSoftware@gmail.com,null", title, content);
+          emailUser,
+          "erd.data@noaa.gov,CoHortSoftware@gmail.com,null",
+          title,
+          content);
     }
     SSR.debugMode = false;
   }
 
-  /**
-   * Test posting info and getting response.
-   */
-  @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  void testPostFormGetResponseString() throws Exception {
-    for (int i = 0; i < 2; i++) {
-      try {
-        String s = SSR.postFormGetResponseString(
-            "https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
-        String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
-        Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
-        Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0,
-            "");
-        Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
-
-        // 2018-10-24 I verified that
-        // * This request appears as a POST (not GET) in tomcat's
-        // localhost_access_lot[date].txt
-        // * The parameters don't appear in that file (whereas they do for GET requests)
-        // * The parameters don't appear in ERDDAP log (whereas they do for GET
-        // requests),
-        // * and it is labelled as a POST request.
-        s = SSR.postFormGetResponseString(
-            "http://localhost:8080/cwexperimental/search/index.html?page=1&itemsPerPage=1000&searchFor=jplmursst41");
-        String2.log("\nSSR.testPostFormGetResponseString() result:\n" + s);
-        Test.ensureTrue(s.indexOf("Do a Full Text Search for Datasets:") >= 0, "");
-        Test.ensureTrue(s.indexOf("Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global") >= 0,
-            "This test requires MUR 4.1 in the local host ERDDAP.");
-        Test.ensureTrue(s.indexOf("ERDDAP, Version") >= 0, "");
-        break; // if successful, don't do i=1 loop
-      } catch (Exception e) {
-        String2.pressEnterToContinue(MustBe.throwableToString(e) +
-            "This requires localhost ERDDAP.\nPress Enter to " +
-            (i == 0 ? "try again." : "skip this test."));
-      }
-    }
-  }
-
-  /**
-   * Run all of the tests which are dependent on Unix.
-   */
+  /** Run all of the tests which are dependent on Unix. */
   @org.junit.jupiter.api.Test
   void runUnixTests() throws Exception {
     // cShell
@@ -483,17 +483,18 @@ public class TestSSR {
     String2.log("Done. All Unix tests passed!");
   }
 
-  /**
-   * Runs some AWS S3-related tests.
-   */
+  /** Runs some AWS S3-related tests. */
   @org.junit.jupiter.api.Test
   @TagAWS
   void testAwsS3() throws Exception {
 
-    String2.log("\n*** TestSSR.testAwsS3() -- THIS TEST REQUIRES testPrivateAwsS3MediaFiles in localhost erddap.");
+    String2.log(
+        "\n*** TestSSR.testAwsS3() -- THIS TEST REQUIRES testPrivateAwsS3MediaFiles in localhost erddap.");
     String localFile20 = "/u00/data/points/testMediaFiles/ShouldWork/noaa20.gif";
-    String privateAwsSource20 = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif";
-    String privateErddapSource20 = "http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/noaa20.gif";
+    String privateAwsSource20 =
+        "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif";
+    String privateErddapSource20 =
+        "http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/noaa20.gif";
     BufferedInputStream bis;
     BufferedOutputStream bos;
     String dest = File2.getSystemTempDirectory() + "testS3";
@@ -512,7 +513,9 @@ public class TestSSR {
     Test.ensureEqual(bro[1], "us-east-1", "");
     Test.ensureEqual(bro[2], "testMediaFiles/noaa20.gif", "");
 
-    bro = String2.parseAwsS3Url("http://some.bucket.s3-website-us-east-1.amazonaws.com/some/object.gif");
+    bro =
+        String2.parseAwsS3Url(
+            "http://some.bucket.s3-website-us-east-1.amazonaws.com/some/object.gif");
     Test.ensureEqual(bro[0], "some.bucket", "");
     Test.ensureEqual(bro[1], "us-east-1", "");
     Test.ensureEqual(bro[2], "some/object.gif", "");
@@ -523,16 +526,24 @@ public class TestSSR {
 
     // private file lastModified
     Test.ensureEqual(File2.getLastModified(localFile20), 1302534310000L, "");
-    Test.ensureEqual(File2.getLastModified(privateAwsSource20), 1620243246000L, ""); // the instant I put it in S3
+    Test.ensureEqual(
+        File2.getLastModified(privateAwsSource20),
+        1620243246000L,
+        ""); // the instant I put it in S3
 
     // a public bucket/file should allow access via a simple https request
     results = "okay";
     try {
-      SSR.touchUrl("https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt", 5000, false); // handleS3ViaSDK=false
+      SSR.touchUrl(
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt",
+          5000,
+          false); // handleS3ViaSDK=false
     } catch (Exception e) {
       results = e.toString();
     }
-    Test.ensureEqual(results, "okay",
+    Test.ensureEqual(
+        results,
+        "okay",
         "A public S3 file should be accessible (e.g., touchUrl) via a simple URL.");
 
     // a private bucket/file shouldn't allow access via a simple https request
@@ -542,36 +553,42 @@ public class TestSSR {
     } catch (Exception e) {
       results = e.toString();
     }
-    expected = "java.io.IOException: HTTP status code=403 for URL: https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif\n";
-    Test.ensureEqual(results.substring(0, expected.length()), expected,
+    expected =
+        "java.io.IOException: HTTP status code=403 for URL: https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif\n";
+    Test.ensureEqual(
+        results.substring(0, expected.length()),
+        expected,
         "A private S3 file shouldn't be accessible (e.g., touchUrl) via a simple URL (even with credentials on this computer). results="
             + results);
 
     // byte range private
     Test.ensureTrue(File2.copy(privateAwsSource20, dest + "1a"), "");
     results = File2.hexDump(dest + "1a", 96);
-    String expected1 = "47 49 46 38 39 61 14 00   14 00 f7 00 00 14 3a 8c   GIF89a        :  |\n" +
-        "2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n" +
-        "56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n" +
-        "94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n" +
-        "64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n" +
-        "42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
+    String expected1 =
+        "47 49 46 38 39 61 14 00   14 00 f7 00 00 14 3a 8c   GIF89a        :  |\n"
+            + "2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n"
+            + "56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n"
+            + "94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n"
+            + "64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n"
+            + "42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
     Test.ensureEqual(results, expected1, "results=\n" + results);
 
     // range request
     Test.ensureTrue(File2.copy(privateAwsSource20, dest + "2a", 16, 95), "");
     results = File2.hexDump(dest + "2a", 1000); // read all
     String expected2 = // same but without 1st row (16 bytes)
-        "2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n" +
-            "56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n" +
-            "94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n" +
-            "64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n" +
-            "42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
+        "2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n"
+            + "56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n"
+            + "94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n"
+            + "64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n"
+            + "42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
     Test.ensureEqual(results, expected2, "results=\n" + results);
 
     // byte range private
-    bis = (BufferedInputStream) SSR.getUrlConnBufferedInputStream(privateErddapSource20,
-        30000, false, false, 0, -1, false)[1];
+    bis =
+        (BufferedInputStream)
+            SSR.getUrlConnBufferedInputStream(
+                    privateErddapSource20, 30000, false, false, 0, -1, false)[1];
     bos = new BufferedOutputStream(new FileOutputStream(dest + "1b"));
     File2.copy(bis, bos, 0, -1);
     bis.close();
@@ -580,8 +597,10 @@ public class TestSSR {
     Test.ensureEqual(results, expected1, "results=\n" + results);
 
     // range request
-    bis = (BufferedInputStream) SSR.getUrlConnBufferedInputStream(privateErddapSource20,
-        30000, false, false, 16, 95, false)[1]; // 16 to 95
+    bis =
+        (BufferedInputStream)
+            SSR.getUrlConnBufferedInputStream(
+                    privateErddapSource20, 30000, false, false, 16, 95, false)[1]; // 16 to 95
     bos = new BufferedOutputStream(new FileOutputStream(dest + "2b"));
     File2.copy(bis, bos, 0, -1);
     bis.close();
@@ -590,8 +609,10 @@ public class TestSSR {
     Test.ensureEqual(results, expected2, "results=\n" + results);
 
     // range request
-    bis = (BufferedInputStream) SSR.getUrlConnBufferedInputStream(privateErddapSource20,
-        30000, false, false, 16, -1, false)[1]; // 16 to end
+    bis =
+        (BufferedInputStream)
+            SSR.getUrlConnBufferedInputStream(
+                    privateErddapSource20, 30000, false, false, 16, -1, false)[1]; // 16 to end
     bos = new BufferedOutputStream(new FileOutputStream(dest + "2b2"));
     File2.copy(bis, bos, 0, -1);
     bis.close();
@@ -600,20 +621,20 @@ public class TestSSR {
     Test.ensureEqual(results, expected2, "results=\n" + results);
   }
 
-  /**
-   * Tests Aws TransferManager.
-   */
+  /** Tests Aws TransferManager. */
   @org.junit.jupiter.api.Test
   @TagAWS
   void testAwsTransferManager() throws Exception {
 
     // *** test a lot of AWS S3 actions on a private AWS bucket
     // delete a file on S3 to ensure it doesn't exist (ignore result)
-    String origLocal = String2.unitTestDataDir + "ascii/standardizeWhat1.csv";
+    String origLocal =
+        Path.of(TestSSR.class.getResource("data/ascii/standardizeWhat1.csv").toURI()).toString();
     String tempLocal = File2.getSystemTempDirectory() + "testAwsS3.csv";
     String awsUrl = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/testAwsS3.csv";
     // bucket is publicly readible in a browser via http but not https
-    String awsUrl2 = "http://bob.simons.public.output.s3-website-us-east-1.amazonaws.com/testAwsS3.csv";
+    String awsUrl2 =
+        "http://bob.simons.public.output.s3-website-us-east-1.amazonaws.com/testAwsS3.csv";
     String content;
 
     // delete files I will create
@@ -637,10 +658,9 @@ public class TestSSR {
 
     // read local file
     content = File2.directReadFrom88591File(tempLocal);
-    Test.ensureEqual(content,
-        "date,data\n" +
-            "20100101000000,1\n" +
-            "20100102000000,2\n",
+    Test.ensureEqual(
+        content,
+        "date,data\n" + "20100101000000,1\n" + "20100102000000,2\n",
         "content=" + String2.annotatedString(content));
 
     // delete files I created
@@ -679,10 +699,9 @@ public class TestSSR {
 
     // read local file
     content = File2.directReadFrom88591File(tempLocal);
-    Test.ensureEqual(content,
-        "date,data\n" +
-            "20100101000000,1\n" +
-            "20100102000000,2\n",
+    Test.ensureEqual(
+        content,
+        "date,data\n" + "20100101000000,1\n" + "20100102000000,2\n",
         "content=" + String2.annotatedString(content));
 
     // delete files I created
@@ -693,13 +712,10 @@ public class TestSSR {
     Test.ensureEqual(File2.isAwsS3File(awsUrl2), false, "");
   }
 
-  /**
-   * Run all of the tests
-   */
+  /** Run all of the tests */
   public static void main(String args[]) throws Throwable {
     SSR.verbose = true;
 
     // runUnixTests();
   }
-
 }

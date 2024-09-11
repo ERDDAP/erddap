@@ -22,16 +22,23 @@ import gov.noaa.pmel.util.Rectangle2D;
  * @version $Revision: 1.2 $, $Date: 2003/08/22 23:02:31 $
  * @since 3.0
  * @stereotype container
- **/
+ */
 public interface DataKey extends LayerChild {
   public void setLocationP(Point2D.Double locP);
-  public void addGraph(CartesianRenderer rend, SGLabel label)
-      throws IllegalArgumentException;
+
+  public void addGraph(CartesianRenderer rend, SGLabel label) throws IllegalArgumentException;
+
   public void setAlign(int vert, int horz);
+
   public void setHAlign(int horz);
+
   public void setVAlign(int vert);
+
   public void setBorderStyle(int style);
+
   public void setBoundsP(Rectangle2D.Double r);
+
   public void setColumns(int col);
+
   public void setLineLengthP(double len);
 }

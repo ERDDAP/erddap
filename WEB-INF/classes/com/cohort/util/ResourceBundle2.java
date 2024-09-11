@@ -4,384 +4,291 @@
  */
 package com.cohort.util;
 
-import java.io.StringReader;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import javax.xml.xpath.XPath;   //requires java 1.5
+import java.util.concurrent.ConcurrentHashMap;
+import javax.xml.xpath.XPath; // requires java 1.5
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- * This class expands the capabilities of a ResourceBundle.
- */
+/** This class expands the capabilities of a ResourceBundle. */
 public class ResourceBundle2 {
- 
-    /**
-     * Set this to true (by calling verbose=true in your program, 
-     * not by changing the code here)
-     * if you want lots of diagnostic messages sent to String2.log.
-     */
-    public static boolean verbose = false; 
 
-    /**
-     * Set this to true (by calling reallyVerbose=true in your program, 
-     * not by changing the code here)
-     * if you want lots of diagnostic messages sent to String2.log.
-     */
-    public static boolean reallyVerbose = false; 
+  /**
+   * Set this to true (by calling verbose=true in your program, not by changing the code here) if
+   * you want lots of diagnostic messages sent to String2.log.
+   */
+  public static boolean verbose = false;
 
-    protected ResourceBundle primaryRB, secondaryRB; //both or just secondary may be null
-    protected ConcurrentHashMap<String,String> concurrentHashMap; //it is thread-safe (and needs to be)
+  /**
+   * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
+   * if you want lots of diagnostic messages sent to String2.log.
+   */
+  public static boolean reallyVerbose = false;
 
-    /**
-     * A constructor that uses the one specified primary ResourceBundle.
-     * 
-     * @param primaryBaseName e.g., "com.cohort.util.TestResourceBundle2"
-     *   for a file in the class path named 
-     *   "com/cohort/util/TestResourceBundle2.properties".
-     * @param locale
-     * @throws RuntimeException if properties file not found
-     */
-    public ResourceBundle2(String primaryBaseName, Locale locale) {
-        primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
+  protected ResourceBundle primaryRB, secondaryRB; // both or just secondary may be null
+  protected ConcurrentHashMap<String, String>
+      concurrentHashMap; // it is thread-safe (and needs to be)
+
+  /**
+   * A constructor that uses the one specified primary ResourceBundle.
+   *
+   * @param primaryBaseName e.g., "com.cohort.util.TestResourceBundle2" for a file in the class path
+   *     named "com/cohort/util/TestResourceBundle2.properties".
+   * @param locale
+   * @throws RuntimeException if properties file not found
+   */
+  public ResourceBundle2(String primaryBaseName, Locale locale) {
+    primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
+  }
+
+  /**
+   * A constructor that uses the two specified ResourceBundles. For the getXxx methods, if no value
+   * is found in primary, secondary is searched.
+   *
+   * @param primaryBaseName e.g., "com.cohort.util.TestResourceBundle2" for a file in the class path
+   *     named "com/cohort/util/TestResourceBundle2.properties".
+   * @param secondaryBaseName e.g., "com.cohort.util.DefaultResourceBundle2" for a file in the class
+   *     path named "com/cohort/util/DefaultResourceBundle2.properties".
+   * @param locale
+   * @throws RuntimeException if properties files not found
+   */
+  public ResourceBundle2(String primaryBaseName, String secondaryBaseName, Locale locale) {
+    primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
+    secondaryRB = ResourceBundle.getBundle(secondaryBaseName, locale);
+  }
+
+  /**
+   * A constructor that uses the one specified primary ResourceBundle.
+   *
+   * @param primaryBaseName
+   * @throws RuntimeException if properties file not found
+   */
+  public ResourceBundle2(String primaryBaseName) {
+    primaryRB = ResourceBundle.getBundle(primaryBaseName);
+  }
+
+  /**
+   * A constructor that uses the one specified primary ResourceBundle. For the getXxx methods, if no
+   * value is found in primary, secondary is searched.
+   *
+   * @param primaryBaseName
+   * @param secondaryBaseName
+   * @throws RuntimeException if properties file not found
+   */
+  public ResourceBundle2(String primaryBaseName, String secondaryBaseName) {
+    primaryRB = ResourceBundle.getBundle(primaryBaseName);
+    secondaryRB = ResourceBundle.getBundle(secondaryBaseName);
+  }
+
+  /**
+   * A constructor that uses the specified ConcurrentHashMap instead of a ResourceBundle.
+   *
+   * @param concurrentHashMap
+   */
+  public ResourceBundle2(ConcurrentHashMap<String, String> concurrentHashMap) {
+    this.concurrentHashMap = concurrentHashMap;
+  }
+
+  /**
+   * A constructor based on an xml file with a very simple structure: 1 outer tag + many 2nd level
+   * tags. This make a concurrentHashMap with the 2nd level tag names and their content.
+   *
+   * @param doc e.g., from XML.parseXml
+   * @return the resourceBundle2 made from it
+   * @throws Exception if trouble
+   */
+  public static ResourceBundle2 fromXml(Document doc) throws Exception {
+    XPath xPath = XML.getXPath();
+    NodeList nodeList =
+        XML.getNodeList(doc, xPath, "/*/*"); // all elements directly under root element
+    int n = nodeList.getLength();
+    ConcurrentHashMap<String, String> tHash =
+        new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
+    // String2.log("ResourceBundle2.fromXml  nNodes=" + n);
+    for (int i = 0; i < n; i++) {
+      Element element = (Element) nodeList.item(i);
+      String key = element.getNodeName();
+      String value = XML.getTextContent(element);
+      // String2.log("  key=" + key + " value=" + value);
+      tHash.put(key, value);
     }
+    return new ResourceBundle2(tHash);
+  }
 
-    /**
-     * A constructor that uses the two specified ResourceBundles.
-     * For the getXxx methods, if no value is found in primary, secondary is searched.
-     * 
-     * @param primaryBaseName e.g., "com.cohort.util.TestResourceBundle2"
-     *   for a file in the class path named 
-     *   "com/cohort/util/TestResourceBundle2.properties".
-     * @param secondaryBaseName e.g., "com.cohort.util.DefaultResourceBundle2"
-     *   for a file in the class path named 
-     *   "com/cohort/util/DefaultResourceBundle2.properties".
-     * @param locale
-     * @throws RuntimeException if properties files not found
-     */
-    public ResourceBundle2(String primaryBaseName, String secondaryBaseName, Locale locale) {
-        primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
-        secondaryRB = ResourceBundle.getBundle(secondaryBaseName, locale);
+  /**
+   * This gets a boolean from the resourceBundle(s). This returns true if
+   * value.trim().toLowerCase().equals("true").
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found or can't be converted to a boolean)
+   */
+  public boolean getBoolean(String key, boolean theDefault) {
+    try {
+      String s = getString(key, null);
+
+      // what does Boolean.getBoolean want? just forget it and do my own
+      return s.toLowerCase().equals("true");
+    } catch (Exception e) {
+      return theDefault;
     }
+  }
 
-    /**
-     * A constructor that uses the one specified primary ResourceBundle.
-     * 
-     * @param primaryBaseName
-     * @throws RuntimeException if properties file not found
-     */
-    public ResourceBundle2(String primaryBaseName) {
-        primaryRB = ResourceBundle.getBundle(primaryBaseName);
+  /**
+   * This gets an int from the resourceBundle(s).
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found or can't be converted to an int (it is strict!))
+   */
+  public int getInt(String key, int theDefault) {
+    return String2.parseInt(getString(key, null), theDefault);
+  }
+
+  /**
+   * This gets a long from the resourceBundle(s).
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found or can't be converted to a long (it is strict!))
+   */
+  public long getLong(String key, long theDefault) {
+    long tl = String2.parseLong(getString(key, null));
+    return tl == Long.MAX_VALUE ? theDefault : tl;
+  }
+
+  /**
+   * This gets a double from the resourceBundle(s).
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found or can't be converted to a double (it is strict!))
+   */
+  public double getDouble(String key, double theDefault) {
+    double d = String2.parseDouble(getString(key, null));
+    return Double.isNaN(d) ? theDefault : d;
+  }
+
+  /**
+   * This gets a StringArray from the resourceBundle(s). StringArrays are encoded in the properties
+   * file as a string, with each of the separate strings separated by "\f". There should be no "\f"
+   * after the last string. [Where is the documentation for the Sun-standard way to store
+   * StringArrays in a properties file?]
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found or can't be converted to a String array)
+   */
+  public String[] getStringArray(String key, String[] theDefault) {
+    try {
+      return getString(key, null).split("\\f"); // a regex for a formfeed
+    } catch (Exception e) {
+      return theDefault;
     }
+  }
 
-    /**
-     * A constructor that uses the one specified primary ResourceBundle.
-     * For the getXxx methods, if no value is found in primary, secondary is searched.
-     * 
-     * @param primaryBaseName
-     * @param secondaryBaseName
-     * @throws RuntimeException if properties file not found
-     */
-    public ResourceBundle2(String primaryBaseName, String secondaryBaseName) {
-        primaryRB = ResourceBundle.getBundle(primaryBaseName);
-        secondaryRB = ResourceBundle.getBundle(secondaryBaseName);
-    }
-
-    /**
-     * A constructor that uses the specified ConcurrentHashMap instead of a ResourceBundle.
-     * 
-     * @param concurrentHashMap
-     */
-    public ResourceBundle2(ConcurrentHashMap<String,String> concurrentHashMap) {
-        this.concurrentHashMap = concurrentHashMap;
-    }
-
-    /** 
-     * A constructor based on an xml file with a very simple structure:
-     * 1 outer tag + many 2nd level tags. This make a concurrentHashMap
-     * with the 2nd level tag names and their content.
-     *
-     * @param doc e.g., from XML.parseXml
-     * @return the resourceBundle2 made from it
-     * @throws Exception if trouble
-     */
-    public static ResourceBundle2 fromXml(Document doc) throws Exception {
-        XPath xPath = XML.getXPath();
-        NodeList nodeList = XML.getNodeList(doc, xPath, "/*/*"); //all elements directly under root element
-        int n = nodeList.getLength();
-        ConcurrentHashMap<String,String> tHash = new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
-        //String2.log("ResourceBundle2.fromXml  nNodes=" + n);
-        for (int i = 0; i < n; i++) {
-            Element element = (Element)nodeList.item(i);
-            String key = element.getNodeName();
-            String value = XML.getTextContent(element);
-            //String2.log("  key=" + key + " value=" + value);
-            tHash.put(key, value);
-        }
-        return new ResourceBundle2(tHash);
-    }
-   
-
-    /**
-     * This gets a boolean from the resourceBundle(s).
-     * This returns true if value.trim().toLowerCase().equals("true").
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found or can't be converted
-     *     to a boolean)
-     */
-    public boolean getBoolean(String key, boolean theDefault) {
+  /**
+   * This gets a String from the resourceBundle(s) and trim's it.
+   *
+   * @param key the identifier for the desired value
+   * @param theDefault the default value
+   * @return the value associated with the key in the resourceBundle (or theDefault, if the key
+   *     isn't found)
+   */
+  public String getString(String key, String theDefault) {
+    try {
+      String s;
+      if (concurrentHashMap == null) {
         try {
-            String s = getString(key, null);
-
-            //what does Boolean.getBoolean want? just forget it and do my own
-            return s.toLowerCase().equals("true");
+          s = primaryRB.getString(key);
         } catch (Exception e) {
-            return theDefault;
+          if (secondaryRB == null) return theDefault;
+          else s = secondaryRB.getString(key);
         }
+      } else {
+        s = concurrentHashMap.get(key);
+      }
+      s = s.trim();
+      if (reallyVerbose)
+        String2.log("  ResourceBundle2.getString(" + key + ") found \"" + s + "\".");
+      return s;
+    } catch (Exception e) {
+      if (reallyVerbose)
+        String2.log(
+            "  ResourceBundle2.getString("
+                + key
+                + ") exception: \""
+                + e.toString()
+                + "\"; so using default=\""
+                + theDefault
+                + "\".");
+      return theDefault;
     }
+  }
 
-    /**
-     * This gets an int from the resourceBundle(s).
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found or can't be converted
-     *     to an int (it is strict!))
-     */
-    public int getInt(String key, int theDefault) {
-        return String2.parseInt(getString(key, null), theDefault);
-    }
+  /**
+   * This gets a String from the resourceBundle(s) and ensures isn't null.
+   *
+   * @param key
+   * @param errorInMethod the start of an Error message
+   * @throws RuntimeException if there is no value for key
+   */
+  public String getNotNullString(String key, String errorInMethod) {
+    String value = getString(key, null);
+    Test.ensureNotNull(value, errorInMethod + "\"" + key + "\" is null!");
+    return value;
+  }
 
-    /**
-     * This gets a long from the resourceBundle(s).
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found or can't be converted
-     *     to a long (it is strict!))
-     */
-    public long getLong(String key, long theDefault) {
-        long tl = String2.parseLong(getString(key, null));
-        return tl == Long.MAX_VALUE? theDefault : tl;
-    }
+  /**
+   * This gets a String from the resourceBundle(s) and ensures isn't null or ''.
+   *
+   * @param key
+   * @param errorInMethod the start of an Error message
+   * @throws RuntimeException if there is no value for key
+   */
+  public String getNotNothingString(String key, String errorInMethod) {
+    String value = getString(key, null);
+    Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!");
+    return value;
+  }
 
-    /**
-     * This gets a double from the resourceBundle(s).
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found or can't be converted
-     *     to a double (it is strict!))
-     */
-    public double getDouble(String key, double theDefault) {
-        double d = String2.parseDouble(getString(key, null));
-        return Double.isNaN(d)? theDefault : d;
-    }
+  /**
+   * This returns the initialValue (if something) or the value for the key from the
+   * resourceBundle(s) (which must be something).
+   *
+   * @param key
+   * @param initialValue
+   * @throws RuntimeException if there is no value for key
+   */
+  public String getIfNotAlreadyString(String key, String initialValue, String errorInMethod) {
+    if (initialValue != null && initialValue.length() > 0) return initialValue;
+    String value = getString(key, null);
+    Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!");
+    return value;
+  }
 
-    /**
-     * This gets a StringArray from the resourceBundle(s).
-     * StringArrays are encoded in the properties file as a string,
-     * with each of the separate strings separated by "\f".
-     * There should be no "\f" after the last string.
-     * [Where is the documentation for the Sun-standard way to store
-     * StringArrays in a properties file?]
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found or can't be converted
-     *     to a String array)
-     */
-    public String[] getStringArray(String key, String[] theDefault) {
-        try {
-            return getString(key, null).split("\\f"); //a regex for a formfeed
-        } catch (Exception e) {
-            return theDefault;
-        }
-    }
-
-    /**
-     * This gets a String from the resourceBundle(s) and trim's it.
-     *
-     * @param key the identifier for the desired value
-     * @param theDefault the default value
-     * @return the value associated with the key in the resourceBundle
-     *     (or theDefault, if the key isn't found)
-     */
-    public String getString(String key, String theDefault) {
-        try {
-            String s;
-            if (concurrentHashMap == null) {
-                try {
-                    s = primaryRB.getString(key);
-                } catch (Exception e) {
-                    if (secondaryRB == null)
-                        return theDefault;
-                    else s = secondaryRB.getString(key);
-                }
-            } else {
-                s = concurrentHashMap.get(key);
-            }
-            s = s.trim();
-            if (reallyVerbose)
-                String2.log("  ResourceBundle2.getString(" + key + ") found \"" + s + "\".");
-            return s;
-        } catch (Exception e) {
-            if (reallyVerbose)
-                String2.log("  ResourceBundle2.getString(" + key + ") exception: \"" + 
-                    e.toString() + "\"; so using default=\"" + theDefault + "\".");
-            return theDefault;
-        }
-    }
-
-    /**
-     * This gets a String from the resourceBundle(s) and ensures isn't null.
-     *
-     * @param key
-     * @param errorInMethod the start of an Error message
-     * @throws RuntimeException if there is no value for key
-     */
-    public String getNotNullString(String key, String errorInMethod) {
-        String value = getString(key, null);
-        Test.ensureNotNull(value, errorInMethod + "\"" + key + "\" is null!"); 
-        return value;
-    }
-
-    /**
-     * This gets a String from the resourceBundle(s) and ensures isn't null or ''.
-     *
-     * @param key
-     * @param errorInMethod the start of an Error message
-     * @throws RuntimeException if there is no value for key
-     */
-    public String getNotNothingString(String key, String errorInMethod) {
-        String value = getString(key, null);
-        Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!"); 
-        return value;
-    }
-
-    /**
-     * This returns the initialValue (if something) or the value for the key 
-     * from the resourceBundle(s) (which must be something).
-     *
-     * @param key
-     * @param initialValue
-     * @throws RuntimeException if there is no value for key
-     */
-    public String getIfNotAlreadyString(String key, String initialValue, String errorInMethod) {
-        if (initialValue != null && initialValue.length() > 0)
-            return initialValue;
-        String value = getString(key, null);
-        Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!"); 
-        return value;
-    }
-
-    /**
-     * This gets all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.
-     *
-     * @return all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.
-     */
-    public String[] getKeys() {
-        ArrayList cumulative = new ArrayList();
-        if (concurrentHashMap != null) 
-            cumulative.addAll(String2.toArrayList(concurrentHashMap.keys()));
-        if (primaryRB != null) 
-            cumulative.addAll(String2.toArrayList(primaryRB.getKeys()));
-        if (secondaryRB != null) 
-            cumulative.addAll(String2.toArrayList(secondaryRB.getKeys()));
-        String sar[] = String2.toStringArray(cumulative.toArray());
-        Arrays.sort(sar, String2.STRING_COMPARATOR_IGNORE_CASE);
-        return sar;
-    }
-
-    /**
-     * Test the methods in this class.
-     *
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        String2.log("\n*** ResourceBundle2.basicTest");
-
-        ResourceBundle2 rb2 = fromXml(XML.parseXml(new StringReader(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<testr>\n" +
-            "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment < > -->text  \n" +
-            "  </level1>\n" +
-            "  <levela />\n" +   //"empty tag" appears as two tags, begin and end
-            "  <levelb> 16</levelb>\n" +
-            "  <bool> true</bool>\n" +
-            "  <dbl> 17.1</dbl>\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "</testr>"), 
-            false));
-        Test.ensureEqual(rb2.getString("level1", ""), "level 1 & text", "");
-        Test.ensureEqual(rb2.getString("levela", ""), "", "");
-        Test.ensureEqual(rb2.getBoolean("bool", false), true, "");
-        Test.ensureEqual(rb2.getInt(   "levelb", 5), 16, "");
-        Test.ensureEqual(rb2.getLong(  "levelb", 5), 16, "");
-        Test.ensureEqual(rb2.getDouble("dbl", 5.5), 17.1, "");
-        Test.ensureEqual(rb2.getString("testr", ""),  "", "");
-
-        Test.ensureEqual(rb2.getBoolean("Z", true), true, "");
-        Test.ensureEqual(rb2.getInt(    "Z", 5), 5, "");
-        Test.ensureEqual(rb2.getDouble( "Z", 5.5), 5.5, "");
-        Test.ensureEqual(rb2.getString( "Z", "word"), "word", "");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ ResourceBundle.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
+  /**
+   * This gets all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and
+   * secondaryRB.
+   *
+   * @return all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.
+   */
+  public String[] getKeys() {
+    ArrayList cumulative = new ArrayList();
+    if (concurrentHashMap != null) cumulative.addAll(String2.toArrayList(concurrentHashMap.keys()));
+    if (primaryRB != null) cumulative.addAll(String2.toArrayList(primaryRB.getKeys()));
+    if (secondaryRB != null) cumulative.addAll(String2.toArrayList(secondaryRB.getKeys()));
+    String sar[] = String2.toStringArray(cumulative.toArray());
+    Arrays.sort(sar, String2.STRING_COMPARATOR_IGNORE_CASE);
+    return sar;
+  }
 }

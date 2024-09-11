@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Axis was not found during operation.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class AxisNotFoundException extends SGException {
   public AxisNotFoundException() {
     super();
-}
+  }
+
   public AxisNotFoundException(String s) {
     super(s);
   }

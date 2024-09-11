@@ -4709,7 +4709,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 
 <patientData>(Please be patient. It may take a while to get the data.)</patientData>
 <patientYourGraph>[The graph you specified. Please be patient.]</patientYourGraph>
@@ -6749,98 +6749,11 @@ for every version is on
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
 the most commonly used system for collaborative
-software projects. 
-So far, these groups/people have contributed code to ERDDAP:
-<ul> 
-<!-- start contributor's info -->
-<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-  <br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGridFromMergeIRFiles.java</a> was written and contributed by
-   Jonathan Lafite and Philippe Makowski of R.Tech Engineering
-   <!-- <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> -->
-   (license: copyrighted open source). Thank you, Jonathan and Philippe!
-  <br>&nbsp;
+software projects.
 
-<li>TableWriterDataTable
-  <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> was written and contributed by Roland Schweitzer of NOAA
-   (license: copyrighted open source). Thank you, Roland!
-  <br>&nbsp;
+<a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Credits</a>
+ERDDAP credits are now available on a <a href="https://github.com/erddap/erddap/blob/main/CREDITS.md">separate page</a>.
 
-<li>json-ld
-  <br>The initial version of the 
-  <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a>
-  feature (and thus all of the hard work in designing the content) was 
-  written and contributed (license: copyrighted open source)
-  by Adam Leadbetter and Rob Fuller of the Marine Institute in Ireland.
-  Thank you, Adam and Rob!
-  <br>&nbsp;
-
-<li>orderBy
-  <br>The code for the 
-  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean filter</a> 
-  in tabledap and the extensive changes to the code to
-  support the 
-  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>variableName/divisor:offset</i> notation</a>
-  for all orderBy filters
-  was written and contributed (license: copyrighted open source)
-  by Rob Fuller and Adam Leadbetter of the Marine Institute in Ireland.
-  Thank you, Rob and Adam!
-  <br>&nbsp;
-
-<li>Borderless Marker Types
-  <br>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
-    Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
-    Thank you, Marco Alba!
-  <br>&nbsp;
-
-<li>Translations of messages.xml
-  <br>The initial version of the code in TranslateMessages.java which uses
-    Google's translation service to translate messages.xml into various languages
-    was written by Qi Zeng, who was working as a Google Summer of Code intern. 
-    Thank you, Qi!
-  <br>&nbsp;
-
-<li>orderBySum
-  <br>The code for the 
-  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
-  >orderBySum filter</a> 
-  in tabledap (based on Rob Fuller and Adam Leadbetter's orderByMean) and 
-  the Check All and Uncheck All buttons on the EDDGrid Data Access Form 
-  were written and contributed (license: copyrighted open source)
-  by Marco Alba of ETT Solutions and EMODnet.
-  Thank you, Marco!
-  <br>&nbsp;
-
-<li>Out-of-range .transparentPng Requests
-  <br>ERDDAP now accepts requests for .transparentPng's when 
-    the latitude and/or longitude values are partly or fully out-of-range. 
-    (This was ERDDAP GitHub Issues #19, posted by Rob Fuller -- thanks for posting that, Rob.)
-    The code to fix this was written by Chris John. 
-    Thank you, Chris!
-  <br>&nbsp;
-
-<li>Display base64 image data in .htmlTable responses
-  <br>The code for displaying base64 image data in .htmlTable responses 
-    was contributed by Marco Alba of ETT / EMODnet Physics.
-    Thank you, Marco Alba!
-  <br>&nbsp;
-
-<li>nThreads Improvement
-  <br>The nThreads system for EDDTableFromFiles was significantly improved. 
-    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
-    for the most challenging requests (when a large number of files must be processed to gather the results).
-    These changes will also lead to a general speedup throughout ERDDAP.
-    The code for these changes was contributed by Chris John. Thank you, Chris!
-  <br>&nbsp;
-
-
-<!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
-</ul>
 I hope others will contribute code in the future.
 If something happens to me, my bosses will hire a replacement with the specific goal that
 s/he continues the development of ERDDAP.

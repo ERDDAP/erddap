@@ -15,14 +15,12 @@ package gov.noaa.pmel.sgt.dm;
 import gov.noaa.pmel.util.GeoDate;
 
 /**
- * Defines a data object to be of Point type. Interpretation
- * of X and Y is determined by the <code>CoordinateSystem</code>.  For
- * <code>Cartesian</code>, X and Y are the Cartesian coordinates. For
- * <code>Polar</code>,
- * X and Y are R (radius) and Theta (angle), respectively.
+ * Defines a data object to be of Point type. Interpretation of X and Y is determined by the <code>
+ * CoordinateSystem</code>. For <code>Cartesian</code>, X and Y are the Cartesian coordinates. For
+ * <code>Polar</code>, X and Y are R (radius) and Theta (angle), respectively.
  *
- * The <code>SGTPoint</code> interface only defines data access, not how
- * the data will be constructed or set.
+ * <p>The <code>SGTPoint</code> interface only defines data access, not how the data will be
+ * constructed or set.
  *
  * @author Donald Denbo
  * @version $Revision: 1.7 $, $Date: 2003/08/22 23:02:38 $
@@ -34,33 +32,26 @@ import gov.noaa.pmel.util.GeoDate;
  * @see SimplePoint
  */
 public interface SGTPoint extends SGTData {
-  /**
-   * Get the x coordinate.
-   */
+  /** Get the x coordinate. */
   public double getX();
-  /**
-   * Get the y coordinate.
-   */
+
+  /** Get the y coordinate. */
   public double getY();
-  /**
-   * Test if a value is associated with the SGTPoint.
-   */
+
+  /** Test if a value is associated with the SGTPoint. */
   public boolean hasValue();
-  /**
-   * Get the associated value.
-   */
+
+  /** Get the associated value. */
   public double getValue();
-  /**
-   * Get the SGTMetaData object associated with the value.
-   */
+
+  /** Get the SGTMetaData object associated with the value. */
   public SGTMetaData getValueMetaData();
-  /**
-   * Get the Time value.
-   */
+
+  /** Get the Time value. */
   public GeoDate getTime();
+
   /**
-   * Get the time as <code>long</code> referenced from
-   * 1970-01-01.
+   * Get the time as <code>long</code> referenced from 1970-01-01.
    *
    * @since 3.0
    */

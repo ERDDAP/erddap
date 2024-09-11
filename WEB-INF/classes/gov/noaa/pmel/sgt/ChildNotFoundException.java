@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Child was not found during operation.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class ChildNotFoundException extends SGException {
   public ChildNotFoundException() {
     super();
-}
+  }
+
   public ChildNotFoundException(String s) {
     super(s);
   }

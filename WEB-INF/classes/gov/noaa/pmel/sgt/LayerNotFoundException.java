@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Operation failed because the layer was not found.
@@ -22,6 +22,7 @@ public class LayerNotFoundException extends SGException {
   public LayerNotFoundException() {
     super();
   }
+
   public LayerNotFoundException(String s) {
     super(s);
   }

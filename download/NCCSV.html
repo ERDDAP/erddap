@@ -47,7 +47,7 @@ NCCSV file into a NetCDF-3 (and perhaps also a NetCDF-4) .nc file,
 and the reverse, with no loss of information.
 Bob Simons has modified 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
->ERDDAP</a> 
+>ERDDAP™</a> 
 to support reading and writing this type of file. 
 
 
@@ -77,16 +77,16 @@ files which follow these conventions are:
 Like CSV files in general, NCCSV files are streamable. 
 Thus, if an NCSV is generated on-the-fly by a data server such as 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
->ERDDAP</a>, 
+>ERDDAP™</a>, 
 the server can start to stream data to the requester before all of the data
 has been gathered. This is a useful and desirable feature. NetCDF files,
 by contrast, are not streamable.
 
-<p><a class="selfLink" id="ERDDAP" href="#ERDDAP" rel="bookmark"><strong>ERDDAP</strong></a> &mdash; 
+<p><a class="selfLink" id="ERDDAP" href="#ERDDAP" rel="bookmark"><strong>ERDDAP™</strong></a> &mdash; 
 This specification is designed so that NCCSV files and the .nc files
 that can be created from them can be used by an 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
->ERDDAP data server</a>
+>ERDDAP™ data server</a>
 (via the  
 <a rel="bookmark"
 href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNccsvFiles"
@@ -96,7 +96,7 @@ and
 href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromNcFiles"
 >EDDTableFromNcFiles</a> dataset types), 
 but this specification is external to ERDDAP. 
-ERDDAP has several required global attributes and many recommended global 
+ERDDAP™ has several required global attributes and many recommended global 
 and variable attributes, mostly based on CF and ACDD attributes (see 
 <br><a rel="bookmark"
 href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
@@ -170,7 +170,7 @@ followed by the data section.
 
 <p>NCCSV files may contain any UCS-2 characters 
 (i.e., 2-byte Unicode characters, as in Java) encoded via UTF-8.
-ERDDAP reads and writes NCCSV files using the UTF-8 encoding.
+ERDDAP™ reads and writes NCCSV files using the UTF-8 encoding.
 
 <p>NCCSV files may use either newline (\n)
 (which is common on Linux and Mac OS X computers)
@@ -184,8 +184,8 @@ which contains just the metadata section (including the <kbd>*END_METADATA*</kbd
 The result provides a complete description of the file's attributes,
 variable names, and data types, 
 thus serving the same purpose as the .das plus .dds responses
-from an OPeNDAP server. ERDDAP will return this variation
-if you request <kbd>fileType=.nccsvMetadata</kbd> from an ERDDAP dataset.
+from an OPeNDAP server. ERDDAP™ will return this variation
+if you request <kbd>fileType=.nccsvMetadata</kbd> from an ERDDAP™ dataset.
 
 
 <p>&nbsp;
@@ -263,7 +263,7 @@ of the NCCSV file.
 with the value "Okeanos Explorer" and a <kbd>cf_role</kbd> attribute, use: 
 <br><kbd>ship,*SCALAR*,"Okeanos Explorer"
 <br>ship,cf_role,trajectory_id</kbd>
-<br>When a scalar data variable is read into ERDDAP, 
+<br>When a scalar data variable is read into ERDDAP™, 
 the scalar value is converted into a column in the data table with the 
 same value on every row.
 
@@ -331,7 +331,7 @@ For data types other than Strings, the values MUST be separated by commas, for e
   <br>&nbsp;
 <li><a class="selfLink" id="long" href="#long" rel="bookmark"><kbd><strong>long</strong></kbd></a>
   attribute values (64-bit, signed, currently supported by 
-  NUG and ERDDAP but not yet supported by CF) must be written without 
+  NUG and ERDDAP™ but not yet supported by CF) must be written without 
   a decimal point and with the suffix 'L',
   e.g., -12345678987654321L, 0L, 12345678987654321L . 
   If you use the converting software to convert an NCCSV file with long 
@@ -344,7 +344,7 @@ For data types other than Strings, the values MUST be separated by commas, for e
   <br>&nbsp;
 <li><a class="selfLink" id="ulong" href="#ulong" rel="bookmark"><kbd><strong>ulong</strong></kbd></a>
   attribute values (64-bit, unsigned, currently supported by 
-  NUG and ERDDAP but not yet supported by CF) must be written without 
+  NUG and ERDDAP™ but not yet supported by CF) must be written without 
   a decimal point and with the suffix 'uL',
   e.g., 0uL, 12345678987654321uL, 9007199254740992uL . 
   If you use the converting software to convert an NCCSV file with long 
@@ -404,7 +404,7 @@ For data types other than Strings, the values MUST be separated by commas, for e
         title="This link to an external website does not constitute an endorsement."></a> 
     to find the hexadecimal numbers associated with specific Unicode characters,
     or use a software library.
-    Note that some ERDDAP output file types, e.g., .csv, use the ISO 8859-1 character set,
+    Note that some ERDDAP™ output file types, e.g., .csv, use the ISO 8859-1 character set,
     so Unicode characters above #255 will be lost when these data values are written to those file types.
   <li>All non-printable characters greater than character #126, e.g., character #127,
     are STRONGLY DISCOURAGED, but you SHOULD use the \u<i>hhhh</i> syntax if you do include them.
@@ -435,7 +435,7 @@ For data types other than Strings, the values MUST be separated by commas, for e
   single and double quotes is odd and cumbersome, but it is a way to 
   distinguish char values from Strings in a way that works with spreadsheets. 
   A value that looks like a char but is invalid will generate an error message. 
-  Note that some ERDDAP output file types, e.g., .csv, use the ISO 8859-1 character set,
+  Note that some ERDDAP™ output file types, e.g., .csv, use the ISO 8859-1 character set,
   so Unicode characters above #255 will be lost when these data values are written to those file types.
 </ul>
 
@@ -460,7 +460,7 @@ variable must be specified by a
 Specifying the wrong data type (e.g., <kbd>int</kbd> when you should have 
 specified <kbd>float</kbd>) will not generate an error message and may cause 
 information to be lost (e.g., float values will be rounded to ints) 
-when the NCCSV file is read by ERDDAP or converted into a NetCDF file. 
+when the NCCSV file is read by ERDDAP™ or converted into a NetCDF file. 
 
 
 <p><a class="selfLink" id="charDiscouraged" href="#charDiscouraged" rel="bookmark"><kbd>char</kbd> Discouraged</a> -
@@ -477,7 +477,7 @@ will be used.
 
 <p><a class="selfLink" id="longDiscouraged" href="#longDiscouraged" rel="bookmark"
 ><kbd>long</kbd> and Unsigned Types Are Discouraged</a> -
-Although many file types (e.g., NetCDF-4 and json) and ERDDAP support
+Although many file types (e.g., NetCDF-4 and json) and ERDDAP™ support
 <kbd>long</kbd> and unsigned (ubyte, ushort, uint, ulong) values, 
 the use of <kbd>long</kbd> and unsigned values in 
 NCCSV files is currently discouraged because they are currently
@@ -497,11 +497,11 @@ byte, short, and int attributes containing the corresponding two's-complement va
 (e.g., 255ub appears as -1b). This is obviously trouble, so signed
 data types should be used instead of unsigned data types whenever possible.
 
-<p><a class="selfLink" id="ERDDAP_Metadata" href="#ERDDAP_Metadata" rel="bookmark"><strong>CF, ACDD, and ERDDAP Metadata</strong></a> -
+<p><a class="selfLink" id="ERDDAP_Metadata" href="#ERDDAP_Metadata" rel="bookmark"><strong>CF, ACDD, and ERDDAP™ Metadata</strong></a> -
 Since it is envisioned that most NCCSV files, or the .nc files
 created from them, will be read into ERDDAP,
 it is strongly recommended that NCCSV files include the metadata attributes
-which are required or recommended by ERDDAP (see 
+which are required or recommended by ERDDAP™ (see 
 <br><a rel="bookmark" href="https://erddap.github.io/setupDatasetsXml.html#globalAttributes"
 >https://erddap.github.io/setupDatasetsXml.html#globalAttributes</a>). 
 The attributes are almost all from the CF and ACDD metadata standards and 
@@ -542,7 +542,7 @@ Unlike in the attributes section, char values in the data section
 may omit the enclosing single quotes if they are not needed for disambiguation
 (thus, ',' and '\'' must be quoted as shown here).
 There may be any number of these data rows in an NCCSV file, 
-but currently ERDDAP can only read NCCSV files with up to 
+but currently ERDDAP™ can only read NCCSV files with up to 
 about 2 billion rows. 
 In general, it is recommended that you split large datasets into
 multiple NCCSV data files with fewer than 1 million rows each.
@@ -578,7 +578,7 @@ For example, see the second value on this data row:
 <br><kbd>Bell M. Shimada,,123.4</kbd>
 
 <p>For byte, ubyte, short, ushort, int, uint, long, and ulong variables,
-the NCCSV converter utility and ERDDAP will convert an empty field 
+the NCCSV converter utility and ERDDAP™ will convert an empty field 
 into the maximum allowed value for that data type (e.g., 127 for bytes).
 If you do this, be sure to add a <kbd>missing_value</kbd> or 
 <kbd>_FillValue</kbd> attribute for that variable to identify this value, 
@@ -620,7 +620,7 @@ You may need a shortened version of this,
 e.g., yyyy-MM-dd'T'HH:mm:ssZ (the only recommended format) or yyyy-MM-dd.
 If you are changing the format of your dateTime values,
 NCCSV strongly recommends that you change to this format (perhaps shortened).
-This is the format that ERDDAP will use when it writes NCCSV files.
+This is the format that ERDDAP™ will use when it writes NCCSV files.
 <li>yyyyMMddHHmmss.SSS &mdash; which is the compact version of the ISO 8601:2004
 dateTime format. You may need a shortened version of this, e.g., yyyyMMdd.
 <li>M/d/yyyy H:mm:ss.SSS &mdash; which handles US-style dates and dateTimes like
@@ -647,7 +647,7 @@ The default time zone for dateTime values is the Zulu (or GMT)
 time zone, which has no daylight saving time periods. 
 If a dateTime variable has dateTime values from a different time zone,
 you must specify this with the ERDDAP-specific attribute <kbd>time_zone</kbd>.
-This is a requirement for ERDDAP (see 
+This is a requirement for ERDDAP™ (see 
 <br><a rel="bookmark" 
 href="https://erddap.github.io/setupDatasetsXml.html#time_zone"
 >https://erddap.github.io/setupDatasetsXml.html#time_zone</a>).
@@ -676,13 +676,13 @@ An NCCSV file may contain CF Discrete Sampling Geometry
   metadata section identifying the <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>
   featureType attribute, e.g., 
   <br><kbd>*GLOBAL*,featureType,trajectory</kbd>
-<li>For use in ERDDAP, the NCCSV file must include a line or lines 
+<li>For use in ERDDAP™, the NCCSV file must include a line or lines 
   in the metadata section identifying the <kbd>cf_role=..._id</kbd> variables, e.g.,
   <br><kbd>ship,cf_role,trajectory_id</kbd>
   <br>This is optional for CF, but required in NCCSV.
-<li>For use in ERDDAP, the NCCSV file must include a line or lines
+<li>For use in ERDDAP™, the NCCSV file must include a line or lines
   in the metadata section identifying which variables are associated 
-  with each timeSeries, trajectory, or profile as required by ERDDAP (see 
+  with each timeSeries, trajectory, or profile as required by ERDDAP™ (see 
 <br><a rel="bookmark"
 href="https://erddap.github.io/setupDatasetsXml.html#cdm_data_type"
 >https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</a>), e.g.,
@@ -915,19 +915,19 @@ To import an NCCSV file into Google Sheets:
 
 <h2><a class="selfLink" id="Changes" href="#Changes" rel="bookmark">Changes</a></h2>
 
-The original version was <a rel="bookmark" href="./NCCSV_1.00">NCCSV v1.00</a> (in ERDDAP v1.76, released 2017-05-12)
+The original version was <a rel="bookmark" href="./NCCSV_1.00">NCCSV v1.00</a> (in ERDDAP™ v1.76, released 2017-05-12)
 <ul>
-<li>Changes introduced in <a rel="bookmark" href="./NCCSV_1.10">NCCSV v1.10</a> (in ERDDAP v2.10, released 2020-11-05):
+<li>Changes introduced in <a rel="bookmark" href="./NCCSV_1.10">NCCSV v1.10</a> (in ERDDAP™ v2.10, released 2020-11-05):
   <ul>
   <li>Added support for ubyte, ushort, uint, ulong.
     Thanks to CF for adding support for these data types in CF.
   </ul>
-<li>Changes introduced in v1.20 (in ERDDAP v2.23, released 2023-02-27):
+<li>Changes introduced in v1.20 (in ERDDAP™ v2.23, released 2023-02-27):
   <ul>
   <li>Switched from ASCII character encoding to UTF-8 encoding for NCCSV .csv files.
     <ul>
-    <li>ERDDAP can still read files from all previous and current versions of NCCSV.
-    <li>ERDDAP now always writes NCCSV v1.20 files.
+    <li>ERDDAP™ can still read files from all previous and current versions of NCCSV.
+    <li>ERDDAP™ now always writes NCCSV v1.20 files.
     <li>If you wrote a client to read NCCSV files, change it so it treats all NCCSV files as UTF-8 files.
       That will work with older NCCSV files because ASCII is a subset of the UTF-8 character encoding.
     <li>Thanks to Pauline Chauvet, Nate, and Thomas Gardiner.
@@ -943,7 +943,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.23
+<p>ERDDAP, Version 2.24
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 </div>

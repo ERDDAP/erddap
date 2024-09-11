@@ -9,9 +9,9 @@
  * Administration should the software be included by the recipient as an
  * element in other product development.
  */
- 
+
 package gov.noaa.pmel.sgt.dm;
- 
+
 /**
  * Base class for coordinate system information
  *
@@ -21,5 +21,4 @@ package gov.noaa.pmel.sgt.dm;
  * @see Cartesian
  * @see Polar
  */
-public interface CoordinateSystem {
-}
+public interface CoordinateSystem {}

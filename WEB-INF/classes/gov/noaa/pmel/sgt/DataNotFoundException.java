@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Graph could not be produced because no data has been assigned.
@@ -22,7 +22,8 @@ package  gov.noaa.pmel.sgt;
 public class DataNotFoundException extends SGException {
   public DataNotFoundException() {
     super();
-}
+  }
+
   public DataNotFoundException(String s) {
     super(s);
   }
