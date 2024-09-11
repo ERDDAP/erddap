@@ -38,6 +38,8 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -269,7 +271,7 @@ public class Erddap extends HttpServlet {
             + BPD
             + "\n"
             + "contextDirectory="
-            + EDStatic.webInfParentDirectory
+            + EDStatic.getWebInfParentDirectory()
             + "\n"
             + "available fonts="
             + String2.toCSSVString(
@@ -353,6 +355,12 @@ public class Erddap extends HttpServlet {
         "\n\\\\\\\\**** Erddap constructor finished. TIME="
             + (System.currentTimeMillis() - constructorMillis)
             + "ms");
+  }
+
+  @Override
+  public void init(final ServletConfig config) throws ServletException {
+    ServletContext context = config.getServletContext();
+    String webInfPath = context.getRealPath("/WEB-INF/");
   }
 
   /**
@@ -12797,7 +12805,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "Some characters are never allowed in requests.");
     }
-    String dir = EDStatic.webInfParentDirectory + protocol + "/";
+    String dir = EDStatic.getWebInfParentDirectory() + protocol + "/";
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 

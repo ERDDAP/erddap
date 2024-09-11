@@ -56,6 +56,7 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.net.URL;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -213,8 +214,7 @@ public class EDStatic {
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
   /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-  public static String webInfParentDirectory =
-      File2.webInfParentDirectory(); // with / separator and / at the end
+  private static String webInfParentDirectory = File2.webInfParentDirectory(); // with / separator and / at the end
   // fgdc and iso19115XmlDirectory are used for virtual URLs.
   public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
   public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
@@ -2390,6 +2390,7 @@ public class EDStatic {
       for (int tl = 1; tl < nLanguages; tl++) {
         String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
+        URL messageFile = TranslateMessages.translatedMessagesDir.toURI().resolve(tName).toURL();
         messagesAr[tl] =
             ResourceBundle2.fromXml(
                 XML.parseXml(TranslateMessages.translatedMessagesDir + tName, false));
@@ -4284,6 +4285,14 @@ public class EDStatic {
       //        String2.returnLoggingToSystemOut();
       throw new RuntimeException(errorInMethod);
     }
+  }
+
+  public static String getWebInfParentDirectory() {
+    return EDStatic.webInfParentDirectory;
+  }
+
+  public static void setWebInfParentDirectory(String webInfParentDir) {
+    EDStatic.webInfParentDirectory = webInfParentDir;
   }
 
   /** This does getNotNothingString for each messages[]. */
@@ -7723,4 +7732,5 @@ public class EDStatic {
     EDStatic.touchThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
     EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   }
+
 }

@@ -64,7 +64,7 @@ class TranslateMessagesTests {
   void findTagsMissingCDATA() throws Exception {
     String2.log("\n*** TranslateMessages.findTagsMissingCDATA()");
     SimpleXMLReader xmlReader =
-        new SimpleXMLReader(new FileInputStream(TranslateMessages.messagesXmlFileName));
+        new SimpleXMLReader(TranslateMessages.messagesXmlFileName.openStream());
     int nTagsProcessed = 0;
     int nBad = 0;
     while (true) {

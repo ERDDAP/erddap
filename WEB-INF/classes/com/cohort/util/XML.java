@@ -4,8 +4,12 @@
  */
 package com.cohort.util;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath; // requires java 1.5
@@ -402,7 +406,7 @@ public class XML {
    * This is like encodeAsXML, but encodes char &gt;=256 so they can be shown in a DOW/Windows
    * terminal window.
    *
-   * @param encodeHighChar
+   * @param plainText
    */
   public static String encodeAsTerminal(String plainText) {
     return encodeAsXMLOpt(plainText, true);
@@ -411,7 +415,7 @@ public class XML {
   /**
    * This is the standard encodeAsXML which leaves chars &gt;=256 as is.
    *
-   * @param encodeHighChar
+   * @param plainText
    */
   public static String encodeAsXML(String plainText) {
     return encodeAsXMLOpt(plainText, false);
@@ -788,9 +792,28 @@ public class XML {
    * @throws Exception if trouble
    */
   public static Document parseXml(String fileName, boolean validating) throws Exception {
+    BufferedReader reader = File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8);
     return parseXml(
-        new InputSource(File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8)),
-        validating);
+        new InputSource(reader),
+        validating
+    );
+  }
+
+  /**
+   * Parse an XML file and return a DOM Document. If validating is true, the XML is validated
+   * against the DTD specified by DOCTYPE in the file.
+   *
+   * @param resourceFile XML resource file
+   * @param validating use true to validate the file against the DTD specified in the file.
+   * @return a DOM Document
+   * @throws Exception if trouble
+   */
+  public static Document parseXml(URL resourceFile, boolean validating) throws Exception {
+    InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8);
+    return parseXml(
+            new InputSource(new BufferedReader(reader)),
+            validating
+    );
   }
 
   /**

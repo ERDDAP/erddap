@@ -45,7 +45,7 @@ public class ValidateDataSetProperties {
     String2.log("ValidateDataSetProperties (testing DataSet.properties validDataSets");
 
     // find a browser properties file (e.g., CWBrowser.properties)
-    String contextDirectory = Paths.get(Resources.getResource("gov/noaa/pfel/coastwatch/").toURI()).toString();
+    String contextDirectory = File2.accessResourceFile("gov/noaa/pfel/coastwatch/");
     String[] propList = RegexFilenameFilter.list(contextDirectory, ".+\\.properties");
     int which = -1;
     for (int i = 0; i < propList.length; i++) {

@@ -12,6 +12,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagImageComparison;
 import testDataset.Initialization;
@@ -656,7 +658,7 @@ class SgtMapTests {
      */
     String vectorCpt =
         CompoundColorMap.makeCPT(
-            File2.webInfParentDirectory()
+                EDStatic.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Rainbow",
@@ -669,7 +671,7 @@ class SgtMapTests {
 
     String gridCpt =
         CompoundColorMap.makeCPT(
-            File2.webInfParentDirectory()
+            EDStatic.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "BlueWhiteRed", // "LightBlueWhite"
@@ -740,7 +742,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile
@@ -826,7 +828,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile

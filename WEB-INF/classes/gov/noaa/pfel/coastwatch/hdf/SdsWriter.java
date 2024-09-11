@@ -732,10 +732,7 @@ public class SdsWriter {
     // describe the data
     String2.log("SdsWriter.main gathering data and attributes");
     int NaN = -999;
-    String dir =
-        File2.getClassPath()
-            + // with / separator and / at the end
-            "gov/noaa/pfel/coastwatch/hdf/";
+    String dir = File2.accessResourceFile("gov/noaa/pfel/coastwatch/hdf/");
     double lonSpacing = 0.25;
     double latSpacing = 0.5;
     double lon[] = {0, .25, 0.5, 0.75};

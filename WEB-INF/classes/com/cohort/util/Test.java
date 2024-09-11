@@ -13,11 +13,6 @@ import java.util.GregorianCalendar;
 /** This is a Java program to test all of the methods in com.cohort.util. */
 public class Test {
 
-  public static String utilDir =
-      File2.getClassPath()
-          + // with / separator and / at the end
-          "com/cohort/util/";
-
   /**
    * This throws a runtime exception with the specified error message.
    *

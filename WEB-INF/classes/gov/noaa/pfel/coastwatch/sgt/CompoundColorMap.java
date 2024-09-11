@@ -13,11 +13,17 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pmel.sgt.ColorMap;
 import gov.noaa.pmel.util.Range2D;
+import jnr.ffi.Struct;
+
 import java.awt.Color;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -142,17 +148,20 @@ public class CompoundColorMap extends ColorMap {
    * @param cptFileName the complete name of the .cpt file
    */
   public CompoundColorMap(String cptFileName) throws Exception {
-    populate(this, cptFileName);
+    List<String> lines = File2.readLinesFromFile(cptFileName, File2.ISO_8859_1, 3);
+    populate(this, cptFileName, lines);
+  }
+
+  public CompoundColorMap(URL cptFileName) throws Exception {
+    List<String> lines = Resources.readLines(cptFileName, StandardCharsets.ISO_8859_1);
+    populate(this, cptFileName.getFile(), lines);
   }
 
   /**
-   * This constructs a CompoundColorMap based on a .cpt file. It is used by some of the
-   * constructors.
+   * This constructs a CompoundColorMap based on a .cpt file. It is used by some of the constructors.
    */
-  protected static void populate(CompoundColorMap ccm, String cptFileName) throws Exception {
+  protected static void populate(CompoundColorMap ccm, String cptFileName, List<String> lines) throws Exception {
     // set up a colorMap based on info in the .cpt file
-    ArrayList<String> lines = File2.readLinesFromFile(cptFileName, File2.ISO_8859_1, 3);
-
     // set up temporary PrimitiveArrays
     DoubleArray rangeLowAr = new DoubleArray(); // stores the low ends of a piece
     DoubleArray rangeHighAr = new DoubleArray(); // stores the high ends of a piece

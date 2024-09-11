@@ -7,6 +7,9 @@ package gov.noaa.pfel.erddap.util;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
+import com.google.common.io.Resources;
+
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,10 +76,7 @@ public class CfToFromGcmd {
   static {
     // this is done only once so no concurrency issues
     // use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-    String fileName =
-        File2.getClassPath()
-            + // with / separator and / at the end
-                "gov/noaa/pfel/erddap/util/CfToGcmd.txt";
+    URL fileName = Resources.getResource("gov/noaa/pfel/erddap/util/CfToGcmd.txt");
     String2.log("CfToFromGcmd static loading " + fileName);
     StringArray lines;
     try {

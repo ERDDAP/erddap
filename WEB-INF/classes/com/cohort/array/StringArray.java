@@ -5,14 +5,10 @@
 package com.cohort.array;
 
 import com.cohort.util.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+
+import java.io.*;
 import java.math.BigInteger;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -287,6 +283,16 @@ public class StringArray extends PrimitiveArray {
     return fromFile(fileName, File2.UTF_8);
   }
 
+  /** This reads the text contents of the specified file using File2.ISO_8859_1. */
+  public static StringArray fromFile88591(final URL resourceFile) throws Exception {
+    return fromFile(resourceFile, File2.ISO_8859_1);
+  }
+
+  /** This reads the text contents of the specified file using File2.UTF_8. */
+  public static StringArray fromFileUtf8(final URL resourceFile) throws Exception {
+    return fromFile(resourceFile, File2.UTF_8);
+  }
+
   /**
    * This reads the text contents of the specified file and makes a StringArray with an item from
    * each line of the file (not trim'd).
@@ -300,18 +306,33 @@ public class StringArray extends PrimitiveArray {
     Math2.ensureMemoryAvailable(
         File2.length(fileName), "StringArray.fromFile"); // canonical may lessen memory requirement
     final StringArray sa = new StringArray();
-    final BufferedReader bufferedReader =
-        File2.getDecompressedBufferedFileReader(fileName, charset);
-    try {
+    try (final BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         sa.addNotCanonical(s);
         s = bufferedReader.readLine();
       }
-    } finally {
-      try {
-        bufferedReader.close();
-      } catch (Exception e) {
+    }
+    return sa;
+  }
+
+  /**
+   * This reads the text contents of the specified file and makes a StringArray with an item from
+   * each line of the file (not trim'd).
+   *
+   * @param charset e.g., ISO-8859-1 (the default); or "" or null for the default
+   * @return StringArray with not canonical strings (on the assumption that lines of all file are
+   *     usually all different).
+   * @throws Exception if trouble (e.g., file not found)
+   */
+  public static StringArray fromFile(final URL resourceFile, final String charset) throws Exception {
+    final StringArray sa = new StringArray();
+    try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
+         BufferedReader bufferedReader = new BufferedReader(reader)){
+      String s = bufferedReader.readLine();
+      while (s != null) { // null = end-of-file
+        sa.addNotCanonical(s);
+        s = bufferedReader.readLine();
       }
     }
     return sa;

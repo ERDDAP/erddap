@@ -2451,7 +2451,7 @@ public class SSR {
    */
   public static String getTempDirectory() {
     if (tempDirectory == null) {
-      String tdir = EDStatic.webInfParentDirectory + "WEB-INF/temp/";
+      String tdir = EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/";
       // make it, because Git doesn't track empty dirs
       File2.makeDirectory(tdir);
       // then set it if successful

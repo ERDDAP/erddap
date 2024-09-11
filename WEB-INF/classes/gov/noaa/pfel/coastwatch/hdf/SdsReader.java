@@ -8,7 +8,10 @@ import com.cohort.util.File2;
 // import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
+
 import java.io.DataInputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -209,10 +212,7 @@ public class SdsReader {
   public static void main(String args[]) throws Exception {
 
     // mini.hdf was made by gov.noaa.pfel.coastwatch/Grid with the HDF libraries
-    String dir =
-        File2.getClassPath()
-            + // with / separator and / at the end
-            "gov/noaa/pfel/coastwatch/hdf/";
+    String dir =  File2.accessResourceFile("gov/noaa/pfel/coastwatch/hdf/");
     // Test.ensureEqual(
     //    File2.writeToFileUtf8(dir + "mini.hdf.hexDump", File2.hexDump(dir + "mini.hdf", 7262)),
     //    "", "Grid.miniTestSaveAsHDF error message");

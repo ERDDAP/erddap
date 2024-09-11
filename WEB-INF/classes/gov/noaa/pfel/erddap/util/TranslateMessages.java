@@ -12,8 +12,14 @@ import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -229,10 +235,10 @@ public class TranslateMessages {
   }
 
   // path
-  public static String utilDir = File2.getClassPath() + "gov/noaa/pfel/erddap/util/";
-  public static String translatedMessagesDir = utilDir + "translatedMessages/";
-  protected static String messagesXmlFileName = utilDir + "messages.xml";
-  private static String oldMessagesXmlFileName = translatedMessagesDir + "messagesOld.xml";
+  public static String utilDir = "gov/noaa/pfel/erddap/util/";
+  public static URL translatedMessagesDir = Resources.getResource(utilDir + "translatedMessages/");
+  protected static URL messagesXmlFileName = Resources.getResource(utilDir + "messages.xml");
+  private static URL oldMessagesXmlFileName = Resources.getResource(utilDir + "translatedMessages/messagesOld.xml");
 
   // translation settings
   private static HashSet<String> doNotTranslateSet =
@@ -995,15 +1001,15 @@ public class TranslateMessages {
     try {
 
       // read the current and old messages.xml file
-      SimpleXMLReader xmlReader = new SimpleXMLReader(new FileInputStream(messagesXmlFileName));
-      HashMap<String, String> previousMessageMap = getXMLTagMap(oldMessagesXmlFileName);
+      SimpleXMLReader xmlReader = new SimpleXMLReader(messagesXmlFileName.openStream());
+      String oldMessagesXmlFilePath = File2.accessResourceFile(oldMessagesXmlFileName.getPath());
+      HashMap<String, String> previousMessageMap = getXMLTagMap(oldMessagesXmlFilePath);
 
       // read the current messages-[langCode].xml files (if they exists)
       HashMap<String, String>[] translatedTagMaps =
           (HashMap<String, String>[]) new HashMap[languageCodeList.length];
       for (int languagei = 1; languagei < languageCodeList.length; languagei++) {
-        String fileName =
-            translatedMessagesDir + "messages-" + languageCodeList[languagei] + ".xml";
+        String fileName = Paths.get(translatedMessagesDir + "messages-" + languageCodeList[languagei] + ".xml").toString();
         translatedTagMaps[languagei] =
             File2.isFile(fileName) ? getXMLTagMap(fileName) : new HashMap();
       }
@@ -1011,15 +1017,8 @@ public class TranslateMessages {
       // create the new-messages-[langCode].xml files
       fileWriters = new Writer[languageCodeList.length];
       for (int languagei = 1; languagei < languageCodeList.length; languagei++) {
-        fileWriters[languagei] =
-            new BufferedWriter(
-                new OutputStreamWriter(
-                    new FileOutputStream(
-                        translatedMessagesDir
-                            + "new-messages-"
-                            + languageCodeList[languagei]
-                            + ".xml"),
-                    "UTF-8"));
+        Path newMessagePath = Paths.get(translatedMessagesDir + "new-messages-" + languageCodeList[languagei] + ".xml");
+        fileWriters[languagei] = Files.newBufferedWriter(newMessagePath, StandardCharsets.UTF_8);
         fileWriters[languagei].write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
       }
       // This for-loop tests the translation output of first justTranslateNTags.
@@ -1168,7 +1167,7 @@ public class TranslateMessages {
    * translated. (Qi used the glossary for this, but Google Translate often didn't honor it reliably
    * with German.)
    *
-   * @param s the rawContent text of a CDATA tag
+   * @param rawContent the rawContent text of a CDATA tag
    * @return the modified text
    */
   public static String preProcessHtml(String rawContent) {
@@ -1532,7 +1531,6 @@ public class TranslateMessages {
    * doNotTranslateSet, or can be trimmed to be "".
    *
    * @param rawContent rawContent of the given tag. Include CDATA and comment syntax.
-   * @param tagName the name of the tag, without "<" and ">"
    * @param languageCode the languageCode of the targeted language
    * @param html if the tag contains HTML
    * @param messageFormat if the tag uses messageFormat
@@ -1598,7 +1596,7 @@ public class TranslateMessages {
    * @return a String[]
    */
   public static String[] extractRegex(String regex) throws Exception {
-    String s = File2.directReadFromUtf8File(messagesXmlFileName);
+    String s = new String(Resources.toByteArray(messagesXmlFileName), StandardCharsets.UTF_8);
     String2.log(s);
     String oa[] = String2.extractAllCaptureGroupsAsHashSet(s, regex, 1).toArray(new String[0]);
     Arrays.sort(oa, new StringComparatorIgnoreCase());

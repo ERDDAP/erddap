@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import com.google.common.io.Resources;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -294,6 +297,18 @@ public class File2 {
 
   private static ConcurrentHashMap<String, S3Client> s3ClientMap =
       new ConcurrentHashMap<String, S3Client>();
+
+  /**
+   * Access a classpath resource via a filesystem path.
+   * NOTE: this will not work unless resource is exploded.
+   *
+   * @param resourcePath Classpath of resource.
+   * @return Filesystem path.
+   * @throws URISyntaxException Could not create URI.
+   */
+  public static String accessResourceFile(String resourcePath) throws URISyntaxException {
+    return Paths.get(Resources.getResource(resourcePath).toURI()).toString();
+  }
 
 // TODO remove this and force resources
 //  /**
