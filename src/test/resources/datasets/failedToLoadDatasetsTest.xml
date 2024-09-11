@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+    <dataset type="EDDGridFromEtopo" datasetID="etopo180" />
+    <!-- Made a typo in the ID here so the dataset fails to load -->
+    <dataset type="EDDGridFromEtopo" datasetID="etopo36" />
+</erddapDatasets>

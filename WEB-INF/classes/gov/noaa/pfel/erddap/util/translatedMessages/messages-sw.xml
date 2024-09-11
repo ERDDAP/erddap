@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--  messages.xml ina jumbe za maandishi za ERDDAP (ambazo zinasomwa katika EDStatic).
 Unaposakinisha ERDDAP kwenye seva yako, ujumbe huu wote unaweza kuachwa kama ulivyo,
 kwa kuwa barua pepe hizi kawaida huwa sawa katika usakinishaji tofauti wa ERDDAP.
@@ -8,22 +9,26 @@ Au, unaweza kutafsiri ujumbe huu katika lugha nyingine (k.m., Kihispania).
 MUHIMU SANA:
 
 Mstari mmoja?
-Ikiwa ujumbe wa Kiingereza unaonekana kama mstari mmoja mrefu (bila mistari mpya), tafadhali tengeneza
+Ikiwa ujumbe wa Kiingereza unaonekana kama mstari mmoja mrefu (bila mistari mpya), tafadhali tengeneza 
 tafsiri mstari mmoja pia.
 
 HTML au la?
 Lebo zote zinazotumia HTML huanza na CDATA.
-Kwa hivyo kama lebo inaanza na CDATA, ni salama kutumia tagi za HTML; vinginevyo, sivyo.
-Ikiwa ujumbe unatumia lebo za HTML, tafadhali tumia tagi sawa za HTML katika tafsiri.
+Kwa hivyo ikiwa lebo inaanza na CDATA, ni salama kutumia lebo za HTML; vinginevyo, sivyo.
+Ikiwa ujumbe unatumia tagi za HTML, tafadhali tumia tagi sawa za HTML katika tafsiri.
 
-Vishika nafasi vya Ufomati wa Ujumbe
+Vishika nafasi vya MessageFormat
 Jumbe nyingi hutumia vishikilia nafasi vya mtindo wa Java MessageFormat kama vile {0} na {1}.
 Katika jumbe hizi, nukuu yoyote moja &#39; lazima iepukwe kama &#39;&#39;.
 Tazama https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 
-&pseudoEntity; hutumika wakati neno hilo halipaswi kutafsiriwa, mara nyingi kwa sababu ni a
+&pseudoEntity; hutumika wakati neno hilo halipaswi kutafsiriwa, mara nyingi kwa sababu ni a 
 simama kwa kitu ambacho kitabadilishwa mahali.
 Mfumo wa tafsiri UNAHITAJI kwamba &quot;pseudoEntity&quot; itumie [a-zA-Z0-9] pekee.
+
+!!! KOSA LA KUTAFSIRI MASHINE??? messages-bn.xml ina viungo &lt;a&gt; vyote vilivyorudufiwa.
+  messages-de.xml na -ga zina viungo vingi vilivyorudiwa. Nashuku wengi zaidi wako hivi.
+
  -->
 <erddapMessages><!--  Hii inarejesha maudhui ya HTML yanayoelezea Kuomba Faili Zilizobanwa.
 Tazama https://httpd.apache.org/docs/1.3/mod/mod_mime.html
@@ -4003,7 +4008,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Tafadhali kuwa na subira. Inaweza kuchukua muda kupata data.)</patientData>
 <patientYourGraph>[Grafu uliyotaja. Tafadhali kuwa na subira.]</patientYourGraph>
 <!--  Kwa kila saizi ya picha, kuna pdfWidth na pdfHeight (katika inchi 1/144).
@@ -5021,7 +5026,7 @@ Hii inaweza kurejelea &erdapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP ni seva ya data inayokupa njia rahisi na thabiti ya kupakua seti ndogo za hifadhidata za kisayansi katika miundo ya kawaida ya faili na kutengeneza grafu na ramani.
+ERDDAP ni seva ya data inayokupa njia rahisi na thabiti ya kupakua seti ndogo za hifadhidata za kisayansi katika miundo ya kawaida ya faili na kutengeneza grafu na ramani.
 <h2>Jedwali la Yaliyomo</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">Matatizo ambayo ERDDAP Inajaribu Kutatua</a>
@@ -5029,15 +5034,15 @@ Hii inaweza kurejelea &erdapUrl;, &ssUse; .
 <ul>
 <li><a rel="bookmark" href="#video">Kwa utangulizi wa haraka wa ERDDAP, tazama nusu ya kwanza ya hii<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (dakika 5)
-<li><a rel="bookmark" href="#localAndRemote">ERDDAP inaweza kupata data kutoka kwa ndani (kwenye diski kuu ya seva) na vyanzo vya data vya mbali (kupitia wavuti).</a>
+<li><a rel="bookmark" href="#localAndRemote">ERDDAP inaweza kupata data kutoka kwa ndani (kwenye diski kuu ya seva) na vyanzo vya data vya mbali (zinazofikiwa kupitia wavuti).</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP inaweza kutoa aina nyingi za data ya kisayansi, sio data ya bahari tu.</a>
 <li><a rel="bookmark" href="#search">ERDDAP inatoa njia kadhaa za kutafuta hifadhidata zinazovutia.</a>
-<li><a rel="bookmark" href="#standardizedRequests">ERDDAP kuomba data kwa njia iliyosanifiwa.</a>
+<li><a rel="bookmark" href="#standardizedRequests">ERDDAP hukuruhusu kuomba data kwa njia iliyosanifiwa.</a>
 <li><a rel="bookmark" href="#userUnits">Maombi ya data iliyowekwa kwenye gridi yanaweza kufanywa katika vitengo vya watumiaji.</a>
 <li><a rel="bookmark" href="#fileFormats">ERDDAP hutuma matokeo katika fomati za faili za data za kawaida.</a>
-<li><a rel="bookmark" href="#LLAT">ERDDAP majina na vitengo tofauti kwa longitudo, latitudo, mwinuko, na wakati katika matokeo.</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP husawazisha majina na vitengo tofauti kwa longitudo, latitudo, mwinuko, na wakati katika matokeo.</a>
 <li><a rel="bookmark" href="#metadata">ERDDAP inaweza kuongeza au kurekebisha metadata.</a>
-<li><a rel="bookmark" href="#images">ERDDAP kuomba faili za picha za .png na .pdf zenye grafu na ramani.</a>
+<li><a rel="bookmark" href="#images">ERDDAP hukuruhusu kuomba faili za picha za .png na .pdf zenye grafu na ramani.</a>
 <li><a rel="bookmark" href="#compression">Inaomba Faili Zilizobanwa</a>
 <li><a rel="bookmark" href="#interoperable">ERDDAP hufanya aina tofauti za seva za data (OPeNDAP, OBIS, SOS, WMS, ...) zishirikiane.</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP hutumia miundo miwili tu ya msingi ya data kushikilia data.</a>
@@ -5055,7 +5060,7 @@ OPeNDAP ?
 DODS ?
 ERDDAP ?
 Tofauti ni ipi?</a>
-<li><a rel="bookmark" href="#sweetSpot">Je, ERDDAP ni suluhisho kwa matatizo ya usambazaji wa data/ufikiaji wa data ya kila mtu?</a>
+<li><a rel="bookmark" href="#sweetSpot">Je, ERDDAP ni suluhisho la matatizo ya kila mtu ya usambazaji wa data / ufikiaji wa data?</a>
 <li><a rel="bookmark" href="#sustainable">Je, mradi wa ERDDAP ni endelevu kwa kiasi gani?</a>
 <li><a rel="bookmark" href="#citeDataset">Jinsi ya Kutaja Seti ya Data kwenye Karatasi</a>
 <li><a rel="bookmark" href="#cite">Jinsi ya Kutaja ERDDAP kwenye Karatasi</a>
@@ -5065,7 +5070,7 @@ Tofauti ni ipi?</a>
 <li><a rel="bookmark" href="#contact">Wasiliana nasi</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Matatizo ambayo ERDDAP Inajaribu Kutatua</a></h2>
-Bila ERDDAP, wakati mtu (au programu ya kompyuta) inaonekana kwenye mtandao kwa aina maalum ya data ya kisayansi (kwa mfano, data ya joto la uso wa bahari ya satelaiti), kuna matatizo ...
+Bila ERDDAP, wakati mtu (au programu ya kompyuta) anaangalia kwenye mtandao kwa aina maalum ya data ya kisayansi (kwa mfano, data ya joto la uso wa bahari ya satelaiti), kuna matatizo ...
 <ul>
 <li>Seti za data zinazovutia ni ngumu kupata kwa sababu ziko kwenye tovuti nyingi tofauti.
 <br>&nbsp;
@@ -5090,36 +5095,36 @@ Bila ERDDAP, wakati mtu (au programu ya kompyuta) inaonekana kwenye mtandao kwa 
 Video hii inaonyesha:
 <ul>
 <li>Ukiwa na ERDDAP, unaweza
-<a href="#search">kutafuta seti za data kwa</a> urahisi,
+<a href="#search">kutafuta seti za data</a> kwa urahisi,
 <a href="#images">kuona data</a> na
 <a href="#fileFormats">kupakua data</a> .
-<li>ERDDAP inaweza kupata data kutoka
-<a href="#localAndRemote">kwa vyanzo vya ndani na vya mbali vya data</a> kupitia
+<li>ERDDAP inaweza kupata data kutoka kwa
+<a href="#localAndRemote">vyanzo vya ndani na vya mbali vya data</a> kupitia
 <a href="#standardizedRequests">maombi sanifu</a> .
 <li>ERDDAP inatoa
-<a href="#rest">huduma za RESTful</a> .
+<a href="#rest">huduma RESTful</a> .
 URL hubainisha ombi zima.
 <li>ERDDAP inaweza kutengeneza
 <a href="#images">ramani na grafu</a> .
 <li>ERDDAP inatoa
 <a href="#fileFormats">data</a> (sio ramani na grafu pekee).
-<li>ERDDAP inaweza kurejesha data katika fomati nyingi za
-<a href="#fileFormats">faili</a> ili kuwezesha kupata data katika programu zingine nyingi.
+<li>ERDDAP inaweza kurejesha data katika
+<a href="#fileFormats">fomati nyingi za faili</a> ili kuwezesha kupata data katika programu zingine nyingi.
 <li>NOAA inafanya kazi pamoja:
-Uchanganuzi unatumia programu mbili zisizolipishwa za programu kutoka NOAA, ERDDAP na GNOME, na data inayotolewa na NOAA &#39;s NODC/NCDDC (iliyowezeshwa na mradi wa NOAA wa UAF).
+Uchambuzi unatumia programu mbili za bila malipo kutoka NOAA, ERDDAP na GNOME, na data inayotolewa na NOAA &#39;s NODC/NCDDC (iliyowezeshwa na mradi wa NOAA wa UAF).
 <li>ERDDAP hufanya
 <a href="#scientificData">data ya kisayansi</a> kupatikana kwa urahisi zaidi ili kuwasaidia wanasayansi (na wengine) kufanya kazi zao kwa ufanisi zaidi.
 <li>Kutumia ERDDAP sio ngumu.
-(Ndio, Rich Signell ni mwerevu sana, lakini mtu yeyote anaweza kutumia ERDDAP .)
+(Ndiyo, Rich Signell ni mwerevu sana, lakini mtu yeyote anaweza kutumia ERDDAP .)
 </ul>
 Asante kwa Rich Signell.
 (Hitilafu moja ndogo kwenye video:
 unapotafuta seti za data, usitumie <kbd>AND</kbd> kati ya maneno ya utafutaji.
-Ni wazi.)
+Ni dhahiri.)
 <br>&nbsp;
-<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP inaweza kupata data kutoka kwa ndani (kwenye diski kuu ya seva) na vyanzo vya data vya mbali (kupitia wavuti).</a></strong>
+<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP inaweza kupata data kutoka kwa ndani (kwenye diski kuu ya seva) na vyanzo vya data vya mbali (vilivyofikiwa kupitia wavuti).</a></strong>
 <br>Tazama
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">orodha ya aina za vyanzo vya data ambavyo</a> ERDDAP inaweza kufikia.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">orodha ya aina za vyanzo vya data</a> ambavyo ERDDAP inaweza kufikia.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP inaweza kutoa aina nyingi za data ya kisayansi, sio data ya bahari tu.</a></strong>
 <br>ERDDAP ni seva ya data ambayo iliandikwa
@@ -5127,23 +5132,23 @@ Ni wazi.)
 <a title="Huduma ya Kitaifa ya Uvuvi wa Baharini" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Kituo cha Sayansi ya Uvuvi Kusini Magharibi" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Idara ya Utafiti wa Mazingira" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-Seva ya ERDDAP katika ERD hutumikia data ya bahari, lakini ERDDAP (mpango) inaweza kufikia na kutoa data yoyote ya gridi au ya jedwali.
+Seva ya ERDDAP katika ERD hutumikia data ya bahari, lakini ERDDAP (mpango) inaweza kufikia na kuhudumia data yoyote ya gridi au ya jedwali.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP inatoa njia kadhaa za kutafuta hifadhidata zinazovutia.</a></strong>
-<br>Kwa mfano, utafutaji wa
-<a href="&erddapUrl;/search/index.html">maandishi kamili</a>,
+<br>Kwa mfano,
+<a href="&erddapUrl;/search/index.html">utafutaji wa maandishi kamili</a>,
 <a href="&erddapUrl;/categorize/index.html">tafuta kulingana na kategoria</a> (pia hujulikana kama utafutaji wa vipengele) na
-<a href="&erddapUrl;/search/advanced.html">Utafutaji</a> wa Kina .
+<a href="&erddapUrl;/search/advanced.html">Utafutaji wa Kina</a> .
 Utafutaji wa Hali ya Juu huchanganya mbinu zote za utafutaji na kuongeza utafutaji wa seti za data zilizo na data ndani ya longitudo, latitudo na masafa ya saa, ili uweze kutafuta seti za data kulingana na vigezo vingi tofauti kwa wakati mmoja.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP kuomba data kwa njia sanifu,</a></strong>
+<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP hukuruhusu kuomba data kwa njia sanifu,</a></strong>
 <br>bila kujali itifaki ya ombi la chanzo cha data.
 <ul>
-<li>ERDDAP hufanya data iliyounganishwa kupatikana kupitia ERDDAP (Utekelezaji wa
-<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP wa itifaki</a> ya OPeNDAP hyperslab ) na
+<li>ERDDAP hufanya data iliyounganishwa kupatikana kupitia griddap (Utekelezaji wa ERDDAP wa
+<a rel="help" href="&erddapUrl;/griddap/index.html">itifaki ya OPeNDAP hyperslab</a>) na
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
 <li>ERDDAP hufanya data ya jedwali ipatikane kupitia tabledap (Utekelezaji wa ERDDAP wa
-<a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP ya vikwazo vya OPeNDAP</a>).
+<a rel="help" href="&erddapUrl;/tabledap/index.html">itifaki ya vikwazo vya OPeNDAP</a>).
 <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -5159,19 +5164,19 @@ ERDDAP pia hutoa Fomu za Ufikiaji Data (kurasa za wavuti) ambazo huwasaidia wana
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> ni mojawapo ya
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
-    >Mapendekezo ya Kiufundi ya Ufikiaji wa Data ya NOAA <img 
+    >Mapendekezo ya Kiufundi ya Ufikiaji Data ya NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na kiwango
+    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na
 <a rel="bookmark" href="https://www.earthdata.nasa.gov/esdis/esco/standards-and-practices#ed-standards"
-    >cha Data na Mfumo wa Habari wa Sayansi ya Dunia ya NASA (ESDIS).
+    >kiwango cha Data na Mfumo wa Habari wa Sayansi ya Dunia ya NASA (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> .
 (OPeNDAP ni nzuri!) ERDDAP hutafsiri ombi lako kutoka kwa umbizo la OPeNDAP, WMS, au SOS hadi umbizo la ombi la chanzo cha data na kubadilisha jibu kuwa mojawapo ya miundo ya ndani ya data ya ERDDAP .
-Kisha ERDDAP data katika umbizo la faili la kawaida la chaguo lako (kwa mfano, kama jedwali la .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) na kukutumia faili.
+Kisha ERDDAP hurekebisha data katika umbizo la faili la kawaida la chaguo lako (kwa mfano, kama jedwali la .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) na kukutumia faili.
 Tazama orodha ya
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">aina za faili za griddap</a> na orodha ya
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">aina za faili za tabledap</a> .
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">aina za faili tabledap</a> .
 Itifaki zingine za kuomba data (kwa mfano,
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5179,22 +5184,22 @@ Itifaki zingine za kuomba data (kwa mfano,
 ERDDAP imeundwa kwa nyongeza hizi na haionekani kuwa na vizuizi vyovyote.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Maombi ya data iliyowekwa kwenye gridi yanaweza kufanywa katika vitengo vya watumiaji.</a></strong>
-<br>Ingawa maombi ya data iliyowekwa kwenye gridi katika ERDDAP yanaweza kufanywa kwa fahirisi za safu (kwa kufuata vipimo vya OPeNDAP ), maombi yanaweza pia kuwa katika vitengo vya watumiaji (kwa mfano, digrii mashariki), kwa kutumia
+<br>Ingawa maombi ya data iliyounganishwa kwenye gridi ya ERDDAP yanaweza kufanywa kwa fahirisi za safu (kwa kufuata vipimo vya OPeNDAP ), maombi yanaweza pia kuwa katika vitengo vya watumiaji (kwa mfano, digrii mashariki), kwa kutumia
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">nukuu ya mabano</a>, kwa kuwa watumiaji hufikiri katika vitengo hivyo, wala si fahirisi.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP hutuma matokeo katika fomati za faili za data za kawaida.</a></strong>
-<br>Matokeo yanaweza kurejeshwa katika muundo wowote kati ya faili za kawaida za data &requestFormatExamplesHtml;, badala ya umbizo asili tu au umbizo la uhamishaji la OPeNDAP (ambalo halina udhihirisho wa kawaida wa faili).
-Faili hizi huundwa kwa kuruka.
+<br>Matokeo yanaweza kurejeshwa katika muundo wowote wa faili za data za kawaida &requestFormatExamplesHtml;, badala ya umbizo asili tu au umbizo la uhamishaji la OPeNDAP (ambalo halina udhihirisho wa kawaida wa faili).
+Faili hizi zinaundwa kwa kuruka.
 Kwa kuwa kuna miundo machache ya data ya ndani, ni rahisi kuongeza viendeshi vya ziada vya aina ya faili.
 Tazama orodha kamili ya
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">aina za faili za gridi na aina za faili za</a>
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">jedwali</a> .
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">aina za faili za gridi</a> na
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">aina za faili za jedwali</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP majina na vitengo tofauti kwa longitudo, latitudo, mwinuko, kina, na wakati katika matokeo.</a></strong>
-<br>Ili kuwezesha ulinganisho wa data kutoka seti tofauti za data, maombi na matokeo katika ERDDAP hutumia vitengo vya mhimili wa nafasi/saa:
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP husawazisha majina na vitengo tofauti kwa longitudo, latitudo, mwinuko, kina, na wakati katika matokeo.</a></strong>
+<br>Ili kuwezesha ulinganisho wa data kutoka kwa hifadhidata tofauti, maombi na matokeo katika ERDDAP hutumia vitengo vya mhimili wa nafasi/saa:
 <ul>
 <li>longitudo daima iko katika degrees_east .
-<li>latitudo daima iko katika degrees_north .
+<li>latitudo huwa katika degrees_north .
 <li>urefu daima ni katika mita na chanya=up.
 <li>kina daima ni katika mita na chanya=chini.
 <li>wakati, unapoumbizwa kama nambari, huwa katika &quot;seconds since 1970-01-01T00:00:00Z&quot; (inayojulikana kama
@@ -5207,8 +5212,8 @@ Tazama orodha kamili ya
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">umbizo la &quot;extended&quot; la ISO 8601:2004.
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> kiwango <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> kwa mfano, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Unaweza kubadilisha saa za nambari hadi/kutoka nyakati za mfuatano wa ISO ukitumia kigeuzi cha
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">saa</a> cha ERDDAP .) Pia, ili kuepuka mkanganyiko wa saa za eneo na saa za kuokoa mchana, thamani za saa hubadilishwa kila mara hadi saa za eneo la Zulu (UTC, GMT).
+    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> kiwango <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> kwa mfano, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Unaweza kubadilisha saa za nambari hadi/kutoka nyakati za mfuatano wa ISO kwa
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">kigeuzi cha saa</a> cha ERDDAP .) Pia, ili kuepuka mkanganyiko wa saa za eneo na wakati wa kuokoa mchana, thamani za saa hubadilishwa kila mara hadi saa za eneo Zulu (UTC, GMT).
 </ul>
 Hii hurahisisha kubainisha vizuizi katika maombi bila kuwa na wasiwasi kuhusu umbizo la data ya mwinuko (je, thamani chanya juu au chini?
 katika mita au fathom?) au umbizo la data ya saa (eneo la ndoto la umbizo linalowezekana, kwa mfano, &quot;Jan.
@@ -5217,12 +5222,12 @@ Hii hufanya matokeo kutoka kwa vyanzo tofauti vya data kuwa rahisi kulinganisha.
 <p>ERDDAP ina matumizi ya
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">Kubadilisha Saa ya Nambari hadi/kutoka kwa Muda wa Mfuatano</a> .
 <br>Kwa maelezo zaidi, angalia
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jinsi ERDDAP na Wakati</a> .
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jinsi ERDDAP Inashughulika na Wakati</a> .
 <p>Kwa sababu longitudo, latitudo, urefu, na vigeu vya saa vinatambuliwa mahususi, ERDDAP inafahamu vipengele vya kijiografia/muda vya kila mkusanyiko wa data.
 Hii ni muhimu wakati wa kutengeneza picha kwa kutumia ramani au mfululizo wa saa, na unapohifadhi data katika aina za faili zinazorejelewa na geo (km, .esriAscii, .geoJson, na .kml ).
 <p>Viwango viwili vya kawaida vya uandishi wa vitengo vya kipimo ni:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (kiungo cha nje)&quot;title=&quot;Kiungo hiki cha tovuti ya nje hakijumuishi uidhinishaji.&quot;&gt; - kutoka
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal link)&quot;title=&quot;Kiungo hiki cha tovuti ya nje hakijumuishi uidhinishaji.&quot;&gt; - kutoka
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, ambayo hutumiwa katika
@@ -5239,7 +5244,7 @@ Kwa mfano, UDUNITS ina chaguo nyingi za digrii Selsiasi, ikijumuisha <kbd>degree
 <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> - Nambari Iliyounganishwa ya Vitengo vya Vipimo.
+      title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> - Kanuni ya Umoja wa Vitengo vya Kipimo.
 <a rel="bookmark" href="https://www.ogc.org/">OGC <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> huduma kama vile
@@ -5256,12 +5261,12 @@ Kwa mfano, UCUM ina chaguo moja tu nyeti kwa hali ya digrii Selsiasi:
 &quot;Cel&quot;.
 <br>&nbsp;
 </ul>
-Ingawa ERDDAP haihitaji matumizi ya kiwango cha aidha cha vitengo, usakinishaji mwingi ERDDAP hupendelea moja au nyingine.
+Ingawa ERDDAP haihitaji matumizi ya viwango vyovyote, usakinishaji mwingi wa ERDDAP hupendelea moja au nyingine.
 (Wasimamizi wa ERDDAP :
-unaweza kubainisha hili kwa <kbd>&lt;units_standard&gt;</kbd> tagi katika setup.xml.) Unaweza kubadilisha UDUNITS hadi/kutoka vitengo vya UCUM kwa kigeuzi cha
-<a rel="bookmark" href="&erddapUrl;/convert/units.html">vitengo</a> vya ERDDAP .
-Unapoomba data au grafu kutoka kwa mkusanyiko wa data ya
-<a href="&erddapUrl;/tabledap/index.html">tabledap</a>, unaweza kuambatisha <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> au <kbd>&amp;units(&quot;UCUM&quot;)</kbd> hadi mwisho wa URL ili kuomba UDUNITS au vitengo vya UCUM.
+unaweza kubainisha hili kwa <kbd>&lt;units_standard&gt;</kbd> tagi katika setup.xml.) Unaweza kubadilisha UDUNITS hadi/kutoka vitengo vya UCUM kwa
+<a rel="bookmark" href="&erddapUrl;/convert/units.html">kigeuzi cha vitengo</a> vya ERDDAP .
+Unapoomba data au grafu kutoka kwa
+<a href="&erddapUrl;/tabledap/index.html">mkusanyiko wa data tabledap</a>, unaweza kuambatisha <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> au <kbd>&amp;units(&quot;UCUM&quot;)</kbd> hadi mwisho wa URL ili kuomba UDUNITS au vitengo vya UCUM.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">taarifa zaidi</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP inaweza kuongeza au kurekebisha metadata.</a></strong>
@@ -5279,13 +5284,13 @@ Tazama
 <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">maelekezo kwa wasimamizi</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
- >ERDDAP kuomba faili za picha za .png na .pdf zenye grafu na ramani</a></strong>
+ >ERDDAP hukuruhusu kuomba faili za picha za .png na .pdf zenye grafu na ramani</a></strong>
 <br>ya data pamoja na data halisi.
-Na ERDDAP &#39;s Make A Graph hukuwezesha kubinafsisha picha.
+Na ERDDAP &#39;s Make A Graph inakuwezesha kubinafsisha picha.
 Baadhi ya matumizi maalum ya picha hizi ni:
 <ul>
 <li>Waandishi wa kurasa za wavuti wanaweza
-<a rel="help" href="&erddapUrl;/images/embed.html">kupachika grafu yenye data ya hivi punde katika ukurasa wa wavuti</a> kwa kutumia tagi ya HTML &lt;img&gt;.
+<a rel="help" href="&erddapUrl;/images/embed.html">kupachika grafu yenye data ya hivi punde katika ukurasa wa wavuti</a> kwa kutumia lebo ya HTML &lt;img&gt;.
 &ssUse; <!--li>Anyone can use or make
      
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">Google Gadgets</a>
@@ -5294,7 +5299,7 @@ Baadhi ya matumizi maalum ya picha hizi ni:
 <br>&nbsp;
 </ul>
 <li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Inaomba Faili Zilizobanwa</a></strong>
-<br>ERDDAP haitoi matokeo yaliyohifadhiwa katika faili zilizobanwa (kwa mfano, .zip au .gzip ) isipokuwa kama faili chanzo tayari imebanwa.
+<br>ERDDAP haitoi matokeo yaliyohifadhiwa katika faili zilizobanwa (kwa mfano, .zip au .gzip ) isipokuwa faili chanzo tayari imebanwa.
 Badala yake, ERDDAP hutafuta
 <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
     >usimbaji wa kukubali <img 
@@ -5303,19 +5308,19 @@ Badala yake, ERDDAP hutafuta
 Ikiwa aina ya mbano inayotumika (gzip, x-gzip, au deflate ) inapatikana katika orodha inayokubalika ya usimbaji, ERDDAP inajumuisha <kbd>content-encoding</kbd> katika kichwa cha majibu cha HTTP na kubana data inapoisambaza.
 Ni juu ya programu ya mteja kutafuta <kbd>content-encoding</kbd> na kubana data.
 Majibu yaliyobanwa mara nyingi huwa haraka mara 3-10, ingawa hakuna faida ya kuomba faili za .png zilizobanwa kwa kuwa yaliyomo kwenye faili tayari yamebanwa.
-Vivinjari na wateja wa OPeNDAP hufanya hivi kwa chaguo-msingi.
-Wanaomba data iliyoshinikizwa na hupunguza data iliyorejeshwa kiotomatiki.
-Wateja wengine (kwa mfano, programu za Java ) wanapaswa kufanya hivi kwa uwazi.
-Ukiwa na curl, ongeza <kbd>--compressed</kbd> kwa mstari wa amri ili kumwambia curl kuomba jibu lililobanwa na kulipunguza kiotomatiki.
+Vivinjari na wateja OPeNDAP hufanya hivi kwa chaguo-msingi.
+Wanaomba data iliyoshinikizwa na kupunguza data iliyorejeshwa kiotomatiki.
+Wateja wengine (kwa mfano, programu Java ) wanapaswa kufanya hivi kwa uwazi.
+Ukiwa na curl, ongeza <kbd>--compressed</kbd> kwa mstari wa amri kuwaambia curl kuomba jibu lililobanwa na kulipunguza kiotomatiki.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP hufanya aina tofauti za seva za data (OPeNDAP, OBIS, SOS, WMS, ...) zishirikiane.</a></strong>
 <br>Aina tofauti za seva za data hutumiwa katika jamii tofauti za kisayansi.
 Katika siku zijazo zinazoonekana, hakuna uwezekano kwamba aina yoyote itatawala na kuchukua nafasi ya zingine.
-Kwa hivyo ERDDAP hufanya kama daraja kati ya aina tofauti za programu za mteja (vivinjari vya wavuti, IDV, Matlab, programu za netCDF, ODV, wateja wa WMS, n.k.) na aina tofauti za seva za data.
+Kwa hivyo ERDDAP hufanya kazi kama daraja kati ya aina tofauti za programu za mteja (vivinjari vya wavuti, IDV, Matlab, programu za netCDF, ODV, wateja wa WMS, n.k.) na aina tofauti za seva za data.
 <ol>
 <li>ERDDAP inakubali maombi ya mteja ya data katika miundo tofauti (km, OPeNDAP, WMS ).
 <li>ERDDAP hubadilisha ombi lililotolewa kuwa umbizo la ombi linalotumiwa na seva chanzo cha data (kwa mfano, OPeNDAP, SOS, OBIS, ...) na kutuma hilo kwa seva chanzo cha data.
-<li>ERDDAP hubadilisha data ya majibu kutoka kwa seva chanzo cha data hadi umbizo la ndani, ikijumuisha kubadilisha data ya wakati wote hadi umbizo la kawaida:
+<li>ERDDAP hubadilisha data ya majibu kutoka kwa seva chanzo cha data hadi umbizo la ndani, ikiwa ni pamoja na kubadilisha data ya wakati wote hadi umbizo la kawaida:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
 <li>ERDDAP hubadilisha data kutoka umbizo la ndani hadi umbizo la faili lililoombwa na mteja (km, .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
 </ol>
@@ -5326,8 +5331,8 @@ Wanapata tu data wanayotaka, katika umbizo la faili wanalotaka.
 <ul>
 <li>Kwa kuwa ni vigumu kwa wateja wa binadamu na wateja wa kompyuta kushughulika na seti changamano ya miundo ya seti ya data inayowezekana, ERDDAP hutumia miundo miwili tu ya msingi ya data:
 <ul>
-<li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">muundo wa data</a> wa gridi (kwa mfano, kwa data ya satelaiti na data ya mfano) na
-<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">muundo wa data</a> ya jedwali (kwa mfano, kwa boya la ndani, kituo, na data ya trajectory).
+<li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">muundo wa data wa gridi</a> (kwa mfano, kwa data ya satelaiti na data ya mfano) na
+<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">muundo wa data wa jedwali</a> (kwa mfano, kwa boya la ndani, kituo, na data ya trajectory).
 </ul>
 <li>Hakika, sio data zote zinaweza kuonyeshwa katika miundo hii, lakini nyingi zinaweza.
 Jedwali, haswa, ni muundo wa data unaobadilika sana (angalia mafanikio ya ajabu ya
@@ -5335,20 +5340,20 @@ Jedwali, haswa, ni muundo wa data unaobadilika sana (angalia mafanikio ya ajabu 
 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> programu).
-<li>Hii hurahisisha uundaji wa maswali ya data.
+<li>Hii hufanya maswali ya data kuwa rahisi kuunda.
 <li>Hii hufanya majibu ya data kuwa na muundo rahisi, ambayo hurahisisha kuhudumia data katika aina mbalimbali za faili za kawaida (ambazo mara nyingi zinaauni miundo rahisi ya data).
-Hii ndiyo sababu kuu kwamba ERDDAP kwa njia hii.
+Hii ndiyo sababu kuu kwamba tulianzisha ERDDAP kwa njia hii.
 <li>Hii, kwa upande wake, hurahisisha sana (au mtu yeyote) kuandika programu ya mteja ambayo inafanya kazi na seti zote za data za ERDDAP .
-<li>Hii hurahisisha kulinganisha data kutoka kwa vyanzo tofauti, kwa mfano kwa Uchanganuzi Jumuishi wa Mfumo ikolojia (IEA).
+<li>Hii hurahisisha kulinganisha data kutoka vyanzo tofauti, kwa mfano kwa Uchanganuzi Jumuishi wa Mfumo ikolojia (IEA).
 <li>Tunafahamu sana kwamba ikiwa umezoea kufanya kazi na data katika miundo mingine ya data hapo awali unaweza kufikiria kuwa mbinu hii ni rahisi au haitoshi.
 Lakini miundo yote ya data ina tradeoffs.
 Hakuna aliye mkamilifu.
 Hata miundo ya kufanya-yote ina hasara zao:
 kufanya kazi nao ni ngumu na faili zinaweza tu kuandikwa au kusoma na maktaba maalum ya programu.
-Ukikubali mbinu ya ERDDAP kutosha kujaribu kufanya kazi nayo, unaweza kupata kwamba ina faida zake (hasa usaidizi wa aina nyingi za faili zinazoweza kushikilia majibu ya data).
+Ukikubali mbinu ya ERDDAP vya kutosha kujaribu kufanya kazi nayo, unaweza kupata kwamba ina faida zake (hasa usaidizi wa aina nyingi za faili zinazoweza kushikilia majibu ya data).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Onyesho asili la slaidi ERDDAP</a> (haswa
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">miundo ya data</a>) huzungumza kuhusu masuala haya.
-<li>Na hata kama mbinu hii inaonekana isiyo ya kawaida kwako, wateja wengi ERDDAP hawatawahi kugundua -- wataona kwa urahisi kwamba hifadhidata zote zina muundo mzuri rahisi na watashukuru kwamba wanaweza kupata data kutoka kwa vyanzo anuwai vinavyorejeshwa ndani.
+<li>Na hata kama mbinu hii inaonekana isiyo ya kawaida kwako, wateja wengi wa ERDDAP hawatawahi kugundua -- wataona kwa urahisi kwamba hifadhidata zote zina muundo mzuri rahisi na watashukuru kwamba wanaweza kupata data kutoka kwa vyanzo anuwai vinavyorejeshwa ndani.
 anuwai ya umbizo la faili.
 <br>&nbsp;
 </ul>
@@ -5360,17 +5365,19 @@ anuwai ya umbizo la faili.
 <ul>
 <li>ERDDAP ni nzuri sana katika kugundua mabadiliko kwenye hifadhidata zilizowekwa gridi kwa sababu inaweza kutambua wakati thamani za mhimili (kwa mfano, thamani za saa) zinabadilika.
 <li>ERDDAP si nzuri sana katika kugundua mabadiliko kwenye hifadhidata za jedwali kwa sababu kwa kawaida hakuna mabadiliko kwenye metadata data mpya inapoongezwa.
-<li>ERDDAP ikiwa mkusanyiko wa data haupatikani (lakini labda si mara moja).
-<li>ERDDAP huo wa data utakapopatikana tena.
+<li>ERDDAP itagundua ikiwa mkusanyiko wa data haupatikani (lakini labda si mara moja).
+<li>ERDDAP itagundua mkusanyiko huo wa data utakapopatikana tena.
 <li>ERDDAP haitoi ahadi zozote kuhusu ufaafu au usahihi wa huduma hizi (ona
 <a rel="license" href="&erddapUrl;/legal.html">KANUSHO cha ERDDAP</a>).
 </ul>
-<p><strong>Usajili
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">wa Barua pepe/URL</a></strong> (haupatikani katika baadhi ya usakinishaji wa ERDDAP ) Kila mkusanyiko wa data unapobadilika, mfumo wa usajili wa barua pepe/URL utakutumia barua pepe <strong>mara moja</strong> au uwasiliane na URL ambayo umebainisha.
+
+  
+<p><strong>Usajili wa
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">Barua pepe/URL</a></strong> (haupatikani katika baadhi ya usakinishaji wa ERDDAP ) Kila mkusanyiko wa data unapobadilika, mfumo wa usajili wa barua pepe/URL utakutumia barua pepe <strong>mara moja</strong> au uwasiliane na URL ambayo umebainisha.
 Usajili wa barua pepe/URL haupatikani katika baadhi ya usakinishaji wa ERDDAP .
-Ili kusanidi usajili wa barua pepe/URL, bofya kwenye mojawapo ya aikoni za bahasha <img alt="Subscribe" style="vertical-align:top" title="Aikoni ya bahasha." src="&erddapUrl;/images/envelope.gif" > zinazoonekana upande wa kulia kwenye kurasa za wavuti za ERDDAP zenye orodha za seti za data (<a rel="contents" href="&erddapUrl;/info/index.html">mfano</a>) na kwenye Fomu za Ufikiaji Data na kurasa za wavuti za Unda Grafu kwa seti mahususi za data (<a href="&erddapUrl;/griddap/etopo180.html">mfano</a>) ikiwa usakinishaji huu ERDDAP usajili wa barua pepe/URL.
-(Watengenezaji programu wa kompyuta:
-ukiandika huduma za wavuti, unaweza kutumia mfumo wa URL kufanya ERDDAP iarifu huduma yako ya wavuti mara moja wakati mkusanyiko wa data unapobadilika.)
+Ili kusanidi usajili wa barua pepe/URL, bofya kwenye mojawapo ya aikoni za bahasha <img alt="Subscribe" style="vertical-align:top" title="Aikoni ya bahasha." src="&erddapUrl;/images/envelope.gif" > zinazoonekana upande wa kulia kwenye kurasa za wavuti za ERDDAP zenye orodha za seti za data (<a rel="contents" href="&erddapUrl;/info/index.html">mfano</a>) na kwenye Fomu za Ufikiaji Data na kurasa za wavuti za Unda Grafu kwa seti mahususi za data (<a href="&erddapUrl;/griddap/etopo180.html">mfano</a>) ikiwa usakinishaji huu wa ERDDAP unaauni usajili wa barua pepe/URL.
+(Watengenezaji programu za kompyuta:
+ukiandika huduma za wavuti, unaweza kutumia mfumo wa URL kuwa na ERDDAP iarifu huduma yako ya wavuti mara moja kila mkusanyiko wa data unapobadilika.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> Usajili</strong> RSS ni mfumo wa kawaida wa kuwaarifu watumiaji wakati maudhui kwenye tovuti yamebadilika.
@@ -5379,8 +5386,8 @@ Vivinjari vya kisasa vya wavuti vina kiteja cha RSS kilichojengwa ndani au unawe
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> .
-ERDDAP inatoa mlisho tofauti wa RSS 2.01 kwa kila seti ya data ili uweze kujua wakati seti za data zinazovutia zimebadilika.
-Ili kujiandikisha kupokea mipasho ya RSS ya seti ya data, bofya kwenye mojawapo ya aikoni za RSS<img alt="RSS" style="vertical-align:top" title="Ikoni ya RSS." src="&erddapUrl;/images/rss.gif" > zinazoonekana katika sehemu ya kulia kabisa kwenye kurasa za wavuti za ERDDAP zenye orodha za seti za data (<a rel="contents" href="&erddapUrl;/info/index.html">mfano</a>) au kwenye Fomu za Ufikiaji Data na kurasa za wavuti za Tengeneza Grafu kwa seti mahususi za data (<a href="&erddapUrl;/griddap/etopo180.html">mfano</a>).
+ERDDAP inatoa mlisho tofauti RSS 2.01 kwa kila seti ya data ili uweze kujua wakati seti za data zinazovutia zimebadilika.
+Ili kujiandikisha kwa mlisho RSS wa seti ya data, bofya kwenye mojawapo ya aikoni RSS<img alt="RSS" style="vertical-align:top" title="Ikoni ya RSS." src="&erddapUrl;/images/rss.gif" > ambazo zinaonekana upande wa kulia kwenye kurasa za wavuti za ERDDAP zilizo na orodha za seti za data (<a rel="contents" href="&erddapUrl;/info/index.html">mfano</a>) au kwenye Fomu za Ufikiaji Data na kurasa za wavuti za Tengeneza Grafu kwa seti mahususi za data (<a href="&erddapUrl;/griddap/etopo180.html">mfano</a>).
 <p><strong>Ulinganisho</strong> Huduma ya RSS inaweza kuwa kile unachotafuta.
 Ni kiwango kizuri.
 Lakini ikiwa unahitaji kujua haraka iwezekanavyo wakati mkusanyiko wa data unabadilika, tumia mfumo wa barua pepe/URL, si RSS .
@@ -5391,8 +5398,8 @@ Mbinu makini zaidi ya mfumo wa barua pepe/URL pia ni bora zaidi:
 Unaweza kuweka mteja wako wa RSS kuangalia mabadiliko kila dakika (usifanye hivyo!), lakini hiyo inaweza kusababisha maombi mengi yasiyo ya lazima.
 kwa seva ya ERDDAP na bado haingegundua mabadiliko mara moja.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP ni programu ya</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Web_application">wavuti <img 
+<li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP ni</a>
+<a rel="help" href="https://en.wikipedia.org/wiki/Web_application">programu ya wavuti <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> (kurasa za wavuti zilizo na fomu za wanadamu wanaotumia vivinjari)
 <br>na
@@ -5400,7 +5407,7 @@ kwa seva ya ERDDAP na bado haingegundua mabadiliko mara moja.
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> (na
 <a rel="help" href="&erddapUrl;/rest.html">huduma za programu za kompyuta</a>).</strong>
-<br>Kwa hakika, fomu kwenye kurasa za wavuti za ERDDAP hutengeneza tu URL iliyoundwa maalum ambazo huwasilishwa kwa huduma za wavuti za ERDDAP .
+<br>Kwa kweli, fomu kwenye kurasa za wavuti za ERDDAP hutengeneza tu URL iliyoundwa maalum ambazo huwasilishwa kwa huduma za wavuti za ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP ina</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
@@ -5418,59 +5425,57 @@ Soma zaidi kuhusu Huduma za ERDDAP
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Usalama</a></strong> - Kwa chaguo-msingi, ERDDAP huendesha kama seva ya umma kabisa bila mfumo wa kuingia na hakuna vizuizi vya ufikiaji wa data.
 Hata hivyo, msimamizi wa ERDDAP anaweza kusanidi ERDDAP ili kuzuia ufikiaji wa baadhi au seti zote za data kwa watumiaji wanaoingia na kukabidhiwa majukumu fulani.
-ERDDAP ina mbinu za ndani za uthibitishaji (kuingia).
-Ikiwa usakinishaji wa ERDDAP uthibitishaji, kutakuwa na kiungo cha&quot;ingia&quot;juu ya kila ukurasa wa wavuti.
-Watumiaji kamwe hawalazimiki kuingia ili kufikia hifadhidata zinazopatikana kwa umma.
-Watumiaji ambao wameingia wanaweza kufikia hifadhidata za umma na seti za faragha ambazo wanaruhusiwa kuzifikia.
+ERDDAP ina mbinu zilizojumuishwa za uthibitishaji (kuingia).
+Ikiwa usakinishaji wa ERDDAP umewashwa uthibitishaji, kutakuwa na kiungo cha&quot;ingia&quot;juu ya kila ukurasa wa wavuti.
+Watumiaji kamwe hawahitaji kuingia ili kufikia hifadhidata zinazopatikana kwa umma.
+Watumiaji ambao wameingia wanaweza kufikia hifadhidata za umma na seti za data za faragha ambazo wanaruhusiwa kuzifikia.
 Watumiaji lazima watumie https:
-(Secure Sockets Layer) kuingia na kufikia hifadhidata za faragha.
+(Safu ya Soketi Salama) kuingia na kufikia hifadhidata za faragha.
 Seti za data zinaweza kusanidiwa kuwa na grafu na ramani zinazoweza kufikiwa na umma, lakini ziwe na data inayofikiwa na watumiaji walioidhinishwa pekee.
-(<a rel="help" href="https://erddap.github.io/setup.html#security">maelezo zaidi</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">taarifa zaidi</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP huchakata data katika vipande.</a></strong>
 <br>Ili kuhifadhi kumbukumbu (suala kubwa) na kufanya majibu kuanza mapema, ERDDAP huchakata maombi ya data katika vipande - kupata sehemu ya data kutoka kwa chanzo mara kwa mara, kuisafisha (kwa mfano, kuongeza
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadata</a>).
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadata)</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>), na kutuma hiyo kwa mteja.
-Kwa vyanzo vingi vya data, hii inamaanisha kuwa sehemu ya kwanza ya data (kwa mfano, kutoka kwa kihisia cha kwanza) hufika kwa mteja kwa sekunde badala ya dakika (kwa mfano, baada ya data kutoka kwa kihisi cha mwisho kurejeshwa), ikimhakikishia mteja kwamba.
+Kwa vyanzo vingi vya data, hii inamaanisha kuwa sehemu ya kwanza ya data (kwa mfano, kutoka kwa kihisia cha kwanza) inafika kwa mteja kwa sekunde badala ya dakika (kwa mfano, baada ya data kutoka kwa kihisi cha mwisho kurejeshwa), na kumhakikishia mteja kwamba.
 data inakuja.
 Kwa mtazamo wa kumbukumbu, hii inaruhusu maombi mengi makubwa (kila moja kubwa kuliko kumbukumbu inayopatikana) kushughulikiwa kwa wakati mmoja.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP ina muundo wa msimu.</a></strong>
-<br>ERDDAP imeundwa ili iwe rahisi kuongeza vipengele tofauti (kwa mfano, darasa la kuomba data kutoka kwa seva ya SOS na kuihifadhi kama jedwali).
-Kipengele kipya basi hupata vipengele na uwezo wote wa mzazi (kwa mfano, usaidizi wa maombi ya OPeNDAP na uwezo wa kuhifadhi data katika fomati kadhaa za kawaida za faili).
+<br>ERDDAP imeundwa ili iwe rahisi kuongeza vipengele tofauti (kwa mfano, darasa la kuomba data kutoka kwa seva SOS na kuihifadhi kama jedwali).
+Kipengele kipya basi hupata vipengele na uwezo wote wa mzazi (kwa mfano, usaidizi wa maombi OPeNDAP na uwezo wa kuhifadhi data katika fomati kadhaa za kawaida za faili).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Usambazaji wa Data / Mitandao ya Usambazaji wa Data:
 Teknolojia ya Push na Pull</a></strong>
 <br>Kwa kawaida, ERDDAP hufanya kama mpatanishi:
 inachukua ombi kutoka kwa mtumiaji; hupata data kutoka kwa chanzo cha data cha mbali; inarekebisha data; na kuituma kwa mtumiaji.
-<a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Teknolojia ya Pull <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Teknolojia Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> :
-Lakini ERDDAP pia ina uwezo wa kupata data yote inayopatikana kutoka kwa chanzo cha mbali na
+Lakini ERDDAP pia ina uwezo wa kupata data zote zinazopatikana kutoka kwa chanzo cha mbali na
 <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">kuhifadhi nakala ya data ya ndani</a> .
-<a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teknolojia ya Push <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teknolojia Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> :
 Kwa kutumia
-<a href="#subscriptions">huduma za usajili za</a> ERDDAP, seva zingine za data zinaweza kuarifiwa punde tu data mpya inapopatikana ili ziweze kuomba data (kwa kuvuta data).
-ERDDAP ya
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid kwaErddap</a> na
+<a href="#subscriptions">huduma za usajili</a> za ERDDAP, seva zingine za data zinaweza kuarifiwa punde tu data mpya inapopatikana ili ziweze kuomba data (kwa kuvuta data).
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> ya ERDDAP Kutoka kwaErddap na
 <a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> hutumia huduma za usajili za ERDDAP na
 <a rel="help" href="https://erddap.github.io/setup.html#flag">mfumo wa kuripoti</a> ili wataarifiwe mara moja data mpya inapopatikana.
 Unaweza kuchanganya haya kwa matokeo mazuri:
-ukifunga Nakala ya EDDGrid karibu na seti ya data ya EDDGrid FromErddap (au kufunika EDDTableCopy karibu na seti ya data ya EDDTableFromErddap), ERDDAP itaunda na kudumisha nakala ya ndani ya hifadhidata nyingine ya ERDDAP .
+ukifunga Nakala ya EDDGrid karibu na seti ya data EDDGrid FromErddap (au kufunika EDDTableCopy karibu na seti ya data ya EDDTableFromErddap), ERDDAP itaunda na kudumisha nakala ya ndani ya hifadhidata nyingine ya ERDDAP kiotomatiki.
 Kwa sababu huduma za usajili hufanya kazi mara tu data mpya inapopatikana, teknolojia ya kusukuma husambaza data haraka sana (ndani ya sekunde).
 <p>Usanifu huu unampa kila msimamizi wa ERDDAP jukumu la kubainisha data ya ERDDAP yake inatoka wapi.
-Wasimamizi wengine wa ERDDAP wanaweza kufanya vivyo hivyo.
+Wasimamizi wengine ERDDAP wanaweza kufanya vivyo hivyo.
 Hakuna haja ya uratibu kati ya wasimamizi.
-Ikiwa wasimamizi wengi wa ERDDAP kwa ERDDAP za kila mmoja wao, mtandao wa usambazaji wa data huundwa.
+Ikiwa wasimamizi wengi ERDDAP wataunganisha kwa ERDDAP za kila mmoja wao, mtandao wa usambazaji wa data huundwa.
 Data itasambazwa kwa haraka, kwa ufanisi na kiotomatiki kutoka kwa vyanzo vya data (ERDDAP s na seva zingine) hadi tovuti za ugawaji upya wa data (ERDDAP s) popote kwenye mtandao.
-ERDDAP iliyotolewa inaweza kuwa chanzo cha data kwa baadhi ya seti za data na tovuti ya ugawaji upya kwa seti nyingine za data.
-Mtandao unaotokana ni sawa na mitandao ya usambazaji wa data iliyoanzishwa na programu kama
-<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">vile IDD/IDM ya Unidata .
-<img 
+ERDDAP fulani inaweza kuwa chanzo cha data kwa baadhi ya seti za data na tovuti ya ugawaji upya kwa seti nyingine za data.
+Mtandao unaotokana ni sawa na mitandao ya usambazaji wa data iliyoanzishwa na programu kama vile
+<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD/IDM ya Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, lakini muundo usio ngumu zaidi.
 <br>&nbsp;
@@ -5480,41 +5485,41 @@ OPeNDAP ?
 DODS ?
 ERDDAP ?
 Tofauti ni ipi?</a></strong> Uelewa wangu (Bob) ni:
-<p>DODS (Mfumo wa Data Uliosambazwa wa Oceanographic) iliundwa katika miaka ya 1990, kabla ya kuwa na http:
+<p>DODS (Mfumo wa Data Uliosambazwa wa Oceanographic) iliundwa miaka ya 1990, kabla ya kuwa na http:
 (!).
 Mfumo wa DODS uliunda na kutumia dods:
 itifaki kwenye mtandao.
 HTTP ilipokuja na kufanikiwa sana, walibadilisha kutoka kwa dods:
 hadi http:.
 <p>Wakati fulani, waligundua mfumo huo ulikuwa muhimu kwa zaidi ya data ya bahari.
-Kwa hivyo waliacha jina hilo la DODS (ingawa linaendelea katika kanuni fulani), wakaunda shirika dogo linaloitwa
+Kwa hivyo waliacha jina hilo la DODS (ingawa linaishi katika nambari fulani), wakaunda shirika dogo linaloitwa
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na kuandika maelezo ya
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP (Itifaki ya Ufikiaji wa Data).
+      title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na kuandika
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">maelezo ya DAP (Itifaki ya Ufikiaji wa Data).
 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, ambayo husawazisha umbizo la maombi ya metadata na/au data, na majibu kwa metadata na/au data.
-OPeNDAP (shirika) bado huchunga DAP (vielelezo) na ndiye mwandishi wa Hyrax (seva ya data ambayo mara nyingi hurejelewa kimakosa kuwa OPeNDAP ).
+OPeNDAP (shirika) bado huchunga DAP (vielelezo) na ndiye mwandishi wa Hyrax (seva ya data ambayo mara nyingi hurejelewa kimakosa kama OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP na nyinginezo ni seva za data (programu) zinazotekeleza DAP .
-Kila mmoja wao hutekeleza kitengo kidogo cha DAP lakini hufanya mambo mengine kwa njia tofauti sana.
-<p>ERDDAP hutumia msimbo (katika saraka ya&quot;dods&quot;) (iliyoandikwa na Jake Hamby katika NASA JPL) kwa baadhi ya vipengele vya kusoma data kutoka kwa seva za nje za DAP .
-ERDDAP hutumia msimbo wake kuandika majibu ya DAP .
+Kila mmoja wao hutekeleza sehemu ndogo ya DAP lakini hufanya mambo mengine kwa njia tofauti sana.
+<p>ERDDAP hutumia msimbo (katika saraka ya&quot;dods&quot;) (iliyoandikwa na Jake Hamby katika NASA JPL) kwa baadhi ya vipengele vya kusoma data kutoka kwa seva za nje DAP .
+ERDDAP hutumia msimbo wake kuandika majibu DAP .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Je, ERDDAP ni suluhisho kwa matatizo ya usambazaji wa data/ufikiaji wa data ya kila mtu?</a></strong>
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Je, ERDDAP ni suluhisho la matatizo ya kila mtu ya usambazaji wa data / ufikiaji wa data?</a></strong>
 <br>Hapana.
 ERDDAP inajaribu kutafuta sehemu tamu ambayo ni suluhu nzuri kwa matatizo mengi ya usambazaji wa data ambayo tulikabiliana nayo.
 ERDDAP inachukua mbinu ya kati:
 Inaweza kupata data kutoka kwa aina nyingi tofauti za seva za data za mbali na inaweza kuwapa wateja data hiyo katika fomati nyingi tofauti za faili.
-Imeundwa kuwa suluhu ya kiagnostiki ambayo inatafuta kufanya seva zingine za data (OPeNDAP, SOS, OBIS, WMS, ...) zishirikiane.
-Je, kuna seva moja kamili ya data ambayo inakidhi mahitaji ya kila mtu kikamilifu?
+Imeundwa kuwa suluhu ya kiagnostiki ambayo inataka kufanya seva zingine za data (OPeNDAP, SOS, OBIS, WMS, ...) zishirikiane.
+Kuna seva moja kamili ya data ambayo inakidhi mahitaji ya kila mtu kikamilifu?
 Hatufikiri hivyo.
 Na hata kama unafikiri ipo au itakuwepo, itachukua muda mrefu kabla ya kila mtu kuibadilisha, kama itawahi kutokea.
 Hadi wakati huo, ERDDAP inapatikana sasa hivi ili kufanya seva zingine za data zishirikiane na kutoa data hivi sasa.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP inaweza kushughulikia hifadhidata nyingi/nyingi kama zilivyo, lakini si zote.</a> Sio kwamba hifadhidata zilizobaki (kwa mfano, data ya mfano inayotumia makadirio ya duara ya mchemraba) sio muhimu.
-Ni kwamba lengo la ERDDAP la kurudisha data katika fomati za kawaida za faili (zingine ni rahisi sana), huzuia muundo wa data wa ndani changamano zaidi.
+Ni kwamba lengo la ERDDAP la kurejesha data katika fomati za kawaida za faili (zingine ni rahisi sana), huzuia muundo wa data wa ndani changamano zaidi.
 Makundi ya watafiti wanaofanya kazi na miundo changamano zaidi ya data mara nyingi tayari wana seva maalum za data na programu maalum za mteja ambazo zimeboreshwa kulingana na mahitaji ya jumuiya yao.
-ERDDAP, kama seva ya data yenye madhumuni ya jumla, haijaribu kushindana na seva hizi maalum za data.
+ERDDAP, kama seva ya data ya madhumuni ya jumla, haijaribu kushindana na seva hizi maalum za data.
 Wameboreshwa kulingana na mahitaji ya jumuiya yao na hufanya kazi nzuri.
 Walakini, hifadhidata hizo mara nyingi&quot;hueleweka&quot;tu na programu maalum katika jamii hiyo.
 <p>Kufanya Kazi kwa Seti Changamano za Data - ERDDAP ina njia ya kushughulikia hifadhidata changamano ambayo haiwezi kushughulikia moja kwa moja.
@@ -5523,17 +5528,18 @@ Kama
   >hifadhidata ya uhusiano <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> inaweza kuhifadhi mkusanyiko wa data changamano kwa kutumia muundo mmoja rahisi wa data (meza), ERDDAP inaweza kuhudumia data kutoka kwa seti changamano zaidi kwa kuvunja hifadhidata ya chanzo katika seti chache za data za ERDDAP, kila moja ikiwa na miundo sawa na rahisi ya data.
-Kwa mfano, baadhi ya seti za muundo wa mazingira zilizounganishwa kwenye gridi zinaweza kuhifadhiwa katika ERDDAP kwa kuweka vigeu vya uso wa bahari ([muda][latitudo][longitudo]) katika mkusanyiko mmoja wa data ERDDAP, na kwa kuweka viambatisho kwa urefu ([muda][altitude][] latitudo][longitudo]) katika mkusanyiko mwingine wa data ERDDAP .
+Kwa mfano, baadhi ya seti za muundo wa mazingira zilizounganishwa zinaweza kuhifadhiwa katika ERDDAP kwa kuweka vigeu vya uso wa bahari ([muda][latitudo][longitudo]) katika mkusanyiko mmoja wa data ERDDAP, na kwa kuweka viambatisho kwa urefu ([time][altitude][] latitudo][longitudo]) katika mkusanyiko mwingine wa data ERDDAP .
 Tunajua hii sio bora, lakini ni muhimu kuruhusu ERDDAP kurudisha data katika fomati za kawaida za faili (ambazo zingine ni rahisi sana).
-<p>Mbinu nyingine ya kushughulika na hifadhidata changamano (kwa mfano, kwa data ya kielelezo kwa kutumia makadirio ya duara ya mchemraba) pia ni kutoa toleo lililokataliwa la mkusanyiko wa data ([time][altitude][latitudo][longitudo]) ambalo ERDDAP inaweza kufanya kazi nalo kwa urahisi.
+<p>Mbinu nyingine ya kushughulika na hifadhidata changamano (kwa mfano, data ya kielelezo inayotumia makadirio ya duara ya mchemraba) pia ni kutoa toleo lililokataliwa la mkusanyiko wa data ([time][altitude][latitudo][longitudo]) ambalo ERDDAP inaweza kufanya kazi nalo kwa urahisi.
 Miundo hii rahisi ya data haikusudiwi kuchukua nafasi ya miundo asili ya data, lakini inaweza kuwa njia muhimu ya kusambaza data kwa hadhira pana.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Je, mradi wa ERDDAP ni endelevu kwa kiasi gani?</strong></a>
 <br>ERDDAP ni endelevu sana.
-<br>Baadhi ya watu wanashangaa na kutamaushwa kusikia kwamba ERDDAP zaidi na mtu mmoja (mimi, Bob Simons).
-[Kwa njia, maoni kwenye ukurasa huu wa wavuti ni maoni yangu ya kibinafsi na si lazima yaakisi msimamo wowote wa Serikali au Utawala wa National Oceanic and Atmospheric Administration .] Wanaogopa kwamba ikiwa kitu kitanipata, huo utakuwa mwisho wa ERDDAP .
+<br>Baadhi ya watu wanashangaa na kutamaushwa kusikia kwamba ERDDAP inatengenezwa zaidi na mtu mmoja (alikuwa Bob Simons, sasa Chris John).
+[Kwa njia, maoni kwenye ukurasa huu wa wavuti ni maoni yangu ya kibinafsi na si lazima yaakisi msimamo wowote wa Serikali au National Oceanic and Atmospheric Administration .] Wanaogopa kwamba ikiwa kitu kitanipata, huo utakuwa mwisho wa ERDDAP .
 Hiyo si kweli.
-Nafasi ya ERDDAP kwa uendelevu wa muda mrefu ni bora, na karibu na bora zaidi inavyoweza kuwa.
+Nafasi ya ERDDAP kwa uendelevu wa muda mrefu ni bora, na inakaribia bora zaidi inavyoweza kuwa.
+
 <p>Ndiyo, mimi ndiye msanidi mkuu wa ERDDAP .
 Mimi ni mfanyakazi wa shirikisho anayefadhiliwa kikamilifu.
 Ufadhili wangu si pesa&quot;laini&quot;, kwa hivyo sipokei au kutegemea ruzuku.
@@ -5553,89 +5559,25 @@ href="https://erddap.github.io/setup.html">kupakua, kusakinisha na kutumia ERDDA
 href="https://erddap.github.io/setup.html#organizations"
 >Zaidi ya mashirika 90 katika angalau nchi 14 hutumia ERDDAP</a> .
 Labda kuna kitu kama chakula cha mchana cha bure.
-<p>ERDDAP ni programu ya Java .
+<p>ERDDAP ni programu Java .
 Nambari ya chanzo kwa kila toleo iko kwenye
 <a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, mfumo unaotumika sana kwa miradi ya programu shirikishi.
-Kufikia sasa, vikundi/watu hawa wamechangia msimbo kwa ERDDAP :
-<ul><!-- start contributor's info -->
-<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">KuunganishaIR</a>
-<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> iliandikwa na kuchangiwa na Jonathan Lafite na Philippe Makowski wa R.Tech Engineering <!--
-<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> --> (leseni:
-chanzo wazi chenye hakimiliki).
-Asante, Jonathan na Philippe!
-<br>&nbsp;
-<li>TableWriterDataTable
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> iliandikwa na kuchangiwa na Roland Schweitzer wa NOAA (leseni:
-chanzo huria kilicho na hakimiliki).
-Asante, Roland!
-<br>&nbsp;
-<li>json-ld
-<br>Toleo la awali la
-<a href="#jsonld" rel="bookmark">Semantic Markup ya Datasets yenye kipengele cha json-ld (JSON Linked Data)</a> (na hivyo basi kazi ngumu ya kubuni maudhui) iliandikwa na kuchangiwa (leseni:
-chanzo huria kilicho na hakimiliki) na Adam Leadbetter na Rob Fuller wa Taasisi ya Marine nchini Ireland.
-Asante, Adam na Rob!
-<br>&nbsp;
-<li>orderBy
-<br>Msimbo wa
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >kichujio orderByMean</a> orderByMean kwenye tabledap na mabadiliko makubwa ya msimbo ili kusaidia
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>variableName/divisor:offset</i> notation</a> kwa orderBy filters iliandikwa na kuchangiwa (leseni:
-chanzo wazi chenye hakimiliki) na Rob Fuller na Adam Leadbetter wa Taasisi ya Marine nchini.
-Ireland.
-Asante, Rob na Adam!
-<br>&nbsp;
-<li>Aina za alama zisizo na mpaka
-<br>Nambari ya kuthibitisha ya aina tatu mpya za vialamisho (Mraba Uliojaa Kipakani, Mduara Uliojaa Mipaka, Pembetatu iliyojazwa na Mipaka) ilichangiwa na Marco Alba wa ETT / EMODnet Fizikia.
-Asante, Marco Alba!
-<br>&nbsp;
-<li>Tafsiri za messages.xml
-<br>Toleo la awali la msimbo katika TranslateMessages.java ambalo hutumia huduma ya utafsiri ya Google kutafsiri messages.xml katika lugha mbalimbali liliandikwa na Qi Zeng, ambaye alikuwa akifanya kazi kama mkufunzi wa Google Summer of Code.
-Asante, Qi!
-<br>&nbsp;
-<li>orderBy Jumla
-<br>Msimbo wa kichujio cha
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
-  >orderBy Sum</a> kwenye tabledap (kulingana na Rob Fuller na Adam Leadbetter&#39;s orderByMean ) na vitufe vya Angalia Zote na Ondoa Uteuzi Zote kwenye Fomu ya Ufikiaji Data ya EDDGrid viliandikwa na kuchangiwa (leseni:
-chanzo wazi chenye hakimiliki) na Marco Alba wa ETT Solutions.
-na EMODnet.
-Asante, Marco!
-<br>&nbsp;
-<li>Maombi ya nje ya anuwai ya .transparentPng
-<br>ERDDAP sasa inakubali maombi ya .transparentPng wakati thamani za latitudo na/au longitudo ziko nje ya masafa kwa kiasi au nje kabisa.
-(Hii ilikuwa ERDDAP GitHub Issues #19, iliyochapishwa na Rob Fuller -- asante kwa kuchapisha hilo, Rob.) Msimbo wa kurekebisha hili uliandikwa na Chris John.
-Asante, Chris!
-<br>&nbsp;
-<li>Onyesha data ya picha ya base64 katika majibu ya .htmlTable
-<br>Msimbo wa kuonyesha data ya picha ya base64 katika .htmlTable ya jedwali ilichangiwa na Marco Alba wa ETT / EMODnet Fizikia.
-Asante, Marco Alba!
-<br>&nbsp;
-<li>nUboreshaji wa nyuzi
-<br>Mfumo wa nThreads wa EDDTableFromFiles uliboreshwa kwa kiasi kikubwa.
-Mabadiliko haya husababisha uboreshaji mkubwa wa kasi (kwa mfano, kasi ya 2X wakati nThreads imewekwa kuwa 2 au zaidi) kwa maombi yenye changamoto nyingi (wakati idadi kubwa ya faili lazima ichakatwa ili kukusanya matokeo).
-Mabadiliko haya pia yatasababisha kuongeza kasi ya jumla kote katika ERDDAP .
-Kanuni za mabadiliko haya zilichangiwa na Chris John.
-Asante, Chris!
-<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
--->
-</ul>
+<a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Salio</a> Salio la ERDDAP sasa linapatikana kwenye
+<a href="https://github.com/erddap/erddap/blob/main/CREDITS.md">ukurasa tofauti</a> .
 Natumai wengine watachangia nambari katika siku zijazo.
 Ikiwa kitu kitanitokea, wakubwa wangu wataajiri mtu mwingine kwa lengo mahususi ambalo ataendelea na uundaji wa ERDDAP .
 Zaidi ya hayo, ninajaribu kuandika nambari safi sana.
 Ninaandika maoni ya Hati ya Java .
 Ninaandika maoni katika kanuni.
 Nilichagua majina tofauti kwa uangalifu.
-Ninafuata miongozo ya umbizo la Java .
-Yote hii ni jitihada za kufanya msimbo usomeke zaidi, kwa watengeneza programu wengine ambao wanataka kuelewa na / au kubadilisha, na kwangu, kwa sababu, katika mwaka mmoja au mbili, nitakuwa nimesahau maelezo ya jinsi na kwa nini kanuni iliandikwa jinsi ilivyokuwa.
+Ninafuata miongozo ya umbizo Java .
+Yote hii ni jitihada za kufanya msimbo usomeke zaidi, kwa watengeneza programu wengine ambao wanataka kuelewa na / au kubadilisha, na kwangu, kwa sababu, katika mwaka mmoja au mbili, nitakuwa nimesahau maelezo ya jinsi na kwa nini kanuni.
+iliandikwa jinsi ilivyokuwa.
 Nambari safi iliyo na maoni mazuri hurahisisha kazi yangu inayoendelea kwenye ERDDAP, kwa hivyo nina motisha nzuri ya kuandika nambari safi na maoni mazuri.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Lakini majibu yangu yote hadi sasa sio muhimu sana.</a> Kitu kimoja tu ambacho ni muhimu sana.
-Kitu kimoja tu kinahakikisha uendelevu kwa ERDDAP au mradi wowote wa programu:
+Jambo moja tu linahakikisha uendelevu kwa ERDDAP au mradi wowote wa programu:
 kwamba ERDDAP ni
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">Programu Huria na Huria (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5656,10 +5598,10 @@ Apple imekomesha miradi.
 ...
 Jambo ni kwamba tu kuungwa mkono na kampuni kubwa hakuna uhakika kwamba mradi utaendelea.
 Watumiaji wa programu hiyo wamekosa bahati, <strong>isipokuwa</strong> programu ilikuwa (na kwa hivyo, daima ni) Programu Huria na Huria (FOSS).
-Kisha, wakati wowote kuna nia ya hata msanidi mmoja, mradi unaweza na utaendelea kubadilika.
+Kisha, wakati wowote kunapopendezwa na hata msanidi mmoja, mradi unaweza na utaendelea kubadilika.
 FOSS ni sera ya bima.
 Kwa kweli, FOSS ndio sera pekee ya bima, hakikisho pekee, ambalo ni muhimu.
-FOSS inahakikisha kuwa kuna njia ya kusonga mbele kwa programu.
+FOSS inahakikisha kuwa kuna njia ya mbele kwa programu.
 Hiyo ni haki ambayo hakuna mtu anayeweza kuinyang&#39;anya, milele.
 <p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Mtu anaweza pia kufikiria kuwa programu ambayo ina timu kubwa ya wasanidi</a> itakuwa endelevu zaidi kuliko programu iliyo na msanidi mkuu mmoja.
 Lakini watengenezaji wengi kawaida huhitaji ufadhili mwingi.
@@ -5667,20 +5609,20 @@ Ninajua mradi maarufu, mkubwa kiasi na watengenezaji 10 (sitawaaibisha kwa kuwat
 Wanategemea ruzuku.
 Daima huendesha upungufu.
 Mlinzi wao amekuwa akiwatolea dhamana dakika za mwisho, lakini anachoka sana kuwaokoa.
-Kwa hivyo ikiwa hawawezi kukusanya dola milioni moja kwa mwaka kwa pesa za ruzuku (au mlinzi anachoka sana kuwadhamini), wataacha.
+Kwa hivyo ikiwa hawawezi kukusanya dola milioni kwa mwaka katika pesa za ruzuku (au mlinzi akichoka sana kuwadhamini), wataacha.
 Na kikundi hakiwezi kufikiria kuwa na wasanidi chini ya 10.
 Kila msanidi ana jukumu la kutekeleza katika kikundi chao.
 Kwa kuzingatia hilo, inaonekana kwangu kuwa ni ishara kubwa kwamba ERDDAP inaweza, na inaendelezwa kikamilifu na msanidi mkuu mmoja tu (ambaye anafadhiliwa kikamilifu) kwa usaidizi usio rasmi wa wengine wachache.
-Kama ni kweli, itakuwa ishara mbaya ikiwa ERDDAP ilihitaji watengenezaji wengi.
+Kama ni kweli, itakuwa ishara mbaya ikiwa ERDDAP ilihitaji wasanidi wengi.
 Kwamba ERDDAP ina msanidi mkuu mmoja tu inamaanisha kuwa si kazi kubwa inayohitaji ufadhili mkubwa unaoendelea; ni kazi ndogo ambayo inahitaji juhudi kidogo na ufadhili.
 Hiyo ni endelevu zaidi, si kidogo.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Mtu anaweza kufikiria kuwa kuajiri kampuni ya kandarasi kuandika programu ni wazo nzuri.</a> Kwa ada, watatoa wasanidi programu na kuahidi mwendelezo (ambayo ni nzuri isipokuwa/mpaka waachane na biashara).
 Lakini pia wako juu ya pipa:
 lazima uwalipe wanachoomba au hakuna maendeleo zaidi, <strong>isipokuwa</strong> programu ni FOSS na unawalipa tu kufanya kazi kwenye nambari.
 Ukiwa na FOSS, huwa una chaguo kuhusu jinsi ya kusonga mbele.
-Kwa sababu ERDDAP ni FOSS, wakandarasi ni chaguo zuri kila wakati kwako au kwa mtu yeyote kuhusu ERDDAP :
-ikiwa chochote kitanipata (msanidi mkuu mmoja), au ikiwa sina wakati wa kufanya mabadiliko fulani unayotaka, au mimi.
-kustaafu na haupendi kazi ya mtu mwingine, unaweza kuajiri kampuni ya kandarasi kufanya mabadiliko unayotaka (au uyafanye mwenyewe).
+Kwa sababu ERDDAP ni FOSS, wakandarasi daima ni chaguo zuri kwako au kwa mtu yeyote kuhusu ERDDAP :
+ikiwa lolote likinitokea (msanidi mkuu mmoja), au kama sina wakati wa kufanya mabadiliko fulani unayotaka, au mimi.
+kustaafu na hupendi kazi ya mbadala wangu, unaweza kuajiri kampuni ya kandarasi kila wakati kufanya mabadiliko unayotaka (au uyafanye mwenyewe).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Kwa muhtasari, ERDDAP ina vipengele viwili vya uendelevu ambavyo ni muhimu zaidi:</a>
 <ol>
 <li>ERDDAP ni mradi mdogo (mdogo wa kutosha kushughulikiwa na msanidi mkuu mmoja kwa usaidizi usio rasmi wa wengine wachache), kwa hivyo hauhitaji rasilimali kubwa.
@@ -5688,7 +5630,7 @@ kustaafu na haupendi kazi ya mtu mwingine, unaweza kuajiri kampuni ya kandarasi 
 </ol>
 Siwezi kufikiria hali bora zaidi.
 Natumai hiyo itaondoa woga wowote uliokuwa nao (au mtu mwingine yeyote) kuhusu uendelevu wa ERDDAP .
-Ukisikia watu wakihoji au kukatisha tamaa matumizi ya ERDDAP kwa sababu kuna msanidi mkuu mmoja tu, tafadhali yaweke sawa kwa kuwaelekeza kwenye mjadala ulio hapo juu kwenye URL hii:
+Ukisikia watu wakihoji au kukatisha tamaa matumizi ya ERDDAP kwa sababu kuna msanidi mkuu mmoja tu, tafadhali yaweke sawa kwa kuwaelekeza kwenye majadiliano yaliyo hapo juu kwenye URL hii:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#endelevu</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5701,10 +5643,10 @@ Kwa kila seti ya data uliyotumia, tafadhali angalia metadata ya seti ya data kat
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
-Metadata wakati mwingine inajumuisha umbizo la manukuu linalohitajika au lililopendekezwa la mkusanyiko wa data.
+Metadata wakati mwingine inajumuisha umbizo la manukuu linalohitajika au lililopendekezwa kwa mkusanyiko wa data.
 Metadata ya&quot;leseni&quot;wakati mwingine huorodhesha vizuizi vya utumiaji wa data.
 <p>Ili kutengeneza nukuu ya mkusanyiko wa data:
-<br>Ikiwa unafikiria seti ya data kama makala ya kisayansi, unaweza kutoa nukuu kulingana na mwandishi (angalia metadata ya&quot;creator_name&quot;au&quot;institution&quot;), tarehe ambayo ulipakua data, kichwa (angalia metadata ya&quot;title&quot;), na mchapishaji (tazama metadata ya&quot;publisher_name&quot;).
+<br>Ikiwa unafikiria seti ya data kama makala ya kisayansi, unaweza kutoa dondoo kulingana na mwandishi (angalia metadata ya&quot;creator_name&quot;au&quot;institution&quot;), tarehe ambayo ulipakua data, kichwa (angalia metadata ya&quot;title&quot;), na mchapishaji (tazama metadata ya&quot;publisher_name&quot;).
 Ikiwezekana, tafadhali jumuisha URL maalum zilizotumiwa kupakua data.
 Ikiwa metadata ya seti ya data inajumuisha
 <a rel="help" 
@@ -5715,7 +5657,12 @@ Ikiwa metadata ya seti ya data inajumuisha
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Jinsi ya Kutaja ERDDAP kwenye Karatasi</a></strong>
 <br>Ikiwa ungependa kutaja ERDDAP yenyewe katika karatasi ya kisayansi, tafadhali tumia kitu kama hicho
-<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, RA, na Chris John.
+2022.
+ERDDAP .
+https://coastwatch.pfeg.noaa.gov/erddap .
+Monterey, CA:
+NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Je, kifupi&quot; ERDDAP &quot;kinamaanisha nini?</a></strong>
 <br>&quot; ERDDAP &quot;zamani ilikuwa kifupi, lakini ilipita maelezo ya asili.
 Sasa, tafadhali lifikirie kama jina, si kifupi.
@@ -5727,8 +5674,8 @@ Sasa, tafadhali lifikirie kama jina, si kifupi.
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Unaweza</a></strong>
 <a rel="help" href="https://erddap.github.io/setup.html"><strong>Kusanidi Seva Yako ya ERDDAP</strong></a> na utumie data yako mwenyewe.
 <ul>
-<li>Juhudi ndogo za kusanidi ERDDAP huleta manufaa mengi.
-<li>Ikiwa tayari una huduma ya tovuti ya kusambaza data yako, unaweza kusanidi ERDDAP ili kufikia data yako kupitia huduma iliyopo au kupitia faili chanzo au hifadhidata.
+<li>Juhudi ndogo za kuanzisha ERDDAP huleta manufaa mengi.
+<li>Ikiwa tayari una huduma ya wavuti ya kusambaza data yako, unaweza kusanidi ERDDAP ili kufikia data yako kupitia huduma iliyopo au kupitia faili chanzo au hifadhidata.
 Kisha, watu watakuwa na njia nyingine ya kufikia data yako na wataweza kupakua data katika miundo ya ziada ya faili au kama grafu au ramani.
 <li>Ikiwa una seti za data zinazohitajika sana, unaweza kusakinisha
 <a rel="help" 
@@ -5744,7 +5691,8 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
   title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na kubofya&quot;Tuma maombi ya uanachama&quot;.
 Ukishakuwa mwanachama, unaweza kutuma swali lako hapo au kutafuta ili kuona kama swali tayari limeulizwa na kujibiwa.
 <p>KANUSHO:
-Maoni kwenye ukurasa huu wa wavuti ni maoni ya kibinafsi ya Bob Simons na si lazima yaakisi msimamo wowote wa Serikali au Utawala wa National Oceanic and Atmospheric Administration .
+Maoni kwenye ukurasa huu wa wavuti ni maoni ya kibinafsi ya Bob Simons na si lazima yaakisi msimamo wowote wa Serikali au National Oceanic and Atmospheric Administration .
+
 ]]></theLongDescriptionHtml>
 <Then>Kisha</Then>
 <twoClickMapDefaultTooltip>Taja mstatili kwa kubofya pembe mbili za diagonal. Fanya tena ikiwa inahitajika.</twoClickMapDefaultTooltip>
@@ -5854,6 +5802,9 @@ https://unitsofmeasure.org/ucum.html
 
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://cfconventions.org/standard-names.html 
+https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 
 https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
 http://portal.chordsrt.com/about
@@ -6377,6 +6328,9 @@ https://jsfiddle.net
 http://jsonlines.org
 https://jsonlines.org
 
+http://jtds.sourceforge.net
+https://jtds.sourceforge.net
+
 http://kgs.uky.edu/arcgis
 https://kgs.uky.edu/arcgis
 
@@ -6418,6 +6372,9 @@ https://motherlode.ucar.edu
 
 http://motherlode.ucar.edu
 https://motherlode.ucar.edu
+
+http://nco.sourceforge.net
+https://nco.sourceforge.net
 
 http://nctr.pmel.noaa.gov
 https://nctr.pmel.noaa.gov

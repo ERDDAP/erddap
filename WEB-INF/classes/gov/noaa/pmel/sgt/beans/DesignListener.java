@@ -13,12 +13,10 @@
 package gov.noaa.pmel.sgt.beans;
 
 /**
- * Used to identify those objects that only need to have their listeners active
- * during design-time.
+ * Used to identify those objects that only need to have their listeners active during design-time.
  *
  * @author Donald Denbo
  * @version $Revision: 1.2 $, $Date: 2003/08/22 23:02:34 $
  * @since 3.0
- **/
-interface DesignListener {
-}
+ */
+interface DesignListener {}

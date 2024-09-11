@@ -2,7 +2,7 @@
 <!-- 
 
 * Update ERDDAP version number below in ...
-   <version>2.23-SNAPSHOT</version>
+   <version>2.24-SNAPSHOT</version>
 
 * Update the version numbers starting with <plugins> section.
   Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
@@ -23,7 +23,6 @@
                               //    WARNINGS for postgresql.jar and Cassandra dependencies:
                               //      slf4j, guava, lz4, metrics, netty, snappy, aws-crt.
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
-      (then copy netcdfAll-x.x.x.jar into /lib)
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
 
@@ -36,7 +35,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.23-SNAPSHOT</version>
+    <version>2.24</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -46,6 +45,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
+        <netcdfJavaVersion>5.6.0</netcdfJavaVersion>
+        <test.resources.version>test1.03</test.resources.version>
+        <jettyVersion>12.0.11</jettyVersion>
+        <error-prone.version>2.27.0</error-prone.version>
     </properties>
 
     <repositories>
@@ -67,6 +70,9 @@
         <resources>
             <resource>
                 <directory>WEB-INF/classes</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -74,7 +80,8 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>install</phase>
+                        <?m2e execute onConfiguration?>
+                        <phase>validate</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
@@ -86,7 +93,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.2</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -97,15 +104,19 @@
                 </configuration>
             </plugin>
             <plugin>
-
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
-                    <source>17</source>   <!-- java version -->
-                    <target>17</target>
+                    <source>21</source>   <!-- java version -->
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:JdkObsolete:OFF -Xep:ReferenceEquality:OFF -Xep:MutablePublicArray:OFF -Xep:AlreadyChecked:OFF -Xep:NarrowCalculation:OFF -Xep:JavaUtilDate:OFF -Xep:NonApiType:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:DefaultCharset:OFF -Xep:EmptyCatch:OFF -Xep:UnusedVariable:OFF -Xep:FloatingPointLiteralPrecision:OFF -Xep:LongDoubleConversion:OFF -Xep:StaticGuardedByInstance:OFF -Xep:BanJNDI:OFF -Xep:IncrementInForLoopAndHeader:OFF -Xep:StaticAssignmentInConstructor:OFF -Xep:UnicodeEscape:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:FutureReturnValueIgnored:OFF -Xep:Finalize:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
+                    </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/MapGraph.javaINACTIVE</exclude>
@@ -131,114 +142,297 @@
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostNcFiles.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/util/FileVisitorDNLS.javaOLD</exclude>
                     </excludes>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error-prone.version}</version>
+                        </path>
+                        <!-- Other annotation processors go here.
+
+                        If 'annotationProcessorPaths' is set, processors will no longer be
+                        discovered on the regular -classpath; see also 'Using Error Prone
+                        together with other annotation processors' below. -->
+                    </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                <execution>
+                    <id>enforce-maven</id>
+                    <goals>
+                    <goal>enforce</goal>
+                    </goals>
+                    <configuration>
+                    <rules>
+                        <requireMavenVersion>
+                            <version>3.6.3</version>
+                        </requireMavenVersion>
+                    </rules>    
+                    </configuration>
+                </execution>
+                </executions>
             </plugin>
 
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-war-plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <configuration>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>WEB-INF/lib/**, target/**, data/**, content/**, .settings/**, *.*</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, *.*, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
 
-            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
+            <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>${jettyVersion}</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/erddap</contextPath>
+                        <descriptor>${project.basedir}/WEB-INF/web.xml</descriptor>
+                    </webApp>
+                    <!-- necessary to override the default classesDirectory ${project.basedir}/target/classes due to:
+                    https://github.com/ERDDAP/erddap/blob/33e6e531484b0cc6ed461f0640b1f0ad3b83e45b/WEB-INF/classes/com/cohort/util/File2.java#L216-->
+                    <classesDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
+                    <scan>0</scan>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>make-lib</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <mkdir dir="${project.basedir}/WEB-INF/lib"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration,onIncremental?>
-                        <id>download-netcdf</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <get src="https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar" dest="${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar" skipexisting="true" verbose="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
+                    <!-- create data directory for testing -->
                     <execution>
                         <?m2e execute onConfiguration?>
-                        <id>make-download-cache-dir</id>
+                        <id>make-data-dir</id>
                         <phase>initialize</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
-                                <mkdir dir="${project.basedir}/download_cache"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-erddap-content</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <get src="https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-etopo</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-ref-files</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
-                                <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
+                                <mkdir dir="${project.basedir}/data"/>
                             </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.9.0</version>
+                <executions>
+                    <execution>
+                        <id>download-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-etopo</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-ref</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>download-test-resources-data</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largeFiles</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largePoints</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-test-resources-largeSatellite</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
+                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.5</version>
                 <configuration>
-                    <excludedGroups>AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, LargeFile, ExternalOther, IncompleteTest, WebInfStructureDependency</excludedGroups>
+                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <groups>Jetty, Slow</groups>
+                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
+                            <includes>
+                                <include>**/IT*.java</include>
+                                <include>**/*IT.java</include>
+                                <include>**/*ITCase.java</include>
+                                <include>**/*Test*.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.6.0</version>
+                <configuration>
+                    <maxHeap>2048</maxHeap>
+                    <includeFilterFile>spotbugs-security-include.xml</includeFilterFile>
+                    <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.12.0</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-code-coverage-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.cosium.code</groupId>
+                <artifactId>git-code-format-maven-plugin</artifactId>
+                <version>5.3</version>
+                <executions>
+                    <!-- On commit, format the modified files -->
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>install-formatter-hook</id>
+                        <goals>
+                            <goal>install-hooks</goal>
+                        </goals>
+                    </execution>
+                    <!-- On Maven verify phase, fail if any file
+                    (including unmodified) is badly formatted -->
+                    <execution>
+                        <id>validate-code-format</id>
+                        <goals>
+                            <goal>validate-code-format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- Enable https://github.com/google/google-java-format -->
+                    <dependency>
+                    <groupId>com.cosium.code</groupId>
+                    <artifactId>google-java-format</artifactId>
+                    <version>5.3</version>
+                    </dependency>
+                </dependencies>      
+                <configuration>
+                    <formatterOptions>
+                        <!-- Use AOSP style instead of Google Style (4-space indentation). -->
+                        <googleJavaFormat.aosp>false</googleJavaFormat.aosp>
+                        <!-- Format the javadoc -->
+                        <googleJavaFormat.formatJavadoc>true</googleJavaFormat.formatJavadoc>
+                        <!-- Fix import order and remove any unused imports, but do no other formatting. -->
+                        <googleJavaFormat.fixImportsOnly>false</googleJavaFormat.fixImportsOnly>
+                        <!-- Do not fix the import order. Unused imports will still be removed. -->
+                        <googleJavaFormat.skipSortingImports>false</googleJavaFormat.skipSortingImports>
+                        <!-- Do not remove unused imports. Imports will still be sorted. -->
+                        <googleJavaFormat.skipRemovingUnusedImports>false</googleJavaFormat.skipRemovingUnusedImports>
+                    </formatterOptions>
                 </configuration>
             </plugin>
         </plugins>
@@ -248,19 +442,19 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.3.1</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.1</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>3.5.0</version>
+                    <version>4.0.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -278,7 +472,7 @@
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.20.22</version> <!-- and same number several places below -->
+              <version>2.26.22</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -286,7 +480,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.10.1</version>
+                <version>5.11.0-M2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -299,7 +493,7 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.0.0</version>
+            <version>6.1.0</version>
             <scope>provided</scope>
             <!-- Tomcat8 needed this. Tomcat10 doesn't allow it.
             <configuration>
@@ -314,6 +508,27 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jettyVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
+            <version>${jettyVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-webapp</artifactId>
+            <version>${jettyVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Kyle had this: 
              https://mvnrepository.com/artifact/org.apache.ant/ant 
         <dependency>
@@ -322,37 +537,11 @@
             <version>1.10.9</version>
         </dependency>   -->
 
-
-        <!-- https://mvnrepository.com/artifact/gnu-regexp/gnu-regexp
-             This is needed for dods.dap code I wasn't compiling but Maven does.  
-             'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
-             -->
+       <!-- https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
         <dependency>
-            <groupId>gnu-regexp</groupId>
-            <artifactId>gnu-regexp</artifactId>
-            <version>1.1.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/gnu.getopt/java-getopt
-             This is needed for dods.dap code I wasn't compiling but Maven does.  
-             'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
-              -->
-        <dependency>
-            <groupId>gnu.getopt</groupId>
-            <artifactId>java-getopt</artifactId>
-            <version>1.0.13</version>
-            <scope>provided</scope>
-        </dependency> 
-
-        <!-- https://mvnrepository.com/artifact/com.lowagie/itext 
-             This is the pdf writer.
-             Newer version is available, but license now gpl! So stick to 1.3.1
-             -->
-        <dependency>
-            <groupId>com.lowagie</groupId>
-            <artifactId>itext</artifactId>
-            <version>1.3.1</version>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>2.0.2</version>
         </dependency>
 
         <!-- Kyle had this: 
@@ -368,7 +557,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>9.5.0</version>
+            <version>9.11.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -376,7 +565,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>9.5.0</version>
+            <version>9.11.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -384,7 +573,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20230227</version>
+            <version>20240303</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -432,7 +621,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.22</version>
+            <version>1.26.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging
@@ -446,157 +635,97 @@
             <version>1.2</version>
         </dependency> -->
 
-        <!-- https://mvnrepository.com/artifact/jaxen/jaxen 
-             org.jdom.xpath code uses this. -->
         <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>2.0.0</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>2.1.0-alpha1</version>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- To use downloaded local netcdf-all:
-            download from https://downloads.unidata.ucar.edu/netcdf-java/
-            or e.g., repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar 
-            [This approach is based on second answer from 
-             https://stackoverflow.com/questions/3765903/how-to-include-local-jar-files-in-maven-project ]
-         -->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdfAll</artifactId>
-            <version>5.5.3</version>  <!-- version number duplicated several times below -->
-        </dependency>
-
-        <!-- These will be needed if I ever switch away from netcdfAll.
-          Published advice https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html 
-            and Jan 24, 2022 email from Jennifer Oxelson Ganter
-            and a set of runtime modules from https://docs.unidata.ucar.edu/netcdf-java/current/userguide/file_types.html 
-          To figure out which module has a given class, Google, e.g.: github netcdf-java ucar nc2 geotiff GeotiffWriter 
-
-          Browse repository (probably unidata-all): https://artifacts.unidata.ucar.edu/#browse/browse
-          -->
-
-        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fbufr - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>bufr</artifactId>
-            <version>5.5.3</version>  <!- - this number duplicated many times below - ->
-            <scope>runtime</scope>  
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-core  
-             Fundamental! 
-             Has ucar.nc2.Variable and Variable.Builder (and other builders).
-             Has ucar.nc2.ncml.NcmlReader, Aggregation, AggregationExisting, AggregationFmrc, AggregationOuterDimension, 
-               AggregationUnion, etc- ->
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-core</artifactId>
-            <version>5.5.3</version>
+            <version>${netcdfJavaVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-image  - ->
+
         <dependency>
             <groupId>edu.ucar</groupId>
-            <artifactId>cdm-image</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
+            <artifactId>cdm-misc</artifactId>
+            <version>${netcdfJavaVersion}</version>
         </dependency>
-       <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-mcidas  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-mcidas</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-misc  
-             Has ucar.nc2.geotiff. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-misc</artifactId> 
-            <version>5.5.3</version>
-            <scope>compile</scope>  
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-radial  
-             probably not needed- ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-radial</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-vis5d  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-vis5d</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-zarr  
-             zarr isn't included in netcdfAll 
-             BUG in 5.5.3 detected at EDDGridFromNcFiles.testNcml(EDDGridFromNcFiles.java:5529)
-               so I can't include zarr module v5.5.3 with distribution - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>cdm-zarr</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency> 
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fclcommon 
-             Referenced in Jennifer's email. Has ucar.nc2.dt.image... and some ucar.nc2.iosp... 
-             But I distrust artifacts with version=5.1.0. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>clcommon</artifactId>
-            <version>5.1.0</version>
-            <scope>compile</scope>
-        </dependency> - ->
-        <!- - d4* is probably dap4: not needed - ->        
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fgrib  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>grib</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fhttpservices  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>httpservices</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Flegacy  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>legacy</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf  doesn't have 5.x - ->
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf-java  doesn't have 5.5.3+ - ->
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf4 
-             This is for writing netcdf4 files with linked C library. - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdf4</artifactId>
-            <version>5.5.3</version>
-            <scope>runtime</scope>
-        </dependency> 
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fopendap  - ->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>opendap</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope>
-        </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fudunits 
-             Marked as needed by dependency:analyze - ->
+
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>udunits</artifactId>
-            <version>5.5.3</version>
-            <scope>compile</scope> 
+            <version>${netcdfJavaVersion}</version>
         </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
+
+        <!-- The following are from netcdf and add support for various file types. -->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdf4</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>grib</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>bufr</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>opendap</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-radial</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-image</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-mcidas</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-s3</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-zarr</artifactId>
+            <version>${netcdfJavaVersion}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
              Marked as needed by dependency:analyze - ->
         <dependency>
             <groupId>edu.wisc.ssec</groupId>
@@ -622,7 +751,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.2.1</version>
+            <version>3.4.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -630,7 +759,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.4</version>
+            <version>42.7.3</version>
         </dependency>
 
 
@@ -642,7 +771,7 @@
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
-            <version>3.11.3</version>
+            <version>3.11.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava 
@@ -650,7 +779,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
+            <version>33.2.1-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -658,7 +787,7 @@
         <dependency>
             <groupId>net.jpountz.lz4</groupId>
             <artifactId>lz4</artifactId>
-            <version>1.3.0</version>
+            <version>1.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
@@ -666,7 +795,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.17</version>
+            <version>4.2.26</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -674,7 +803,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.89.Final</version>
+            <version>4.1.112.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -682,7 +811,7 @@
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.10.1</version>
+            <version>1.1.10.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
@@ -706,7 +835,7 @@
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.20.22</version>
+          <version>2.26.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -714,7 +843,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.20.22</version>
+            <version>2.26.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -722,7 +851,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.20.22</version>
+            <version>2.26.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
@@ -732,7 +861,7 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.21.12</version>
+            <version>0.30.0</version>
         </dependency>
 
 
@@ -746,28 +875,58 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.12.0</version>
+            <version>2.46.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.3</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
         <!-- Added by Bob for translation project -->
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.12.0</version>
+            <version>2.46.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.16.0</version>
+            <version>1.24.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.23.2</version>
+            <version>2.50.0</version>
         </dependency>
 
     </dependencies>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.4.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.4.0</version>
+                <reportSets>
+                    <reportSet>
+                        <id>integration-tests</id>
+                        <reports>
+                        <report>failsafe-report-only</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

@@ -10,11 +10,11 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import gov.noaa.pmel.util.GeoDate;
-import gov.noaa.pmel.util.TimeRange;
 import gov.noaa.pmel.util.IllegalTimeValue;
+import gov.noaa.pmel.util.TimeRange;
 
 /**
  * Draws time axes using the minute/hour style.
@@ -36,31 +36,35 @@ import gov.noaa.pmel.util.IllegalTimeValue;
  * @see TimeAxis
  */
 public class MinuteHourAxis implements TimeAxisStyle {
-  static final int MINUTE_TEST__ = 31;  // >0.5 hr
+  static final int MINUTE_TEST__ = 31; // >0.5 hr
   static final String defaultMinorLabelFormat__ = "mm";
-  //2011-12-15 Bob Simons changed space to 'T'
-  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd'T'HH"; 
+  // 2011-12-15 Bob Simons changed space to 'T'
+  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd'T'HH";
   static final int defaultNumSmallTics__ = 0;
   int defaultMinorLabelInterval_ = 2;
   int defaultMajorLabelInterval_ = 1;
   static final double incrementValue__ = 1.0;
   static final int incrementUnits__ = GeoDate.MINUTES;
+
   /**
    * MinuteHourAxis constructor.
    *
    * @param id axis identifier
-   **/
-  public MinuteHourAxis() {
-  }
-  public double computeLocation(double prev,double now) {
+   */
+  public MinuteHourAxis() {}
+
+  @Override
+  public double computeLocation(double prev, double now) {
     return prev;
   }
+
+  @Override
   public void computeDefaults(GeoDate delta) {
     long msec = Math.abs(delta.getTime()) % GeoDate.MSECS_IN_DAY;
-    if(msec > 6000000) {
+    if (msec > 6000000) {
       defaultMinorLabelInterval_ = 15;
       defaultMajorLabelInterval_ = 2;
-    } else if(msec > 1200000) {
+    } else if (msec > 1200000) {
       defaultMinorLabelInterval_ = 5;
       defaultMajorLabelInterval_ = 1;
     } else {
@@ -68,63 +72,101 @@ public class MinuteHourAxis implements TimeAxisStyle {
       defaultMajorLabelInterval_ = 1;
     }
   }
+
+  @Override
   public int getMinorValue(GeoDate time) {
     return time.getGMTMinutes();
   }
+
+  @Override
   public int getMajorValue(GeoDate time) {
     return time.getGMTHours();
   }
+
+  @Override
   public boolean isRoomForMajorLabel(GeoDate delta) {
-    return 1440.0*(((double)delta.getTime())/((double)GeoDate.MSECS_IN_DAY)) > MINUTE_TEST__;
+    return 1440.0 * (((double) delta.getTime()) / ((double) GeoDate.MSECS_IN_DAY)) > MINUTE_TEST__;
   }
+
+  @Override
   public boolean isStartOfMinor(GeoDate time) {
     return time.getGMTMinutes() == 0;
   }
+
+  @Override
   public String getDefaultMinorLabelFormat() {
     return defaultMinorLabelFormat__;
   }
+
+  @Override
   public String getDefaultMajorLabelFormat() {
     return defaultMajorLabelFormat__;
   }
+
+  @Override
   public int getDefaultNumSmallTics() {
     return defaultNumSmallTics__;
   }
+
+  @Override
   public int getDefaultMinorLabelInterval() {
     return defaultMinorLabelInterval_;
   }
+
+  @Override
   public int getDefaultMajorLabelInterval() {
     return defaultMajorLabelInterval_;
   }
+
+  @Override
   public GeoDate getStartTime(TimeRange tRange) {
     boolean time_increasing;
     GeoDate time = null;
     time_increasing = tRange.end.after(tRange.start);
     try {
-      if(time_increasing) {
-        time = new GeoDate(tRange.start.getGMTMonth(),
-                           tRange.start.getGMTDay(),
-                           tRange.start.getGMTYear(),
-                           tRange.start.getGMTHours(),
-                           tRange.start.getGMTMinutes(), 0, 0);
-        if(!time.equals(tRange.start)) time.increment(1.0, GeoDate.MINUTES);
+      if (time_increasing) {
+        time =
+            new GeoDate(
+                tRange.start.getGMTMonth(),
+                tRange.start.getGMTDay(),
+                tRange.start.getGMTYear(),
+                tRange.start.getGMTHours(),
+                tRange.start.getGMTMinutes(),
+                0,
+                0);
+        if (!time.equals(tRange.start)) time.increment(1.0, GeoDate.MINUTES);
       } else {
-        time = new GeoDate(tRange.end.getGMTMonth(),
-                           tRange.end.getGMTDay(),
-                           tRange.end.getGMTYear(),
-                           tRange.end.getGMTHours(),
-                           tRange.end.getGMTMinutes(), 0, 0);
-        if(!time.equals(tRange.end)) time.increment(1.0, GeoDate.MINUTES);
+        time =
+            new GeoDate(
+                tRange.end.getGMTMonth(),
+                tRange.end.getGMTDay(),
+                tRange.end.getGMTYear(),
+                tRange.end.getGMTHours(),
+                tRange.end.getGMTMinutes(),
+                0,
+                0);
+        if (!time.equals(tRange.end)) time.increment(1.0, GeoDate.MINUTES);
       }
-    } catch (IllegalTimeValue e) {}
+    } catch (IllegalTimeValue e) {
+    }
     return time;
   }
+
+  @Override
   public double getIncrementValue() {
     return incrementValue__;
   }
+
+  @Override
   public int getIncrementUnits() {
     return incrementUnits__;
   }
+
+  @Override
   public String toString() {
-    return "MinuteHourAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
+    return "MinuteHourAxis inc="
+        + incrementValue__
+        + " minorLabelInterval="
+        + defaultMinorLabelInterval_;
   }
 }

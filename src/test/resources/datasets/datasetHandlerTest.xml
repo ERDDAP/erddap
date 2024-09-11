@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+    <dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
+    </dataset>
+    <dataset type="EDDGridFromDap" datasetID="erdMHchla8day">
+        <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day</sourceUrl>
+        <reloadEveryNMinutes>11000</reloadEveryNMinutes>
+        <addAttributes>
+            <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+            <att name="Metadata_Conventions">null</att>
+            <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html</att>
+            <att name="creator_name">NOAA NMFS SWFSC ERD</att>
+            <att name="creator_type">institution</att>
+            <att name="creator_email">erd.data@noaa.gov</att>
+            <att name="creator_url">https://www.pfeg.noaa.gov</att>
+            <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
+            <att name="publisher_type">institution</att>
+            <att name="publisher_email">erd.data@noaa.gov</att>
+            <att name="publisher_url">https://www.pfeg.noaa.gov</att>
+            <att name="institution">NOAA NMFS SWFSC ERD</att>
+            <att name="keywords">8-day,
+                Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll,
+                aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn</att>
+            <att name="license">[standard]</att>
+            <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
+            <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+            <att name="title">Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION (8 Day Composite)</att>
+            <att name="cwhdf_version" />
+            <att name="cols" />
+            <att name="et_affine" />
+            <att name="gctp_datum" />
+            <att name="gctp_parm" />
+            <att name="gctp_sys" />
+            <att name="gctp_zone" />
+            <att name="id" />
+            <att name="pass_date" />
+            <att name="polygon_latitude" />
+            <att name="polygon_longitude" />
+            <att name="rows" />
+            <att name="start_time" />
+        </addAttributes>
+        <axisVariable>
+            <sourceName>time</sourceName>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>altitude</sourceName>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lat</sourceName>
+            <destinationName>latitude</destinationName>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lon</sourceName>
+            <destinationName>longitude</destinationName>
+        </axisVariable>
+        <dataVariable>
+            <sourceName>MHchla</sourceName>
+            <destinationName>chlorophyll</destinationName>
+            <addAttributes>
+                <att name="ioos_category">Ocean Color</att>
+                <att name="long_name">Concentration Of Chlorophyll In Sea Water</att>
+                <att name="colorBarMinimum" type="double">0.03</att>
+                <att name="colorBarMaximum" type="double">30</att>
+                <att name="colorBarScale">Log</att>
+                <att name="actual_range" />
+                <att name="numberOfObservations" />
+                <att name="percentCoverage" />
+            </addAttributes>
+        </dataVariable>
+    </dataset>
+    <dataset type="EDDGridFromDap" datasetID="hawaii_d90f_20ee_c4cb" active="true">
+        <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>
+        <accessibleViaWMS>false</accessibleViaWMS>
+        <reloadEveryNMinutes>15000</reloadEveryNMinutes>
+        <defaultDataQuery>temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]</defaultDataQuery>
+        <defaultGraphQuery>temp[last][0][0:last][0:last]&amp;.draw=surface&amp;.vars=longitude|latitude|temp</defaultGraphQuery>
+        <!-- sourceAttributes>
+            <att name="Conventions">COARDS</att>
+            <att name="dataType">Grid</att>
+            <att name="documentation">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>
+            <att name="history">Tue Feb 22 14:37:08 HST 2011 : imported by GrADS Data Server 2.0</att>
+            <att name="title">SODA v2.2.4 monthly means</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="cdm_data_type">Grid</att>
+            <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+            <att name="infoUrl">https://www.atmos.umd.edu/~ocean/</att>
+            <att name="institution">TAMU/UMD</att>
+            <att name="keywords">
+                Earth Science &gt; Oceans &gt; Ocean Circulation &gt; Ocean Currents,
+                Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature,
+                Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity,
+                circulation, currents, density, depths, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water</att>
+            <att name="keywords_vocabulary">GCMD Science Keywords</att>
+            <att name="license">[standard]</att>
+            <att name="Metadata_Conventions">null</att>
+            <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+            <att name="summary">Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean
+                climate. SODA uses the GFDL modular ocean model version 2.2. The model is
+                forced by observed surface wind stresses from the COADS data set (from 1958
+                to 1992) and from NCEP (after 1992). Note that the wind stresses were
+                detrended before use due to inconsistencies with observed sea level pressure
+                trends. The model is also constrained by constant assimilation of observed
+                temperatures, salinities, and altimetry using an optimal data assimilation
+                technique. The observed data comes from: 1) The World Ocean Atlas 1994 which
+                contains ocean temperatures and salinities from mechanical
+                bathythermographs, expendable bathythermographs and conductivity-temperature-
+                depth probes. 2) The expendable bathythermograph archive 3) The TOGA-TAO
+                thermistor array 4) The Soviet SECTIONS tropical program 5) Satellite
+                altimetry from Geosat, ERS/1 and TOPEX/Poseidon.
+                We are now exploring an eddy-permitting reanalysis based on the Parallel
+                Ocean Program POP-1.4 model with 40 levels in the vertical and a 0.4x0.25
+                degree displaced pole grid (25 km resolution in the western North
+                Atlantic).  The first version of this we will release is SODA1.2, a
+                reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended to
+                the current year using available altimetry).</att>
+            <att name="title">SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)</att>
+        </addAttributes>
+        <axisVariable>
+            <sourceName>time</sourceName>
+            <destinationName>time</destinationName>
+            <!-- sourceAttributes>
+                <att name="grads_dim">t</att>
+                <att name="grads_mapping">linear</att>
+                <att name="grads_min">00z15jan1958</att>
+                <att name="grads_size">612</att>
+                <att name="grads_step">1mo</att>
+                <att name="long_name">time</att>
+                <att name="maximum">00z15dec2008</att>
+                <att name="minimum">00z15jan1958</att>
+                <att name="resolution" type="float">30.436989</att>
+                <att name="units">days since 1-1-1 00:00:0.0</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_min"></att>
+                <att name="grads_size"></att>
+                <att name="grads_step"></att>
+                <att name="ioos_category">Time</att>
+                <att name="long_name">Centered Time</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="units">days since 0001-01-01T00:00:00</att>
+                <att name="standard_name">time</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lev</sourceName>
+            <destinationName>depth</destinationName>
+            <!-- sourceAttributes>
+                <att name="grads_dim">z</att>
+                <att name="grads_mapping">levels</att>
+                <att name="long_name">altitude</att>
+                <att name="maximum" type="double">5374.0</att>
+                <att name="minimum" type="double">5.0</att>
+                <att name="name">Depth</att>
+                <att name="positive">down</att>
+                <att name="resolution" type="float">137.66667</att>
+                <att name="units">meters</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="ioos_category">Location</att>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="long_name">Depth</att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="name"></att>
+                <att name="resolution"></att>
+                <att name="units">m</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lat</sourceName>
+            <destinationName>latitude</destinationName>
+            <!-- sourceAttributes>
+                <att name="grads_dim">y</att>
+                <att name="grads_mapping">linear</att>
+                <att name="grads_size">330</att>
+                <att name="long_name">latitude</att>
+                <att name="maximum" type="double">89.25</att>
+                <att name="minimum" type="double">-75.25</att>
+                <att name="resolution" type="float">0.5</att>
+                <att name="units">degrees_north</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Latitude</att>
+                <att name="standard_name">latitude</att>
+            </addAttributes>
+        </axisVariable>
+        <axisVariable>
+            <sourceName>lon</sourceName>
+            <destinationName>longitude</destinationName>
+            <!-- sourceAttributes>
+                <att name="grads_dim">x</att>
+                <att name="grads_mapping">linear</att>
+                <att name="grads_size">720</att>
+                <att name="long_name">longitude</att>
+                <att name="maximum" type="double">359.75</att>
+                <att name="minimum" type="double">0.25</att>
+                <att name="resolution" type="float">0.5</att>
+                <att name="units">degrees_east</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="grads_dim"></att>
+                <att name="grads_mapping"></att>
+                <att name="grads_size"></att>
+                <att name="long_name"></att>
+                <att name="maximum"></att>
+                <att name="minimum"></att>
+                <att name="resolution"></att>
+                <att name="ioos_category">Location</att>
+                <att name="long_name">Longitude</att>
+                <att name="standard_name">longitude</att>
+            </addAttributes>
+        </axisVariable>
+        <dataVariable>
+            <sourceName>temp</sourceName>
+            <destinationName>temp</destinationName>
+            <!-- sourceAttributes>
+                <att name="_FillValue" type="float">-9.99E33</att>
+                <att name="long_name">temperature [degc] </att>
+                <att name="missing_value" type="float">-9.99E33</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">0</att>
+                <att name="colorBarMaximum" type="double">32</att>
+                <att name="ioos_category">Temperature</att>
+                <att name="long_name">Sea Water Temperature</att>
+                <att name="standard_name">sea_water_temperature</att>
+                <att name="units">degree_C</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>salt</sourceName>
+            <destinationName>salt</destinationName>
+            <!-- sourceAttributes>
+                <att name="_FillValue" type="float">-9.99E33</att>
+                <att name="long_name">salinity [psu] </att>
+                <att name="missing_value" type="float">-9.99E33</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">32.0</att>
+                <att name="colorBarMaximum" type="double">37.0</att>
+                <att name="ioos_category">Salinity</att>
+                <att name="long_name">Sea Water Practical Salinity</att>
+                <att name="standard_name">sea_water_practical_salinity</att>
+                <att name="units">PSU</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>u</sourceName>
+            <destinationName>u</destinationName>
+            <!-- sourceAttributes>
+                <att name="_FillValue" type="float">-9.99E33</att>
+                <att name="long_name">zonal velocity [m/s] </att>
+                <att name="missing_value" type="float">-9.99E33</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Eastward Sea Water Velocity</att>
+                <att name="standard_name">eastward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>v</sourceName>
+            <destinationName>v</destinationName>
+            <!-- sourceAttributes>
+                <att name="_FillValue" type="float">-9.99E33</att>
+                <att name="long_name">meridional velocity [m/s] </att>
+                <att name="missing_value" type="float">-9.99E33</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-0.5</att>
+                <att name="colorBarMaximum" type="double">0.5</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Northward Sea Water Velocity</att>
+                <att name="standard_name">northward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>w</sourceName>
+            <destinationName>w</destinationName>
+            <!-- sourceAttributes>
+                <att name="_FillValue" type="float">-9.99E33</att>
+                <att name="long_name">vertical velocity [m/s] </att>
+                <att name="missing_value" type="float">-9.99E33</att>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">-1e-5</att>
+                <att name="colorBarMaximum" type="double">1e-5</att>
+                <att name="comment">WARNING: Please use this variable's data with caution.</att>
+                <att name="ioos_category">Currents</att>
+                <att name="long_name">Upward Sea Water Velocity</att>
+                <att name="standard_name">upward_sea_water_velocity</att>
+                <att name="units">m s-1</att>
+            </addAttributes>
+        </dataVariable>
+    </dataset>
+    <dataset type="EDDTableFromEDDGrid" datasetID="erdMH1cflh1day_AsATable" active="true">
+        <accessibleTo>String for accessibleTo</accessibleTo>
+        <addAttributes>
+            <att name="maxAxis0" type="int">0</att>
+            <att name="title">Fluorescence Line Height, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite), (As A Table)</att>
+            <att name="summary">This dataset has monthly composites of Level 3, Standard Mapped Image, 4km, chlorophyll fluorescence data from NASA&#39;s Aqua Spacecraft, which gives insight into the physiology of phytoplankton in the ocean. When phytoplankton are under stress, the rate at which they fluoresce can be decoupled from the rate of photosynthetic productivity. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.  This is the August 2015 version of this dataset.</att>
+        </addAttributes>
+        <dataset type="EDDGridFromErddap" datasetID="erdMH1cflh1day_AsATableChild">
+            <sourceUrl>http://localhost:8080/erddap/griddap/erdMH1cflh1day</sourceUrl>
+        </dataset>
+    </dataset>
+    <dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true">
+        <!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily -->
+        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41</sourceUrl>
+    </dataset>
+    <dataset type="EDDTableFromAsciiFiles" datasetID="testTimeAxis" active="true">
+        <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+        <fileDir>/usr/local/Tomcat/webapps/erddap/target/test-classes/data/points/lisirdTss</fileDir>
+        <recursive>true</recursive>
+        <fileNameRegex>historical_tsi\.csv</fileNameRegex>
+        <metadataFrom>last</metadataFrom>
+        <columnNamesRow>1</columnNamesRow>
+        <firstDataRow>2</firstDataRow>
+        <preExtractRegex></preExtractRegex>
+        <postExtractRegex></postExtractRegex>
+        <extractRegex></extractRegex>
+        <columnNameForExtract></columnNameForExtract>
+        <sortedColumnSourceName></sortedColumnSourceName>
+        <sortFilesBySourceNames></sortFilesBySourceNames>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+            <att name="cdm_timeseries_variables">station, longitude, latitude</att>
+            <att name="subsetVariables">station, longitude, latitude</att>
+        -->
+        <addAttributes>
+            <att name="cdm_data_type">Other</att>
+            <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+            <att name="infoUrl">http://lasp.colorado.edu/lisird/</att>
+            <att name="institution">LISIRD</att>
+            <att name="keywords">data, historical, interactive, irradiance, LASP, local, reconstruction, solar, source, time, total, tsi</att>
+            <att name="license">[standard]</att>
+            <att name="Metadata_Conventions">null</att>
+            <att name="sourceUrl">http://lasp.colorado.edu/lisird/tss/historical_tsi.html</att>
+            <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+            <att name="summary">[The summary of testTimeAxis]</att>
+            <att name="title">Historical Total Solar Irradiance Reconstruction -- testTimeAxis</att>
+        </addAttributes>
+        <dataVariable>
+            <sourceName>time (years since 0000-01-01)</sourceName>
+            <destinationName>time</destinationName>
+            <dataType>float</dataType>
+            <!-- sourceAttributes>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="ioos_category">Time</att>
+                <att name="long_name">Year</att>
+                <att name="standard_name">time</att>
+                <att name="resolution">P1Y</att>
+                <att name="precision">1</att>
+                <att name="time_precision">1970-01-01T00:00:00.000Z</att>
+                <att name="units">years since 0000-01-01</att>
+            </addAttributes>
+        </dataVariable>
+        <dataVariable>
+            <sourceName>Irradiance (W/m^2)</sourceName>
+            <destinationName>irradiance</destinationName>
+            <dataType>double</dataType>
+            <!-- sourceAttributes>
+            </sourceAttributes -->
+            <addAttributes>
+                <att name="colorBarMinimum" type="double">1360</att>
+                <att name="colorBarMaximum" type="double">1362</att>
+                <att name="ioos_category">Optical Properties</att>
+                <att name="long_name">Total Solar Irradiance</att>
+                <att name="units">W/m^2</att>
+                <att name="precision">4</att>
+            </addAttributes>
+        </dataVariable>
+    </dataset>
+    <dataset type="EDDGridSideBySide" datasetID="erdTAssh1day">
+        <dataset type="EDDGridFromDap"    datasetID="erdTAsshl1day">
+            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <addAttributes>
+                <att name="cols">null</att>
+                <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+                <att name="creator_email">erd.data@noaa.gov</att>
+                <att name="creator_name">NOAA NMFS SWFSC ERD</att>
+                <att name="creator_type">institution</att>
+                <att name="creator_url">https://www.pfeg.noaa.gov</att>
+                <att name="cwhdf_version">null</att>
+                <att name="et_affine">null</att>
+                <att name="gctp_datum">null</att>
+                <att name="gctp_parm">null</att>
+                <att name="gctp_sys">null</att>
+                <att name="gctp_zone">null</att>
+                <att name="id">null</att>
+                <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshl_las.html</att>
+                <att name="institution">NOAA NMFS SWFSC ERD</att>
+                <att name="keywords">above, absolute, altitude, archiving, aviso, coast, coastwatch, data, degrees, earth, geodetics, geoid, global, gravity, height, interpretation, level, long, ltm, mean, noaa, node, ocean, oceanography, oceans,
+                    Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,
+                    properties, quality, satellite, science, science quality, sea, sea level, sea_surface_height_above_geoid, solid,
+                    Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,
+                    ssh, surface, TAsshl, term, time, topography, validation, wcn, west</att>
+                <att name="license">[standard]</att>
+                <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
+                <att name="pass_date">null</att>
+                <att name="polygon_latitude">null</att>
+                <att name="polygon_longitude">null</att>
+                <att name="project">CoastWatch (https://coastwatch.noaa.gov/)</att>
+                <att name="publisher_email">erd.data@noaa.gov</att>
+                <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
+                <att name="publisher_type">institution</att>
+                <att name="publisher_url">https://www.pfeg.noaa.gov</att>
+                <att name="references">Aviso: https://www.aviso.altimetry.fr/en/my-aviso.html .</att>
+                <att name="rows">null</att>
+                <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+                <att name="start_time">null</att>
+                <att name="title">Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)</att>
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>altitude</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>TAsshl</sourceName>
+                <destinationName>ssh</destinationName>
+                <addAttributes>
+                    <att name="ioos_category">Sea Level</att>
+                    <att name="long_name">Sea Surface Height</att>
+                    <att name="colorBarMinimum" type="double">-10</att>
+                    <att name="colorBarMaximum" type="double">10</att>
+                    <att name="actual_range" />
+                    <att name="numberOfObservations" />
+                    <att name="percentCoverage" />
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+        <dataset type="EDDGridFromDap" datasetID="erdTAsshd1day">
+            <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshd/1day</sourceUrl>
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <addAttributes>
+                <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+                <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+                <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshd_las.html</att>
+                <att name="institution">NOAA CoastWatch, West Coast Node</att>
+                <att name="standard_name_vocabulary">CF-12</att>
+                <att name="title">Sea Surface Height Deviation, Aviso, Global, Science Quality (1 Day Composite)</att>
+                <att name="cwhdf_version" />
+                <att name="cols" />
+                <att name="et_affine" />
+                <att name="gctp_datum" />
+                <att name="gctp_parm" />
+                <att name="gctp_sys" />
+                <att name="gctp_zone" />
+                <att name="id" />
+                <att name="pass_date" />
+                <att name="polygon_latitude" />
+                <att name="polygon_longitude" />
+                <att name="rows" />
+                <att name="start_time" />
+                <att name="time_coverage_end" />
+                <att name="time_coverage_start" />
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>altitude</sourceName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>TAsshd</sourceName>
+                <destinationName>sshd</destinationName>
+                <addAttributes>
+                    <att name="ioos_category">Sea Level</att>
+                    <att name="long_name">Sea Surface Height Deviation</att>
+                    <att name="colorBarMinimum" type="double">-0.5</att>
+                    <att name="colorBarMaximum" type="double">0.5</att>
+                    <att name="actual_range" />
+                    <att name="numberOfObservations" />
+                    <att name="percentCoverage" />
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+    </dataset>
+    <dataset type="EDDGridFromEtopo" datasetID="etopo180" />
+     <dataset type="EDDGridLonPM180" datasetID="erdTAssh1day_LonPM180" active="true">
+        <accessibleTo>person1</accessibleTo>
+        <dataset type="EDDGridFromErddap" datasetID="erdTAssh1day_LonPM180Child">
+            <!-- Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)
+                 minLon=0.0 maxLon=359.75 -->
+            <sourceUrl>http://localhost:8080/erddap/griddap/erdTAssh1day</sourceUrl>
+        </dataset>
+    </dataset>
+</erddapDatasets>

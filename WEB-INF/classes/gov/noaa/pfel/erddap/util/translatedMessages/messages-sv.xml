@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--  messages.xml innehåller textmeddelanden för ERDDAP (som läses i EDStatic).
 När du installerar ERDDAP på din server kan alla dessa meddelanden lämnas som de är,
 eftersom dessa meddelanden vanligtvis är desamma vid olika ERDDAP-installationer.
@@ -8,7 +9,7 @@ Eller så kan du översätta dessa meddelanden till andra språk (t.ex. spanska)
 VÄLDIGT VIKTIGT:
 
 En linje?
-Om det engelska meddelandet visas som en lång rad (utan nya rader), vänligen ange
+Om det engelska meddelandet visas som en lång rad (utan nya rader), vänligen ange 
 översättning en rad också.
 
 HTML eller inte?
@@ -21,9 +22,13 @@ Många meddelanden använder ersättningsplatshållare i Java MessageFormat-stil
 I dessa meddelanden måste varje enskilt citationstecken &#39;&#39; escapes som &#39;&#39;.
 Se https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 
-&pseudoEntity; används när termen inte ska översättas, ofta för att den är en
+&pseudoEntity; används när termen inte ska översättas, ofta för att den är en 
 stand-in för något som kommer att bytas på plats.
 Översättningssystemet KRÄVER att &quot;pseudoEntity&quot; endast använder [a-zA-Z0-9].
+
+!!! MASKINÖVERSÄTTNINGS BUG??? messages-bn.xml har alla &lt;a&gt; länkar duplicerade.
+  messages-de.xml och -ga har många länkar duplicerade. Jag misstänker att många fler är så här.
+
  -->
 <erddapMessages><!--  Detta returnerar HTML-innehåll som beskriver Begär komprimerade filer.
 Se https://httpd.apache.org/docs/1.3/mod/mod_mime.html
@@ -4009,7 +4014,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Var tålamod. Det kan ta ett tag att få informationen.)</patientData>
 <patientYourGraph>[Graffen du angav. Var tålmodig.]</patientYourGraph>
 <!--  För varje bildstorlek finns det en pdfWidth och pdfHeight (i 1/144:e tum).
@@ -5028,17 +5033,17 @@ Detta kan referera till &erddapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP är en dataserver som ger dig ett enkelt, konsekvent sätt att ladda ner delmängder av vetenskapliga datauppsättningar i vanliga filformat och göra grafer och kartor.
+ERDDAP är en dataserver som ger dig ett enkelt, konsekvent sätt att ladda ner delmängder av vetenskapliga datauppsättningar i vanliga filformat och göra grafer och kartor.
 <h2>Innehållsförteckning</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">Problemen som ERDDAP försöker lösa</a>
 <li><a rel="bookmark" href="#solutions">ERDDAP lösningar</a>
 <ul>
-<li><a rel="bookmark" href="#video">För en snabb introduktion till ERDDAP, titta på första halvan av detta<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
+<li><a rel="bookmark" href="#video">För en snabb introduktion till ERDDAP, se första halvan av detta<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 minuter)
 <li><a rel="bookmark" href="#localAndRemote">ERDDAP kan hämta data från lokala (på serverns hårddisk) och fjärranslutna (åtkomliga via webben) datakällor.</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP kan tjäna många typer av vetenskapliga data, inte bara oceanografiska data.</a>
-<li><a rel="bookmark" href="#search">ERDDAP erbjuder flera sätt att söka efter intressanta datamängder.</a>
+<li><a rel="bookmark" href="#search">ERDDAP erbjuder flera sätt att söka efter intressanta datauppsättningar.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP låter dig begära data på ett standardiserat sätt.</a>
 <li><a rel="bookmark" href="#userUnits">Begäran om rutnätsdata kan göras i användarenheter.</a>
 <li><a rel="bookmark" href="#fileFormats">ERDDAP skickar resultat i vanliga datafilformat.</a>
@@ -5055,7 +5060,7 @@ Detta kan referera till &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#chunks">ERDDAP bearbetar data i bitar.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP har en modulär struktur.</a>
 <li><a rel="bookmark" href="#pushPull">Dataspridning / Datadistributionsnätverk:
-Push and Pull teknik</a>
+Push and Pull -teknik</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP ?
 OPeNDAP ?
@@ -5068,29 +5073,29 @@ Vad är skillnaden?</a>
 <li><a rel="bookmark" href="#cite">Hur man citerar ERDDAP i ett papper</a>
 <li><a rel="bookmark" href="#acronym">Vad står förkortningen &quot;ERDDAP&quot; för?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Riktlinjer för datadistributionssystem</a>
-<li><a rel="bookmark" href="#setup">Du kan sätta upp din egen ERDDAP -server.</a>
+<li><a rel="bookmark" href="#setup">Du kan sätta upp din egen ERDDAP server.</a>
 <li><a rel="bookmark" href="#contact">Kontakta oss</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Problemen som ERDDAP försöker lösa</a></h2>
-Utan ERDDAP, när en person (eller ett datorprogram) letar på Internet efter en specifik typ av vetenskaplig data (till exempel satellitdata om havsytans temperatur), finns det problem ...
+Utan ERDDAP, när en person (eller ett datorprogram) letar på Internet efter en specifik typ av vetenskaplig data (till exempel satellitdata för havsytans temperatur), finns det problem ...
 <ul>
 <li>Intressanta datauppsättningar är svåra att hitta eftersom de finns på många olika webbplatser.
 <br>&nbsp;
-<li>Varje webbplats kräver ett annat protokoll för att begära uppgifterna:
+<li>Varje webbplats kräver ett annat protokoll för att begära data:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Varje webbplats returnerar data i ett annat format (till exempel XML, SOAP+XML, OPeNDAP binär dataström, ASCII-text, HDF 4, HDF 5, NetCDF, ...) och det är inte det vanliga filformatet du vilja.
+<li>Varje webbplats returnerar data i olika format (till exempel XML, SOAP+XML, OPeNDAP binär dataström, ASCII-text, HDF 4, HDF 5, NetCDF, ...) och det är inte det vanliga filformatet som du vilja.
 <br>&nbsp;
-<li>Data från olika webbplatser är svåra att jämföra eftersom datum+tider uttrycks i olika format, till exempel &quot;2/1/85&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, eller dagar sedan 1 januari 1980, eller ...).
+<li>Data från olika webbplatser är svåra att jämföra eftersom datum+tider uttrycks i olika format, till exempel &quot;2 januari 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, eller dagar sedan 1 januari 1980, eller ...).
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAP lösningar</a></h2>
 <ul>
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">För en snabb introduktion till ERDDAP,</a>
-<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">titta på första halvan av detta<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video- <img 
+<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">se första halvan av detta<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> .</strong> (5 minuter)
 <br>I den laddar en forskare ner havsströmsprognosdata från ERDDAP för att modellera ett giftigt utsläpp i havet med hjälp av
-<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA :s GNOME -programvara <img 
+<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA :s GNOME programvara <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> (om 5 minuter!).
 Den här videon visar:
@@ -5110,7 +5115,7 @@ En URL anger en hel begäran.
 <li>ERDDAP erbjuder
 <a href="#fileFormats">data</a> (inte bara kartor och grafer).
 <li>ERDDAP kan returnera data i många
-<a href="#fileFormats">filformat för</a> att få data till många andra program.
+<a href="#fileFormats">filformat</a> för att få data till många andra program.
 <li>NOAA arbetar tillsammans:
 Analysen använder två gratisprogram från NOAA, ERDDAP och GNOME, och data som betjänas av NOAA NODC/NCDDC (underlättad av NOAA UAF-projekt).
 <li>ERDDAP gör
@@ -5133,9 +5138,9 @@ Det är implicit.)
 <a title="National Marine Fisheries Service" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Avdelningen för miljöforskning" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-ERDDAP -servern på ERD betjänar oceanografisk data, men ERDDAP (programmet) kan komma åt och betjäna alla rutnäts- eller tabelldata.
+ERDDAP servern på ERD betjänar oceanografisk data, men ERDDAP (programmet) kan komma åt och betjäna alla rutnäts- eller tabelldata.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP erbjuder flera sätt att söka efter intressanta datamängder.</a></strong>
+<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP erbjuder flera sätt att söka efter intressanta datauppsättningar.</a></strong>
 <br>Till exempel
 <a href="&erddapUrl;/search/index.html">fulltextsökning</a>,
 <a href="&erddapUrl;/categorize/index.html">sök efter kategori</a> (även känd som fasetterad sökning) och
@@ -5143,7 +5148,7 @@ ERDDAP -servern på ERD betjänar oceanografisk data, men ERDDAP (programmet) ka
 Avancerad sökning kombinerar alla söktekniker och lägger till sökningar efter datauppsättningar som har data inom longitud, latitud och tidsintervall, så att du kan söka efter datauppsättningar baserat på många olika kriterier samtidigt.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP låter dig begära data på ett standardiserat sätt,</a></strong>
-<br>oavsett datakällans begärandeprotokoll.
+<br>oavsett datakällans förfrågningsprotokoll.
 <ul>
 <li>ERDDAP gör gridded data tillgänglig via griddap (ERDDAP :s implementering av
 <a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab-protokollet</a>) och
@@ -5165,20 +5170,18 @@ ERDDAP tillhandahåller också Data Access Forms (webbsidor) som hjälper männi
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> är en av
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
-    >NOAA :s tekniska rekommendationer</a> för dataåtkomst
-<a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
-    ><img 
+    >NOAA :s tekniska rekommendationer för dataåtkomst <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> och en
 <a rel="bookmark" href="https://www.earthdata.nasa.gov/esdis/esco/standards-and-practices#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> .
-(OPeNDAP är jättebra!) ERDDAP översätter din förfrågan från OPeNDAP, WMS eller SOS -formatet till datakällans förfrågningsformat och konverterar svaret till en av ERDDAP :s interna datastrukturer.
-Sedan ERDDAP om data i det vanliga filformatet du väljer (till exempel som en .html-tabell, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) och skickar filen till dig.
+(OPeNDAP är bra!) ERDDAP översätter din förfrågan från OPeNDAP, WMS eller SOS -formatet till datakällans förfrågningsformat och konverterar svaret till en av ERDDAP :s interna datastrukturer.
+Sedan formaterar ERDDAP om data i det vanliga filformatet du väljer (till exempel som en .html-tabell, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) och skickar filen till dig.
 Se listan över
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">griddap-filtyper</a> och listan över
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap -filtyper</a> .
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap filtyper</a> .
 Andra protokoll för att begära data (till exempel
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5187,13 +5190,13 @@ ERDDAP är strukturerat för dessa tillägg och det verkar inte finnas några hi
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Begäran om rutnätsdata kan göras i användarenheter.</a></strong>
 <br>Även om förfrågningar om rutnätsdata i ERDDAP kan göras med arrayindex (enligt OPeNDAP specifikationen), kan förfrågningar också vara i användarenheter (till exempel grader öster), med hjälp av
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">en parentesnotation</a>, eftersom användare tänker i dessa enheter, inte i index.
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">en parentesnotation</a>, eftersom användare tänker i dessa enheter, inte index.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP skickar resultat i vanliga datafilformat.</a></strong>
-<br>Resultaten kan returneras i vilket som helst av flera vanliga &requestFormatExamplesHtml;, istället för bara originalformatet eller bara OPeNDAP överföringsformatet (som inte har någon standardfilmanifestation).
+<br>Resultaten kan returneras i vilket som helst av flera vanliga datafilformat &requestFormatExamplesHtml;, istället för bara originalformatet eller bara OPeNDAP överföringsformatet (som inte har någon standardfilmanifestation).
 Dessa filer skapas i farten.
 Eftersom det finns få interna datastrukturer är det enkelt att lägga till ytterligare filtypsdrivrutiner.
-Se den fullständiga listan över
+Se hela listan över
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">rutnätsfiltyper</a> och
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabellfiltyper</a> .
 <br>&nbsp;
@@ -5216,19 +5219,19 @@ Se den fullständiga listan över
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> till exempel <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Du kan konvertera numeriska tider till/från ISO-strängtider med ERDDAP :s
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">tidsomvandlare</a> .) Dessutom, för att undvika förvirring av tidszon och sommartid, konverteras tidsvärden alltid till Zulu (UTC, GMT) tidszon.
 </ul>
-Detta gör det enkelt att ange begränsningar i förfrågningar utan att behöva oroa sig för höjddataformatet (är positiva värden uppåt eller nedåt?
-i meter eller famnar?) eller tidsdataformatet (en mardrömslik värld av möjliga format, till exempel &quot;Jan 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, eller dagar sedan 1 januari 1980).
+Detta gör det enkelt att ange begränsningar i förfrågningar utan att behöva oroa sig för höjddataformatet (är positiva värden upp eller ner?
+i meter eller famnar?) eller tidsdataformatet (en mardrömslik sfär av möjliga format, till exempel &quot;Jan 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, eller dagar sedan 1 januari 1980).
 Detta gör resultaten från olika datakällor lätta att jämföra.
 <p>ERDDAP har ett verktyg för att
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">konvertera en numerisk tid till/från en strängtid</a> .
 <br>För mer information, se
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Hur ERDDAP tid</a> .
-<p>Eftersom variablerna longitud, latitud, höjd och tid är specifikt igenkända, är ERDDAP medveten om de geografiska/temporala egenskaperna för varje datauppsättning.
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Hur ERDDAP hanterar tid</a> .
+<p>Eftersom variablerna longitud, latitud, höjd och tid är specifikt igenkända, är ERDDAP medveten om de geografiska/temporala egenskaperna för varje datamängd.
 Detta är användbart när du gör bilder med kartor eller tidsserier och när du sparar data i filtyper med georeferenser (t.ex.
 .esriAscii, .geoJson och .kml ).
 <p>Två vanliga standarder för att skriva måttenheter är:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (extern länk)&quot;title=&quot;Denna länk till en extern webbplats utgör inte ett stöd.&quot;&gt; - från
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal link)&quot;title=&quot;Denna länk till en extern webbplats utgör inte ett stöd.&quot;&gt; - från
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, som används i
@@ -5264,10 +5267,10 @@ Till exempel har UCUM bara ett skiftlägeskänsligt alternativ för grader Celsi
 </ul>
 Även om ERDDAP inte kräver användning av endera enhetsstandarden, föredrar de flesta ERDDAP installationer det ena eller det andra.
 (ERDDAP administratörer:
-du kan ange detta med <kbd>&lt;units_standard&gt;</kbd> i setup.xml.) Du kan konvertera UDUNITS till/från UCUM-
-<a rel="bookmark" href="&erddapUrl;/convert/units.html">enheter</a> med ERDDAP :s enhetsomvandlare .
+du kan ange detta med taggen <kbd>&lt;units_standard&gt;</kbd> i setup.xml.) Du kan konvertera UDUNITS till/från UCUM-enheter med ERDDAP :s
+<a rel="bookmark" href="&erddapUrl;/convert/units.html">enhetsomvandlare</a> .
 När du begär data eller en graf från en
-<a href="&erddapUrl;/tabledap/index.html">tabledap</a> kan du lägga till <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> eller <kbd>&amp;units(&quot;UCUM&quot;)</kbd> i slutet av URL:en för att begära UDUNITS eller UCUM-enheter.
+<a href="&erddapUrl;/tabledap/index.html">tabledap -datauppsättning</a> kan du lägga till <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> eller <kbd>&amp;units(&quot;UCUM&quot;)</kbd> i slutet av URL:en för att begära UDUNITS eller UCUM-enheter.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">mer information</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP kan lägga till eller ändra metadata.</a></strong>
@@ -5280,8 +5283,8 @@ När du begär data eller en graf från en
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>) som beskriver data.
 ERDDAP låter (och uppmuntrar) administratören att beskriva metadata som kommer att läggas till datauppsättningar och deras variabler i farten.
 Se
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">avsnittet addAttributes</a> i instruktionerna
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">för administratörer</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">avsnittet addAttributes</a> i
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">instruktionerna för administratörer</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP låter dig begära .png- och .pdf-bildfiler med grafer och kartor</a></strong>
@@ -5290,7 +5293,7 @@ Och ERDDAP :s Make A Graph låter dig anpassa bilderna.
 Några speciella användningsområden för dessa bilder är:
 <ul>
 <li>Webbsidesförfattare kan
-<a rel="help" href="&erddapUrl;/images/embed.html">bädda in en graf med den senaste informationen på en webbsida</a> med hjälp av en HTML-tagg &lt;img&gt;.
+<a rel="help" href="&erddapUrl;/images/embed.html">bädda in en graf med de senaste uppgifterna på en webbsida</a> med hjälp av en HTML-tagg &lt;img&gt;.
 &ssUse; <!--li>Anyone can use or make
      
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">Google Gadgets</a>
@@ -5306,19 +5309,19 @@ Istället letar ERDDAP efter
     >accept-encoding <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> i HTTP GET begäran som skickas av klienten.
-Om en komprimeringstyp som stöds (gzip, x-gzip eller deflate ) hittas i accept-encoding-listan, inkluderar ERDDAP <kbd>content-encoding</kbd> i HTTP-svarshuvudet och komprimerar data när den överför den.
+Om en komprimeringstyp som stöds (gzip, x-gzip eller deflate ) hittas i listan över acceptera kodning, inkluderar ERDDAP <kbd>content-encoding</kbd> i HTTP-svarshuvudet och komprimerar data när den överför den.
 Det är upp till klientprogrammet att leta efter <kbd>content-encoding</kbd> och dekomprimera data.
 Komprimerade svar är ofta 3-10 gånger snabbare, även om det inte finns någon fördel med att begära komprimerade .png-filer eftersom filernas innehåll redan är komprimerat.
-Webbläsare och OPeNDAP klienter gör detta som standard.
+Webbläsare och OPeNDAP -klienter gör detta som standard.
 De begär komprimerad data och dekomprimerar den returnerade datan automatiskt.
 Andra klienter (t.ex.
-Java -program) måste göra detta uttryckligen.
+Java program) måste göra detta uttryckligen.
 Med curl lägger du till <kbd>--compressed</kbd> på kommandoraden för att tala om för curl att begära ett komprimerat svar och automatiskt dekomprimera det.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP gör olika typer av dataservrar (OPeNDAP, OBIS, SOS, WMS, ...) kompatibla.</a></strong>
 <br>Olika typer av dataservrar används i olika vetenskapliga samfund.
 Inom en överskådlig framtid är det osannolikt att någon typ kommer att bli dominerande och ersätta de andra.
-Så ERDDAP fungerar som en brygga mellan olika typer av klientprogram (webbläsare, IDV, Matlab, netCDF-program, ODV, WMS -klienter, etc.) och de olika typerna av dataservrar.
+Så ERDDAP fungerar som en brygga mellan olika typer av klientprogram (webbläsare, IDV, Matlab, netCDF-program, ODV, WMS klienter, etc.) och de olika typerna av dataservrar.
 <ol>
 <li>ERDDAP accepterar klientförfrågningar om data i olika format (t.ex.
 OPeNDAP, WMS ).
@@ -5348,11 +5351,11 @@ Tabeller, i synnerhet, är mycket flexibla datastrukturer (titta på den fenomen
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> program).
 <li>Detta gör datafrågor lättare att konstruera.
 <li>Detta gör att datasvar har en enkel struktur, vilket gör det lättare att betjäna data i ett större antal standardfiltyper (som ofta bara stöder enkla datastrukturer).
-Detta är huvudskälet till att vi ställer in ERDDAP på detta sätt.
-<li>Detta i sin tur gör det väldigt enkelt för oss (eller vem som helst) att skriva klientprogramvara som fungerar med alla ERDDAP .
-<li>Detta gör det lättare att jämföra data från olika källor, till exempel för en integrerad ekosystemanalys (IEA).
+Detta är huvudorsaken till att vi ställer in ERDDAP på detta sätt.
+<li>Detta i sin tur gör det väldigt enkelt för oss (eller vem som helst) att skriva klientprogramvara som fungerar med alla ERDDAP datauppsättningar.
+<li>Detta gör det lättare att jämföra data från olika källor, till exempel för en Integrated Ecosystem Analysis (IEA).
 <li>Vi är mycket medvetna om att om du är van att arbeta med data i andra datastrukturer kan du till en början tycka att detta tillvägagångssätt är förenklat eller otillräckligt.
-Men alla datastrukturer har kompromisser.
+Men alla datastrukturer har avvägningar.
 Ingen är perfekt.
 Även gör-det-allt-strukturerna har sina nackdelar:
 att arbeta med dem är komplext och filerna kan bara skrivas eller läsas med speciella programbibliotek.
@@ -5360,44 +5363,46 @@ Om du accepterar ERDDAP :s tillvägagångssätt tillräckligt för att försöka
 Det
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">ursprungliga ERDDAP bildspelet</a> (särskilt
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">datastrukturbilden</a>) talar om dessa frågor.
-<li>Och även om detta tillvägagångssätt låter konstigt för dig, kommer de flesta ERDDAP klienter aldrig att märka det - de kommer helt enkelt att se att alla datamängder har en trevlig enkel struktur och de kommer att vara tacksamma för att de kan få data från en mängd olika källor som returneras i en mängd olika filformat.
+<li>Och även om detta tillvägagångssätt låter konstigt för dig, kommer de flesta ERDDAP -klienter aldrig att märka det - de kommer helt enkelt att se att alla datamängder har en trevlig enkel struktur och de kommer att vara tacksamma för att de kan få data från en mängd olika källor som returneras i en mängd olika filformat.
 <br>&nbsp;
 </ul>
-<li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP erbjuder</a> e-
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">post/URL</a> och
+<li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP erbjuder</a>
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">e-post/URL</a> och
 <a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> prenumerationstjänster,</strong> så att du kan bli meddelad när en datauppsättning ändras.
 <ul>
 <li>ERDDAP är mycket bra på att upptäcka ändringar i rutnätsdatauppsättningar eftersom den kan upptäcka när axelvärdena (t.ex.
 tidsvärdena) ändras.
-<li>ERDDAP är inte särskilt bra på att upptäcka ändringar i tabelluppsättningar eftersom det vanligtvis inte sker några ändringar i metadata när ny data läggs till.
+<li>ERDDAP är inte särskilt bra på att upptäcka ändringar i tabelluppsättningar eftersom det vanligtvis inte sker några ändringar av metadata när ny data läggs till.
 <li>ERDDAP kommer att upptäcka om en datauppsättning blir otillgänglig (men kanske inte omedelbart).
 <li>ERDDAP kommer att upptäcka när den datamängden blir tillgänglig igen.
 <li>ERDDAP ger inga löften om dessa tjänsters lämplighet eller noggrannhet (se
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAP :s ANSVARSFRISKRIVNINGAR</a>).
 </ul>
-<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">E-post/URL</a> -prenumerationer</strong> (ej tillgängligt vid vissa ERDDAP installationer) Närhelst en datauppsättning ändras kommer e-post/URL-prenumerationssystemet <strong>omedelbart</strong> att skicka ett e-postmeddelande eller kontakta en URL som du anger.
+
+  
+<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">E-post-/URL-</a> prenumerationer</strong> (inte tillgängligt vid vissa ERDDAP installationer) Närhelst en datauppsättning ändras kommer e-post-/URL-prenumerationssystemet <strong>omedelbart</strong> att skicka ett e-postmeddelande eller kontakta en URL som du anger.
 E-post/URL-prenumerationer är inte tillgängliga på vissa ERDDAP installationer.
-För att skapa en e-post-/URL-prenumeration, klicka på en av kuvertikonerna <img alt="Subscribe" style="vertical-align:top" title="Kuvertikonen." src="&erddapUrl;/images/envelope.gif" > som visas längst till höger på ERDDAP -webbsidor med listor över datauppsättningar (<a rel="contents" href="&erddapUrl;/info/index.html">exempel</a>) och på webbsidorna Data Access Forms and Make A Graph för individuella datauppsättningar (<a href="&erddapUrl;/griddap/etopo180.html">exempel</a>) om denna ERDDAP installation stöder e-post/URL-prenumerationer.
+För att skapa en e-post-/URL-prenumeration, klicka på en av kuvertikonerna <img alt="Subscribe" style="vertical-align:top" title="Kuvertikonen." src="&erddapUrl;/images/envelope.gif" > som visas längst till höger på ERDDAP -webbsidor med listor över datauppsättningar (<a rel="contents" href="&erddapUrl;/info/index.html">exempel</a>) och på webbsidorna Data Access Forms and Make A Graph för enskilda datauppsättningar (<a href="&erddapUrl;/griddap/etopo180.html">exempel</a>) om denna ERDDAP installation stöder e-post/URL-prenumerationer.
 (Datorprogrammerare:
 om du skriver webbtjänster kan du använda URL-systemet för att låta ERDDAP meddela din webbtjänst omedelbart när en datauppsättning ändras.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> Prenumerationer</strong> RSS är ett standardsystem för att meddela användare när innehållet på en webbplats har ändrats.
-Moderna webbläsare har en inbyggd RSS -klient eller så kan du använda en separat
+Moderna webbläsare har en inbyggd RSS klient eller så kan du använda en separat
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS läsare <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> .
 ERDDAP erbjuder ett separat RSS 2.01-flöde för varje datauppsättning så att du kan ta reda på när intressanta datauppsättningar har ändrats.
-För att prenumerera på en datauppsättnings RSS -flöde, klicka på en av RSS ikonerna<img alt="RSS" style="vertical-align:top" title="RSS-ikonen." src="&erddapUrl;/images/rss.gif" > som visas längst till höger på ERDDAP -webbsidor med listor över datauppsättningar (<a rel="contents" href="&erddapUrl;/info/index.html">exempel</a>) eller på webbsidorna Data Access Forms and Make A Graph för enskilda datauppsättningar (<a href="&erddapUrl;/griddap/etopo180.html">exempel</a>).
-<p><strong>Jämförelse</strong> RSS -tjänsten kan vara precis vad du letar efter.
+För att prenumerera på en datauppsättnings RSS flöde, klicka på en av RSS ikonerna<img alt="RSS" style="vertical-align:top" title="RSS-ikonen." src="&erddapUrl;/images/rss.gif" > som visas längst till höger på ERDDAP -webbsidor med listor över datauppsättningar (<a rel="contents" href="&erddapUrl;/info/index.html">exempel</a>) eller på webbsidorna Data Access Forms and Make A Graph för enskilda datauppsättningar (<a href="&erddapUrl;/griddap/etopo180.html">exempel</a>).
+<p><strong>Jämförelse</strong> RSS tjänsten kan vara precis vad du letar efter.
 Det är en fin standard.
 Men om du behöver veta så snart som möjligt när en datauppsättning ändras, använd e-post/URL-systemet, inte RSS .
 RSS klienter begär och läser regelbundet (varje timme?) RSS XML-dokumentet för att leta efter ändringar.
-Så vanligtvis kommer en RSS klient inte att upptäcka en ändring av en datauppsättning snabbt (i genomsnitt 30 minuter?).
+Så vanligtvis kommer en RSS klient inte att upptäcka en ändring i en datauppsättning snabbt (i genomsnitt 30 minuter?).
 Däremot agerar e-post/URL-prenumerationssystemet omedelbart när ERDDAP upptäcker en ändring i en datauppsättning.
-E-post/URL-systemets mer proaktiva tillvägagångssätt är också mycket effektivare:
+E-post-/URL-systemets mer proaktiva tillvägagångssätt är också mycket effektivare:
 du kanske kan ställa in din RSS klient så att den söker efter ändringar varje minut (gör inte det!), men det skulle bara leda till många onödiga förfrågningar till ERDDAP -servern och den skulle fortfarande inte upptäcka ändringar omedelbart.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP är en</a>
@@ -5417,27 +5422,27 @@ du kanske kan ställa in din RSS klient så att den söker efter ändringar varj
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> - och
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> -stillänkar för att göra dess tjänster tillgängliga för datorprogram.</strong>
+      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> -länkar för att göra dess tjänster tillgängliga för datorprogram.</strong>
 <br>Dessa funktioner kan användas för att bygga ytterligare en webbtjänst ovanpå ERDDAP (så att ERDDAP gör allt!).
-ERDDAP är inte tänkt att vara en datautforskning/graftjänst på hög nivå.
+ERDDAP är inte avsedd att vara en datautforskning/graftjänst på hög nivå.
 Istället är ERDDAP avsedd att tillhandahålla tjänster för sådana webbplatser och program.
-Så om du har en idé om ett bättre gränssnitt till den data ERDDAP betjänar, uppmuntrar vi dig att bygga din egen webbapplikation eller webbtjänst och använda ERDDAP som grund.
+Så om du har en idé om ett bättre gränssnitt till den data som ERDDAP betjänar, uppmuntrar vi dig att bygga din egen webbapplikation eller webbtjänst och använda ERDDAP som grund.
 Läs mer om ERDDAP :s
 <a rel="help" href="&erddapUrl;/rest.html">tjänster för datorprogram</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Säkerhet</a></strong> - Som standard körs ERDDAP som en helt offentlig server utan inloggningssystem och inga begränsningar för dataåtkomst.
-En ERDDAP administratör kan dock konfigurera ERDDAP för att begränsa åtkomst till vissa eller alla datauppsättningar till användare som loggar in och har tilldelats vissa roller.
+En ERDDAP -administratör kan dock konfigurera ERDDAP för att begränsa åtkomst till vissa eller alla datauppsättningar till användare som loggar in och har tilldelats vissa roller.
 ERDDAP har inbyggda metoder för autentisering (inloggning).
 Om en ERDDAP installation har autentisering aktiverad, kommer det att finnas en&quot;logga in&quot;-länk överst på varje webbsida.
 Användare behöver aldrig logga in för att komma åt de allmänt tillgängliga datauppsättningarna.
 Användare som har loggat in kan komma åt offentliga datauppsättningar och de privata datauppsättningar som de får åtkomst till.
 Användare måste använda https:
-(Secure Sockets Layer) för att logga in och för att komma åt privata datauppsättningar.
+(Secure Sockets Layer) för att logga in och komma åt privata datauppsättningar.
 Datauppsättningar kan konfigureras för att ha grafer och kartor offentligt tillgängliga, men har data endast tillgängliga för behöriga användare.
 (<a rel="help" href="https://erddap.github.io/setup.html#security">mer information</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP bearbetar data i bitar.</a></strong>
-<br>För att spara minne (ett stort problem) och få svar att starta tidigare, bearbetar ERDDAP i bitar - upprepade gånger hämtar en bit data från källan, rensar upp den (till exempel lägga till
+<br>För att spara minne (ett stort problem) och få svar att starta tidigare, bearbetar ERDDAP dataförfrågningar i bitar - upprepade gånger hämtar en bit data från källan, rensar upp den (till exempel lägga till
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>), och skicka det till klienten.
@@ -5445,19 +5450,19 @@ För många datakällor innebär detta att den första databiten (till exempel f
 Ur minnessynpunkt tillåter detta att många stora förfrågningar (var och en är större än tillgängligt minne) kan hanteras samtidigt.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP har en modulär struktur.</a></strong>
-<br>ERDDAP är uppbyggt så att det är enkelt att lägga till olika komponenter (till exempel en klass för att begära data från en SOS -server och lagra den som en tabell).
+<br>ERDDAP är uppbyggt så att det är enkelt att lägga till olika komponenter (till exempel en klass för att begära data från en SOS server och lagra den som en tabell).
 Den nya komponenten får då alla funktioner och möjligheter hos föräldern (till exempel stöd för OPeNDAP förfrågningar och möjligheten att spara data i flera vanliga filformat).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Dataspridning / Datadistributionsnätverk:
-Push and Pull teknik</a></strong>
-<br>Normalt fungerar ERDDAP som en mellanhand:
-den tar emot en begäran från en användare; hämtar data från en fjärrdatakälla; formaterar om data; och skickar den till användaren.
-<a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pull teknik <img 
+Push and Pull -teknik</a></strong>
+<br>Normalt agerar ERDDAP som en mellanhand:
+det tar en begäran från en användare; hämtar data från en fjärrdatakälla; formaterar om data; och skickar den till användaren.
+<a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pull -teknik <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> :
 Men ERDDAP har också förmågan att aktivt hämta all tillgänglig data från en fjärrdatakälla och
 <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">lagra en lokal kopia av datan</a> .
-<a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push teknik <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push -teknik <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> :
 Genom att använda ERDDAP :s
@@ -5469,13 +5474,13 @@ ERDDAP :s
 Du kan kombinera dessa med stor effekt:
 om du lindar en EDDGrid kopia runt en EDDGrid FromErddap-datauppsättning (eller lindar en EDDTableCopy runt en EDDTableFromErddap-datauppsättning), kommer ERDDAP automatiskt att skapa och underhålla en lokal kopia av en annan ERDDAP -datauppsättning.
 Eftersom prenumerationstjänsterna fungerar så fort ny data finns tillgänglig, sprider push-teknik data mycket snabbt (inom några sekunder).
-<p>Denna arkitektur gör att varje ERDDAP administratör ansvarar för att bestämma var data för hans/hennes ERDDAP kommer ifrån.
+<p>Denna arkitektur ger varje ERDDAP administratör ansvar för att bestämma var data för hans/hennes ERDDAP kommer ifrån.
 Andra ERDDAP administratörer kan göra samma sak.
 Det finns inget behov av samordning mellan administratörer.
 Om många ERDDAP administratörer länkar till varandras ERDDAP :er bildas ett datadistributionsnätverk.
-Data kommer snabbt, effektivt och automatiskt att spridas från datakällor (ERDDAP er och andra servrar) till dataomfördelningsplatser (ERDDAP er) var som helst i nätverket.
+Data kommer snabbt, effektivt och automatiskt att spridas från datakällor (ERDDAP :er och andra servrar) till dataomfördelningsplatser (ERDDAP :er) var som helst i nätverket.
 En given ERDDAP kan vara både en datakälla för vissa datauppsättningar och en omfördelningsplats för andra datauppsättningar.
-Det resulterande nätverket liknar ungefär datadistributionsnätverk som är inrättat med program som
+Det resulterande nätverket är ungefär likt datadistributionsnätverk som konfigurerats med program som
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata IDD/IDM <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, men mindre styvt strukturerad.
@@ -5492,11 +5497,11 @@ DODS systemet skapade och använde dods:-protokollet på Internet.
 När HTTP kom och var så framgångsrik bytte de från dods:
 till http:.
 <p>Vid något tillfälle insåg de att systemet var användbart för mer än bara oceanografiska data.
-Så de lade bort det DODS namnet (även om det lever kvar i någon kod), bildade en liten organisation som heter
+Så de lade bort det DODS -namnet (även om det lever kvar i någon kod), bildade en liten organisation som heter
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> och skrev
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP -specifikationen (Data Access Protocol).
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP specifikationen (Data Access Protocol).
 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, som standardiserar formatet för förfrågningarna om metadata och/eller data, och svaren med metadata och/eller data.
@@ -5504,11 +5509,12 @@ OPeNDAP (organisationen) sköter fortfarande DAP (specifikationen) och är förf
 <p>Hyrax, THREDDS, GRADS, ERDDAP och andra är dataservrar (mjukvara) som implementerar DAP .
 De implementerar var och en en delmängd av DAP men gör andra saker väldigt annorlunda.
 <p>ERDDAP använder kod (i&quot;dods&quot;-katalogen) (faktiskt skriven av Jake Hamby på NASA JPL) för vissa funktioner för att läsa data från externa DAP servrar.
-ERDDAP använder sin egen kod för att skriva ut DAP -svar.
+ERDDAP använder sin egen kod för att skriva ut DAP svar.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Är ERDDAP en lösning på allas problem med datadistribution/dataåtkomst?</a></strong>
-<br>Nej ERDDAP försöker hitta en sweet spot som är en riktigt bra lösning på de flesta av de datadistributionsproblem som vi ställs inför.
-ERDDAP ett mellanprogram:
+<br>Nej.
+ERDDAP försöker hitta en sweet spot som är en riktigt bra lösning på de flesta av de datadistributionsproblem som vi stötte på.
+ERDDAP använder ett mellanprogram:
 Det kan hämta data från många olika typer av fjärrdataservrar och det kan ge dessa data till klienter i många olika filformat.
 Den är designad för att vara en agnostisk lösning som försöker göra andra dataservrar (OPeNDAP, SOS, OBIS, WMS, ...) kompatibla.
 Finns det en perfekt dataserver som uppfyller allas behov perfekt?
@@ -5521,122 +5527,59 @@ Det är bara det att ERDDAP :s mål att returnera data i vanliga filformat (av v
 Grupper av forskare som arbetar med mer komplexa datastrukturer har ofta redan specialiserade dataservrar och specialiserad klientmjukvara som är anpassad efter deras samhälles behov.
 ERDDAP, som en allmän dataserver, försöker inte konkurrera med dessa specialiserade dataservrar.
 De är anpassade efter behoven i deras samhälle och gör ett bra jobb.
-Men dessa datamängder&quot;förstås&quot;ofta bara av den specialiserade programvaran i den gemenskapen.
-<p>En lösning för komplexa datauppsättningar - ERDDAP har ett sätt att hantera komplexa datauppsättningar som den inte kan hantera direkt.
+Men dessa datamängder&quot;förstås&quot;ofta bara av den specialiserade mjukvaran i den gemenskapen.
+<p>En lösning för komplexa datauppsättningar – ERDDAP har ett sätt att hantera komplexa datauppsättningar som den inte kan hantera direkt.
 Precis som en
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relationsdatabas <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> kan lagra en komplex datauppsättning genom att bara använda en enkel datastruktur (en tabell), kan ERDDAP betjäna data från mer komplexa datauppsättningar genom att dela upp källdatauppsättningen i några ERDDAP, var och en med liknande, enkla datastrukturer.
-Till exempel kan vissa rutnätsbaserade miljömodelldatauppsättningar lagras i ERDDAP genom att sätta havsytans variabler ([tid][latitud][longitud]) i en ERDDAP och genom att sätta variablerna med höjd ([tid][höjd][] latitud][longitud]) i en annan ERDDAP .
+      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> kan lagra en komplex datauppsättning genom att bara använda en enkel datastruktur (en tabell), kan ERDDAP betjäna data från mer komplexa datauppsättningar genom att dela upp källdatauppsättningen i några få ERDDAP datauppsättningar, var och en med liknande, enkla datastrukturer.
+Till exempel kan vissa rutnätade miljömodelldatauppsättningar lagras i ERDDAP genom att sätta havsytans variabler ([tid][latitud][longitud]) i en ERDDAP datauppsättning och genom att sätta variablerna med höjd ([tid][höjd][] latitud][longitud]) i en annan ERDDAP -datauppsättning.
 Vi vet att detta inte är idealiskt, men det är nödvändigt att tillåta ERDDAP att returnera data i vanliga filformat (av vilka några är ganska enkla).
 <p>Ett annat tillvägagångssätt för att hantera komplexa datamängder (t.ex.
-för modelldata som använder en kuberad sfärprojektion) är att även erbjuda en omprojekterad version av datasetet ([tid][höjd][latitud][longitud]) som ERDDAP kan arbeta med.
+för modelldata med en kuberad sfärprojektion) är att även erbjuda en omprojekterad version av datamängden ([tid][höjd][latitud][longitud]) som ERDDAP enkelt kan arbeta med.
 Dessa enklare datastrukturer är inte avsedda att ersätta de ursprungliga datastrukturerna, men de kan vara ett användbart sätt att distribuera data till en bredare publik.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Hur hållbart är ERDDAP projektet?</strong></a>
 <br>ERDDAP är mycket hållbart.
-<br>Vissa människor är förvånade och besvikna över att höra att ERDDAP mestadels utvecklas av en person (jag, Bob Simons).
-[Förresten, åsikterna på den här webbsidan är mina personliga åsikter och speglar inte nödvändigtvis någon ståndpunkt från regeringen eller National Oceanic and Atmospheric Administration .] De fruktar att om något händer mig så kommer det att vara slutet på ERDDAP .
+<br>Vissa människor är förvånade och besvikna över att höra att ERDDAP mestadels utvecklas av en person (var Bob Simons, nu Chris John).
+[Förresten, åsikterna på den här webbsidan är mina personliga åsikter och speglar inte nödvändigtvis någon ståndpunkt från regeringen eller National Oceanic and Atmospheric Administration .] De fruktar att om något händer mig, kommer det att vara slutet på ERDDAP .
 Det är helt enkelt inte sant.
 ERDDAP :s positionering för långsiktig hållbarhet är utmärkt och nära det bästa det kan vara.
+
 <p>Ja, jag är huvudutvecklaren av ERDDAP .
 Jag är en fullt finansierad federal anställd.
 Min finansiering är inte&quot;mjuka&quot;pengar, så jag tar inte emot eller förlitar mig på bidrag.
 Jag lägger mer än halva min tid på att utveckla ERDDAP .
 Resten av min tid går åt till att hantera datamängder.
-Det arbetet är användbart för ERDDAP eftersom jag behöver arbeta med riktiga datauppsättningar för att i detalj veta vad ERDDAP behöver göra.
-Mina chefer stöder mitt arbete med ERDDAP eftersom det gör det jag anställdes för att göra:
+Det arbetet är användbart för ERDDAP eftersom jag behöver arbeta med riktiga datamängder för att i detalj veta vad ERDDAP behöver göra.
+Mina chefer stöder mitt arbete med ERDDAP fullt ut eftersom det gör det jag anställdes för att göra:
 göra det lättare för fiskeriforskare (i första hand, men egentligen alla) att få vetenskaplig data från olika källor.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Det mirakulösa med programvara är att det inte kostar något att duplicera.</a> Så för att göra mitt jobb skriver jag ERDDAP för användning på ERD .
 Jag tror att det är det bästa möjliga sättet för mig att göra mitt jobb.
-Bara det skälet motiverar kostnaderna för att utveckla ERDDAP .
+Redan det skälet motiverar kostnaderna för att utveckla ERDDAP .
 (Jag tror att det kan visas att ERDDAP har sparat mer NOAA -forskares tid än att jag har lagt ner på att utveckla ERDDAP .
-Tid=Pengar.) Men sidofördelen är att vilken annan organisation som helst kan
+Time=Money.) Men sidofördelen är att vilken annan organisation som helst kan
 <a rel="bookmark" 
 href="https://erddap.github.io/setup.html">ladda ner, installera och använda ERDDAP</a> <strong>gratis</strong> för att distribuera sina vetenskapliga data.
 <p><a rel="bookmark" 
 href="https://erddap.github.io/setup.html#organizations"
 >Över 90 organisationer i minst 14 länder använder ERDDAP</a> .
 Kanske finns det något sådant som gratis lunch.
-<p>ERDDAP är ett Java -program.
+<p>ERDDAP är ett Java program.
 Källkoden för varje version finns på
 <a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, det mest använda systemet för samarbetande programvaruprojekt.
-Hittills har dessa grupper/personer bidragit med kod till ERDDAP :
-<ul><!-- start contributor's info -->
-<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> skrevs och bidrog med Jonathan Lafite och Philippe Makowski från R.Tech Engineering <!--
-<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> --> (licens:
-upphovsrättsskyddad öppen källkod).
-Tack, Jonathan och Philippe!
-<br>&nbsp;
-<li>TableWriterDataTable
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> skrevs och bidrog med Roland Schweitzer från NOAA (licens:
-upphovsrättsskyddad öppen källkod).
-Tack, Roland!
-<br>&nbsp;
-<li>json-ld
-<br>Den första versionen av
-<a href="#jsonld" rel="bookmark">Semantic Markup of Dataset with json-ld (JSON Linked Data)</a> -funktionen (och därmed allt det hårda arbetet med att utforma innehållet) skrevs och bidrog (licens:
-upphovsrättsskyddad öppen källkod) av Adam Leadbetter och Rob Fuller från Marine Institute i Irland.
-Tack, Adam och Rob!
-<br>&nbsp;
-<li>orderBy
-<br>Koden för
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean filtret</a> i tabledap och de omfattande ändringarna av koden för att stödja
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  >notationen <i>variabelName/divisor:offset</i></a> för alla orderBy filter skrevs och bidrog med (licens:
-upphovsrättsskyddad öppen källkod) av Rob Fuller och Adam Leadbetter från Marine Institute i Irland.
-Tack, Rob och Adam!
-<br>&nbsp;
-<li>Kantlösa markörtyper
-<br>Koden för tre nya markörtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) bidrog med Marco Alba från ETT / EMODnet Physics.
-Tack, Marco Alba!
-<br>&nbsp;
-<li>Översättningar av messages.xml
-<br>Den första versionen av koden i TranslateMessages.java som använder Googles översättningstjänst för att översätta messages.xml till olika språk skrevs av Qi Zeng, som arbetade som Google Summer of Code-praktikant.
-Tack, Qi!
-<br>&nbsp;
-<li>orderBy Summa
-<br>Koden för
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
-  >orderBy Sum-filtret</a> i tabledap (baserat på Rob Fuller och Adam Leadbetters orderByMean ) och knapparna Check All and Uncheck All på EDDGrid Data Access Form skrevs och bidrog med (licens:
-upphovsrättsskyddad öppen källkod) av Marco Alba från ETT Solutions och EMODnet.
-Tack, Marco!
-<br>&nbsp;
-<li>.transparentPng-förfrågningar utanför intervallet
-<br>ERDDAP accepterar nu förfrågningar om .transparentPng:er när latitud- och/eller longitudvärdena ligger helt eller delvis utanför intervallet.
-(Detta var ERDDAP GitHub Issues #19, postat av Rob Fuller -- tack för att du postade det, Rob.) Koden för att fixa detta skrevs av Chris John.
-Tack, Chris!
-<br>&nbsp;
-<li>Visa base64-bilddata i .htmlTable
-<br>Koden för att visa base64-bilddata i .htmlTable svar bidrog med Marco Alba från ETT/EMODnet Physics.
-Tack, Marco Alba!
-<br>&nbsp;
-<li>n Förbättring av trådar
-<br>nThreads-systemet för EDDTableFromFiles förbättrades avsevärt.
-Dessa ändringar leder till en enorm hastighetsförbättring (t.ex.
-2X snabbare när nThreads är inställd på 2 eller mer) för de mest utmanande förfrågningarna (när ett stort antal filer måste bearbetas för att samla in resultaten).
-Dessa förändringar kommer också att leda till en allmän påskyndning i hela ERDDAP .
-Koden för dessa ändringar har bidragit med Chris John.
-Tack, Chris!
-<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
--->
-</ul>
+<a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Krediter</a> ERDDAP poäng finns nu tillgängliga på en
+<a href="https://github.com/erddap/erddap/blob/main/CREDITS.md">separat sida</a> .
 Jag hoppas att andra kommer att bidra med kod i framtiden.
 Om något händer mig kommer mina chefer att anställa en ersättare med det specifika målet att han/hon fortsätter utvecklingen av ERDDAP .
 Vidare försöker jag skriva mycket ren kod.
 Jag skriver Java Doc-kommentarer.
 Jag skriver kommentarer i koden.
 Jag valde variabelnamn noggrant.
-Jag följer riktlinjerna för Java -formatering.
+Jag följer riktlinjerna för Java formatering.
 Allt detta är ett försök att göra koden mer läsbar, för andra programmerare som vill förstå och/eller ändra den, och för mig, för om ett år eller två kommer jag att ha glömt detaljerna om hur och varför koden skrevs som det var.
 Ren kod med bra kommentarer gör mitt pågående arbete med ERDDAP enklare, så jag har ett stort incitament att skriva ren kod med bra kommentarer.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Men alla mina svar hittills är inte särskilt viktiga.</a> Bara en sak som är riktigt viktig.
@@ -5673,27 +5616,27 @@ Jag känner till ett känt, lagom stort projekt med 10 utvecklare (jag kommer in
 De är beroende av bidrag.
 De går alltid med underskott.
 Deras beskyddare har alltid räddat dem i sista minuten, men börjar bli riktigt trött på att rädda dem.
-Så om de inte kan samla in en miljon dollar per år i bidragspengar (eller beskyddaren blir för trött på att rädda dem), kommer de att sluta.
+Så om de inte kan samla in en miljon dollar per år i bidragspengar (eller beskyddaren blir för trött på att rädda dem), slutar de.
 Och gruppen kan inte tänka sig att ha färre än 10 utvecklare.
 Varje utvecklare har en roll att spela i sin grupp.
-I ljuset av det förefaller det mig som att det är ett bra tecken på att ERDDAP kan utvecklas och aktivt utvecklas av bara en huvudutvecklare (som är fullt finansierad) med inofficiell hjälp av några andra.
+Mot bakgrund av det förefaller det mig som att det är ett bra tecken på att ERDDAP aktivt kan utvecklas och utvecklas av bara en huvudutvecklare (som är fullt finansierad) med inofficiell hjälp av några andra.
 I själva verket skulle det vara ett dåligt tecken om ERDDAP krävde flera utvecklare.
 Att ERDDAP bara har en huvudutvecklare betyder att det inte är en enorm uppgift som kräver massiv pågående finansiering; det är en relativt liten uppgift som kräver minimal ansträngning och finansiering.
 Det är mer hållbart, inte mindre.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Man kan tycka att det är en bra idé att anlita ett entreprenadföretag för att skriva mjukvara.</a> Mot en avgift kommer de att tillhandahålla utvecklare och lova kontinuitet (vilket är bra om inte/tills de går i konkurs).
 Men de har dig också över ett fat:
-du måste betala dem vad de begär annars finns det ingen mer utveckling, <strong>såvida inte</strong> programvaran är FOSS och du bara betalar dem för att arbeta med koden.
+du måste betala dem vad de begär annars finns det ingen mer utveckling, <strong>om inte</strong> programvaran är FOSS och du bara betalar dem för att arbeta med koden.
 Med FOSS har du alltid val om hur du ska gå vidare.
 Eftersom ERDDAP är FOSS, är entreprenörer alltid ett bra alternativ för dig eller någon med avseende på ERDDAP :
 om något händer mig (den enda huvudutvecklaren), eller om jag inte har tid att göra någon förändring som du vill, eller jag gå i pension och du inte gillar min ersättares arbete kan du alltid anlita en entreprenadfirma för att göra de ändringar du vill (eller göra dem själv).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Sammanfattningsvis har ERDDAP de två hållbarhetsegenskaper som betyder mest:</a>
 <ol>
 <li>ERDDAP är ett litet projekt (tillräckligt litet för att hanteras av en huvudutvecklare med inofficiell hjälp av några andra), så det kräver inte stora resurser.
-<li>ERDDAP är gratis programvara med öppen källkod, så ingen kan någonsin hindra dig eller någon annan från att arbeta på ERDDAP .
+<li>ERDDAP är gratis och öppen programvara, så ingen kan någonsin hindra dig eller någon annan från att arbeta på ERDDAP .
 </ol>
 Jag kan inte tänka mig en bättre situation.
 Jag hoppas att det lindrar alla farhågor du (eller någon annan) hade om ERDDAP :s hållbarhet.
-Om du hör människor ifrågasätta eller avskräcka användningen av ERDDAP eftersom det bara finns en huvudutvecklare, vänligen vänd dem till diskussionen ovan på denna URL:
+Om du hör människor ifrågasätta eller avskräcka användningen av ERDDAP eftersom det bara finns en huvudutvecklare, vänligen ställ dem till rätta genom att peka på diskussionen ovan på denna URL:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#hållbar</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5702,14 +5645,14 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Hur man citerar en datauppsättning i ett papper</a></strong>
 <br>Det är viktigt att låta läsarna veta hur du fick den information som du använde i din tidning.
-För varje datamängd du använde, vänligen titta på datasetets metadata i avsnittet Dataset Attribute Structure längst ned på .html-sidan för datamängden, t.ex.
+För varje datamängd du använde, titta på datasetets metadata i avsnittet Dataset Attribute Structure längst ned på .html-sidan för datamängden, t.ex.
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
-Metadata inkluderar ibland ett obligatoriskt eller föreslaget citeringsformat för datasetet.
+Metadata innehåller ibland ett obligatoriskt eller föreslaget citeringsformat för datamängden.
 &quot;Licens&quot;-metadata listar ibland begränsningar för användningen av data.
 <p>Så här genererar du ett citat för en datauppsättning:
-<br>Om du tänker på datamängden som en vetenskaplig artikel kan du generera ett citat baserat på författaren (se metadata för&quot;creator_name&quot;eller&quot;institution&quot;), datumet då du laddade ner datan, titeln (se metadata för&quot;title&quot;), och utgivaren (se metadata för&quot;publisher_name&quot;).
+<br>Om du tänker på datamängden som en vetenskaplig artikel kan du generera ett citat baserat på författaren (se metadata för&quot;creator_name&quot;eller&quot;institution&quot;), datumet då du laddade ned datan, titeln (se metadata för&quot;title&quot;), och utgivaren (se metadata för&quot;publisher_name&quot;).
 Om möjligt, vänligen inkludera den eller de specifika URL:erna som används för att ladda ner data.
 Om datauppsättningens metadata innehåller en
 <a rel="help" 
@@ -5720,9 +5663,14 @@ Om datauppsättningens metadata innehåller en
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Hur man citerar ERDDAP i ett papper</a></strong>
 <br>Om du vill citera själva ERDDAP i en vetenskaplig artikel, använd gärna något liknande
-<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, RA och Chris John.
+2022.
+ERDDAP .
+https://coastwatch.pfeg.noaa.gov/erddap .
+Monterey, CA:
+NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Vad står förkortningen&quot; ERDDAP &quot;för?</a></strong>
-<br>&quot; ERDDAP &quot;brukade vara en akronym, men det växte ifrån den ursprungliga beskrivningen.
+<br>&quot; ERDDAP &quot;brukade vara en akronym, men den växte ifrån den ursprungliga beskrivningen.
 Tänk bara på det som ett namn, inte en akronym.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Riktlinjer för datadistributionssystem</a></strong>
@@ -5734,11 +5682,11 @@ Tänk bara på det som ett namn, inte en akronym.
 <ul>
 <li>Den lilla ansträngningen att sätta upp ERDDAP ger många fördelar.
 <li>Om du redan har en webbtjänst för att distribuera dina data kan du ställa in ERDDAP för att komma åt dina data via den befintliga tjänsten eller via källfilerna eller databasen.
-Sedan kommer människor att ha ett annat sätt att komma åt din data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
+Då kommer människor att ha ett annat sätt att komma åt din data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
 <li>Om du har datauppsättningar som är mycket efterfrågade kan du installera
 <a rel="help" 
   href="https://erddap.github.io/grids.html"
-  >flera ERDDAP er som arbetar tillsammans</a> för att skala upp och möta behoven hos ett stort datadistributionscenter.
+  >flera ERDDAP :er som arbetar tillsammans</a> för att skala upp och möta behoven hos ett stort datadistributionscenter.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakta oss</a></h2>
 Om du har frågor, förslag eller kommentarer om ERDDAP i allmänhet (inte den här specifika ERDDAP installationen), skicka ett e-postmeddelande till <kbd>erd dot data at noaa dot gov</kbd> och inkludera ERDDAP URL:n som är direkt relaterad till din fråga eller kommentar.
@@ -5747,9 +5695,10 @@ Om du har frågor, förslag eller kommentarer om ERDDAP i allmänhet (inte den h
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Denna länk till en extern webbplats utgör inte ett stöd."></a> och klicka på&quot;Ansök om medlemskap&quot;.
-När du väl är medlem kan du posta din fråga där eller söka för att se om frågan redan har ställts och besvarats.
+När du är medlem kan du posta din fråga där eller söka för att se om frågan redan har ställts och besvarats.
 <p>ANSVARSFRISKRIVNING:
-Åsikterna på denna webbsida är Bob Simons personliga åsikter och återspeglar inte nödvändigtvis någon ståndpunkt från regeringen eller National Oceanic and Atmospheric Administration .
+Åsikterna på denna webbsida är Bob Simons personliga åsikter och återspeglar inte nödvändigtvis någon ståndpunkt från regeringen eller National Oceanic and Atmospheric Administration
+
 ]]></theLongDescriptionHtml>
 <Then>Sedan</Then>
 <twoClickMapDefaultTooltip>Ange en rektangel genom att klicka på två diagonala hörn. Gör det igen om det behövs.</twoClickMapDefaultTooltip>
@@ -5860,6 +5809,9 @@ https://unitsofmeasure.org/ucum.html
 
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://cfconventions.org/standard-names.html 
+https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 
 https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
 http://portal.chordsrt.com/about
@@ -6383,6 +6335,9 @@ https://jsfiddle.net
 http://jsonlines.org
 https://jsonlines.org
 
+http://jtds.sourceforge.net
+https://jtds.sourceforge.net
+
 http://kgs.uky.edu/arcgis
 https://kgs.uky.edu/arcgis
 
@@ -6424,6 +6379,9 @@ https://motherlode.ucar.edu
 
 http://motherlode.ucar.edu
 https://motherlode.ucar.edu
+
+http://nco.sourceforge.net
+https://nco.sourceforge.net
 
 http://nctr.pmel.noaa.gov
 https://nctr.pmel.noaa.gov

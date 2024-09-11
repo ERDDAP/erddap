@@ -14,34 +14,26 @@ package gov.noaa.pmel.sgt.contour;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-
+import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.ContourLineAttribute;
 import gov.noaa.pmel.sgt.DefaultContourLineAttribute;
-import gov.noaa.pmel.sgt.SGLabel;
-import gov.noaa.pmel.sgt.LayerNotFoundException;
-import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.LayerNotFoundException;
 import gov.noaa.pmel.sgt.LineAttribute;
+import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.sgt.StrokeDrawer;
-
-import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.GeoDate;
-
-import java.util.Vector;
-import java.util.Enumeration;
-
-import java.awt.Graphics;
+import gov.noaa.pmel.util.Point2D;
 import java.awt.Color;
-
+import java.awt.Graphics;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
- * <code>ContourLine</code> contains a single closed or open contour
- * and a list of its labels.
- * The level, closedness, and path are properties.
- * The path is stored as a <code>Vector</code> of <code>Point2D</code>
- * user coordinate values. <code>ContourLine</code> objects are
- * created by <code>Contour</code> and drawn by
- * <code>GridCartesianRenderer</code>.  Time coordinates are stored in
+ * <code>ContourLine</code> contains a single closed or open contour and a list of its labels. The
+ * level, closedness, and path are properties. The path is stored as a <code>Vector</code> of <code>
+ * Point2D</code> user coordinate values. <code>ContourLine</code> objects are created by <code>
+ * Contour</code> and drawn by <code>GridCartesianRenderer</code>. Time coordinates are stored in
  * the <code>Point2D</code> objects releative to a reference time.
  *
  * @author D. W. Denbo
@@ -66,6 +58,7 @@ public class ContourLine extends Vector {
    * @label attr
    */
   private ContourLineAttribute attr_ = null;
+
   private DefaultContourLineAttribute defaultAttr_ = null;
   private Vector conLabels_;
 
@@ -77,112 +70,93 @@ public class ContourLine extends Vector {
 
   private CartesianGraph cg_;
 
-    /** 
-     * Bob Simons added this to avoid memory leak problems.
-     */
-    public void releaseResources() throws Exception {
-        try {  
-            stroke_ = null;
-            attr_ = null;
-            defaultAttr_ = null;
-            if (conLabels_ != null) {
-                Vector o = conLabels_;
-                conLabels_ = null;
-                o.clear();
-            }
-            lnkContourLabel = null;
-            cg_ = null;   //not releaseResources() else infinite loop
-            if (JPane.debug) String2.log("sgt.contour.ContourLine.releaseResources() finished");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            if (JPane.debug) 
-                String2.pressEnterToContinue(); 
-        }
+  /** Bob Simons added this to avoid memory leak problems. */
+  public void releaseResources() throws Exception {
+    try {
+      stroke_ = null;
+      attr_ = null;
+      defaultAttr_ = null;
+      if (conLabels_ != null) {
+        Vector o = conLabels_;
+        conLabels_ = null;
+        o.clear();
+      }
+      lnkContourLabel = null;
+      cg_ = null; // not releaseResources() else infinite loop
+      if (JPane.debug) String2.log("sgt.contour.ContourLine.releaseResources() finished");
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+      if (JPane.debug) String2.pressEnterToContinue();
     }
+  }
 
-
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public ContourLine() {
     super();
     conLabels_ = new Vector();
     stroke_ = JPane.getStrokeDrawer();
   }
-  /**
-   * Constructor setting initial size and extend values of coordinate
-   * <code>Vector</code>.
-   */
+
+  /** Constructor setting initial size and extend values of coordinate <code>Vector</code>. */
   public ContourLine(int size, int extend) {
     super(size, extend);
     conLabels_ = new Vector();
     stroke_ = JPane.getStrokeDrawer();
   }
-  /**
-   * Constructor setting initial size of coordinate <code>Vector</code>.
-   */
+
+  /** Constructor setting initial size of coordinate <code>Vector</code>. */
   public ContourLine(int size) {
     super(size);
     conLabels_ = new Vector();
     stroke_ = JPane.getStrokeDrawer();
   }
-  /**
-   * Set the parent <code>CartesianGraph</code>.  Used internally by
-   * sgt.
-   */
+
+  /** Set the parent <code>CartesianGraph</code>. Used internally by sgt. */
   public void setCartesianGraph(CartesianGraph cg) {
     cg_ = cg;
   }
-  /**
-   * Set the attributes for the contour line.
-   */
+
+  /** Set the attributes for the contour line. */
   public void setAttributes(DefaultContourLineAttribute def, ContourLineAttribute attr) {
     defaultAttr_ = def;
     attr_ = attr;
   }
-  /**
-   * Set the <code>ContourLineAttribute</code>
-   */
+
+  /** Set the <code>ContourLineAttribute</code> */
   public void setContourLineAttribute(ContourLineAttribute attr) {
     attr_ = attr;
   }
 
-  /**
-   * Get the <code>ContourLineAttribute</code>
-   */
+  /** Get the <code>ContourLineAttribute</code> */
   public ContourLineAttribute getContourLineAttribute() {
     return attr_;
   }
-  /**
-   * Set the <code>DefaultContourLineAttribute</code>
-   */
+
+  /** Set the <code>DefaultContourLineAttribute</code> */
   public void setDefaultContourLineAttribute(DefaultContourLineAttribute def) {
-        defaultAttr_ = def;
-  }
-  /**
-   * Get the <code>DefaultContourLineAttribute</code>
-   */
-  public DefaultContourLineAttribute getDefaultContourLineAttribute() {
-        return defaultAttr_;
+    defaultAttr_ = def;
   }
 
-  void setClosed(boolean closed){
+  /** Get the <code>DefaultContourLineAttribute</code> */
+  public DefaultContourLineAttribute getDefaultContourLineAttribute() {
+    return defaultAttr_;
+  }
+
+  void setClosed(boolean closed) {
     closed_ = closed;
   }
-  /**
-   * Is the contour line closed?
-   */
+
+  /** Is the contour line closed? */
   public boolean isClosed() {
     return closed_;
   }
-  /**
-   * The level value of the contour line.
-   */
-  public double getLevel(){
+
+  /** The level value of the contour line. */
+  public double getLevel() {
     return level_;
   }
 
-  void setLevel(double level){
+  void setLevel(double level) {
     level_ = level;
   }
 
@@ -197,9 +171,8 @@ public class ContourLine extends Vector {
   void setKmax(int kmax) {
     kmax_ = kmax;
   }
-  /**
-   * Get the number of points in the contour line.
-   */
+
+  /** Get the number of points in the contour line. */
   public int getKmax() {
     return kmax_;
   }
@@ -213,9 +186,8 @@ public class ContourLine extends Vector {
   void setReferenceTime(GeoDate tref) {
     timeRef_ = tref;
   }
-  /**
-   * Get reference time for the time point of the <code>Point2D</code> object.
-   */
+
+  /** Get reference time for the time point of the <code>Point2D</code> object. */
   public GeoDate getReferenceTime() {
     return timeRef_;
   }
@@ -223,9 +195,8 @@ public class ContourLine extends Vector {
   void setXTime(boolean time) {
     xTime_ = time;
   }
-  /**
-   * Is the x coordinate time?
-   */
+
+  /** Is the x coordinate time? */
   public boolean isXTime() {
     return xTime_;
   }
@@ -233,9 +204,8 @@ public class ContourLine extends Vector {
   void setYTime(boolean time) {
     yTime_ = time;
   }
-  /**
-   * Is the y coordinate time?
-   */
+
+  /** Is the y coordinate time? */
   public boolean isYTime() {
     return yTime_;
   }
@@ -244,34 +214,31 @@ public class ContourLine extends Vector {
     /* k is reversal length */
     Point2D.Double point;
     int kkr;
-    int kh = 1 + k/2;
-    for(int kk=1; kk < kh; kk++) {
-      kkr = k+1-kk;
-      point = (Point2D.Double)elementAt(kk);
+    int kh = 1 + k / 2;
+    for (int kk = 1; kk < kh; kk++) {
+      kkr = k + 1 - kk;
+      point = (Point2D.Double) elementAt(kk);
       setElementAt(elementAt(kkr), kk);
       setElementAt(point, kkr);
     }
   }
-  /**
-   * Add a label to the contour line.
-   */
+
+  /** Add a label to the contour line. */
   public void addLabel(int point, SGLabel lab, double hgt, double wid) {
     ContourLabel clab = new ContourLabel(point, lab, hgt, wid);
     conLabels_.addElement(clab);
   }
-  /**
-   * Remove all labels.
-   */
+
+  /** Remove all labels. */
   public void removeAllLabels() {
     conLabels_.removeAllElements();
   }
-  /**
-   * Used internally by sgt.
-   */
+
+  /** Used internally by sgt. */
   public void draw(Graphics g) {
     int k, kk, loc, kp1;
-    double[] x = new double[kmax_+1];
-    double[] y = new double[kmax_+1];
+    double[] x = new double[kmax_ + 1];
+    double[] y = new double[kmax_ + 1];
     ContourLabel clab;
     double width, hhgt;
     double dxx, dyy, space;
@@ -290,13 +257,13 @@ public class ContourLine extends Vector {
     //
     // loop through labels
     //
-    k=1;
+    k = 1;
     Enumeration cenum = conLabels_.elements();
-    while(cenum.hasMoreElements()) {
-      clab = (ContourLabel)cenum.nextElement();
+    while (cenum.hasMoreElements()) {
+      clab = (ContourLabel) cenum.nextElement();
       loc = clab.getIndex();
       width = clab.getWidth();
-      hhgt = clab.getHeight()*0.5;
+      hhgt = clab.getHeight() * 0.5;
       label = clab.getLabel();
       //
       g.setColor(lineColor);
@@ -304,41 +271,41 @@ public class ContourLine extends Vector {
       //
       k = loc;
       kp1 = k + 1;
-      for(kk=kp1; kk <= kmax_; kk++) {
+      for (kk = kp1; kk <= kmax_; kk++) {
         dxx = x[kk] - x[k];
         dyy = y[kk] - y[k];
-        space = Math.sqrt(dxx*dxx+dyy*dyy);
-        if(space >= width) break;
+        space = Math.sqrt(dxx * dxx + dyy * dyy);
+        if (space >= width) break;
       }
-      xa = x[kk-1] - x[k];
-      xb = x[kk] - x[kk-1];
-      ya = y[kk-1] - y[k];
-      yb = y[kk] - y[kk-1];
-      aa = xb*xb + yb*yb;
-      bb = xa*xb + ya*yb;
-      cc = xa*xa + ya*ya - width*width;
-      zxy = (-bb + Math.sqrt(bb*bb - aa*cc))/aa;
-      dxx = xa + xb*zxy;
-      dyy = ya + yb*zxy;
+      xa = x[kk - 1] - x[k];
+      xb = x[kk] - x[kk - 1];
+      ya = y[kk - 1] - y[k];
+      yb = y[kk] - y[kk - 1];
+      aa = xb * xb + yb * yb;
+      bb = xa * xb + ya * yb;
+      cc = xa * xa + ya * ya - width * width;
+      zxy = (-bb + Math.sqrt(bb * bb - aa * cc)) / aa;
+      dxx = xa + xb * zxy;
+      dyy = ya + yb * zxy;
       xendl = x[k] + dxx;
       yendl = y[k] + dyy;
       //
       // compute label angle
       //
       angle = 90.0;
-      if(dyy < 0.0) angle = -90.0;
-      if(dxx != 0.0) {
-        angle = Math.atan(dyy/dxx)*180.0/Math.PI;
+      if (dyy < 0.0) angle = -90.0;
+      if (dxx != 0.0) {
+        angle = Math.atan(dyy / dxx) * 180.0 / Math.PI;
       }
       //
       // compute label position
       //
-      if(dxx >= 0) {
-        xlab = x[k] + hhgt*(0.5*dxx + dyy)/width;
-        ylab = y[k] + hhgt*(0.5*dyy - dxx)/width;
+      if (dxx >= 0) {
+        xlab = x[k] + hhgt * (0.5 * dxx + dyy) / width;
+        ylab = y[k] + hhgt * (0.5 * dyy - dxx) / width;
       } else {
-        xlab = xendl - hhgt*(0.5*dxx + dyy)/width;
-        ylab = yendl - hhgt*(0.5*dyy - dxx)/width;
+        xlab = xendl - hhgt * (0.5 * dxx + dyy) / width;
+        ylab = yendl - hhgt * (0.5 * dyy - dxx) / width;
       }
       label.setAngle(angle);
       label.setLocationP(new Point2D.Double(xlab, ylab));
@@ -349,47 +316,45 @@ public class ContourLine extends Vector {
       }
       g.setColor(lineColor);
       drawLineSegment(g, xendl, yendl, x[kk], y[kk]);
-      k=kk;
+      k = kk;
     }
-    if(k < kmax_) {
+    if (k < kmax_) {
       g.setColor(lineColor);
       drawLine(g, x, y, k, kmax_);
     }
   }
 
-  private void drawLine(Graphics g, double[] x, double[] y,
-                        int kstart, int kend) {
-    int size = kend-kstart+1;
+  private void drawLine(Graphics g, double[] x, double[] y, int kstart, int kend) {
+    int size = kend - kstart + 1;
     int[] xp = new int[size];
     int[] yp = new int[size];
     int i, k;
-    for(i=0, k=kstart; k <= kend; k++, i++) {
+    for (i = 0, k = kstart; k <= kend; k++, i++) {
       xp[i] = cg_.getLayer().getXPtoD(x[k]);
       yp[i] = cg_.getLayer().getYPtoD(y[k]);
     }
-    switch(defaultAttr_.getStyle()) {
-    case LineAttribute.HIGHLIGHT:
-      stroke_.drawHighlight(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.HEAVY:
-      stroke_.drawHeavy(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.DASHED:
-      stroke_.drawDashed(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.STROKE:
-      stroke_.drawStroke(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    default:
-    case LineAttribute.MARK:
-    case LineAttribute.MARK_LINE:
-    case LineAttribute.SOLID:
-      g.drawPolyline(xp, yp, size);
+    switch (defaultAttr_.getStyle()) {
+      case LineAttribute.HIGHLIGHT:
+        stroke_.drawHighlight(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.HEAVY:
+        stroke_.drawHeavy(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.DASHED:
+        stroke_.drawDashed(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.STROKE:
+        stroke_.drawStroke(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      default:
+      case LineAttribute.MARK:
+      case LineAttribute.MARK_LINE:
+      case LineAttribute.SOLID:
+        g.drawPolyline(xp, yp, size);
     }
   }
 
-  private void drawLineSegment(Graphics g, double x0, double y0,
-                               double x1, double y1) {
+  private void drawLineSegment(Graphics g, double x0, double y0, double x1, double y1) {
     int[] xp, yp;
     int size = 2;
     xp = new int[2];
@@ -398,39 +363,38 @@ public class ContourLine extends Vector {
     yp[0] = cg_.getLayer().getYPtoD(y0);
     xp[1] = cg_.getLayer().getXPtoD(x1);
     yp[1] = cg_.getLayer().getYPtoD(y1);
-    switch(defaultAttr_.getStyle()) {
-    case LineAttribute.HIGHLIGHT:
-      stroke_.drawHighlight(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.HEAVY:
-      stroke_.drawHeavy(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.DASHED:
-      stroke_.drawDashed(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    case LineAttribute.STROKE:
-      stroke_.drawStroke(g, xp, yp, size, (LineAttribute)defaultAttr_);
-      break;
-    default:
-    case LineAttribute.MARK:
-    case LineAttribute.MARK_LINE:
-    case LineAttribute.SOLID:
-      g.drawPolyline(xp, yp, size);
+    switch (defaultAttr_.getStyle()) {
+      case LineAttribute.HIGHLIGHT:
+        stroke_.drawHighlight(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.HEAVY:
+        stroke_.drawHeavy(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.DASHED:
+        stroke_.drawDashed(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      case LineAttribute.STROKE:
+        stroke_.drawStroke(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        break;
+      default:
+      case LineAttribute.MARK:
+      case LineAttribute.MARK_LINE:
+      case LineAttribute.SOLID:
+        g.drawPolyline(xp, yp, size);
     }
   }
-  /**
-   * Get x physical coordinates of the contour line.
-   */
+
+  /** Get x physical coordinates of the contour line. */
   public double[] getXArrayP() {
     double[] xp = null;
     Point2D.Double pt;
     GeoDate time;
-    if(cg_ != null) {
-      xp = new double[kmax_+1];
-      for(int k=0; k <= kmax_; k++) {
-        pt = (Point2D.Double)elementAt(k);
-        if(isXTime()) {
-          time = (new GeoDate(timeRef_)).increment(pt.x, GeoDate.DAYS);
+    if (cg_ != null) {
+      xp = new double[kmax_ + 1];
+      for (int k = 0; k <= kmax_; k++) {
+        pt = (Point2D.Double) elementAt(k);
+        if (isXTime()) {
+          time = new GeoDate(timeRef_).increment(pt.x, GeoDate.DAYS);
           xp[k] = cg_.getXUtoP(time);
         } else {
           xp[k] = cg_.getXUtoP(pt.x);
@@ -439,19 +403,18 @@ public class ContourLine extends Vector {
     }
     return xp;
   }
-  /**
-   * Get y physical coordinates of the contour line.
-   */
+
+  /** Get y physical coordinates of the contour line. */
   public double[] getYArrayP() {
     double[] yp = null;
     Point2D.Double pt;
     GeoDate time;
-    if(cg_ != null) {
-      yp = new double[kmax_+1];
-      for(int k=0; k <= kmax_; k++) {
-        pt = (Point2D.Double)elementAt(k);
-        if(isYTime()) {
-          time = (new GeoDate(timeRef_)).increment(pt.x, GeoDate.DAYS);
+    if (cg_ != null) {
+      yp = new double[kmax_ + 1];
+      for (int k = 0; k <= kmax_; k++) {
+        pt = (Point2D.Double) elementAt(k);
+        if (isYTime()) {
+          time = new GeoDate(timeRef_).increment(pt.x, GeoDate.DAYS);
           yp[k] = cg_.getYUtoP(time);
         } else {
           yp[k] = cg_.getYUtoP(pt.y);

@@ -15,26 +15,31 @@ package gov.noaa.pmel.sgt;
 import java.awt.Graphics;
 
 /**
- * Used internally by SGT to work with <code>Layer</code> and
- * <code>LayerContainer</code>.
+ * Used internally by SGT to work with <code>Layer</code> and <code>LayerContainer</code>.
+ *
  * @author Donald Denbo
  * @version $Revision: 1.3 $, $Date: 2003/09/15 22:05:41 $
  * @since 3.0
- **/
+ */
 public interface LayerControl {
   /**
    * Used internally by sgt.
+   *
    * @param pane Parent pane
    */
   void setPane(AbstractPane pane);
+
   /**
    * Used internally by sgt.
+   *
    * @param g Graphics object
    * @throws PaneNotFoundException Pane not found.
    */
   void draw(Graphics g) throws PaneNotFoundException;
+
   /**
    * Used internally by sgt.
+   *
    * @since 2.0
    * @param g Graphics object.
    * @throws PaneNotFoundException Pane not found.
@@ -42,7 +47,8 @@ public interface LayerControl {
   void drawDraggableItems(Graphics g) throws PaneNotFoundException;
 
   /**
-   * Get identifier of layer.  Internally uses getName() method for <code>Panel</code>.
+   * Get identifier of layer. Internally uses getName() method for <code>Panel</code>.
+   *
    * @since 3.0
    * @return identifier
    */

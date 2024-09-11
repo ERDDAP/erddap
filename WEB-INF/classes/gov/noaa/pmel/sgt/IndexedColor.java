@@ -20,11 +20,10 @@ import java.awt.Color;
  * @author Donald Denbo
  * @version $Revision: 1.4 $, $Date: 2003/08/22 23:02:32 $
  * @since 2.0
- **/
+ */
 public interface IndexedColor {
 
   /**
-   *
    * @param index
    * @return
    * @since 3.0
@@ -34,8 +33,7 @@ public interface IndexedColor {
   void setColor(int index, Color color);
 
   void setColor(int index, int red, int green, int blue);
-  /**
-   * Get the maximum legal value of the color index.
-   */
+
+  /** Get the maximum legal value of the color index. */
   int getMaximumIndex();
 }

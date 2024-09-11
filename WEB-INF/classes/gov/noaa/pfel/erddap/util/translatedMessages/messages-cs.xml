@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--  messages.xml obsahuje textové zprávy pro ERDDAP (které se čtou v EDStatic).
 Když na svůj server nainstalujete ERDDAP, všechny tyto zprávy mohou být ponechány tak, jak jsou,
 protože tyto zprávy jsou obvykle stejné v různých instalacích ERDDAP.
@@ -8,7 +9,7 @@ Nebo můžete tyto zprávy přeložit do jiných jazyků (např. španělštiny)
 VELMI DŮLEŽITÉ:
 
 Jeden řádek?
-Pokud se anglická zpráva zobrazí jako jeden dlouhý řádek (bez nových řádků), proveďte prosím
+Pokud se anglická zpráva zobrazí jako jeden dlouhý řádek (bez nových řádků), proveďte prosím 
 překlad také jeden řádek.
 
 HTML nebo ne?
@@ -21,9 +22,13 @@ Mnoho zpráv používá zástupné symboly ve stylu Java MessageFormat, jako jso
 V těchto zprávách musí být každá jednoduchá uvozovka &#39; uvozena jako &#39;&#39;.
 Viz https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 
-&pseudoEntity; se používá, když by se výraz neměl překládat, často proto, že je to a
+&pseudoEntity; se používá, když by se výraz neměl překládat, často proto, že je to a 
 zastoupit něco, co bude vyměněno na místo.
 Překladový systém VYŽADUJE, aby &quot;pseudoEntity&quot; používal pouze [a-zA-Z0-9].
+
+!!! CHYBA STROJNÍHO PŘEKLADU??? messages-bn.xml má všechny odkazy &lt;a&gt; duplikované.
+  messages-de.xml a -ga mají mnoho odkazů duplikovaných. Mám podezření, že takových je mnohem víc.
+
  -->
 <erddapMessages><!--  Tím se vrátí obsah HTML popisující požadavek na komprimované soubory.
 Viz https://httpd.apache.org/docs/1.3/mod/mod_mime.html
@@ -4042,7 +4047,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Buďte prosím trpěliví. Získání dat může chvíli trvat.)</patientData>
 <patientYourGraph>[Ten graf, který jste zadali. Prosím, buďte trpěliví.]</patientYourGraph>
 <!--  Pro každou velikost obrázku je pdfWidth a pdfHeight (v 1/144 palce).
@@ -5069,10 +5074,10 @@ To může odkazovat na &erddapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP je datový server, který vám poskytuje jednoduchý a konzistentní způsob stahování podmnožin vědeckých datových sad v běžných formátech souborů a vytváření grafů a map.
+ERDDAP je datový server, který vám poskytuje jednoduchý a konzistentní způsob stahování podmnožin vědeckých datových sad v běžných formátech souborů a vytváření grafů a map.
 <h2>Obsah</h2>
 <ul>
-<li><a rel="bookmark" href="#problems">Problémy, které ERDDAP snaží vyřešit</a>
+<li><a rel="bookmark" href="#problems">Problémy, které se ERDDAP snaží vyřešit</a>
 <li><a rel="bookmark" href="#solutions">Řešení ERDDAP</a>
 <ul>
 <li><a rel="bookmark" href="#video">Pro rychlý úvod do ERDDAP se podívejte na první polovinu tohoto<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
@@ -5083,13 +5088,13 @@ To může odkazovat na &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP vám umožňuje požadovat data standardizovaným způsobem.</a>
 <li><a rel="bookmark" href="#userUnits">Požadavky na mřížková data lze provádět v uživatelských jednotkách.</a>
 <li><a rel="bookmark" href="#fileFormats">ERDDAP odesílá výsledky v běžných formátech datových souborů.</a>
-<li><a rel="bookmark" href="#LLAT">ERDDAP standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku a čas ve výsledcích.</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP ve výsledcích standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku a čas.</a>
 <li><a rel="bookmark" href="#metadata">ERDDAP může přidávat nebo upravovat metadata.</a>
 <li><a rel="bookmark" href="#images">ERDDAP vám umožňuje požádat o obrázkové soubory .png a .pdf s grafy a mapami.</a>
 <li><a rel="bookmark" href="#compression">Požadavek na komprimované soubory</a>
 <li><a rel="bookmark" href="#interoperable">ERDDAP zajišťuje interoperabilitu různých typů datových serverů (OPeNDAP, OBIS, SOS, WMS, ...).</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP používá k uchovávání dat pouze dvě základní datové struktury.</a>
-<li><a rel="bookmark" href="#subscriptions">ERDDAP nabízí předplatné e-mailů/URL a RSS .</a>
+<li><a rel="bookmark" href="#subscriptions">ERDDAP nabízí e-mailové/URL a předplatné RSS .</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP je webová aplikace a webová služba.</a>
 <li><a rel="bookmark" href="#rest">ERDDAP má odkazy ve stylu REST a ROA, aby zpřístupnil své služby počítačovým programům.</a>
 <li><a rel="bookmark" href="#security">Bezpečnostní</a>
@@ -5103,16 +5108,16 @@ OPeNDAP ?
 DODS ?
 ERDDAP ?
 Jaký je v tom rozdíl?</a>
-<li><a rel="bookmark" href="#sweetSpot">Je ERDDAP řešením všech problémů s distribucí dat / s přístupem k datům?</a>
+<li><a rel="bookmark" href="#sweetSpot">Je ERDDAP řešením pro všechny problémy s distribucí dat / s přístupem k datům?</a>
 <li><a rel="bookmark" href="#sustainable">Jak udržitelný je projekt ERDDAP ?</a>
 <li><a rel="bookmark" href="#citeDataset">Jak citovat datovou sadu v článku</a>
-<li><a rel="bookmark" href="#cite">Jak ERDDAP v článku</a>
+<li><a rel="bookmark" href="#cite">Jak citovat ERDDAP v článku</a>
 <li><a rel="bookmark" href="#acronym">Co znamená zkratka „ERDDAP“?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Směrnice pro systémy distribuce dat</a>
 <li><a rel="bookmark" href="#setup">Můžete si nastavit svůj vlastní ERDDAP server.</a>
 <li><a rel="bookmark" href="#contact">Kontaktujte nás</a>
 </ul>
-<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Problémy, které ERDDAP snaží vyřešit</a></h2>
+<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Problémy, které se ERDDAP snaží vyřešit</a></h2>
 Bez ERDDAP, když člověk (nebo počítačový program) hledá na internetu konkrétní typ vědeckých dat (například údaje o teplotě povrchu moře z družice), nastávají problémy ...
 <ul>
 <li>Zajímavé datové sady je těžké najít, protože jsou na mnoha různých webových stránkách.
@@ -5123,18 +5128,21 @@ Bez ERDDAP, když člověk (nebo počítačový program) hledá na internetu kon
 <li>Každý web vrací data v jiném formátu (například XML, SOAP+XML, binární datový tok OPeNDAP, text ASCII, HDF 4, HDF 5, NetCDF, ...) a nejedná se o běžný formát souboru, který chtít.
 <br>&nbsp;
 <li>Data z různých webů se těžko porovnávají, protože data a časy jsou vyjádřeny v různých formátech, například „2.
-ledna 1985“, „02-JAN-1985“, „1/2/85“, „2/1/85 &quot;,&quot;1985-01-02&quot;, nebo dny od 1.
+leden 1985“, „2.
+leden-1985“, „1/2/85“, „1.
+2.
+85“.
+&quot;,&quot;1985-01-02&quot;, nebo dny od 1.
 ledna 1980 nebo ...).
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Řešení ERDDAP</a></h2>
 <ul>
-<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Pro rychlý úvod do ERDDAP se</a>
-<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">podívejte na první polovinu tohoto<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
+<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Pro rychlý úvod do ERDDAP</a>
+<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">se podívejte na první polovinu tohoto<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .</strong> (5 minut)
 <br>V něm si vědec stáhne data prognózy oceánských proudů z ERDDAP, aby modeloval únik toxických látek v oceánu pomocí
-<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">softwaru GNOME NOAA .
-<img 
+<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">softwaru GNOME NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> (za 5 minut!).
 Toto video ukazuje:
@@ -5156,7 +5164,7 @@ Adresa URL určuje celý požadavek.
 <li>ERDDAP může vracet data v mnoha
 <a href="#fileFormats">souborových formátech</a> a umožnit tak získávání dat do mnoha dalších programů.
 <li>NOAA spolupracuje:
-Analýza využívá dva bezplatné softwarové programy od NOAA, ERDDAP a GNOME, a data obsluhovaná NODC/NCDDC NOAA (usnadněno projektem NOAA UAF).
+Analýza využívá dva svobodné softwarové programy od NOAA, ERDDAP a GNOME, a data obsluhovaná NODC/NCDDC NOAA (usnadněno projektem NOAA UAF).
 <li>ERDDAP zjednodušuje dostupnost
 <a href="#scientificData">vědeckých dat</a> a pomáhá vědcům (a dalším) dělat jejich práci efektivněji.
 <li>Použití ERDDAP není těžké.
@@ -5168,8 +5176,8 @@ při vyhledávání datových sad nepoužívejte mezi vyhledávacími výrazy <k
 Je to implicitní.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP může získávat data z lokálních (na pevném disku serveru) a vzdálených (přístupných přes web) datových zdrojů.</a></strong>
-<br>Podívejte se na
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
+<br>Podívejte se
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">na seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP může sloužit mnoha typům vědeckých dat, nejen oceánografických dat.</a></strong>
 <br>ERDDAP je datový server, který byl napsán na
@@ -5184,16 +5192,16 @@ Server ERDDAP v ERD poskytuje oceánografická data, ale ERDDAP (program) může
 <a href="&erddapUrl;/search/index.html">fulltextové vyhledávání</a>,
 <a href="&erddapUrl;/categorize/index.html">vyhledávání podle kategorie</a> (známé také jako fasetové vyhledávání) a
 <a href="&erddapUrl;/search/advanced.html">pokročilé vyhledávání</a> .
-Rozšířené vyhledávání kombinuje všechny vyhledávací techniky a přidává vyhledávání datových sad, které obsahují data v rámci zeměpisné délky, zeměpisné šířky a časového rozsahu, takže můžete vyhledávat datové sady na základě mnoha různých kritérií současně.
+Rozšířené vyhledávání kombinuje všechny techniky vyhledávání a přidává vyhledávání datových sad, které obsahují data v rámci zeměpisné délky, zeměpisné šířky a časových rozsahů, takže můžete vyhledávat datové sady na základě mnoha různých kritérií současně.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP vám umožňuje požadovat data standardizovaným způsobem,</a></strong>
 <br>bez ohledu na protokol požadavku zdroje dat.
 <ul>
-<li>ERDDAP zpřístupňuje mřížková data prostřednictvím ERDDAP (implementace
-<a rel="help" href="&erddapUrl;/griddap/index.html">protokolu OPeNDAP hyperslab</a> v ERDDAP) a
+<li>ERDDAP zpřístupňuje mřížková data prostřednictvím griddap (implementace
+<a rel="help" href="&erddapUrl;/griddap/index.html">protokolu OPeNDAP hyperslab</a> v ERDDAP ) a
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
 <li>ERDDAP zpřístupňuje tabulková data prostřednictvím tabledap (implementace
-<a rel="help" href="&erddapUrl;/tabledap/index.html">protokolu omezení OPeNDAP</a> ERDDAP .
+<a rel="help" href="&erddapUrl;/tabledap/index.html">protokolu omezení OPeNDAP</a> ERDDAP ).
 <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -5237,8 +5245,8 @@ ERDDAP je strukturován pro tyto doplňky a nezdá se, že by existovaly nějak�
 Tyto soubory jsou vytvářeny za chodu.
 Protože existuje málo interních datových struktur, je snadné přidat další ovladače typu souboru.
 Podívejte se na úplný seznam
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">typů souborů mřížky a typů</a>
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">souborů tabulek</a> .
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">typů souborů mřížky</a> a
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">typů souborů tabulek</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP ve výsledcích standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku, hloubku a čas.</a></strong>
 <br>Pro usnadnění porovnávání dat z různých datových sad používají požadavky a výsledky v ERDDAP standardizované jednotky prostorové/časové osy:
@@ -5256,8 +5264,8 @@ Podívejte se na úplný seznam
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> -kompatibilní) a je-li formátován jako řetězec, je naformátován podle
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">&quot;extended&quot;formátu ISO 8601:2004 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> standardní <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> například <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Číselné časy můžete převést do/z ISO řetězcových časů pomocí převodníku
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">času</a> ERDDAP .) Aby se předešlo zmatkům v časovém pásmu a letním čase, jsou časové hodnoty vždy převedeny na časové pásmo Zulu (UTC, GMT).
+    title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> standardní <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> například <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Číselné časy můžete převést do/z ISO řetězcových časů pomocí
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">převodníku času</a> ERDDAP .) Aby se předešlo zmatkům v časovém pásmu a letním čase, jsou časové hodnoty vždy převedeny na časové pásmo Zulu (UTC, GMT).
 </ul>
 To usnadňuje specifikovat omezení v požadavcích, aniž byste se museli starat o formát dat nadmořské výšky (jsou kladné hodnoty nahoru nebo dolů?
 v metrech nebo sázích?) nebo formát časových dat (strašná říše možných formátů, například „Jan 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, nebo dny od 1.
@@ -5265,14 +5273,14 @@ ledna 1980).
 Díky tomu lze výsledky z různých zdrojů dat snadno porovnávat.
 <p>ERDDAP má nástroj pro
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">převod číselného času na/z času řetězce</a> .
-<br>Další podrobnosti naleznete v části
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jak ERDDAP s časem</a> .
+<br>Další podrobnosti najdete v tématu
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jak ERDDAP nakládá s časem</a> .
 <p>Protože zeměpisná délka, zeměpisná šířka, nadmořská výška a časové proměnné jsou specificky rozpoznávány, ERDDAP si je vědom geo/časových vlastností každé datové sady.
 To je užitečné při vytváření obrázků s mapami nebo časovými řadami a při ukládání dat do georeferencovaných typů souborů (např.
 .esriAscii, .geoJson a .kml ).
 <p>Dva běžné standardy pro psaní měrných jednotek jsou:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (externí odkaz)&quot;title=&quot;Tento odkaz na externí web nepředstavuje podporu.&quot;&gt; - od
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal link)&quot;title=&quot;Tento odkaz na externí web nepředstavuje podporu.&quot;&gt; - od
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, který se používá v
@@ -5307,11 +5315,11 @@ Například UCUM má pro stupně Celsia pouze jednu možnost rozlišovat malá a
 <br>&nbsp;
 </ul>
 Ačkoli ERDDAP nevyžaduje použití ani jednoho standardu jednotek, většina instalací ERDDAP upřednostňuje jeden nebo druhý.
-(ERDDAP :
-můžete to specifikovat pomocí tagu <kbd>&lt;units_standard&gt;</kbd> v setup.xml.) UDUNITS můžete převádět do/z jednotek UCUM pomocí převodníku
-<a rel="bookmark" href="&erddapUrl;/convert/units.html">jednotek</a> ERDDAP .
+(Správci ERDDAP :
+můžete to specifikovat pomocí tagu <kbd>&lt;units_standard&gt;</kbd> v setup.xml.) UDUNITS můžete převést do/z jednotek UCUM pomocí
+<a rel="bookmark" href="&erddapUrl;/convert/units.html">převodníku jednotek</a> ERDDAP .
 Když požadujete data nebo graf z
-<a href="&erddapUrl;/tabledap/index.html">datové sady tabledap</a>, můžete na konec adresy URL připojit <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> nebo <kbd>&amp;units(&quot;UCUM&quot;)</kbd> a požádat o jednotky UDUNITS nebo UCUM.
+<a href="&erddapUrl;/tabledap/index.html">datové sady tabledap</a>, můžete na konec adresy URL připojit <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> nebo <kbd>&amp;units(&quot;UCUM&quot;)</kbd> požádat o jednotky UDUNITS nebo UCUM.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">více informací</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP může přidávat nebo upravovat metadata.</a></strong>
@@ -5323,18 +5331,18 @@ Když požadujete data nebo graf z
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>) popisující údaje.
 ERDDAP umožňuje (a doporučuje) administrátorovi popsat metadata, která budou přidávána do datových sad a jejich proměnných za běhu.
-Viz část
-<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes</a> v
+Viz
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">část addAttributes</a> v
 <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">pokynech pro administrátory</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP vám umožňuje požádat o obrázkové soubory .png a .pdf s grafy a mapami</a></strong>
 <br>údajů navíc ke skutečným údajům.
-A ERDDAP Make A Graph vám umožňuje přizpůsobit obrázky.
+A ERDDAP &#39;s Make A Graph umožňuje přizpůsobit obrázky.
 Některá speciální použití těchto obrázků jsou:
 <ul>
-<li>Autoři webových stránek mohou do webové stránky
-<a rel="help" href="&erddapUrl;/images/embed.html">vložit graf s nejnovějšími daty</a> pomocí HTML značky &lt;img&gt;.
+<li>Autoři webových stránek mohou
+<a rel="help" href="&erddapUrl;/images/embed.html">do webové stránky vložit graf s nejnovějšími daty</a> pomocí HTML značky &lt;img&gt;.
 &ssUse; <!--li>Anyone can use or make
      
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">Google Gadgets</a>
@@ -5350,13 +5358,13 @@ Místo toho ERDDAP hledá
     >kódování pro přijetí <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> v hlavičce požadavku HTTP GET zaslané klientem.
-Pokud je v seznamu akceptovaných kódování nalezen podporovaný typ komprese (gzip, x-gzip nebo deflate ), ERDDAP <kbd>content-encoding</kbd> do hlavičky HTTP odpovědi a zkomprimuje data při jejich přenosu.
+Pokud je v seznamu akceptovaných kódování nalezen podporovaný typ komprese (gzip, x-gzip nebo deflate ), ERDDAP zahrne <kbd>content-encoding</kbd> do hlavičky HTTP odpovědi a komprimuje data při jejich přenosu.
 Je na klientském programu, aby vyhledával <kbd>content-encoding</kbd> a dekomprimoval data.
 Komprimované odezvy jsou často 3-10krát rychlejší, ačkoli požadavek na komprimované soubory .png nepřináší žádnou výhodu, protože obsah souborů je již zkomprimován.
 Prohlížeče a klienti OPeNDAP to dělají ve výchozím nastavení.
 Požadují komprimovaná data a vrácená data automaticky dekomprimují.
 Ostatní klienti (např.
-Java programy) to musí udělat výslovně.
+Java programy) to musí udělat explicitně.
 S curl přidejte <kbd>--compressed</kbd> do příkazového řádku, abyste curl řekli, aby požadoval komprimovanou odpověď a automaticky ji dekomprimoval.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP zajišťuje interoperabilitu různých typů datových serverů (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
@@ -5381,7 +5389,7 @@ Prostě získají data, která chtějí, ve formátu souboru, jaký chtějí.
 <li>Protože je pro lidské klienty a počítačové klienty obtížné vypořádat se s komplexní sadou možných struktur datových sad, ERDDAP používá pouze dvě základní datové struktury:
 <ul>
 <li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">mřížkovou datovou strukturu</a> (například pro satelitní data a data modelu) a
-<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabulková datová struktura</a> (například pro in-situ data bóje, stanice a trajektorie).
+<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabulkovou datovou strukturu</a> (například pro in-situ data bóje, stanice a trajektorie).
 </ul>
 <li>Jistě, ne všechna data mohou být vyjádřena v těchto strukturách, ale velká část ano.
 Zejména tabulky jsou velmi flexibilní datové struktury (podívejte se na fenomenální úspěch
@@ -5390,15 +5398,15 @@ Zejména tabulky jsou velmi flexibilní datové struktury (podívejte se na feno
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> programy).
 <li>To usnadňuje vytváření datových dotazů.
 <li>Díky tomu mají datové odpovědi jednoduchou strukturu, což usnadňuje poskytování dat v širší škále standardních typů souborů (které často podporují pouze jednoduché datové struktury).
-To je hlavní důvod, proč jsme ERDDAP tímto způsobem.
+To je hlavní důvod, proč jsme ERDDAP nastavili tímto způsobem.
 <li>To nám (nebo komukoli) zase velmi usnadňuje psaní klientského softwaru, který pracuje se všemi datovými sadami ERDDAP .
 <li>To usnadňuje porovnávání údajů z různých zdrojů, například pro integrovanou analýzu ekosystémů (IEA).
-<li>Jsme si velmi vědomi toho, že pokud jste zvyklí pracovat s daty v jiných datových strukturách, můžete si zpočátku myslet, že tento přístup je zjednodušený nebo nedostatečný.
+<li>Jsme si vědomi toho, že pokud jste zvyklí pracovat s daty v jiných datových strukturách, můžete si zpočátku myslet, že tento přístup je zjednodušený nebo nedostatečný.
 Ale všechny datové struktury mají kompromisy.
 Žádný není dokonalý.
-I struktury typu do-it-all mají své stinné stránky:
+Dokonce i do-it-all struktury mají své nevýhody:
 práce s nimi je složitá a soubory lze zapisovat nebo číst pouze pomocí speciálních softwarových knihoven.
-Pokud přijmete přístup ERDDAP natolik, že se pokusíte s ním pracovat, možná zjistíte, že má své výhody (zejména podporu více typů souborů, které mohou obsahovat datové odpovědi).
+Pokud přijmete přístup ERDDAP natolik, že se s ním pokusíte pracovat, možná zjistíte, že má své výhody (zejména podporu více typů souborů, které mohou obsahovat datové odpovědi).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Původní prezentace ERDDAP</a> (zejména
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">snímek datových struktur</a>) hovoří o těchto problémech.
 <li>A i když vám tento přístup zní divně, většina klientů ERDDAP si toho nikdy nevšimne – jednoduše uvidí, že všechny datové sady mají pěkně jednoduchou strukturu, a budou vděční, že mohou získat data ze široké škály zdrojů vrácených v širokou škálu formátů souborů.
@@ -5416,14 +5424,16 @@ Pokud přijmete přístup ERDDAP natolik, že se pokusíte s ním pracovat, mož
 <li>ERDDAP zjistí, pokud se soubor dat stane nedostupným (ale možná ne okamžitě).
 <li>ERDDAP zjistí, kdy bude tato datová sada opět dostupná.
 <li>ERDDAP neposkytuje žádné sliby ohledně vhodnosti nebo přesnosti těchto služeb (viz
-<a rel="license" href="&erddapUrl;/legal.html">ERDDAP</a>).
+<a rel="license" href="&erddapUrl;/legal.html">PROHLÁŠENÍ ERDDAP</a>).
 </ul>
+
+  
 <p><strong>Předplatné
 <a rel="help" href="&erddapUrl;/subscriptions/index.html">e-mailem/URL</a></strong> (není k dispozici u některých instalací ERDDAP ) Kdykoli se změní datová sada, systém předplatného e-mailu/URL vám <strong>okamžitě</strong> zašle e-mail nebo kontaktuje adresu URL, kterou určíte.
 Předplatné e-mailu/URL není u některých instalací ERDDAP dostupné.
 Chcete-li nastavit odběr e-mailů/URL, klikněte na jednu z ikon obálek <img alt="Subscribe" style="vertical-align:top" title="Ikona obálky." src="&erddapUrl;/images/envelope.gif" > které se objevují zcela vpravo na webových stránkách ERDDAP se seznamy datových sad (<a rel="contents" href="&erddapUrl;/info/index.html">příklad</a>) a na webových stránkách Data Access Forms a Make A Graph pro jednotlivé datové sady (<a href="&erddapUrl;/griddap/etopo180.html">příklad</a>), pokud tato instalace ERDDAP podporuje předplatné e-mailem/URL.
 (Počítačoví programátoři:
-pokud píšete webové služby, můžete použít systém URL k tomu, aby ERDDAP upozornil vaši webovou službu, kdykoli se změní datová sada.)
+pokud píšete webové služby, můžete použít systém URL k tomu, aby ERDDAP okamžitě upozornil vaši webovou službu, kdykoli se změní datová sada.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> Předplatné</strong> RSS je standardní systém pro upozorňování uživatelů, když se obsah webové stránky změnil.
@@ -5431,7 +5441,7 @@ Moderní webové prohlížeče mají vestavěného RSS klienta nebo můžete pou
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS čtečku <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> .
-ERDDAP nabízí samostatný RSS 2.01 pro každou datovou sadu, takže můžete zjistit, kdy se zajímavé datové sady změnily.
+ERDDAP nabízí samostatný kanál RSS 2.01 pro každou datovou sadu, takže můžete zjistit, kdy se zajímavé datové sady změnily.
 Chcete-li se přihlásit k odběru zdroje RSS datové sady, klikněte na jednu z ikon RSS<img alt="RSS" style="vertical-align:top" title="Ikona RSS." src="&erddapUrl;/images/rss.gif" > které se objevují zcela vpravo na webových stránkách ERDDAP se seznamy datových sad (<a rel="contents" href="&erddapUrl;/info/index.html">příklad</a>) nebo na webových stránkách Data Access Forms a Make A Graph pro jednotlivé datové sady (<a href="&erddapUrl;/griddap/etopo180.html">příklad</a>).
 <p><strong>Porovnání</strong> Služba RSS může být právě to, co hledáte.
 Je to pěkný standard.
@@ -5452,7 +5462,7 @@ na server ERDDAP a přesto by změny okamžitě nezjistil.
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> (se
 <a rel="help" href="&erddapUrl;/rest.html">službami pro počítačové programy</a>).</strong>
-<br>Ve skutečnosti formuláře na webových stránkách ERDDAP pouze generují speciálně vytvořené adresy URL, které jsou poté odeslány webovým službám ERDDAP .
+<br>Ve skutečnosti formuláře na webových stránkách ERDDAP pouze generují speciálně vytvořené adresy URL, které jsou poté odeslány do webových služeb ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP má</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
@@ -5464,12 +5474,12 @@ na server ERDDAP a přesto by změny okamžitě nezjistil.
 <br>Tyto funkce lze použít k vytvoření další webové služby nad ERDDAP (přičemž ERDDAP udělá veškerou práci!).
 ERDDAP není zamýšlen jako služba pro průzkum dat/grafování na vysoké úrovni.
 Místo toho je ERDDAP určen k poskytování služeb pro takové webové stránky a programy.
-Pokud tedy máte nápad na lepší rozhraní pro data, ERDDAP slouží, doporučujeme vám vytvořit si vlastní webovou aplikaci nebo webovou službu a použít ERDDAP jako základ.
-Přečtěte si více o ERDDAP
+Pokud tedy máte nápad na lepší rozhraní pro data, která ERDDAP slouží, doporučujeme vám vytvořit si vlastní webovou aplikaci nebo webovou službu a použít ERDDAP jako základ.
+Přečtěte si více o službách ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">pro počítačové programy</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Zabezpečení</a></strong> – ERDDAP standardně běží jako zcela veřejný server bez přihlašovacího systému a bez omezení přístupu k datům.
-Administrátor ERDDAP však může nakonfigurovat ERDDAP tak, aby omezil přístup k některým nebo všem datovým sadám uživatelům, kteří se přihlásí a mají přiřazeny určité role.
+<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Zabezpečení</a></strong> – Ve výchozím nastavení běží ERDDAP jako zcela veřejný server bez přihlašovacího systému a bez omezení přístupu k datům.
+Administrátor ERDDAP však může nakonfigurovat ERDDAP tak, aby omezil přístup k některým nebo všem datovým sadám uživatelům, kteří se přihlásí a mají přiřazené určité role.
 ERDDAP má vestavěné metody pro autentizaci (přihlášení).
 Pokud má instalace ERDDAP zapnuté ověřování, bude v horní části každé webové stránky odkaz „přihlásit se“.
 Uživatelé se nikdy nemusí přihlašovat, aby získali přístup k veřejně dostupným datovým sadám.
@@ -5480,7 +5490,7 @@ Datové sady lze nakonfigurovat tak, aby byly grafy a mapy veřejně přístupn�
 (<a rel="help" href="https://erddap.github.io/setup.html#security">více informací</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP zpracovává data v blocích.</a></strong>
-<br>Aby se ušetřila paměť (velký problém) a odpovědi začaly dříve, zpracovává ERDDAP požadavky na data po částech – opakovaně získává část dat ze zdroje, čistí je (například přidáváním
+<br>Aby se ušetřila paměť (velký problém) a aby se odpovědi spustily dříve, zpracovává ERDDAP požadavky na data po částech – opakovaně získává část dat ze zdroje, čistí je (například přidáváním
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadat <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>) a odeslání klientovi.
@@ -5505,20 +5515,19 @@ Ale ERDDAP má také schopnost aktivně získávat všechna dostupná data ze vz
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> :
 Pomocí
 <a href="#subscriptions">předplatitelských služeb</a> ERDDAP mohou být ostatní datové servery upozorněny, jakmile jsou k dispozici nová data, aby si mohly data vyžádat (vytažením dat).
-ERDDAP
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> a ERDDAP společnosti
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> používají předplacené služby a
-<a rel="help" href="https://erddap.github.io/setup.html#flag">systém</a> příznaků ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
-Můžete je zkombinovat s velkým efektem:
-pokud EDDGrid kopii EDDGrid kolem datové sady EDDGrid FromErddap (nebo obalíte EDDTableCopy kolem datové sady EDDTableFromErddap), ERDDAP automaticky vytvoří a udržuje místní kopii datové sady jiného ERDDAP .
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> a
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> společnosti ERDDAP používají předplacené služby a
+<a rel="help" href="https://erddap.github.io/setup.html#flag">systém příznaků</a> ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
+Můžete je kombinovat s velkým efektem:
+pokud obalíte kopii EDDGrid kolem datové sady EDDGrid FromErddap (nebo obalíte EDDTableCopy kolem datové sady EDDTableFromErddap), ERDDAP automaticky vytvoří a udržuje místní kopii datové sady jiného ERDDAP .
 Protože předplacené služby fungují, jakmile jsou k dispozici nová data, technologie push šíří data velmi rychle (během několika sekund).
-<p>Tato architektura dává každému správci ERDDAP na starosti určování, odkud data pro jeho/její ERDDAP pocházejí.
+<p>Tato architektura dává každému správci ERDDAP na starosti určování, odkud data pro jeho ERDDAP pocházejí.
 Ostatní správci ERDDAP mohou udělat totéž.
 Není potřeba koordinace mezi správci.
-Pokud se mnoho ERDDAP vzájemně propojí se svými ERDDAP, vytvoří se datová distribuční síť.
+Pokud se mnoho správců ERDDAP spojí navzájem se svými ERDDAP, vytvoří se datová distribuční síť.
 Data budou rychle, efektivně a automaticky šířena ze zdrojů dat (ERDDAP a další servery) na místa pro redistribuci dat (ERDDAP ) kdekoli v síti.
 Daný ERDDAP může být jak zdrojem dat pro některé datové sady, tak redistribučním místem pro jiné datové sady.
-Výsledná síť je zhruba podobná sítím pro distribuci dat vytvořenými pomocí programů, jako
+Výsledná síť je zhruba podobná sítím pro distribuci dat vytvořených pomocí programů, jako
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">je IDD/IDM Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, ale méně pevně strukturované.
@@ -5537,22 +5546,22 @@ Systém DODS vytvořil a používal protokol dods:
 na internetu.
 Když přišel HTTP a byl tak úspěšný, přešli z dods:
 na http:.
-<p>V určitém okamžiku si uvědomili, že systém je užitečný pro víc než jen oceánografická data.
+<p>V určitém okamžiku si uvědomili, že systém je užitečný pro více než jen oceánografická data.
 Zbavili se tedy názvu DODS (ačkoli žije v nějakém kódu) a vytvořili malou organizaci s názvem
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a napsal specifikaci
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP (Data Access Protocol)</a> .
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf"><img 
+      title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a napsal
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">specifikaci DAP (Data Access Protocol).
+<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, který standardizuje formát žádostí o metadata a/nebo data a odpovědi s metadaty a/nebo daty.
 OPeNDAP (organizace) je stále pastýřem DAP (specifikace) a je autorem Hyrax (datový server, který je často mylně označován jako OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP a další jsou datové servery (software), které implementují DAP .
 Každý z nich implementuje podmnožinu DAP, ale jiné věci dělají velmi odlišně.
-<p>ERDDAP používá kód (v adresáři „dods“) (ve skutečnosti napsal Jake Hamby z NASA JPL) pro některé funkce čtení dat z externích serverů DAP .
+<p>ERDDAP používá kód (v adresáři „dods“) (ve skutečnosti napsal Jake Hamby z NASA JPL) pro některé funkce čtení dat z externích DAP serverů.
 ERDDAP používá svůj vlastní kód k vypisování odpovědí DAP .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Je ERDDAP řešením všech problémů s distribucí dat / s přístupem k datům?</a></strong>
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Je ERDDAP řešením pro všechny problémy s distribucí dat / s přístupem k datům?</a></strong>
 <br>Ne.
 ERDDAP se snaží najít sladké místo, které je opravdu dobrým řešením většiny problémů s distribucí dat, kterým jsme čelili.
 ERDDAP využívá middlewarový přístup:
@@ -5561,21 +5570,21 @@ Je navržen jako agnostické řešení, které usiluje o to, aby ostatní datov�
 Existuje jeden dokonalý datový server, který dokonale splňuje potřeby každého?
 Myslíme si, že ne.
 A i když si myslíte, že existuje nebo bude, bude trvat dlouho, než na něj všichni přejdou, pokud vůbec.
-Do té doby je ERDDAP k dispozici právě teď, aby bylo možné zajistit interoperabilitu ostatních datových serverů a obsluhovat data právě teď.
+Do té doby je ERDDAP k dispozici právě teď, aby zajistil interoperabilitu ostatních datových serverů a obsluhoval data právě teď.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP dokáže zpracovat mnoho/většinu datových sad tak, jak je, ale ne všechny.</a> Není to tak, že by zbývající datové sady (např.
 data modelu využívající projekci krychlové koule) nebyly důležité.
-Jde jen o to, že ERDDAP vracet data v běžných souborových formátech (některé z nich jsou docela jednoduché), vylučuje složitější vnitřní datovou strukturu.
+Jde jen o to, že cíl ERDDAP vracet data v běžných souborových formátech (některé z nich jsou docela jednoduché), vylučuje složitější vnitřní datovou strukturu.
 Skupiny výzkumníků pracující se složitějšími datovými strukturami již často mají specializované datové servery a specializovaný klientský software, které jsou přizpůsobeny potřebám jejich komunity.
-ERDDAP jako datový server pro všeobecné použití se nesnaží těmto specializovaným datovým serverům konkurovat.
+ERDDAP, jako univerzální datový server, se nesnaží těmto specializovaným datovým serverům konkurovat.
 Jsou přizpůsobeni potřebám své komunity a odvádějí skvělou práci.
 Tyto datové sady však často „pochopí“ pouze specializovaný software v dané komunitě.
-<p>Řešení pro komplexní datové sady – ERDDAP má způsob, jak zpracovat složité datové sady, které nemůže zpracovat přímo.
+<p>Řešení pro komplexní datové sady – ERDDAP má způsob, jak zpracovat složité datové sady, se kterými nemůže pracovat přímo.
 Prostě jako
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relační databáze <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> může ukládat komplexní datovou sadu pomocí pouze jedné jednoduché datové struktury (tabulky), ERDDAP může obsluhovat data ze složitějších datových sad rozdělením zdrojové datové sady na několik datových sad ERDDAP, z nichž každá má podobné jednoduché datové struktury.
-Například některé datové sady mřížkového modelu prostředí lze uložit do ERDDAP vložením proměnných mořského povrchu ([čas][zeměpisná šířka][délka]) do jedné datové sady ERDDAP a vložením proměnných s nadmořskou výškou ([čas][nadmořská výška][ zeměpisná šířka][délka]) v jiné datové ERDDAP .
+Například některé datové sady mřížkovaného modelu prostředí lze uložit do ERDDAP vložením proměnných mořského povrchu ([čas][zeměpisná šířka][délka]) do jedné datové sady ERDDAP a vložením proměnných s nadmořskou výškou ([čas][nadmořská výška][ zeměpisná šířka][délka]) v jiné datové sadě ERDDAP .
 Víme, že to není ideální, ale je nutné umožnit ERDDAP vracet data v běžných souborových formátech (některé z nich jsou docela jednoduché).
 <p>Dalším přístupem k řešení komplexních datových sad (např.
 pro modelová data využívající projekci krychlové koule) je také nabídnout reprojektovanou verzi datové sady ([čas][nadmořská výška][zeměpisná šířka][délka]), se kterou může ERDDAP snadno pracovat.
@@ -5583,101 +5592,37 @@ Tyto jednodušší datové struktury nemají nahradit původní datové struktur
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Jak udržitelný je projekt ERDDAP ?</strong></a>
 <br>ERDDAP je velmi udržitelný.
-<br>Někteří lidé jsou překvapeni a zklamáni, když slyší, že ERDDAP většinou vyvíjí jedna osoba (já, Bob Simons).
-[Mimochodem, názory na této webové stránce jsou mými osobními názory a nemusí nutně odrážet jakýkoli postoj vlády nebo National Oceanic and Atmospheric Administration .] Obávají se, že pokud se mi něco stane, bude to konec ERDDAP .
+<br>Někteří lidé jsou překvapeni a zklamáni, když slyší, že ERDDAP většinou vyvíjí jedna osoba (byl Bob Simons, nyní Chris John).
+[Mimochodem, názory na této webové stránce jsou mými osobními názory a nemusí nutně odrážet jakékoli stanovisko vlády nebo National Oceanic and Atmospheric Administration .] Obávají se, že pokud se mi něco stane, bude to konec ERDDAP .
 To prostě není pravda.
-ERDDAP pro dlouhodobou udržitelnost je vynikající a blíží se tomu nejlepšímu, co by mohlo být.
+Pozice ERDDAP pro dlouhodobou udržitelnost je vynikající a téměř nejlepší, jaká by mohla být.
+
 <p>Ano, jsem hlavním vývojářem ERDDAP .
 Jsem plně financovaný federální zaměstnanec.
 Mé financování nejsou „měkké“ peníze, takže granty nedostávám ani se na ně nespoléhám.
-Více než polovinu svého času věnuji vývoji ERDDAP .
+Více než polovinu času trávím vývojem ERDDAP .
 Zbytek času trávím správou datových sad.
-Tato práce je užitečná pro ERDDAP protože potřebuji pracovat se skutečnými datovými sadami, abych podrobně věděl, co ERDDAP potřebuje udělat.
-Moji šéfové plně podporují mou práci na ERDDAP, protože dělá to, k čemu jsem byl najat:
+Tato práce je užitečná pro ERDDAP, protože potřebuji pracovat se skutečnými datovými sadami, abych podrobně věděl, co ERDDAP potřebuje udělat.
+Moji šéfové plně podporují mou práci na ERDDAP protože dělá to, k čemu jsem byl najat:
 usnadňuje rybářským vědcům (především, ale opravdu všem) získat vědecká data z různých zdrojů.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Na softwaru je zázračné, že jeho kopírování nic nestojí.</a> Abych dělal svou práci, píšu ERDDAP pro použití v ERD .
 Myslím, že je to pro mě nejlepší možný způsob, jak dělat svou práci.
 Tento důvod sám o sobě ospravedlňuje náklady na vývoj ERDDAP .
-(Myslím, že by se dalo ukázat, že ERDDAP ušetřil více času vědců NOAA, než který jsem strávil vývojem ERDDAP .
-Čas=Peníze.) Ale vedlejší výhodou je, že jakákoli jiná organizace si může
+(Myslím, že by se dalo prokázat, že ERDDAP ušetřil více času vědců NOAA, než který jsem strávil vývojem ERDDAP .
+Čas = peníze.) Ale vedlejší výhodou je, že jakákoli jiná organizace si může
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědecká data.
+href="https://erddap.github.io/setup.html">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědeckých údajů.
 <p><a rel="bookmark" 
 href="https://erddap.github.io/setup.html#organizations"
->ERDDAP používá více než 90 organizací v nejméně 14 zemích</a> .
+>ERDDAP využívá více než 90 organizací v nejméně 14 zemích</a> .
 Možná existuje něco jako oběd zdarma.
-<p>ERDDAP je program v Java .
+<p>ERDDAP je Java program.
 Zdrojový kód každé verze je na
 <a rel="bookmark" href="https://github.com/ERDDAP">GitHubu <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, nejběžněji používaný systém pro kolaborativní softwarové projekty.
-Doposud tyto skupiny/lidé přispěli kódem do ERDDAP :
-<ul><!-- start contributor's info -->
-<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> napsali a přispěli Jonathan Lafite a Philippe Makowski z R.Tech Engineering <!--
-<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> --> (licence:
-open source chráněný autorským právem).
-Děkuji, Jonathane a Philippe!
-<br>&nbsp;
-<li>TableWriterDataTable
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> napsal a přispěl Roland Schweitzer z NOAA (licence:
-open source chráněný autorským právem).
-Děkuji, Rolande!
-<br>&nbsp;
-<li>json-ld
-<br>Počáteční verzi
-<a href="#jsonld" rel="bookmark">sémantického značení datových sad s funkcí json-ld (JSON Linked Data)</a> (a tedy veškerou tvrdou práci při navrhování obsahu) napsali a přispěli (licence:
-open source chráněný autorským právem) Adam Leadbetter a Rob Fuller z Marine Institute v Irsku.
-Děkuji, Adame a Robe!
-<br>&nbsp;
-<li>orderBy
-<br>Kód pro
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean</a> orderByMean v tabledap a rozsáhlé změny kódu pro podporu
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  >zápisu <i>variableName/divisor:offset</i></a> pro všechny filtry orderBy napsali a přispěli (licence:
-open source chráněný autorským právem) Rob Fuller a Adam Leadbetter z Marine Institute v roce Irsko.
-Děkuji, Robe a Adame!
-<br>&nbsp;
-<li>Bezokrajové typy značek
-<br>Kód pro tři nové typy značek (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) přispěl Marco Alba z ETT / EMODnet Physics.
-Děkuji, Marco Alba!
-<br>&nbsp;
-<li>Překlady zpráv.xml
-<br>Počáteční verzi kódu v TranslateMessages.java, která používá překladatelskou službu Google k překladu messages.xml do různých jazyků, napsal Qi Zeng, který pracoval jako stážista Google Summer of Code.
-Děkuji, Qi!
-<br>&nbsp;
-<li>orderBy součtu
-<br>Kód pro
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
-  >filtr orderBy Sum</a> v tabledap (založený na orderByMean Roba Fullera a Adama Leadbettera) a tlačítka Check All a Uncheck All na formuláři EDDGrid Data Access Form napsal a přispěl (licence:
-open source chráněný autorským právem) Marco Alba z ETT Solutions.
-a EMODnet.
-Děkuji, Marco!
-<br>&nbsp;
-<li>Požadavky .transparentPng mimo dosah
-<br>ERDDAP nyní přijímá požadavky na .transparentPng, když jsou hodnoty zeměpisné šířky a/nebo délky částečně nebo zcela mimo rozsah.
-(Toto bylo číslo 19 ERDDAP GitHub Issues, zveřejněné Robem Fullerem -- děkujeme za zveřejnění, Robe.) Kód, který to opraví, napsal Chris John.
-Děkuji, Chrisi!
-<br>&nbsp;
-<li>Zobrazte data obrázku base64 v odpovědích .htmlTable
-<br>Kód pro zobrazení obrazových dat base64 v odpovědích .htmlTable přispěl Marco Alba z ETT / EMODnet Physics.
-Děkuji, Marco Alba!
-<br>&nbsp;
-<li>Vylepšení nThreads
-<br>Systém nThreads pro EDDTableFromFiles byl výrazně vylepšen.
-Tyto změny vedou k obrovskému zvýšení rychlosti (např.
-2X zrychlení, když je nThreads nastaveno na 2 nebo více) u nejnáročnějších požadavků (když je nutné zpracovat velké množství souborů, aby se získaly výsledky).
-Tyto změny také povedou k obecnému zrychlení celého ERDDAP .
-Kód pro tyto změny přispěl Chris John.
-Děkuji, Chrisi!
-<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
--->
-</ul>
+<a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Kredity</a> Kredity ERDDAP jsou nyní k dispozici na
+<a href="https://github.com/erddap/erddap/blob/main/CREDITS.md">samostatné stránce</a> .
 Doufám, že ostatní přispějí kódem v budoucnu.
 Pokud se mi něco stane, moji šéfové najmou náhradu s konkrétním cílem, aby pokračoval ve vývoji ERDDAP .
 Dále se snažím psát velmi čistý kód.
@@ -5685,7 +5630,7 @@ Píšu komentáře Java Doc.
 Komentáře píšu do kódu.
 Názvy proměnných jsem vybíral pečlivě.
 Dodržuji pokyny pro formátování Java .
-To vše je snaha, aby byl kód čitelnější, pro ostatní programátory, kteří mu chtějí porozumět a/nebo ho změnit, i pro mě, protože za rok nebo dva zapomenu podrobnosti o tom, jak a proč kód byl napsán tak, jak byl.
+To vše je snaha, aby byl kód čitelnější, pro ostatní programátory, kteří mu chtějí porozumět a/nebo ho změnit, i pro mě, protože za rok nebo dva zapomenu podrobnosti o tom, jak a proč kód bylo napsáno tak, jak bylo.
 Čistý kód s dobrými komentáři mi usnadňuje pokračující práci na ERDDAP, takže mám velkou motivaci psát čistý kód s dobrými komentáři.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ale všechny mé dosavadní odpovědi nejsou příliš důležité.</a> Jen jedna věc je opravdu důležitá.
 Pouze jedna věc zaručuje udržitelnost pro ERDDAP nebo jakýkoli softwarový projekt:
@@ -5697,7 +5642,7 @@ Konkrétně ERDDAP používá
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">softwarové licence kompatibilní s Apache <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, takže si s kódem může kdokoli dělat, co chce.
-<p>proč je to důležité?
+<p>Proč je to důležité?
 Někdo by si mohl myslet, že software bude v budoucnu spolehlivě dostupný, protože za ním stojí velká společnost.
 Ale například Google ukončil řadu projektů (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
@@ -5708,25 +5653,25 @@ Nechci si vybírat Google, protože Google mám opravdu rád a financuje velké 
 Microsoft ukončil projekty.
 Apple ukončil projekty.
 ...
-Jde o to, že pouhá podpora velké společnosti není zárukou, že projekt bude pokračovat.
+Jde o to, že jen podpora velké společnosti není zárukou, že projekt bude pokračovat.
 Uživatelé tohoto softwaru mají smůlu, <strong>pokud</strong> tento software nebyl (a tedy vždy je) Free and Open Source Software (FOSS).
 Kdykoli pak projeví zájem byť jen jednoho vývojáře, projekt se může a bude dále vyvíjet.
 FOSS je pojistka.
 Ve skutečnosti je FOSS jedinou pojistkou, jedinou pojistkou, na které záleží.
 FOSS zajišťuje, že pro software vždy existuje cesta vpřed.
 To je právo, které nám nikdo nikdy nemůže vzít.
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Někdo by si také mohl myslet, že software, který má velký tým vývojářů</a>, bude udržitelnější než software s jedním hlavním vývojářem.
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Někdo by si také mohl myslet, že software, který má velký tým vývojářů,</a> bude udržitelnější než software s jedním hlavním vývojářem.
 Ale spousta vývojářů obvykle potřebuje hodně financí.
 Znám slavný, přiměřeně velký projekt s 10 vývojáři (neudělám jim ostudu jejich vyjmenováním), kterému neustále vážně hrozí zastavení projektu, protože nemají dostatek financí.
 Spoléhají na dotace.
 Vždy mají deficit.
 Jejich patron je vždy zachránil na poslední chvíli, ale už ho to zachraňování opravdu unavuje.
-Takže pokud se jim nepodaří získat milion dolarů ročně z grantových peněz (nebo je patron příliš unavený jejich zachraňováním), přestanou.
+Takže pokud se jim nepodaří získat milion dolarů ročně v grantových penězích (nebo je patron příliš unavený jejich zachraňováním), přestanou.
 A skupina si nemůže představit, že by měla méně než 10 vývojářů.
 Každý vývojář má ve své skupině určitou roli.
 Ve světle toho se mi zdá, že je to skvělé znamení, že ERDDAP může být a je aktivně vyvíjen pouze jedním hlavním vývojářem (který je plně financován) s neoficiální pomocí několika dalších.
 Pokud by ERDDAP vyžadoval více vývojářů, bylo by to špatné znamení.
-To, že ERDDAP má pouze jednoho hlavního vývojáře, znamená, že se nejedná o obrovský úkol, který by vyžadoval masivní průběžné financování; jde o relativně malý úkol, který vyžaduje minimální úsilí a finanční prostředky.
+To, že ERDDAP má pouze jednoho hlavního vývojáře, znamená, že to není velký úkol, který by vyžadoval masivní průběžné financování; je to relativně malý úkol, který vyžaduje minimální úsilí a finanční prostředky.
 To je udržitelnější, ne méně.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Někdo by si mohl myslet, že najmout smluvní společnost na psaní softwaru je dobrý nápad.</a> Za poplatek poskytnou vývojáře a slíbí kontinuitu (což je dobré, pokud/dokud nezaniknou).
 Ale také vás mají přes barel:
@@ -5741,34 +5686,39 @@ pokud se mi něco stane (jednímu hlavnímu vývojáři), nebo když nemám čas
 </ol>
 Nedovedu si představit lepší situaci.
 Doufám, že to zbaví vás (nebo kohokoli jiného) obav z udržitelnosti ERDDAP .
-Pokud uslyšíte lidi zpochybňovat nebo odrazovat od používání ERDDAP, protože existuje pouze jeden hlavní vývojář, uveďte je prosím na pravou míru tím, že je nasměrujete na výše uvedenou diskusi na této adrese URL:
+Pokud slyšíte lidi zpochybňovat nebo odrazovat od používání ERDDAP, protože existuje pouze jeden hlavní vývojář, uveďte je prosím na pravou míru tím, že je nasměrujete na výše uvedenou diskusi na této adrese URL:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#sustainable</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
 for ERDDAP development, please contact me.
 I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
-<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Jak citovat datovou sadu v dokumentu</a></strong>
+<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Jak citovat datovou sadu v článku</a></strong>
 <br>Je důležité, abyste čtenáři věděli, jak jste získali data, která jste ve svém článku použili.
 Pro každou datovou sadu, kterou jste použili, se prosím podívejte na metadata datové sady v sekci Struktura atributů datové sady ve spodní části stránky .html pro datovou sadu, např.
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
 Metadata někdy obsahují požadovaný nebo navrhovaný formát citace pro datovou sadu.
-Metadata „licence“ někdy uvádějí omezení použití dat.
+Metadata „licence“ někdy uvádějí omezení pro použití dat.
 <p>Chcete-li vygenerovat citaci pro datovou sadu:
 <br>Pokud o datové sadě uvažujete jako o vědeckém článku, můžete vygenerovat citaci na základě autora (viz metadata „creator_name“ nebo&quot;institution&quot;), data, kdy jste data stáhli, názvu (viz metadata&quot;title&quot;) a vydavatel (viz metadata „název_vydavatele“).
 Pokud je to možné, uveďte konkrétní adresy URL použité ke stažení dat.
-Pokud metadata datové sady obsahují identifikátor
+Pokud metadata datové sady obsahují
 <a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
-  >digitálního objektu (DOI ) <img 
+  >identifikátor digitálního objektu (DOI ) <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, uveďte to prosím do citace, kterou vytvoříte.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Jak ERDDAP v článku</a></strong>
+<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Jak citovat ERDDAP v článku</a></strong>
 <br>Pokud chcete citovat samotný ERDDAP ve vědecké práci, použijte něco jako
-<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, RA a Chris John.
+2022.
+ERDDAP .
+https://coastwatch.pfeg.noaa.gov/erddap.
+Monterey, CA:
+NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Co znamená zkratka „ERDDAP“?</a></strong>
 <br>„ERDDAP“ bývala zkratka, ale přerostla původní popis.
 Teď to prosím berte jako jméno, ne jako zkratku.
@@ -5777,27 +5727,28 @@ Teď to prosím berte jako jméno, ne jako zkratku.
 <br>Bobovy názory na návrh a hodnocení systémů distribuce dat naleznete
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">zde</a> .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Můžete si</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Můžete</a></strong>
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>si nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
 <ul>
 <li>Malé úsilí o nastavení ERDDAP přináší mnoho výhod.
 <li>Pokud již máte webovou službu pro distribuci vašich dat, můžete nastavit ERDDAP pro přístup k vašim datům prostřednictvím stávající služby nebo prostřednictvím zdrojových souborů či databáze.
 Lidé pak budou mít jiný způsob přístupu k vašim datům a budou si moci data stáhnout v dalších formátech souborů nebo jako grafy či mapy.
-<li>Máte-li datové sady, po kterých je vysoká poptávka, můžete nainstalovat
+<li>Pokud máte datové sady, po kterých je vysoká poptávka, můžete nainstalovat
 <a rel="help" 
   href="https://erddap.github.io/grids.html"
-  >více ERDDAP, které spolupracují</a> na škálování a splňují potřeby velkého datového distribučního centra.
+  >více ERDDAP, které spolupracují</a> při škálování a splňují potřeby velkého datového distribučního centra.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontaktujte nás</a></h2>
-Máte-li dotazy, návrhy nebo připomínky k ERDDAP obecně (nikoli k této konkrétní instalaci ERDDAP ), pošlete e-mail na adresu <kbd>erd dot data at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nebo se můžete připojit ke skupině ERDDAP Google Group / Mailing List</a> na
+Máte-li dotazy, návrhy nebo připomínky k ERDDAP obecně (nikoli k této konkrétní instalaci ERDDAP ), pošlete e-mail na <kbd>erd dot data at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nebo se můžete připojit ke skupině ERDDAP Google Group / Mailing List</a> na adrese
 <a rel="help"
-href="https://groups.google.com/forum/#!forum/erddap">adrese https://groups.google.com/forum/#!forum/erddap <img 
+href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a kliknutím na „Zažádat o členství“.
+  title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a klikněte na „Zažádat o členství“.
 Jakmile se stanete členem, můžete tam umístit svou otázku nebo vyhledat, zda již byla otázka položena a zodpovězena.
-<p>OMEZENÍ ODPOVĚDNOSTI:
+<p>ODMÍTNUTÍ ODPOVĚDNOSTI:
 Názory na této webové stránce jsou osobními názory Boba Simonse a nemusí nutně odrážet jakýkoli postoj vlády nebo National Oceanic and Atmospheric Administration .
+
 ]]></theLongDescriptionHtml>
 <Then>Pak</Then>
 <twoClickMapDefaultTooltip>Určete obdélník kliknutím na dva diagonální rohy. V případě potřeby to udělejte znovu.</twoClickMapDefaultTooltip>
@@ -5908,6 +5859,9 @@ https://unitsofmeasure.org/ucum.html
 
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://cfconventions.org/standard-names.html 
+https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 
 https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
 http://portal.chordsrt.com/about
@@ -6431,6 +6385,9 @@ https://jsfiddle.net
 http://jsonlines.org
 https://jsonlines.org
 
+http://jtds.sourceforge.net
+https://jtds.sourceforge.net
+
 http://kgs.uky.edu/arcgis
 https://kgs.uky.edu/arcgis
 
@@ -6472,6 +6429,9 @@ https://motherlode.ucar.edu
 
 http://motherlode.ucar.edu
 https://motherlode.ucar.edu
+
+http://nco.sourceforge.net
+https://nco.sourceforge.net
 
 http://nctr.pmel.noaa.gov
 https://nctr.pmel.noaa.gov

@@ -1,0 +1,1140 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<erddapDatasets>
+<!-- GENERAL INFORMATION
+The information in this file specifies which datasets your ERDDAP will serve.
+The initial version of this file has a few examples which should work for you.
+But after your initial experiments with ERDDAP, 
+you should replace them with information for your datasets.
+
+You can change this document (e.g., add datasets, change metadata) while ERDDAP is running. 
+The changes will be detected the next time this document is read
+(as often as loadDatasetsMinMinutes).
+
+Each dataset has a reloadEveryNMinutes value (default = 10080 (one week)).
+When this document is reread, datasets that haven't been been reloaded in 
+their reloadEveryNMinutes will be reloaded.
+You only need to specify a reloadEveryNMinutes value if you anticipate that
+the dataset will change periodically.
+
+If this document has an xml error, processing will stop and an email
+will be sent to emailEverythingTo as specified in setup.xml.
+
+If you want to remove a dataset while ERDDAP is running, add 
+    active="false"
+to the dataset tag.  For example,
+    <dataset type="EDDGridFromDap" datasetID="erdMHchla8day" active="false">
+
+For more information, see 
+https://coastwatch.pfel.noaa.gov/erddap/download/setupDatasetsXml.html
+-->
+
+<!-- The tags below are described in setupDatasetsXml.html.
+     The defaults listed below are as of ERDDAP v2.00. -->
+<cacheMinutes></cacheMinutes>                                     <!-- default=60 --> 
+<decompressedCacheMaxGB></decompressedCacheMaxGB>                 <!-- default=10 --> 
+<decompressedCacheMaxMinutesOld></decompressedCacheMaxMinutesOld> <!-- default=15 --> 
+<drawLandMask></drawLandMask>                                     <!-- "over", "under" (default), "outline", or "off" -->
+<emailDiagnosticsToErdData></emailDiagnosticsToErdData>           <!-- "true (default) or "false" -->
+<graphBackgroundColor></graphBackgroundColor>                     <!-- 0xAARRGGBB, default is 0xffccccff -->
+<ipAddressMaxRequests></ipAddressMaxRequests>                     <!-- current default=7 -->
+<ipAddressMaxRequestsActive></ipAddressMaxRequestsActive>         <!-- current default=2 -->
+<ipAddressUnlimited></ipAddressUnlimited>                         <!-- default=(empty) -->
+<loadDatasetsMinMinutes></loadDatasetsMinMinutes>                 <!-- usually=default=15 -->
+<loadDatasetsMaxMinutes></loadDatasetsMaxMinutes>                 <!-- default=60 -->
+<logLevel></logLevel> <!-- "warning" (fewest messages), "info" (default), or "all" (most messages) -->
+<nGridThreads></nGridThreads>                                     <!-- default=1 -->
+<nTableThreads></nTableThreads>                                   <!-- default=1 -->
+<partialRequestMaxBytes></partialRequestMaxBytes>                 <!-- default=490000000 -->
+<partialRequestMaxCells></partialRequestMaxCells>                 <!-- default=10000000 -->
+<slowDownTroubleMillis></slowDownTroubleMillis>                   <!-- default=1000 -->
+<unusualActivity></unusualActivity>                               <!-- default=10000 -->
+<updateMaxEvents></updateMaxEvents>                               <!-- default=10 -->
+<!-- The defaults for the following tags are in messages.xml. -->
+<startHeadHtml5></startHeadHtml5>                                
+<endBodyHtml5></endBodyHtml5>
+<standardLicense></standardLicense>
+<standardContact></standardContact>
+<standardDataLicenses></standardDataLicenses>
+<standardDisclaimerOfEndorsement></standardDisclaimerOfEndorsement>
+<standardDisclaimerOfExternalLinks></standardDisclaimerOfExternalLinks>
+<standardGeneralDisclaimer></standardGeneralDisclaimer>
+
+<standardPrivacyPolicy><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a class="selfLink" id="privacyPolicy" href="#privacyPolicy" rel="help">Privacy Policy</a></h2>
+ERDDAP follows 
+<a rel="bookmark" href="https://www.noaa.gov/protecting-your-privacy"
+  >NOAA's Privacy Policy Guidelines</a>.
+]]></standardPrivacyPolicy>
+
+<startBodyHtml5><![CDATA[
+<body>
+<table class="compact nowrap" style="width:100%; background-color:#128CB5;">
+  <tr> 
+    <td style="text-align:center; width:80px;"><a rel="bookmark"
+      href="https://www.noaa.gov/"><img 
+      title="National Oceanic and Atmospheric Administration" 
+      src="&erddapUrl;/images/noaab.png" alt="NOAA"
+      style="vertical-align:middle;"></a></td> 
+    <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
+      <strong>ERDDAP</strong>
+      <br><small><small><small>&EasierAccessToScientificData;</small></small></small>
+      </td> 
+    <td style="text-align:right; font-size:small;"> 
+      &loginInfo; | &language; &nbsp; &nbsp;
+      <br>&BroughtToYouBy; 
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
+      href="https://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark"
+      href="https://www.fisheries.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark"
+      href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a> 
+      <a title="Environmental Research Division" rel="bookmark"
+      href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
+      &nbsp; &nbsp;
+      </td> 
+  </tr> 
+</table>
+]]></startBodyHtml5>
+
+<theShortDescriptionHtml><![CDATA[ 
+<h1>ERDDAP</h1>
+&erddapIs;
+&thisParticularErddap;
+[standardShortDescriptionHtml]
+]]></theShortDescriptionHtml>
+
+
+<!-- If you want to refuse requests from certain clients
+  (e.g., to fend off a Denial of Service attack or an overly zealous web robot), 
+  add their numeric IP address (e.g., 123.45.67.89) to this comma-separated list. 
+  You can also replace the last number in an IP address with * to block 0-255 (e.g., 123.45.67.*).
+  See your ERDDAP daily report for a list/tally of the most active requesters. -->
+<requestBlacklist></requestBlacklist>
+
+
+<!-- If you want to prevent specific people from using the email/URL subscription
+     system, add their email addresses to this comma-separated list. 
+     You can use the name "*" to blacklist an entire domain, e.g., *@example.com .
+-->
+<subscriptionEmailBlacklist>your.email@yourinstitution.edu, some.name@company.com, 
+another.name@company.com, *@example.com</subscriptionEmailBlacklist>
+
+
+<dataset type="EDDGridFromEtopo" datasetID="etopo180" />
+
+<dataset type="EDDGridFromEtopo" datasetID="etopo360" />
+
+<dataset type="EDDGridFromDap" datasetID="erdMH1chla1dayTDS" active="true">
+    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH1/chla/1day</sourceUrl>
+    <reloadEveryNMinutes>240</reloadEveryNMinutes>
+    <!-- sourceAttributes>
+        <att name="_History">Direct read of HDF4 file through CDM library</att>
+        <att name="Conventions">CF-1.6</att>
+        <att name="infoUrl">https://oceancolor.gsfc.nasa.gov/</att>
+        <att name="institution">NASA/GSFC OBPG</att>
+        <att name="L2_Flag_Names">ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL, NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT</att>
+        <att name="Map_Projection">Equidistant Cylindrical</att>
+        <att name="Processing_Version">2013.1.1QL</att>
+        <att name="Sensor_Name">HMODISA</att>
+        <att name="Software_Name">smigen</att>
+        <att name="Software_Version">4.42</att>
+        <att name="title">MODISA Level-3 Standard Mapped Image, Chlorophyll a, Daily, 4km</att>
+    </sourceAttributes -->
+    <addAttributes>
+        <att name="Conventions">CF-1.6, COARDS, ACDD-1.3</att>
+        <att name="creator_type">group</att>
+        <att name="creator_url">https://oceandata.sci.gsfc.nasa.gov</att>
+        <att name="data_bins">null</att>
+        <att name="data_maximum">null</att>
+        <att name="data_minimum">null</att>
+        <att name="easternmost_longitude">null</att>
+        <att name="end_orbit_number">null</att>
+        <att name="history">Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)
+ERD uses .ncml to add a time dimension.
+Direct read of HDF4 file through CDM library</att>
+        <att name="id">null</att>
+        <att name="identifier_product_doi_authority">https://dx.doi.org</att>
+        <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="keywords">algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, mass, mass_concentration_chlorophyll_concentration_in_sea_water, moderate, modis, nasa, ocean, ocean color, oceans,
+Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll; Oceans &gt; Ocean Optics &gt; Ocean Color,
+oci, optics, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, time, water</att>
+        <att name="keywords_vocabulary">GCMD Science Keywords</att>
+        <att name="latitude_step">null</att>
+        <att name="latitude_units">null</att>
+        <att name="license">https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/
+[standard]</att>
+        <att name="longitude_step">null</att>
+        <att name="longitude_units">null</att>
+        <att name="Metadata_Conventions">null</att>
+        <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
+        <att name="northernmost_latitude">null</att>
+        <att name="number_of_columns">null</att>
+        <att name="number_of_lines">null</att>
+        <att name="publisher_email">erd.data@noaa.gov</att>
+        <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
+        <att name="publisher_type">institution</att>
+        <att name="publisher_url">https://www.pfeg.noaa.gov</att>
+        <att name="southernmost_latitude">null</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+        <att name="start_orbit_number">null</att>
+        <att name="suggested_image_scaling_applied">null</att>
+        <att name="suggested_image_scaling_maximum">null</att>
+        <att name="suggested_image_scaling_minimum">null</att>
+        <att name="suggested_image_scaling_type">null</att>
+        <att name="sw_point_latitude">null</att>
+        <att name="sw_point_longitude">null</att>
+        <att name="summary">This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.</att>
+        <att name="testOutOfDate">now-3days</att>
+        <att name="title">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)</att>
+        <att name="westernmost_longitude">null</att>
+    </addAttributes>
+    <axisVariable>
+        <sourceName>time</sourceName>
+        <destinationName>time</destinationName>
+        <!-- sourceAttributes>
+            <att name="_CoordinateAxisType">Time</att>
+            <att name="axis">T</att>
+            <att name="long_name">Centered Time</att>
+            <att name="standard_name">time</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+        </addAttributes>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>latitude</sourceName>
+        <destinationName>latitude</destinationName>
+        <!-- sourceAttributes>
+            <att name="_CoordinateAxisType">Lat</att>
+            <att name="axis">Y</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Latitude</att>
+        </addAttributes>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>longitude</sourceName>
+        <destinationName>longitude</destinationName>
+        <!-- sourceAttributes>
+            <att name="_CoordinateAxisType">Lon</att>
+            <att name="axis">X</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Longitude</att>
+        </addAttributes>
+    </axisVariable>
+    <dataVariable>
+        <sourceName>MHchla</sourceName>
+        <destinationName>chlorophyll</destinationName>
+        <!-- sourceAttributes>
+            <att name="_FillValue" type="float">-32767.0</att>
+            <att name="long_name">Mean Chlorophyll a Concentration</att>
+            <att name="standard_name">concentration_of_chlorophyll_in_sea_water</att>
+            <att name="units">mg m^-3</att>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">30.0</att>
+            <att name="colorBarMinimum" type="double">0.03</att>
+            <att name="colorBarScale">Log</att>
+            <att name="ioos_category">Ocean Color</att>
+            <att name="units">mg m-3</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+
+
+<!-- For EDDGridSideBySide, the datasetID's for the parent and the children must be different. -->
+<dataset type="EDDGridSideBySide" datasetID="erdTAssh1day">
+<dataset type="EDDGridFromDap"    datasetID="erdTAsshl1day">
+    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <addAttributes> 
+        <att name="cols">null</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="creator_email">erd.data@noaa.gov</att>
+        <att name="creator_name">NOAA NMFS SWFSC ERD</att>
+        <att name="creator_type">institution</att>
+        <att name="creator_url">https://www.pfeg.noaa.gov</att>
+        <att name="cwhdf_version">null</att>
+        <att name="et_affine">null</att>
+        <att name="gctp_datum">null</att>
+        <att name="gctp_parm">null</att>
+        <att name="gctp_sys">null</att>
+        <att name="gctp_zone">null</att>
+        <att name="id">null</att>
+        <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshl_las.html</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="keywords">above, absolute, altitude, archiving, aviso, coast, coastwatch, data, degrees, earth, geodetics, geoid, global, gravity, height, interpretation, level, long, ltm, mean, noaa, node, ocean, oceanography, oceans,
+Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,
+properties, quality, satellite, science, science quality, sea, sea level, sea_surface_height_above_geoid, solid,
+Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,
+ssh, surface, TAsshl, term, time, topography, validation, wcn, west</att>
+        <att name="license">[standard]</att>
+        <att name="naming_authority">gov.noaa.pfeg.coastwatch</att>
+        <att name="pass_date">null</att>
+        <att name="polygon_latitude">null</att>
+        <att name="polygon_longitude">null</att>
+        <att name="project">CoastWatch (https://coastwatch.noaa.gov/)</att>
+        <att name="publisher_email">erd.data@noaa.gov</att>
+        <att name="publisher_name">NOAA NMFS SWFSC ERD</att>
+        <att name="publisher_type">institution</att>
+        <att name="publisher_url">https://www.pfeg.noaa.gov</att>
+        <att name="references">Aviso: https://www.aviso.altimetry.fr/en/my-aviso.html .</att>
+        <att name="rows">null</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+        <att name="start_time">null</att>
+        <att name="title">Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)</att>
+    </addAttributes>
+    <axisVariable>
+        <sourceName>time</sourceName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>altitude</sourceName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>lat</sourceName>
+        <destinationName>latitude</destinationName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>lon</sourceName>
+        <destinationName>longitude</destinationName>
+    </axisVariable>
+    <dataVariable>
+        <sourceName>TAsshl</sourceName>
+        <destinationName>ssh</destinationName>
+        <addAttributes> 
+            <att name="ioos_category">Sea Level</att>
+            <att name="long_name">Sea Surface Height</att>
+            <att name="colorBarMinimum" type="double">-10</att>
+            <att name="colorBarMaximum" type="double">10</att>
+            <att name="actual_range" /> 
+            <att name="numberOfObservations" /> 
+            <att name="percentCoverage" />
+        </addAttributes>
+    </dataVariable>
+</dataset>
+<dataset type="EDDGridFromDap" datasetID="erdTAsshd1day">
+    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshd/1day</sourceUrl>
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <addAttributes> 
+        <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+        <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+        <att name="infoUrl">https://coastwatch.pfeg.noaa.gov/infog/TA_sshd_las.html</att>
+        <att name="institution">NOAA CoastWatch, West Coast Node</att>
+        <att name="standard_name_vocabulary">CF-12</att>
+        <att name="title">Sea Surface Height Deviation, Aviso, Global, Science Quality (1 Day Composite)</att>
+        <att name="cwhdf_version" />
+        <att name="cols" />  
+        <att name="et_affine" />
+        <att name="gctp_datum" />
+        <att name="gctp_parm" />
+        <att name="gctp_sys" />
+        <att name="gctp_zone" />
+        <att name="id" />
+        <att name="pass_date" />
+        <att name="polygon_latitude" />
+        <att name="polygon_longitude" />
+        <att name="rows" />
+        <att name="start_time" />
+        <att name="time_coverage_end" />  
+        <att name="time_coverage_start" />
+    </addAttributes>
+    <axisVariable>
+        <sourceName>time</sourceName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>altitude</sourceName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>lat</sourceName>
+        <destinationName>latitude</destinationName>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>lon</sourceName>
+        <destinationName>longitude</destinationName>
+    </axisVariable>
+    <dataVariable>
+        <sourceName>TAsshd</sourceName>
+        <destinationName>sshd</destinationName>
+        <addAttributes> 
+            <att name="ioos_category">Sea Level</att>
+            <att name="long_name">Sea Surface Height Deviation</att>
+            <att name="colorBarMinimum" type="double">-0.5</att>
+            <att name="colorBarMaximum" type="double">0.5</att>
+            <att name="actual_range" /> 
+            <att name="numberOfObservations" /> 
+            <att name="percentCoverage" />
+        </addAttributes>
+    </dataVariable>
+</dataset>
+</dataset>
+
+
+
+
+
+
+<dataset type="EDDTableFromSOS" datasetID="ndbcSosWTemp" active="true">
+    <sourceUrl>http://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>
+    <sosVersion>1.0.0</sosVersion>
+    <sosServerType>IOOS_NDBC</sosServerType>
+    <reloadEveryNMinutes>1440</reloadEveryNMinutes>
+    <observationOfferingIdRegex>.+</observationOfferingIdRegex>
+    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>
+    <bboxOffering>urn:ioos:network:noaa.nws.ndbc:all</bboxOffering>
+    <bboxParameter>featureofinterest=BBOX:</bboxParameter>
+    <addAttributes>
+        <att name="cdm_data_type">TimeSeries</att>
+        <att name="cdm_timeseries_variables">station_id, longitude, latitude, sensor_id</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="Metadata_Conventions">null</att>
+        <att name="infoUrl">http://sdf.ndbc.noaa.gov/sos/</att>
+        <att name="institution">NOAA NDBC</att>
+        <att name="keywords">
+Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height,
+Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature,
+altitude, atmosphere, height, identifier, ndbc, noaa, ocean, oceans, sea, sea_water_temperature, seawater, sensor, sos, station, temperature, time, water</att>
+        <att name="keywords_vocabulary">GCMD Science Keywords</att>
+        <att name="license">[standard]</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+        <att name="summary">The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.
+
+Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.</att>
+        <att name="title">NOAA NDBC SOS, 2006-present, sea_water_temperature</att>
+    </addAttributes>
+    <longitudeSourceName>longitude (degree)</longitudeSourceName>
+    <latitudeSourceName>latitude (degree)</latitudeSourceName>
+    <altitudeSourceName>depth (m)</altitudeSourceName>
+    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>
+    <timeSourceName>date_time</timeSourceName>
+    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ssZ</timeSourceFormat>
+    <dataVariable>
+        <sourceName>sensor_id</sourceName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="comment">Always check the quality_flags before using this data.</att>
+            <att name="ioos_category">Identifier</att>
+            <att name="long_name">Sensor ID</att>
+            <att name="observedProperty">http://mmisw.org/ont/cf/parameter/sea_water_temperature</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>sea_water_temperature (C)</sourceName>
+        <destinationName>sea_water_temperature</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">32</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Sea Water Temperature</att>
+            <att name="observedProperty">http://mmisw.org/ont/cf/parameter/sea_water_temperature</att>
+            <att name="standard_name">sea_water_temperature</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+
+
+<!-- Here are some excellent gridded datasets that you can include in your ERDDAP
+     via EDDGridFromErddap links. All requests for actual data from these
+     datasets get rerouted to the source server. -->
+
+<!-- JPL High Resolution SST -->
+<dataset type="EDDGridFromErddap" datasetID="jplG1SST" active="true">
+    <!-- GHRSST Global 1-km Sea Surface Temperature (G1SST), Global, 0.01 Degree, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplG1SST</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true">
+    <!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41</sourceUrl>
+</dataset>
+
+<!-- NAVGEM -->
+<dataset type="EDDGridFromErddap" datasetID="erdNavgem05D10mWind_LonPM180" active="true">
+    <!-- Navy Global Environmental Model (NAVGEM), 0.5 degree, 10 m Wind -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdNavgem05D10mWind_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdNavgem05D20mWind_LonPM180" active="true">
+    <!-- Navy Global Environmental Model (NAVGEM), 0.5 degree, 20 m Wind -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdNavgem05D20mWind_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdNavgem05D500mb_LonPM180" active="true">
+    <!-- Navy Global Environmental Model (NAVGEM), 0.5 degree, 500 hPa Height -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdNavgem05D500mb_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdNavgem05DPres_LonPM180" active="true">
+    <!-- Navy Global Environmental Model (NAVGEM), 0.5 degree, Pressure MSL -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdNavgem05DPres_LonPM180</sourceUrl>
+</dataset>
+
+<!-- NCDC Ocean Winds -->
+<dataset type="EDDGridFromErddap" datasetID="ncdcOw6hr_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended 6-Hourly 0.25-degree Sea Surface Winds -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOw6hr_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="ncdcOwClm9505_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended 0.25-degree Sea Winds, Climatological Monthly Means -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwClm9505_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="ncdcOwDly_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended Daily 0.25-degree Sea Surface Winds -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwDly_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="ncdcOwMon_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended Monthly 0.25-degree Sea Surface Winds -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwMon_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="ncdcOwDlyStrs_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended Daily 0.25-degree Sea Surface Wind Stress -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwDlyStrs_LonPM180</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="ncdcOwMonStrs_LonPM180" active="true">
+    <!-- NOAA/NCDC Blended Monthly 0.25-degree Sea Surface Wind Stress -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOwMonStrs_LonPM180</sourceUrl>
+</dataset>
+
+<!-- Miami Currents -->
+<dataset type="EDDGridFromErddap" datasetID="miamicurrents">
+  <defaultGraphQuery>&amp;.draw=vectors</defaultGraphQuery>
+  <sourceUrl>http://cwcgom.aoml.noaa.gov/erddap/griddap/miamicurrents</sourceUrl>
+</dataset>
+
+<!-- Aqua MODIS -->
+<dataset type="EDDGridFromErddap" datasetID="erdMH1cflh1day" active="true">
+    <!-- Fluorescense Line Height, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1cflh1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1cflh8day" active="true">
+    <!-- Fluorescense Line Height, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1cflh8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1cflhmday" active="true">
+    <!-- Fluorescense Line Height, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1cflhmday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1chla1day" active="true">
+    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1chla8day" active="true">
+    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1chlamday" active="true">
+    <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1kd4901day" active="true">
+    <!-- Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1kd4901day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1kd4908day" active="true">
+    <!-- Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1kd4908day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1kd490mday" active="true">
+    <!-- Diffuse Attenuation K490, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1kd490mday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1par01day" active="true">
+    <!-- Photosynthetically Available Radiation, Aqua MODIS, NPP, L3SMI, Global, Science Quality (1 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1par01day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1par08day" active="true">
+    <!-- Photosynthetically Available Radiation, Aqua MODIS, NPP, L3SMI, Global, Science Quality (8 Day Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1par08day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdMH1par0mday" active="true">
+    <!-- Photosynthetically Available Radiation, Aqua MODIS, NPP, L3SMI, Global, Science Quality (Monthly Composite) -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1par0mday</sourceUrl>
+</dataset>
+
+<!-- VIIRS -->
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018chla1day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Chlorophyll a, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018chla1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018chla8day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Chlorophyll a, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018chla8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018chlamday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Chlorophyll a, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018chlamday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018k4901day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, K490, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018k4901day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018k4908day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, K490, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018k4908day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018k490mday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, K490, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018k490mday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018par1day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PAR, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018par1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018par8day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PAR, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018par8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018parmday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PAR, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018parmday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018pic1day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PIC, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018pic1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018pic8day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PIC, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018pic8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018picmday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, PIC, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018picmday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018poc1day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, POC, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018poc1day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018poc8day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, POC, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018poc8day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018pocmday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, POC, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018pocmday</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018r6711day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Reflectance at 671 nm, Evaluation Data, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018r6711day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018r6718day" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Reflectance at 671 nm, Evaluation Data, 8-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018r6718day</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="erdVH2018r671mday" active="true">
+    <!-- VIIRSN, Suomi-NPP, Level-3 SMI, Global, 4km, Reflectance at 671 nm, Evaluation Data, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVH2018r671mday</sourceUrl>
+</dataset>
+
+<!-- Aquarius -->
+<dataset type="EDDGridFromErddap" datasetID="jplAquariusSSS3MonthV5" active="true">
+    <!-- Aquarius Sea Surface Salinity, Version 5, Global, 3-Month -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSS3MonthV5</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="jplAquariusSSS7DayV5" active="true">
+    <!-- Aquarius Sea Surface Salinity, Version 5, Global, 7-Day -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSS7DayV5</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="jplAquariusSSSDailyV5" active="true">
+    <!-- Aquarius Sea Surface Salinity, Version 5, Global, Daily -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSSDailyV5</sourceUrl>
+</dataset>
+<dataset type="EDDGridFromErddap" datasetID="jplAquariusSSSMonthlyV5" active="true">
+    <!-- Aquarius Sea Surface Salinity, Version 5, Global, Monthly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSSMonthlyV5</sourceUrl>
+</dataset>
+
+
+<!-- Here are some excellent tabular datasets that you can include in your ERDDAP
+     via EDDTableFromErddap links. All requests for actual data from these
+     datasets get rerouted to the source server. -->
+<dataset type="EDDTableFromErddap" datasetID="cwwcNDBCMet" active="true">
+    <!-- NDBC Standard Meteorological Buoy Data -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="erdGtsppBest" active="true">
+    <!-- Global Temperature and Salinity Profile Programme (GTSPP) Data -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyAdcp" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, ADCP -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyAdcp</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyAirt" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyAirt</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyBf" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Buoyancy Flux -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyBf</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyBp" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Barometric (Air) Pressure -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyBp</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyCur" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Currents -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyCur</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyD" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Potential Density Anomaly -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyD</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyDyn" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Dynamic Height -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyDyn</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyEmp" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Evaporation Minus Precipitation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyEmp</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyEvap" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Evaporation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyEvap</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyHeat" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Heat Content -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyHeat</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyIso" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 20C Isotherm Depth -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyIso</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyLw" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Longwave Radiation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyLw</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyLwnet" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Net Longwave Radiation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyLwnet</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyPos" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Position -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyPos</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyQlat" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Latent Heat Flux -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyQlat</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyQnet" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Total Heat Flux -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyQnet</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyQsen" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sensible Heat Flux -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyQsen</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyRad" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Downgoing Shortwave Radiation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyRad</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyRain" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Precipitation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyRain</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyRf" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Heat Flux Due To Rain -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyRf</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyRh" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Relative Humidity -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyRh</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyS" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Salinity -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyS</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDySsd" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sigma-Theta -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySsd</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDySss" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sea Surface Salinity -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySss</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDySst" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sea Surface Temperature -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDySwnet" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Net Shortwave Radiation -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySwnet</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyT" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Temperature -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyT</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyTau" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Wind Stress -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyTau</sourceUrl>
+</dataset>
+<dataset type="EDDTableFromErddap" datasetID="pmelTaoDyW" active="true">
+    <!-- TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Wind -->
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDyW</sourceUrl>
+</dataset>
+
+<dataset type="EDDGridFromErddap" datasetID="erdMWchla1day" active="true">
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchla1day</sourceUrl>
+</dataset>
+
+<dataset type="EDDTableFromErddap" datasetID="rlPmelTaoDySst" active="true">
+    <sourceUrl>http://localhost:8080/erddap/tabledap/pmelTaoDySst</sourceUrl>
+</dataset>
+
+<dataset type="EDDGridFromErddap" datasetID="erdBAssta5day">
+    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day</sourceUrl>
+</dataset>
+
+<!-- This is an example of EDDTableFromNcFiles, but commented out since you won't have these files.
+<dataset type="EDDTableFromNcFiles" datasetID="cwwcNDBCMetF">
+    <reloadEveryNMinutes>10</reloadEveryNMinutes>
+    <accessibleViaFiles>true</accessibleViaFiles>
+    <fileDir>/u00/data/points/ndbcMet/</fileDir>
+    <recursive>false</recursive>
+    <fileNameRegex>NDBC_.*\x2Enc</fileNameRegex>
+    <metadataFrom>last</metadataFrom>
+    <preExtractRegex>^NDBC_</preExtractRegex>
+    <postExtractRegex>_met\x2Enc$</postExtractRegex>
+    <extractRegex>.*</extractRegex>
+    <columnNameForExtract>station</columnNameForExtract>
+    <sortedColumnSourceName>TIME</sortedColumnSourceName>
+    <addAttributes>
+        <att name="cdm_data_type">TimeSeries</att>
+        <att name="featureType">TimeSeries</att>
+        <att name="cdm_timeseries_variables">station, longitude, latitude</att>
+        <att name="subsetVariables">station, longitude, latitude</att>
+        <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+        <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+        <att name="date_created">null</att>
+        <att name="date_issued">null</att>
+        <att name="id">null</att>
+        <att name="infoUrl">http://www.ndbc.noaa.gov/</att>
+        <att name="institution">NOAA NDBC, CoastWatch WCN</att>
+        <att name="keywords">
+Earth Science &gt; Atmosphere &gt; Air Quality &gt; Visibility,
+Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Surface Pressure,
+Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,
+Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,
+Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,
+Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Height,
+Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Period,
+Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Speed/Direction
+</att>
+        <att name="keywords_vocabulary">GCMD Science Keywords</att>
+        <att name="license">[standard]</att>
+        <att name="sourceUrl">http://www.ndbc.noaa.gov/</att>
+        <att name="summary">The National Data Buoy Center (NDBC) distributes meteorological data from
+moored buoys maintained by NDBC and others. Moored buoys are the weather
+sentinels of the sea. They are deployed in the coastal and offshore waters
+from the western Atlantic to the Pacific Ocean around Hawaii, and from the
+Bering Sea to the South Pacific. NDBC's moored buoys measure and transmit
+barometric pressure; wind direction, speed, and gust; air and sea
+temperature; and wave energy spectra from which significant wave height,
+dominant wave period, and average wave period are derived. Even the
+direction of wave propagation is measured on many moored buoys.
+
+The data is from NOAA NDBC. It has been reformatted by NOAA Coastwatch,
+West Coast Node. This dataset only has the data that is closest to a
+given hour. The time values in the dataset are rounded to the nearest hour.
+
+This dataset has both historical data (quality controlled, before
+2011-04-01T00:00:00) and near real time data (less quality controlled, from
+2011-04-01T00:00:00 on).</att>
+        <att name="testOutOfDate">now-1day</att>
+        <att name="title">NDBC Standard Meteorological Buoy Data</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>station</sourceName>
+        <destinationName>station</destinationName>
+        <dataType>String</dataType>
+        <addAttributes>
+            <att name="ioos_category">Identifier</att>
+            <att name="long_name">Station Name</att>
+            <att name="cf_role">timeseries_id</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LON</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAT</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>TIME</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="point_spacing">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WD</sourceName>
+        <destinationName>wd</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">360</att>
+            <att name="_FillValue" type="short">32767</att>
+            <att name="ioos_category">Wind</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WSPD</sourceName>
+        <destinationName>wspd</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">15</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Wind</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>GST</sourceName>
+        <destinationName>gst</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">30</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Wind</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WVHT</sourceName>
+        <destinationName>wvht</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">10</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Surface Waves</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>DPD</sourceName>
+        <destinationName>dpd</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">20</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Surface Waves</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>APD</sourceName>
+        <destinationName>apd</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">20</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Surface Waves</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>MWD</sourceName>
+        <destinationName>mwd</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">360</att>
+            <att name="_FillValue" type="short">32767</att>
+            <att name="ioos_category">Surface Waves</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BAR</sourceName>
+        <destinationName>bar</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">970</att>
+            <att name="colorBarMaximum" type="double">1030</att>
+            <att name="comment">Air pressure (hPa). ('PRES' on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Pressure</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ATMP</sourceName>
+        <destinationName>atmp</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">40</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Temperature</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WTMP</sourceName>
+        <destinationName>wtmp</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">32</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Temperature</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>DEWP</sourceName>
+        <destinationName>dewp</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">40</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Meteorology</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>VIS</sourceName>
+        <destinationName>vis</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">0</att>
+            <att name="colorBarMaximum" type="double">100</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Meteorology</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>PTDY</sourceName>
+        <destinationName>ptdy</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">-3</att>
+            <att name="colorBarMaximum" type="double">3</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Pressure</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>TIDE</sourceName>
+        <destinationName>tide</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">-5</att>
+            <att name="colorBarMaximum" type="double">5</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Sea Level</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WSPU</sourceName>
+        <destinationName>wspu</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">-15</att>
+            <att name="colorBarMaximum" type="double">15</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Wind</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WSPV</sourceName>
+        <destinationName>wspv</destinationName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="colorBarMinimum" type="double">-15</att>
+            <att name="colorBarMaximum" type="double">15</att>
+            <att name="_FillValue" type="float">-9999999</att>
+            <att name="ioos_category">Wind</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+-->
+
+<!-- This is an example of EDDTableFromDatabase, 
+     but commented out and with generic setup information (e.g., "yourUserName") 
+     since you won't have access to this database.
+<dataset type="EDDTableFromDatabase" datasetID="yourDatasetID">
+    <sourceUrl>jdbc:postgresql://123.45.67.89:5432/yourDatabaseName</sourceUrl>
+    <driverName>org.postgresql.Driver</driverName>
+    <connectionProperty name="user">yourUserName</connectionProperty>
+    <connectionProperty name="password">yourPassword</connectionProperty>
+    <connectionProperty name="ssl">true</connectionProperty>
+    <connectionProperty name="sslfactory">org.postgresql.ssl.NonValidatingFactory</connectionProperty>
+    <catalogName></catalogName>
+    <schemaName>yourSchemaName</schemaName>
+    <tableName>yourTableName</tableName>
+    <orderBy>id, timestamp</orderBy>
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <addAttributes>
+        <att name="cdm_data_type">Point</att>
+        <att name="featureType">Point</att>
+        <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>
+        <att name="infoUrl">http://www.coml.org/</att>
+        <att name="institution">yourInstitution</att>
+        <att name="keywords">Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature</att>
+        <att name="keywords_vocabulary">GCMD Science Keywords</att>
+        <att name="license">[standard]</att>
+        <att name="standard_name_vocabulary">CF-11</att>
+        <att name="subsetVariables">id, longitude, latitude</att>
+        <att name="summary">yourSummary</att>
+        <att name="testOutOfDate">now-1day</att>
+        <att name="title">yourTitle</att>        
+    </addAttributes>
+    <dataVariable>
+        <sourceName>id</sourceName>
+        <dataType>int</dataType>
+        <addAttributes>
+            <att name="ioos_category">Identifier</att>
+            <att name="long_name">Station ID</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>timestamp</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>String</dataType>
+        <addAttributes>
+            <att name="units">yyyy-MM-dd HH:mm:ssZ</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>station_latitude</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>station_longitude</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>temperature</sourceName>
+        <dataType>float</dataType>
+        <addAttributes>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Sea Surface Temperature</att>
+            <att name="standard_name">sea_surface_temperature</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+-->
+
+</erddapDatasets>
+

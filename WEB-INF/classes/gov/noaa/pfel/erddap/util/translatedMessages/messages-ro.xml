@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--  messages.xml conține mesaje text pentru ERDDAP (care sunt citite în EDStatic).
 Când instalați ERDDAP pe serverul dvs., toate aceste mesaje pot fi lăsate așa cum sunt,
 deoarece aceste mesaje sunt de obicei aceleași la diferite instalații ERDDAP.
@@ -8,7 +9,7 @@ Sau puteți traduce aceste mesaje în alte limbi (de exemplu, spaniolă).
 FOARTE IMPORTANT:
 
 O linie?
-Dacă mesajul în limba engleză apare ca o singură linie lungă (fără linii noi), vă rugăm să faceți
+Dacă mesajul în limba engleză apare ca o singură linie lungă (fără linii noi), vă rugăm să faceți 
 traduce, de asemenea, o linie.
 
 HTML sau nu?
@@ -17,13 +18,17 @@ Deci, dacă o etichetă începe cu CDATA, este sigur să utilizați etichete HTM
 Dacă mesajul folosește etichete HTML, vă rugăm să utilizați aceleași etichete HTML în traducere.
 
 Substituenți pentru format mesaj
-Multe mesaje folosesc substituenți de substituție în stilul Java MessageFormat, cum ar fi {0} și {1}.
+Multe mesaje folosesc substituenți de înlocuire în stilul Java MessageFormat, cum ar fi {0} și {1}.
 În aceste mesaje, orice ghilimele „trebuie să fie eliminate ca „”.
 Consultați https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 
-&pseudoEntity; este folosit atunci când termenul nu ar trebui tradus, adesea pentru că este a
+&pseudoEntity; este folosit atunci când termenul nu ar trebui tradus, adesea pentru că este a 
 înlocuiți ceva care va fi schimbat în loc.
 Sistemul de traducere NECESITĂ ca „pseudoEntity” să folosească numai [a-zA-Z0-9].
+
+!!! EROARE DE TRADUCERE LA MAȘINĂ??? messages-bn.xml are toate linkurile &lt;a&gt; duplicate.
+  messages-de.xml și -ga au multe legături duplicate. Bănuiesc că multe altele sunt așa.
+
  -->
 <erddapMessages><!--  Aceasta returnează conținut HTML care descrie Solicitarea fișierelor comprimate.
 Consultați https://httpd.apache.org/docs/1.3/mod/mod_mime.html
@@ -4006,7 +4011,7 @@ RedWhiteBlue, RedWhiteBlue2, RedWideWhiteBlue, Spectrum, Topography, TopographyD
 WhiteGreenBlack, WhiteRedBlack, WhiteBlack, YellowRed,
 KT_algae, KT_amp, KT_balance, KT_curl, KT_deep, KT_delta, KT_dense,
 KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
-KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
+KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Vă rugăm să aveți răbdare. Poate dura ceva timp pentru a obține datele.)</patientData>
 <patientYourGraph>[Graficul specificat. Te rog fii rabdator.]</patientYourGraph>
 <!--  Pentru fiecare imagineSize, există un pdfWidth și pdfHeight (în 1/144ths inch).
@@ -5047,11 +5052,11 @@ Aceasta se poate referi la &erddapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP este un server de date care vă oferă o modalitate simplă și consistentă de a descărca subseturi de seturi de date științifice în formate de fișiere comune și de a realiza grafice și hărți.
+ERDDAP este un server de date care vă oferă o modalitate simplă și consistentă de a descărca subseturi de seturi de date științifice în formate de fișiere comune și de a realiza grafice și hărți.
 <h2>Cuprins</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">Problemele pe care ERDDAP încearcă să le rezolve</a>
-<li><a rel="bookmark" href="#solutions">ERDDAP</a>
+<li><a rel="bookmark" href="#solutions">Soluțiile ERDDAP</a>
 <ul>
 <li><a rel="bookmark" href="#video">Pentru o introducere rapidă în ERDDAP, urmăriți prima jumătate a acesteia<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 minute)
@@ -5074,7 +5079,7 @@ Aceasta se poate referi la &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#chunks">ERDDAP prelucrează datele în bucăți.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP are o structură modulară.</a>
 <li><a rel="bookmark" href="#pushPull">Diseminarea datelor / Rețele de distribuție a datelor:
-Tehnologie Push și Pull</a>
+Tehnologie Push and Pull</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP ?
 OPeNDAP ?
@@ -5083,8 +5088,8 @@ ERDDAP ?
 Care este diferența?</a>
 <li><a rel="bookmark" href="#sweetSpot">Este ERDDAP o soluție pentru problemele tuturor de distribuție a datelor / acces la date?</a>
 <li><a rel="bookmark" href="#sustainable">Cât de durabil este proiectul ERDDAP ?</a>
-<li><a rel="bookmark" href="#citeDataset">Cum să citezi un set de date într-o lucrare</a>
-<li><a rel="bookmark" href="#cite">Cum se ERDDAP într-o lucrare</a>
+<li><a rel="bookmark" href="#citeDataset">Cum să citați un set de date într-o lucrare</a>
+<li><a rel="bookmark" href="#cite">Cum se citează ERDDAP într-o lucrare</a>
 <li><a rel="bookmark" href="#acronym">Ce înseamnă acronimul „ERDDAP ”?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Ghid pentru sistemele de distribuție a datelor</a>
 <li><a rel="bookmark" href="#setup">Vă puteți configura propriul server ERDDAP .</a>
@@ -5100,18 +5105,18 @@ Fără ERDDAP, atunci când o persoană (sau un program de calculator) caută pe
 <br>&nbsp;
 <li>Fiecare site returnează datele într-un format diferit (de exemplu, XML, SOAP+XML, flux de date binare OPeNDAP, text ASCII, HDF 4, HDF 5, NetCDF, ...) și nu este formatul de fișier comun pe care îl vrei.
 <br>&nbsp;
-<li>Datele de pe site-uri diferite sunt greu de comparat, deoarece datele și orele sunt exprimate în formate diferite, de exemplu, „2 ianuarie 1985”, „02-JAN-1985”, „1/2/85”, „2/1/85 &quot;,&quot;1985-01-02&quot;, sau zile de la 1 ianuarie 1980 sau ...).
+<li>Datele de pe site-uri diferite sunt greu de comparat, deoarece datele și orele sunt exprimate în formate diferite, de exemplu, „2 ianuarie 1985”, „02-IAN-1985”, „1/2/85”, „2/1/85 &quot;,&quot;1985-01-02&quot;, sau zile de la 1 ianuarie 1980 sau ...).
 </ul>
-<h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAP</a></h2>
+<h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Soluțiile ERDDAP</a></h2>
 <ul>
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Pentru o introducere rapidă în ERDDAP,</a>
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">urmăriți prima jumătate a acesteia<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> .</strong> (5 minute)
+    title="Acest link către un site web extern nu constituie o aprobare."></a> .</strong> (5 minute)
 <br>În ea, un om de știință descarcă datele privind prognoza curenților oceanici de la ERDDAP pentru a modela o scurgere toxică în ocean folosind
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">software-ul GNOME de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> (in 5 minute!).
+    title="Acest link către un site web extern nu constituie o aprobare."></a> (in 5 minute!).
 Acest videoclip arată:
 <ul>
 <li>Cu ERDDAP, puteți
@@ -5133,9 +5138,9 @@ O adresă URL specifică o cerere întreagă.
 <li>NOAA lucrează împreună:
 analiza utilizează două programe software libere de la NOAA, ERDDAP și GNOME și date furnizate de NODC/NCDDC al NOAA (facilitat de proiectul UAF al NOAA ).
 <li>ERDDAP face
-<a href="#scientificData">datele științifice</a> mai ușor disponibile pentru a ajuta oamenii de știință (și pe alții) să-și facă munca mai eficient.
+<a href="#scientificData">datele științifice</a> mai ușor disponibile pentru a-i ajuta pe oamenii de știință (și pe alții) să-și facă munca mai eficient.
 <li>Utilizarea ERDDAP nu este dificilă.
-(Da, Rich Signell este cu adevărat inteligent, dar oricine poate folosi ERDDAP .)
+(Da, Rich Signell este foarte inteligent, dar oricine poate folosi ERDDAP .)
 </ul>
 Mulțumim lui Rich Signell.
 (O mică eroare în videoclip:
@@ -5152,23 +5157,23 @@ Este implicit.)
 <a title="Serviciul Național pentru Pescuit Marin" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Centrul de Știință a Pescuitului de Sud-Vest" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Divizia de cercetare de mediu" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-Serverul ERDDAP de la ERD servește date oceanografice, dar ERDDAP (programul) poate accesa și servi orice date grid sau tabelare.
+Serverul ERDDAP de la ERD servește date oceanografice, dar ERDDAP (programul) poate accesa și servi orice date grid sau tabulare.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP oferă mai multe modalități de a căuta seturi de date interesante.</a></strong>
 <br>De exemplu,
 <a href="&erddapUrl;/search/index.html">căutarea text integral</a>,
-<a href="&erddapUrl;/categorize/index.html">căutarea după categorie</a> (cunoscută și sub denumirea de căutare fațetă) și
+<a href="&erddapUrl;/categorize/index.html">căutarea după categorie</a> (cunoscută și sub numele de căutare fațetă) și
 <a href="&erddapUrl;/search/advanced.html">căutarea avansată</a> .
 Căutarea avansată combină toate tehnicile de căutare și adaugă căutări pentru seturi de date care au date în intervale de longitudine, latitudine și timp, astfel încât să poți căuta seturi de date pe baza mai multor criterii diferite simultan.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP vă permite să solicitați date într-un mod standardizat,</a></strong>
 <br>indiferent de protocolul de solicitare al sursei de date.
 <ul>
-<li>ERDDAP face disponibile datele griddap prin ERDDAP (implementarea de către
-<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP a protocolului hyperslab OPeNDAP</a>) și
+<li>ERDDAP face disponibile datele griddap prin griddap (implementarea de către ERDDAP a
+<a rel="help" href="&erddapUrl;/griddap/index.html">protocolului OPeNDAP hyperslab</a>) și
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP pune la dispoziție datele tabulare prin tabledap (implementarea de către ERDDAP a protocolului de
-<a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP</a>).
+<li>ERDDAP pune la dispoziție datele tabulare prin tabledap (implementarea de către ERDDAP a
+<a rel="help" href="&erddapUrl;/tabledap/index.html">protocolului de constrângere OPeNDAP</a>).
 <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -5179,26 +5184,26 @@ Căutarea avansată combină toate tehnicile de căutare și adaugă căutări p
 ERDDAP oferă, de asemenea, formulare de acces la date (pagini web) care ajută oamenii să creeze cererile OPeNDAP .
 <a rel="bookmark" href="https://www.opendap.org">OPeNDAP -urile <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a>
+    title="Acest link către un site web extern nu constituie o aprobare."></a>
 <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Protocolul de acces la date (DAP ) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> este una dintre
+    title="Acest link către un site web extern nu constituie o aprobare."></a> este una dintre
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     >Recomandările tehnice de acces la date ale NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> și un
+    title="Acest link către un site web extern nu constituie o aprobare."></a> și un
 <a rel="bookmark" href="https://www.earthdata.nasa.gov/esdis/esco/standards-and-practices#ed-standards"
     >standard NASA Earth Science Data and Information System (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> .
+    title="Acest link către un site web extern nu constituie o aprobare."></a> .
 (OPeNDAP este grozav!) ERDDAP traduce cererea dvs.
 din formatul OPeNDAP, WMS sau SOS în formatul de solicitare al sursei de date și convertește răspunsul într-una dintre structurile de date interne ale ERDDAP .
 Apoi ERDDAP reformatează datele în formatul de fișier comun ales de dvs.
-(de exemplu, ca tabel .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json ., .xhtml, .png, .pdf) și vă trimite fișierul.
-Vedeți lista tipurilor de
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">fișiere griddap</a> și lista tipurilor de
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">fișiere tabledap</a> .
+(de exemplu, ca tabel .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json )., .xhtml, .png, .pdf) și vă trimite fișierul.
+Vedeți lista
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">tipurilor de fișiere griddap</a> și lista
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tipurilor de fișiere tabledap</a> .
 Alte protocoale pentru solicitarea datelor (de exemplu,
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5213,11 +5218,11 @@ ERDDAP este structurat pentru aceste completări și nu pare să existe impedime
 <br>Rezultatele pot fi returnate în oricare dintre mai multe formate comune de fișiere de date &requestFormatExamplesHtml;, în loc de doar formatul original sau doar formatul de transfer OPeNDAP (care nu are o manifestare standard de fișier).
 Aceste fișiere sunt create din mers.
 Deoarece există puține structuri de date interne, este ușor să adăugați drivere suplimentare de tip fișier.
-Consultați lista completă a tipurilor de
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">fișiere grilă și a tipurilor</a>
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">de fișiere tabel</a> .
+Consultați lista completă a
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">tipurilor de fișiere grilă</a> și
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">a tipurilor de fișiere tabel</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizează numele și unitățile variabilelor pentru longitudine, latitudine, altitudine, adâncime și timp în rezultate.</a></strong>
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizează numele variabilelor și unitățile pentru longitudine, latitudine, altitudine, adâncime și timp în rezultate.</a></strong>
 <br>Pentru a facilita compararea datelor din diferite seturi de date, cererile și rezultatele din ERDDAP utilizează unități standardizate de axe spațiu/timp:
 <ul>
 <li>longitudinea este întotdeauna în degrees_east .
@@ -5233,22 +5238,21 @@ Consultați lista completă a tipurilor de
     title="Acest link către un site extern nu constituie o aprobare."></a> -compatibil) și, atunci când este formatat ca șir, este formatat conform
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">formatului&quot;extended&quot;ISO 8601:2004 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> de exemplu, <span class="N">„1985-01-02T00:00:00Z”).</span> (Puteți converti orele numerice în/din orele șirului ISO cu convertorul de
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">timp</a> al lui ERDDAP .) De asemenea, pentru a evita confuzia cu fusul orar și ora de vară, valorile orare sunt întotdeauna convertite în fusul orar Zulu (UTC, GMT).
+    title="Acest link către un site extern nu constituie o aprobare."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> de exemplu, <span class="N">„1985-01-02T00:00:00Z”).</span> (Puteți converti orele numerice în/din orele șirului ISO cu
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">convertorul de timp</a> al lui ERDDAP .) De asemenea, pentru a evita confuzia cu fusul orar și ora de vară, valorile orare sunt întotdeauna convertite în fusul orar Zulu (UTC, GMT).
 </ul>
 Acest lucru face ușoară specificarea constrângerilor în cereri fără a fi nevoie să vă faceți griji cu privire la formatul datelor de altitudine (sunt valorile pozitive în sus sau în jos?
-în metri sau în brațe?) sau formatul datelor de timp (un tărâm de coșmar al formatelor posibile, de exemplu, „Ian.
-2, 1985”, „02-JAN-1985”, „1/2/85”, „2/1/85”, „1985-01-02”, sau zile de la 1 ianuarie 1980).
+în metri sau în brațe?) sau formatul datelor de timp (un tărâm de coșmar al formatelor posibile, de exemplu, „Jan 2, 1985”, „02-JAN-1985”, „1/2/85”, „2/1/85”, „1985-01-02”, sau zile de la 1 ianuarie 1980).
 Acest lucru face ca rezultatele din diferite surse de date să fie ușor de comparat.
-<p>ERDDAP are un utilitar pentru a
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">converti un timp numeric într-un timp șir</a> .
+<p>ERDDAP are un utilitar pentru
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">a converti un timp numeric într-un timp șir</a> .
 <br>Pentru mai multe detalii, consultați
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Cum se ERDDAP cu timpul</a> .
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Cum se ocupă ERDDAP cu timpul</a> .
 <p>Deoarece variabilele de longitudine, latitudine, altitudine și timp sunt recunoscute în mod specific, ERDDAP este conștient de caracteristicile geo/temporale ale fiecărui set de date.
 Acest lucru este util atunci când se realizează imagini cu hărți sau serii temporale și când se salvează date în tipuri de fișiere georeferențiate (de exemplu, .esriAscii, .geoJson și .kml ).
 <p>Două standarde comune pentru scrierea unităților de măsură sunt:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(link extern)&quot; title=&quot;Acest link către un site web extern nu constituie o aprobare.&quot;&gt; - de la
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal link)&quot; title=&quot;Acest link către un site extern nu constituie o aprobare.&quot;&gt; - de la
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a>, care este folosit în
@@ -5284,16 +5288,15 @@ De exemplu, UCUM are o singură opțiune sensibilă la majuscule și minuscule p
 </ul>
 Deși ERDDAP nu necesită utilizarea standardului niciunui unități, majoritatea instalațiilor ERDDAP o favorizează pe una sau pe alta.
 (Administratorii ERDDAP :
-puteți specifica acest lucru cu eticheta <kbd>&lt;units_standard&gt;</kbd> în setup.xml.) Puteți converti UDUNITS în/din unități ERDDAP cu convertorul de
-<a rel="bookmark" href="&erddapUrl;/convert/units.html">unități</a> ERDDAP .
-Când solicitați date sau un grafic dintr-un set de
-<a href="&erddapUrl;/tabledap/index.html">date tabledap</a>, puteți adăuga <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> sau <kbd>&amp;units(&quot;UCUM&quot;)</kbd> la sfârșitul adresei URL pentru a solicita unități UDUNITS sau UCUM.
+puteți specifica acest lucru cu eticheta <kbd>&lt;units_standard&gt;</kbd> din setup.xml.) Puteți converti UDUNITS în/din unități UCUM cu
+<a rel="bookmark" href="&erddapUrl;/convert/units.html">convertorul de unități</a> ERDDAP .
+Când solicitați date sau un grafic dintr-un
+<a href="&erddapUrl;/tabledap/index.html">set de date tabledap</a>, puteți adăuga <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> sau <kbd>&amp;units(&quot;UCUM&quot;)</kbd> la sfârșitul adresei URL pentru a solicita unități UDUNITS sau UCUM.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">mai multe informatii</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP poate adăuga sau modifica metadate.</a></strong>
-<br>Multe surse de date au puține
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadate</a> sau deloc
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
+<br>Multe surse de date au puține sau deloc
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadate <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> (de exemplu,
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">metadatele CF <img 
@@ -5326,18 +5329,18 @@ Câteva utilizări speciale ale acestor imagini sunt:
     >accept-encoding <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> în antetul cererii HTTP GET trimis de client.
-Dacă se găsește un tip de compresie acceptat (gzip, x-gzip sau deflate ) în lista de codificare acceptată, ERDDAP include <kbd>content-encoding</kbd> în antetul răspunsului HTTP și comprimă datele pe măsură ce le transmite.
+Dacă un tip de compresie acceptat (gzip, x-gzip sau deflate ) este găsit în lista de codificare acceptată, ERDDAP include <kbd>content-encoding</kbd> în antetul răspunsului HTTP și comprimă datele pe măsură ce le transmite.
 Este la latitudinea programului client să caute <kbd>content-encoding</kbd> și să decomprima datele.
 Răspunsurile comprimate sunt adesea de 3-10 ori mai rapide, deși nu există niciun beneficiu în a solicita fișiere .png comprimate, deoarece conținutul fișierelor este deja comprimat.
 Browserele și clienții OPeNDAP fac acest lucru în mod implicit.
 Ei solicită date comprimate și decomprimă automat datele returnate.
 Alți clienți (de exemplu, programele Java ) trebuie să facă acest lucru în mod explicit.
-Cu curl, adăugați <kbd>--compressed</kbd> la linia de comandă pentru a-i spune lui curl să solicite un răspuns comprimat și să îl decomprimați automat.
+Cu curl, adăugați <kbd>--compressed</kbd> la linia de comandă pentru a-i spune curl să solicite un răspuns comprimat și să îl decomprimați automat.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP face interoperabile diferite tipuri de servere de date (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
 <br>Diferite tipuri de servere de date sunt utilizate în diferite comunități științifice.
 În viitorul previzibil, este puțin probabil ca vreun tip să devină dominant și să le înlocuiască pe celelalte.
-Deci ERDDAP acționează ca o punte între diferitele tipuri de programe client (browsere web, IDV, Matlab, programe netCDF, clienți ODV, WMS etc.) și diferitele tipuri de servere de date.
+Deci ERDDAP acționează ca o punte între diferite tipuri de programe client (browser-uri web, IDV, Matlab, programe netCDF, ODV, clienți WMS etc.) și diferitele tipuri de servere de date.
 <ol>
 <li>ERDDAP acceptă cererile clienților pentru date în diferite formate (de exemplu, OPeNDAP, WMS ).
 <li>ERDDAP convertește o anumită cerere în formatul de solicitare utilizat de serverul de date sursă (de exemplu, OPeNDAP, SOS, OBIS, ...) și o trimite către serverul de date sursă.
@@ -5345,7 +5348,7 @@ Deci ERDDAP acționează ca o punte între diferitele tipuri de programe client 
 &quot;seconds since 1970-01-01T00:00:00Z&quot; .
 <li>ERDDAP convertește datele din formatul intern în formatul de fișier solicitat de client (de exemplu, .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
 </ol>
-Clienții nu trebuie să-și facă griji sau să cunoască despre tipul de server de date sursă.
+Clienții nu trebuie să-și facă griji sau să cunoască despre tipul serverului de date sursă.
 Ei doar primesc datele pe care le doresc, în formatul de fișier pe care îl doresc.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP utilizează doar două structuri de date de bază pentru a păstra datele.</a></strong>
@@ -5355,11 +5358,11 @@ Ei doar primesc datele pe care le doresc, în formatul de fișier pe care îl do
 <li>o
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">structură de date grid</a> (de exemplu, pentru date satelitare și date model) și
 <li>o
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">structură de date tabelară</a> (de exemplu, pentru date in-situ despre geamanduri, stații și traiectorie).
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">structură de date tabelară</a> (de exemplu, pentru date in situ despre geamanduri, stații și traiectorii).
 </ul>
 <li>Cu siguranță, nu toate datele pot fi exprimate în aceste structuri, dar multe dintre ele pot fi exprimate.
-Tabelele, în special, sunt structuri de date foarte flexibile (uitați-vă la succesul fenomenal al bazelor de
-<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">date relaționale <img 
+Tabelele, în special, sunt structuri de date foarte flexibile (uitați-vă la succesul fenomenal al
+<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">bazelor de date relaționale <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> programe).
 <li>Acest lucru face interogările de date mai ușor de construit.
@@ -5372,9 +5375,8 @@ Dar toate structurile de date au compromisuri.
 Niciuna nu este perfectă.
 Chiar și structurile do-it-all au dezavantajele lor:
 lucrul cu ele este complex și fișierele pot fi scrise sau citite doar cu biblioteci speciale de software.
-Dacă acceptați abordarea ERDDAP suficient pentru a încerca să lucrați cu ea, este posibil să descoperiți că are avantajele sale (în special suportul pentru mai multe tipuri de fișiere care pot stoca răspunsurile de date).
-Prezentarea
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">de diapozitive ERDDAP originală</a> (în special
+Dacă acceptați abordarea ERDDAP suficient pentru a încerca să lucrați cu ea, este posibil să descoperiți că are avantajele sale (în special suportul pentru mai multe tipuri de fișiere care pot deține răspunsurile la date).
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Prezentarea de diapozitive ERDDAP originală</a> (în special
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">diapozitivul structurilor de date</a>) vorbește despre aceste probleme.
 <li>Și chiar dacă această abordare vă sună ciudat, majoritatea clienților ERDDAP nu vor observa niciodată -- vor vedea pur și simplu că toate seturile de date au o structură simplă și plăcută și vor fi recunoscători că pot obține date dintr-o mare varietate de surse returnate în o mare varietate de formate de fișiere.
 <br>&nbsp;
@@ -5390,23 +5392,25 @@ Prezentarea
 <li>ERDDAP va detecta dacă un set de date devine indisponibil (dar poate nu imediat).
 <li>ERDDAP va detecta când acel set de date devine din nou disponibil.
 <li>ERDDAP nu face nicio promisiune cu privire la adecvarea sau acuratețea acestor servicii (a se vedea
-<a rel="license" href="&erddapUrl;/legal.html">ERDDAP</a>).
+<a rel="license" href="&erddapUrl;/legal.html">DECLARAȚII ERDDAP</a>).
 </ul>
-<p><strong>Abonamente de
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">e-mail/URL</a></strong> (nu sunt disponibile la unele instalări ERDDAP ) Ori de câte ori se modifică un set de date, sistemul de abonare e-mail/URL vă va trimite <strong>imediat</strong> un e-mail sau vă va contacta adresa URL pe care o specificați.
+
+  
+<p><strong>Abonamente
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">de e-mail/URL</a></strong> (nu sunt disponibile la unele instalări ERDDAP ) Ori de câte ori se modifică un set de date, sistemul de abonare e-mail/URL vă va trimite <strong>imediat</strong> un e-mail sau vă va contacta adresa URL pe care o specificați.
 Abonamentele de e-mail/URL nu sunt disponibile la unele instalări ERDDAP .
 Pentru a configura un abonament de e-mail/URL, faceți clic pe una dintre pictogramele plicului <img alt="Subscribe" style="vertical-align:top" title="Pictograma plicului." src="&erddapUrl;/images/envelope.gif" > care apar în extrema dreaptă pe paginile web ERDDAP cu liste de seturi de date (<a rel="contents" href="&erddapUrl;/info/index.html">exemplu</a>) și pe paginile web Formularele de acces la date și Make A Graph pentru seturi de date individuale (<a href="&erddapUrl;/griddap/etopo180.html">exemplu</a>) dacă această instalare ERDDAP acceptă abonamente la e-mail/URL.
-(Programatori:
+(Programatori de computere:
 dacă scrieți servicii web, puteți utiliza sistemul URL pentru ca ERDDAP să vă notifice imediat serviciul web ori de câte ori se modifică un set de date.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> Abonamente</strong> RSS este un sistem standard pentru notificarea utilizatorilor atunci când conținutul unui site web s-a modificat.
+      title="Acest link către un site web extern nu constituie o aprobare."></a> Abonamente</strong> RSS este un sistem standard pentru notificarea utilizatorilor atunci când conținutul unui site web s-a modificat.
 Browserele web moderne au un client RSS încorporat sau puteți utiliza un
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">cititor RSS</a> separat
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> .
-ERDDAP oferă un RSS 2.01 separat pentru fiecare set de date, astfel încât să puteți afla când s-au schimbat seturile de date interesante.
+      title="Acest link către un site web extern nu constituie o aprobare."></a> .
+ERDDAP oferă un flux RSS 2.01 separat pentru fiecare set de date, astfel încât să puteți afla când s-au schimbat seturile de date interesante.
 Pentru a vă abona la fluxul RSS al unui set de date, faceți clic pe una dintre pictogramele RSS<img alt="RSS" style="vertical-align:top" title="Pictograma RSS." src="&erddapUrl;/images/rss.gif" >care apar în extrema dreaptă pe paginile web ERDDAP cu liste de seturi de date (<a rel="contents" href="&erddapUrl;/info/index.html">exemplu</a>) sau pe paginile web Formularele de acces la date și Make A Graph pentru seturi de date individuale (<a href="&erddapUrl;/griddap/etopo180.html">exemplu</a>).
 <p><strong>Comparație</strong> Serviciul RSS poate fi exact ceea ce căutați.
 Este un standard frumos.
@@ -5415,13 +5419,13 @@ Clienții RSS periodic (în fiecare oră?) solicită și citesc documentul RSS X
 Deci, de obicei, un client RSS nu va detecta rapid o modificare a unui set de date (în medie 30 de minute?).
 În schimb, sistemul de abonare e-mail/URL acționează imediat ori de câte ori ERDDAP detectează o modificare a unui set de date.
 Abordarea mai proactivă a sistemului de e-mail/URL este, de asemenea, mult mai eficientă:
-s-ar putea să vă puteți seta clientul RSS să verifice modificările în fiecare minut (nu o faceți!), dar asta ar duce doar la o mulțime de solicitări inutile.
+este posibil să vă puteți seta clientul RSS să verifice modificările în fiecare minut (nu o faceți!), dar asta ar duce doar la o mulțime de solicitări inutile.
 la serverul ERDDAP și tot nu va detecta modificări imediat.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP este o</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">aplicație web <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> (pagini web cu formulare pentru oameni care folosesc browsere)
+      title="Acest link către un site web extern nu constituie o aprobare."></a> (pagini web cu formulare pentru oameni care folosesc browsere)
 <br>și un
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_service">serviciu web <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5432,11 +5436,11 @@ la serverul ERDDAP și tot nu va detecta modificări imediat.
 <li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP are</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> - și
+      title="Acest link către un site web extern nu constituie o aprobare."></a> - și
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> -stil link-uri pentru a face serviciile sale disponibile programelor de calculator.</strong>
-<br>Aceste caracteristici pot fi folosite pentru a construi un alt serviciu web pe deasupra ERDDAP (făcându-l pe ERDDAP să facă toată treaba!).
+      title="Acest link către un site web extern nu constituie o aprobare."></a> -stil link-uri pentru a face serviciile sale disponibile programelor de calculator.</strong>
+<br>Aceste caracteristici pot fi folosite pentru a construi un alt serviciu web pe lângă ERDDAP (făcându-l ERDDAP să facă toată treaba!).
 ERDDAP nu este destinat a fi un serviciu de explorare/graficare a datelor de nivel înalt.
 În schimb, ERDDAP este destinat să furnizeze servicii pentru astfel de site-uri web și programe.
 Deci, dacă aveți o idee pentru o interfață mai bună cu datele pe care le servește ERDDAP, vă încurajăm să vă creați propria aplicație web sau serviciu web și să utilizați ERDDAP ca bază.
@@ -5445,7 +5449,7 @@ Citiți mai multe despre Serviciile ERDDAP
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Securitate</a></strong> - Implicit, ERDDAP rulează ca un server în întregime public, fără sistem de conectare și fără restricții de acces la date.
 Cu toate acestea, un administrator ERDDAP poate configura ERDDAP pentru a restricționa accesul la unele sau la toate seturile de date pentru utilizatorii care se conectează și li s-au atribuit anumite roluri.
-ERDDAP are metode încorporate pentru autentificare (autentificare).
+ERDDAP are metode încorporate de autentificare (autentificare).
 Dacă o instalare ERDDAP are autentificarea activată, va exista un link de „conectare” în partea de sus a fiecărei pagini web.
 Utilizatorii nu trebuie niciodată să se conecteze pentru a accesa seturile de date disponibile public.
 Utilizatorii care s-au autentificat pot accesa seturile de date publice și seturile de date private la care li se permite accesul.
@@ -5456,9 +5460,10 @@ Seturile de date pot fi configurate pentru a avea grafice și hărți accesibile
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP prelucrează datele în bucăți.</a></strong>
 <br>Pentru a economisi memorie (o problemă majoră) și pentru a face răspunsurile să înceapă mai devreme, ERDDAP procesează cererile de date în bucăți - obținând în mod repetat o bucată de date de la sursă, curățând-o (de exemplu, adăugând
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadate <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadate)</a> .
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a>), și trimiterea acestuia către client.
+      title="Acest link către un site web extern nu constituie o aprobare."></a>), și trimiterea acestuia către client.
 Pentru multe surse de date, aceasta înseamnă că prima bucată de date (de exemplu, de la primul senzor) ajunge la client în secunde în loc de minute (de exemplu, după ce datele de la ultimul senzor au fost preluate), asigurând clientul că datele vin.
 Din punct de vedere al memoriei, acest lucru permite ca numeroase cereri mari (fiecare mai mare decât memoria disponibilă) să fie tratate simultan.
 <br>&nbsp;
@@ -5467,22 +5472,21 @@ Din punct de vedere al memoriei, acest lucru permite ca numeroase cereri mari (f
 Noua componentă câștigă apoi toate caracteristicile și capacitățile părintelui (de exemplu, suport pentru cererile OPeNDAP și capacitatea de a salva datele în mai multe formate de fișiere comune).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Diseminarea datelor / Rețele de distribuție a datelor:
-Tehnologie Push și Pull</a></strong>
+Tehnologie Push and Pull</a></strong>
 <br>În mod normal, ERDDAP acționează ca un intermediar:
 preia o solicitare de la un utilizator; obține date de la o sursă de date de la distanță; reformatează datele; și îl trimite utilizatorului.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Tehnologia Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> :
+      title="Acest link către un site web extern nu constituie o aprobare."></a> :
 Dar ERDDAP are și capacitatea de a obține în mod activ toate datele disponibile de la o sursă de date de la distanță și
 <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">de a stoca o copie locală a datelor</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Tehnologia Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> :
+      title="Acest link către un site web extern nu constituie o aprobare."></a> :
 Prin utilizarea
 <a href="#subscriptions">serviciilor de abonament</a> ERDDAP, alte servere de date pot fi notificate de îndată ce sunt disponibile date noi, astfel încât să poată solicita datele (prin extragerea datelor).
-ERDDAP
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> și EDDTableFromErddap ale
-<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> utilizează serviciile de abonament și
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> și
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> ale ERDDAP utilizează serviciile de abonament și
 <a rel="help" href="https://erddap.github.io/setup.html#flag">sistemul de semnalizare</a> ERDDAP, astfel încât să fie notificați imediat când sunt disponibile date noi.
 Puteți combina acestea cu un mare efect:
 dacă includeți o copie EDDGrid în jurul unui set de date EDDGrid FromErddap (sau includeți o EDDTableCopy în jurul unui set de date EDDTableFromErddap), ERDDAP va crea și menține automat o copie locală a unui alt set de date ERDDAP .
@@ -5496,7 +5500,7 @@ Un anumit ERDDAP poate fi atât o sursă de date pentru unele seturi de date, c�
 Rețeaua rezultată este aproximativ similară cu rețelele de distribuție a datelor configurate cu programe precum
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD/IDM Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a>, dar mai puțin rigid structurat.
+      title="Acest link către un site web extern nu constituie o aprobare."></a>, dar mai puțin rigid structurat.
 <br>&nbsp;
 </ul>
 <p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ?
@@ -5510,16 +5514,16 @@ Sistemul DODS a creat și folosit dods:
 protocol pe Internet.
 Când HTTP a apărut și a avut atât de mult succes, au trecut de la dods:
 la http:.
-<p>La un moment dat, au realizat că sistemul era util pentru mai mult decât doar date oceanografice.
-Așa că au renunțat la acel nume DODS (deși trăiește într-un anumit cod), au format o organizație mică numită
+<p>La un moment dat, au realizat că sistemul este util pentru mai mult decât doar date oceanografice.
+Așa că au renunțat la numele DODS (deși trăiește într-un anumit cod), au format o organizație mică numită
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a> și a scris specificația
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP (Protocol de acces la date).
+      title="Acest link către un site web extern nu constituie o aprobare."></a> și a scris
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">specificația DAP (Protocol de acces la date).
 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Acest link către un site extern nu constituie o aprobare."></a>, care standardizează formatul cererilor de metadate și/sau date și răspunsurile cu metadate și/sau date.
-OPeNDAP (organizația) încă păstorește DAP (specificația) și este autorul lui Hyrax (serverul de date care este adesea denumit în mod eronat OPeNDAP ).
+      title="Acest link către un site web extern nu constituie o aprobare."></a>, care standardizează formatul cererilor de metadate și/sau date și răspunsurile cu metadate și/sau date.
+OPeNDAP (organizația) încă păzește DAP (specificația) și este autorul lui Hyrax (serverul de date care este adesea denumit în mod eronat OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP și altele sunt servere de date (software) care implementează DAP .
 Fiecare implementează un subset de DAP, dar fac alte lucruri foarte diferit.
 <p>ERDDAP folosește cod (în directorul „dods”) (de fapt scris de Jake Hamby la NASA JPL) pentru unele caracteristici de citire a datelor de pe serverele DAP externe.
@@ -5535,118 +5539,56 @@ Există un server de date perfect care să răspundă perfect nevoilor tuturor?
 Noi nu credem.
 Și chiar dacă crezi că există sau va exista, va trece mult timp până când toată lumea trece la el, dacă vreodată.
 Până atunci, ERDDAP este disponibil chiar acum pentru a face alte servere de date interoperabile și pentru a servi date chiar acum.
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP poate gestiona multe/majoritatea seturi de date așa cum este, dar nu toate.</a> Nu este faptul că seturile de date rămase (de exemplu, datele modelului folosind o proiecție cu sferă cuburi) nu sunt importante.
-Doar că ERDDAP de a returna date în formate de fișiere comune (unele dintre ele destul de simple), exclude o structură internă de date mai complexă.
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP poate gestiona multe/majoritatea seturi de date așa cum este, dar nu toate.</a> Nu este faptul că seturile de date rămase (de exemplu, datele modelului care utilizează o proiecție cu sferă cuburi) nu sunt importante.
+Doar că scopul ERDDAP de a returna date în formate de fișiere comune (unele dintre ele destul de simple), exclude o structură internă de date mai complexă.
 Grupurile de cercetători care lucrează cu structuri de date mai complexe au adesea deja servere de date specializate și software client specializat, care sunt personalizate pentru nevoile comunității lor.
 ERDDAP, ca server de date de uz general, nu încearcă să concureze cu aceste servere de date specializate.
 Sunt adaptați nevoilor comunității lor și fac o treabă grozavă.
 Cu toate acestea, acele seturi de date sunt adesea „înțelese” doar de software-ul specializat din acea comunitate.
 <p>O soluție pentru seturi de date complexe - ERDDAP are o modalitate de a gestiona seturi de date complexe pe care nu le poate gestiona direct.
-La fel ca o bază de
+La fel ca o
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
-  >date relațională <img 
+  >bază de date relațională <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> poate stoca un set de date complex utilizând o singură structură de date simplă (un tabel), ERDDAP poate servi datele din seturi de date mai complexe prin împărțirea setului de date sursă în câteva seturi de date ERDDAP, fiecare cu structuri de date similare și simple.
-De exemplu, unele seturi de date model de mediu grid pot fi stocate în ERDDAP punând variabilele suprafeței mării ([timp][latitudine][longitudine]) într-un set de date ERDDAP și punând variabilele cu altitudinea ([timp][altitudine][ latitudine][longitudine]) într-un alt set de date ERDDAP .
-Știm că acest lucru nu este ideal, dar este necesar să permitem ERDDAP să returneze date în formate de fișiere obișnuite (dintre care unele sunt destul de simple).
-<p>O altă abordare pentru a trata seturile de date complexe (de exemplu, pentru datele modelului folosind o proiecție cu sferă cubă) este de a oferi și o versiune reproiectată a setului de date ([timp][altitudine][latitudine][longitudine]) cu care ERDDAP poate lucra cu ușurință.
-Aceste structuri de date mai simple nu sunt menite să înlocuiască structurile originale de date, dar pot fi o modalitate utilă de a distribui datele unui public mai larg.
+De exemplu, unele seturi de date model de mediu grid pot fi stocate în ERDDAP prin introducerea variabilelor de suprafață a mării ([timp][latitudine][longitudine]) într-un set de date ERDDAP și punând variabilele cu altitudinea ([timp][altitudine][ latitudine][longitudine]) într-un alt set de date ERDDAP .
+Știm că acest lucru nu este ideal, dar este necesar să se permită ERDDAP să returneze date în formate de fișiere obișnuite (dintre care unele sunt destul de simple).
+<p>O altă abordare pentru tratarea seturilor de date complexe (de exemplu, pentru datele modelului folosind o proiecție cu sfere cuburi) este de a oferi și o versiune reproiectată a setului de date ([timp][altitudine][latitudine][longitudine]) cu care ERDDAP poate lucra cu ușurință.
+Aceste structuri de date mai simple nu sunt menite să înlocuiască structurile de date originale, dar pot fi o modalitate utilă de a distribui datele unui public mai larg.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Cât de durabil este proiectul ERDDAP ?</strong></a>
 <br>ERDDAP este foarte durabil.
-<br>Unii oameni sunt surprinși și dezamăgiți să audă că ERDDAP este dezvoltat în mare parte de o singură persoană (eu, Bob Simons).
-[Apropo, opiniile de pe această pagină web sunt părerile mele personale și nu reflectă neapărat nicio poziție a Guvernului sau a National Oceanic and Atmospheric Administration .] Ei se tem că, dacă mi se întâmplă ceva, acesta va fi sfârșitul ERDDAP .
+<br>Unii oameni sunt surprinși și dezamăgiți să audă că ERDDAP este dezvoltat în mare parte de o singură persoană (a fost Bob Simons, acum Chris John).
+[Apropo, opiniile de pe această pagină web sunt părerile mele personale și nu reflectă neapărat vreo poziție a Guvernului sau a National Oceanic and Atmospheric Administration .] Ei se tem că, dacă mi se întâmplă ceva, acesta va fi sfârșitul ERDDAP .
 Pur și simplu nu este adevărat.
-ERDDAP pentru sustenabilitatea pe termen lung este excelentă și aproape de cea mai bună posibilitate.
+Poziționarea ERDDAP pentru sustenabilitatea pe termen lung este excelentă și aproape de cea mai bună posibilitate.
+
 <p>Da, sunt principalul dezvoltator al ERDDAP .
 Sunt un angajat federal finanțat integral.
 Finanțarea mea nu este bani „moale”, așa că nu primesc și nu mă bazez pe granturi.
 Îmi petrec mai mult de jumătate din timp dezvoltării ERDDAP .
 Restul timpului meu îl petrec gestionând seturi de date.
-Această lucrare este utilă pentru ERDDAP, deoarece trebuie să lucrez cu seturi de date reale pentru a ști în detaliu ce trebuie să facă ERDDAP .
-Sefii mei susțin pe deplin munca mea pe ERDDAP, deoarece face ceea ce am fost angajat:
+Această lucrare este utilă pentru ERDDAP deoarece trebuie să lucrez cu seturi de date reale pentru a ști în detaliu ce trebuie să facă ERDDAP .
+Sefii mei susțin pe deplin munca mea pe ERDDAP deoarece face ceea ce am fost angajat:
 să faciliteze pentru oamenii de știință din domeniul pescuitului (în primul rând, dar cu adevărat tuturor) să obțină date științifice din diverse surse.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Lucrul miraculos cu software-ul este că nu costă nimic de duplicat.</a> Deci, pentru a-mi face treaba, scriu ERDDAP pentru a fi folosit la ERD .
 Cred că acesta este cel mai bun mod posibil de a-mi face treaba.
 Numai acest motiv justifică cheltuielile pentru dezvoltarea ERDDAP .
-(Cred că s-ar putea demonstra că ERDDAP a economisit mai mult timp oamenilor de știință de la NOAA decât am petrecut eu dezvoltând ERDDAP .
-Timp=Bani.) Dar avantajul secundar este că orice altă organizație poate
+(Cred că s-ar putea demonstra că ERDDAP a economisit mai mult timp oamenilor de știință NOAA decât cel pe care l-am petrecut eu dezvoltând ERDDAP .
+Timp=Bani.) Dar beneficiul secundar este că orice altă organizație poate
 <a rel="bookmark" 
-href="https://erddap.github.io/setup.html">descărca, instala și utiliza ERDDAP</a> <strong>gratuit</strong> pentru a-și distribui date științifice.
+href="https://erddap.github.io/setup.html">descărca, instala și utiliza ERDDAP</a> <strong>gratuit pentru</strong> a-și distribui date științifice.
 <p><a rel="bookmark" 
 href="https://erddap.github.io/setup.html#organizations"
 >Peste 90 de organizații din cel puțin 14 țări utilizează ERDDAP</a> .
-Poate că există așa ceva ca un prânz gratuit.
+Poate că există un prânz gratuit.
 <p>ERDDAP este un program Java .
 Codul sursă pentru fiecare versiune este pe
 <a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a>, cel mai des folosit sistem pentru proiecte software colaborative.
-Până acum, aceste grupuri/persoane au contribuit cu cod la ERDDAP :
-<ul><!-- start contributor's info -->
-<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> a fost scris și contribuit de Jonathan Lafite și Philippe Makowski de la R.Tech Engineering <!--
-<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> --> (licență:
-open source cu drepturi de autor).
-Mulțumesc, Jonathan și Philippe!
-<br>&nbsp;
-<li>TableWriterDataTable
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> a fost scris și contribuit de către Roland Schweitzer de la NOAA (licență:
-open source cu drepturi de autor).
-Mulțumesc, Roland!
-<br>&nbsp;
-<li>json-ld
-<br>Versiunea inițială a caracteristicii
-<a href="#jsonld" rel="bookmark">Semantic Markup of Datasets cu json-ld (JSON Linked Data)</a> (și, prin urmare, toată munca grea în proiectarea conținutului) a fost scrisă și contribuită (licență:
-sursă deschisă cu drepturi de autor) de Adam Leadbetter și Rob Fuller de la Institutul Marin din Irlanda.
-Mulțumesc, Adam și Rob!
-<br>&nbsp;
-<li>orderBy
-<br>Codul pentru
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean</a> orderByMean din tabledap și modificările ample aduse codului pentru a suporta
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  >notația <i>variabilăNume/divizor:offset</i></a> pentru toate filtrele orderBy a fost scris și contribuit (licență:
-sursă deschisă protejată de drepturi de autor) de Rob Fuller și Adam Leadbetter de la Institutul Marin în Irlanda.
-Mulțumesc, Rob și Adam!
-<br>&nbsp;
-<li>Tipuri de markere fără margini
-<br>Codul pentru trei tipuri noi de markere (Pătrat umplut fără margini, Cerc umplut fără margini, Triunghi umplut fără margini) a fost contribuit de Marco Alba de la ETT / EMODnet Physics.
-Mulțumesc, Marco Alba!
-<br>&nbsp;
-<li>Traduceri mesaje.xml
-<br>Versiunea inițială a codului din TranslateMessages.java, care folosește serviciul de traducere Google pentru a traduce messages.xml în diferite limbi, a fost scrisă de Qi Zeng, care lucra ca stagiar Google Summer of Code.
-Mulțumesc, Qi!
-<br>&nbsp;
-<li>orderBy Sumă
-<br>Codul pentru
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
-  >filtrul orderBy Sum</a> din tabledap (bazat pe Rob Fuller și Adam Leadbetter orderByMean ) și butoanele Check All și Uncheck All de pe formularul de acces la date EDDGrid au fost scrise și contribuite (licență:
-open source cu drepturi de autor) de Marco Alba de la ETT Solutions și EMODnet.
-Mulțumesc, Marco!
-<br>&nbsp;
-<li>Solicitări .transparentPng în afara intervalului
-<br>ERDDAP acceptă acum cereri pentru .transparentPng atunci când valorile de latitudine și/sau longitudine sunt parțial sau complet în afara intervalului.
-(Acesta a fost ERDDAP GitHub Issues #19, postat de Rob Fuller -- mulțumesc pentru postare, Rob.) Codul pentru a remedia acest lucru a fost scris de Chris John.
-Mulțumesc, Chris!
-<br>&nbsp;
-<li>Afișați datele de imagine base64 în .htmlTable la tabel
-<br>Codul pentru afișarea datelor de imagine base64 în răspunsurile .htmlTable a fost contribuit de Marco Alba de la ETT / EMODnet Physics.
-Mulțumesc, Marco Alba!
-<br>&nbsp;
-<li>n Îmbunătățirea firelor
-<br>Sistemul nThreads pentru EDDTableFromFiles a fost îmbunătățit semnificativ.
-Aceste modificări duc la o îmbunătățire uriașă a vitezei (de exemplu, accelerare de 2X când nThreads este setat la 2 sau mai mult) pentru cele mai dificile solicitări (când trebuie procesate un număr mare de fișiere pentru a aduna rezultatele).
-Aceste modificări vor duce, de asemenea, la o accelerare generală în întreaga ERDDAP .
-Codul pentru aceste modificări a fost contribuit de Chris John.
-Mulțumesc, Chris!
-<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
--->
-</ul>
+    title="Acest link către un site web extern nu constituie o aprobare."></a>, cel mai des folosit sistem pentru proiecte software colaborative.
+<a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Credite</a> Creditele ERDDAP sunt acum disponibile pe o
+<a href="https://github.com/erddap/erddap/blob/main/CREDITS.md">pagină separată</a> .
 Sper că alții vor contribui cu codul în viitor.
 Dacă mi se întâmplă ceva, șefii mei vor angaja un înlocuitor cu scopul specific de a continua dezvoltarea ERDDAP .
 În plus, încerc să scriu un cod foarte curat.
@@ -5654,7 +5596,7 @@ Scriu comentarii Java Doc.
 Scriu comentarii în cod.
 Am ales cu grijă numele variabilelor.
 Urmează instrucțiunile de formatare Java .
-Toate acestea sunt un efort de a face codul mai lizibil, pentru alți programatori care vor să-l înțeleagă și/sau să-l schimbe, și pentru mine, pentru că, peste un an sau doi, voi fi uitat detaliile despre cum și de ce codul.
+Toate acestea reprezintă un efort de a face codul mai lizibil, pentru alți programatori care vor să-l înțeleagă și/sau să-l schimbe, și pentru mine, pentru că, peste un an sau doi, voi fi uitat detaliile despre cum și de ce codul.
 a fost scris așa cum a fost.
 Codul curat cu comentarii bune ușurează munca mea în desfășurare pe ERDDAP, așa că am un mare stimulent să scriu cod curat cu comentarii bune.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Dar toate răspunsurile mele de până acum nu sunt foarte importante.</a> Un singur lucru care este cu adevărat important.
@@ -5662,25 +5604,25 @@ Un singur lucru garantează sustenabilitatea ERDDAP sau a oricărui proiect soft
 că ERDDAP este
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">software gratuit și cu sursă deschisă (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> .
+    title="Acest link către un site web extern nu constituie o aprobare."></a> .
 Mai exact, ERDDAP folosește
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">licențe software compatibile cu Apache <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a>, astfel încât oricine poate face orice dorește cu codul.
+    title="Acest link către un site web extern nu constituie o aprobare."></a>, astfel încât oricine poate face orice dorește cu codul.
 <p>De ce este asta important?
 S-ar putea crede că software-ul va fi disponibil în mod fiabil în viitor, deoarece o companie mare este în spatele lui.
 Dar Google, de exemplu, a întrerupt numeroase proiecte (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >iată o listă <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a>).
+    title="Acest link către un site web extern nu constituie o aprobare."></a>).
 Nu vreau să aleg Google pentru că îmi place foarte mult Google și finanțează un număr mare de proiecte grozave, open-source.
 Microsoft a întrerupt proiectele.
 Apple a întrerupt proiectele.
 ...
 Ideea este că doar a avea sprijinul unei companii mari nu este o asigurare că proiectul va continua.
-Utilizatorii acelui software nu au noroc, <strong>cu excepția cazului</strong> în care software-ul a fost (și, prin urmare, este întotdeauna) Software gratuit și cu sursă deschisă (FOSS).
-Apoi, ori de câte ori există interes din partea unui singur dezvoltator, proiectul poate și va continua să evolueze.
+Utilizatorii acelui software nu au noroc, <strong>cu excepția cazului în care</strong> software-ul a fost (și, prin urmare, este întotdeauna) Software gratuit și cu sursă deschisă (FOSS).
+Apoi, ori de câte ori există interes chiar și din partea unui singur dezvoltator, proiectul poate și va continua să evolueze.
 FOSS este o poliță de asigurare.
 De fapt, FOSS este singura poliță de asigurare, singura asigurare, care contează.
 FOSS asigură că există întotdeauna o cale de urmat pentru software.
@@ -5700,25 +5642,26 @@ Faptul că ERDDAP are un singur dezvoltator principal înseamnă că nu este o s
 Este mai durabil, nu mai puțin.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">S-ar putea crede că angajarea unei companii contractante pentru a scrie software este o idee bună.</a> Contra cost, ei vor oferi dezvoltatori și vor promite continuitate (ceea ce este bun cu excepția cazului în care/până când aceștia vor înceta).
 Dar ei te au și peste un baril:
-trebuie să le plătești ceea ce cer sau nu mai există dezvoltare, <strong>cu excepția cazului</strong> în care software-ul este FOSS și îi plătești doar pentru a lucra la cod.
+trebuie să le plătești ceea ce cer sau nu mai există dezvoltare, <strong>cu excepția cazului în care</strong> software-ul este FOSS și îi plătești doar pentru a lucra la cod.
 Cu FOSS, aveți întotdeauna opțiuni despre cum să mergeți mai departe.
-Deoarece ERDDAP este FOSS, contractorii sunt întotdeauna o opțiune bună pentru tine sau oricine în ceea ce privește ERDDAP :
-dacă mi se întâmplă ceva (unicul dezvoltator principal), sau dacă nu am timp să fac o schimbare pe care o dorești, sau eu pensionați-vă și nu vă place munca înlocuitorului meu, puteți oricând să angajați o firmă contractantă care să facă modificările dorite (sau să le faceți singur).
+Deoarece ERDDAP este FOSS, contractorii sunt întotdeauna o opțiune bună pentru dvs.
+sau pentru oricine în ceea ce privește ERDDAP :
+dacă mi se întâmplă ceva (unicul dezvoltator principal), sau dacă nu am timp să fac o schimbare pe care o doriți, sau eu pensionați-vă și nu vă place munca înlocuitorului meu, puteți oricând să angajați o firmă contractantă care să facă modificările dorite (sau să le faceți singur).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Pe scurt, ERDDAP are cele două caracteristici de durabilitate care contează cel mai mult:</a>
 <ol>
 <li>ERDDAP este un proiect mic (suficient de mic pentru a fi gestionat de un dezvoltator principal cu asistența neoficială a altor câțiva), așa că nu necesită resurse masive.
-<li>ERDDAP este un software gratuit și cu sursă deschisă, așa că nimeni nu vă poate opri vreodată pe dumneavoastră sau pe oricine altcineva să lucrați la ERDDAP .
+<li>ERDDAP este un software gratuit și cu sursă deschisă, așa că nimeni nu vă poate opri vreodată pe dumneavoastră sau pe altcineva să lucrați la ERDDAP .
 </ol>
 Nu mă pot gândi la o situație mai bună.
-Sper că asta ameliorează orice temeri pe care dumneavoastră (sau oricine altcineva) le-ați avut cu privire la sustenabilitatea ERDDAP .
-Dacă auziți oameni punând la îndoială sau descurajând utilizarea ERDDAP deoarece există un singur dezvoltator principal, vă rugăm să le clarificați, îndreptându-i către discuția de mai sus la acest URL:
+Sper că asta ameliorează orice temere pe care dumneavoastră (sau oricine altcineva) le-ați avut cu privire la sustenabilitatea ERDDAP .
+Dacă auziți oameni punând la îndoială sau descurajând utilizarea ERDDAP deoarece există doar un singur dezvoltator principal, vă rugăm să le clarificați, îndreptându-i către discuția de mai sus la acest URL:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#sustainable</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
 for ERDDAP development, please contact me.
 I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
-<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Cum să citezi un set de date într-o lucrare</a></strong>
+<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Cum să citați un set de date într-o lucrare</a></strong>
 <br>Este important să anunțați cititorii cum ați obținut datele pe care le-ați folosit în lucrare.
 Pentru fiecare set de date pe care l-ați folosit, vă rugăm să priviți metadatele setului de date în secțiunea Structura atributelor setului de date din partea de jos a paginii .html pentru setul de date, de exemplu,
 <br><a rel="help" 
@@ -5727,18 +5670,23 @@ Pentru fiecare set de date pe care l-ați folosit, vă rugăm să priviți metad
 Metadatele includ uneori un format de citare necesar sau sugerat pentru setul de date.
 Metadatele „licență” enumeră uneori restricții privind utilizarea datelor.
 <p>Pentru a genera o citare pentru un set de date:
-<br>Dacă considerați setul de date ca un articol științific, puteți genera o citare bazată pe autor (vezi metadatele „creator_name” sau &quot;institution&quot; ), data la care ați descărcat datele, titlul (vezi metadatele &quot;title&quot; ), și editorul (consultați metadatele „publisher_name”).
+<br>Dacă considerați setul de date ca un articol științific, puteți genera o citare bazată pe autor (vezi metadatele „nume_creator” sau &quot;institution&quot; ), data la care ați descărcat datele, titlul (vezi metadatele &quot;title&quot; ), și editorul (consultați metadatele „publisher_name”).
 Dacă este posibil, includeți URL-urile specifice utilizate pentru descărcarea datelor.
 Dacă metadatele setului de date includ un
 <a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
   >identificator digital de obiect (DOI ) <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="Acest link către un site extern nu constituie o aprobare."></a>, vă rugăm să includeți asta în citarea pe care o creați.
+  title="Acest link către un site web extern nu constituie o aprobare."></a>, vă rugăm să includeți asta în citarea pe care o creați.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cum se ERDDAP într-o lucrare</a></strong>
+<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cum se citează ERDDAP într-o lucrare</a></strong>
 <br>Dacă doriți să citați ERDDAP într-o lucrare științifică, vă rugăm să folosiți ceva de genul
-<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, RA și Chris John.
+2022.
+ERDDAP .
+https://coastwatch.pfeg.noaa.gov/erddap .
+Monterey, CA:
+NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Ce înseamnă acronimul „ERDDAP ”?</a></strong>
 <br>„ERDDAP ” a fost un acronim, dar a depășit descrierea originală.
 Acum, vă rog să vă gândiți la el ca un nume, nu un acronim.
@@ -5747,8 +5695,8 @@ Acum, vă rog să vă gândiți la el ca un nume, nu un acronim.
 <br>Părerile lui Bob despre proiectarea și evaluarea sistemelor de distribuție a datelor pot fi găsite
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">aici</a> .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Puteți să</a></strong>
-<a rel="help" href="https://erddap.github.io/setup.html"><strong>vă configurați propriul server ERDDAP</strong></a> și să vă serviți propriile date.
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Puteți</a></strong>
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>să vă configurați propriul server ERDDAP</strong></a> și să vă serviți propriile date.
 <ul>
 <li>Micul efort de a înființa ERDDAP aduce multe beneficii.
 <li>Dacă aveți deja un serviciu web pentru distribuirea datelor dvs., puteți configura ERDDAP pentru a vă accesa datele prin serviciul existent sau prin fișierele sursă sau baza de date.
@@ -5756,7 +5704,7 @@ Apoi, oamenii vor avea o altă modalitate de a vă accesa datele și vor putea d
 <li>Dacă aveți seturi de date care sunt la mare căutare, puteți instala
 <a rel="help" 
   href="https://erddap.github.io/grids.html"
-  >mai multe ERDDAP uri care funcționează împreună</a> pentru a se extinde și a satisface nevoile unui centru mare de distribuție de date.
+  >mai multe ERDDAP -uri care funcționează împreună</a> pentru a se extinde și a satisface nevoile unui centru mare de distribuție de date.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contactaţi-ne</a></h2>
 Dacă aveți întrebări, sugestii sau comentarii despre ERDDAP în general (nu această instalare specifică ERDDAP ), vă rugăm să trimiteți un e-mail la <kbd>erd dot data at noaa dot gov</kbd> și să includeți adresa URL ERDDAP direct legată de întrebarea sau comentariul dvs.
@@ -5769,6 +5717,7 @@ Odată ce sunteți membru, puteți posta întrebarea dvs.
 acolo sau puteți căuta pentru a vedea dacă întrebarea a fost deja pusă și a răspuns.
 <p>DECLINAREA RESPONSABILITĂȚII:
 Opiniile de pe această pagină web sunt opiniile personale ale lui Bob Simons și nu reflectă neapărat nicio poziție a Guvernului sau a National Oceanic and Atmospheric Administration .
+
 ]]></theLongDescriptionHtml>
 <Then>Atunci</Then>
 <twoClickMapDefaultTooltip>Specificați un dreptunghi făcând clic pe două colțuri diagonale. Fă-o din nou dacă este nevoie.</twoClickMapDefaultTooltip>
@@ -5878,6 +5827,9 @@ https://unitsofmeasure.org/ucum.html
 
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://cfconventions.org/standard-names.html 
+https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 
 https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
 http://portal.chordsrt.com/about
@@ -6401,6 +6353,9 @@ https://jsfiddle.net
 http://jsonlines.org
 https://jsonlines.org
 
+http://jtds.sourceforge.net
+https://jtds.sourceforge.net
+
 http://kgs.uky.edu/arcgis
 https://kgs.uky.edu/arcgis
 
@@ -6442,6 +6397,9 @@ https://motherlode.ucar.edu
 
 http://motherlode.ucar.edu
 https://motherlode.ucar.edu
+
+http://nco.sourceforge.net
+https://nco.sourceforge.net
 
 http://nctr.pmel.noaa.gov
 https://nctr.pmel.noaa.gov

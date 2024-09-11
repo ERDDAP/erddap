@@ -10,20 +10,16 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-
 import gov.noaa.pmel.util.Range2D;
-
-import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.awt.Color;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Contains levels and line styles for contour graphics.
@@ -38,36 +34,32 @@ public class ContourLevels implements Cloneable {
    * @link aggregationByValue
    * @supplierCardinality 1
    */
-  private DefaultContourLineAttribute defaultAttr_ =
-    new DefaultContourLineAttribute();
+  private DefaultContourLineAttribute defaultAttr_ = new DefaultContourLineAttribute();
+
   private Vector levels_ = new Vector();
   private Hashtable lineAttrMap_ = new Hashtable();
   private boolean sorted_ = false;
-
 
   /**
    * @label solid
    * @link aggregationByValue
    */
-  static private ContourLineAttribute solid_ =
-    new ContourLineAttribute(ContourLineAttribute.SOLID);
+  private static ContourLineAttribute solid_ = new ContourLineAttribute(ContourLineAttribute.SOLID);
 
   /**
    * @label heavy
    * @link aggregationByValue
    */
-  static private ContourLineAttribute heavy_ =
-    new ContourLineAttribute(ContourLineAttribute.HEAVY);
+  private static ContourLineAttribute heavy_ = new ContourLineAttribute(ContourLineAttribute.HEAVY);
 
   /**
    * @label dashed
    * @link aggregationByValue
    */
-  static private ContourLineAttribute dashed_ =
-    new ContourLineAttribute(ContourLineAttribute.DASHED);
+  private static ContourLineAttribute dashed_ =
+      new ContourLineAttribute(ContourLineAttribute.DASHED);
 
-  private PropertyChangeSupport changes_ =
-    new PropertyChangeSupport(this);
+  private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
   /**
    * @directed
@@ -77,234 +69,207 @@ public class ContourLevels implements Cloneable {
    */
   private ContourLineAttribute lnkLineAttribute;
 
-  
-      /** 
-     * Bob Simons added this to avoid memory leak problems.
-     */
-    public void releaseResources() throws Exception {
-        try {  
-            if (levels_ != null) { levels_.clear(); levels_ = null; }                    
-            defaultAttr_ = null;
-            if (lineAttrMap_ != null) { lineAttrMap_.clear(); lineAttrMap_ = null; }
-            solid_ = null;
-            heavy_ = null;
-            dashed_ = null;
-            changes_ = null;
-            lnkLineAttribute = null;
-            if (JPane.debug) String2.log("sgt.ContourLevels.releaseResources() finished");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            if (JPane.debug) 
-                String2.pressEnterToContinue(); 
-        }
+  /** Bob Simons added this to avoid memory leak problems. */
+  public void releaseResources() throws Exception {
+    try {
+      if (levels_ != null) {
+        levels_.clear();
+        levels_ = null;
+      }
+      defaultAttr_ = null;
+      if (lineAttrMap_ != null) {
+        lineAttrMap_.clear();
+        lineAttrMap_ = null;
+      }
+      solid_ = null;
+      heavy_ = null;
+      dashed_ = null;
+      changes_ = null;
+      lnkLineAttribute = null;
+      if (JPane.debug) String2.log("sgt.ContourLevels.releaseResources() finished");
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+      if (JPane.debug) String2.pressEnterToContinue();
     }
+  }
 
-  /**
-   * Construct a default <code>ContourLevels</code> object from a double[].
-   */
-  static public ContourLevels getDefault(double[] array) {
+  /** Construct a default <code>ContourLevels</code> object from a double[]. */
+  public static ContourLevels getDefault(double[] array) {
     ContourLevels cl = new ContourLevels();
     double val = 0.0;
-    for(int i=0; i < array.length; i++) {
+    for (int i = 0; i < array.length; i++) {
       cl.addLevel(array[i]);
     }
     return cl;
   }
-  /**
-   * Construct a default <code>ContourLevels</code> object from a
-   * <code>Range2D</code>.
-   */
-  static public ContourLevels getDefault(Range2D range) {
+
+  /** Construct a default <code>ContourLevels</code> object from a <code>Range2D</code>. */
+  public static ContourLevels getDefault(Range2D range) {
     ContourLevels cl = new ContourLevels();
     double val = range.start;
-    while(val <= range.end) {
+    while (val <= range.end) {
       cl.addLevel(val);
       val = val + range.delta;
     }
     return cl;
   }
-  /**
-   * Create a deep copy.
-   */
+
+  /** Create a deep copy. */
   public ContourLevels copy() {
     ContourLevels newcls;
     try {
-      newcls = (ContourLevels)clone();
+      newcls = (ContourLevels) clone();
       //      newcls.defaultAttr_ =
       //	(DefaultContourLineAttribute)this.defaultAttr_.copy();
-      newcls.levels_ = (Vector)this.levels_.clone();
-      newcls.lineAttrMap_ = (Hashtable)this.lineAttrMap_.clone();
+      newcls.levels_ = (Vector) this.levels_.clone();
+      newcls.lineAttrMap_ = (Hashtable) this.lineAttrMap_.clone();
     } catch (CloneNotSupportedException e) {
       newcls = null;
     }
     return newcls;
   }
-  /**
-   * Get the contour level elements.
-   */
+
+  /** Get the contour level elements. */
   public Enumeration levelElements() {
-    //try { //bob added
-    //System.out.println("pre  ContourLevels.levelElements label(-4000)=" + getContourLineAttribute(-4000).getLabelText());
-    if(!sorted_) sort();
-    //System.out.println("post ContourLevels.levelElements label(-4000)=" + getContourLineAttribute(-4000).getLabelText());
-    //} catch (Exception e) {}
+    // try { //bob added
+    // System.out.println("pre  ContourLevels.levelElements label(-4000)=" +
+    // getContourLineAttribute(-4000).getLabelText());
+    if (!sorted_) sort();
+    // System.out.println("post ContourLevels.levelElements label(-4000)=" +
+    // getContourLineAttribute(-4000).getLabelText());
+    // } catch (Exception e) {}
     return levels_.elements();
   }
-  /**
-   * Set a the <code>ContourLineAttribute</code> for a value.
-   */
+
+  /** Set a the <code>ContourLineAttribute</code> for a value. */
   public void setContourLineAttribute(double val, ContourLineAttribute l)
-    throws ContourLevelNotFoundException  {
+      throws ContourLevelNotFoundException {
     throw new MethodNotImplementedError();
   }
-  /**
-   * Set a the <code>ContourLineAttribute</code> for an index.
-   */
+
+  /** Set a the <code>ContourLineAttribute</code> for an index. */
   public void setContourLineAttribute(int indx, ContourLineAttribute l)
-    throws ContourLevelNotFoundException  {
+      throws ContourLevelNotFoundException {
     throw new MethodNotImplementedError();
   }
-  /**
-   * Get the <code>ContourLineAttribute</code> for a value.
-   */
+
+  /** Get the <code>ContourLineAttribute</code> for a value. */
   public ContourLineAttribute getContourLineAttribute(double val)
-    throws ContourLevelNotFoundException  {
-    ContourLineAttribute attr =
-      (ContourLineAttribute)lineAttrMap_.get(Double.valueOf(val));
-    //System.out.println("contourLevels.getContourLineAtt(" + val + ") label=" + attr.getLabelText());
-    if(attr == null) {
+      throws ContourLevelNotFoundException {
+    ContourLineAttribute attr = (ContourLineAttribute) lineAttrMap_.get(Double.valueOf(val));
+    // System.out.println("contourLevels.getContourLineAtt(" + val + ") label=" +
+    // attr.getLabelText());
+    if (attr == null) {
       throw new ContourLevelNotFoundException();
     }
     return attr;
   }
-  /**
-   * Get the <code>ContourLineAttribute</code> for an index.
-   */
+
+  /** Get the <code>ContourLineAttribute</code> for an index. */
   public ContourLineAttribute getContourLineAttribute(int indx)
-    throws ContourLevelNotFoundException  {
-    if(!sorted_) sort();
+      throws ContourLevelNotFoundException {
+    if (!sorted_) sort();
     return getContourLineAttribute(getLevel(indx));
   }
-  /**
-   * Get the <code>DefaultContourLineAtrribute</code>
-   */
+
+  /** Get the <code>DefaultContourLineAtrribute</code> */
   public DefaultContourLineAttribute getDefaultContourLineAttribute() {
     return defaultAttr_;
   }
-  /**
-   * Get the <code>DefaultContourLineAttribute</code> for index.
-   */
+
+  /** Get the <code>DefaultContourLineAttribute</code> for index. */
   public DefaultContourLineAttribute getDefaultContourLineAttribute(int indx)
-    throws ContourLevelNotFoundException {
-    if(!sorted_) sort();
-    return
-      defaultAttr_.setContourLineAttribute(getContourLineAttribute(getLevel(indx)));
+      throws ContourLevelNotFoundException {
+    if (!sorted_) sort();
+    return defaultAttr_.setContourLineAttribute(getContourLineAttribute(getLevel(indx)));
   }
-  /**
-   * Get the <code>DefaultContourLineAttribute</code> for value.
-   */
+
+  /** Get the <code>DefaultContourLineAttribute</code> for value. */
   public DefaultContourLineAttribute getDefaultContourLineAttribute(double val)
-    throws ContourLevelNotFoundException {
-    if(!sorted_) sort();
-    return
-      defaultAttr_.setContourLineAttribute(getContourLineAttribute(val));
+      throws ContourLevelNotFoundException {
+    if (!sorted_) sort();
+    return defaultAttr_.setContourLineAttribute(getContourLineAttribute(val));
   }
-  /**
-   * Set the <code>DefaultContourLineAttribute</code>
-   */
+
+  /** Set the <code>DefaultContourLineAttribute</code> */
   public void setDefaultContourLineAttribute(DefaultContourLineAttribute attr) {
     defaultAttr_ = attr;
   }
-  /**
-   * Add a contour level with default <code>ContourLineAttribute</code>.
-   */
+
+  /** Add a contour level with default <code>ContourLineAttribute</code>. */
   public void addLevel(double val) {
     ContourLineAttribute attr = null;
-    if(val < 0.0) {
-      attr = (ContourLineAttribute)dashed_.copy();
+    if (val < 0.0) {
+      attr = (ContourLineAttribute) dashed_.copy();
     } else if (val > 0.0) {
-      attr = (ContourLineAttribute)solid_.copy();
+      attr = (ContourLineAttribute) solid_.copy();
     } else {
-      attr = (ContourLineAttribute)heavy_.copy();
-     }
+      attr = (ContourLineAttribute) heavy_.copy();
+    }
     attr.setStyleOverridden(true);
-    attr.setLabelText("" + val); //bob added
+    attr.setLabelText("" + val); // bob added
     addLevel(val, attr);
   }
-  /**
-   * Add a contour level with a specified
-   * <code>ContourLineAttribute</code>.
-   */
+
+  /** Add a contour level with a specified <code>ContourLineAttribute</code>. */
   public void addLevel(double val, ContourLineAttribute l) {
     Double value = Double.valueOf(val);
     levels_.addElement(value);
-    //System.out.println("contourLevels.addLevel(" + val + ") label=" + l.getLabelText() + "\n" +
+    // System.out.println("contourLevels.addLevel(" + val + ") label=" + l.getLabelText() + "\n" +
     //    com.cohort.util.MustBe.getStackTrace());
     lineAttrMap_.put(value, l);
     sorted_ = false;
   }
-  /**
-   * Get the value of level by index.
-   */
-  public double getLevel(int indx)
-    throws ContourLevelNotFoundException  {
-    if(indx < 0 || indx >= levels_.size())
-      throw new ContourLevelNotFoundException();
-    if(!sorted_) sort();
-    Double value = (Double)levels_.elementAt(indx);
+
+  /** Get the value of level by index. */
+  public double getLevel(int indx) throws ContourLevelNotFoundException {
+    if (indx < 0 || indx >= levels_.size()) throw new ContourLevelNotFoundException();
+    if (!sorted_) sort();
+    Double value = (Double) levels_.elementAt(indx);
     return value.doubleValue();
   }
-  /**
-   * Remove a level by value.
-   */
-  public void removeLevel(double val)
-    throws ContourLevelNotFoundException  {
+
+  /** Remove a level by value. */
+  public void removeLevel(double val) throws ContourLevelNotFoundException {
     throw new MethodNotImplementedError();
   }
-  /**
-   * Remove a level by index.
-   */
-  public void removeLevel(int indx)
-    throws ContourLevelNotFoundException  {
+
+  /** Remove a level by index. */
+  public void removeLevel(int indx) throws ContourLevelNotFoundException {
     throw new MethodNotImplementedError();
   }
-  /**
-   * Get the index of a level by value
-   */
+
+  /** Get the index of a level by value */
   public int getIndex(Double dval) {
-    if(!sorted_) sort();
+    if (!sorted_) sort();
     return levels_.indexOf(dval);
   }
-  /**
-   * Get the index of a level by value
-   */
+
+  /** Get the index of a level by value */
   public int getIndex(double val) {
-    if(!sorted_) sort();
+    if (!sorted_) sort();
     return getIndex(Double.valueOf(val));
   }
-  /**
-   * Get the maximum level index.
-   */
+
+  /** Get the maximum level index. */
   public int getMaximumIndex() {
     return levels_.size() - 1;
   }
-  /**
-   * Get the range of levels
-   */
+
+  /** Get the range of levels */
   public Range2D getRange() {
     double min = Double.MAX_VALUE;
-    double max = -Double.MAX_VALUE; //bob changed this
+    double max = -Double.MAX_VALUE; // bob changed this
     double value;
-    for(int i=0; i < levels_.size(); i++) {
-      value = ((Double)levels_.get(i)).doubleValue();
+    for (int i = 0; i < levels_.size(); i++) {
+      value = ((Double) levels_.get(i)).doubleValue();
       min = Math.min(min, value);
       max = Math.max(max, value);
     }
     return new Range2D(min, max);
   }
-  /**
-   * Get the number of levels.
-   */
+
+  /** Get the number of levels. */
   public int size() {
     return levels_.size();
   }
@@ -318,39 +283,37 @@ public class ContourLevels implements Cloneable {
     Double a, b;
     int[] index = new int[size];
     boolean flipped = true;
-    for(i=0; i < size; i++) {
+    for (i = 0; i < size; i++) {
       index[i] = i;
     }
-    while(flipped) {
+    while (flipped) {
       flipped = false;
-      for(i=0; i < size-1; i++) {
-        a = (Double)levels_.elementAt(index[i]);
-        b = (Double)levels_.elementAt(index[i+1]);
-        if(a.doubleValue() > b.doubleValue()) {
+      for (i = 0; i < size - 1; i++) {
+        a = (Double) levels_.elementAt(index[i]);
+        b = (Double) levels_.elementAt(index[i + 1]);
+        if (a.doubleValue() > b.doubleValue()) {
           //	  if(a.compareTo(b) > 0) { // jdk1.2
           temp = index[i];
-          index[i] = index[i+1];
-          index[i+1] = temp;
+          index[i] = index[i + 1];
+          index[i + 1] = temp;
           flipped = true;
         }
       }
     }
     Vector oldValues = levels_;
     levels_ = new Vector(size);
-    for(i=0; i < size; i++) {
+    for (i = 0; i < size; i++) {
       levels_.addElement(oldValues.elementAt(index[i]));
     }
     sorted_ = true;
   }
 
-  /**
-   * Add listener to changes in <code>ColorMap</code> properties.
-   */
+  /** Add listener to changes in <code>ColorMap</code> properties. */
   public void addPropertyChangeListener(PropertyChangeListener listener) {
     changes_.addPropertyChangeListener(listener);
   }
+
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
 }
-

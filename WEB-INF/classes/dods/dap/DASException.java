@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 1998, California Institute of Technology.  
-// ALL RIGHTS RESERVED.   U.S. Government Sponsorship acknowledged. 
+// Copyright (c) 1998, California Institute of Technology.
+// ALL RIGHTS RESERVED.   U.S. Government Sponsorship acknowledged.
 //
 // Please read the full copyright notice in the file COPYRIGHT
 // in this directory.
@@ -20,12 +20,11 @@ package dods.dap;
  */
 public class DASException extends DODSException {
   /**
-   * Construct a <code>DASException</code> with the specified detail
-   * message and DODS error code.
+   * Construct a <code>DASException</code> with the specified detail message and DODS error code.
    *
    * @param s the detail message.
    */
   public DASException(int error, String s) {
-    super(error,s);
+    super(error, s);
   }
 }

@@ -1,10 +1,5 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-
-import org.junit.jupiter.api.io.TempDir;
-
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
@@ -21,7 +16,11 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import org.junit.jupiter.api.io.TempDir;
+import tags.TagMissingFile;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayByte;
 import ucar.ma2.ArrayChar;
@@ -41,12 +40,9 @@ import ucar.nc2.write.NetcdfFormatWriter;
 
 class NcHelperTests {
 
-  @TempDir
-  private static Path TEMP_DIR;
+  @TempDir private static Path TEMP_DIR;
 
-  /**
-   * This tests the methods in this class.
-   */
+  /** This tests the methods in this class. */
   @org.junit.jupiter.api.Test
   void testBasic() throws Throwable {
     String2.log("\n*** NcHelper.testBasic...");
@@ -54,7 +50,7 @@ class NcHelperTests {
 
     // getArray get1DArray, get1DArrayLength
     Object o;
-    o = new String[] { "5.5", "7.77" };
+    o = new String[] {"5.5", "7.77"};
     Array array = NcHelper.get1DArray(o, false);
     Test.ensureTrue(array instanceof ArrayChar.D2, "get1DArray a");
     Test.ensureEqual(NcHelper.get1DArrayLength(array), 2, "get1DArrayLength a");
@@ -86,7 +82,7 @@ class NcHelperTests {
      * Test.ensureEqual(sar[5], "f", "");
      */
 
-    o = new byte[] { (byte) 2, (byte) 9 };
+    o = new byte[] {(byte) 2, (byte) 9};
     array = NcHelper.get1DArray(o, false);
     Test.ensureTrue(array instanceof ArrayByte.D1, "get1DArray b");
     Test.ensureEqual(NcHelper.get1DArrayLength(array), 2, "get1DArrayLength a");
@@ -97,7 +93,7 @@ class NcHelperTests {
     Test.ensureEqual(bar.get(0), 2, "");
     Test.ensureEqual(bar.get(1), 9, "");
 
-    o = new double[] { 2.2, 9.9 };
+    o = new double[] {2.2, 9.9};
     array = NcHelper.get1DArray(o, false);
     Test.ensureTrue(array instanceof ArrayDouble.D1, "get1DArray c");
     Test.ensureEqual(NcHelper.get1DArrayLength(array), 2, "get1DArrayLength a");
@@ -109,26 +105,24 @@ class NcHelperTests {
     Test.ensureEqual(dar.get(1), 9.9, "");
 
     // test readWritePAsInNc
-    ByteArray ba = new ByteArray(new byte[] { 1, 2, 4, 7 });
-    ShortArray sha = new ShortArray(new short[] { 100, 200, 400, 700 });
-    IntArray ia = new IntArray(new int[] { -1, 0, 1 });
-    LongArray la = new LongArray(new long[] { -10L, 0, 10L });
+    ByteArray ba = new ByteArray(new byte[] {1, 2, 4, 7});
+    ShortArray sha = new ShortArray(new short[] {100, 200, 400, 700});
+    IntArray ia = new IntArray(new int[] {-1, 0, 1});
+    LongArray la = new LongArray(new long[] {-10L, 0, 10L});
     char charAr[] = new char[65536];
-    for (int i = 0; i < 65536; i++)
-      charAr[i] = (char) i;
+    for (int i = 0; i < 65536; i++) charAr[i] = (char) i;
     CharArray ca = new CharArray(charAr);
-    FloatArray fa = new FloatArray(new float[] { -1.1f, 2.2f, 5.5f, Float.NaN });
-    DoubleArray da = new DoubleArray(new double[] { 1.1, 2.2, 9.9, Double.NaN });
+    FloatArray fa = new FloatArray(new float[] {-1.1f, 2.2f, 5.5f, Float.NaN});
+    DoubleArray da = new DoubleArray(new double[] {1.1, 2.2, 9.9, Double.NaN});
     StringArray sa = new StringArray();
     for (int i = 0; i < 65536; i++)
       sa.add("a" + (i == 8 ? " " : (char) i) + "z"); // backspace not saved
     // write to file
     fullName = TEMP_DIR.toAbsolutePath().toString() + "/PAsInNc.nc";
     File2.delete(fullName); // for test, make double sure it doesn't already exist
-    StringArray varNames = new StringArray(new String[] {
-        "ba", "sha", "ia", "la", "ca", "fa", "da", "sa" });
-    PrimitiveArray pas[] = new PrimitiveArray[] {
-        ba, sha, ia, la, ca, fa, da, sa };
+    StringArray varNames =
+        new StringArray(new String[] {"ba", "sha", "ia", "la", "ca", "fa", "da", "sa"});
+    PrimitiveArray pas[] = new PrimitiveArray[] {ba, sha, ia, la, ca, fa, da, sa};
     NcHelper.writePAsInNc3(fullName, varNames, pas);
     // read from file
     StringArray varNames2 = new StringArray();
@@ -141,14 +135,16 @@ class NcHelperTests {
       Test.ensureEqual(pas[i].elementTypeString(), pa2.elementTypeString(), "i=" + i);
       if (pas[i].elementType() == PAType.STRING) {
         for (int j = 0; j < pas[i].size(); j++)
-          Test.ensureEqual(String2.toJson(pas[i].getString(j)),
-              String2.toJson(pa2.getString(j)), "i=" + i + " j=" + j);
+          Test.ensureEqual(
+              String2.toJson(pas[i].getString(j)),
+              String2.toJson(pa2.getString(j)),
+              "i=" + i + " j=" + j);
       } else {
         Test.ensureEqual(pas[i].toJsonCsvString(), pa2.toJsonCsvString(), "i=" + i);
       }
     }
 
-    pas2 = NcHelper.readPAsInNc3(fullName, new String[] { "sa" }, varNames2);
+    pas2 = NcHelper.readPAsInNc3(fullName, new String[] {"sa"}, varNames2);
     Test.ensureEqual(varNames2.size(), 1, "");
     Test.ensureEqual(varNames2.get(0), "sa", "");
     Test.ensureEqual(pas2.length, 1, "");
@@ -157,8 +153,7 @@ class NcHelperTests {
     // test writeAttributesToNc
     fullName = TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc";
     Attributes atts = new Attributes();
-    for (int i = 0; i < pas.length; i++)
-      atts.set(varNames.get(i), pas[i]);
+    for (int i = 0; i < pas.length; i++) atts.set(varNames.get(i), pas[i]);
     NcHelper.writeAttributesToNc3(fullName, atts);
     // read 1
     PrimitiveArray pa = NcHelper.readAttributeFromNc(fullName, "sa");
@@ -181,34 +176,33 @@ class NcHelperTests {
       Test.ensureEqual(pas[i].toJsonCsvString(), pa.toJsonCsvString(), "i=" + i);
     }
     // test fail to read non-existent file
+    String testPath =
+        Paths.get(TEMP_DIR.toAbsolutePath().toString(), "AttsInNc.nczztop").toString();
     try {
       pa = NcHelper.readAttributeFromNc(fullName + "zztop", "sa");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     try {
       pas2 = NcHelper.readAttributesFromNc3(fullName + "zztop", varNames.toArray());
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     try {
       atts = NcHelper.readAttributesFromNc3(fullName + "zztop");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     // test fail to read non-existent var
@@ -216,20 +210,26 @@ class NcHelperTests {
       pa = NcHelper.readAttributeFromNc(fullName, "zztop");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          String2.ERROR + ": Expected variable #0 not found while reading " +
-              TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc (loadVarNames=zztop).") < 0)
-        throw e;
+      if (e.toString()
+              .indexOf(
+                  String2.ERROR
+                      + ": Expected variable #0 not found while reading "
+                      + TEMP_DIR.toAbsolutePath().toString()
+                      + "/AttsInNc.nc (loadVarNames=zztop).")
+          < 0) throw e;
     }
 
     try {
-      pas2 = NcHelper.readAttributesFromNc3(fullName, new String[] { "zztop" });
+      pas2 = NcHelper.readAttributesFromNc3(fullName, new String[] {"zztop"});
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          String2.ERROR + ": Expected variable #0 not found while reading " +
-              TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc (loadVarNames=zztop).") < 0)
-        throw e;
+      if (e.toString()
+              .indexOf(
+                  String2.ERROR
+                      + ": Expected variable #0 not found while reading "
+                      + TEMP_DIR.toAbsolutePath().toString()
+                      + "/AttsInNc.nc (loadVarNames=zztop).")
+          < 0) throw e;
     }
 
     // test if defining >2GB throws exception
@@ -251,12 +251,13 @@ class NcHelperTests {
       ArrayList<Dimension> dims = new ArrayList<Dimension>();
       dims.add(dim0);
       dims.add(dim1);
-      NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
+      NcHelper.addNc3StringVariable(
+          rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
       Array ar;
 
       // "create" mode
       ncWriter = ncOut.build();
-      String sa6[] = { "", "a", "abcd", "abc", "abcd", "abcd" };
+      String sa6[] = {"", "a", "abcd", "abc", "abcd", "abcd"};
       Variable s1Var = ncWriter.findVariable("s1");
 
       // this fails (as expected and desired):
@@ -264,8 +265,8 @@ class NcHelperTests {
       // ar = Array.factory(DataType.STRING, new int[]{6}, sa6);
       // ncOut.writeStringDataToChar(s1, new int[]{0}, ar);
 
-      ar = Array.factory(DataType.STRING, new int[] { 2, 3 }, sa6);
-      ncWriter.writeStringDataToChar(s1Var, new int[] { 0, 0 }, ar);
+      ar = Array.factory(DataType.STRING, new int[] {2, 3}, sa6);
+      ncWriter.writeStringDataToChar(s1Var, new int[] {0, 0}, ar);
       ncWriter.close();
       ncWriter = null;
     } catch (Exception e) {
@@ -282,20 +283,21 @@ class NcHelperTests {
 
     // Strings are truncated to maxCharLength specified in "define" mode.
     String results = NcHelper.ncdump(fullName, "");
-    String expected = "netcdf StringsInNc.nc {\n" +
-        "  dimensions:\n" +
-        "    dim0 = 2;\n" +
-        "    dim1 = 3;\n" +
-        "    s1_strlen = 4;\n" +
-        "  variables:\n" +
-        "    char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
-        "\n" +
-        "\n" +
-        "  data:\n" +
-        "    s1 = \n" +
-        "      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n" +
-        "      }\n" +
-        "}\n";
+    String expected =
+        "netcdf StringsInNc.nc {\n"
+            + "  dimensions:\n"
+            + "    dim0 = 2;\n"
+            + "    dim1 = 3;\n"
+            + "    s1_strlen = 4;\n"
+            + "  variables:\n"
+            + "    char s1(dim0=2, dim1=3, s1_strlen=4);\n"
+            + "\n"
+            + "\n"
+            + "  data:\n"
+            + "    s1 = \n"
+            + "      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n"
+            + "      }\n"
+            + "}\n";
     // String2.log("results=\n" + results);
     Test.ensureEqual(results, expected, "");
     File2.delete(fullName);
@@ -315,12 +317,13 @@ class NcHelperTests {
       ArrayList<Dimension> dims = new ArrayList<Dimension>();
       dims.add(dim0);
       dims.add(dim1);
-      NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
+      NcHelper.addNc3StringVariable(
+          rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
       Array ar;
 
       // "create" mode
       ncWriter = ncOut.build();
-      String sa6[] = { "", "a", "abcde", "abc", "abcd", "abcde" };
+      String sa6[] = {"", "a", "abcde", "abc", "abcd", "abcde"};
       Variable s1Var = ncWriter.findVariable("s1");
 
       // this fails (as expected and desired):
@@ -328,8 +331,8 @@ class NcHelperTests {
       // ar = Array.factory(DataType.STRING, new int[]{6}, sa6);
       // ncOut.writeStringDataToChar(s1, new int[]{0}, ar);
 
-      ar = Array.factory(DataType.STRING, new int[] { 2, 3 }, sa6);
-      ncWriter.writeStringDataToChar(s1Var, new int[] { 0, 0 }, ar);
+      ar = Array.factory(DataType.STRING, new int[] {2, 3}, sa6);
+      ncWriter.writeStringDataToChar(s1Var, new int[] {0, 0}, ar);
       ncWriter.close();
       ncWriter = null;
     } catch (Exception e) {
@@ -346,20 +349,21 @@ class NcHelperTests {
 
     // Strings are truncated to maxCharLength specified in "define" mode.
     results = NcHelper.ncdump(fullName, "");
-    expected = "netcdf StringsInNc2.nc {\n" +
-        "  dimensions:\n" +
-        "    dim0 = 2;\n" +
-        "    dim1 = 3;\n" +
-        "    s1_strlen = 4;\n" +
-        "  variables:\n" +
-        "    char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
-        "\n" +
-        "\n" +
-        "  data:\n" +
-        "    s1 = \n" +
-        "      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n" +
-        "      }\n" +
-        "}\n";
+    expected =
+        "netcdf StringsInNc2.nc {\n"
+            + "  dimensions:\n"
+            + "    dim0 = 2;\n"
+            + "    dim1 = 3;\n"
+            + "    s1_strlen = 4;\n"
+            + "  variables:\n"
+            + "    char s1(dim0=2, dim1=3, s1_strlen=4);\n"
+            + "\n"
+            + "\n"
+            + "  data:\n"
+            + "    s1 = \n"
+            + "      {  \"\",   \"a\",   \"abcd\",  \"abc\",   \"abcd\",   \"abcd\"\n"
+            + "      }\n"
+            + "}\n";
     // String2.log("results=\n" + results);
     Test.ensureEqual(results, expected, "");
 
@@ -435,17 +439,18 @@ class NcHelperTests {
 
   /**
    * Test findAllVariablesWithDims.
-   * 
+   *
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
   void testFindAllVariablesWithDims() throws Exception {
     StringArray sa = new StringArray();
-    NetcdfFile ncFile = NcHelper.openFile(NcHelperTests.class.getResource("/nodcTemplates/ncCFMA2a.nc").getFile());
+    NetcdfFile ncFile =
+        NcHelper.openFile(
+            NcHelperTests.class.getResource("/data/nodcTemplates/ncCFMA2a.nc").getFile());
     try {
       Variable vars[] = NcHelper.findAllVariablesWithDims(ncFile);
-      for (int v = 0; v < vars.length; v++)
-        sa.add(vars[v].getFullName());
+      for (int v = 0; v < vars.length; v++) sa.add(vars[v].getFullName());
       sa.sort();
     } finally {
       ncFile.close();
@@ -453,16 +458,12 @@ class NcHelperTests {
     String results = sa.toString();
     String expected = "bottle_posn, cast, cruise_id, latitude, longitude, ship, temperature0, time";
     Test.ensureEqual(results, expected, "results=" + results);
-
   }
 
-  /**
-   * This is the test that Bob sent to Sean. It only uses netcdf-java methods, not
-   * NcHelper.
-   */
+  /** This is the test that Bob sent to Sean. It only uses netcdf-java methods, not NcHelper. */
   @org.junit.jupiter.api.Test
   void testReadStructure() throws Throwable {
-    String fileName = NcHelperTests.class.getResource("/nc/SDScompound.h5").getFile();
+    String fileName = NcHelperTests.class.getResource("/data/nc/SDScompound.h5").getFile();
     // System.out.println(NcHelper.ncdump(fileName, "-v ArrayOfStructures"));
     NetcdfFile nc = NetcdfFiles.open(fileName);
     try {
@@ -502,59 +503,64 @@ class NcHelperTests {
     }
   }
 
-  /**
-   * ERDDAP: require that all vars be in same structure
-   */
+  /** ERDDAP: require that all vars be in same structure */
   @org.junit.jupiter.api.Test
   void testReadStructure2() throws Throwable {
-    String fileName = NcHelperTests.class.getResource("/nc/SDScompound.h5").getFile();
+    String fileName = NcHelperTests.class.getResource("/data/nc/SDScompound.h5").getFile();
     // System.out.println(NcHelper.ncdump(fileName, "-v ArrayOfStructures"));
     NetcdfFile nc = NetcdfFiles.open(fileName);
     try {
-      String memberNames[] = new String[] { "a_name", "b_name", "c_name" };
-      PrimitiveArray pa[] = NcHelper.readStructure(nc, "ArrayOfStructures",
-          memberNames, IntArray.fromCSV("0,1,9"));
+      String memberNames[] = new String[] {"a_name", "b_name", "c_name"};
+      PrimitiveArray pa[] =
+          NcHelper.readStructure(nc, "ArrayOfStructures", memberNames, IntArray.fromCSV("0,1,9"));
       Test.ensureEqual(pa[0].toString(), "0, 1, 2, 3, 4, 5, 6, 7, 8, 9", "a_name");
-      Test.ensureEqual(pa[1].toString(), "0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0", "b_name");
-      Test.ensureEqual(pa[2].toString(),
+      Test.ensureEqual(
+          pa[1].toString(), "0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0", "b_name");
+      Test.ensureEqual(
+          pa[2].toString(),
           "1.0, 0.5, 0.3333333333333333, 0.25, 0.2, 0.16666666666666666, 0.14285714285714285, 0.125, 0.1111111111111111, 0.1",
           "c_name");
 
       pa = NcHelper.readStructure(nc, "ArrayOfStructures", memberNames, IntArray.fromCSV("2,3,9"));
       Test.ensureEqual(pa[0].toString(), "2, 5, 8", "a_name");
       Test.ensureEqual(pa[1].toString(), "4.0, 25.0, 64.0", "b_name");
-      Test.ensureEqual(pa[2].toString(), "0.3333333333333333, 0.16666666666666666, 0.1111111111111111", "c_name");
+      Test.ensureEqual(
+          pa[2].toString(),
+          "0.3333333333333333, 0.16666666666666666, 0.1111111111111111",
+          "c_name");
 
       pa = NcHelper.readStructure(nc, "ArrayOfStructures", memberNames, IntArray.fromCSV("2,3,8"));
       Test.ensureEqual(pa[0].toString(), "2, 5, 8", "a_name");
       Test.ensureEqual(pa[1].toString(), "4.0, 25.0, 64.0", "b_name");
-      Test.ensureEqual(pa[2].toString(), "0.3333333333333333, 0.16666666666666666, 0.1111111111111111", "c_name");
+      Test.ensureEqual(
+          pa[2].toString(),
+          "0.3333333333333333, 0.16666666666666666, 0.1111111111111111",
+          "c_name");
     } finally {
       nc.close();
     }
   }
 
-  /**
-   * This is a test of unlimitedDimension
-   */
+  /** This is a test of unlimitedDimension */
   @org.junit.jupiter.api.Test
   void testUnlimited() throws Exception {
-    String testUnlimitedFileName = "/temp/unlimited.nc";
+    String testUnlimitedFileName =
+        Path.of(NcHelperTests.class.getResource("/data/unlimited.nc").toURI()).toString();
     String2.log("\n* Projects.testUnlimited() " + testUnlimitedFileName);
     int strlen = 6;
     int row = -1;
     String results, expected;
     NetcdfFormatWriter ncWriter = null;
     try {
-      NetcdfFormatWriter.Builder file = NetcdfFormatWriter.createNewNetcdf3(
-          testUnlimitedFileName);
+      NetcdfFormatWriter.Builder file = NetcdfFormatWriter.createNewNetcdf3(testUnlimitedFileName);
       Group.Builder rootGroup = file.getRootGroup();
 
       // add the unlimited time dimension
       // Dimension timeDim = file.addUnlimitedDimension("time");
 
       // alternative way to add the unlimited dimension
-      Dimension timeDim = Dimension.builder().setName("time").setIsUnlimited(true).setLength(0).build();
+      Dimension timeDim =
+          Dimension.builder().setName("time").setIsUnlimited(true).setLength(0).build();
       rootGroup.addDimension(timeDim);
 
       ArrayList<Dimension> dims = new ArrayList<Dimension>();
@@ -573,7 +579,8 @@ class NcHelperTests {
       Variable.Builder sstVar = NcHelper.addVariable(rootGroup, "sst", DataType.DOUBLE, dims);
       sstVar.addAttribute(new Attribute("units", "degree_C"));
 
-      Variable.Builder commentVar = NcHelper.addNc3StringVariable(rootGroup, "comment", dims, strlen);
+      Variable.Builder commentVar =
+          NcHelper.addNc3StringVariable(rootGroup, "comment", dims, strlen);
 
       // create the file
       ncWriter = file.build();
@@ -592,20 +599,20 @@ class NcHelperTests {
           ncWriter = NetcdfFormatWriter.openExisting(testUnlimitedFileName).build();
         // String2.log("writing row=" + row);
 
-        int[] origin1 = new int[] { row };
-        int[] origin2 = new int[] { row, 0 };
+        int[] origin1 = new int[] {row};
+        int[] origin2 = new int[] {row, 0};
         Array array;
         ArrayChar.D2 ac = new ArrayChar.D2(1, strlen);
 
         double cTime = System.currentTimeMillis() / 1000.0;
-        array = NcHelper.get1DArray(new double[] { row }, false);
+        array = NcHelper.get1DArray(new double[] {row}, false);
         ncWriter.write(ncWriter.findVariable("time"), origin1, array);
         // String2.log(">> array=" + array.toString());
-        array = NcHelper.get1DArray(new double[] { 33.33 }, false);
+        array = NcHelper.get1DArray(new double[] {33.33}, false);
         ncWriter.write(ncWriter.findVariable("lat"), origin1, array);
-        array = NcHelper.get1DArray(new double[] { -123.45 }, false);
+        array = NcHelper.get1DArray(new double[] {-123.45}, false);
         ncWriter.write(ncWriter.findVariable("lon"), origin1, array);
-        array = NcHelper.get1DArray(new double[] { 10 + row / 10.0 }, false);
+        array = NcHelper.get1DArray(new double[] {10 + row / 10.0}, false);
         ncWriter.write(ncWriter.findVariable("sst"), origin1, array);
         ac.setString(0, row + " comment");
         ncWriter.write(ncWriter.findVariable("comment"), origin2, ac);
@@ -671,7 +678,12 @@ class NcHelperTests {
         ncWriter = null;
       }
     } catch (Exception e9) {
-      String2.log("row=" + row + " " + NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+      String2.log(
+          "row="
+              + row
+              + " "
+              + NcHelper.ERROR_WHILE_CREATING_NC_FILE
+              + MustBe.throwableToString(e9));
       if (ncWriter != null) {
         try {
           ncWriter.abort();
@@ -685,38 +697,68 @@ class NcHelperTests {
 
     results = NcHelper.ncdump(testUnlimitedFileName, "");
     // String2.log(results);
-    expected = "netcdf unlimited.nc {\n" + // 2013-09-03 netcdf-java 4.3 added blank lines
-        "  dimensions:\n" +
-        "    time = UNLIMITED;   // (5 currently)\n" +
-        "    comment_strlen = 6;\n" +
-        "  variables:\n" +
-        "    double time(time=5);\n" +
-        "      :units = \"seconds since 1970-01-01\";\n" +
-        "\n" +
-        "    double lat(time=5);\n" +
-        "      :units = \"degrees_north\";\n" +
-        "\n" +
-        "    double lon(time=5);\n" +
-        "      :units = \"degrees_east\";\n" +
-        "\n" +
-        "    double sst(time=5);\n" +
-        "      :units = \"degree_C\";\n" +
-        "\n" +
-        "    char comment(time=5, comment_strlen=6);\n" +
-        "\n" +
-        "\n" +
-        "  data:\n" +
-        "    time = \n" +
-        "      {0.0, 1.0, 2.0, 3.0, 4.0}\n" +
-        "    lat = \n" +
-        "      {33.33, 33.33, 33.33, 33.33, 33.33}\n" +
-        "    lon = \n" +
-        "      {-123.45, -123.45, -123.45, -123.45, -123.45}\n" +
-        "    sst = \n" +
-        "      {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
-        "    comment =   \"0 comm\",   \"1 comm\",   \"2 comm\",   \"3 comm\",   \"4 comm\"\n" +
-        "}\n";
+    expected =
+        "netcdf unlimited.nc {\n"
+            + // 2013-09-03 netcdf-java 4.3 added blank lines
+            "  dimensions:\n"
+            + "    time = UNLIMITED;   // (5 currently)\n"
+            + "    comment_strlen = 6;\n"
+            + "  variables:\n"
+            + "    double time(time=5);\n"
+            + "      :units = \"seconds since 1970-01-01\";\n"
+            + "\n"
+            + "    double lat(time=5);\n"
+            + "      :units = \"degrees_north\";\n"
+            + "\n"
+            + "    double lon(time=5);\n"
+            + "      :units = \"degrees_east\";\n"
+            + "\n"
+            + "    double sst(time=5);\n"
+            + "      :units = \"degree_C\";\n"
+            + "\n"
+            + "    char comment(time=5, comment_strlen=6);\n"
+            + "\n"
+            + "\n"
+            + "  data:\n"
+            + "    time = \n"
+            + "      {0.0, 1.0, 2.0, 3.0, 4.0}\n"
+            + "    lat = \n"
+            + "      {33.33, 33.33, 33.33, 33.33, 33.33}\n"
+            + "    lon = \n"
+            + "      {-123.45, -123.45, -123.45, -123.45, -123.45}\n"
+            + "    sst = \n"
+            + "      {10.0, 10.1, 10.2, 10.3, 10.4}\n"
+            + "    comment =   \"0 comm\",   \"1 comm\",   \"2 comm\",   \"3 comm\",   \"4 comm\"\n"
+            + "}\n";
     Test.ensureEqual(results, expected, "");
+  }
 
+  /** Diagnose a problem */
+  @org.junit.jupiter.api.Test
+  @TagMissingFile
+  void testJplG1SST() throws Exception {
+    String dir = "c:/data/jplG1SST/";
+    String request[] = new String[] {"SST"};
+    StringArray varNames = new StringArray();
+    NetcdfFile fi;
+    Variable var; // read start:stop:stride
+
+    fi = NcHelper.openFile(dir + "sst_20120214.nc");
+    var = fi.findVariable("SST");
+    PrimitiveArray pas14 =
+        NcHelper.getPrimitiveArray(
+            var.read("0,0:14000:200,0:28000:200"), true, NcHelper.isUnsigned(var));
+    fi.close();
+    String2.log(pas14.toString());
+
+    fi = NcHelper.openFile(dir + "sst_20120212.nc");
+    var = fi.findVariable("SST");
+    PrimitiveArray pas13 =
+        NcHelper.getPrimitiveArray(
+            var.read("0,0:14000:200,0:28000:200"), true, NcHelper.isUnsigned(var));
+    fi.close();
+    String2.log(pas13.toString());
+
+    String2.log("diffString=\n" + pas14.diffString(pas13));
   }
 }

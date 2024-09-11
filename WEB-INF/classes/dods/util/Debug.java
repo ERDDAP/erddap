@@ -22,46 +22,39 @@ package dods.util;
 
 import java.util.TreeMap;
 
-/**
- * A minimal implementation of a globally-accessible set of Debug flags.
- */
-
+/** A minimal implementation of a globally-accessible set of Debug flags. */
 public class Debug {
-  static private TreeMap map = new TreeMap();
-  static private boolean debug = false, changed = true;
+  private static TreeMap<String, Boolean> map = new TreeMap<>();
+  private static boolean debug = false, changed = true;
 
-  static public boolean isSet(String flagName) {
+  public static boolean isSet(String flagName) {
     Object val;
     if (null == (val = map.get(flagName))) {
-      if (debug) System.out.println("Debug.isSet new "+ flagName);
-      map.put(flagName, new Boolean(false));
+      if (debug) System.out.println("Debug.isSet new " + flagName);
+      map.put(flagName, Boolean.FALSE);
       changed = true;
       return false;
     }
 
-    return ((Boolean)val).booleanValue();
+    return ((Boolean) val).booleanValue();
   }
 
-  static public void set(String flagName, boolean value) {
+  public static void set(String flagName, boolean value) {
     Object val;
     if (null == (val = map.get(flagName))) {
       changed = true;
     }
-    map.put(flagName, new Boolean(value));
-    if (debug) System.out.println("  Debug.set "+ flagName+" "+value);
+    map.put(flagName, Boolean.valueOf(value));
+    if (debug) System.out.println("  Debug.set " + flagName + " " + value);
   }
 
-  static public void clear() {
-   map = new TreeMap();
+  public static void clear() {
+    map = new TreeMap<>();
   }
 }
 
 /**
- * $Log: Debug.java,v $
- * Revision 1.1  2001/10/24 22:51:42  ndp
- * *** empty log message ***
+ * $Log: Debug.java,v $ Revision 1.1 2001/10/24 22:51:42 ndp *** empty log message ***
  *
- * Revision 1.1.1.1  2001/09/26 15:36:47  caron
- * checkin beta1
- *
+ * <p>Revision 1.1.1.1 2001/09/26 15:36:47 caron checkin beta1
  */

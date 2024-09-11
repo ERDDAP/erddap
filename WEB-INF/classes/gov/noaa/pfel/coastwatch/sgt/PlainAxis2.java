@@ -14,27 +14,20 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
-import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.sgt.*;
-
-import java.util.Vector;
+import gov.noaa.pmel.util.Point2D;
 import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.net.URL;
-import java.net.MalformedURLException;
+
 // jdk1.2
-//import java.awt.geom.Point2D;
+// import java.awt.geom.Point2D;
 
 /**
- * [This is a variant of PlainAxis which takes a NumberFormatter
- * to format the labels on the axis.  (by Bob Simons)
- * I had to make a few changes to PlainAxis to make this work:
- * change some constants to "public" not default access.]
+ * [This is a variant of PlainAxis which takes a NumberFormatter to format the labels on the axis.
+ * (by Bob Simons) I had to make a few changes to PlainAxis to make this work: change some constants
+ * to "public" not default access.]
  *
- * Axis class for creation of standard "plain" linear axes. An
- * {@link SpaceAxis example} is available demonstrating
- * <code>PlainAxis</code> use.
+ * <p>Axis class for creation of standard "plain" linear axes. An {@link SpaceAxis example} is
+ * available demonstrating <code>PlainAxis</code> use.
  *
  * @author Donald Denbo
  * @version $Revision: 1.9 $, $Date: 2003/08/22 23:02:32 $
@@ -51,9 +44,9 @@ public class PlainAxis2 extends PlainAxis {
   public PlainAxis2(NumberFormatter numberFormatter) {
     this("", numberFormatter);
   }
+
   /**
-   * Constructor for Axis. Sets the axis identifier and initializes
-   * the defaults.
+   * Constructor for Axis. Sets the axis identifier and initializes the defaults.
    *
    * @param id axis identification
    * @param numberFormatter which determines how axis labels will be formatted
@@ -64,6 +57,7 @@ public class PlainAxis2 extends PlainAxis {
   }
 
   //
+  @Override
   public void draw(Graphics g) {
     int xloc, yloc, xend, yend;
     int istop, i;
@@ -73,24 +67,23 @@ public class PlainAxis2 extends PlainAxis {
     Format format;
     String labelText;
     SGLabel title = getTitle();
-    if(!visible_) return;
-    if(Double.isNaN(delta)) 
-        delta = (uRange_.end - uRange_.start)/10.0;
-    if(title != null) title.setLayer(graph_.getLayer());
+    if (!visible_) return;
+    if (Double.isNaN(delta)) delta = (uRange_.end - uRange_.start) / 10.0;
+    if (title != null) title.setLayer(graph_.getLayer());
     //
-    if(lineColor_ == null) {
+    if (lineColor_ == null) {
       g.setColor(graph_.getLayer().getPane().getComponent().getForeground());
     } else {
       g.setColor(lineColor_);
     }
-    //bob commented out next 5 lines:
-    //if(labelFormat_.length() <= 0) {
+    // bob commented out next 5 lines:
+    // if(labelFormat_.length() <= 0) {
     //  format = new Format(Format.computeFormat(uRange_.start, uRange_.end, sigDigits_));
-    //} else {
+    // } else {
     //  format = new Format(labelFormat_);
-    //}
-    if(orientation_ == Axis.HORIZONTAL) {
-      if(uLocation_ == null) {
+    // }
+    if (orientation_ == Axis.HORIZONTAL) {
+      if (uLocation_ == null) {
         yloc = graph_.getYUtoD(tLocation_.t);
         yp = graph_.getYUtoP(tLocation_.t);
       } else {
@@ -101,16 +94,19 @@ public class PlainAxis2 extends PlainAxis {
       xend = graph_.getXUtoD(uRange_.end);
       g.drawLine(xloc, yloc, xend, yloc);
       //
-      dir = delta > 0? 1.0: -1.0;
-      //System.out.println(">PlainAxis2 horizontal delta=" + delta);
-      xt = (int)((uRange_.start/delta + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001))*delta; //safe? Denbo code
-      if(dir*xt < dir*uRange_.start) xt += delta;  
-      istop = (int)((uRange_.end - xt)/delta + 0.00001); //safe? Denbo code
+      dir = delta > 0 ? 1.0 : -1.0;
+      // System.out.println(">PlainAxis2 horizontal delta=" + delta);
+      xt =
+          (int)
+              ((uRange_.start / delta + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * delta); // safe? Denbo code
+      if (dir * xt < dir * uRange_.start) xt += delta;
+      istop = (int) ((uRange_.end - xt) / delta + 0.00001); // safe? Denbo code
       x = xt;
       xp = graph_.getXUtoP(x);
       drawSmallXTics(g, x, uRange_.start, -delta, yp, uRange_.start);
       drawXTic(g, xp, yp, largeTicHeight_);
-      for(i=0; i < istop; i++) {
+      for (i = 0; i < istop; i++) {
         drawSmallXTics(g, x, uRange_.end, delta, yp, uRange_.start);
         x += delta;
         xp = graph_.getXUtoP(x);
@@ -118,36 +114,36 @@ public class PlainAxis2 extends PlainAxis {
       }
       drawSmallXTics(g, x, uRange_.end, delta, yp, uRange_.start);
       //
-      if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
+      if (labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
       //
       SGLabel label;
       int vertalign;
-      if(labelPosition_ == POSITIVE_SIDE) {
+      if (labelPosition_ == POSITIVE_SIDE) {
         vertalign = SGLabel.BOTTOM;
-        if(ticPosition_ == BOTH_SIDES || ticPosition_ == POSITIVE_SIDE) {
-          yt = yp + TIC_RATIO*largeTicHeight_;
+        if (ticPosition_ == BOTH_SIDES || ticPosition_ == POSITIVE_SIDE) {
+          yt = yp + TIC_RATIO * largeTicHeight_;
         } else {
           yt = yp + TIC_GAP;
         }
-        ytitle = yt + LABEL_RATIO*labelHeight_;
+        ytitle = yt + LABEL_RATIO * labelHeight_;
       } else {
         vertalign = SGLabel.TOP;
-        if(ticPosition_ == BOTH_SIDES || ticPosition_ == NEGATIVE_SIDE) {
-          yt = yp - TIC_RATIO*largeTicHeight_;
+        if (ticPosition_ == BOTH_SIDES || ticPosition_ == NEGATIVE_SIDE) {
+          yt = yp - TIC_RATIO * largeTicHeight_;
         } else {
           yt = yp - TIC_GAP;
         }
-        ytitle = yt - LABEL_RATIO*labelHeight_;
+        ytitle = yt - LABEL_RATIO * labelHeight_;
       }
-      if(dir*uRange_.start <= 0 && dir*uRange_.end >= 0) {
-        x = ((int)(uRange_.start/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
+      if (dir * uRange_.start <= 0 && dir * uRange_.end >= 0) {
+        x = ((int) (uRange_.start / (delta * labelInterval_) - 0.00001)) * delta * labelInterval_;
       } else {
         x = xt;
       }
-      istop = (int)((uRange_.end - x)/(delta*labelInterval_) + 0.00001);
-      for(i=0; i <= istop; i++) {
+      istop = (int) ((uRange_.end - x) / (delta * labelInterval_) + 0.00001);
+      for (i = 0; i <= istop; i++) {
         xt = graph_.getXUtoP(x);
-        labelText = numberFormatter.format(x); //bob changed, was format.form(x);
+        labelText = numberFormatter.format(x); // bob changed, was format.form(x);
         label = new SGLabel("coordinate", labelText, new Point2D.Double(xt, yt));
         label.setAlign(vertalign, SGLabel.MIDDLE);
         label.setOrientation(SGLabel.HORIZONTAL);
@@ -157,11 +153,12 @@ public class PlainAxis2 extends PlainAxis {
         label.setLayer(graph_.getLayer());
         try {
           label.draw(g);
-        } catch (LayerNotFoundException e) {}
-        x = x + delta*labelInterval_;
+        } catch (LayerNotFoundException e) {
+        }
+        x = x + delta * labelInterval_;
       }
-      if(title_ != null) {
-        xtitle = (uRange_.end + uRange_.start)*0.5;
+      if (title_ != null) {
+        xtitle = (uRange_.end + uRange_.start) * 0.5;
         yt = ytitle;
         xt = graph_.getXUtoP(xtitle);
         title.setLocationP(new Point2D.Double(xt, yt));
@@ -169,10 +166,11 @@ public class PlainAxis2 extends PlainAxis {
         title.setOrientation(SGLabel.HORIZONTAL);
         try {
           title.draw(g);
-        } catch (LayerNotFoundException e) {}
+        } catch (LayerNotFoundException e) {
+        }
       }
-    } else {                               // orientation is vertical
-      if(uLocation_ == null) {
+    } else { // orientation is vertical
+      if (uLocation_ == null) {
         xloc = graph_.getXUtoD(tLocation_.t);
         xp = graph_.getXUtoP(tLocation_.t);
       } else {
@@ -183,16 +181,19 @@ public class PlainAxis2 extends PlainAxis {
       yend = graph_.getYUtoD(uRange_.end);
       g.drawLine(xloc, yloc, xloc, yend);
       //
-      dir = delta > 0? 1.0: -1.0;
-      //System.out.println(">PlainAxis2 vertical delta=" + delta);
-      yt = (int)((uRange_.start/delta) + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001)*delta;
-      if(dir*yt < dir*uRange_.start) yt += delta;
-      istop = (int)((uRange_.end - yt)/delta + 0.00001);
+      dir = delta > 0 ? 1.0 : -1.0;
+      // System.out.println(">PlainAxis2 vertical delta=" + delta);
+      yt =
+          (int)
+              (((uRange_.start / delta) + (dir * uRange_.start > 0 ? 1.0 : -1.0) * 0.00001)
+                  * delta);
+      if (dir * yt < dir * uRange_.start) yt += delta;
+      istop = (int) ((uRange_.end - yt) / delta + 0.00001);
       y = yt;
       yp = graph_.getYUtoP(y);
       drawSmallYTics(g, xp, y, uRange_.start, -delta, uRange_.start);
       drawYTic(g, xp, yp, largeTicHeight_);
-      for(i=0; i < istop; i++) {
+      for (i = 0; i < istop; i++) {
         drawSmallYTics(g, xp, y, uRange_.end, delta, uRange_.start);
         y += delta;
         yp = graph_.getYUtoP(y);
@@ -200,36 +201,36 @@ public class PlainAxis2 extends PlainAxis {
       }
       drawSmallYTics(g, xp, y, uRange_.end, delta, uRange_.start);
       //
-      if(labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
+      if (labelInterval_ <= 0 || labelPosition_ == NO_LABEL) return;
       //
       SGLabel label;
       int vertalign;
-      if(labelPosition_ == NEGATIVE_SIDE) {
+      if (labelPosition_ == NEGATIVE_SIDE) {
         vertalign = SGLabel.BOTTOM;
-        if(ticPosition_ == BOTH_SIDES || ticPosition_ == NEGATIVE_SIDE) {
-          xt = xp - TIC_RATIO*largeTicHeight_;
+        if (ticPosition_ == BOTH_SIDES || ticPosition_ == NEGATIVE_SIDE) {
+          xt = xp - TIC_RATIO * largeTicHeight_;
         } else {
           xt = xp - TIC_GAP;
         }
-        xtitle = xt - LABEL_RATIO*labelHeight_;
+        xtitle = xt - LABEL_RATIO * labelHeight_;
       } else {
         vertalign = SGLabel.TOP;
-        if(ticPosition_ == BOTH_SIDES || ticPosition_ == POSITIVE_SIDE) {
-          xt = xp + TIC_RATIO*largeTicHeight_;
+        if (ticPosition_ == BOTH_SIDES || ticPosition_ == POSITIVE_SIDE) {
+          xt = xp + TIC_RATIO * largeTicHeight_;
         } else {
           xt = xp + TIC_GAP;
         }
-        xtitle = xt + LABEL_RATIO*labelHeight_;
+        xtitle = xt + LABEL_RATIO * labelHeight_;
       }
-      if(dir*uRange_.start <= 0 && dir*uRange_.end >= 0) {
-        y = ((int)(uRange_.start/(delta*labelInterval_) - 0.00001))*delta*labelInterval_;
+      if (dir * uRange_.start <= 0 && dir * uRange_.end >= 0) {
+        y = ((int) (uRange_.start / (delta * labelInterval_) - 0.00001)) * delta * labelInterval_;
       } else {
         y = yt;
       }
-      istop = (int)((uRange_.end - y)/(delta*labelInterval_) + 0.00001);
-      for(i=0; i <= istop; i++) {
+      istop = (int) ((uRange_.end - y) / (delta * labelInterval_) + 0.00001);
+      for (i = 0; i <= istop; i++) {
         yt = graph_.getYUtoP(y);
-        labelText = numberFormatter.format(y); //bob changed, was format.form(y);
+        labelText = numberFormatter.format(y); // bob changed, was format.form(y);
         label = new SGLabel("coordinate", labelText, new Point2D.Double(xt, yt));
         label.setAlign(vertalign, SGLabel.CENTER);
         label.setOrientation(SGLabel.VERTICAL);
@@ -239,11 +240,12 @@ public class PlainAxis2 extends PlainAxis {
         label.setLayer(graph_.getLayer());
         try {
           label.draw(g);
-        } catch (LayerNotFoundException e) {}
-        y = y + delta*labelInterval_;
+        } catch (LayerNotFoundException e) {
+        }
+        y = y + delta * labelInterval_;
       }
-      if(title_ != null) {
-        ytitle = (uRange_.end + uRange_.start)*0.5;
+      if (title_ != null) {
+        ytitle = (uRange_.end + uRange_.start) * 0.5;
         yt = graph_.getYUtoP(ytitle);
         xt = xtitle;
         title.setLocationP(new Point2D.Double(xt, yt));
@@ -251,7 +253,8 @@ public class PlainAxis2 extends PlainAxis {
         title.setOrientation(SGLabel.VERTICAL);
         try {
           title.draw(g);
-        } catch (LayerNotFoundException e) {}
+        } catch (LayerNotFoundException e) {
+        }
       }
     }
   }

@@ -10,7 +10,7 @@
  * element in other product development.
  */
 
-package  gov.noaa.pmel.sgt;
+package gov.noaa.pmel.sgt;
 
 /**
  * Label was not found during operation.
@@ -21,7 +21,8 @@ package  gov.noaa.pmel.sgt;
 public class LabelNotFoundException extends SGException {
   public LabelNotFoundException() {
     super();
-}
+  }
+
   public LabelNotFoundException(String s) {
     super(s);
   }

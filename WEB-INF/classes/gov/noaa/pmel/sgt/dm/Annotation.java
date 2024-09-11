@@ -13,27 +13,24 @@ package gov.noaa.pmel.sgt.dm;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-
 import gov.noaa.pmel.sgt.JPane;
-import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.sgt.LineAttribute;
 import gov.noaa.pmel.sgt.PointAttribute;
 import gov.noaa.pmel.sgt.SGException;
-
-import gov.noaa.pmel.util.SoTRange;
+import gov.noaa.pmel.sgt.SGLabel;
 import gov.noaa.pmel.util.SoTPoint;
-
-import java.util.List;
-import java.util.Vector;
-import java.util.Iterator;
+import gov.noaa.pmel.util.SoTRange;
 import java.awt.Color;
-
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeEvent;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * A container to hold <code>Annote</code> objects.
+ *
  * @author Donald Denbo
  * @version $Revision: 1.8 $
  * @since 3.0
@@ -45,15 +42,16 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   /**
    * @label x
-   * @link aggregation 
+   * @link aggregation
    */
   private SGTMetaData xMeta_ = null;
 
   /**
    * @link aggregation
-   * @label y 
+   * @label y
    */
   private SGTMetaData yMeta_ = null;
+
   private List text_ = new Vector();
   private List line_ = new Vector();
   private List point_ = new Vector();
@@ -65,28 +63,26 @@ public class Annotation implements SGTData, PropertyChangeListener {
   private boolean xTime_ = false;
   private boolean yTime_ = false;
 
-    /** 
-     * Bob Simons added this to avoid memory leak problems.
-     */
-    public void releaseResources() throws Exception {
-        try {  
-            changes_ = null;
-            xMeta_ = null;
-            yMeta_ = null;
-            text_ = null;
-            line_ = null;
-            point_ = null;
-            oval_ = null;
-            rect_ = null;
-            xRange_ = null;
-            yRange_ = null;
-            if (JPane.debug) String2.log("sgt.dm.Annotation.releaseResources() finished");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            if (JPane.debug) 
-                String2.pressEnterToContinue(); 
-        }
+  /** Bob Simons added this to avoid memory leak problems. */
+  @Override
+  public void releaseResources() throws Exception {
+    try {
+      changes_ = null;
+      xMeta_ = null;
+      yMeta_ = null;
+      text_ = null;
+      line_ = null;
+      point_ = null;
+      oval_ = null;
+      rect_ = null;
+      xRange_ = null;
+      yRange_ = null;
+      if (JPane.debug) String2.log("sgt.dm.Annotation.releaseResources() finished");
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
+      if (JPane.debug) String2.pressEnterToContinue();
     }
+  }
 
   public Annotation() {
     this(null, false, false);
@@ -104,57 +100,57 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   public boolean remove(String id) {
     Annote ann = findAnnote(id);
-    if(ann == null) return false;
+    if (ann == null) return false;
     return remove(ann);
   }
 
   public boolean remove(Annote ann) {
-    if(ann instanceof Annote.Line) {
+    if (ann instanceof Annote.Line) {
       return removeLine(ann);
-    } else if(ann instanceof Annote.Oval) {
+    } else if (ann instanceof Annote.Oval) {
       return removeOval(ann);
-    } else if(ann instanceof Annote.Point) {
+    } else if (ann instanceof Annote.Point) {
       return removePoint(ann);
-    } else if(ann instanceof Annote.Rect) {
+    } else if (ann instanceof Annote.Rect) {
       return removeRect(ann);
-    } else if(ann instanceof Annote.Text) {
+    } else if (ann instanceof Annote.Text) {
       return removeText(ann);
     }
     return false;
   }
 
   public void add(Annote ann) throws SGException {
-    if(ann instanceof Annote.Line) {
-      SGTLine line = ((Annote.Line)ann).getLine();
-      if(xTime_ != line.isXTime() || yTime_ != line.isYTime())
+    if (ann instanceof Annote.Line) {
+      SGTLine line = ((Annote.Line) ann).getLine();
+      if (xTime_ != line.isXTime() || yTime_ != line.isYTime())
         throw new SGException("Time axes do not match");
       ann.addPropertyChangeListener(this);
       line_.add(ann);
       changes_.firePropertyChange("lineAdded", true, false);
-    } else if(ann instanceof Annote.Oval) {
-      SoTPoint pt1 = ((Annote.Oval)ann).getUpperLeft();
-      if(xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
+    } else if (ann instanceof Annote.Oval) {
+      SoTPoint pt1 = ((Annote.Oval) ann).getUpperLeft();
+      if (xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
         throw new SGException("Time axes do not match");
       ann.addPropertyChangeListener(this);
       oval_.add(ann);
       changes_.firePropertyChange("ovalAdded", true, false);
-    } else if(ann instanceof Annote.Point) {
-      SGTPoint point = ((Annote.Point)ann).getPoint();
-      if(xTime_ != point.isXTime() || yTime_ != point.isYTime())
+    } else if (ann instanceof Annote.Point) {
+      SGTPoint point = ((Annote.Point) ann).getPoint();
+      if (xTime_ != point.isXTime() || yTime_ != point.isYTime())
         throw new SGException("Time axes do not match");
       ann.addPropertyChangeListener(this);
       point_.add(ann);
       changes_.firePropertyChange("pointAdded", true, false);
-    } else if(ann instanceof Annote.Rect) {
-      SoTPoint pt1 = ((Annote.Rect)ann).getUpperLeft();
-      if(xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
+    } else if (ann instanceof Annote.Rect) {
+      SoTPoint pt1 = ((Annote.Rect) ann).getUpperLeft();
+      if (xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
         throw new SGException("Time axes do not match");
       ann.addPropertyChangeListener(this);
       rect_.add(ann);
       changes_.firePropertyChange("rectAdded", true, false);
-    } else if(ann instanceof Annote.Text) {
-      SoTPoint loc = ((Annote.Text)ann).getLocation();
-      if(xTime_ != loc.isXTime() || yTime_ != loc.isYTime())
+    } else if (ann instanceof Annote.Text) {
+      SoTPoint loc = ((Annote.Text) ann).getLocation();
+      if (xTime_ != loc.isXTime() || yTime_ != loc.isYTime())
         throw new SGException("Time axes do not match");
       ann.addPropertyChangeListener(this);
       text_.add(ann);
@@ -162,9 +158,8 @@ public class Annotation implements SGTData, PropertyChangeListener {
     }
   }
 
-  public Annote addLine(String id, SGTLine line, LineAttribute attr)
-                      throws SGException {
-    if(xTime_ != line.isXTime() || yTime_ != line.isYTime())
+  public Annote addLine(String id, SGTLine line, LineAttribute attr) throws SGException {
+    if (xTime_ != line.isXTime() || yTime_ != line.isYTime())
       throw new SGException("Time axes do not match");
     Annote.Line aLine = new Annote.Line(id, line, attr);
     aLine.addPropertyChangeListener(this);
@@ -176,10 +171,10 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   private boolean removeLine(Annote line) {
     boolean result = false;
-    if(line instanceof Annote.Line) {
+    if (line instanceof Annote.Line) {
       line.removePropertyChangeListener(this);
       result = line_.remove(line);
-      if(result) changes_.firePropertyChange("lineRemoved", true, false);
+      if (result) changes_.firePropertyChange("lineRemoved", true, false);
     }
     return result;
   }
@@ -192,9 +187,8 @@ public class Annotation implements SGTData, PropertyChangeListener {
     return !line_.isEmpty();
   }
 
-  public Annote addPoint(String id, SGTPoint point, PointAttribute attr)
-                       throws SGException {
-    if(xTime_ != point.isXTime() || yTime_ != point.isYTime())
+  public Annote addPoint(String id, SGTPoint point, PointAttribute attr) throws SGException {
+    if (xTime_ != point.isXTime() || yTime_ != point.isYTime())
       throw new SGException("Time axes do not match");
     Annote.Point aPoint = new Annote.Point(id, point, attr);
     aPoint.addPropertyChangeListener(this);
@@ -206,10 +200,10 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   private boolean removePoint(Annote point) {
     boolean result = false;
-    if(point instanceof Annote.Point) {
+    if (point instanceof Annote.Point) {
       point.removePropertyChangeListener(this);
       result = point_.remove(point);
-      if(result) changes_.firePropertyChange("pointRemoved", true, false);
+      if (result) changes_.firePropertyChange("pointRemoved", true, false);
     }
     return result;
   }
@@ -222,9 +216,8 @@ public class Annotation implements SGTData, PropertyChangeListener {
     return !point_.isEmpty();
   }
 
-  public Annote addText(String id, SoTPoint loc, SGLabel text)
-                      throws SGException {
-    if(xTime_ != loc.isXTime() || yTime_ != loc.isYTime())
+  public Annote addText(String id, SoTPoint loc, SGLabel text) throws SGException {
+    if (xTime_ != loc.isXTime() || yTime_ != loc.isYTime())
       throw new SGException("Time axes do not match");
     Annote.Text aText = new Annote.Text(id, loc, text);
     aText.addPropertyChangeListener(this);
@@ -236,10 +229,10 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   private boolean removeText(Annote text) {
     boolean result = false;
-    if(text instanceof Annote.Text) {
+    if (text instanceof Annote.Text) {
       text.removePropertyChangeListener(this);
       result = text_.remove(text);
-      if(result) changes_.firePropertyChange("textRemoved", true, false);
+      if (result) changes_.firePropertyChange("textRemoved", true, false);
     }
     return result;
   }
@@ -251,13 +244,14 @@ public class Annotation implements SGTData, PropertyChangeListener {
   public boolean hasText() {
     return !text_.isEmpty();
   }
-/**
- * Add an oval to the <code>Annotation</code>. If attr is non-null an oval
- * outline will be drawn, if color is non-null it will be filled.
- */
-  public Annote addOval(String id, SoTPoint pt1, SoTPoint pt2,
-                      LineAttribute attr, Color color) throws SGException {
-    if(xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
+
+  /**
+   * Add an oval to the <code>Annotation</code>. If attr is non-null an oval outline will be drawn,
+   * if color is non-null it will be filled.
+   */
+  public Annote addOval(String id, SoTPoint pt1, SoTPoint pt2, LineAttribute attr, Color color)
+      throws SGException {
+    if (xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
       throw new SGException("Time axes do not match");
     Annote.Oval aOval = new Annote.Oval(id, pt1, pt2, attr, color);
     aOval.addPropertyChangeListener(this);
@@ -269,10 +263,10 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   private boolean removeOval(Annote oval) {
     boolean result = false;
-    if(oval instanceof Annote.Oval) {
+    if (oval instanceof Annote.Oval) {
       oval.removePropertyChangeListener(this);
       result = oval_.remove(oval);
-      if(result) changes_.firePropertyChange("ovalRemoved", true, false);
+      if (result) changes_.firePropertyChange("ovalRemoved", true, false);
     }
     return result;
   }
@@ -284,13 +278,14 @@ public class Annotation implements SGTData, PropertyChangeListener {
   public boolean hasOval() {
     return !oval_.isEmpty();
   }
-/**
- * Add an rectangle to the <code>Annotation</code>. If attr is non-null an rectangle
- * outline will be drawn, if color is non-null it will be filled.
- */
-  public Annote addRect(String id, SoTPoint pt1, SoTPoint pt2,
-                      LineAttribute attr, Color color) throws SGException {
-    if(xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
+
+  /**
+   * Add an rectangle to the <code>Annotation</code>. If attr is non-null an rectangle outline will
+   * be drawn, if color is non-null it will be filled.
+   */
+  public Annote addRect(String id, SoTPoint pt1, SoTPoint pt2, LineAttribute attr, Color color)
+      throws SGException {
+    if (xTime_ != pt1.isXTime() || yTime_ != pt1.isYTime())
       throw new SGException("Time axes do not match");
     Annote.Rect aRect = new Annote.Rect(id, pt1, pt2, attr, color);
     aRect.addPropertyChangeListener(this);
@@ -302,10 +297,10 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   private boolean removeRect(Annote rect) {
     boolean result = false;
-    if(rect instanceof Annote.Rect) {
-    rect.removePropertyChangeListener(this);
+    if (rect instanceof Annote.Rect) {
+      rect.removePropertyChangeListener(this);
       result = rect_.remove(rect);
-      if(result) changes_.firePropertyChange("rectRemoved", true, false);
+      if (result) changes_.firePropertyChange("rectRemoved", true, false);
     }
     return result;
   }
@@ -321,39 +316,39 @@ public class Annotation implements SGTData, PropertyChangeListener {
   public Annote findAnnote(String id) {
     Annote tmp = null;
     Iterator iter;
-    if(!line_.isEmpty()) {
+    if (!line_.isEmpty()) {
       iter = line_.iterator();
-      while(iter.hasNext()) {
-        tmp = (Annote)iter.next();
-        if(tmp.getAnnoteId().equals(id)) return tmp;
+      while (iter.hasNext()) {
+        tmp = (Annote) iter.next();
+        if (tmp.getAnnoteId().equals(id)) return tmp;
       }
     }
-    if(!point_.isEmpty()) {
+    if (!point_.isEmpty()) {
       iter = point_.iterator();
-      while(iter.hasNext()) {
-        tmp = (Annote)iter.next();
-        if(tmp.getAnnoteId().equals(id)) return tmp;
+      while (iter.hasNext()) {
+        tmp = (Annote) iter.next();
+        if (tmp.getAnnoteId().equals(id)) return tmp;
       }
     }
-    if(!oval_.isEmpty()) {
+    if (!oval_.isEmpty()) {
       iter = oval_.iterator();
-      while(iter.hasNext()) {
-        tmp = (Annote)iter.next();
-        if(tmp.getAnnoteId().equals(id)) return tmp;
+      while (iter.hasNext()) {
+        tmp = (Annote) iter.next();
+        if (tmp.getAnnoteId().equals(id)) return tmp;
       }
     }
-    if(!rect_.isEmpty()) {
+    if (!rect_.isEmpty()) {
       iter = rect_.iterator();
-      while(iter.hasNext()) {
-        tmp = (Annote)iter.next();
-        if(tmp.getAnnoteId().equals(id)) return tmp;
+      while (iter.hasNext()) {
+        tmp = (Annote) iter.next();
+        if (tmp.getAnnoteId().equals(id)) return tmp;
       }
     }
-    if(!text_.isEmpty()) {
+    if (!text_.isEmpty()) {
       iter = text_.iterator();
-      while(iter.hasNext()) {
-        tmp = (Annote)iter.next();
-        if(tmp.getAnnoteId().equals(id)) return tmp;
+      while (iter.hasNext()) {
+        tmp = (Annote) iter.next();
+        if (tmp.getAnnoteId().equals(id)) return tmp;
       }
     }
     return null;
@@ -363,10 +358,12 @@ public class Annotation implements SGTData, PropertyChangeListener {
     title_ = title;
   }
 
+  @Override
   public String getTitle() {
     return title_;
   }
 
+  @Override
   public SGLabel getKeyTitle() {
     return null;
   }
@@ -375,19 +372,25 @@ public class Annotation implements SGTData, PropertyChangeListener {
     id_ = id;
   }
 
+  @Override
   public String getId() {
     return id_;
   }
 
+  @Override
   public SGTData copy() {
-    /**@todo: Implement this gov.noaa.pmel.sgt.dm.SGTData method*/
+    /**
+     * @todo: Implement this gov.noaa.pmel.sgt.dm.SGTData method
+     */
     throw new UnsupportedOperationException("Method copy() not yet implemented.");
   }
 
+  @Override
   public boolean isXTime() {
     return xTime_;
   }
 
+  @Override
   public boolean isYTime() {
     return yTime_;
   }
@@ -396,6 +399,7 @@ public class Annotation implements SGTData, PropertyChangeListener {
     xMeta_ = meta;
   }
 
+  @Override
   public SGTMetaData getXMetaData() {
     return xMeta_;
   }
@@ -404,25 +408,32 @@ public class Annotation implements SGTData, PropertyChangeListener {
     yMeta_ = meta;
   }
 
+  @Override
   public SGTMetaData getYMetaData() {
     return yMeta_;
   }
 
+  @Override
   public SoTRange getXRange() {
     return xRange_;
   }
 
+  @Override
   public SoTRange getYRange() {
     return yRange_;
   }
 
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     changes_.addPropertyChangeListener(l);
   }
 
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     changes_.removePropertyChangeListener(l);
   }
+
+  @Override
   public void propertyChange(PropertyChangeEvent evt) {
     changes_.firePropertyChange(evt);
   }
