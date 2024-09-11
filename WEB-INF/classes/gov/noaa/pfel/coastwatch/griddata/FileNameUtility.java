@@ -56,7 +56,7 @@ public class FileNameUtility {
   public static String STANDARD_REGIONS_FILE_NAME =
       File2.getClassPath()
           + // with / separator and / at the end
-          "gov/noaa/pfel/coastwatch/griddata/regions";
+              "gov/noaa/pfel/coastwatch/griddata/regions";
 
   public static String getAcknowledgement() {
     return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD";

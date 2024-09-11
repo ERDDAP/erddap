@@ -76,7 +76,7 @@ public class CfToFromGcmd {
     String fileName =
         File2.getClassPath()
             + // with / separator and / at the end
-            "gov/noaa/pfel/erddap/util/CfToGcmd.txt";
+                "gov/noaa/pfel/erddap/util/CfToGcmd.txt";
     String2.log("CfToFromGcmd static loading " + fileName);
     StringArray lines;
     try {

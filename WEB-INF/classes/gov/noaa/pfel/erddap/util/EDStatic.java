@@ -2379,7 +2379,7 @@ public class EDStatic {
         messagesFileName =
             File2.getClassPath()
                 + // with / separator and / at the end
-                "gov/noaa/pfel/erddap/util/messages.xml";
+                    "gov/noaa/pfel/erddap/util/messages.xml";
         String2.log("Using default messages.xml from  " + messagesFileName);
       }
       errorInMethod = "ERROR while reading messages.xml: ";
