@@ -41,6 +41,7 @@ import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
+import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -1798,6 +1799,7 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
+      JvmMetrics.builder().register(); // initialize the out-of-the-box JVM metrics
 
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
       allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
