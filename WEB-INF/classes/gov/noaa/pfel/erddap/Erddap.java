@@ -361,6 +361,7 @@ public class Erddap extends HttpServlet {
   public void init(final ServletConfig config) throws ServletException {
     ServletContext context = config.getServletContext();
     String webInfPath = context.getRealPath("/WEB-INF/");
+    String2.log(webInfPath);
   }
 
   /**

@@ -3,6 +3,8 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDStatic;
+
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,9 +16,9 @@ class DataStreamTests {
   void basicTest() throws Exception {
     // write bytes to a file
     String fileName =
-        File2.getClassPath()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
-            "TestDataStream";
+            "temp/TestDataStream";
     DataOutputStream dos =
         new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
     byte buffer[] = new byte[128];

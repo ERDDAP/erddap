@@ -4,6 +4,7 @@ import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagExternalOther;
@@ -22,7 +23,7 @@ class FileVisitorSubdirTests {
     // String2.log("\n*** FileVisitorSubdir.testLocal");
     // verbose = true;
     String contextDir =
-        File2.webInfParentDirectory().replace('\\', '/'); // with / separator and / at the end
+        EDStatic.getWebInfParentDirectory(); // with / separator and / at the end
     StringArray alps;
     long time;
 

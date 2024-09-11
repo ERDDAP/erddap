@@ -307,6 +307,9 @@ public class File2 {
     return Paths.get(Resources.getResource(resourcePath).toURI()).toString();
   }
 
+//  public static String getClassPath() { return webInfParentDirectory() + "WEB-INF/classes/"; }
+//  public static String webInfParentDirectory() { return Paths.get("erddap/").toAbsolutePath().toString().replace("\\", "/") + "/"; }
+
   /**
    * This indicates if the named file is indeed an existing local file. AWS S3 files don't count as
    * local here. If dir="", it just says it isn't a file.

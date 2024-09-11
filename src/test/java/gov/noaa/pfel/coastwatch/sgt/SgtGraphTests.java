@@ -14,6 +14,8 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import tags.TagImageComparison;
@@ -34,7 +36,7 @@ class SgtGraphTests {
    */
   @org.junit.jupiter.api.Test
   void testForMemoryLeak() throws Exception {
-    File2.setWebInfParentDirectory();
+    EDStatic.setWebInfParentDirectory(System.getProperty("user.dir") + "/");
     // verbose = true;
     // reallyVerbose = true;
     // PathCartesianRenderer.verbose = true;
@@ -48,7 +50,7 @@ class SgtGraphTests {
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
 
@@ -251,7 +253,7 @@ class SgtGraphTests {
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
     String baseImageName =
@@ -1027,7 +1029,7 @@ class SgtGraphTests {
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
 
@@ -1053,7 +1055,7 @@ class SgtGraphTests {
         new CompoundColorMap(
             // String baseDir, String palette, String scale, double minData,
             // double maxData, int nSections, boolean continuous, String resultDir)
-            File2.webInfParentDirectory() + "WEB-INF/cptfiles/",
+            EDStatic.getWebInfParentDirectory() + "WEB-INF/cptfiles/",
             "Rainbow",
             "linear",
             0,
