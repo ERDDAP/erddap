@@ -315,9 +315,16 @@ public class File2 {
 
       // on windows, remove the troublesome leading "/"
       if (String2.OSIsWindows
-          && classPath.length() > 2
-          && classPath.charAt(0) == '/'
-          && classPath.charAt(2) == ':') classPath = classPath.substring(1);
+              && classPath.length() > 2
+              && classPath.charAt(0) == '/'
+              && classPath.charAt(2) == ':') {
+        classPath = classPath.substring(1);
+      }
+
+      //remove uri protocol if present
+      if (classPath.startsWith("file:/")) {
+        classPath = classPath.substring("file:/".length());
+      }
 
       // classPath is a URL! so spaces are encoded as %20 on Windows!
       // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
@@ -329,6 +336,10 @@ public class File2 {
     }
 
     return classPath;
+  }
+
+  public static void setClassPath(String classPath) {
+    File2.classPath = classPath.replace("\\", "/");
   }
 
   /**
