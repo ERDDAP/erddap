@@ -14,6 +14,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -53,6 +54,8 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.codec.Resources;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -146,24 +149,22 @@ public class SSR {
   /**
    * This finds the first line in the specified text file which startsWith 'start'.
    *
-   * @param fileName the name of the file
+   * @param resourceFile the URL of the file
    * @param charset e.g., File2.ISO_8859_1.
    * @param start the text which must be at the beginning of the line
    * @return the first line in the specified text file which startsWith 'start' (or null if none
    *     found).
    * @throws Exception if error opening, reading, or closing the file
    */
-  public static String getFirstLineStartsWith(String fileName, String charset, String start)
+  public static String getFirstLineStartsWith(URL resourceFile, String charset, String start)
       throws Exception {
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);
-    try {
+    try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
+            BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
         // String2.log(s);
         if (s.startsWith(start)) return s;
       }
-    } finally {
-      bufferedReader.close();
     }
     return null;
   }
@@ -171,24 +172,22 @@ public class SSR {
   /**
    * This finds the first line in the specified text file which matches 'regex'.
    *
-   * @param fileName the name of the text file
+   * @param resourceFile the name of the text file
    * @param charset e.g., File2.ISO_8859_1.
    * @param regex the regex text to be matched
    * @return the first line in the specified text file which matches regex (or null if none found).
    * @throws Exception if error opening, reading, or closing the file
    */
-  public static String getFirstLineMatching(String fileName, String charset, String regex)
+  public static String getFirstLineMatching(URL resourceFile, String charset, String regex)
       throws Exception {
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);
-    try {
+    try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
+         BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       Pattern pattern = Pattern.compile(regex);
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
         // String2.log(s);
         if (pattern.matcher(s).matches()) return s;
       }
-    } finally {
-      bufferedReader.close();
     }
     return null;
   }
@@ -1826,7 +1825,7 @@ public class SSR {
    *     See https://en.wikipedia.org/wiki/Percent-encoding . <br>
    *     Note that reserved characters only need to be percent encoded in special circumstances (not
    *     always).
-   * @param timeOutMillis the time out for opening a connection in milliseconds (use -1 to get high
+   * @param connectTimeOutMillis the time out for opening a connection in milliseconds (use -1 to get high
    *     default, currently 10 minutes)
    * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) BufferedInputStream,
    *     [2]=charset (will be valid)
@@ -2382,7 +2381,7 @@ public class SSR {
   /**
    * This gets the bytes from a file.
    *
-   * @param fileName. If compressed file, this reads the decompressed, first file in the archive.
+   * @param fileName If compressed file, this reads the decompressed, first file in the archive.
    * @return a byte[] with the response.
    * @throws Exception if error occurs
    */
@@ -2452,7 +2451,7 @@ public class SSR {
    */
   public static String getTempDirectory() {
     if (tempDirectory == null) {
-      String tdir = File2.webInfParentDirectory() + "WEB-INF/temp/";
+      String tdir = EDStatic.webInfParentDirectory + "WEB-INF/temp/";
       // make it, because Git doesn't track empty dirs
       File2.makeDirectory(tdir);
       // then set it if successful

@@ -57,8 +57,8 @@ public class File2 {
   public static final Charset UTF_8_CHARSET = StandardCharsets.UTF_8;
   public static final String UNABLE_TO_DELETE = "unable to delete"; // so consistent in log.txt
 
-  private static String classPath; // lazy creation by getClassPath
-  private static String webInfParentDirectory; // lazy creation by webInfParentDirectory()
+//  private static String classPath; // lazy creation by getClassPath
+//  private static String webInfParentDirectory; // lazy creation by webInfParentDirectory()
 
   // define the file types for the purpose of assigning icon in Table.directoryListing
   // compressed and image ext from wikipedia
@@ -295,89 +295,90 @@ public class File2 {
   private static ConcurrentHashMap<String, S3Client> s3ClientMap =
       new ConcurrentHashMap<String, S3Client>();
 
-  /**
-   * This returns the directory that is the classpath for the source code files (with forward
-   * slashes and a trailing slash, e.g.,
-   * c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/.
-   *
-   * @return directory that is the classpath for the source code files (with / separator and / at
-   *     the end)
-   * @throws RuntimeException if trouble
-   */
-  public static String getClassPath() {
-    if (classPath == null) {
-      String find = "/com/cohort/util/String2.class";
-      // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-      classPath = String2.class.getResource(find).getFile();
-      classPath = String2.replaceAll(classPath, '\\', '/');
-      int po = classPath.indexOf(find);
-      classPath = classPath.substring(0, po + 1);
-
-      // on windows, remove the troublesome leading "/"
-      if (String2.OSIsWindows
-              && classPath.length() > 2
-              && classPath.charAt(0) == '/'
-              && classPath.charAt(2) == ':') {
-        classPath = classPath.substring(1);
-      }
-
-      //remove uri protocol if present
-      if (classPath.startsWith("file:/")) {
-        classPath = classPath.substring("file:/".length());
-      }
-
-      // classPath is a URL! so spaces are encoded as %20 on Windows!
-      // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
-      try {
-        classPath = URLDecoder.decode(classPath, UTF_8);
-      } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-      }
-    }
-
-    return classPath;
-  }
-
-  public static void setClassPath(String classPath) {
-    File2.classPath = classPath.replace("\\", "/");
-  }
-
-  /**
-   * This returns the directory that is the tomcat application's root (with forward slashes and a
-   * trailing slash, e.g., c:/programs/_tomcat/webapps/cwexperimental/). Tomcat calls this the
-   * ContextDirectory. This only works if these classes are installed underneath Tomcat (with
-   * "WEB-INF/" the start of things to be removed from classPath).
-   *
-   * @return the parent directory of WEB-INF (with / separator and / at the end) or "ERROR if
-   *     trouble
-   * @throws RuntimeException if trouble
-   */
-  public static String webInfParentDirectory() {
-    if (webInfParentDirectory == null) {
-      String classPath = getClassPath(); // with / separator and / at the end
-      int po = classPath.indexOf("/WEB-INF/");
-      if (po < 0)
-        throw new RuntimeException(
-            String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
-      webInfParentDirectory = classPath.substring(0, po + 1);
-    }
-
-    return webInfParentDirectory;
-  }
-
-  /**
-   * This sets the temp directory instead of looking for one based on where the WEB-INF directory
-   * is.
-   *
-   * <p>THIS IS ONLY INTENDED FOR USE DURING TESTS.
-   */
-  public static void setWebInfParentDirectory() {
-    webInfParentDirectory = System.getProperty("user.dir") + "/";
-  }
-
-  public static void setWebInfParentDirectory(String dir) {
-    webInfParentDirectory = dir;
-  }
+// TODO remove this and force resources
+//  /**
+//   * This returns the directory that is the classpath for the source code files (with forward
+//   * slashes and a trailing slash, e.g.,
+//   * c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/.
+//   *
+//   * @return directory that is the classpath for the source code files (with / separator and / at
+//   *     the end)
+//   * @throws RuntimeException if trouble
+//   */
+//  public static String getClassPath() {
+//    if (classPath == null) {
+//      String find = "/com/cohort/util/String2.class";
+//      // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
+//      classPath = String2.class.getResource(find).getFile();
+//      classPath = String2.replaceAll(classPath, '\\', '/');
+//      int po = classPath.indexOf(find);
+//      classPath = classPath.substring(0, po + 1);
+//
+//      // on windows, remove the troublesome leading "/"
+//      if (String2.OSIsWindows
+//              && classPath.length() > 2
+//              && classPath.charAt(0) == '/'
+//              && classPath.charAt(2) == ':') {
+//        classPath = classPath.substring(1);
+//      }
+//
+//      //remove uri protocol if present
+//      if (classPath.startsWith("file:/")) {
+//        classPath = classPath.substring("file:/".length());
+//      }
+//
+//      // classPath is a URL! so spaces are encoded as %20 on Windows!
+//      // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
+//      try {
+//        classPath = URLDecoder.decode(classPath, UTF_8);
+//      } catch (Throwable t) {
+//        String2.log(MustBe.throwableToString(t));
+//      }
+//    }
+//
+//    return classPath;
+//  }
+//
+//  public static void setClassPath(String classPath) {
+//    File2.classPath = classPath.replace("\\", "/");
+//  }
+//
+//  /**
+//   * This returns the directory that is the tomcat application's root (with forward slashes and a
+//   * trailing slash, e.g., c:/programs/_tomcat/webapps/cwexperimental/). Tomcat calls this the
+//   * ContextDirectory. This only works if these classes are installed underneath Tomcat (with
+//   * "WEB-INF/" the start of things to be removed from classPath).
+//   *
+//   * @return the parent directory of WEB-INF (with / separator and / at the end) or "ERROR if
+//   *     trouble
+//   * @throws RuntimeException if trouble
+//   */
+//  public static String webInfParentDirectory() {
+//    if (webInfParentDirectory == null) {
+//      String classPath = getClassPath(); // with / separator and / at the end
+//      int po = classPath.indexOf("/WEB-INF/");
+//      if (po < 0)
+//        throw new RuntimeException(
+//            String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+//      webInfParentDirectory = classPath.substring(0, po + 1);
+//    }
+//
+//    return webInfParentDirectory;
+//  }
+//
+//  /**
+//   * This sets the temp directory instead of looking for one based on where the WEB-INF directory
+//   * is.
+//   *
+//   * <p>THIS IS ONLY INTENDED FOR USE DURING TESTS.
+//   */
+//  public static void setWebInfParentDirectory() {
+//    webInfParentDirectory = System.getProperty("user.dir") + "/";
+//  }
+//
+//  public static void setWebInfParentDirectory(String dir) {
+//    webInfParentDirectory = dir;
+//  }
 
   /**
    * This indicates if the named file is indeed an existing local file. AWS S3 files don't count as

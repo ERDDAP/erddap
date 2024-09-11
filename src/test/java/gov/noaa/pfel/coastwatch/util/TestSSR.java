@@ -12,7 +12,12 @@ import com.cohort.util.Test;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import com.google.common.io.Resources;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagPassword;
@@ -115,7 +120,7 @@ public class TestSSR {
     // dosShell
     String2.log("test dosShell");
     String tempGif =
-        File2.webInfParentDirectory()
+        EDStatic.webInfParentDirectory
             + // with / separator and / at the end
             "images/temp.gif";
     File2.delete(tempGif);
@@ -124,7 +129,7 @@ public class TestSSR {
           String2.toNewlineString(
               SSR.dosShell(
                       "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
-                          + File2.webInfParentDirectory()
+                          + EDStatic.webInfParentDirectory
                           + // with / separator and / at the end
                           "images/subtitle.jpg "
                           + tempGif,
@@ -327,8 +332,9 @@ public class TestSSR {
 
     // getFirstLineStartsWith
     String2.log("test getFirstLineStartsWith");
-    String tFileName = classPath + "testSSR.txt";
-    File2.writeToFile88591(tFileName, "This is\na file\nwith a few lines.");
+    Path tFilePath = Paths.get("testSSR.txt");
+    URL tFileName = tFilePath.toUri().toURL();
+    File2.writeToFile88591(tFilePath.toString(), "This is\na file\nwith a few lines.");
     Test.ensureEqual(
         SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
     Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "hi "), null, "b");
@@ -352,12 +358,12 @@ public class TestSSR {
     Test.ensureEqual(
         SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"), null, "d"); // no match
 
-    Test.ensureTrue(File2.delete(tFileName), "delete " + tFileName);
+    Test.ensureTrue(File2.delete(tFilePath.toString()), "delete " + tFileName);
 
     // getContextDirectory
     String2.log(
         "test getContextDirectory current="
-            + File2.webInfParentDirectory()); // with / separator and / at the end
+            + EDStatic.webInfParentDirectory); // with / separator and / at the end
     // there is no way to test this and have it work with different installations
     // test for my computer (comment out on other computers):
     // ensureEqual(String2.getContextDirectory(), //with / separator and / at the
@@ -365,13 +371,13 @@ public class TestSSR {
     // "C:/programs/_tomcat/webapps/cwexperimental/", "a");
     // wimpy test, but works on all computers
     Test.ensureNotNull(
-        File2.webInfParentDirectory(), // with / separator and / at the end
+            EDStatic.webInfParentDirectory, // with / separator and / at the end
         "contextDirectory");
 
     // getTempDirectory
     String2.log("test getTempDirectory current=" + SSR.getTempDirectory());
     // wimpy test
-    Test.ensureEqual(SSR.getTempDirectory(), File2.webInfParentDirectory() + "WEB-INF/temp/", "a");
+    Test.ensureEqual(SSR.getTempDirectory(), EDStatic.webInfParentDirectory + "WEB-INF/temp/", "a");
 
     // done
     String2.log("\nDone. All non-Unix tests passed!");

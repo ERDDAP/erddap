@@ -10,9 +10,12 @@ import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+
+import java.nio.file.Paths;
 
 /**
  * This class is designed to be a stand-alone program to validate that the DataSet.properties file
@@ -42,10 +45,8 @@ public class ValidateDataSetProperties {
     String2.log("ValidateDataSetProperties (testing DataSet.properties validDataSets");
 
     // find a browser properties file (e.g., CWBrowser.properties)
-    String contextDirectory = File2.webInfParentDirectory(); // with / separator and / at the end
-    String[] propList =
-        RegexFilenameFilter.list(
-            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/coastwatch/", ".+\\.properties");
+    String contextDirectory = Paths.get(Resources.getResource("gov/noaa/pfel/coastwatch/").toURI()).toString();
+    String[] propList = RegexFilenameFilter.list(contextDirectory, ".+\\.properties");
     int which = -1;
     for (int i = 0; i < propList.length; i++) {
       if (!propList[i].equals("DataSet.properties")) {
@@ -58,7 +59,6 @@ public class ValidateDataSetProperties {
         -1,
         String2.ERROR
             + ": No non-DataSet.properties properties files found in\n"
-            + contextDirectory
             + "WEB-INF/classes/gov/noaa/pfel/coastwatch/.\n"
             + ".properties files="
             + String2.toCSSVString(propList));

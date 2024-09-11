@@ -10,8 +10,11 @@ import com.cohort.util.Math2;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.TimePeriods;
 import gov.noaa.pfel.coastwatch.util.SSR;
+
+import java.net.URL;
 import java.util.GregorianCalendar;
 
 /**
@@ -53,10 +56,8 @@ public class FileNameUtility {
 
   public double regionMinX, regionMaxX, regionMinY, regionMaxY;
 
-  public static String STANDARD_REGIONS_FILE_NAME =
-      File2.getClassPath()
-          + // with / separator and / at the end
-              "gov/noaa/pfel/coastwatch/griddata/regions";
+  public static URL STANDARD_REGIONS_FILE_NAME =
+          Resources.getResource("gov/noaa/pfel/coastwatch/griddata/regions");
 
   public static String getAcknowledgement() {
     return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD";
