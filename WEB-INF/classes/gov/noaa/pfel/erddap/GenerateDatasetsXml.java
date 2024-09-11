@@ -1321,16 +1321,12 @@ public class GenerateDatasetsXml {
       // Or, it must be sibling of webapps
       // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
       // On windows, contentDirectory may have spaces as %20(!)
-      contentDirectory =
-          String2.replaceAll(
-              File2.getClassPath(), // with / separator and / at the end
-              "%20",
-              " ");
+      contentDirectory = File2.accessResourceFile("gov"); // access a resource folder
       int po = contentDirectory.indexOf("/webapps/");
       if (po == -1) {
         Path userDir = Path.of(System.getProperty("user.dir"));
         String webInfParentDir = userDir.getParent().toString() + "/";
-        File2.setWebInfParentDirectory(webInfParentDir);
+        EDStatic.setWebInfParentDirectory(webInfParentDir);
         System.setProperty(ecd, webInfParentDir + "/development/test/");
       }
     }

@@ -467,7 +467,9 @@ public class CompoundColorMap extends ColorMap {
     //   public static String makeCPT(String baseDir, String palette, String scale, double minData,
     //       double maxData, int nSections, boolean continuous, String resultDir) throws Exception {
     if (reallyVerbose) String2.log("nPieces=" + nPieces);
-    populate(this, makeCPT(baseDir, palette, "Linear", 0, nPieces, nPieces, continuous, resultDir));
+    String cptFileName = makeCPT(baseDir, palette, "Linear", 0, nPieces, nPieces, continuous, resultDir);
+    List<String> lines = File2.readLinesFromFile(cptFileName, File2.ISO_8859_1, 3);
+    populate(this, cptFileName, lines);
 
     // put tRangeLow, tRangeHigh, tLeftLabel, tLastLabel into place
     rangeLow = tRangeLow.toArray();

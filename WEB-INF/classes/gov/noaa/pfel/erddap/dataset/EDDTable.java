@@ -52,6 +52,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -387,8 +388,8 @@ public abstract class EDDTable extends EDD {
    * are straight from the source; scale_factor and add_offset haven't been applied. Even time is
    * stored as raw source values; see "//EEEK!!!" in EDDTableFromFiles.
    *
-   * @param minMaxTable Currently, only EDDTableFromFiles returns a table. For other subclasses,
-   *     this will be null. Just read from this. Don't change the values.
+   * Currently, only EDDTableFromFiles returns a table. For other subclasses,
+   * this will be null. Just read from this. Don't change the values.
    */
   public Table minMaxTable() {
     return minMaxTable;
@@ -4015,7 +4016,7 @@ public abstract class EDDTable extends EDD {
    *     encloses with all the needed tableWriters (e.g., for handling
    *     handleViaFixedOrSubsetVariables()).
    * @param dir a private cache directory for storing the intermediate files
-   * @param fileNameNoExt is the fileName without dir or extension (used as basis for temp files).
+   * @param fileName is the fileName without dir or extension (used as basis for temp files).
    * @param tableWriter the final tableWriter (e.g., TableWriterJson)
    * @param userDapQuery
    * @return the (possibly) wrapped tableWriter (or the same tableWriter if no need to enclose it,
@@ -5689,6 +5690,10 @@ public abstract class EDDTable extends EDD {
           g2.fillRect(0, 0, imageWidth, imageHeight);
         }
 
+        URL bathyResourceFile = "under".equals(currentDrawLandMask)
+                ? SgtMap.topographyCptFullName
+                : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
+        String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.getPath());
         ArrayList mmal =
             SgtMap.makeMap(
                 transparentPng,
@@ -5707,9 +5712,7 @@ public abstract class EDDTable extends EDD {
                 1,
                 1,
                 0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-                "under".equals(currentDrawLandMask)
-                    ? SgtMap.topographyCptFullName
-                    : SgtMap.bathymetryCptFullName, // "over": deals better with elevation ~= 0
+                bathymetryCptFullPath,
                 null, // SgtMap.TOPOGRAPHY_BOLD_TITLE + " (" + SgtMap.TOPOGRAPHY_UNITS + ")",
                 "",
                 "",
@@ -6068,7 +6071,7 @@ public abstract class EDDTable extends EDD {
    * @param outputStreamSource
    * @param twawm all the results data, with missingValues stored as destinationMissingValues or
    *     destinationFillValues (they are converted to NaNs)
-   * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results (or
+   * @param jsonp the not-percent-encoded jsonp functionName to be prepended to the results (or
    *     null if none). See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
    *     https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ and
    *     https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/
@@ -8709,7 +8712,6 @@ public abstract class EDDTable extends EDD {
    *
    * @param language the index of the selected language
    * @param nOrderByComboBox The number of variable list comboBoxes must be 4 or 5.
-   * @param narrow if false, it will be standard
    */
   void writeFunctionHtml(
       int language,
@@ -15479,7 +15481,7 @@ public abstract class EDDTable extends EDD {
    * @param maxChar options that are longer than maxChar are removed (and if so, "[Some really long
    *     options aren't shown.]" is added at the end).
    * @return the left array has a value for each subsetVariable. Times are ISO 8601 string times.
-   * @throws exception if trouble (e.g., dataset isn't accessibleViaSubset)
+   * @throws Throwable if trouble (e.g., dataset isn't accessibleViaSubset)
    */
   public String[][] distinctOptionsTable(int language, String loggedInAs, int maxChar)
       throws Throwable {
@@ -15557,7 +15559,7 @@ public abstract class EDDTable extends EDD {
    *     null.
    * @param tableWriter
    * @return true if it was handled
-   * @throws throwable e.g., if it should have been handled, but failed. Or if no data.
+   * @throws Throwable e.g., if it should have been handled, but failed. Or if no data.
    */
   public boolean handleViaFixedOrSubsetVariables(
       int language,
@@ -17750,7 +17752,7 @@ public abstract class EDDTable extends EDD {
    *
    * @param language the index of the selected language
    * @param loggedInAs
-   * @param sosQueryMap
+   * @param sosQuery
    * @return [0]=dapQuery (percent encoded), [1]=requestOfferingType (e.g., "network" or e.g.,
    *     "station"), [2]=requestShortOfferingName (short name: e.g., all or 41004)
    *     [3]=responseFormat (in request) //[4]=responseMode (e.g., inline) [5]=requestedVars (csv of
@@ -18518,7 +18520,7 @@ public abstract class EDDTable extends EDD {
    * <p>This seeks to mimic IOOS SOS servers like ndbcSosWind. See https://sdf.ndbc.noaa.gov/sos/ .
    *
    * @param language the index of the selected language
-   * @param requesttOfferingType e.g., network or e.g., station
+   * @param requestOfferingType e.g., network or e.g., station
    * @param requestShortOfferingName e.g., all or 41004 or ...
    * @param tw with all of the results data. Units should be UCUM already.
    * @param writer In the end, the writer is flushed, not closed.
@@ -19204,7 +19206,7 @@ public abstract class EDDTable extends EDD {
    * http://www.gomoos.org/cgi-bin/sos/oostethys_sos.cgi ].
    *
    * @param language the index of the selected language
-   * @param requesttOfferingType e.g., network or e.g., station
+   * @param requestOfferingType e.g., network or e.g., station
    * @param requestShortOfferingName e.g., all or 41004 or ...
    * @param tw with all of the results data. Units should be UCUM already.
    * @param writer In the end, the writer is flushed, not closed.
@@ -20563,7 +20565,7 @@ public abstract class EDDTable extends EDD {
    * See Query Language reference
    * https://developers.google.com/chart/interactive/docs/querylanguage?csw=1
    *
-   * @param tgVisQuery the case of the key words (e.g., SELECT) is irrelevant
+   * @param gVisQuery the case of the key words (e.g., SELECT) is irrelevant
    * @return dapQuery
    * @throws Throwable if trouble ???or if error, return gVis-style error message string?
    */

@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.ArrayList;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -565,6 +566,7 @@ class SgtMapTests {
               cy[i] + inc[i],
               460,
               460);
+      String bathymetryCptFullPath = File2.accessResourceFile(SgtMap.bathymetryCptFullName.getPath());
       SgtMap.makeMap(
           false,
           SgtUtil.LEGEND_BELOW,
@@ -582,7 +584,7 @@ class SgtMapTests {
           1,
           1,
           0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-          SgtMap.bathymetryCptFullName,
+          bathymetryCptFullPath,
           null, // SgtMap.BATHYMETRY_BOLD_TITLE + " (" + SgtMap.BATHYMETRY_UNITS + ")",
           "",
           "",
@@ -823,6 +825,9 @@ class SgtMapTests {
     int predicted[] =
         SgtMap.predictGraphSize(
             1, imageWidth, imageHeight, minX[region], maxX[region], minY[region], maxY[region]);
+
+    URL bathyResourceFile = bathCpt ? SgtMap.bathymetryCptFullName : SgtMap.topographyCptFullName;
+    String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.getPath());
     SgtMap.makeMap(
         false,
         SgtUtil.LEGEND_BELOW,
@@ -849,7 +854,7 @@ class SgtMapTests {
         1,
         1,
         0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-        bathCpt ? SgtMap.bathymetryCptFullName : SgtMap.topographyCptFullName,
+        bathymetryCptFullPath,
         bathCpt
             ? SgtMap.BATHYMETRY_BOLD_TITLE + " (" + SgtMap.BATHYMETRY_UNITS + ")"
             : SgtMap.TOPOGRAPHY_BOLD_TITLE + " (" + SgtMap.TOPOGRAPHY_UNITS + ")",
