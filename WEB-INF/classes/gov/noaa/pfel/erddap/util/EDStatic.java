@@ -1832,8 +1832,7 @@ public class EDStatic {
               + "because '"
               + ecd
               + "' environment variable not found "
-              + "and couldn't find '/webapps/' in classPath="
-              + File2.getClassPath()
+              + "and couldn't find '/webapps/' "
               + // with / separator and / at the end
               " (and 'content/erddap' should be a sibling of <tomcat>/webapps): ";
       contentDirectory = System.getProperty(ecd);
@@ -1841,11 +1840,7 @@ public class EDStatic {
         // Or, it must be sibling of webapps
         // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
         // On windows, contentDirectory may have spaces as %20(!)
-        contentDirectory =
-            String2.replaceAll(
-                File2.getClassPath(), // with / separator and / at the end
-                "%20",
-                " ");
+        contentDirectory = File2.accessResourceFile("gov"); // access a resource folder
         int po = contentDirectory.indexOf("/webapps/");
         contentDirectory =
             contentDirectory.substring(0, po) + "/content/erddap/"; // exception if po=-1
@@ -1872,7 +1867,7 @@ public class EDStatic {
       Path bpd = Path.of(bigParentDirectory);
       if (!bpd.isAbsolute()) {
         if (!File2.isDirectory(bigParentDirectory)) {
-          bigParentDirectory = File2.webInfParentDirectory() + bigParentDirectory;
+          bigParentDirectory = EDStatic.webInfParentDirectory + bigParentDirectory;
         }
       }
       Test.ensureTrue(
@@ -7024,7 +7019,6 @@ public class EDStatic {
    * @param maxTasks This let's you just see what would happen (0), or just make a limited or
    *     unlimited (Integer.MAX_VALUE) number of download tasks.
    * @param tDatasetID
-   * @param the number of files that will be downloaded
    */
   public static int makeCopyFileTasks(
       String tClassName,
