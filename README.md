@@ -29,6 +29,9 @@ Simply run `mvn test` in a terminal to run the JUnit tests.
 
 Note that by default tests that do an image comparison are enabled. To disable those tests add `ImageComparison` to the `excludedGroups` section of the surefire `configuration`. It is recommended you run the image tests before making changes to ERDDAP&trade; so you can generate a baseline set of images that will be later used for comparison.
 
+### Metrics
+
+Metrics are collected using [Prometheus](https://prometheus.github.io/client_java/). You can see the metrics on a local server at [/erddap/metrics](http://localhost:8080/erddap/metrics?debug=text).
 
 ### Building a war
 

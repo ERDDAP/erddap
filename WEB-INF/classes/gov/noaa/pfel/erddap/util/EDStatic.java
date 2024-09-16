@@ -41,6 +41,7 @@ import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
+import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -94,6 +95,8 @@ public class EDStatic {
   public static boolean skipEmailThread = false;
 
   public static boolean allowDeferedLoading = true;
+
+  public static boolean usePrometheusMetrics = true;
 
   /** The all lowercase name for the program that appears in urls. */
   public static final String programname = "erddap";
@@ -1800,7 +1803,6 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
       allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
 
@@ -1864,6 +1866,12 @@ public class EDStatic {
 
       // logLevel may be: warning, info(default), all
       setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
+
+      usePrometheusMetrics = getSetupEVBoolean(setup, ev, "usePrometheusMetrics", true);
+      if (usePrometheusMetrics) {
+        JvmMetrics.builder().register(); // initialize the out-of-the-box JVM metrics
+      }
+
       bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", "");
       bigParentDirectory = File2.addSlash(bigParentDirectory);
       Path bpd = Path.of(bigParentDirectory);
