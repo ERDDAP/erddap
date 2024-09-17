@@ -22,6 +22,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
+import com.google.common.base.Strings;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -1637,7 +1638,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     }
 
     // skip loading until after intial loadDatasets?
-    if (EDStatic.allowDeferedLoading && fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+    if (!EDStatic.forceSynchronousLoading
+        && fileTable.nRows() == 0
+        && EDStatic.initialLoadDatasets()) {
       requestReloadASAP();
       throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
     }
@@ -1860,6 +1863,11 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
+        if (Strings.isNullOrEmpty(tFileS)) {
+          tFileListPo++;
+          // Skipping file name that is null or empty string.
+          continue;
+        }
         int dirI = fileListPo < ftFileList.size() ? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
         String fileS = fileListPo < ftFileList.size() ? ftFileList.get(fileListPo) : "\uFFFF";
         long lastMod = fileListPo < ftFileList.size() ? ftLastMod.get(fileListPo) : Long.MAX_VALUE;
@@ -4911,10 +4919,16 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           || t instanceof InterruptedException
           || t instanceof OutOfMemoryError
           || tToString.indexOf(Math2.memoryTooMuchData) >= 0
-          || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) throw t;
+          || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) {
+        // Finish will close resource streams.
+        tableWriter.finish();
+        throw t;
+      }
 
       if (!(t instanceof NoMoreDataPleaseException)) { // the only exception to keep going
         String2.log(MustBe.throwableToString(t));
+        // Finish will close resource streams.
+        tableWriter.finish();
         throw t;
         // throw t instanceof WaitThenTryAgainException? t :
         // new WaitThenTryAgainException(

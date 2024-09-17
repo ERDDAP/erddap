@@ -21,6 +21,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
+import com.google.common.base.Strings;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -793,7 +794,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     }
 
     // skip loading until after intial loadDatasets?
-    if (EDStatic.allowDeferedLoading && fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+    if (!EDStatic.forceSynchronousLoading
+        && fileTable.nRows() == 0
+        && EDStatic.initialLoadDatasets()) {
       requestReloadASAP();
       throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
     }
@@ -1101,6 +1104,11 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
+        if (Strings.isNullOrEmpty(tFileS)) {
+          tFileListPo++;
+          // Skipping file name that is null or empty string.
+          continue;
+        }
         int dirI = fileListPo < ftFileList.size() ? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
         String fileS = fileListPo < ftFileList.size() ? ftFileList.get(fileListPo) : "\uFFFF";
         long lastMod = fileListPo < ftFileList.size() ? ftLastMod.get(fileListPo) : Long.MAX_VALUE;

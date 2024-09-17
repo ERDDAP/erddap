@@ -42,7 +42,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
 import tags.TagLargeFiles;
@@ -1307,6 +1306,7 @@ class EDDTableFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
+  @TagSlowTests
   void test2D(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.test2D()
     // *****************\n");
@@ -6154,6 +6154,7 @@ class EDDTableFromNcFilesTests {
 
   /** This tests converting global metadata into data. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testGlobal() throws Throwable {
     // testVerboseOn();
 
@@ -6975,6 +6976,7 @@ class EDDTableFromNcFilesTests {
 
   @org.junit.jupiter.api.Test
   @TagImageComparison
+  @TagSlowTests // If the dataset needs to be downloaded, this is slow.
   void testLegend() throws Throwable {
 
     int language = 0;
@@ -7210,7 +7212,6 @@ class EDDTableFromNcFilesTests {
 
   /** Test pmelTaoAirT against website. */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testPmelTaoAirt() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testPmelTaoAirt");
@@ -7253,7 +7254,7 @@ class EDDTableFromNcFilesTests {
             + "    String long_name \"Station\";\n"
             + "  }\n"
             + "  wmo_platform_code {\n"
-            + "    Int32 actual_range 13001, 2147483647;\n"
+            + "    Int32 actual_range 13001, 56055;\n"
             + "    String ioos_category \"Identifier\";\n"
             + "    String long_name \"WMO Platform Code\";\n"
             + "    Int32 missing_value 2147483647;\n"
@@ -7371,9 +7372,11 @@ class EDDTableFromNcFilesTests {
             + "  }\n"
             + " }\n"
             + "  NC_GLOBAL {\n"
+            + "    Float32 _FillValue 1.0e+35;\n"
             + "    String cdm_data_type \"TimeSeries\";\n"
             + "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude, depth\";\n"
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
+            + "    String CREATION_DATE \"07:12  3-JAN-2022\";\n"
             + "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n"
             + "    String creator_name \"GTMBA Project Office/NOAA/PMEL\";\n"
             + "    String creator_type \"group\";\n"
@@ -7417,7 +7420,9 @@ class EDDTableFromNcFilesTests {
             + "implied, including warranties of merchantability and fitness for a\n"
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
+            + "    Float32 missing_value 1.0e+35;\n"
             + "    Float64 Northernmost_Northing 21.0;\n"
+            + "    String platform_code \"0n3w\";\n"
             + "    String project \"TAO/TRITON, RAMA, PIRATA\";\n"
             + "    String Request_for_acknowledgement \"If you use these data in publications "
             + "or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. "
@@ -10102,7 +10107,6 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testQuickRestart() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testQuickRestart()\n");
 
@@ -11154,7 +11158,7 @@ class EDDTableFromNcFilesTests {
               + "ME_TE_33AW_68990 17,ME,TE,33AW,68990 17,29162540,-20.14,58.22,2017-06-02T20:09:00Z,200.0,10.0,35.3\n";
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
-    String2.log(bigResults.toString());
+    // String2.log(bigResults.toString());
     /*
      * 2018-07-27 but times vary greatly
      * bigResults: (truncated to seconds) not much: but these are large data files.
@@ -12973,6 +12977,7 @@ class EDDTableFromNcFilesTests {
    * SY, LM, LY.
    */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testCAMarCat() throws Throwable {
 
     int language = 0;
@@ -16483,7 +16488,6 @@ class EDDTableFromNcFilesTests {
    * <p>And this tests altitude&gt;= should become depth&lt;= internally. (and related)
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testAltitude() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testAltitude");

@@ -247,6 +247,7 @@ class EDDGridTests {
 
   @org.junit.jupiter.api.Test
   @TagImageComparison
+  @TagThredds
   void testGeotif2() throws Throwable {
     String tDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     EDDGrid gridDataset = (EDDGrid) EDDTestDataset.geterdMHchla8day();

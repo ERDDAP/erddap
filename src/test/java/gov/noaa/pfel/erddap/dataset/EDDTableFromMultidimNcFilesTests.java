@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
 import tags.TagSlowTests;
@@ -2552,7 +2551,6 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagFlaky
   void testTreatDimensionsAs(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n******************
     // EDDTableFromMultidimNcFiles.testTreatDimensionsAs() *****************\n");

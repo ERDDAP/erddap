@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagMissingDataset;
+import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -22,6 +23,7 @@ class EDDTableCopyTests {
 
   /** The basic tests of this class. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests // If the dataset needs to be copied, this is slow.
   void testTableCopyBasic() throws Throwable {
     // testVerboseOn();
     int language = 0;

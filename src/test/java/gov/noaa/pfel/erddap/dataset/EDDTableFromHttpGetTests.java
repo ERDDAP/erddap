@@ -19,7 +19,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
-import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -1058,7 +1057,6 @@ class EDDTableFromHttpGetTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagFlaky
   void testBasic() throws Throwable {
     // String2.log("\n****************** EDDTableFromHttpGet.testBasic()
     // *****************\n");
@@ -1154,7 +1152,7 @@ class EDDTableFromHttpGetTests {
             + "    String units \"degree_C\";\n"
             + "  }\n"
             + "  timestamp {\n"
-            + "    Float64 actual_range 0.0, 1.71387998582e+9;\n"
+            + "    Float64 actual_range 0.0, 1.531153327766e+9;\n"
             + "    String ioos_category \"Time\";\n"
             + "    String long_name \"Timestamp\";\n"
             + "    String time_origin \"01-JAN-1970 00:00:00\";\n"

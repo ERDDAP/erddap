@@ -891,7 +891,14 @@ public abstract class EDDTable extends EDD {
         PrimitiveArray pa = table.getColumn(col);
         // note that time is stored as doubles in distinctValues table
         // String2.log("distinct col=" + colName + " " + pa.elementTypeString());
-        if (pa instanceof StringArray) continue;
+        if (pa instanceof StringArray) {
+          continue;
+        }
+        // If the destination has max is MV, this should also have it, otherwise the
+        // calculated max value will be wrong.
+        if (edv.destinationMaxIsMV()) {
+          pa.setMaxIsMV(true);
+        }
         int nMinMax[] = pa.getNMinMaxIndex();
         if (nMinMax[0] == 0) continue;
         edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
@@ -14709,10 +14716,11 @@ public abstract class EDDTable extends EDD {
                 + EDStatic.subsetRefineSubsetDownloadAr[language]
                 + "</a>)\n");
 
+        TableWriterAll twa = null;
         try {
           // get the raw data
           String fullCountsQuery = lastPName + newConstraintsNLP.toString();
-          TableWriterAll twa =
+          twa =
               new TableWriterAll(
                   language,
                   this,
@@ -14807,6 +14815,10 @@ public abstract class EDDTable extends EDD {
           writer.write(
               // "<p>An error occurred while getting the data:\n" +
               "<pre>" + XML.encodeAsPreHTML(message, 100) + "</pre>\n");
+        } finally {
+          if (twa != null) {
+            twa.releaseResources();
+          }
         }
 
       } else {

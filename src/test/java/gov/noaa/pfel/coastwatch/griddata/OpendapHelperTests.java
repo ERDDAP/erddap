@@ -17,8 +17,9 @@ class OpendapHelperTests {
 
   @TempDir private static Path TEMP_DIR;
 
-  @org.junit.jupiter.api.Test
   /** This tests getting attibutes, notably the DODS_strlen attribute. */
+  @org.junit.jupiter.api.Test
+  @TagThredds
   void testGetAttributes() throws Throwable {
     String url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";

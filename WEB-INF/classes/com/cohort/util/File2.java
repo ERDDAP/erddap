@@ -786,7 +786,6 @@ public class File2 {
       if (String2.OSIsWindows)
         Math2.sleep(Math2.shortSleep); // if Windows: encourage successful file deletion
     }
-
     // rename
     if (oldFile.renameTo(newFile)) return;
 
@@ -794,6 +793,26 @@ public class File2 {
     // The problem might be that something needs to be gc'd.
     Math2.gcAndWait("File2.rename (before retry)");
     if (oldFile.renameTo(newFile)) return;
+
+    // This is a bad idea, but its better than datasets failing to load.
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      String2.log("Was sleeping to allow file handles time to free, but got interrupted.");
+    }
+    Math2.gcAndWait("File2.rename (before retry)");
+
+    if (oldFile.renameTo(newFile)) return;
+
+    if (!oldFile.canWrite()) {
+      throw new RuntimeException(
+          "Unable to rename\n"
+              + fullOldName
+              + " to\n"
+              + fullNewName
+              + "\nbecause the source file is not writable.");
+    }
+
     throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
   }
 

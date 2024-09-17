@@ -93,7 +93,7 @@ public class EDStatic {
    */
   public static boolean skipEmailThread = false;
 
-  public static boolean allowDeferedLoading = true;
+  public static boolean forceSynchronousLoading = false;
 
   /** The all lowercase name for the program that appears in urls. */
   public static final String programname = "erddap";
@@ -1802,7 +1802,6 @@ public class EDStatic {
     try {
 
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
-      allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
 
       // route calls to a logger to com.cohort.util.String2Log
       String2.setupCommonsLogging(-1);
@@ -7189,6 +7188,12 @@ public class EDStatic {
           String2.log("% created task#" + lastTask + " TASK_SET_FLAG " + tDatasetID);
         lastAssignedTask.put(tDatasetID, Integer.valueOf(lastTask));
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
+
+        if (EDStatic.forceSynchronousLoading) {
+          while (EDStatic.lastFinishedTask < lastTask) {
+            Thread.sleep(2000);
+          }
+        }
       }
 
       if (verbose)

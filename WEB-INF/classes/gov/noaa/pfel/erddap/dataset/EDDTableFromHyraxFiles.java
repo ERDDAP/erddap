@@ -396,6 +396,17 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     if (taskNumber > -1) {
       EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
+
+      if (EDStatic.forceSynchronousLoading) {
+        boolean interrupted = false;
+        while (!interrupted && EDStatic.lastFinishedTask < taskNumber) {
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            interrupted = true;
+          }
+        }
+      }
     }
   }
 

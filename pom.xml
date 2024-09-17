@@ -43,7 +43,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <erddapcontent.download.version>v2.23</erddapcontent.download.version>
+        <erddapcontent.download.version>v2.25</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.6.0</netcdfJavaVersion>
         <test.resources.version>test1.03</test.resources.version>
@@ -237,7 +237,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
+                            <url>https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
@@ -923,6 +923,18 @@
                         <id>integration-tests</id>
                         <reports>
                         <report>failsafe-report-only</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report</report>
                         </reports>
                     </reportSet>
                 </reportSets>

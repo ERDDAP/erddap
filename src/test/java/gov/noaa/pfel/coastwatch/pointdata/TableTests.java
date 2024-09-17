@@ -1681,6 +1681,7 @@ public class TableTests {
 
   /** Test the speed of readASCII */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testReadASCIISpeed() throws Exception {
 
     String fileName =
