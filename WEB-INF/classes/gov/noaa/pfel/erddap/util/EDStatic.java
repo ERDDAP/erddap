@@ -217,7 +217,7 @@ public class EDStatic {
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
   /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-  private static String webInfParentDirectory = File2.lookupWebInfParentDirectory();
+  private static String webInfParentDirectory;
   // fgdc and iso19115XmlDirectory are used for virtual URLs.
   public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
   public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
@@ -1803,6 +1803,9 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
+      if (webInfParentDirectory == null) {
+        webInfParentDirectory = File2.lookupWebInfParentDirectory();
+      }
 
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
       allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));

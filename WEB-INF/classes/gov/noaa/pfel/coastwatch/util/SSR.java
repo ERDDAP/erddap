@@ -158,7 +158,8 @@ public class SSR {
    */
   public static String getFirstLineStartsWith(URL resourceFile, String charset, String start)
       throws Exception {
-    try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
+    try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
+            InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
             BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
@@ -180,7 +181,8 @@ public class SSR {
    */
   public static String getFirstLineMatching(URL resourceFile, String charset, String regex)
       throws Exception {
-    try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
+    try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
+         InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
          BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       Pattern pattern = Pattern.compile(regex);

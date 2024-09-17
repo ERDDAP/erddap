@@ -5,13 +5,10 @@
 package gov.noaa.pfel.coastwatch.hdf;
 
 import com.cohort.util.File2;
-// import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import com.google.common.io.Resources;
 
 import java.io.DataInputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**

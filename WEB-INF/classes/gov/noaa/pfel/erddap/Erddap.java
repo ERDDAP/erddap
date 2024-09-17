@@ -38,8 +38,6 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

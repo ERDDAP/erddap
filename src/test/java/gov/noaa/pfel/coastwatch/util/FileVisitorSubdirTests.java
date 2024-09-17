@@ -23,7 +23,7 @@ class FileVisitorSubdirTests {
     // String2.log("\n*** FileVisitorSubdir.testLocal");
     // verbose = true;
     String contextDir =
-        EDStatic.getWebInfParentDirectory(); // with / separator and / at the end
+        EDStatic.getWebInfParentDirectory().replace('\\', '/'); // with / separator and / at the end
     StringArray alps;
     long time;
 

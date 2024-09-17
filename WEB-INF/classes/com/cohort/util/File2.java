@@ -20,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -1188,11 +1189,9 @@ public class File2 {
    * @return a decompressed, buffered InputStream from a file.
    * @throws Exception if trouble
    */
-  public static InputStream getDecompressedBufferedInputStream(String fullFileName)
-      throws Exception {
+  public static InputStream getDecompressedBufferedInputStream(String fullFileName, InputStream is)
+          throws Exception {
     String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
-
-    InputStream is = getBufferedInputStream(fullFileName); // starting point before decompression
 
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
@@ -1210,8 +1209,8 @@ public class File2 {
     if (ext.indexOf('z') < 0) return is;
 
     if (ext.equals(".tgz")
-        || fullFileName.endsWith(".tar.gz")
-        || fullFileName.endsWith(".tar.gzip")) {
+            || fullFileName.endsWith(".tar.gz")
+            || fullFileName.endsWith(".tar.gzip")) {
       // modified from
       // https://stackoverflow.com/questions/7128171/how-to-compress-decompress-tar-gz-files-in-java
       GzipCompressorInputStream gzipIn = null;
@@ -1223,7 +1222,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
         if (entry == null)
           throw new IOException(
-              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = tarIn;
       } catch (Exception e) {
         if (tarIn != null) tarIn.close();
@@ -1248,7 +1247,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = zis.getNextEntry();
         if (entry == null)
           throw new IOException(
-              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = zis;
       } catch (Exception e) {
         if (zis != null) zis.close();
@@ -1269,6 +1268,35 @@ public class File2 {
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
     return is;
+  }
+
+  /**
+   * This gets a decompressed, buffered InputStream from a file or S3 URL. If the file is
+   * compressed, it is assumed to be the only file (entry) in the archive.
+   *
+   * @param fullFileName The full file name. If it ends in .tgz, .tar.gz, .tar.gzip, .gz, .gzip,
+   *     .zip, or .bz2, this returns a decompressed, buffered InputStream.
+   * @return a decompressed, buffered InputStream from a file.
+   * @throws Exception if trouble
+   */
+  public static InputStream getDecompressedBufferedInputStream(String fullFileName)
+      throws Exception {
+    InputStream is = getBufferedInputStream(fullFileName); // starting point before decompression
+    return getDecompressedBufferedInputStream(fullFileName, is);
+  }
+
+  /**
+   * This gets a decompressed, buffered InputStream from a file or S3 URL. If the file is
+   * compressed, it is assumed to be the only file (entry) in the archive.
+   *
+   * @param resourceFile The full file name. If it ends in .tgz, .tar.gz, .tar.gzip, .gz, .gzip,
+   *     .zip, or .bz2, this returns a decompressed, buffered InputStream.
+   * @return a decompressed, buffered InputStream from a file.
+   * @throws Exception if trouble
+   */
+  public static InputStream getDecompressedBufferedInputStream(URL resourceFile)
+          throws Exception {
+    return getDecompressedBufferedInputStream(resourceFile.getFile(), resourceFile.openStream());
   }
 
   public static void decompressAllFiles(String sourceFullName, String destDir) throws IOException {
