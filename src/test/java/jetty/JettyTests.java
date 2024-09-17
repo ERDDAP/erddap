@@ -107,8 +107,6 @@ class JettyTests {
     server.setHandler(context);
 
     server.start();
-    // Make a request of the server to make sure it starts loading the datasets
-    SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap");
 
     // Delay the tests to give the server a chance to load all of the data.
     // If the cache/data folder is cold some machines might need longer. If
