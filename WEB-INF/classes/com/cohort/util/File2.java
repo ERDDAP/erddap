@@ -34,6 +34,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import com.google.common.io.Resources;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -61,6 +62,8 @@ public class File2 {
   public static final String UTF_8_LC = UTF_8.toLowerCase();
   public static final Charset UTF_8_CHARSET = StandardCharsets.UTF_8;
   public static final String UNABLE_TO_DELETE = "unable to delete"; // so consistent in log.txt
+
+  private static String webInfParentDirectory;
 
   // define the file types for the purpose of assigning icon in Table.directoryListing
   // compressed and image ext from wikipedia
@@ -307,7 +310,7 @@ public class File2 {
    *     trouble
    * @throws RuntimeException if trouble
    */
-  public static String lookupWebInfParentDirectory() {
+  private static String lookupWebInfParentDirectory() {
     String find = "/com/cohort/util/String2.class";
     // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
     String classPath = String2.class.getResource(find).getFile();
@@ -332,8 +335,25 @@ public class File2 {
     if (po < 0)
       throw new RuntimeException(
               String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
-    String path = Paths.get(URI.create(classPath.substring(0, po + 1))).toAbsolutePath().toString();
-    return path.replace("\\", "/") + "/";
+    classPath = classPath.substring(0, po + 1);
+    Path path;
+    if (classPath.startsWith("file:/")) {
+      path = Paths.get(URI.create(classPath));
+    } else {
+      path = Paths.get(classPath);
+    }
+    return path.toAbsolutePath().toString().replace("\\", "/") + "/";
+  }
+
+  public static String getWebInfParentDirectory() {
+    if (webInfParentDirectory == null) {
+      webInfParentDirectory = lookupWebInfParentDirectory();
+    }
+    return webInfParentDirectory;
+  }
+
+  public static void setWebInfParentDirectory(String webInfParentDir) {
+    webInfParentDirectory = webInfParentDir;
   }
 
   /**

@@ -1326,7 +1326,7 @@ public class GenerateDatasetsXml {
       if (po == -1) {
         Path userDir = Path.of(System.getProperty("user.dir"));
         String webInfParentDir = userDir.getParent().toString() + "/";
-        EDStatic.setWebInfParentDirectory(webInfParentDir);
+        File2.setWebInfParentDirectory(webInfParentDir);
         System.setProperty(ecd, webInfParentDir + "/development/test/");
       }
     }

@@ -4,10 +4,7 @@
  */
 package com.cohort.util;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -809,7 +806,8 @@ public class XML {
    * @throws Exception if trouble
    */
   public static Document parseXml(URL resourceFile, boolean validating) throws Exception {
-    InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8);
+    InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
+    InputStreamReader reader = new InputStreamReader(decompressedStream, StandardCharsets.UTF_8);
     return parseXml(
             new InputSource(new BufferedReader(reader)),
             validating

@@ -224,10 +224,10 @@ public class EDStatic {
   public static final String DOWNLOAD_DIR = "download/";
   public static final String IMAGES_DIR = "images/";
   public static final String PUBLIC_DIR = "public/";
-  public static String fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/",
-      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR,
-      downloadDir = webInfParentDirectory + DOWNLOAD_DIR, // local directory on this computer
-      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
+  public static String fullPaletteDirectory;
+  public static String fullPublicDirectory;
+  public static String downloadDir; // local directory on this computer
+  public static String imageDir; // local directory on this computer
   public static Tally tally = new Tally();
   public static int emailThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
   public static int emailThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
@@ -1804,8 +1804,13 @@ public class EDStatic {
     String errorInMethod = "";
     try {
       if (webInfParentDirectory == null) {
-        webInfParentDirectory = File2.lookupWebInfParentDirectory();
+        webInfParentDirectory = File2.getWebInfParentDirectory();
       }
+
+      fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
+      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR;
+      downloadDir = webInfParentDirectory + DOWNLOAD_DIR; // local directory on this computer
+      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
 
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
       allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
@@ -4289,10 +4294,6 @@ public class EDStatic {
 
   public static String getWebInfParentDirectory() {
     return EDStatic.webInfParentDirectory;
-  }
-
-  public static void setWebInfParentDirectory(String webInfParentDir) {
-    EDStatic.webInfParentDirectory = webInfParentDir;
   }
 
   /** This does getNotNothingString for each messages[]. */

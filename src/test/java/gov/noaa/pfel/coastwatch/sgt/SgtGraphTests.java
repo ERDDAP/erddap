@@ -36,7 +36,7 @@ class SgtGraphTests {
    */
   @org.junit.jupiter.api.Test
   void testForMemoryLeak() throws Exception {
-    EDStatic.setWebInfParentDirectory(System.getProperty("user.dir") + "/");
+    File2.setWebInfParentDirectory(System.getProperty("user.dir") + "/");
     // verbose = true;
     // reallyVerbose = true;
     // PathCartesianRenderer.verbose = true;
