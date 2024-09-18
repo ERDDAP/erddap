@@ -54,7 +54,6 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -158,8 +157,8 @@ public class SSR {
   public static String getFirstLineStartsWith(URL resourceFile, String charset, String start)
       throws Exception {
     try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-            InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
-            BufferedReader bufferedReader = new BufferedReader(reader)) {
+        InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
+        BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
         // String2.log(s);
@@ -181,8 +180,8 @@ public class SSR {
   public static String getFirstLineMatching(URL resourceFile, String charset, String regex)
       throws Exception {
     try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-         InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
-         BufferedReader bufferedReader = new BufferedReader(reader)) {
+        InputStreamReader reader = new InputStreamReader(decompressedStream, charset);
+        BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s;
       Pattern pattern = Pattern.compile(regex);
       while ((s = bufferedReader.readLine()) != null) { // null = end-of-file
@@ -1826,8 +1825,8 @@ public class SSR {
    *     See https://en.wikipedia.org/wiki/Percent-encoding . <br>
    *     Note that reserved characters only need to be percent encoded in special circumstances (not
    *     always).
-   * @param connectTimeOutMillis the time out for opening a connection in milliseconds (use -1 to get high
-   *     default, currently 10 minutes)
+   * @param connectTimeOutMillis the time out for opening a connection in milliseconds (use -1 to
+   *     get high default, currently 10 minutes)
    * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) BufferedInputStream,
    *     [2]=charset (will be valid)
    * @throws Exception if trouble

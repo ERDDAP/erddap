@@ -57,19 +57,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.store.Directory;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
-
 import java.awt.Color;
 import java.awt.Image;
 import java.io.BufferedOutputStream;
@@ -97,6 +84,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.store.Directory;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -2417,9 +2416,7 @@ public class EDStatic {
         String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
         URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
-        messagesAr[tl] =
-            ResourceBundle2.fromXml(
-                XML.parseXml(messageFile, false));
+        messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
       }
 
       // read all the static Strings from messages.xml
@@ -6367,9 +6364,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("acronym", col1);
     table.addColumn("fullName", col2);
-    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv");
-    List<String> lines =
-            File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
+    URL resourceFile =
+        Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv");
+    List<String> lines = File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) { // 1 because skip colNames
       String s = lines.get(i).trim();
@@ -6398,9 +6395,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("variableName", col1);
     table.addColumn("fullName", col2);
-    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv");
-    List<String> lines =
-        File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
+    URL resourceFile =
+        Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv");
+    List<String> lines = File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) {
       String s = lines.get(i).trim();
@@ -6499,7 +6496,9 @@ public class EDStatic {
    */
   public static Table fipsCountyTable() throws Exception {
     URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/FipsCounty.tsv");
-    BufferedReader reader = new BufferedReader(new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8));
+    BufferedReader reader =
+        new BufferedReader(
+            new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8));
     Table table = new Table();
     table.readASCII(
         resourceFile.getFile(),
@@ -7751,5 +7750,4 @@ public class EDStatic {
     EDStatic.touchThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
     EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   }
-
 }

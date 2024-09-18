@@ -14,7 +14,6 @@ import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Writer;
@@ -241,7 +240,8 @@ public class TranslateMessages {
   public static String utilDir = "gov/noaa/pfel/erddap/util/";
   public static URL translatedMessagesDir = Resources.getResource(utilDir + "translatedMessages/");
   protected static URL messagesXmlFileName = Resources.getResource(utilDir + "messages.xml");
-  private static URL oldMessagesXmlFileName = Resources.getResource(utilDir + "translatedMessages/messagesOld.xml");
+  private static URL oldMessagesXmlFileName =
+      Resources.getResource(utilDir + "translatedMessages/messagesOld.xml");
 
   // translation settings
   private static HashSet<String> doNotTranslateSet =
@@ -1012,7 +1012,9 @@ public class TranslateMessages {
       HashMap<String, String>[] translatedTagMaps =
           (HashMap<String, String>[]) new HashMap[languageCodeList.length];
       for (int languagei = 1; languagei < languageCodeList.length; languagei++) {
-        String fileName = Paths.get(translatedMessagesDir + "messages-" + languageCodeList[languagei] + ".xml").toString();
+        String fileName =
+            Paths.get(translatedMessagesDir + "messages-" + languageCodeList[languagei] + ".xml")
+                .toString();
         translatedTagMaps[languagei] =
             File2.isFile(fileName) ? getXMLTagMap(fileName) : new HashMap();
       }
@@ -1020,7 +1022,9 @@ public class TranslateMessages {
       // create the new-messages-[langCode].xml files
       fileWriters = new Writer[languageCodeList.length];
       for (int languagei = 1; languagei < languageCodeList.length; languagei++) {
-        Path newMessagePath = Paths.get(translatedMessagesDir + "new-messages-" + languageCodeList[languagei] + ".xml");
+        Path newMessagePath =
+            Paths.get(
+                translatedMessagesDir + "new-messages-" + languageCodeList[languagei] + ".xml");
         fileWriters[languagei] = Files.newBufferedWriter(newMessagePath, StandardCharsets.UTF_8);
         fileWriters[languagei].write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
       }

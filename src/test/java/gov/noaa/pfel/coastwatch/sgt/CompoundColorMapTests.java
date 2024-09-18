@@ -6,9 +6,8 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import java.awt.Color;
-
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.awt.Color;
 import org.junit.jupiter.api.BeforeAll;
 import testDataset.Initialization;
 

@@ -388,8 +388,8 @@ public abstract class EDDTable extends EDD {
    * are straight from the source; scale_factor and add_offset haven't been applied. Even time is
    * stored as raw source values; see "//EEEK!!!" in EDDTableFromFiles.
    *
-   * Currently, only EDDTableFromFiles returns a table. For other subclasses,
-   * this will be null. Just read from this. Don't change the values.
+   * <p>Currently, only EDDTableFromFiles returns a table. For other subclasses, this will be null.
+   * Just read from this. Don't change the values.
    */
   public Table minMaxTable() {
     return minMaxTable;
@@ -5697,7 +5697,8 @@ public abstract class EDDTable extends EDD {
           g2.fillRect(0, 0, imageWidth, imageHeight);
         }
 
-        URL bathyResourceFile = "under".equals(currentDrawLandMask)
+        URL bathyResourceFile =
+            "under".equals(currentDrawLandMask)
                 ? SgtMap.topographyCptFullName
                 : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
         String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
@@ -6078,8 +6079,8 @@ public abstract class EDDTable extends EDD {
    * @param outputStreamSource
    * @param twawm all the results data, with missingValues stored as destinationMissingValues or
    *     destinationFillValues (they are converted to NaNs)
-   * @param jsonp the not-percent-encoded jsonp functionName to be prepended to the results (or
-   *     null if none). See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
+   * @param jsonp the not-percent-encoded jsonp functionName to be prepended to the results (or null
+   *     if none). See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/ and
    *     https://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/ and
    *     https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/
    *     . A SimpleException will be thrown if tJsonp is not null but isn't

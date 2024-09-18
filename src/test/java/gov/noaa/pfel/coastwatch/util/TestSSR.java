@@ -9,14 +9,13 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagPassword;
@@ -209,12 +208,7 @@ public class TestSSR {
     File2.delete(zipDir + fileName);
     // unzip the zip file
     time2 = System.currentTimeMillis();
-    SSR.unzip(
-        zipDir + zipName,
-            zipDir,
-        false,
-        10,
-        null); // false 'ignoreDirectoryInfo'
+    SSR.unzip(zipDir + zipName, zipDir, false, 10, null); // false 'ignoreDirectoryInfo'
     time2 = System.currentTimeMillis() - time2;
     // ensure results are as expected
     results = File2.readFromFile88591(zipDir + fileName);
@@ -366,13 +360,14 @@ public class TestSSR {
     // "C:/programs/_tomcat/webapps/cwexperimental/", "a");
     // wimpy test, but works on all computers
     Test.ensureNotNull(
-            EDStatic.getWebInfParentDirectory(), // with / separator and / at the end
+        EDStatic.getWebInfParentDirectory(), // with / separator and / at the end
         "contextDirectory");
 
     // getTempDirectory
     String2.log("test getTempDirectory current=" + SSR.getTempDirectory());
     // wimpy test
-    Test.ensureEqual(SSR.getTempDirectory(), EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/", "a");
+    Test.ensureEqual(
+        SSR.getTempDirectory(), EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/", "a");
 
     // done
     String2.log("\nDone. All non-Unix tests passed!");
