@@ -16,12 +16,10 @@ import com.cohort.util.Test;
 import com.google.common.io.Resources;
 import gov.noaa.pmel.sgt.ColorMap;
 import gov.noaa.pmel.util.Range2D;
-import jnr.ffi.Struct;
 
 import java.awt.Color;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

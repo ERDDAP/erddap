@@ -4,9 +4,24 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
+import com.cohort.util.StringHolder;
+import com.cohort.util.StringHolderComparator;
+import com.cohort.util.StringHolderComparatorIgnoreCase;
+import ucar.ma2.StructureData;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -19,7 +34,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
-import ucar.ma2.StructureData;
 
 /**
  * StringArray is a thin shell over a String[] with methods like ArrayList's methods; it extends

@@ -14,7 +14,10 @@ import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
-import java.io.*;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

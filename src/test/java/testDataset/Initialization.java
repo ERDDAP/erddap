@@ -14,6 +14,6 @@ public class Initialization {
     System.setProperty("allowDeferedLoading", String.valueOf(false));
     EDD.debugMode = true;
     SgtMap.fontFamily = "SansSerif";
-    EDStatic.useSaxParser = true;
+    EDStatic.useSaxParser = false;
   }
 }

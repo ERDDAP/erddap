@@ -16,7 +16,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.google.common.io.Resources;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
