@@ -4,6 +4,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
@@ -21,7 +22,7 @@ class HtmlWidgetsTests {
     // boolean oDebugMode = debugMode;
     // debugMode = true;
     String fullName = SSR.getTempDirectory() + "TestHtmlWidgets.html";
-    String imageDir = File2.webInfParentDirectory() + "\\images\\";
+    String imageDir = EDStatic.getWebInfParentDirectory() + "\\images\\";
     File2.delete(fullName);
     StringBuilder sb = new StringBuilder();
     boolean tHtmlTooltips = true;

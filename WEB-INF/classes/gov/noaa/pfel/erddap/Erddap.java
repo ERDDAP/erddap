@@ -269,7 +269,7 @@ public class Erddap extends HttpServlet {
             + BPD
             + "\n"
             + "contextDirectory="
-            + EDStatic.webInfParentDirectory
+            + EDStatic.getWebInfParentDirectory()
             + "\n"
             + "available fonts="
             + String2.toCSSVString(
@@ -12797,7 +12797,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "Some characters are never allowed in requests.");
     }
-    String dir = EDStatic.webInfParentDirectory + protocol + "/";
+    String dir = EDStatic.getWebInfParentDirectory() + protocol + "/";
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -20612,7 +20612,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * param) to facilitate testing.
    *
    * @param language the index of the selected language
-   * @param gridDatasetHashMap
+   * @param tGridDatasetHashMap
    * @param TLLTable ASCII text with table with latitude,longitude,time columns
    * @param requestCSV the CSV list of desired datasetID/variable/algorithm/nearby settings
    * @return a table with latitude,longitude,time and requested datasetID/variable columns

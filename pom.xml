@@ -69,10 +69,7 @@
         <sourceDirectory>WEB-INF/classes</sourceDirectory>
         <resources>
             <resource>
-                <directory>WEB-INF/classes</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
+                <directory>src/main/resources</directory>
             </resource>
         </resources>
         <plugins>
@@ -156,7 +153,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-             <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.5.0</version>
@@ -419,7 +416,7 @@
                     <artifactId>google-java-format</artifactId>
                     <version>5.3</version>
                     </dependency>
-                </dependencies>      
+                </dependencies>
                 <configuration>
                     <formatterOptions>
                         <!-- Use AOSP style instead of Google Style (4-space indentation). -->

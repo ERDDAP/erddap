@@ -10,8 +10,14 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-import java.util.ArrayList;
+
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.io.Resources;
 import ucar.units.Unit;
 import ucar.units.UnitFormat;
 
@@ -47,21 +53,19 @@ public class Units2 {
   public static int nTwo = twoAcronym.length;
 
   // these don't need to be thread-safe because they are read-only after creation
-  private static HashMap<String, String> udHashMap =
+  private static Map<String, String> udHashMap =
       getHashMapStringString(
-          File2.webInfParentDirectory()
-              + "WEB-INF/classes/com/cohort/util/UdunitsToUcum.properties",
+              Resources.getResource("com/cohort/util/UdunitsToUcum.properties"),
           File2.UTF_8);
-  protected static HashMap<String, String> ucHashMap =
+  protected static Map<String, String> ucHashMap =
       getHashMapStringString(
-          File2.webInfParentDirectory()
-              + "WEB-INF/classes/com/cohort/util/UcumToUdunits.properties",
+          Resources.getResource("com/cohort/util/UcumToUdunits.properties"),
           File2.UTF_8);
 
   // these special cases are usually populated by EDStatic static constructor, but don't have to be
-  public static HashMap<String, String> standardizeUdunitsHM = new HashMap();
-  public static HashMap<String, String> ucumToUdunitsHM = new HashMap();
-  public static HashMap<String, String> udunitsToUcumHM = new HashMap();
+  public static Map<String, String> standardizeUdunitsHM = new HashMap();
+  public static Map<String, String> ucumToUdunitsHM = new HashMap();
+  public static Map<String, String> udunitsToUcumHM = new HashMap();
 
   /**
    * Set this to true (by calling reallyReallyVerbose=true in your program, not by changing the code
@@ -951,15 +955,15 @@ public class Units2 {
    * This makes a HashMap&lt;String, String&gt; from the ResourceBundle-like file's keys=values. The
    * key and value strings are trim()'d.
    *
-   * @param fileName the full file name of the key=value file.
+   * @param resourceFile the full file name of the key=value file.
    * @param charset e.g., ISO-8859-1; or "" or null for the default
    * @throws RuntimeException if trouble
    */
-  public static HashMap<String, String> getHashMapStringString(String fileName, String charset)
+  public static Map<String, String> getHashMapStringString(URL resourceFile, String charset)
       throws RuntimeException {
     try {
-      HashMap ht = new HashMap();
-      ArrayList<String> sar = File2.readLinesFromFile(fileName, charset, 2);
+      Map ht = new HashMap();
+      List<String> sar = Resources.readLines(resourceFile, Charset.forName(charset));
       int n = sar.size();
       int i = 0;
       while (i < n) {

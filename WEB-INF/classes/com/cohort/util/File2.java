@@ -18,6 +18,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import com.google.common.io.Resources;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -57,8 +63,7 @@ public class File2 {
   public static final Charset UTF_8_CHARSET = StandardCharsets.UTF_8;
   public static final String UNABLE_TO_DELETE = "unable to delete"; // so consistent in log.txt
 
-  private static String classPath; // lazy creation by getClassPath
-  private static String webInfParentDirectory; // lazy creation by webInfParentDirectory()
+  private static String webInfParentDirectory;
 
   // define the file types for the purpose of assigning icon in Table.directoryListing
   // compressed and image ext from wikipedia
@@ -295,37 +300,25 @@ public class File2 {
   private static ConcurrentHashMap<String, S3Client> s3ClientMap =
       new ConcurrentHashMap<String, S3Client>();
 
-  /**
-   * This returns the directory that is the classpath for the source code files (with forward
-   * slashes and a trailing slash, e.g.,
-   * c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/.
-   *
-   * @return directory that is the classpath for the source code files (with / separator and / at
-   *     the end)
-   * @throws RuntimeException if trouble
-   */
   public static String getClassPath() {
-    if (classPath == null) {
-      String find = "/com/cohort/util/String2.class";
-      // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-      classPath = String2.class.getResource(find).getFile();
-      classPath = String2.replaceAll(classPath, '\\', '/');
-      int po = classPath.indexOf(find);
-      classPath = classPath.substring(0, po + 1);
+    String find = "/com/cohort/util/String2.class";
+    // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
+    String classPath = String2.class.getResource(find).getFile();
+    int po = classPath.indexOf(find);
+    classPath = classPath.substring(0, po + 1);
 
-      // on windows, remove the troublesome leading "/"
-      if (String2.OSIsWindows
-          && classPath.length() > 2
-          && classPath.charAt(0) == '/'
-          && classPath.charAt(2) == ':') classPath = classPath.substring(1);
+    // on windows, remove the troublesome leading "/"
+    if (String2.OSIsWindows
+            && classPath.length() > 2
+            && classPath.charAt(0) == '/'
+            && classPath.charAt(2) == ':') classPath = classPath.substring(1);
 
-      // classPath is a URL! so spaces are encoded as %20 on Windows!
-      // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
-      try {
-        classPath = URLDecoder.decode(classPath, UTF_8);
-      } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-      }
+    // classPath is a URL! so spaces are encoded as %20 on Windows!
+    // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
+    try {
+      classPath = URLDecoder.decode(classPath, StandardCharsets.UTF_8);
+    } catch (Throwable t) {
+      String2.log(MustBe.throwableToString(t));
     }
 
     return classPath;
@@ -341,31 +334,47 @@ public class File2 {
    *     trouble
    * @throws RuntimeException if trouble
    */
-  public static String webInfParentDirectory() {
-    if (webInfParentDirectory == null) {
-      String classPath = getClassPath(); // with / separator and / at the end
-      int po = classPath.indexOf("/WEB-INF/");
-      if (po < 0)
-        throw new RuntimeException(
-            String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
-      webInfParentDirectory = classPath.substring(0, po + 1);
+  private static String lookupWebInfParentDirectory() {
+    String classPath = getClassPath();
+    int po = classPath.indexOf("/WEB-INF/");
+    if (po < 0)
+      throw new RuntimeException(
+              String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+    classPath = classPath.substring(0, po + 1);
+    Path path;
+    if (classPath.startsWith("file:/")) {
+      path = Paths.get(URI.create(classPath));
+    } else {
+      path = Paths.get(classPath);
     }
+    return path.toAbsolutePath().toString().replace("\\", "/") + "/";
+  }
 
+  public static String getWebInfParentDirectory() {
+    if (webInfParentDirectory == null) {
+      webInfParentDirectory = lookupWebInfParentDirectory();
+    }
     return webInfParentDirectory;
   }
 
-  /**
-   * This sets the temp directory instead of looking for one based on where the WEB-INF directory
-   * is.
-   *
-   * <p>THIS IS ONLY INTENDED FOR USE DURING TESTS.
-   */
-  public static void setWebInfParentDirectory() {
-    webInfParentDirectory = System.getProperty("user.dir") + "/";
+  public static void setWebInfParentDirectory(String webInfParentDir) {
+    webInfParentDirectory = webInfParentDir.replace("\\", "/");
   }
 
-  public static void setWebInfParentDirectory(String dir) {
-    webInfParentDirectory = dir;
+  /**
+   * Access a classpath resource via a filesystem path.
+   * NOTE: this will not work unless resource is exploded.
+   *
+   * @param resourcePath Classpath of resource.
+   * @return Filesystem path.
+   * @throws URISyntaxException Could not create URI.
+   */
+  public static String accessResourceFile(String resourcePath) throws URISyntaxException {
+    if (resourcePath.startsWith("file:/")) {
+      return Paths.get(new URI(resourcePath)).toString();
+    } else {
+      return Paths.get(resourcePath).toString();
+    }
   }
 
   /**
@@ -1228,11 +1237,9 @@ public class File2 {
    * @return a decompressed, buffered InputStream from a file.
    * @throws Exception if trouble
    */
-  public static InputStream getDecompressedBufferedInputStream(String fullFileName)
-      throws Exception {
+  public static InputStream getDecompressedBufferedInputStream(String fullFileName, InputStream is)
+          throws Exception {
     String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
-
-    InputStream is = getBufferedInputStream(fullFileName); // starting point before decompression
 
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
@@ -1250,8 +1257,8 @@ public class File2 {
     if (ext.indexOf('z') < 0) return is;
 
     if (ext.equals(".tgz")
-        || fullFileName.endsWith(".tar.gz")
-        || fullFileName.endsWith(".tar.gzip")) {
+            || fullFileName.endsWith(".tar.gz")
+            || fullFileName.endsWith(".tar.gzip")) {
       // modified from
       // https://stackoverflow.com/questions/7128171/how-to-compress-decompress-tar-gz-files-in-java
       GzipCompressorInputStream gzipIn = null;
@@ -1263,7 +1270,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
         if (entry == null)
           throw new IOException(
-              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = tarIn;
       } catch (Exception e) {
         if (tarIn != null) tarIn.close();
@@ -1288,7 +1295,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = zis.getNextEntry();
         if (entry == null)
           throw new IOException(
-              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = zis;
       } catch (Exception e) {
         if (zis != null) zis.close();
@@ -1309,6 +1316,35 @@ public class File2 {
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
     return is;
+  }
+
+  /**
+   * This gets a decompressed, buffered InputStream from a file or S3 URL. If the file is
+   * compressed, it is assumed to be the only file (entry) in the archive.
+   *
+   * @param fullFileName The full file name. If it ends in .tgz, .tar.gz, .tar.gzip, .gz, .gzip,
+   *     .zip, or .bz2, this returns a decompressed, buffered InputStream.
+   * @return a decompressed, buffered InputStream from a file.
+   * @throws Exception if trouble
+   */
+  public static InputStream getDecompressedBufferedInputStream(String fullFileName)
+      throws Exception {
+    InputStream is = getBufferedInputStream(fullFileName); // starting point before decompression
+    return getDecompressedBufferedInputStream(fullFileName, is);
+  }
+
+  /**
+   * This gets a decompressed, buffered InputStream from a file or S3 URL. If the file is
+   * compressed, it is assumed to be the only file (entry) in the archive.
+   *
+   * @param resourceFile The full file name. If it ends in .tgz, .tar.gz, .tar.gzip, .gz, .gzip,
+   *     .zip, or .bz2, this returns a decompressed, buffered InputStream.
+   * @return a decompressed, buffered InputStream from a file.
+   * @throws Exception if trouble
+   */
+  public static InputStream getDecompressedBufferedInputStream(URL resourceFile)
+          throws Exception {
+    return getDecompressedBufferedInputStream(resourceFile.getFile(), resourceFile.openStream());
   }
 
   public static void decompressAllFiles(String sourceFullName, String destDir) throws IOException {
@@ -1728,6 +1764,48 @@ public class File2 {
       for (int i = 0; i < maxAttempt; i++) {
         try {
           bufferedReader = getDecompressedBufferedFileReader(fileName, charset);
+          break; // success
+        } catch (RuntimeException e) {
+          if (i == maxAttempt - 1) throw e;
+          Math2.sleep(100);
+        }
+      }
+      ArrayList<String> al = new ArrayList();
+      String s = bufferedReader.readLine();
+      while (s != null) { // null = end-of-file
+        al.add(s);
+        s = bufferedReader.readLine();
+      }
+      return al;
+    } finally {
+      if (bufferedReader != null) bufferedReader.close();
+    }
+  }
+  /**
+   * This is like the other readFromFile, but returns ArrayList of Strings and throws Exception is
+   * trouble. The strings in the ArrayList are not canonical! So this is useful for reading,
+   * processing, and throwing away.
+   *
+   * <p>This method is generally appropriate for small and medium-sized files. For very large files
+   * or files that need additional processing, it may be more efficient to write a custom method to
+   * read the file line-by-line, processing as it goes.
+   *
+   * @param resourceFile URL of the file to be read
+   * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
+   * @param maxAttempt e.g. 3 (the tries are 1 second apart)
+   * @return ArrayList with the lines from the file
+   * @throws Exception if trouble
+   */
+  public static ArrayList<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
+          throws Exception {
+
+    long time = System.currentTimeMillis();
+    BufferedReader bufferedReader = null;
+    try {
+      for (int i = 0; i < maxAttempt; i++) {
+        try {
+          InputStream is = getDecompressedBufferedInputStream(resourceFile);
+          bufferedReader = new BufferedReader(new InputStreamReader(is, charset));
           break; // success
         } catch (RuntimeException e) {
           if (i == maxAttempt - 1) throw e;
