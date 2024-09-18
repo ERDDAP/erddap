@@ -22,6 +22,7 @@ import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.io.Resources;
 import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -38,36 +39,24 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
-import gov.noaa.pfel.erddap.*;
-import gov.noaa.pfel.erddap.dataset.*;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.LoadDatasets;
+import gov.noaa.pfel.erddap.RunLoadDatasets;
+import gov.noaa.pfel.erddap.dataset.AxisDataAccessor;
+import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
+import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
+import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
+import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.awt.Color;
-import java.awt.Image;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Writer;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.nio.file.Path;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -80,6 +69,34 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
+
+import java.awt.Color;
+import java.awt.Image;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Writer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -216,18 +233,17 @@ public class EDStatic {
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
   /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-  public static String webInfParentDirectory =
-      File2.webInfParentDirectory(); // with / separator and / at the end
+  private static String webInfParentDirectory;
   // fgdc and iso19115XmlDirectory are used for virtual URLs.
   public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
   public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
   public static final String DOWNLOAD_DIR = "download/";
   public static final String IMAGES_DIR = "images/";
   public static final String PUBLIC_DIR = "public/";
-  public static String fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/",
-      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR,
-      downloadDir = webInfParentDirectory + DOWNLOAD_DIR, // local directory on this computer
-      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
+  public static String fullPaletteDirectory;
+  public static String fullPublicDirectory;
+  public static String downloadDir; // local directory on this computer
+  public static String imageDir; // local directory on this computer
   public static Tally tally = new Tally();
   public static int emailThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
   public static int emailThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
@@ -1803,6 +1819,15 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
+      if (webInfParentDirectory == null) {
+        webInfParentDirectory = File2.getWebInfParentDirectory();
+      }
+
+      fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
+      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR;
+      downloadDir = webInfParentDirectory + DOWNLOAD_DIR; // local directory on this computer
+      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
+
       skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
       allowDeferedLoading = Boolean.parseBoolean(System.getProperty("allowDeferedLoading"));
 
@@ -1831,8 +1856,7 @@ public class EDStatic {
               + "because '"
               + ecd
               + "' environment variable not found "
-              + "and couldn't find '/webapps/' in classPath="
-              + File2.getClassPath()
+              + "and couldn't find '/webapps/' "
               + // with / separator and / at the end
               " (and 'content/erddap' should be a sibling of <tomcat>/webapps): ";
       contentDirectory = System.getProperty(ecd);
@@ -1840,11 +1864,7 @@ public class EDStatic {
         // Or, it must be sibling of webapps
         // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
         // On windows, contentDirectory may have spaces as %20(!)
-        contentDirectory =
-            String2.replaceAll(
-                File2.getClassPath(), // with / separator and / at the end
-                "%20",
-                " ");
+        contentDirectory = File2.getClassPath(); // access a resource folder
         int po = contentDirectory.indexOf("/webapps/");
         contentDirectory =
             contentDirectory.substring(0, po) + "/content/erddap/"; // exception if po=-1
@@ -1877,7 +1897,7 @@ public class EDStatic {
       Path bpd = Path.of(bigParentDirectory);
       if (!bpd.isAbsolute()) {
         if (!File2.isDirectory(bigParentDirectory)) {
-          bigParentDirectory = File2.webInfParentDirectory() + bigParentDirectory;
+          bigParentDirectory = EDStatic.webInfParentDirectory + bigParentDirectory;
         }
       }
       Test.ensureTrue(
@@ -2377,30 +2397,30 @@ public class EDStatic {
       // This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup
       // and add it below.
       // Read static messages from messages(2).xml in contentDirectory.
+      errorInMethod = "ERROR while reading messages.xml: ";
+      ResourceBundle2[] messagesAr = new ResourceBundle2[nLanguages];
       String messagesFileName = contentDirectory + "messages.xml";
       if (File2.isFile(messagesFileName)) {
         String2.log("Using custom messages.xml from " + messagesFileName);
+        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
+        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
       } else {
         // use default messages.xml
         String2.log("Custom messages.xml not found at " + messagesFileName);
         // use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-        messagesFileName =
-            File2.getClassPath()
-                + // with / separator and / at the end
-                "gov/noaa/pfel/erddap/util/messages.xml";
+        URL messagesResourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/messages.xml");
+        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
+        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesResourceFile, false));
         String2.log("Using default messages.xml from  " + messagesFileName);
       }
-      errorInMethod = "ERROR while reading messages.xml: ";
-      ResourceBundle2[] messagesAr = new ResourceBundle2[nLanguages];
-      // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
 
       for (int tl = 1; tl < nLanguages; tl++) {
         String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
+        URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
         messagesAr[tl] =
             ResourceBundle2.fromXml(
-                XML.parseXml(TranslateMessages.translatedMessagesDir + tName, false));
+                XML.parseXml(messageFile, false));
       }
 
       // read all the static Strings from messages.xml
@@ -4292,6 +4312,10 @@ public class EDStatic {
       //        String2.returnLoggingToSystemOut();
       throw new RuntimeException(errorInMethod);
     }
+  }
+
+  public static String getWebInfParentDirectory() {
+    return EDStatic.webInfParentDirectory;
   }
 
   /** This does getNotNothingString for each messages[]. */
@@ -6344,12 +6368,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("acronym", col1);
     table.addColumn("fullName", col2);
-    ArrayList<String> lines =
-        File2.readLinesFromFile(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
-            File2.UTF_8,
-            1);
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv");
+    List<String> lines =
+            File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) { // 1 because skip colNames
       String s = lines.get(i).trim();
@@ -6378,12 +6399,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("variableName", col1);
     table.addColumn("fullName", col2);
-    ArrayList<String> lines =
-        File2.readLinesFromFile(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
-            File2.UTF_8,
-            1);
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv");
+    List<String> lines =
+        File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) {
       String s = lines.get(i).trim();
@@ -6481,10 +6499,12 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table fipsCountyTable() throws Exception {
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/FipsCounty.tsv");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8));
     Table table = new Table();
     table.readASCII(
-        webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv",
-        File2.UTF_8,
+        resourceFile.getFile(),
+        reader,
         "",
         "",
         0,
@@ -6505,9 +6525,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsCfTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/cfStdNames.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("CfStandardNames", sa);
     return table;
@@ -6520,10 +6539,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsGcmdTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("GcmdScienceKeywords", sa);
     return table;
@@ -6537,9 +6554,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsCfToGcmdTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("CfToGcmd", sa);
     return table;
@@ -7021,7 +7037,6 @@ public class EDStatic {
    * @param maxTasks This let's you just see what would happen (0), or just make a limited or
    *     unlimited (Integer.MAX_VALUE) number of download tasks.
    * @param tDatasetID
-   * @param the number of files that will be downloaded
    */
   public static int makeCopyFileTasks(
       String tClassName,
@@ -7731,4 +7746,5 @@ public class EDStatic {
     EDStatic.touchThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
     EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   }
+
 }

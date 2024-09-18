@@ -9,6 +9,8 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
+
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -732,10 +734,8 @@ public class SdsWriter {
     // describe the data
     String2.log("SdsWriter.main gathering data and attributes");
     int NaN = -999;
-    String dir =
-        File2.getClassPath()
-            + // with / separator and / at the end
-            "gov/noaa/pfel/coastwatch/hdf/";
+    String resourcePath = Resources.getResource("gov/noaa/pfel/coastwatch/hdf/").toString();
+    String dir = File2.accessResourceFile(resourcePath);
     double lonSpacing = 0.25;
     double latSpacing = 0.5;
     double lon[] = {0, .25, 0.5, 0.75};
