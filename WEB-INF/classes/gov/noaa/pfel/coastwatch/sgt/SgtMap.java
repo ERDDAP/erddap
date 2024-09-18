@@ -11,6 +11,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
@@ -18,6 +19,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.hdf.HdfConstants;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.sgt.dm.*;
 import gov.noaa.pmel.util.*;
@@ -28,6 +30,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -124,7 +127,7 @@ public class SgtMap {
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
   public static String fullRefDirectory =
-      File2.webInfParentDirectory()
+          EDStatic.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -161,16 +164,10 @@ public class SgtMap {
   public static String bathymetryCpt = "Ocean.cpt";
 
   public static String bathymetryCptTrue = "OceanTrue.cpt";
-  public static String bathymetryCptFullName =
-      File2.getClassPath()
-          + // with / separator and / at the end
-          "gov/noaa/pfel/coastwatch/sgt/"
-          + bathymetryCpt;
-  public static String bathymetryCptTrueFullName =
-      File2.getClassPath()
-          + // with / separator and / at the end
-          "gov/noaa/pfel/coastwatch/sgt/"
-          + bathymetryCptTrue;
+  public static URL bathymetryCptFullName =
+          Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
+  public static URL bathymetryCptTrueFullName =
+      Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCptTrue);
 
   public static final String TOPOGRAPHY_BOLD_TITLE =
       "Topography, ETOPO1, 0.0166667 degrees, Global (Ice Sheet Surface)"; // grid registered
@@ -188,11 +185,8 @@ public class SgtMap {
    */
   public static String topographyCpt = "Topography.cpt";
 
-  public static String topographyCptFullName =
-      File2.getClassPath()
-          + // with / separator and / at the end
-          "gov/noaa/pfel/coastwatch/sgt/"
-          + topographyCpt;
+  public static URL topographyCptFullName =
+      Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + topographyCpt);
 
   public static Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
   public static Boundaries stateBoundaries = Boundaries.getStateBoundaries();
@@ -427,9 +421,9 @@ public class SgtMap {
    * @param contourScaleFactor is a scale factor to be applied (use "1" if none)
    * @param contourAltScaleFactor is a scale factor to be applied to the data (use "1" if none)
    * @param contourAltOffset is a scale factor to be added to the data (use "0" if none)
-   * @param contourDrawingLinesAt is a single value or a comma-separated list of values at which
+   * @param contourDrawLinesAt is a single value or a comma-separated list of values at which
    *     contour lines should be drawn
-   * @param contourPaletteFileName is the complete name of the palette file to be used
+   * param contourPaletteFileName is the complete name of the palette file to be used
    * @param contourColor is an int with the rgb color value for the contour lines
    * @param contourBoldTitle
    * @param contourUnits
@@ -2611,7 +2605,6 @@ public class SgtMap {
    * Make a matlab file with the specified topography grid. This is a custom method to help Luke.
    *
    * @param spacing e.g., 0.25 degrees
-   * @param fileName without the .mat extension
    */
   public static void createTopographyMatlabFile(
       double minX, double maxX, double minY, double maxY, double spacing, String dir)
@@ -2766,12 +2759,8 @@ public class SgtMap {
       Grid bathymetryGrid =
           createTopographyGrid(
               fullPrivateDirectory, minX, maxX, minY, maxY, graphWidth, graphHeight);
-      CompoundColorMap oceanColorMap =
-          new CompoundColorMap(
-              File2.getClassPath()
-                  + // with / separator and / at the end
-                  "gov/noaa/pfel/coastwatch/sgt/"
-                  + bathymetryCpt);
+      URL resourceFile = Resources.getResource("gov/noaa/pfel/coastwatch/sgt/"+ bathymetryCpt);
+      CompoundColorMap oceanColorMap = new CompoundColorMap(resourceFile);
       graph = new CartesianGraph("", xt, yt);
       layer = new Layer("bathymetryColors", layerDimension2D);
       layerNames.add(layer.getId());
@@ -3092,7 +3081,7 @@ public class SgtMap {
       BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
 
       // make the cpt file
-      String contextDir = File2.webInfParentDirectory(); // with / separator and / at the end
+      String contextDir = EDStatic.getWebInfParentDirectory(); // with / separator and / at the end
       DoubleArray dataDA = new DoubleArray(grid.data);
       double stats[] = dataDA.calculateStats();
       double minData = stats[PrimitiveArray.STATS_MIN];
@@ -3241,7 +3230,7 @@ public class SgtMap {
 
     String cptName =
         CompoundColorMap.makeCPT(
-            File2.webInfParentDirectory()
+            EDStatic.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Topography",

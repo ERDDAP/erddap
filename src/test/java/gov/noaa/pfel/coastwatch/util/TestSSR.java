@@ -12,7 +12,11 @@ import com.cohort.util.Test;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import gov.noaa.pfel.erddap.util.EDStatic;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagPassword;
@@ -23,8 +27,6 @@ import tags.TagPassword;
  * @author Robert Simons was bob.simons@noaa.gov, now BobSimons2.00@gmail.com January 2005
  */
 public class TestSSR {
-
-  static String classPath = File2.getClassPath(); // with / separator and / at the end
 
   /** Run all of the tests which are operating system independent. */
   @org.junit.jupiter.api.Test
@@ -115,7 +117,7 @@ public class TestSSR {
     // dosShell
     String2.log("test dosShell");
     String tempGif =
-        File2.webInfParentDirectory()
+        EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/temp.gif";
     File2.delete(tempGif);
@@ -124,7 +126,7 @@ public class TestSSR {
           String2.toNewlineString(
               SSR.dosShell(
                       "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
-                          + File2.webInfParentDirectory()
+                          + EDStatic.getWebInfParentDirectory()
                           + // with / separator and / at the end
                           "images/subtitle.jpg "
                           + tempGif,
@@ -166,8 +168,7 @@ public class TestSSR {
 
     // zip without directory info
     String2.log("\n* test zip without dir info" + testMB);
-    String middleDir = "gov/noaa/pfel/coastwatch/";
-    String zipDir = classPath + middleDir;
+    String zipDir = EDStatic.getWebInfParentDirectory() + "temp/";
     String zipName = "TestSSR.zip";
     String fileName = "TestSSR.txt";
     // write a longText file
@@ -203,14 +204,14 @@ public class TestSSR {
     // make the zip file
     File2.delete(zipDir + zipName);
     time1 = System.currentTimeMillis();
-    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10, classPath);
+    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10, zipDir);
     time1 = System.currentTimeMillis() - time1;
     File2.delete(zipDir + fileName);
     // unzip the zip file
     time2 = System.currentTimeMillis();
     SSR.unzip(
         zipDir + zipName,
-        classPath, // note: extract to classPath, since includes dir
+            zipDir,
         false,
         10,
         null); // false 'ignoreDirectoryInfo'
@@ -229,8 +230,7 @@ public class TestSSR {
     // gzip without directory info
     for (int rep = 0; rep < 2; rep++) {
       String2.log("\n* test gzip without dir info" + testMB);
-      middleDir = "gov/noaa/pfel/coastwatch/";
-      String gzipDir = classPath + middleDir;
+      String gzipDir = EDStatic.getWebInfParentDirectory() + "temp/";
       String gzipName = "TestSSRG.txt.gz";
       fileName = "TestSSRG.txt";
       // write a longText file
@@ -327,8 +327,9 @@ public class TestSSR {
 
     // getFirstLineStartsWith
     String2.log("test getFirstLineStartsWith");
-    String tFileName = classPath + "testSSR.txt";
-    File2.writeToFile88591(tFileName, "This is\na file\nwith a few lines.");
+    Path tFilePath = Paths.get("testSSR.txt");
+    URL tFileName = tFilePath.toUri().toURL();
+    File2.writeToFile88591(tFilePath.toString(), "This is\na file\nwith a few lines.");
     Test.ensureEqual(
         SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
     Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "hi "), null, "b");
@@ -352,12 +353,12 @@ public class TestSSR {
     Test.ensureEqual(
         SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"), null, "d"); // no match
 
-    Test.ensureTrue(File2.delete(tFileName), "delete " + tFileName);
+    Test.ensureTrue(File2.delete(tFilePath.toString()), "delete " + tFileName);
 
     // getContextDirectory
     String2.log(
         "test getContextDirectory current="
-            + File2.webInfParentDirectory()); // with / separator and / at the end
+            + EDStatic.getWebInfParentDirectory()); // with / separator and / at the end
     // there is no way to test this and have it work with different installations
     // test for my computer (comment out on other computers):
     // ensureEqual(String2.getContextDirectory(), //with / separator and / at the
@@ -365,13 +366,13 @@ public class TestSSR {
     // "C:/programs/_tomcat/webapps/cwexperimental/", "a");
     // wimpy test, but works on all computers
     Test.ensureNotNull(
-        File2.webInfParentDirectory(), // with / separator and / at the end
+            EDStatic.getWebInfParentDirectory(), // with / separator and / at the end
         "contextDirectory");
 
     // getTempDirectory
     String2.log("test getTempDirectory current=" + SSR.getTempDirectory());
     // wimpy test
-    Test.ensureEqual(SSR.getTempDirectory(), File2.webInfParentDirectory() + "WEB-INF/temp/", "a");
+    Test.ensureEqual(SSR.getTempDirectory(), EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/", "a");
 
     // done
     String2.log("\nDone. All non-Unix tests passed!");
