@@ -5693,7 +5693,7 @@ public abstract class EDDTable extends EDD {
         URL bathyResourceFile = "under".equals(currentDrawLandMask)
                 ? SgtMap.topographyCptFullName
                 : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
-        String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.getPath());
+        String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
         ArrayList mmal =
             SgtMap.makeMap(
                 transparentPng,

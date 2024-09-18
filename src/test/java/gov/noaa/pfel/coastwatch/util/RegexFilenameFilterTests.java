@@ -7,6 +7,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import testDataset.Initialization;
 
 class RegexFilenameFilterTests {
 
@@ -17,10 +18,11 @@ class RegexFilenameFilterTests {
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
+    Initialization.edStatic();
     String2.log("\n* RegexFilenameFilter.basicTest ...");
     String coastwatchDir =
-        EDStatic.getWebInfParentDirectory() // with / separator and / at the end
-            + "classes/gov/noaa/pfel/coastwatch/";
+            File2.getClassPath() // with / separator and / at the end
+            + "gov/noaa/pfel/coastwatch/";
 
     // test list
     String[] sar = RegexFilenameFilter.list(coastwatchDir, "T.+\\.class");

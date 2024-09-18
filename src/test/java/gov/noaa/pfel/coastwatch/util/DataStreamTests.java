@@ -4,6 +4,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import testDataset.Initialization;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -14,11 +15,12 @@ class DataStreamTests {
   /** This runs a small test of the methods in this class. */
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
+    Initialization.edStatic();
     // write bytes to a file
     String fileName =
         EDStatic.getWebInfParentDirectory()
             + // with / separator and / at the end
-            "temp/TestDataStream";
+            "WEB-INF/temp/TestDataStream";
     DataOutputStream dos =
         new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
     byte buffer[] = new byte[128];

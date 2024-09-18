@@ -10,6 +10,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -44,7 +45,8 @@ public class ValidateDataSetProperties {
     String2.log("ValidateDataSetProperties (testing DataSet.properties validDataSets");
 
     // find a browser properties file (e.g., CWBrowser.properties)
-    String contextDirectory = File2.accessResourceFile("gov/noaa/pfel/coastwatch/");
+    String resourcePath = Resources.getResource("gov/noaa/pfel/coastwatch/").toString();
+    String contextDirectory = File2.accessResourceFile(resourcePath);
     String[] propList = RegexFilenameFilter.list(contextDirectory, ".+\\.properties");
     int which = -1;
     for (int i = 0; i < propList.length; i++) {

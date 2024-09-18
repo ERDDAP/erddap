@@ -48,13 +48,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.awt.Color;
 import java.awt.Image;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Writer;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.URL;
@@ -62,13 +56,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.analysis.Analyzer;
@@ -1848,7 +1836,7 @@ public class EDStatic {
         // Or, it must be sibling of webapps
         // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
         // On windows, contentDirectory may have spaces as %20(!)
-        contentDirectory = File2.accessResourceFile("gov"); // access a resource folder
+        contentDirectory = File2.getClassPath(); // access a resource folder
         int po = contentDirectory.indexOf("/webapps/");
         contentDirectory =
             contentDirectory.substring(0, po) + "/content/erddap/"; // exception if po=-1
@@ -6346,12 +6334,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("acronym", col1);
     table.addColumn("fullName", col2);
-    ArrayList<String> lines =
-        File2.readLinesFromFile(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
-            File2.UTF_8,
-            1);
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv");
+    List<String> lines =
+            File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) { // 1 because skip colNames
       String s = lines.get(i).trim();
@@ -6380,12 +6365,9 @@ public class EDStatic {
     StringArray col2 = new StringArray();
     table.addColumn("variableName", col1);
     table.addColumn("fullName", col2);
-    ArrayList<String> lines =
-        File2.readLinesFromFile(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
-            File2.UTF_8,
-            1);
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv");
+    List<String> lines =
+        File2.readLinesFromFile(resourceFile, File2.UTF_8, 1);
     int nLines = lines.size();
     for (int i = 1; i < nLines; i++) {
       String s = lines.get(i).trim();
@@ -6483,10 +6465,12 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table fipsCountyTable() throws Exception {
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/FipsCounty.tsv");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(resourceFile.openStream(), StandardCharsets.UTF_8));
     Table table = new Table();
     table.readASCII(
-        webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv",
-        File2.UTF_8,
+        resourceFile.getFile(),
+        reader,
         "",
         "",
         0,
@@ -6507,9 +6491,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsCfTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/cfStdNames.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("CfStandardNames", sa);
     return table;
@@ -6522,10 +6505,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsGcmdTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory
-                + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("GcmdScienceKeywords", sa);
     return table;
@@ -6539,9 +6520,8 @@ public class EDStatic {
    * @throws Exception if trouble (e.g., file not found)
    */
   public static Table keywordsCfToGcmdTable() throws Exception {
-    StringArray sa =
-        StringArray.fromFileUtf8(
-            webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+    URL resourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+    StringArray sa = StringArray.fromFileUtf8(resourceFile);
     Table table = new Table();
     table.addColumn("CfToGcmd", sa);
     return table;

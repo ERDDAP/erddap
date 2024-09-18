@@ -1002,7 +1002,7 @@ public class TranslateMessages {
 
       // read the current and old messages.xml file
       SimpleXMLReader xmlReader = new SimpleXMLReader(messagesXmlFileName.openStream());
-      String oldMessagesXmlFilePath = File2.accessResourceFile(oldMessagesXmlFileName.getPath());
+      String oldMessagesXmlFilePath = File2.accessResourceFile(oldMessagesXmlFileName.toString());
       HashMap<String, String> previousMessageMap = getXMLTagMap(oldMessagesXmlFilePath);
 
       // read the current messages-[langCode].xml files (if they exists)

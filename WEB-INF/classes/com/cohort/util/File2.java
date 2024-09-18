@@ -300,17 +300,7 @@ public class File2 {
   private static ConcurrentHashMap<String, S3Client> s3ClientMap =
       new ConcurrentHashMap<String, S3Client>();
 
-  /**
-   * This returns the directory that is the tomcat application's root (with forward slashes and a
-   * trailing slash, e.g., c:/programs/_tomcat/webapps/cwexperimental/). Tomcat calls this the
-   * ContextDirectory. This only works if these classes are installed underneath Tomcat (with
-   * "WEB-INF/" the start of things to be removed from classPath).
-   *
-   * @return the parent directory of WEB-INF (with / separator and / at the end) or "ERROR if
-   *     trouble
-   * @throws RuntimeException if trouble
-   */
-  private static String lookupWebInfParentDirectory() {
+  public static String getClassPath() {
     String find = "/com/cohort/util/String2.class";
     // use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
     String classPath = String2.class.getResource(find).getFile();
@@ -331,7 +321,22 @@ public class File2 {
       String2.log(MustBe.throwableToString(t));
     }
 
-    po = classPath.indexOf("/WEB-INF/");
+    return classPath;
+  }
+
+  /**
+   * This returns the directory that is the tomcat application's root (with forward slashes and a
+   * trailing slash, e.g., c:/programs/_tomcat/webapps/cwexperimental/). Tomcat calls this the
+   * ContextDirectory. This only works if these classes are installed underneath Tomcat (with
+   * "WEB-INF/" the start of things to be removed from classPath).
+   *
+   * @return the parent directory of WEB-INF (with / separator and / at the end) or "ERROR if
+   *     trouble
+   * @throws RuntimeException if trouble
+   */
+  private static String lookupWebInfParentDirectory() {
+    String classPath = getClassPath();
+    int po = classPath.indexOf("/WEB-INF/");
     if (po < 0)
       throw new RuntimeException(
               String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
@@ -353,7 +358,7 @@ public class File2 {
   }
 
   public static void setWebInfParentDirectory(String webInfParentDir) {
-    webInfParentDirectory = webInfParentDir;
+    webInfParentDirectory = webInfParentDir.replace("\\", "/");
   }
 
   /**
@@ -365,7 +370,11 @@ public class File2 {
    * @throws URISyntaxException Could not create URI.
    */
   public static String accessResourceFile(String resourcePath) throws URISyntaxException {
-    return Paths.get(Resources.getResource(resourcePath).toURI()).toString();
+    if (resourcePath.startsWith("file:/")) {
+      return Paths.get(new URI(resourcePath)).toString();
+    } else {
+      return Paths.get(resourcePath).toString();
+    }
   }
 
   /**
@@ -1736,6 +1745,48 @@ public class File2 {
       for (int i = 0; i < maxAttempt; i++) {
         try {
           bufferedReader = getDecompressedBufferedFileReader(fileName, charset);
+          break; // success
+        } catch (RuntimeException e) {
+          if (i == maxAttempt - 1) throw e;
+          Math2.sleep(100);
+        }
+      }
+      ArrayList<String> al = new ArrayList();
+      String s = bufferedReader.readLine();
+      while (s != null) { // null = end-of-file
+        al.add(s);
+        s = bufferedReader.readLine();
+      }
+      return al;
+    } finally {
+      if (bufferedReader != null) bufferedReader.close();
+    }
+  }
+  /**
+   * This is like the other readFromFile, but returns ArrayList of Strings and throws Exception is
+   * trouble. The strings in the ArrayList are not canonical! So this is useful for reading,
+   * processing, and throwing away.
+   *
+   * <p>This method is generally appropriate for small and medium-sized files. For very large files
+   * or files that need additional processing, it may be more efficient to write a custom method to
+   * read the file line-by-line, processing as it goes.
+   *
+   * @param resourceFile URL of the file to be read
+   * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
+   * @param maxAttempt e.g. 3 (the tries are 1 second apart)
+   * @return ArrayList with the lines from the file
+   * @throws Exception if trouble
+   */
+  public static ArrayList<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
+          throws Exception {
+
+    long time = System.currentTimeMillis();
+    BufferedReader bufferedReader = null;
+    try {
+      for (int i = 0; i < maxAttempt; i++) {
+        try {
+          InputStream is = getDecompressedBufferedInputStream(resourceFile);
+          bufferedReader = new BufferedReader(new InputStreamReader(is, charset));
           break; // success
         } catch (RuntimeException e) {
           if (i == maxAttempt - 1) throw e;

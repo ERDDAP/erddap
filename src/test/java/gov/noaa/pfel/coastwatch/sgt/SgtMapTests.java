@@ -566,7 +566,7 @@ class SgtMapTests {
               cy[i] + inc[i],
               460,
               460);
-      String bathymetryCptFullPath = File2.accessResourceFile(SgtMap.bathymetryCptFullName.getPath());
+      String bathymetryCptFullPath = File2.accessResourceFile(SgtMap.bathymetryCptFullName.toString());
       SgtMap.makeMap(
           false,
           SgtUtil.LEGEND_BELOW,
@@ -827,7 +827,7 @@ class SgtMapTests {
             1, imageWidth, imageHeight, minX[region], maxX[region], minY[region], maxY[region]);
 
     URL bathyResourceFile = bathCpt ? SgtMap.bathymetryCptFullName : SgtMap.topographyCptFullName;
-    String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.getPath());
+    String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
     SgtMap.makeMap(
         false,
         SgtUtil.LEGEND_BELOW,
