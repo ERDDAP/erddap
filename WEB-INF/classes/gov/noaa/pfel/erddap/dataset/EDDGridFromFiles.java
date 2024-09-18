@@ -35,6 +35,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
@@ -1105,9 +1106,23 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
         if (Strings.isNullOrEmpty(tFileS)) {
-          tFileListPo++;
-          // Skipping file name that is null or empty string.
-          continue;
+          boolean isZarr =
+              tFileNameRegex.contains("zarr")
+                  || (tPathRegex != null && tPathRegex.contains("zarr"));
+          if (isZarr) {
+            if (!isZarr || tDirI == Integer.MAX_VALUE) {
+              tFileListPo++;
+              // Skipping file name that is null or empty string and not in zarr.
+              continue;
+            }
+            String dirName = Path.of(dirList.get(tDirI)).getFileName().toString();
+            if (!dirName.matches(fileNameRegex)) {
+              // If the file name is empty and we're in a zarr file, that means effectively
+              // the last dirname is the file name, so make sure it matches the fileNameRegex.
+              tFileListPo++;
+              continue;
+            }
+          }
         }
         int dirI = fileListPo < ftFileList.size() ? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
         String fileS = fileListPo < ftFileList.size() ? ftFileList.get(fileListPo) : "\uFFFF";
