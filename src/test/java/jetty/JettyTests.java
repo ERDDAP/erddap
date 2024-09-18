@@ -104,8 +104,6 @@ class JettyTests {
     server.setHandler(context);
 
     server.start();
-    // Make a request of the server to make sure it starts loading the datasets
-    SSR.getUrlResponseStringUnchanged("http://localhost:" + PORT + "/erddap");
 
     Thread.sleep(10 * 60 * 1000);
   }
@@ -10271,7 +10269,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   @TagFlaky // This is flaky. Specifically for the check after the files are supposed to be
-            // downloaded.
+  // downloaded.
   void testMakeCopyFileTasks() throws Exception {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
