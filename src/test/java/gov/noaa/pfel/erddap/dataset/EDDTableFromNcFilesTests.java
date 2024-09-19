@@ -7244,7 +7244,8 @@ class EDDTableFromNcFilesTests {
     boolean hasMultipleFillValues = false;
     int fillValueIndex = results.indexOf("Float32 _FillValue 1.0e+35");
     if (fillValueIndex != -1) {
-      hasMultipleFillValues = results.indexOf(results, fillValueIndex + 1) > -1;
+      hasMultipleFillValues =
+          results.indexOf("Float32 _FillValue 1.0e+35", fillValueIndex + 1) > -1;
     }
     expected = // 2013-01-04 several changes related to new array and wmo_platform_code
         "Attributes {\n"
