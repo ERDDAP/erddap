@@ -10,14 +10,12 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
-
+import com.google.common.io.Resources;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.io.Resources;
 import ucar.units.Unit;
 import ucar.units.UnitFormat;
 
@@ -55,12 +53,10 @@ public class Units2 {
   // these don't need to be thread-safe because they are read-only after creation
   private static Map<String, String> udHashMap =
       getHashMapStringString(
-              Resources.getResource("com/cohort/util/UdunitsToUcum.properties"),
-          File2.UTF_8);
+          Resources.getResource("com/cohort/util/UdunitsToUcum.properties"), File2.UTF_8);
   protected static Map<String, String> ucHashMap =
       getHashMapStringString(
-          Resources.getResource("com/cohort/util/UcumToUdunits.properties"),
-          File2.UTF_8);
+          Resources.getResource("com/cohort/util/UcumToUdunits.properties"), File2.UTF_8);
 
   // these special cases are usually populated by EDStatic static constructor, but don't have to be
   public static Map<String, String> standardizeUdunitsHM = new HashMap();

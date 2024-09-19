@@ -7,14 +7,13 @@ import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.ArrayList;
-
-import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagImageComparison;
 import testDataset.Initialization;
@@ -566,7 +565,8 @@ class SgtMapTests {
               cy[i] + inc[i],
               460,
               460);
-      String bathymetryCptFullPath = File2.accessResourceFile(SgtMap.bathymetryCptFullName.toString());
+      String bathymetryCptFullPath =
+          File2.accessResourceFile(SgtMap.bathymetryCptFullName.toString());
       SgtMap.makeMap(
           false,
           SgtUtil.LEGEND_BELOW,
@@ -660,7 +660,7 @@ class SgtMapTests {
      */
     String vectorCpt =
         CompoundColorMap.makeCPT(
-                EDStatic.getWebInfParentDirectory()
+            EDStatic.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Rainbow",

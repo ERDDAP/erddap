@@ -7,7 +7,9 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import java.util.Random;
+import tags.TagExternalOther;
 import tags.TagIncompleteTest;
+import tags.TagSlowTests;
 
 class CacheOpendapStationTests {
   /**
@@ -180,6 +182,8 @@ class CacheOpendapStationTests {
 
   /** This tests using this class to create a cache file. */
   @org.junit.jupiter.api.Test
+  @TagSlowTests // Slow if it needs to build the cache.
+  @TagExternalOther
   void basicTest() throws Exception {
     // verbose = true;
     // DataHelper.verbose = true;

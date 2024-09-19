@@ -397,6 +397,12 @@ public class EDDGridCopy extends EDDGrid {
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it
+
+        if (EDStatic.forceSynchronousLoading) {
+          while (EDStatic.lastFinishedTask < taskNumber) {
+            Thread.sleep(2000);
+          }
+        }
       }
     }
 

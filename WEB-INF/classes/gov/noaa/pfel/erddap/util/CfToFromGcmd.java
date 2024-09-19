@@ -5,10 +5,8 @@
 package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.StringArray;
-import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.google.common.io.Resources;
-
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;

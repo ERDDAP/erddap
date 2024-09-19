@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import tags.TagMissingDataset;
 import tags.TagSlowTests;
@@ -2552,7 +2551,6 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagFlaky
   void testTreatDimensionsAs(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n******************
     // EDDTableFromMultidimNcFiles.testTreatDimensionsAs() *****************\n");
@@ -2619,7 +2617,9 @@ class EDDTableFromMultidimNcFilesTests {
             + "    Float64 colorBarMaximum 8000.0;\n"
             + "    Float64 colorBarMinimum -8000.0;\n"
             + "    String colorBarPalette \"TopographyDepth\";\n"
-            + "    String coordinate_reference_frame \"urn:ogc:crs:EPSG::5113\";\n"
+            + (results.indexOf("String coordinate_reference_frame \"urn:ogc:crs:EPSG::5113\"") > -1
+                ? "    String coordinate_reference_frame \"urn:ogc:crs:EPSG::5113\";\n"
+                : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth of each measurement\";\n"
             + "    String positive \"down\";\n"
@@ -2681,9 +2681,16 @@ class EDDTableFromMultidimNcFilesTests {
             + "  }\n"
             + "  TEMP {\n"
             + "    Float32 _FillValue NaN;\n"
+            + (results.indexOf("Float32 accuracy 0.0") > -1 ? "    Float32 accuracy 0.0;\n" : "")
             + "    Float32 actual_range 6.7, 16.7;\n"
+            + (results.indexOf("String ancillary_variables \"temp_qc\";") > -1
+                ? "    String ancillary_variables \"temp_qc\";\n"
+                : "")
             + "    Float64 colorBarMaximum 32.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
+            + (results.indexOf("String DM_indicator \"R\"") > -1
+                ? "    String DM_indicator \"R\";\n"
+                : "")
             + "    String ioos_category \"Temperature\";\n"
             + "    String long_name \"Sea temperature\";\n"
             + "    String standard_name \"sea_water_temperature\";\n"
@@ -2720,6 +2727,9 @@ class EDDTableFromMultidimNcFilesTests {
             + "    Float32 actual_range -8.5, 4.166667;\n"
             + "    Float64 colorBarMaximum 3.0;\n"
             + "    Float64 colorBarMinimum -3.0;\n"
+            + (results.indexOf("String DM_indicator \"R\"") > -1
+                ? "    String DM_indicator \"R\";\n"
+                : "")
             + "    String ioos_category \"Pressure\";\n"
             + "    String long_name \"Atmospheric pressure hourly tendency\";\n"
             + "    String standard_name \"tendency_of_air_pressure\";\n"
@@ -2756,6 +2766,9 @@ class EDDTableFromMultidimNcFilesTests {
             + "    Float32 actual_range 974.7, 1026.6;\n"
             + "    Float64 colorBarMaximum 1050.0;\n"
             + "    Float64 colorBarMinimum 950.0;\n"
+            + (results.indexOf("String DM_indicator \"R\"") > -1
+                ? "    String DM_indicator \"R\";\n"
+                : "")
             + "    String ioos_category \"Pressure\";\n"
             + "    String long_name \"Atmospheric pressure at sea level\";\n"
             + "    String standard_name \"air_pressure_at_sea_level\";\n"

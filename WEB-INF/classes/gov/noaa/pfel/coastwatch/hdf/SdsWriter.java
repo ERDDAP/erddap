@@ -10,7 +10,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.google.common.io.Resources;
-
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;

@@ -4,13 +4,6 @@
  */
 package com.cohort.util;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,6 +12,12 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /** This has some static methods to facilitate reading and writing an XML file. */
 public class XML {
@@ -795,10 +794,7 @@ public class XML {
    */
   public static Document parseXml(String fileName, boolean validating) throws Exception {
     BufferedReader reader = File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8);
-    return parseXml(
-        new InputSource(reader),
-        validating
-    );
+    return parseXml(new InputSource(reader), validating);
   }
 
   /**
@@ -813,10 +809,7 @@ public class XML {
   public static Document parseXml(URL resourceFile, boolean validating) throws Exception {
     InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
     InputStreamReader reader = new InputStreamReader(decompressedStream, StandardCharsets.UTF_8);
-    return parseXml(
-            new InputSource(new BufferedReader(reader)),
-            validating
-    );
+    return parseXml(new InputSource(new BufferedReader(reader)), validating);
   }
 
   /**

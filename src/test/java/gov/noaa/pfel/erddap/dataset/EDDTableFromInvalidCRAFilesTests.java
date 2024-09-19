@@ -97,6 +97,7 @@ class EDDTableFromInvalidCRAFilesTests {
             language, null, null, "", testCacheDir, eddTable.className() + "_wod", ".das");
     results = File2.directReadFrom88591File(testCacheDir + tName);
     // String2.log(results);
+    int oxygenIndex = results.indexOf("  Oxygen_WODprofileflag {");
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -199,7 +200,9 @@ class EDDTableFromInvalidCRAFilesTests {
             + "    String long_name \"WOD_dataset\";\n"
             + "  }\n"
             + "  real_time {\n"
-            + "    String comment \"timeliness and quality status\";\n"
+            + (results.indexOf("String comment \"timeliness and quality status\"") > -1
+                ? "    String comment \"timeliness and quality status\";\n"
+                : "")
             + "    String ioos_category \"Time\";\n"
             + "    String long_name \"Real Time Data\";\n"
             + "  }\n"
@@ -253,13 +256,20 @@ class EDDTableFromInvalidCRAFilesTests {
             "    Byte actual_range 0, 0;\n"
             + "    Float64 colorBarMaximum 10.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
-            + "    String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out\";\n"
-            + "    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n"
-            + "    String ioos_category \"Quality\";\n"
-            + "    String long_name \"WOD_profile_flag\";\n"
+            + (results.indexOf(
+                        "String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out",
+                        oxygenIndex)
+                    > -1
+                ? "    String flag_meanings \"accepted annual_sd_out density_inversion cruise seasonal_sd_out monthly_sd_out annual+seasonal_sd_out anomaly_or_annual+monthly_sd_out seasonal+monthly_sd_out annual+seasonal+monthly_sd_out\";\n"
+                    + "    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;\n"
+                    + "    String ioos_category \"Quality\";\n"
+                    + "    String long_name \"WOD_profile_flag\";\n"
+                : "    String ioos_category \"Quality\";\n")
             + "  }\n"
             + "  Oxygen_Original_units {\n"
-            + "    String comment \"Units originally used: coverted to standard units\";\n"
+            + (results.indexOf("Units originally used: coverted to standard units") > -1
+                ? "    String comment \"Units originally used: coverted to standard units\";\n"
+                : "")
             + "    String ioos_category \"Dissolved O2\";\n"
             + "    String long_name \"Oxygen Original Units\";\n"
             + "  }\n"

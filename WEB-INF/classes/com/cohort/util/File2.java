@@ -32,9 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import com.google.common.io.Resources;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -309,9 +306,9 @@ public class File2 {
 
     // on windows, remove the troublesome leading "/"
     if (String2.OSIsWindows
-            && classPath.length() > 2
-            && classPath.charAt(0) == '/'
-            && classPath.charAt(2) == ':') classPath = classPath.substring(1);
+        && classPath.length() > 2
+        && classPath.charAt(0) == '/'
+        && classPath.charAt(2) == ':') classPath = classPath.substring(1);
 
     // classPath is a URL! so spaces are encoded as %20 on Windows!
     // UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
@@ -339,7 +336,7 @@ public class File2 {
     int po = classPath.indexOf("/WEB-INF/");
     if (po < 0)
       throw new RuntimeException(
-              String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
+          String2.ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
     classPath = classPath.substring(0, po + 1);
     Path path;
     if (classPath.startsWith("file:/")) {
@@ -362,8 +359,8 @@ public class File2 {
   }
 
   /**
-   * Access a classpath resource via a filesystem path.
-   * NOTE: this will not work unless resource is exploded.
+   * Access a classpath resource via a filesystem path. NOTE: this will not work unless resource is
+   * exploded.
    *
    * @param resourcePath Classpath of resource.
    * @return Filesystem path.
@@ -795,7 +792,6 @@ public class File2 {
       if (String2.OSIsWindows)
         Math2.sleep(Math2.shortSleep); // if Windows: encourage successful file deletion
     }
-
     // rename
     if (oldFile.renameTo(newFile)) return;
 
@@ -803,6 +799,26 @@ public class File2 {
     // The problem might be that something needs to be gc'd.
     Math2.gcAndWait("File2.rename (before retry)");
     if (oldFile.renameTo(newFile)) return;
+
+    // This is a bad idea, but its better than datasets failing to load.
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      String2.log("Was sleeping to allow file handles time to free, but got interrupted.");
+    }
+    Math2.gcAndWait("File2.rename (before retry)");
+
+    if (oldFile.renameTo(newFile)) return;
+
+    if (!oldFile.canWrite()) {
+      throw new RuntimeException(
+          "Unable to rename\n"
+              + fullOldName
+              + " to\n"
+              + fullNewName
+              + "\nbecause the source file is not writable.");
+    }
+
     throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
   }
 
@@ -1219,7 +1235,7 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static InputStream getDecompressedBufferedInputStream(String fullFileName, InputStream is)
-          throws Exception {
+      throws Exception {
     String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
 
     // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
@@ -1238,8 +1254,8 @@ public class File2 {
     if (ext.indexOf('z') < 0) return is;
 
     if (ext.equals(".tgz")
-            || fullFileName.endsWith(".tar.gz")
-            || fullFileName.endsWith(".tar.gzip")) {
+        || fullFileName.endsWith(".tar.gz")
+        || fullFileName.endsWith(".tar.gzip")) {
       // modified from
       // https://stackoverflow.com/questions/7128171/how-to-compress-decompress-tar-gz-files-in-java
       GzipCompressorInputStream gzipIn = null;
@@ -1251,7 +1267,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
         if (entry == null)
           throw new IOException(
-                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = tarIn;
       } catch (Exception e) {
         if (tarIn != null) tarIn.close();
@@ -1276,7 +1292,7 @@ public class File2 {
         while (entry != null && entry.isDirectory()) entry = zis.getNextEntry();
         if (entry == null)
           throw new IOException(
-                  String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
+              String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
         is = zis;
       } catch (Exception e) {
         if (zis != null) zis.close();
@@ -1323,8 +1339,7 @@ public class File2 {
    * @return a decompressed, buffered InputStream from a file.
    * @throws Exception if trouble
    */
-  public static InputStream getDecompressedBufferedInputStream(URL resourceFile)
-          throws Exception {
+  public static InputStream getDecompressedBufferedInputStream(URL resourceFile) throws Exception {
     return getDecompressedBufferedInputStream(resourceFile.getFile(), resourceFile.openStream());
   }
 
@@ -1762,6 +1777,7 @@ public class File2 {
       if (bufferedReader != null) bufferedReader.close();
     }
   }
+
   /**
    * This is like the other readFromFile, but returns ArrayList of Strings and throws Exception is
    * trouble. The strings in the ArrayList are not canonical! So this is useful for reading,
@@ -1777,8 +1793,8 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
-          throws Exception {
+  public static ArrayList<String> readLinesFromFile(
+      URL resourceFile, String charset, int maxAttempt) throws Exception {
 
     long time = System.currentTimeMillis();
     BufferedReader bufferedReader = null;

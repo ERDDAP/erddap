@@ -15,8 +15,6 @@ import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
-import java.nio.file.Paths;
-
 /**
  * This class is designed to be a stand-alone program to validate that the DataSet.properties file
  * contains valid information for all datasets listed by validDataSets in DataSet.properties. Don't

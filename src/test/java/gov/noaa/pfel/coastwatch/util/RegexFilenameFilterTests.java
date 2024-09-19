@@ -25,7 +25,7 @@ class RegexFilenameFilterTests {
   void basicTest() throws Exception {
     String2.log("\n* RegexFilenameFilter.basicTest ...");
     String coastwatchDir =
-            File2.getClassPath() // with / separator and / at the end
+        File2.getClassPath() // with / separator and / at the end
             + "gov/noaa/pfel/coastwatch/";
 
     // test list

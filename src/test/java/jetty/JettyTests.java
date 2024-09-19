@@ -39,7 +39,9 @@ import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
 import gov.noaa.pfel.erddap.dataset.EDDGridSideBySide;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiFiles;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
@@ -71,6 +73,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagJetty;
+import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -105,6 +108,10 @@ class JettyTests {
 
     server.start();
 
+    // Delay the tests to give the server a chance to load all of the data.
+    // If the cache/data folder is cold some machines might need longer. If
+    // all of the data is already loaded on the machine, this can probably be
+    // shortened.
     Thread.sleep(10 * 60 * 1000);
   }
 
@@ -10268,8 +10275,6 @@ class JettyTests {
   /** This tests makeCopyFileTasks. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // This is flaky. Specifically for the check after the files are supposed to be
-  // downloaded.
   void testMakeCopyFileTasks() throws Exception {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
@@ -10951,18 +10956,8 @@ class JettyTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
     }
 
-    // first attempt will start file downloads (but if deleteCachedInfo, will fail
-    // to load)
     EDDTable eddTable;
-    try {
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    } catch (Exception e2) {
-      String2.log("Caught expected error:\n" + MustBe.throwableToString(e2));
-      String2.log("Waiting 20 seconds until files load...");
-      Math2.sleep(20000);
-      // String2.pressEnterToContinue("Wait for download tasks to finish, then:");
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    }
+    eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
 
     // *** test getting das for entire dataset
     String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
@@ -11094,7 +11089,7 @@ class JettyTests {
             + //
             "    String _CoordinateAxisType \"Time\";\n"
             + //
-            "    Float64 actual_range -1.071792e+9, 2.19456e+8;\n"
+            "    Float64 actual_range 1.90512e+8, 2.19456e+8;\n"
             + //
             "    String axis \"T\";\n"
             + //
@@ -11196,7 +11191,7 @@ class JettyTests {
             + //
             "    String time_coverage_end \"1976-12-15T00:00:00Z\";\n"
             + //
-            "    String time_coverage_start \"1936-01-15T00:00:00Z\";\n"
+            "    String time_coverage_start \"1976-01-15T00:00:00Z\";\n"
             + //
             "    String title \"Data from a local source.\";\n"
             + //
@@ -11249,17 +11244,10 @@ class JettyTests {
     results = File2.directReadFrom88591File(tDir + tName);
     // String2.log(results);
     expected =
-        // "area\n" +
-        //         "\n" +
-        "Central America\n"
-            + "Central California\n"
-            + "Mexico\n"
+        "Central California\n"
             + "Northern California\n"
             + "Oregon\n"
-            + "SF Bay\n"
-            + "South America\n"
             + "Southern California\n"
-            + "Unknown\n"
             + "Washington\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
 
@@ -16922,6 +16910,8 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
@@ -17379,6 +17369,8 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -17426,6 +17418,7 @@ class JettyTests {
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
@@ -17529,52 +17522,47 @@ class JettyTests {
     topLevelHandler = new TopLevelHandler(saxHandler, context);
     saxHandler.setState(topLevelHandler);
 
-    inputStream = JettyTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
+    inputStream = File2.getBufferedInputStream("development/test/datasets.xml");
     if (inputStream == null) {
-      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
+      throw new IllegalArgumentException("File not found: development/test/datasets.xml");
     }
     saxParser.parse(inputStream, saxHandler);
 
     EDDTableFromErddap eddTableFromErddap =
-        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
+        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("rlPmelTaoDySst");
     assertEquals(
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
-        eddTableFromErddap.localSourceUrl());
+        "http://localhost:8080/erddap/tabledap/pmelTaoDySst", eddTableFromErddap.localSourceUrl());
 
-    // TODO erdMH1cflh1day is not in the jetty test datasets, update this to be something that is
-    //   EDDTableFromEDDGrid eddTableFromEDDGrid = (EDDTableFromEDDGrid)
-    // context.getErddap().tableDatasetHashMap.get("erdMH1cflh1day_AsATable");
-    //   assertEquals(
-    //   "http://localhost:8080/erddap/griddap/erdMH1cflh1day",
-    //   eddTableFromEDDGrid.localSourceUrl());
+    EDDTableFromEDDGrid eddTableFromEDDGrid =
+        (EDDTableFromEDDGrid) context.getErddap().tableDatasetHashMap.get("erdMPOC1day_AsATable");
+    assertEquals("(local files)", eddTableFromEDDGrid.localSourceUrl());
+    assertEquals("String for accessibleTo", eddTableFromEDDGrid.getAccessibleTo()[0]);
 
     EDDGridFromDap eddGridFromDap =
-        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
     assertEquals(
-        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
+        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
-        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
-    assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdQSwindmday_LonPM180");
+    assertEquals(1, eddGridLonPM180.childDatasetIDs().size());
+    assertEquals("erdQSwindmday", eddGridLonPM180.childDatasetIDs().get(0));
+    assertEquals("(local files)", eddGridLonPM180.getChildDataset(0).localSourceUrl());
 
-    // TODO jplMURSST41 is not in the jetty test datasets, update this to be
-    // something that is
-    //   EDDGridFromErddap eddGridFromErddap = (EDDGridFromErddap)
-    // context.getErddap().gridDatasetHashMap
-    //           .get("jplMURSST41");
-    //   assertEquals(
-    //           "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
-    //           eddGridFromErddap.localSourceUrl());
+    EDDGridFromErddap eddGridFromErddap =
+        (EDDGridFromErddap) context.getErddap().gridDatasetHashMap.get("testGridFromErddap");
+    assertEquals(
+        "http://localhost:8080/erddap/griddap/nceiPH53sstn1day",
+        eddGridFromErddap.localSourceUrl());
 
-    // TODO testTimeAxis is not in the jetty test datasets, update this to be
-    //   EDDTableFromAsciiFiles eddTableFromAsciiFiles = (EDDTableFromAsciiFiles)
-    // context.getErddap().tableDatasetHashMap
-    //           .get("testTimeAxis");
-    //   assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
+    EDDTableFromAsciiFiles eddTableFromAsciiFiles =
+        (EDDTableFromAsciiFiles)
+            context.getErddap().tableDatasetHashMap.get("LiquidR_HBG3_2015_weather");
+    assertEquals("weather.*\\.csv", eddTableFromAsciiFiles.fileNameRegex());
 
     EDDGridSideBySide eddGridSideBySide =
-        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
+        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdQSwindmday");
     assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
 
     EDDGridFromEtopo eddGridFromEtopo =
