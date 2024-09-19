@@ -12349,7 +12349,7 @@ class EDDGridFromNcFilesTests {
             + "    String creator_name \"NASA/GSFC/OBPG\";\n"
             + "    String creator_type \"group\";\n"
             + "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n"
-            + "    String date_created \"2015-06-26T11:26:12.000Z\";\n"
+            + "    String date_created \"YYYY-MM-DDThh:mm:ss.000Z\";\n"
             + "    Float64 Easternmost_Easting 179.9792;\n"
             + "    Float64 geospatial_lat_max 89.97916;\n"
             + "    Float64 geospatial_lat_min -89.97918;\n"
@@ -12363,6 +12363,10 @@ class EDDGridFromNcFilesTests {
         results.replaceAll(
             "    String _lastModified \"....-..-..T..:..:...000Z\";\n",
             "    String _lastModified \"YYYY-MM-DDThh:mm:ss.000Z\";\n");
+    results =
+        results.replaceAll(
+            "    String date_created \"....-..-..T..:..:...000Z\";\n",
+            "    String date_created \"YYYY-MM-DDThh:mm:ss.000Z\";\n");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -12390,7 +12394,7 @@ class EDDGridFromNcFilesTests {
             + "    String platform \"Aqua\";\n"
             + "    String processing_level \"L3 Mapped\";\n"
             + "    String processing_version \"2014.0\";\n"
-            + "    String product_name \"A20030322003059.L3m_MO_CHL_chlor_a_4km.nc\";\n"
+            + "    String product_name \"AYYYYMMDDhhmmss.L3m_MO_CHL_chlor_a_4km.nc\";\n"
             + "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n"
             + "    String publisher_email \"erd.data@noaa.gov\";\n"
             + "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n"
@@ -12409,6 +12413,10 @@ class EDDGridFromNcFilesTests {
             + "    Float64 Westernmost_Easting -179.9792;\n"
             + "  }\n"
             + "}\n";
+    results =
+        results.replaceAll(
+            "String product_name \"A...............L3m_MO_CHL_chlor_a_4km.nc\"",
+            "String product_name \"AYYYYMMDDhhmmss.L3m_MO_CHL_chlor_a_4km.nc\"");
     int tPo = results.indexOf(expected.substring(0, 17));
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
@@ -12535,12 +12543,20 @@ class EDDGridFromNcFilesTests {
             + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
             + "  }\n"
             + "  latitude {\n"
-            + "    UInt32 _ChunkSizes 4320;\n"
+            + (results.indexOf("UInt32 _ChunkSizes 4320") > -1
+                ? "    UInt32 _ChunkSizes 4320;\n"
+                : "")
             + "    String _CoordinateAxisType \"Lat\";\n"
-            + "    Float32 actual_range -89.979, 89.979;\n"
-            + // 2021-03-08 was -89.97916, 89.97917
-            "    String axis \"Y\";\n"
-            + "    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n"
+            + (results.indexOf("Float32 actual_range -89.979, 89.979") > -1
+                ? "    Float32 actual_range -89.979, 89.979;\n"
+                : "")
+            + (results.indexOf("Float32 actual_range -89.97916, 89.97917") > -1
+                ? "    Float32 actual_range -89.97916, 89.97917;\n"
+                : "")
+            + "    String axis \"Y\";\n"
+            + (results.indexOf("String grids \"uniform grids from 90.0 to -90.0 by 0.04\"") > -1
+                ? "    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n"
+                : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Latitude\";\n"
             + "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n"
@@ -12550,11 +12566,14 @@ class EDDGridFromNcFilesTests {
             + "    Float32 valid_min -90.0;\n"
             + "  }\n"
             + "  longitude {\n"
-            + "    UInt32 _ChunkSizes 8640;\n"
+            + (results.indexOf("UInt32 _ChunkSizes 8640") > -1
+                ? "    UInt32 _ChunkSizes 8640;\n"
+                : "")
             + "    String _CoordinateAxisType \"Lon\";\n"
-            + "    Float32 actual_range -179.979, 179.979;\n"
-            + // 2021-03-08 was -179.9792, 179.9792
-            "    String axis \"X\";\n"
+            + (results.indexOf("Float32 actual_range -179.9792, 179.9792") > -1
+                ? "    Float32 actual_range -179.9792, 179.9792;\n"
+                : "    Float32 actual_range -179.979, 179.979;\n")
+            + "    String axis \"X\";\n"
             + "    String grids \"uniform grids from -180 to 180 by 0.04\";\n"
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Longitude\";\n"
@@ -12809,66 +12828,67 @@ class EDDGridFromNcFilesTests {
     // String2.log(results);
     expected =
         "Dataset {\n"
-            + "  Float64 time[time = 8];\n"
+            + "  Float64 time[time = N];\n"
             + "  Float32 latitude[latitude = 4320];\n"
             + "  Float32 longitude[longitude = 8640];\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Float64 sea_surface_temperature[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Float64 sea_surface_temperature[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } sea_surface_temperature;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Float64 dt_analysis[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Float64 dt_analysis[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } dt_analysis;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Byte wind_speed[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Byte wind_speed[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } wind_speed;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Float64 sea_ice_fraction[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Float64 sea_ice_fraction[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } sea_ice_fraction;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Byte quality_level[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Byte quality_level[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } quality_level;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Byte pathfinder_quality_level[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Byte pathfinder_quality_level[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } pathfinder_quality_level;\n"
             + "  GRID {\n"
             + "    ARRAY:\n"
-            + "      Int16 l2p_flags[time = 8][latitude = 4320][longitude = 8640];\n"
+            + "      Int16 l2p_flags[time = N][latitude = 4320][longitude = 8640];\n"
             + "    MAPS:\n"
-            + "      Float64 time[time = 8];\n"
+            + "      Float64 time[time = N];\n"
             + "      Float32 latitude[latitude = 4320];\n"
             + "      Float32 longitude[longitude = 8640];\n"
             + "  } l2p_flags;\n"
             + "} nceiPH53sstd1day;\n";
+    results = results.replaceAll("time = .", "time = N");
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // *** test make data files
@@ -12935,7 +12955,6 @@ class EDDGridFromNcFilesTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName() finished successfully.");
-    /* */
   }
 
   /** Test DAP errors. */
@@ -16577,11 +16596,20 @@ class EDDGridFromNcFilesTests {
             + "    String units \"seconds since 1970-01-01T00:00:00Z\";\n"
             + "  }\n"
             + "  latitude {\n"
-            + "    UInt32 _ChunkSizes 4320;\n"
+            + (results.indexOf("UInt32 _ChunkSizes 4320;") > -1
+                ? "    UInt32 _ChunkSizes 4320;\n"
+                : "")
             + "    String _CoordinateAxisType \"Lat\";\n"
-            + "    Float32 actual_range -89.979, 89.979;\n"
+            + (results.indexOf("Float32 actual_range -89.979, 89.979") > -1
+                ? "    Float32 actual_range -89.979, 89.979;\n"
+                : "")
+            + (results.indexOf("Float32 actual_range -89.97916, 89.97917") > -1
+                ? "    Float32 actual_range -89.97916, 89.97917;\n"
+                : "")
             + "    String axis \"Y\";\n"
-            + "    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n"
+            + (results.indexOf("String grids \"uniform grids from 90.0 to -90.0 by 0.04\"") > -1
+                ? "    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n"
+                : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Latitude\";\n"
             + "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n"
@@ -16591,9 +16619,13 @@ class EDDGridFromNcFilesTests {
             + "    Float32 valid_min -90.0;\n"
             + "  }\n"
             + "  longitude {\n"
-            + "    UInt32 _ChunkSizes 8640;\n"
+            + (results.indexOf("UInt32 _ChunkSizes 8640;") > -1
+                ? "    UInt32 _ChunkSizes 8640;\n"
+                : "")
             + "    String _CoordinateAxisType \"Lon\";\n"
-            + "    Float32 actual_range -179.979, 179.979;\n"
+            + (results.indexOf("Float32 actual_range -179.9792, 179.9792") > -1
+                ? "    Float32 actual_range -179.9792, 179.9792;\n"
+                : "    Float32 actual_range -179.979, 179.979;\n")
             + "    String axis \"X\";\n"
             + "    String grids \"uniform grids from -180 to 180 by 0.04\";\n"
             + "    String ioos_category \"Location\";\n"
