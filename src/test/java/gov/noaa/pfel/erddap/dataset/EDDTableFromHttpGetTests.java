@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
+import tags.TagFlaky;
 import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -1057,6 +1058,7 @@ class EDDTableFromHttpGetTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagFlaky
   void testBasic() throws Throwable {
     // String2.log("\n****************** EDDTableFromHttpGet.testBasic()
     // *****************\n");
