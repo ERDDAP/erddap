@@ -11331,7 +11331,7 @@ class JettyTests {
             + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11360,7 +11360,7 @@ class JettyTests {
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11485,6 +11485,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11501,6 +11508,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11511,12 +11525,14 @@ class JettyTests {
 
     // *** test getting .nccsv
     tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
+    // note no actual_range info
+    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11556,7 +11572,7 @@ class JettyTests {
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11671,9 +11687,14 @@ class JettyTests {
             + "TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-04T12:00:00Z,1.0,1.0E35,0.0,0.0\n"
             + "*END_DATA*\n";
 
-    // note no actual_range info
-    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     results = results.replaceAll("....-..-.. Bob Simons", "dddd-dd-dd Bob Simons");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
@@ -11686,6 +11707,13 @@ class JettyTests {
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf(expected2.substring(0, 100));
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
