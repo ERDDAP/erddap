@@ -46928,7 +46928,7 @@ public class EDDTestDataset {
 
   private static String xmlFragment_nceiPH53sstd1day(boolean useXinclude)
       throws URISyntaxException {
-    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstd1day\" active=\"true\">\n"
+    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstd1day\" active=\"true\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
@@ -47068,10 +47068,10 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>"
+            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
             : xmlFragment_PH53_variables_all())
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>"
+            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>\n"
             : xmlFragment_PH53_dataVariables())
         + "    <dataVariable>\n"
         + "        <sourceName>wind_speed</sourceName>\n"
@@ -47205,7 +47205,7 @@ public class EDDTestDataset {
 
   private static String xmlFragment_nceiPH53sstn1day(boolean useXinclude)
       throws URISyntaxException {
-    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstn1day\" active=\"true\">\n"
+    return "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"nceiPH53sstn1day\" active=\"true\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
@@ -47343,10 +47343,10 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>"
+            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
             : xmlFragment_PH53_variables_all())
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>"
+            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>\n"
             : xmlFragment_PH53_dataVariables())
         + "    <dataVariable>\n"
         + "        <sourceName>wind_speed</sourceName>\n"
@@ -51624,7 +51624,7 @@ public class EDDTestDataset {
 
   private static String xmlFragment_testMinimalReadSource(boolean useXinclude)
       throws URISyntaxException {
-    return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testMinimalReadSource\" active=\"true\">\n"
+    return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testMinimalReadSource\" active=\"true\" xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
         + "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n"
         + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/largeSatellite/PH53/1day/").toURI()).toString()
@@ -51764,7 +51764,7 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>"
+            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
             : xmlFragment_PH53_variables_all())
         + "    <dataVariable>\n"
         + "        <sourceName>sea_surface_temperature</sourceName>\n"
