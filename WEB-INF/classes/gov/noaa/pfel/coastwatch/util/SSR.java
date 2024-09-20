@@ -262,11 +262,26 @@ public class SSR {
    */
   public static ArrayList cShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("cShell        in: " + commandLine);
-    PipeToStringArray outCatcher = new PipeToStringArray();
-    PipeToStringArray errCatcher = new PipeToStringArray();
-
-    int exitValue =
-        shell(new String[] {"/bin/csh", "-c", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+    PipeToStringArray outCatcher;
+    PipeToStringArray errCatcher;
+    int exitValue = 0;
+    try {
+      outCatcher = new PipeToStringArray();
+      errCatcher = new PipeToStringArray();
+      exitValue =
+          shell(
+              new String[] {"/bin/csh", "-c", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+    } catch (IOException e) {
+      // Try to fallback to bash.
+      outCatcher = new PipeToStringArray();
+      errCatcher = new PipeToStringArray();
+      exitValue =
+          shell(
+              new String[] {"/bin/bash", "-c", commandLine},
+              outCatcher,
+              errCatcher,
+              timeOutSeconds);
+    }
 
     // collect and print results (or throw exception)
     String err = errCatcher.getString();

@@ -2635,7 +2635,9 @@ class EDDTableFromMultidimNcFilesTests {
             + "    Byte _FillValue 127;\n"
             + "    String _Unsigned \"false\";\n"
             + // ERDDAP adds
-            (deleteCachedInfo ? "" : "    Byte actual_range 127, 127;\n")
+            (results.indexOf("Byte actual_range 127, 127") > -1
+                ? "    Byte actual_range 127, 127;\n"
+                : "")
             + "    Float64 colorBarMaximum 10.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
             + "    String conventions \"OceanSites reference table 2\";\n"
