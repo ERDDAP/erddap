@@ -24,7 +24,6 @@ src/test/resources/*
 .idea
 development/test/datasets.xml
 development/test/datasets.xml*
-development/test/testGriddedNcFiles.xml
 missingImage.txt
 *.hprof
 jmeter.log

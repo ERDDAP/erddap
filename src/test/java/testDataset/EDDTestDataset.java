@@ -14,7 +14,7 @@ public class EDDTestDataset {
       datasetsXml.append(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
               + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
-              + "<erddapDatasets xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
+              + "<erddapDatasets>\n"
               // Try to set this so the datasets that need to load in the background have a chance
               // and this runs again before the jetty tests to ensure all the datasets are loaded.
               + "<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>\n"
