@@ -21,6 +21,8 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDGridFromEDDTableHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.DataInputStream;
@@ -33,6 +35,7 @@ import java.util.Arrays;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-01-27
  */
+@SaxHandlerClass(EDDGridFromEDDTableHandler.class)
 public class EDDGridFromEDDTable extends EDDGrid {
 
   protected EDDTable eddTable;
@@ -55,6 +58,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridFromEDDTable fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

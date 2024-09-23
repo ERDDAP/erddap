@@ -20,6 +20,8 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDGridAggregateExistingDimensionHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
+@SaxHandlerClass(EDDGridAggregateExistingDimensionHandler.class)
 public class EDDGridAggregateExistingDimension extends EDDGrid {
 
   protected EDDGrid childDatasets[];
@@ -53,6 +56,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridAggregateExistingDimension fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 
