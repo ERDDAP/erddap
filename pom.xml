@@ -238,6 +238,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -251,6 +252,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -264,6 +266,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
 
@@ -278,6 +281,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -291,6 +295,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -304,6 +309,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -317,6 +323,7 @@
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
                             <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
                 </executions>

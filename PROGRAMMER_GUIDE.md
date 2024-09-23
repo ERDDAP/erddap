@@ -17,7 +17,10 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - [ref\_files.zip](https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/1.0.0/ref_files.zip) and unzip it into /WEB-INF/ref/ .
 
-  - [erddapContent.zip](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddapContent.zip) (version 2.23, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
+  - [erddapContent.zip](https://github.com/ERDDAP/erddap/releases/download/v2.24/erddapContent.zip) (version 2.24, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2024-06-07) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
+
+NOTE: Maven caches downloads but will unzip the downloaded archives on each execution, which takes time. To skip downloading
+and unzipping archives, you may specify the `skipResourceDownload` property to Maven (e.g. `mvn -DskipResourceDownload package`).
 
 - ERDDAP™ and its subcomponents have very liberal, open-source [licenses](https://erddap.github.io/setup.html#license), so you can use and modify the source code for any purpose, for-profit or not-for-profit. Note that ERDDAP™ and many subcomponents have licenses that require that you acknowledge the source of the code that you are using. See [Credits](https://erddap.github.io/setup.html#credits). Whether required or not, it is just good form to acknowledge all of these contributors.
    
@@ -66,6 +69,8 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - Most classes have test methods in their associated src/test file. You can run the JUnit tests with the `mvn test` command. This will download several zip files of data that the tests rely on from the latest release of [ERDDAP/erddapTest](https://github.com/ERDDAP/erddapTest/releases/).\
      
+NOTE: Maven caches downloads but will unzip the downloaded archives on each execution, which takes time. To skip downloading
+and unzipping test data archives, you may specify the `skipTestResourceDownload` property to Maven (e.g. `mvn -DskipTestResourceDownload package`).
 
 ###  **Important Classes**
 
