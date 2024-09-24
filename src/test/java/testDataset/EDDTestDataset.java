@@ -10,12 +10,45 @@ import java.nio.file.Path;
 public class EDDTestDataset {
   public static void generateDatasetsXml() throws URISyntaxException, FileNotFoundException {
     if (EDStatic.useSaxParser) {
-      try (PrintWriter datasetsXml = new PrintWriter("development/test/PH53_all.xml")) {
-        datasetsXml.append(xmlFragment_PH53_variables_all());
+      // This section writes xml files that represent parts of a dataset. These are to show using
+      // XInclude
+      // to load information into the datasets.xml file.
+      // One thing to note, these xml files can only have 1 root node, so even if there are multiple
+      // variables
+      // (like lat and lon) that you want to reuse, you'll likely need to make 1 file per variable
+      // if you are using XInclude the way it is used here.
+      // You can also use XInclude to define each dataset in it's own file. (not done here)
+      try (PrintWriter datasetsXml = new PrintWriter("development/test/PH53_axis_lat.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_axis_lat());
       }
 
-      try (PrintWriter datasetsXml = new PrintWriter("development/test/PH53_dataVariables.xml")) {
-        datasetsXml.append(xmlFragment_PH53_dataVariables());
+      try (PrintWriter datasetsXml = new PrintWriter("development/test/PH53_axis_lon.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_axis_lon());
+      }
+
+      try (PrintWriter datasetsXml = new PrintWriter("development/test/PH53_data_quality.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_data_quality());
+      }
+
+      try (PrintWriter datasetsXml =
+          new PrintWriter("development/test/PH53_data_pathfinder_quality.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_data_pathfinder_quality());
+      }
+
+      try (PrintWriter datasetsXml =
+          new PrintWriter("development/test/PH53_dataVariable_seaSurfaceTemp.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_dataVariable_seaSurfaceTemp());
+      }
+
+      try (PrintWriter datasetsXml =
+          new PrintWriter("development/test/PH53_dataVariable_dtAnalysis.xml")) {
+        datasetsXml.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
+        datasetsXml.append(xmlFragment_PH53_dataVariable_dtAnalysis());
       }
     }
 
@@ -23,7 +56,7 @@ public class EDDTestDataset {
       datasetsXml.append(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
               + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
-              + "<erddapDatasets>\n"
+              + "<erddapDatasets xmlns:xi=\"http://www.w3.org/2001/XInclude\">\n"
               // Try to set this so the datasets that need to load in the background have a chance
               // and this runs again before the jetty tests to ensure all the datasets are loaded.
               + "<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>\n"
@@ -46666,7 +46699,7 @@ public class EDDTestDataset {
         "</dataset>\n";
   }
 
-  private static String xmlFragment_PH53_variables_all() {
+  private static String xmlFragment_PH53_axis_lat() {
     return "    <axisVariable>\n"
         + "        <sourceName>lat</sourceName>\n"
         + "        <destinationName>latitude</destinationName>\n"
@@ -46683,8 +46716,11 @@ public class EDDTestDataset {
         + "            <att name=\"ioos_category\">Location</att>\n"
         + "            <att name=\"long_name\">Latitude</att>\n"
         + "        </addAttributes>\n"
-        + "    </axisVariable>\n"
-        + "    <axisVariable>\n"
+        + "    </axisVariable>\n";
+  }
+
+  private static String xmlFragment_PH53_axis_lon() {
+    return "    <axisVariable>\n"
         + "        <sourceName>lon</sourceName>\n"
         + "        <destinationName>longitude</destinationName>\n"
         + "        <!-- sourceAttributes>\n"
@@ -46782,8 +46818,11 @@ public class EDDTestDataset {
         + "            <att name=\"ioos_category\">Statistics</att>\n"
         + "            <att name=\"units\">degree_C</att>\n"
         + "        </addAttributes>\n"
-        + "    </dataVariable -->\n"
-        + "    <dataVariable>\n"
+        + "    </dataVariable -->\n";
+  }
+
+  private static String xmlFragment_PH53_data_quality() {
+    return "    <dataVariable>\n"
         + "        <sourceName>quality_level</sourceName>\n"
         + "        <destinationName>quality_level</destinationName>\n"
         + "        <dataType>byte</dataType>\n"
@@ -46822,8 +46861,11 @@ public class EDDTestDataset {
         + "            <att name=\"ioos_category\">Quality</att>\n"
         + "            <att name=\"scale_factor\">null</att>\n"
         + "        </addAttributes>\n"
-        + "    </dataVariable>\n"
-        + "    <dataVariable>\n"
+        + "    </dataVariable>\n";
+  }
+
+  private static String xmlFragment_PH53_data_pathfinder_quality() {
+    return "    <dataVariable>\n"
         + "        <sourceName>pathfinder_quality_level</sourceName>\n"
         + "        <destinationName>pathfinder_quality_level</destinationName>\n"
         + "        <dataType>byte</dataType>\n"
@@ -46857,7 +46899,7 @@ public class EDDTestDataset {
         + "    </dataVariable>\n";
   }
 
-  private static String xmlFragment_PH53_dataVariables() {
+  private static String xmlFragment_PH53_dataVariable_seaSurfaceTemp() {
     return "    <dataVariable>\n"
         + "        <sourceName>sea_surface_temperature</sourceName>\n"
         + "        <destinationName>sea_surface_temperature</destinationName>\n"
@@ -46889,8 +46931,11 @@ public class EDDTestDataset {
         + "            <att name=\"valid_max\" type=\"double\">318.15</att>\n"
         + "            <att name=\"valid_min\" type=\"double\">271.35</att>\n"
         + "        </addAttributes>\n"
-        + "    </dataVariable>\n"
-        + "    <dataVariable>\n"
+        + "    </dataVariable>\n";
+  }
+
+  private static String xmlFragment_PH53_dataVariable_dtAnalysis() {
+    return "    <dataVariable>\n"
         + "        <sourceName>dt_analysis</sourceName>\n"
         + "        <destinationName>dt_analysis</destinationName>\n"
         + "        <dataType>double</dataType>\n"
@@ -47068,11 +47113,17 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
-            : xmlFragment_PH53_variables_all())
+            ? "   <xi:include href=\"development/test/PH53_axis_lat.xml\"/>\n"
+            : xmlFragment_PH53_axis_lat())
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>\n"
-            : xmlFragment_PH53_dataVariables())
+            ? "   <xi:include href=\"development/test/PH53_axis_lon.xml\"/>\n"
+            : xmlFragment_PH53_axis_lon())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_dataVariable_seaSurfaceTemp.xml\"/>\n"
+            : xmlFragment_PH53_dataVariable_seaSurfaceTemp())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_dataVariable_dtAnalysis.xml\"/>\n"
+            : xmlFragment_PH53_dataVariable_dtAnalysis())
         + "    <dataVariable>\n"
         + "        <sourceName>wind_speed</sourceName>\n"
         + "        <destinationName>wind_speed</destinationName>\n"
@@ -47166,6 +47217,12 @@ public class EDDTestDataset {
         + "            <att name=\"scale_factor\">null</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable> -->\n"
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_quality())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_pathfinder_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_pathfinder_quality())
         + "    <dataVariable>\n"
         + "        <sourceName>l2p_flags</sourceName>\n"
         + "        <destinationName>l2p_flags</destinationName>\n"
@@ -47343,11 +47400,17 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
-            : xmlFragment_PH53_variables_all())
+            ? "   <xi:include href=\"development/test/PH53_axis_lat.xml\"/>\n"
+            : xmlFragment_PH53_axis_lat())
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_dataVariables.xml\"/>\n"
-            : xmlFragment_PH53_dataVariables())
+            ? "   <xi:include href=\"development/test/PH53_axis_lon.xml\"/>\n"
+            : xmlFragment_PH53_axis_lon())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_dataVariable_seaSurfaceTemp.xml\"/>\n"
+            : xmlFragment_PH53_dataVariable_seaSurfaceTemp())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_dataVariable_dtAnalysis.xml\"/>\n"
+            : xmlFragment_PH53_dataVariable_dtAnalysis())
         + "    <dataVariable>\n"
         + "        <sourceName>wind_speed</sourceName>\n"
         + "        <destinationName>wind_speed</destinationName>\n"
@@ -47441,6 +47504,12 @@ public class EDDTestDataset {
         + "            <att name=\"scale_factor\">null</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable> -->\n"
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_quality())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_pathfinder_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_pathfinder_quality())
         + "    <dataVariable>\n"
         + "        <sourceName>l2p_flags</sourceName>\n"
         + "        <destinationName>l2p_flags</destinationName>\n"
@@ -51764,8 +51833,11 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </axisVariable>\n"
         + (useXinclude
-            ? "   <xi:include href=\"development/test/PH53_all.xml\"/>\n"
-            : xmlFragment_PH53_variables_all())
+            ? "   <xi:include href=\"development/test/PH53_axis_lat.xml\"/>\n"
+            : xmlFragment_PH53_axis_lat())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_axis_lon.xml\"/>\n"
+            : xmlFragment_PH53_axis_lon())
         + "    <dataVariable>\n"
         + "        <sourceName>sea_surface_temperature</sourceName>\n"
         + "        <destinationName>sea_surface_temperature</destinationName>\n"
@@ -52001,6 +52073,12 @@ public class EDDTestDataset {
         + "            <att name=\"scale_factor\">null</att>\n"
         + "        </addAttributes>\n"
         + "    </dataVariable> -->\n"
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_quality())
+        + (useXinclude
+            ? "   <xi:include href=\"development/test/PH53_data_pathfinder_quality.xml\"/>\n"
+            : xmlFragment_PH53_data_pathfinder_quality())
         + "    <dataVariable>\n"
         + "        <sourceName>l2p_flags</sourceName>\n"
         + "        <destinationName>l2p_flags</destinationName>\n"

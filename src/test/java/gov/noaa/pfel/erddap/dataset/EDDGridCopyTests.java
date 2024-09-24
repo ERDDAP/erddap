@@ -30,7 +30,7 @@ class EDDGridCopyTests {
     // checkSourceData +
     // ") *****************\n");
     // testVerboseOn();
-    // defaultCheckSourceData = checkSourceData;
+    EDDGridCopy.defaultCheckSourceData = checkSourceData;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
     EDV edv;

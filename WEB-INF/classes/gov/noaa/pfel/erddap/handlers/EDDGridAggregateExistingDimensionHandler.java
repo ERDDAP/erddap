@@ -11,32 +11,19 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridAggregateExistingDimensionHandler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
-  private String datasetID;
+public class EDDGridAggregateExistingDimensionHandler extends BaseGridHandler {
   private SaxParsingContext context;
 
   public EDDGridAggregateExistingDimensionHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler, completeState);
-    this.datasetID = datasetID;
+    super(saxHandler, datasetID, completeState);
     this.context = context;
   }
 
   private EDDGrid firstChild = null;
   private StringArray tLocalSourceUrls = new StringArray();
-  private String tAccessibleTo = null;
-  private String tGraphsAccessibleTo = null;
-  private boolean tAccessibleViaWMS = true;
   private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  private StringArray tOnChange = new StringArray();
-  private String tFgdcFile = null;
-  private String tIso19115File = null;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
-  private String tDefaultDataQuery = null;
-  private String tDefaultGraphQuery = null;
-  private int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
-  private boolean tDimensionValuesInMemory = true;
 
   private String tSUServerType = null;
   private String tSURegex = null;
@@ -82,14 +69,10 @@ public class EDDGridAggregateExistingDimensionHandler extends StateWithParent {
   }
 
   @Override
-  public void characters(char[] ch, int start, int length) throws SAXException {
-    content.append(ch, start, length);
-  }
-
-  @Override
-  public void endElement(String uri, String localName, String qName) throws Throwable {
-    String contentStr = content.toString().trim();
-
+  protected boolean handleEndElement(String contentStr, String localName) {
+    if (super.handleEndElement(contentStr, localName)) {
+      return true;
+    }
     switch (localName) {
       case "sourceUrl" -> tLocalSourceUrls.add(contentStr);
       case "sourceUrls" -> tSU = contentStr;
@@ -97,51 +80,41 @@ public class EDDGridAggregateExistingDimensionHandler extends StateWithParent {
           tMatchAxisNDigits = String2.parseInt(contentStr, DEFAULT_MATCH_AXIS_N_DIGITS);
       case "ensureAxisValuesAreEqual" ->
           tMatchAxisNDigits = String2.parseBoolean(contentStr) ? 20 : 0;
-      case "accessibleTo" -> tAccessibleTo = contentStr;
-      case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
-      case "accessibleViaWMS" -> tAccessibleViaWMS = String2.parseBoolean(contentStr);
       case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
-      case "onChange" -> tOnChange.add(contentStr);
-      case "fgdcFile" -> tFgdcFile = contentStr;
-      case "iso19115File" -> tIso19115File = contentStr;
-      case "defaultDataQuery" -> tDefaultDataQuery = contentStr;
-      case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
-      case "nThreads" -> tnThreads = String2.parseInt(contentStr);
-      case "dimensionValuesInMemory" -> tDimensionValuesInMemory = String2.parseBoolean(contentStr);
-      case "dataset" -> {
-        EDD dataset =
-            new EDDGridAggregateExistingDimension(
-                datasetID,
-                tAccessibleTo,
-                tGraphsAccessibleTo,
-                tAccessibleViaWMS,
-                tAccessibleViaFiles,
-                tOnChange,
-                tFgdcFile,
-                tIso19115File,
-                tDefaultDataQuery,
-                tDefaultGraphQuery,
-                firstChild,
-                tLocalSourceUrls.toArray(),
-                tSUServerType,
-                tSURegex,
-                tSURecursive,
-                tSUPathRegex,
-                tSU,
-                tMatchAxisNDigits,
-                tnThreads,
-                tDimensionValuesInMemory);
-
-        this.completeState.handleDataset(dataset);
-        saxHandler.setState(this.completeState);
+      default -> {
+        return false;
       }
-      default -> String2.log("Unexpected end tag: " + localName);
     }
-    content.setLength(0);
+    return true;
   }
 
   @Override
   public void handleDataset(EDD dataset) {
     firstChild = (EDDGrid) dataset;
+  }
+
+  @Override
+  protected EDD buildDataset() throws Throwable {
+    return new EDDGridAggregateExistingDimension(
+        datasetID,
+        tAccessibleTo,
+        tGraphsAccessibleTo,
+        tAccessibleViaWMS,
+        tAccessibleViaFiles,
+        tOnChange,
+        tFgdcFile,
+        tIso19115File,
+        tDefaultDataQuery,
+        tDefaultGraphQuery,
+        firstChild,
+        tLocalSourceUrls.toArray(),
+        tSUServerType,
+        tSURegex,
+        tSURecursive,
+        tSUPathRegex,
+        tSU,
+        tMatchAxisNDigits,
+        tnThreads,
+        tDimensionValuesInMemory);
   }
 }
