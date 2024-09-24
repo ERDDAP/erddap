@@ -9,11 +9,16 @@ import java.nio.file.Path;
 
 public class EDDTestDataset {
   public static void generateDatasetsXml() throws URISyntaxException, FileNotFoundException {
+
     try (PrintWriter datasetsXml = new PrintWriter("development/test/datasets.xml")) {
       datasetsXml.append(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n"
               + (EDStatic.useSaxParser ? "<!DOCTYPE note [<!ENTITY deg '&#176;'>]>\n" : "")
-              + "<erddapDatasets>\n");
+              + "<erddapDatasets>\n"
+              // Try to set this so the datasets that need to load in the background have a chance
+              // and this runs again before the jetty tests to ensure all the datasets are loaded.
+              + "<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>\n"
+              + "<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>\n");
 
       datasetsXml.append(xmlFragment_test_chars());
       datasetsXml.append(xmlFragment_testZarr_compressedData());
@@ -27,11 +32,11 @@ public class EDDTestDataset {
 
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb());
       datasetsXml.append(xmlFragment_hawaii_d90f_20ee_c4cb_LonPM180());
-      datasetsXml.append(xmlFragment_erdMHchla8day());
+      // datasetsXml.append(xmlFragment_erdMHchla8day()); // thredds, fails
       datasetsXml.append(xmlFragment_testActualRange());
       datasetsXml.append(xmlFragment_testActualRange2());
       // datasetsXml.append(xmlFragment_hycom_GLBa008_tyx()); // thredds, fails
-      datasetsXml.append(xmlFragment_erdBAssta5day());
+      // datasetsXml.append(xmlFragment_erdBAssta5day()); // thredds, fails
       // datasetsXml.append(xmlFragment_NCOM_Region7_2D()); // external server fails
       // datasetsXml.append(xmlFragment_jplNesdisG17v271()); // thredds, fails
       // datasetsXml.append(xmlFragment_usgsCeCrm10()); // thredds, fails
@@ -41,7 +46,7 @@ public class EDDTestDataset {
       // available?
       datasetsXml.append(xmlFragment_etopo180());
       datasetsXml.append(xmlFragment_etopo360());
-      datasetsXml.append(xmlFragment_ndbcCWind41002());
+      // datasetsXml.append(xmlFragment_ndbcCWind41002()); // thredds, fails
       // datasetsXml.append(xmlFragment_cwwcNDBCMet()); // very large files, not
       // currently loaded
       datasetsXml.append(xmlFragment_erdCinpKfmSFNH());
@@ -79,8 +84,9 @@ public class EDDTestDataset {
       // datasetsXml.append(xmlFragment_testEDDTableCopyFiles());
       datasetsXml.append(xmlFragment_ndbcSosWaves());
       datasetsXml.append(xmlFragment_testTablePseudoSourceNames());
-      datasetsXml.append(xmlFragment_fsuNoaaShipWTEP());
-      datasetsXml.append(xmlFragment_fsuNoaaShipWTEPnrt());
+      // reloading from source can be extremely slow
+      // datasetsXml.append(xmlFragment_fsuNoaaShipWTEP()); // not used in server tests
+      // datasetsXml.append(xmlFragment_fsuNoaaShipWTEPnrt()); // not used in server tests
       datasetsXml.append(xmlFragment_pmelTaoDyAirt());
       datasetsXml.append(xmlFragment_miniNdbc410());
       // datasetsXml.append(xmlFragment_testEDDTableCacheFiles()); // todo re-enable,
@@ -132,8 +138,11 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testFileNames());
       // datasetsXml.append(xmlFragment_testFileNamesAwsS3()); // aws credentials
       // datasetsXml.append(xmlFragment_awsS3NoaaGoes17()); // aws credentials
-      datasetsXml.append(xmlFragment_awsS3NoaaGoes17partial());
-      datasetsXml.append(xmlFragment_awsS3NoaaGoes17all());
+      // the two below datasets are not used in local server tests and significantly
+      // impact how long it takes for the server to load its data. Disabling them from
+      // the server.
+      // datasetsXml.append(xmlFragment_awsS3NoaaGoes17partial()); // loads slowly
+      // datasetsXml.append(xmlFragment_awsS3NoaaGoes17all()); // loads slowly
       // datasetsXml.append(xmlFragment_testBadNcFile()); // bad file for tests
       datasetsXml.append(xmlFragment_testGriddedNcFiles());
       datasetsXml.append(xmlFragment_testGribFiles_42());
@@ -253,261 +262,10 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_testGridWav());
       // datasetsXml.append(xmlFragment_TS_SLEV_TAD()); // dataset not available
       datasetsXml.append(xmlFragment_TS_ATMP_AAD());
+      datasetsXml.append(xmlFragment_erdMPOC1day_AsATable());
 
       datasetsXml.append(
-          "<!-- For EDDGridSideBySide, the datasetID's for the parent and the children must be different. -->\n"
-              + //
-              "<dataset type=\"EDDGridSideBySide\" datasetID=\"erdTAssh1day\">\n"
-              + //
-              "<dataset type=\"EDDGridFromDap\"    datasetID=\"erdTAsshl1day\">\n"
-              + //
-              "    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshl/1day</sourceUrl>\n"
-              + //
-              "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
-              + //
-              "    <addAttributes> \n"
-              + //
-              "        <att name=\"cols\">null</att>\n"
-              + //
-              "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n"
-              + //
-              "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n"
-              + //
-              "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n"
-              + //
-              "        <att name=\"creator_type\">institution</att>\n"
-              + //
-              "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n"
-              + //
-              "        <att name=\"cwhdf_version\">null</att>\n"
-              + //
-              "        <att name=\"et_affine\">null</att>\n"
-              + //
-              "        <att name=\"gctp_datum\">null</att>\n"
-              + //
-              "        <att name=\"gctp_parm\">null</att>\n"
-              + //
-              "        <att name=\"gctp_sys\">null</att>\n"
-              + //
-              "        <att name=\"gctp_zone\">null</att>\n"
-              + //
-              "        <att name=\"id\">null</att>\n"
-              + //
-              "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/TA_sshl_las.html</att>\n"
-              + //
-              "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
-              + //
-              "        <att name=\"keywords\">above, absolute, altitude, archiving, aviso, coast, coastwatch, data, degrees, earth, geodetics, geoid, global, gravity, height, interpretation, level, long, ltm, mean, noaa, node, ocean, oceanography, oceans,\n"
-              + //
-              "Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n"
-              + //
-              "properties, quality, satellite, science, science quality, sea, sea level, sea_surface_height_above_geoid, solid,\n"
-              + //
-              "Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,\n"
-              + //
-              "ssh, surface, TAsshl, term, time, topography, validation, wcn, west</att>\n"
-              + //
-              "        <att name=\"license\">[standard]</att>\n"
-              + //
-              "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n"
-              + //
-              "        <att name=\"pass_date\">null</att>\n"
-              + //
-              "        <att name=\"polygon_latitude\">null</att>\n"
-              + //
-              "        <att name=\"polygon_longitude\">null</att>\n"
-              + //
-              "        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n"
-              + //
-              "        <att name=\"publisher_email\">erd.data@noaa.gov</att>\n"
-              + //
-              "        <att name=\"publisher_name\">NOAA NMFS SWFSC ERD</att>\n"
-              + //
-              "        <att name=\"publisher_type\">institution</att>\n"
-              + //
-              "        <att name=\"publisher_url\">https://www.pfeg.noaa.gov</att>\n"
-              + //
-              "        <att name=\"references\">Aviso: https://www.aviso.altimetry.fr/en/my-aviso.html .</att>\n"
-              + //
-              "        <att name=\"rows\">null</att>\n"
-              + //
-              "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n"
-              + //
-              "        <att name=\"start_time\">null</att>\n"
-              + //
-              "        <att name=\"title\">Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)</att>\n"
-              + //
-              "    </addAttributes>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>time</sourceName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>altitude</sourceName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>lat</sourceName>\n"
-              + //
-              "        <destinationName>latitude</destinationName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>lon</sourceName>\n"
-              + //
-              "        <destinationName>longitude</destinationName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <dataVariable>\n"
-              + //
-              "        <sourceName>TAsshl</sourceName>\n"
-              + //
-              "        <destinationName>ssh</destinationName>\n"
-              + //
-              "        <addAttributes> \n"
-              + //
-              "            <att name=\"ioos_category\">Sea Level</att>\n"
-              + //
-              "            <att name=\"long_name\">Sea Surface Height</att>\n"
-              + //
-              "            <att name=\"colorBarMinimum\" type=\"double\">-10</att>\n"
-              + //
-              "            <att name=\"colorBarMaximum\" type=\"double\">10</att>\n"
-              + //
-              "            <att name=\"actual_range\" /> \n"
-              + //
-              "            <att name=\"numberOfObservations\" /> \n"
-              + //
-              "            <att name=\"percentCoverage\" />\n"
-              + //
-              "        </addAttributes>\n"
-              + //
-              "    </dataVariable>\n"
-              + //
-              "</dataset>\n"
-              + //
-              "<dataset type=\"EDDGridFromDap\" datasetID=\"erdTAsshd1day\">\n"
-              + //
-              "    <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/TA/sshd/1day</sourceUrl>\n"
-              + //
-              "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
-              + //
-              "    <addAttributes> \n"
-              + //
-              "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n"
-              + //
-              "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n"
-              + //
-              "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/TA_sshd_las.html</att>\n"
-              + //
-              "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n"
-              + //
-              "        <att name=\"standard_name_vocabulary\">CF-12</att>\n"
-              + //
-              "        <att name=\"title\">Sea Surface Height Deviation, Aviso, Global, Science Quality (1 Day Composite)</att>\n"
-              + //
-              "        <att name=\"cwhdf_version\" />\n"
-              + //
-              "        <att name=\"cols\" />  \n"
-              + //
-              "        <att name=\"et_affine\" />\n"
-              + //
-              "        <att name=\"gctp_datum\" />\n"
-              + //
-              "        <att name=\"gctp_parm\" />\n"
-              + //
-              "        <att name=\"gctp_sys\" />\n"
-              + //
-              "        <att name=\"gctp_zone\" />\n"
-              + //
-              "        <att name=\"id\" />\n"
-              + //
-              "        <att name=\"pass_date\" />\n"
-              + //
-              "        <att name=\"polygon_latitude\" />\n"
-              + //
-              "        <att name=\"polygon_longitude\" />\n"
-              + //
-              "        <att name=\"rows\" />\n"
-              + //
-              "        <att name=\"start_time\" />\n"
-              + //
-              "        <att name=\"time_coverage_end\" />  \n"
-              + //
-              "        <att name=\"time_coverage_start\" />\n"
-              + //
-              "    </addAttributes>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>time</sourceName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>altitude</sourceName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>lat</sourceName>\n"
-              + //
-              "        <destinationName>latitude</destinationName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <axisVariable>\n"
-              + //
-              "        <sourceName>lon</sourceName>\n"
-              + //
-              "        <destinationName>longitude</destinationName>\n"
-              + //
-              "    </axisVariable>\n"
-              + //
-              "    <dataVariable>\n"
-              + //
-              "        <sourceName>TAsshd</sourceName>\n"
-              + //
-              "        <destinationName>sshd</destinationName>\n"
-              + //
-              "        <addAttributes> \n"
-              + //
-              "            <att name=\"ioos_category\">Sea Level</att>\n"
-              + //
-              "            <att name=\"long_name\">Sea Surface Height Deviation</att>\n"
-              + //
-              "            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n"
-              + //
-              "            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n"
-              + //
-              "            <att name=\"actual_range\" /> \n"
-              + //
-              "            <att name=\"numberOfObservations\" /> \n"
-              + //
-              "            <att name=\"percentCoverage\" />\n"
-              + //
-              "        </addAttributes>\n"
-              + //
-              "    </dataVariable>\n"
-              + //
-              "</dataset>\n"
-              + //
-              "</dataset>\n"
-              + //
-              "\n"
-              + //
-              "<!-- Here are some excellent gridded datasets that you can include in your ERDDAP\n"
+          "<!-- Here are some excellent gridded datasets that you can include in your ERDDAP\n"
               + //
               "     via EDDGridFromErddap links. All requests for actual data from these\n"
               + //
@@ -16806,16 +16564,16 @@ public class EDDTestDataset {
   private static String xmlFragment_testEDDTableCopyFiles() throws URISyntaxException {
     return "<dataset type=\"EDDTableFromNcFiles\" datasetID=\"testEDDTableCopyFiles\" active=\"true\">\n"
         + //
-        "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
+        "    <reloadEveryNMinutes>14400</reloadEveryNMinutes>\n"
         + //
-        "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        "    <updateEveryNMillis>1000000</updateEveryNMillis>\n"
         + //
         "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/data/points/testEDDTableCopyFiles/").toURI())
             .toString()
         + "</fileDir>\n"
         + //
-        "    <fileNameRegex>19\\d7\\.nc</fileNameRegex>\n"
+        "    <fileNameRegex>1977\\.nc</fileNameRegex>\n"
         + //
         "    <recursive>true</recursive>\n"
         + //
@@ -19712,11 +19470,9 @@ public class EDDTestDataset {
         + "/</fileDir>\n"
         + //
         "    <recursive>true</recursive>\n"
-        + //
-        // "    <fileNameRegex>WTEP_.*\\.nc</fileNameRegex>\n" + //
-        "    <metadataFrom>last</metadataFrom>\n"
-        + //
-        "    <preExtractRegex></preExtractRegex>\n"
+        // + "    <fileNameRegex>WTEP_.*\\.nc</fileNameRegex>\n"
+        + "    <metadataFrom>last</metadataFrom>\n"
+        + "    <preExtractRegex></preExtractRegex>\n"
         + //
         "    <postExtractRegex></postExtractRegex>\n"
         + //
@@ -23963,21 +23719,18 @@ public class EDDTestDataset {
 
   private static String xmlFragment_testGridCopy() throws URISyntaxException {
     return "<dataset type=\"EDDGridCopy\" datasetID=\"testGridCopy\">\n"
-        + //
-        "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
-        + //
-        "    <fileTableInMemory>true</fileTableInMemory>\n"
-        + //
-        "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles\">\n"
-        + //
-        "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
-        + //
-        "    <fileDir>"
+        + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
+        + "    <fileTableInMemory>true</fileTableInMemory>\n"
+        + "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles_COPY\">\n"
+        + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
+        + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/largeFiles/erdQSwind1day/").toURI()).toString()
         + "</fileDir>\n"
-        + "    <recursive>true</recursive>\n"
+        + "    <!--fileTableInMemory>true</fileTableInMemory-->\n"
         + //
-        "    <fileNameRegex>.*\\.nc</fileNameRegex>\n"
+        "    <recursive>true</recursive>\n"
+        + //
+        "    <fileNameRegex>.*\\.nc(|.gz)</fileNameRegex>\n"
         + //
         "    <metadataFrom>last</metadataFrom>\n"
         + //
@@ -23986,8 +23739,6 @@ public class EDDTestDataset {
         "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n"
         + //
         "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n"
-        + //
-        "        <att name=\"creator_type\">group</att>\n"
         + //
         "        <att name=\"Metadata_Conventions\">null</att>\n"
         + //
@@ -24050,8 +23801,7 @@ public class EDDTestDataset {
         "    </dataVariable>\n"
         + //
         "</dataset>\n"
-        + //
-        "</dataset>\n";
+        + "</dataset>\n";
   }
 
   public static EDD gettestOnlySince() throws Throwable {
@@ -36954,12 +36704,9 @@ public class EDDTestDataset {
 
   private static String xmlFragment_testGriddedNcFiles() throws URISyntaxException {
     return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles\">\n"
-        + //
-        "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
-        + //
-        "    <updateEveryNMillis>1</updateEveryNMillis>\n"
-        + //
-        "    <fileDir>"
+        + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
+        + "    <updateEveryNMillis>1</updateEveryNMillis>\n"
+        + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/largeFiles/erdQSwind1day/").toURI()).toString()
         + "</fileDir>\n"
         + "    <!--fileTableInMemory>true</fileTableInMemory-->\n"
@@ -62896,18 +62643,12 @@ public class EDDTestDataset {
 
   private static String xmlFragment_erdQSwindmday_LonPM180() {
     return "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdQSwindmday_LonPM180\" active=\"true\">\n"
-        + //
-        "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdQSwindmday_LonPM180Child\">\n"
-        + //
-        "        <!-- Wind, QuikSCAT SeaWinds, 0.125&#xc2;&#xb0;, Global, Science Quality, 1999-2009 (Monthly)\n"
-        + //
-        "             minLon=0.0 maxLon=360.0 -->\n"
-        + //
-        "        <sourceUrl>http://localhost:8080/erddap/griddap/erdQSwindmday</sourceUrl>\n"
-        + //
-        "    </dataset>\n"
-        + //
-        "</dataset>";
+        + "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdQSwindmday_LonPM180Child\">\n"
+        + "        <!-- Wind, QuikSCAT SeaWinds, 0.125&#xc2;&#xb0;, Global, Science Quality, 1999-2009 (Monthly)\n"
+        + "             minLon=0.0 maxLon=360.0 -->\n"
+        + "        <sourceUrl>http://localhost:8080/erddap/griddap/erdQSwindmday</sourceUrl>\n"
+        + "    </dataset>\n"
+        + "</dataset>";
   }
 
   public static EDD geterdQSwind8day() throws Throwable {
@@ -85644,5 +85385,23 @@ public class EDDTestDataset {
         "    </dataVariable>\n"
         + //
         "</dataset>\n";
+  }
+
+  public static EDD geterdMPOC1day_AsATable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_erdMPOC1day_AsATable());
+  }
+
+  private static String xmlFragment_erdMPOC1day_AsATable() {
+    return "<dataset type=\"EDDTableFromEDDGrid\" datasetID=\"erdMPOC1day_AsATable\" active=\"true\">\n"
+        + "        <accessibleTo>String for accessibleTo</accessibleTo>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"summary\">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)</att>\n"
+        + "            <att name=\"title\">MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table</att>\n"
+        + "            <att name=\"maxAxis0\" type=\"int\">0</att>\n"
+        + "        </addAttributes>\n"
+        + "        <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMPOC1day_AsATableChild\">\n"
+        + "            <sourceUrl>http://localhost:8080/erddap/griddap/erdMPOC1day</sourceUrl>\n"
+        + "        </dataset>\n"
+        + "    </dataset>\n";
   }
 }

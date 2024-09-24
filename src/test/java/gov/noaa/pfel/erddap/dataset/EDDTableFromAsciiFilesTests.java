@@ -1398,7 +1398,7 @@ class EDDTableFromAsciiFilesTests {
               + "WFPM4,2020-05-22T20:40:00Z,0.0,46.762,-84.966,0,4.6,6.7,NaN,NaN,NaN,,1015.9,18.7,NaN,NaN,NaN,NaN,NaN,0.0,-4.6\n";
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
-    String2.log(bigResults.toString());
+    // String2.log(bigResults.toString());
     /*
      * times truncted to seconds
      * 2022-04-27 with Bob's changes to String2 and Chris John's changes to

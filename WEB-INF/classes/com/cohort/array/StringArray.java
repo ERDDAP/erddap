@@ -12,8 +12,6 @@ import com.cohort.util.String2;
 import com.cohort.util.StringHolder;
 import com.cohort.util.StringHolderComparator;
 import com.cohort.util.StringHolderComparatorIgnoreCase;
-import ucar.ma2.StructureData;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -34,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
+import ucar.ma2.StructureData;
 
 /**
  * StringArray is a thin shell over a String[] with methods like ArrayList's methods; it extends
@@ -320,7 +319,8 @@ public class StringArray extends PrimitiveArray {
     Math2.ensureMemoryAvailable(
         File2.length(fileName), "StringArray.fromFile"); // canonical may lessen memory requirement
     final StringArray sa = new StringArray();
-    try (final BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);) {
+    try (final BufferedReader bufferedReader =
+        File2.getDecompressedBufferedFileReader(fileName, charset); ) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         sa.addNotCanonical(s);
@@ -339,10 +339,11 @@ public class StringArray extends PrimitiveArray {
    *     usually all different).
    * @throws Exception if trouble (e.g., file not found)
    */
-  public static StringArray fromFile(final URL resourceFile, final String charset) throws Exception {
+  public static StringArray fromFile(final URL resourceFile, final String charset)
+      throws Exception {
     final StringArray sa = new StringArray();
     try (InputStreamReader reader = new InputStreamReader(resourceFile.openStream(), charset);
-         BufferedReader bufferedReader = new BufferedReader(reader)){
+        BufferedReader bufferedReader = new BufferedReader(reader)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         sa.addNotCanonical(s);

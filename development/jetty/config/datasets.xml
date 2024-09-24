@@ -49,6 +49,7 @@ https://coastwatch.pfel.noaa.gov/erddap/download/setupDatasetsXml.html
 <slowDownTroubleMillis></slowDownTroubleMillis>                   <!-- default=1000 -->
 <unusualActivity></unusualActivity>                               <!-- default=10000 -->
 <updateMaxEvents></updateMaxEvents>                               <!-- default=10 -->
+<unusualActivityFailPercent>25</unusualActivityFailPercent>       <!-- default=25 -->
 <!-- The defaults for the following tags are in messages.xml. -->
 <startHeadHtml5></startHeadHtml5>                                
 <endBodyHtml5></endBodyHtml5>

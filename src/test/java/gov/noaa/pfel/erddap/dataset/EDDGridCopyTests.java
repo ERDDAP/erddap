@@ -162,13 +162,8 @@ class EDDGridCopyTests {
             + "    String contributor_role \"Source of level 2 data.\";\n"
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
             + "    String creator_email \"erd.data@noaa.gov\";\n"
-            + // this should appear some
-            // day
-            // " String creator_email \"dave.foley@noaa.gov\";\n" +
-            "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n"
-            + "    String creator_type \"group\";\n"
-            + // this may appear some day
-            "    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n"
+            + "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n"
+            + "    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n"
             + "    String date_created \"2008-08-29\";\n"
             + "    String date_issued \"2008-08-29\";\n"
             + "    Float64 Easternmost_Easting 359.875;\n"

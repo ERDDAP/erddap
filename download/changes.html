@@ -70,8 +70,54 @@ those great suggestions coming!
 
 <!-- ****************************************************************************** -->
 
+<!-- TODO Make sure github.io site is updated with all the latest documentation for release -->
+<h2><a class="selfLink" id="changes2.25" href="#changes2.25" rel="bookmark">Changes</a>
+  in ERDDAP™ version 2.25 (released TBD)</h2>
+<ul>
+  <li><strong>New Features and Changes (for users):</strong>
+    <ul>
+      <li>EDDTableFromFiles can now support queries with only derived outputs (globals, jexl script, or variables).
+        <br>&nbsp;
+    </ul>
+  <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong>
+    <ul>
+      <li>The ERDDAP™ servlet will now start at server startup. Which means datasets will begin loading immediately instead of
+        waiting until a request is made.
+        <br>&nbsp;
+      <li>The removeMVRows parameter in EDDTableFromMultidimNcFiles will now have an effect. Setting it to false may
+        significantly speed up some queries, but this may not be suitable for all datasets. For more information see
+        the <a href="https://erddap.github.io/setupDatasetsXml.html#removeMVRows">description of the parameter</a>.
+          <br>&nbsp;
+      <li>Datasets (EDDTableFromNcFiles and EDDGridFromNcFiles) using zarr files are now supported. They must include "zarr"
+        in either the fileNameRegex or pathRegex. See the <a href="https://erddap.github.io/setupDatasetsXml.html#zarr">zarr
+        secion in the datasets documentation</a> for more details.
+        <br>&nbsp;
+      <li><a href="https://prometheus.io/">Prometheus metrics</a> are now available at <kbd>/erddap/metrics</kbd>.
+        <br>&nbsp;
+      <li>A new XML parser implementation is available. This new parser allows using XInclude in datasets.xml.
+        Thanks to Ayush Singh for the feature.
+        <br>&nbsp;
+      <li>New parameter in datasets.xml to control unusual activity emails. unusualActivityFailPercent defaults to the old value of 25%.
+        Thanks to Ayush Singh for the feature.
+        <br>&nbsp;
+      <li>Some small changes and bug fixes.
+        <br>&nbsp;
+    </ul>
+    <li><strong>For ERDDAP™ Developers:</strong>
+      <ul>
+        <li>Testing separated to unit and integration (slow) tests. Also more tests enabled and tests have been made less flaky.
+          <br>&nbsp;
+        <li>Error Prone (some checks still disabled) and Spot Bugs integrated through Maven.
+          <br>&nbsp;
+        <li>Full code base formatted to match the Google Style Guide.
+          <br>&nbsp;
+      </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
+
 <h2><a class="selfLink" id="changes2.24" href="#changes2.24" rel="bookmark">Changes</a>
-  in ERDDAP™ version 2.24 (released TBD)</h2> <!-- todo add release date -->
+  in ERDDAP™ version 2.24 (released 2024-06-07)</h2>
 <ul>
   <li><strong>New Features and Changes (for users):</strong>
     <ul>

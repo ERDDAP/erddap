@@ -127,7 +127,7 @@ public class SgtMap {
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
   public static String fullRefDirectory =
-          EDStatic.getWebInfParentDirectory()
+      EDStatic.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -165,7 +165,7 @@ public class SgtMap {
 
   public static String bathymetryCptTrue = "OceanTrue.cpt";
   public static URL bathymetryCptFullName =
-          Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
+      Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
   public static URL bathymetryCptTrueFullName =
       Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCptTrue);
 
@@ -422,8 +422,8 @@ public class SgtMap {
    * @param contourAltScaleFactor is a scale factor to be applied to the data (use "1" if none)
    * @param contourAltOffset is a scale factor to be added to the data (use "0" if none)
    * @param contourDrawLinesAt is a single value or a comma-separated list of values at which
-   *     contour lines should be drawn
-   * param contourPaletteFileName is the complete name of the palette file to be used
+   *     contour lines should be drawn param contourPaletteFileName is the complete name of the
+   *     palette file to be used
    * @param contourColor is an int with the rgb color value for the contour lines
    * @param contourBoldTitle
    * @param contourUnits
@@ -2759,7 +2759,7 @@ public class SgtMap {
       Grid bathymetryGrid =
           createTopographyGrid(
               fullPrivateDirectory, minX, maxX, minY, maxY, graphWidth, graphHeight);
-      URL resourceFile = Resources.getResource("gov/noaa/pfel/coastwatch/sgt/"+ bathymetryCpt);
+      URL resourceFile = Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
       CompoundColorMap oceanColorMap = new CompoundColorMap(resourceFile);
       graph = new CartesianGraph("", xt, yt);
       layer = new Layer("bathymetryColors", layerDimension2D);

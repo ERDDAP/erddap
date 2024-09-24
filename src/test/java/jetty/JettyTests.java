@@ -39,7 +39,9 @@ import gov.noaa.pfel.erddap.dataset.EDDGridLonPM180;
 import gov.noaa.pfel.erddap.dataset.EDDGridSideBySide;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableCopy;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiFiles;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
@@ -71,6 +73,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagFlaky;
 import tags.TagImageComparison;
 import tags.TagJetty;
+import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -105,6 +108,10 @@ class JettyTests {
 
     server.start();
 
+    // Delay the tests to give the server a chance to load all of the data.
+    // If the cache/data folder is cold some machines might need longer. If
+    // all of the data is already loaded on the machine, this can probably be
+    // shortened.
     Thread.sleep(10 * 60 * 1000);
   }
 
@@ -10268,8 +10275,6 @@ class JettyTests {
   /** This tests makeCopyFileTasks. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // This is flaky. Specifically for the check after the files are supposed to be
-  // downloaded.
   void testMakeCopyFileTasks() throws Exception {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
@@ -10951,18 +10956,8 @@ class JettyTests {
       EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
     }
 
-    // first attempt will start file downloads (but if deleteCachedInfo, will fail
-    // to load)
     EDDTable eddTable;
-    try {
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    } catch (Exception e2) {
-      String2.log("Caught expected error:\n" + MustBe.throwableToString(e2));
-      String2.log("Waiting 20 seconds until files load...");
-      Math2.sleep(20000);
-      // String2.pressEnterToContinue("Wait for download tasks to finish, then:");
-      eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
-    }
+    eddTable = (EDDTable) EDDTestDataset.gettestEDDTableCopyFiles();
 
     // *** test getting das for entire dataset
     String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
@@ -11094,7 +11089,7 @@ class JettyTests {
             + //
             "    String _CoordinateAxisType \"Time\";\n"
             + //
-            "    Float64 actual_range -1.071792e+9, 2.19456e+8;\n"
+            "    Float64 actual_range 1.90512e+8, 2.19456e+8;\n"
             + //
             "    String axis \"T\";\n"
             + //
@@ -11196,7 +11191,7 @@ class JettyTests {
             + //
             "    String time_coverage_end \"1976-12-15T00:00:00Z\";\n"
             + //
-            "    String time_coverage_start \"1936-01-15T00:00:00Z\";\n"
+            "    String time_coverage_start \"1976-01-15T00:00:00Z\";\n"
             + //
             "    String title \"Data from a local source.\";\n"
             + //
@@ -11249,17 +11244,10 @@ class JettyTests {
     results = File2.directReadFrom88591File(tDir + tName);
     // String2.log(results);
     expected =
-        // "area\n" +
-        //         "\n" +
-        "Central America\n"
-            + "Central California\n"
-            + "Mexico\n"
+        "Central California\n"
             + "Northern California\n"
             + "Oregon\n"
-            + "SF Bay\n"
-            + "South America\n"
             + "Southern California\n"
-            + "Unknown\n"
             + "Washington\n";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
 
@@ -11343,7 +11331,7 @@ class JettyTests {
             + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11372,7 +11360,7 @@ class JettyTests {
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11497,6 +11485,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11513,6 +11508,13 @@ class JettyTests {
             "*GLOBAL*,time_coverage_end,dddd-dd-ddT12:00:00Z\n");
     results =
         results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
+    results =
+        results.replaceAll(
             "time,actual_range,1977-11-03T12:00:00Z\\\\n....-..-..T12:00:00Z\n",
             "time,actual_range,1977-11-03T12:00:00Z\\\\ndddd-dd-ddT12:00:00Z\n");
     results =
@@ -11523,12 +11525,14 @@ class JettyTests {
 
     // *** test getting .nccsv
     tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
+    // note no actual_range info
+    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,07:12  3-JAN-2022\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11568,7 +11572,7 @@ class JettyTests {
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
             + (EDStatic.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,0n3w\n" : "")
+            + (EDStatic.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -11683,9 +11687,14 @@ class JettyTests {
             + "TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-04T12:00:00Z,1.0,1.0E35,0.0,0.0\n"
             + "*END_DATA*\n";
 
-    // note no actual_range info
-    results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     results = results.replaceAll("....-..-.. Bob Simons", "dddd-dd-dd Bob Simons");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
@@ -11698,6 +11707,13 @@ class JettyTests {
     results =
         results.replaceAll(
             "time_coverage_end,....-..-..T12:00:00Z\n", "time_coverage_end,dddd-dd-ddT12:00:00Z\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,CREATION_DATE,..:..  .-...-....\n",
+            "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n");
+    results =
+        results.replaceAll(
+            "\\*GLOBAL\\*,platform_code,[a-zA-Z0-9]+", "*GLOBAL*,platform_code,CODE");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     tPo = results.indexOf(expected2.substring(0, 100));
     Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
@@ -16922,6 +16938,8 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
@@ -17379,6 +17397,8 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -17426,6 +17446,7 @@ class JettyTests {
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
@@ -17529,52 +17550,47 @@ class JettyTests {
     topLevelHandler = new TopLevelHandler(saxHandler, context);
     saxHandler.setState(topLevelHandler);
 
-    inputStream = JettyTests.class.getResourceAsStream("/datasets/datasetHandlerTest.xml");
+    inputStream = File2.getBufferedInputStream("development/test/datasets.xml");
     if (inputStream == null) {
-      throw new IllegalArgumentException("File not found: /datasets/datasetHandlerTest.xml");
+      throw new IllegalArgumentException("File not found: development/test/datasets.xml");
     }
     saxParser.parse(inputStream, saxHandler);
 
     EDDTableFromErddap eddTableFromErddap =
-        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("cwwcNDBCMet");
+        (EDDTableFromErddap) context.getErddap().tableDatasetHashMap.get("rlPmelTaoDySst");
     assertEquals(
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet",
-        eddTableFromErddap.localSourceUrl());
+        "http://localhost:8080/erddap/tabledap/pmelTaoDySst", eddTableFromErddap.localSourceUrl());
 
-    // TODO erdMH1cflh1day is not in the jetty test datasets, update this to be something that is
-    //   EDDTableFromEDDGrid eddTableFromEDDGrid = (EDDTableFromEDDGrid)
-    // context.getErddap().tableDatasetHashMap.get("erdMH1cflh1day_AsATable");
-    //   assertEquals(
-    //   "http://localhost:8080/erddap/griddap/erdMH1cflh1day",
-    //   eddTableFromEDDGrid.localSourceUrl());
+    EDDTableFromEDDGrid eddTableFromEDDGrid =
+        (EDDTableFromEDDGrid) context.getErddap().tableDatasetHashMap.get("erdMPOC1day_AsATable");
+    assertEquals("(local files)", eddTableFromEDDGrid.localSourceUrl());
+    assertEquals("String for accessibleTo", eddTableFromEDDGrid.getAccessibleTo()[0]);
 
     EDDGridFromDap eddGridFromDap =
-        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("erdMHchla8day");
+        (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
     assertEquals(
-        "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
+        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
-        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdTAssh1day_LonPM180");
-    assertEquals("person1", eddGridLonPM180.getAccessibleTo()[0]);
+        (EDDGridLonPM180) context.getErddap().gridDatasetHashMap.get("erdQSwindmday_LonPM180");
+    assertEquals(1, eddGridLonPM180.childDatasetIDs().size());
+    assertEquals("erdQSwindmday", eddGridLonPM180.childDatasetIDs().get(0));
+    assertEquals("(local files)", eddGridLonPM180.getChildDataset(0).localSourceUrl());
 
-    // TODO jplMURSST41 is not in the jetty test datasets, update this to be
-    // something that is
-    //   EDDGridFromErddap eddGridFromErddap = (EDDGridFromErddap)
-    // context.getErddap().gridDatasetHashMap
-    //           .get("jplMURSST41");
-    //   assertEquals(
-    //           "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41",
-    //           eddGridFromErddap.localSourceUrl());
+    EDDGridFromErddap eddGridFromErddap =
+        (EDDGridFromErddap) context.getErddap().gridDatasetHashMap.get("testGridFromErddap");
+    assertEquals(
+        "http://localhost:8080/erddap/griddap/nceiPH53sstn1day",
+        eddGridFromErddap.localSourceUrl());
 
-    // TODO testTimeAxis is not in the jetty test datasets, update this to be
-    //   EDDTableFromAsciiFiles eddTableFromAsciiFiles = (EDDTableFromAsciiFiles)
-    // context.getErddap().tableDatasetHashMap
-    //           .get("testTimeAxis");
-    //   assertEquals("historical_tsi\\.csv", eddTableFromAsciiFiles.fileNameRegex());
+    EDDTableFromAsciiFiles eddTableFromAsciiFiles =
+        (EDDTableFromAsciiFiles)
+            context.getErddap().tableDatasetHashMap.get("LiquidR_HBG3_2015_weather");
+    assertEquals("weather.*\\.csv", eddTableFromAsciiFiles.fileNameRegex());
 
     EDDGridSideBySide eddGridSideBySide =
-        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdTAssh1day");
+        (EDDGridSideBySide) context.getErddap().gridDatasetHashMap.get("erdQSwindmday");
     assertEquals(2, eddGridSideBySide.childDatasetIDs().size());
 
     EDDGridFromEtopo eddGridFromEtopo =

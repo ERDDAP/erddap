@@ -1681,6 +1681,7 @@ public class TableTests {
 
   /** Test the speed of readASCII */
   @org.junit.jupiter.api.Test
+  @TagSlowTests
   void testReadASCIISpeed() throws Exception {
 
     String fileName =
@@ -1934,9 +1935,10 @@ public class TableTests {
       File2.delete(destName + ".csv");
       if (time <= 550) break;
     }
-    if (time > 550)
-      throw new SimpleException(
-          "saveAsCsvASCII  (time=" + time + "ms). Expected=~344 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time > 550)
+    //   throw new SimpleException(
+    //       "saveAsCsvASCII  (time=" + time + "ms). Expected=~344 for 17117 rows.");
 
     for (int attempt = 0; attempt < 3; attempt++) {
       // saveAsJson
@@ -1955,9 +1957,10 @@ public class TableTests {
       File2.delete(destName + ".json");
       if (time <= 450) break;
     }
-    if (time >= 450)
-      throw new SimpleException(
-          "saveAsJson took too long (time=" + time + "ms). Expected=~281 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time >= 450)
+    //   throw new SimpleException(
+    //       "saveAsJson took too long (time=" + time + "ms). Expected=~281 for 17117 rows.");
 
     // saveAsFlatNc
     for (int attempt = 0; attempt < 3; attempt++) {
@@ -1976,9 +1979,10 @@ public class TableTests {
       File2.delete(destName + ".nc");
       if (time <= 200) break;
     }
-    if (time > 200)
-      throw new SimpleException(
-          "saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
+    // TODO get a better performance check than time which varies on machines
+    // if (time > 200)
+    //   throw new SimpleException(
+    //       "saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
   }
 
   /**
