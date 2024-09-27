@@ -57,6 +57,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ in
   <li><a rel="help" href="#DataProviderForm">Data Provider Form</a> 
   <li><a rel="help" href="#Tools">Tools</a>
   <li><a rel="help" href="#basicStructure">The basic structure of the datasets.xml file</a>
+  <li><a rel="help" href="#xinclude">XInclude</a>
     <br>&nbsp;
   </ul>
 
@@ -1039,7 +1040,12 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 </pre>
 It is possible that other encodings will be allowed in the future, but for now, only ISO-8859-1 is recommended.
 
-
+<br>&nbsp;
+<p><strong><a class="selfLink" id="xinclude" href="#xinclude" rel="bookmark">XInclude</a></strong>
+  <br>New in version 2.25 is support for XInclude. This requires you are using the SAX parser <kbd>&lt;useSaxParser&gt;true&lt;/useSaxParser&gt;</kbd> in your setup.xml.
+  This can allow you to write each dataset in its own file, then include them all in the main datasets.xml, reuse parts of dataset definitions, or both.
+  If you want to see an example, <a href="https://github.com/ERDDAP/erddap/blob/main/src/test/java/testDataset/EDDTestDataset.java">EDDTestDataset.java</a> sets up XInclude to reuse variable definitions.
+  
 <br>&nbsp;
 <hr>
 <h2><a class="selfLink" id="notes" href="#notes" rel="bookmark">Notes</a></h2>

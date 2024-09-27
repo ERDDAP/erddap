@@ -9,9 +9,10 @@ public class DataVariableHandler extends StateWithParent {
   StringBuilder content = new StringBuilder();
   String tSourceName = null, tDestinationName = null, tDataType = null;
   com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
-  ArrayList tDataVariables;
+  ArrayList<Object[]> tDataVariables;
 
-  public DataVariableHandler(SaxHandler saxHandler, ArrayList tDataVariables, State completeState) {
+  public DataVariableHandler(
+      SaxHandler saxHandler, ArrayList<Object[]> tDataVariables, State completeState) {
     super(saxHandler, completeState);
     this.tDataVariables = tDataVariables;
   }

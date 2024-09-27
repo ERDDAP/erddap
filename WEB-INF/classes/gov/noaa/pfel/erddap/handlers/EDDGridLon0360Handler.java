@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.handlers;
 
-import com.cohort.array.StringArray;
 import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
@@ -9,32 +8,18 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class EDDGridLon0360Handler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
+public class EDDGridLon0360Handler extends BaseGridHandler {
   private SaxParsingContext context;
-  private String datasetID;
 
   public EDDGridLon0360Handler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
-    super(saxHandler, completeState);
-    this.datasetID = datasetID;
+    super(saxHandler, datasetID, completeState);
     this.context = context;
   }
 
   private EDDGrid tChildDataset = null;
-  private String tAccessibleTo = null;
-  private String tGraphsAccessibleTo = null;
-  private boolean tAccessibleViaWMS = true;
   private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  private StringArray tOnChange = new StringArray();
-  private String tFgdcFile = null;
-  private String tIso19115File = null;
-  private String tDefaultDataQuery = null;
-  private String tDefaultGraphQuery = null;
-  private int tReloadEveryNMinutes = Integer.MAX_VALUE;
   private int tUpdateEveryNMillis = Integer.MAX_VALUE;
-  private int tnThreads = -1;
-  private boolean tDimensionValuesInMemory = true;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)
@@ -65,58 +50,43 @@ public class EDDGridLon0360Handler extends StateWithParent {
   }
 
   @Override
-  public void characters(char[] ch, int start, int length) throws SAXException {
-    content.append(ch, start, length);
-  }
-
-  @Override
-  public void endElement(String uri, String localName, String qName) throws Throwable {
-    String contentStr = content.toString().trim();
-
-    switch (localName) {
-      case "reloadEveryNMinutes" -> tReloadEveryNMinutes = String2.parseInt(contentStr);
-      case "updateEveryNMillis" -> tUpdateEveryNMillis = String2.parseInt(contentStr);
-      case "accessibleTo" -> tAccessibleTo = contentStr;
-      case "graphsAccessibleTo" -> tGraphsAccessibleTo = contentStr;
-      case "accessibleViaWMS" -> tAccessibleViaWMS = String2.parseBoolean(contentStr);
-      case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
-      case "onChange" -> tOnChange.add(contentStr);
-      case "fgdcFile" -> tFgdcFile = contentStr;
-      case "iso19115File" -> tIso19115File = contentStr;
-      case "defaultDataQuery" -> tDefaultDataQuery = contentStr;
-      case "defaultGraphQuery" -> tDefaultGraphQuery = contentStr;
-      case "nThreads" -> tnThreads = String2.parseInt(contentStr);
-      case "dimensionValuesInMemory" -> tDimensionValuesInMemory = String2.parseBoolean(contentStr);
-      case "dataset" -> {
-        EDD dataset =
-            new EDDGridLon0360(
-                context.getErddap(),
-                datasetID,
-                tAccessibleTo,
-                tGraphsAccessibleTo,
-                tAccessibleViaWMS,
-                tAccessibleViaFiles,
-                tOnChange,
-                tFgdcFile,
-                tIso19115File,
-                tDefaultDataQuery,
-                tDefaultGraphQuery,
-                tReloadEveryNMinutes,
-                tUpdateEveryNMillis,
-                tChildDataset,
-                tnThreads,
-                tDimensionValuesInMemory);
-
-        this.completeState.handleDataset(dataset);
-        saxHandler.setState(this.completeState);
-      }
-      default -> String2.log("Unexpected end tag: " + localName);
-    }
-    content.setLength(0);
-  }
-
-  @Override
   public void handleDataset(EDD dataset) {
     tChildDataset = (EDDGrid) dataset;
+  }
+
+  @Override
+  protected boolean handleEndElement(String contentStr, String localName) {
+    if (super.handleEndElement(contentStr, localName)) {
+      return true;
+    }
+    switch (localName) {
+      case "updateEveryNMillis" -> tUpdateEveryNMillis = String2.parseInt(contentStr);
+      case "accessibleViaFiles" -> tAccessibleViaFiles = String2.parseBoolean(contentStr);
+      default -> {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  protected EDD buildDataset() throws Throwable {
+    return new EDDGridLon0360(
+        context.getErddap(),
+        datasetID,
+        tAccessibleTo,
+        tGraphsAccessibleTo,
+        tAccessibleViaWMS,
+        tAccessibleViaFiles,
+        tOnChange,
+        tFgdcFile,
+        tIso19115File,
+        tDefaultDataQuery,
+        tDefaultGraphQuery,
+        tReloadEveryNMinutes,
+        tUpdateEveryNMillis,
+        tChildDataset,
+        tnThreads,
+        tDimensionValuesInMemory);
   }
 }

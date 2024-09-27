@@ -9,12 +9,13 @@ import org.xml.sax.SAXException;
 
 public class AxisVariableHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
-  private ArrayList tAxisVariables;
+  private ArrayList<Object[]> tAxisVariables;
   private String tSourceName = null, tDestinationName = null;
   private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   private PrimitiveArray tValuesPA = null;
 
-  public AxisVariableHandler(SaxHandler saxHandler, ArrayList tAxisVariables, State completeState) {
+  public AxisVariableHandler(
+      SaxHandler saxHandler, ArrayList<Object[]> tAxisVariables, State completeState) {
     super(saxHandler, completeState);
     this.tAxisVariables = tAxisVariables;
   }
