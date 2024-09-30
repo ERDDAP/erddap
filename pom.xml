@@ -182,7 +182,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, *.*, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, *.*, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -252,7 +252,6 @@
                             <url>https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -266,7 +265,6 @@
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -280,7 +278,6 @@
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -294,8 +291,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -308,8 +304,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -322,8 +317,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -336,8 +330,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -347,6 +340,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
                     <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
                 </configuration>
             </plugin>
