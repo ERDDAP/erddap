@@ -5979,7 +5979,6 @@ public abstract class EDD {
 
           break;
         }
-        parti++;
       }
     }
 

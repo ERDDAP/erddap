@@ -176,17 +176,17 @@ public class Erddap extends HttpServlet {
    * the time penalty of Collections.synchronizedMap(new HashMap()).]
    */
   public ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap(16, 0.75f, 4);
+  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap(16, 0.75f, 4);
+  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap<>(16, 0.75f, 4);
   public ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
   /**
@@ -326,14 +326,6 @@ public class Erddap extends HttpServlet {
     // initialize Lucene
     if (EDStatic.useLuceneSearchEngine) EDStatic.initializeLucene();
 
-    // make subscriptions
-    if (EDStatic.subscriptionSystemActive)
-      EDStatic.subscriptions =
-          new Subscriptions(
-              BPD + "subscriptionsV1.txt",
-              48, // maxHoursPending,
-              EDStatic.preferredErddapUrl); // prefer https url
-
     // make new catInfo with first level hashMaps
     int nCat = EDStatic.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++)
@@ -343,10 +335,6 @@ public class Erddap extends HttpServlet {
     runLoadDatasets = new RunLoadDatasets(this);
     EDStatic.runningThreads.put("runLoadDatasets", runLoadDatasets);
     runLoadDatasets.start();
-
-    // set some things in EDStatic
-    EDStatic.gridDatasetHashMap = gridDatasetHashMap;
-    EDStatic.tableDatasetHashMap = tableDatasetHashMap;
 
     // done
     String2.log(
@@ -539,7 +527,7 @@ public class Erddap extends HttpServlet {
             EDStatic.ipAddressQueue.putIfAbsent(
                 ipAddress, new IntArray(EDStatic.ipAddressMaxRequests, false));
         if (iaq == null) iaq = EDStatic.ipAddressQueue.get(ipAddress);
-        synchronized (iaq) {
+        synchronized (EDStatic.ipAddressQueue.get(ipAddress)) {
           // first thing
           iaq.add(requestNumber);
 
@@ -4743,14 +4731,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Status",
             out);
     try {
-      int nGridDatasets = gridDatasetHashMap.size();
-      int nTableDatasets = tableDatasetHashMap.size();
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(language, loggedInAs, EDStatic.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb);
+      EDStatic.addIntroStatistics(sb, this);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);

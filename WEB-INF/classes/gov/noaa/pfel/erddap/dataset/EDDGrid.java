@@ -5271,7 +5271,8 @@ public abstract class EDDGrid extends EDD {
         GregorianCalendar idMinGc =
             Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
         // if it rounded to later time period, shift to earlier time period
-        if (idMinGc.getTimeInMillis() / 1000 > timeCenter)
+        long roundedTime = idMinGc.getTimeInMillis() / 1000;
+        if (roundedTime > timeCenter)
           idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
         GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
         idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
@@ -5282,13 +5283,16 @@ public abstract class EDDGrid extends EDD {
           GregorianCalendar tidMinGc =
               Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (tidMinGc.getTimeInMillis() / 1000 > timeFirst)
+          long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
+          if (roundedTimeTid > timeFirst)
             tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
           tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
 
           // always show LL button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStart > timeFirst || ratio < 0.99 || ratio > 1.01) {
             writer.write(

@@ -22,8 +22,8 @@ import java.nio.file.Path;
  */
 public class DasDds {
 
-  static String logFileName = null;
-  static String outFileName = null;
+  String logFileName = null;
+  String outFileName = null;
   Writer outFile = null;
 
   public DasDds() {

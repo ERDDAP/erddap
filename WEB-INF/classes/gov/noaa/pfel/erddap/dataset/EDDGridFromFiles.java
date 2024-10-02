@@ -1172,9 +1172,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               // remove it from cache   (Yes, a file may be marked bad (recently) and so still be in
               // cache)
               nRemoved++;
-              removeCumTime -= System.currentTimeMillis();
               fileTable.removeRow(fileListPo);
-              removeCumTime += System.currentTimeMillis();
             }
             // go on to next tFile
             continue;
@@ -1208,9 +1206,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
                     + dirList.get(dirI)
                     + fileS);
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo);
-          removeCumTime += System.currentTimeMillis();
           // tFileListPo isn't incremented, so it will be considered again in next iteration
           continue;
         }
@@ -1296,9 +1292,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               || msg.indexOf(Math2.TooManyOpenFiles) >= 0) throw t; // stop loading this dataset
           msg = "";
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo);
-          removeCumTime += System.currentTimeMillis();
           tFileListPo++;
           if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE)
             // >30 minutes old, so not still being ftp'd, so add to badFileMap

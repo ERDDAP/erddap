@@ -1932,9 +1932,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               // remove it from cached info (Yes, a file may be marked bad (recently) and so
               // still be in cache)
               nRemoved++;
-              removeCumTime -= System.currentTimeMillis();
               fileTable.removeRow(fileListPo);
-              removeCumTime += System.currentTimeMillis();
             }
             // go on to next tFile
             if (logThis) String2.log(tFileListPo + " already in badFile list");
@@ -1968,9 +1966,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                     + dirList.get(dirI)
                     + fileS);
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo); // may be slow
-          removeCumTime += System.currentTimeMillis();
           // tFileListPo isn't incremented, so it will be considered again in next
           // iteration
           continue;
@@ -2036,9 +2032,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               || t instanceof InterruptedException
               || msg.indexOf(Math2.TooManyOpenFiles) >= 0) throw t; // stop loading this dataset
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo);
-          removeCumTime += System.currentTimeMillis();
           tFileListPo++;
           if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE
               && !(t instanceof TimeoutException

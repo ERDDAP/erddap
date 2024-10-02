@@ -13213,13 +13213,15 @@ public abstract class EDDTable extends EDD {
           GregorianCalendar tidMinGc =
               Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (tidMinGc.getTimeInMillis() / 1000 > edvTimeMin)
+          if (Math2.divideNoRemainder(tidMinGc.getTimeInMillis(), 1000) > edvTimeMin)
             tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
           tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
 
           // always show button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMin > edvTimeMin || ratio < 0.99 || ratio > 1.01) {
@@ -13317,13 +13319,15 @@ public abstract class EDDTable extends EDD {
           GregorianCalendar tidMaxGc =
               Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (tidMaxGc.getTimeInMillis() / 1000 < edvTimeMax)
+          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < edvTimeMax)
             tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
           GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
           tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
 
           // always show button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeMax - timeMin) / idRange;
 
           if (timeMax < edvTimeMax || ratio < 0.99 || ratio > 1.01) {

@@ -34,7 +34,7 @@ public class TouchThread extends Thread {
   /** The constructor. TouchThread uses touch variables in EDStatic. */
   public TouchThread(int tNextTouch) {
     EDStatic.nextTouch.set(tNextTouch);
-    EDStatic.lastFinishedTouch = tNextTouch - 1;
+    EDStatic.lastFinishedTouch.set(tNextTouch - 1);
     setName("TouchThread");
   }
 
@@ -125,7 +125,7 @@ public class TouchThread extends Thread {
           // whether succeeded or failed
           lastStartTime = -1;
           synchronized (EDStatic.touchList) {
-            EDStatic.lastFinishedTouch = (EDStatic.nextTouch.get() - 1);
+            EDStatic.lastFinishedTouch.set(EDStatic.nextTouch.get() - 1);
             EDStatic.touchList.set(
                 (EDStatic.nextTouch.get() - 1), null); // throw away the touch info (gc)
           }

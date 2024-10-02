@@ -1215,7 +1215,7 @@ public class LoadDatasets extends Thread {
 
   private void emailUnusualActivity(String threadSummary, String threadList) {
     StringBuilder sb = new StringBuilder();
-    EDStatic.addIntroStatistics(sb);
+    EDStatic.addIntroStatistics(sb, erddap);
 
     if (threadSummary != null) sb.append(threadSummary + "\n");
 
@@ -1280,7 +1280,7 @@ public class LoadDatasets extends Thread {
     String stars = String2.makeString('*', 70);
     String subject = "Daily Report";
     StringBuilder contentSB = new StringBuilder(subject + "\n\n");
-    EDStatic.addIntroStatistics(contentSB);
+    EDStatic.addIntroStatistics(contentSB, erddap);
 
     // append number of active threads
     if (threadSummary != null) contentSB.append(threadSummary + "\n");

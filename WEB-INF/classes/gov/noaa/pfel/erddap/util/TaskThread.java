@@ -69,7 +69,7 @@ public class TaskThread extends Thread {
   /** The constructor. TaskThread uses task variables in EDStatic. */
   public TaskThread(int tNextTask) {
     EDStatic.nextTask.set(tNextTask);
-    EDStatic.lastFinishedTask = tNextTask - 1;
+    EDStatic.lastFinishedTask.set(tNextTask - 1);
     setName("TaskThread");
   }
 
@@ -105,7 +105,7 @@ public class TaskThread extends Thread {
         EDStatic.nextTask.incrementAndGet();
 
         // get the task settings
-        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
+        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
         if (taskOA == null) {
           String2.log("task #" + (EDStatic.nextTask.get() - 1) + " was null.");
           continue;
@@ -262,7 +262,7 @@ public class TaskThread extends Thread {
 
       // whether succeeded or failed
       synchronized (EDStatic.taskList) {
-        EDStatic.lastFinishedTask = EDStatic.nextTask.get() - 1;
+        EDStatic.lastFinishedTask.set(EDStatic.nextTask.get() - 1);
         EDStatic.taskList.set(EDStatic.nextTask.get() - 1, null); // throw away the task info (gc)
       }
     }

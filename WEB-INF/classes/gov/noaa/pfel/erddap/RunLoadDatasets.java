@@ -13,8 +13,6 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.*;
 import java.io.File;
-import java.nio.file.FileSystems;
-import org.apache.lucene.store.NIOFSDirectory;
 
 /**
  * This class is in charge of creating and monitoring LoadDatasets threads.
@@ -47,27 +45,7 @@ public class RunLoadDatasets extends Thread {
     setName("RunLoadDatasets");
 
     if (EDStatic.useLuceneSearchEngine) {
-      try {
-        // delete old index files
-        // Index will be recreated, and Lucense throws exception if it tries to read from old
-        // indices.
-        File2.deleteAllFiles(EDStatic.fullLuceneDirectory);
-
-        // Since I recreate index when erddap restarted, I can change anything
-        //  (e.g., Directory type, Version) any time
-        //  (no worries about compatibility with existing index).
-        // ??? For now, use NIOFSDirectory,
-        //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
-        EDStatic.luceneDirectory =
-            new NIOFSDirectory(FileSystems.getDefault().getPath(EDStatic.fullLuceneDirectory));
-
-        // At start of ERDDAP, always create a new index.  Never re-use existing index.
-        // Do it here to use true and also to ensure it can be done.
-        EDStatic.createLuceneIndexWriter(true); // throws exception if trouble
-      } catch (Throwable t) {
-        EDStatic.useLuceneSearchEngine = false;
-        throw new RuntimeException(t);
-      }
+      EDStatic.resetLuceneIndex();
     }
   }
 

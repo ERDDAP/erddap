@@ -97,6 +97,13 @@ public class NetCheck {
    */
   public static final double version = 1.1;
 
+  private void initializeLoggingSettings() {
+    HttpTest.verbose = verbose;
+    // SftpTest.verbose = verbose;
+    SSR.verbose = false;
+    File2.verbose = true;
+  }
+
   /**
    * The constructor. A log file called NetCheck.log will be created in the root directory.
    *
@@ -123,10 +130,7 @@ public class NetCheck {
             + String2.logFileName()
             + "\n"
             + String2.standardHelpAboutMessage());
-    HttpTest.verbose = verbose;
-    // SftpTest.verbose = verbose;
-    SSR.verbose = false;
-    File2.verbose = true;
+    initializeLoggingSettings();
 
     // run setup
     setup(xmlFileName);

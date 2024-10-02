@@ -72,6 +72,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -95,6 +96,8 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.NIOFSDirectory;
+
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
@@ -298,9 +301,6 @@ public class EDStatic {
   public static volatile int cldNTry = 0; //   0=none actively loading
   public static volatile String cldDatasetID = null; // null=none actively loading
   public static volatile long cldStartMillis = 0; //   0=none actively loading
-  // set by ERDDAP constructor. Only used by status.html below.
-  public static ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap = null;
-  public static ConcurrentHashMap<String, EDDTable> tableDatasetHashMap = null;
 
   public static final ConcurrentHashMap<String, String> activeRequests =
       new ConcurrentHashMap(); // request# -> 1 line info about request
@@ -471,7 +471,8 @@ public class EDStatic {
    * stopped in Tomcat. For example, key="taskThread", value=taskThread. The key make it easy to get
    * a specific thread (e.g., to remove it).
    */
-  public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(16, 0.75f, 4);
+  public static ConcurrentHashMap<String, Thread> runningThreads =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   // emailThread variables
   // Funnelling all emailThread emails through one emailThread ensures that
@@ -479,7 +480,7 @@ public class EDStatic {
   //  and allows me to email in batches so fewer email sessions (so I won't
   //  get Too Many Login Attempts and lost emails).
   public static ArrayList<String[]> emailList =
-      new ArrayList(); // keep here in case EmailThread needs to be restarted
+      new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
   // no lastAssignedEmail since not needed
@@ -487,13 +488,13 @@ public class EDStatic {
    * This returns the index number of the email in emailList (-1,0..) of the last completed email
    * (successful or not). nFinishedEmails = lastFinishedEmail + 1;
    */
-  public static volatile int lastFinishedEmail = -1;
+  public static final AtomicInteger lastFinishedEmail = new AtomicInteger(-1);
 
   /**
    * This returns the index number of the email in emailList (0..) that will be started when the
    * current email is finished.
    */
-  public static volatile int nextEmail = 0;
+  public static final AtomicInteger nextEmail = new AtomicInteger(0);
 
   // taskThread variables
   // Funnelling all taskThread tasks through one taskThread ensures
@@ -501,33 +502,34 @@ public class EDStatic {
   //  and stress on remote servers will be minimal
   //  (although at the cost of not doing the tasks faster / in parallel).
   // In a grid of erddaps, each will have its own taskThread, which is appropriate.
-  public static ArrayList taskList =
-      new ArrayList(); // keep here in case TaskThread needs to be restarted
+  public static ArrayList<Object[]> taskList =
+      new ArrayList<>(); // keep here in case TaskThread needs to be restarted
   private static TaskThread taskThread;
 
   /**
    * lastAssignedTask is used by EDDxxxCopy instances to keep track of the number of the last task
    * assigned to taskThread for a given datasetID. key=datasetID value=Integer(task#)
    */
-  public static ConcurrentHashMap lastAssignedTask = new ConcurrentHashMap(16, 0.75f, 4);
+  public static ConcurrentHashMap<String, Integer> lastAssignedTask =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /**
    * This returns the index number of the task in taskList (-1,0..) of the last completed task
    * (successful or not). nFinishedTasks = lastFinishedTask + 1;
    */
-  public static volatile int lastFinishedTask = -1;
+  public static final AtomicInteger lastFinishedTask = new AtomicInteger(-1);
 
   /**
    * This returns the index number of the task in taskList (0..) that will be started when the
    * current task is finished.
    */
-  public static volatile AtomicInteger nextTask = new AtomicInteger(0);
+  public static final AtomicInteger nextTask = new AtomicInteger(0);
 
   // touchThread variables
   // Funnelling all touchThread tasks through one touchThread ensures that
   //  touches that timeout don't slow down other processes.
   public static ArrayList<String> touchList =
-      new ArrayList(); // keep here in case TouchThread needs to be restarted
+      new ArrayList<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
 
   // no lastAssignedTouch since not needed
@@ -535,13 +537,13 @@ public class EDStatic {
    * This returns the index number of the touch in touchList (-1,0..) of the last completed touch
    * (successful or not). nFinishedTouches = lastFinishedTouch + 1;
    */
-  public static volatile int lastFinishedTouch = -1;
+  public static final AtomicInteger lastFinishedTouch = new AtomicInteger(-1);
 
   /**
    * This returns the index number of the touch in touchList (0..) that will be started when the
    * current touch is finished.
    */
-  public static volatile AtomicInteger nextTouch = new AtomicInteger(0);
+  public static final AtomicInteger nextTouch = new AtomicInteger(0);
 
   /**
    * This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets and is
@@ -2346,6 +2348,14 @@ public class EDStatic {
       erddapUrl = baseUrl + "/" + warName;
       erddapHttpsUrl = baseHttpsUrl + "/" + warName;
       preferredErddapUrl = baseHttpsUrl.startsWith("https://") ? erddapHttpsUrl : erddapUrl;
+
+      if (subscriptionSystemActive) {
+        subscriptions =
+            new Subscriptions(
+                bigParentDirectory + "subscriptionsV1.txt",
+                48, // maxHoursPending,
+                preferredErddapUrl); // prefer https url
+      }
 
       // ???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
       // logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs, language) + lowResLogoImageFile
@@ -5112,16 +5122,14 @@ public class EDStatic {
   }
 
   /** This adds the common, publicly accessible statistics to the StringBuilder. */
-  public static void addIntroStatistics(StringBuilder sb) {
+  public static void addIntroStatistics(StringBuilder sb, Erddap erddap) {
     sb.append("Current time is " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
     sb.append("Startup was at  " + startupLocalDateTime + "\n");
     long loadTime = lastMajorLoadDatasetsStopTimeMillis - lastMajorLoadDatasetsStartTimeMillis;
+    long timSinceLoad = (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis) / 1000;
     sb.append(
         "Last major LoadDatasets started "
-            + Calendar2.elapsedTimeString(
-                1000
-                    * Math2.roundToInt(
-                        (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis) / 1000))
+            + Calendar2.elapsedTimeString(1000l * Math2.longToInt(timSinceLoad))
             + " ago and "
             + (loadTime < 0
                 ? "is still running.\n"
@@ -5149,8 +5157,8 @@ public class EDStatic {
     }
 
     // make local copy of volatile variables to avoid null pointers and so sum is correct
-    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = gridDatasetHashMap;
-    ConcurrentHashMap<String, EDDTable> tTableDatasetHashMap = tableDatasetHashMap;
+    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = erddap.gridDatasetHashMap;
+    ConcurrentHashMap<String, EDDTable> tTableDatasetHashMap = erddap.tableDatasetHashMap;
     int tnGridDatasets = tGridDatasetHashMap == null ? 0 : tGridDatasetHashMap.size();
     int tnTableDatasets = tTableDatasetHashMap == null ? 0 : tTableDatasetHashMap.size();
     sb.append("nGridDatasets  = " + tnGridDatasets + "\n");
@@ -5184,7 +5192,7 @@ public class EDStatic {
       long tElapsedTime = taskThread == null ? -1 : taskThread.elapsedTime();
       sb.append(
           "TaskThread has finished "
-              + (lastFinishedTask + 1)
+              + (lastFinishedTask.get() + 1)
               + " out of "
               + taskList.size()
               + " tasks.  "
@@ -5212,7 +5220,7 @@ public class EDStatic {
         long tElapsedTime = emailThread == null ? -1 : emailThread.elapsedTime();
         sb.append(
             "EmailThread has sent "
-                + (lastFinishedEmail + 1)
+                + (lastFinishedEmail.get() + 1)
                 + " out of "
                 + emailList.size()
                 + " emails.  "
@@ -5238,7 +5246,7 @@ public class EDStatic {
       long tElapsedTime = touchThread == null ? -1 : touchThread.elapsedTime();
       sb.append(
           "TouchThread has finished "
-              + (lastFinishedTouch + 1)
+              + (lastFinishedTouch.get() + 1)
               + " out of "
               + touchList.size()
               + " touches.  "
@@ -5977,7 +5985,7 @@ public class EDStatic {
       // interrupt all of them
       for (int i = 0; i < names.length; i++) {
         try {
-          Thread thread = (Thread) runningThreads.get(names[i]);
+          Thread thread = runningThreads.get(names[i]);
           if (thread != null && thread.isAlive()) thread.interrupt();
           else runningThreads.remove(names[i]);
         } catch (Throwable t) {
@@ -5993,7 +6001,7 @@ public class EDStatic {
         for (int i = 0; i < names.length; i++) {
           try {
             if (names[i] == null) continue; // it has already stopped
-            Thread thread = (Thread) runningThreads.get(names[i]);
+            Thread thread = runningThreads.get(names[i]);
             if (thread != null && thread.isAlive()) {
               allDone = false;
               if (waitedSeconds > maxSeconds) {
@@ -6161,7 +6169,7 @@ public class EDStatic {
 
           stopThread(taskThread, 10); // short time; it is already in trouble
           // runningThreads.remove   not necessary since new one is put() in below
-          lastFinishedTask = nextTask.get() - 1;
+          lastFinishedTask.set(nextTask.get() - 1);
           taskThread = null;
           return false;
         }
@@ -6171,7 +6179,7 @@ public class EDStatic {
         String2.log(
             "%%% TaskThread: EDStatic noticed that taskThread is finished at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        lastFinishedTask = nextTask.get() - 1;
+        lastFinishedTask.set(nextTask.get() - 1);
         taskThread = null;
         return false;
       }
@@ -6207,7 +6215,7 @@ public class EDStatic {
 
           stopThread(touchThread, 10); // short time; it is already in trouble
           // runningThreads.remove   not necessary since new one is put() in below
-          lastFinishedTouch = nextTouch.get() - 1;
+          lastFinishedTouch.set(nextTouch.get() - 1);
           touchThread = null;
           return false;
         }
@@ -6217,7 +6225,7 @@ public class EDStatic {
         String2.log(
             "%%% TouchThread: EDStatic noticed that touchThread isn't alive at "
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        lastFinishedTouch = nextTouch.get() - 1;
+        lastFinishedTouch.set(nextTouch.get() - 1);
         touchThread = null;
         return false;
       }
@@ -6235,7 +6243,7 @@ public class EDStatic {
 
       // emailIsActive && emailThread isn't running
       // need to start a new emailThread
-      emailThread = new EmailThread(nextEmail);
+      emailThread = new EmailThread(nextEmail.get());
       runningThreads.put(emailThread.getName(), emailThread);
       String2.log(
           "%%% EmailThread: new emailThread started at "
@@ -6292,17 +6300,17 @@ public class EDStatic {
 
   /** This returns the number of unfinished emails. */
   public static int nUnfinishedEmails() {
-    return (emailList.size() - lastFinishedEmail) - 1;
+    return (emailList.size() - lastFinishedEmail.get()) - 1;
   }
 
   /** This returns the number of unfinished tasks. */
   public static int nUnfinishedTasks() {
-    return (taskList.size() - lastFinishedTask) - 1;
+    return (taskList.size() - lastFinishedTask.get()) - 1;
   }
 
   /** This returns the number of unfinished touches. */
   public static int nUnfinishedTouches() {
-    return (touchList.size() - lastFinishedTouch) - 1;
+    return (touchList.size() - lastFinishedTouch.get()) - 1;
   }
 
   // addEmail is inside EDStatic.email()
@@ -7064,15 +7072,16 @@ public class EDStatic {
     try {
       // if previous tasks are still running, return
       ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-      Integer datasetLastAssignedTask = (Integer) lastAssignedTask.get(tDatasetID);
+      Integer datasetLastAssignedTask = lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          datasetLastAssignedTask != null && lastFinishedTask < datasetLastAssignedTask.intValue();
+          datasetLastAssignedTask != null
+              && lastFinishedTask.get() < datasetLastAssignedTask.intValue();
       if (verbose)
         String2.log(
             "  "
                 + tClassName
                 + ".makeCopyFileTasks: lastFinishedTask="
-                + lastFinishedTask
+                + lastFinishedTask.get()
                 + " < datasetLastAssignedTask("
                 + tDatasetID
                 + ")="
@@ -7204,7 +7213,7 @@ public class EDStatic {
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
         if (EDStatic.forceSynchronousLoading) {
-          while (EDStatic.lastFinishedTask < lastTask) {
+          while (lastFinishedTask.get() < lastTask) {
             Thread.sleep(2000);
           }
         }
@@ -7741,5 +7750,28 @@ public class EDStatic {
     EDStatic.taskThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
     EDStatic.touchThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
     EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+  }
+
+  public static void resetLuceneIndex() {
+    try {
+      // delete old index files
+      // Index will be recreated, and Lucense throws exception if it tries to read from old
+      // indices.
+      File2.deleteAllFiles(fullLuceneDirectory);
+
+      // Since I recreate index when erddap restarted, I can change anything
+      //  (e.g., Directory type, Version) any time
+      //  (no worries about compatibility with existing index).
+      // ??? For now, use NIOFSDirectory,
+      //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
+      luceneDirectory = new NIOFSDirectory(FileSystems.getDefault().getPath(fullLuceneDirectory));
+
+      // At start of ERDDAP, always create a new index.  Never re-use existing index.
+      // Do it here to use true and also to ensure it can be done.
+      createLuceneIndexWriter(true); // throws exception if trouble
+    } catch (Throwable t) {
+      useLuceneSearchEngine = false;
+      throw new RuntimeException(t);
+    }
   }
 }

@@ -322,13 +322,14 @@ public class EDDTableCopy extends EDDTable {
       try {
         // check if taskThread has finished previously assigned tasks for this dataset
         EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-        Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(datasetID);
+        Integer lastAssignedTask = EDStatic.lastAssignedTask.get(datasetID);
         boolean pendingTasks =
-            lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            lastAssignedTask != null
+                && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
         if (verbose)
           String2.log(
               "  lastFinishedTask="
-                  + EDStatic.lastFinishedTask
+                  + EDStatic.lastFinishedTask.get()
                   + " < lastAssignedTask("
                   + tDatasetID
                   + ")="
@@ -465,7 +466,7 @@ public class EDDTableCopy extends EDDTable {
         // checking on it
 
         if (EDStatic.forceSynchronousLoading) {
-          while (EDStatic.lastFinishedTask < taskNumber) {
+          while (EDStatic.lastFinishedTask.get() < taskNumber) {
             Thread.sleep(2000);
           }
         }
