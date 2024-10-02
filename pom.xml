@@ -158,19 +158,38 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.5.0</version>
                 <executions>
-                <execution>
-                    <id>enforce-maven</id>
-                    <goals>
-                    <goal>enforce</goal>
-                    </goals>
-                    <configuration>
-                    <rules>
-                        <requireMavenVersion>
-                            <version>3.6.3</version>
-                        </requireMavenVersion>
-                    </rules>    
-                    </configuration>
-                </execution>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>no-test-data-in-src-test-resources</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireFilesDontExist>
+                                    <message>Test data directories should be removed from src/test/resources</message>
+                                    <files>
+                                        <file>${project.basedir}/src/test/resources/data</file>
+                                        <file>${project.basedir}/src/test/resources/largeFiles</file>
+                                        <file>${project.basedir}/src/test/resources/largePoints</file>
+                                        <file>${project.basedir}/src/test/resources/largeSatellite</file>
+                                    </files>
+                                </requireFilesDontExist>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
