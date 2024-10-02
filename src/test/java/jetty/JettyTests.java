@@ -3829,7 +3829,7 @@ class JettyTests {
     Test.ensureEqual(table.getColumnName(0), "abund_m3", "");
     Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance", "");
     Test.ensureEqual(table.getFloatData(0, 0), 11.49f, "");
-    Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
+    Test.ensureEqual(table.getFloatData(0, 1), 74.72f, "");
 
     url = "http://localhost:8080/erddap/tabledap/erdGlobecBottle?cruise_id&distinct()";
     table.readOpendapSequence(url, false);
@@ -6973,7 +6973,7 @@ class JettyTests {
         continue;
       } else {
         try {
-          Thread.sleep(1000 * (i + 1) * (i + 1));
+          Thread.sleep(1000 * (i + 1) * ((long) (i + 1)));
           msg = null;
         } catch (InterruptedException e) {
           return msg;

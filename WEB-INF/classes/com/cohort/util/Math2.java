@@ -908,6 +908,33 @@ public class Math2 {
   }
 
   /**
+   * Safely rounds a double to an int. (Math.round but rounds to a long and not safely.)
+   *
+   * @param d any double
+   * @return Integer.MAX_VALUE if d is too small, too big, or NaN; otherwise d, rounded to the
+   *     nearest int. Undesirable: d.5 rounds up for positive numbers, down for negative.
+   */
+  public static final int longToInt(final long l) {
+    return l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE - 0.5
+        ? Integer.MAX_VALUE
+        : (int) l; // safe since checked for larger values above
+  }
+
+  /**
+   * Divides a long. This is used to tell the compiler we are intentionally loosing the remainder.
+   */
+  public static final long divideNoRemainder(final long l, final long divisor) {
+    return l / divisor;
+  }
+
+  /**
+   * Divides an int. This is used to tell the compiler we are intentionally loosing the remainder.
+   */
+  public static final int divideNoRemainder(final int l, final int divisor) {
+    return l / divisor;
+  }
+
+  /**
    * Safely rounds a double to a uint.
    *
    * @param d any double
@@ -1522,7 +1549,7 @@ public class Math2 {
     //  9,223,372,036,854,775,808
     // +9,223,372,036,854,775,808
     // =18 446 744 073 709 551 616
-    return tl < 0 ? tl + 18446744073709551616.0 : tl; // 2^64
+    return tl < 0 ? tl + ULONG_MAX_VALUE_AS_DOUBLE : tl; // 2^64
   }
 
   /**

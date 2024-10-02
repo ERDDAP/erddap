@@ -14,7 +14,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -2466,7 +2465,7 @@ public class SSR {
    */
   public static String getTempDirectory() {
     if (tempDirectory == null) {
-      String tdir = EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/";
+      String tdir = File2.getWebInfParentDirectory() + "WEB-INF/temp/";
       // make it, because Git doesn't track empty dirs
       File2.makeDirectory(tdir);
       // then set it if successful

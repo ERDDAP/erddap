@@ -4,7 +4,6 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
@@ -22,7 +21,7 @@ class HtmlWidgetsTests {
     // boolean oDebugMode = debugMode;
     // debugMode = true;
     String fullName = SSR.getTempDirectory() + "TestHtmlWidgets.html";
-    String imageDir = EDStatic.getWebInfParentDirectory() + "\\images\\";
+    String imageDir = File2.getWebInfParentDirectory() + "\\images\\";
     File2.delete(fullName);
     StringBuilder sb = new StringBuilder();
     boolean tHtmlTooltips = true;
@@ -33,7 +32,7 @@ class HtmlWidgetsTests {
         HtmlWidgets.DOCTYPE_HTML
             + "  <title>Test Html Widgets</title>\n"
             + "  <link href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">\n"
-            + widgets.leafletHead("http://localhost:8080/cwexperimental")
+            + HtmlWidgets.leafletHead("http://localhost:8080/cwexperimental")
             +
             // myMouseMove_SCRIPT +
             "</head>\n"

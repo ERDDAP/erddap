@@ -7,7 +7,6 @@ import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -508,7 +507,7 @@ class SgtMapTests {
     Test.ensureEqual((float) grid.lon[1], -9.983334f, ""); // was -9.9666666666f
     Test.ensureEqual(grid.lat.length, 3, ""); // was 2
     Test.ensureEqual((float) grid.lat[0], -80f, "");
-    Test.ensureEqual((float) grid.lat[1], -79.983334f, ""); // was -79.966666666f
+    Test.ensureEqual((float) grid.lat[1], -79.98334f, ""); // was -79.966666666f
     Test.ensureEqual(grid.getData(0, 0), 1838, ""); // same as above 1932
     Test.ensureEqual(grid.getData(0, 1), 1835, ""); // was 1942
     Test.ensureEqual(grid.getData(1, 0), 1839, ""); // was 1938
@@ -648,7 +647,7 @@ class SgtMapTests {
       throws Exception {
 
     // describe grid vectors
-    ArrayList pointDataList = new ArrayList();
+    ArrayList<GraphDataLayer> pointDataList = new ArrayList<>();
     String griddataDir = SgtMapTests.class.getResource("/data/gridTests/").getPath();
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
@@ -660,7 +659,7 @@ class SgtMapTests {
      */
     String vectorCpt =
         CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
+            File2.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Rainbow",
@@ -673,7 +672,7 @@ class SgtMapTests {
 
     String gridCpt =
         CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
+            File2.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "BlueWhiteRed", // "LightBlueWhite"
@@ -744,7 +743,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile
@@ -833,7 +832,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile

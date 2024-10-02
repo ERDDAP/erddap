@@ -1267,7 +1267,7 @@ public class LoadDatasets extends Thread {
           EDStatic.emailEverythingToCsv, "Unusual Activity: lots of requests", sb.toString());
     } else if (nFailed > 10
         && nFailed
-            > nSucceeded * (EDStatic.unusualActivityFailPercent) / 100) { // >25% of requests fail
+            > nSucceeded * EDStatic.unusualActivityFailPercent / 100) { // >25% of requests fail
       EDStatic.email(
           EDStatic.emailEverythingToCsv,
           "Unusual Activity: >" + EDStatic.unusualActivityFailPercent + "% of requests failed",

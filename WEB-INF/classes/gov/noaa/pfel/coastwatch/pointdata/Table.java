@@ -11826,7 +11826,7 @@ public class Table {
         }
 
         // if not for regex, convert isoString to epochSeconds
-        if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
+        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
           if (Calendar2.isIsoDate(tValue)) {
             conValueD =
                 repair
@@ -11890,7 +11890,7 @@ public class Table {
         // numeric variables
 
         // if op=regex, value must have "'s around it
-        if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
+        if (PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
           if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
             // repair if needed
             if (!tValue.startsWith("\"")) tValue = "\"" + tValue;
@@ -12879,7 +12879,7 @@ public class Table {
     final int nRows = nRows();
     final int nKeyColumnNames = keyColumnNames.length;
     for (int i = 0; i < nKeyColumnNames; i++) {
-      if (sortKeyColumnNames[i] == keyColumnNames[i].trim()) {
+      if (sortKeyColumnNames[i].equals(keyColumnNames[i].trim())) {
         continue;
       }
 

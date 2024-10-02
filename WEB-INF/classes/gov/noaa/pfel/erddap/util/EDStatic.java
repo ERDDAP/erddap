@@ -231,8 +231,6 @@ public class EDStatic {
   public static final String INSTITUTION = "institution";
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
-  /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-  private static String webInfParentDirectory;
   // fgdc and iso19115XmlDirectory are used for virtual URLs.
   public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
   public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
@@ -1818,9 +1816,7 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-      if (webInfParentDirectory == null) {
-        webInfParentDirectory = File2.getWebInfParentDirectory();
-      }
+      String webInfParentDirectory = File2.getWebInfParentDirectory();
 
       fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
       fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR;
@@ -1895,7 +1891,7 @@ public class EDStatic {
       Path bpd = Path.of(bigParentDirectory);
       if (!bpd.isAbsolute()) {
         if (!File2.isDirectory(bigParentDirectory)) {
-          bigParentDirectory = EDStatic.webInfParentDirectory + bigParentDirectory;
+          bigParentDirectory = File2.getWebInfParentDirectory() + bigParentDirectory;
         }
       }
       Test.ensureTrue(
@@ -4310,10 +4306,6 @@ public class EDStatic {
     }
   }
 
-  public static String getWebInfParentDirectory() {
-    return EDStatic.webInfParentDirectory;
-  }
-
   /** This does getNotNothingString for each messages[]. */
   private static String[] getNotNothingString(
       ResourceBundle2 messages[], String name, String errorInMethod) {
@@ -5616,7 +5608,7 @@ public class EDStatic {
    *     automatically gets role=anyoneLoggedIn ("[anyoneLoggedIn]").
    */
   public static String[] getRoles(String loggedInAs) {
-    if (loggedInAs == null || loggedInAs == loggedInAsHttps) return null;
+    if (loggedInAs == null || loggedInAsHttps.equals(loggedInAs)) return null;
 
     // ???future: for authentication="basic", use tomcat-defined roles???
 
@@ -7271,7 +7263,7 @@ public class EDStatic {
 
     // always: if >=2000ms since gc and memory use is high, call gc
     long inUse = Math2.getMemoryInUse();
-    if (timeSinceGc >= 3 * Math2.shortSleep
+    if (timeSinceGc >= 3L * Math2.shortSleep
         && inUse
             >= Math2
                 .halfMemory) { // This is arbitrary. I don't want to call gc too often but I don't

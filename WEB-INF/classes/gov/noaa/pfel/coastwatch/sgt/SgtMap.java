@@ -19,7 +19,6 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.hdf.HdfConstants;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.sgt.dm.*;
 import gov.noaa.pmel.util.*;
@@ -127,7 +126,7 @@ public class SgtMap {
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
   public static String fullRefDirectory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -448,6 +447,7 @@ public class SgtMap {
    *     will exist but have size()=0.
    * @throws Exception
    */
+  @SuppressWarnings("ReferenceEquality") // below gridGrid == contourGrid
   public static ArrayList makeMap(
       boolean transparent,
       int legendPosition,
@@ -515,6 +515,7 @@ public class SgtMap {
       long startTime = System.currentTimeMillis();
       long time = System.currentTimeMillis();
 
+      // We want == here not object.equals.
       if (gridGrid != null && contourGrid != null && gridGrid == contourGrid)
         Test.error(String2.ERROR + " in SgtMap.makeMap: gridGrid == contourGrid!");
       if (!Double.isFinite(minX))
@@ -3081,7 +3082,7 @@ public class SgtMap {
       BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
 
       // make the cpt file
-      String contextDir = EDStatic.getWebInfParentDirectory(); // with / separator and / at the end
+      String contextDir = File2.getWebInfParentDirectory(); // with / separator and / at the end
       DoubleArray dataDA = new DoubleArray(grid.data);
       double stats[] = dataDA.calculateStats();
       double minData = stats[PrimitiveArray.STATS_MIN];
@@ -3230,7 +3231,7 @@ public class SgtMap {
 
     String cptName =
         CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
+            File2.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Topography",

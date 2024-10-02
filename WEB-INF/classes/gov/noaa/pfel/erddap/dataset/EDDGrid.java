@@ -15548,15 +15548,15 @@ public abstract class EDDGrid extends EDD {
             // origin: from project, creator_email, creator_name, infoUrl, institution
             "        <origin>\n"
             + XML.encodeAsXML(
-                (project == unknown ? "" : "Project: " + project + "\n")
-                    + (creatorName == unknown ? "" : "Name: " + creatorName + "\n")
-                    + (creatorEmail == unknown ? "" : "Email: " + creatorEmail + "\n")
+                (unknown.equals(project) ? "" : "Project: " + project + "\n")
+                    + (unknown.equals(creatorName) ? "" : "Name: " + creatorName + "\n")
+                    + (unknown.equals(creatorEmail) ? "" : "Email: " + creatorEmail + "\n")
                     + "Institution: "
                     + institution
                     + "\n"
                     + // always known
-                    (infoUrl == unknown ? "" : "InfoURL: " + infoUrl + "\n")
-                    + (sourceUrl == unknown ? "" : "Source URL: " + sourceUrl + "\n"))
+                    (unknown.equals(infoUrl) ? "" : "InfoURL: " + infoUrl + "\n")
+                    + (unknown.equals(sourceUrl) ? "" : "Source URL: " + sourceUrl + "\n"))
             + "        </origin>\n"
             + "        <origin_cntinfo>\n"
             + // ngdc added?
@@ -15588,7 +15588,7 @@ public abstract class EDDGrid extends EDD {
             "          </cntinfo>\n"
             + "        </origin_cntinfo>\n"
             + "        <pubdate>"
-            + XML.encodeAsXML(dateIssued == unknown ? eddCreationDate : dateIssued)
+            + XML.encodeAsXML(unknown.equals(dateIssued) ? eddCreationDate : dateIssued)
             + "</pubdate>\n"
             + "        <title>"
             + XML.encodeAsXML(title)
@@ -15673,7 +15673,7 @@ public abstract class EDDGrid extends EDD {
             + "Add .dods to download data via the OPeNDAP protocol.</description>\n"
             + "          <function>OPeNDAP</function>\n"
             + "        </CI_OnlineResource>\n"
-            + (infoUrl == unknown
+            + (unknown.equals(infoUrl)
                 ? ""
                 : "        <CI_OnlineResource>\n"
                     + "          <linkage>"
@@ -15699,7 +15699,7 @@ public abstract class EDDGrid extends EDD {
                     + "        </CI_OnlineResource>\n"));
 
     // larger work citation: project
-    if (project != unknown)
+    if (!unknown.equals(project))
       writer.write(
           "        <lworkcit>\n"
               + "          <citeinfo>\n"
@@ -15904,7 +15904,9 @@ public abstract class EDDGrid extends EDD {
         "    <keywords>\n"
             + "      <theme>\n"
             + "        <themekt>"
-            + (keywordsVocabulary == unknown ? "Uncontrolled" : XML.encodeAsXML(keywordsVocabulary))
+            + (unknown.equals(keywordsVocabulary)
+                ? "Uncontrolled"
+                : XML.encodeAsXML(keywordsVocabulary))
             + "</themekt>\n");
     for (int i = 0; i < kar.size(); i++)
       writer.write("        <themekey>" + XML.encodeAsXML(kar.get(i)) + "</themekey>\n");
@@ -15916,7 +15918,7 @@ public abstract class EDDGrid extends EDD {
           "      <theme>\n"
               + "        <themekt>"
               + XML.encodeAsXML(
-                  standardNameVocabulary == unknown ? "Uncontrolled" : standardNameVocabulary)
+                  unknown.equals(standardNameVocabulary) ? "Uncontrolled" : standardNameVocabulary)
               + "</themekt>\n");
       for (int i = 0; i < standardNames.size(); i++)
         writer.write(
@@ -15927,7 +15929,7 @@ public abstract class EDDGrid extends EDD {
     writer.write("    </keywords>\n");
 
     // Platform and Instrument Indentification: satellite, sensor
-    if (satellite != unknown || sensor != unknown)
+    if (!unknown.equals(satellite) || !unknown.equals(sensor))
       writer.write(
           "    <plainsid>\n"
               + // long and short names the same since that's all I have
@@ -15963,7 +15965,7 @@ public abstract class EDDGrid extends EDD {
     String conPhone = unknown;
     String conEmail = creatorEmail;
     String conPos = unknown;
-    if (conEmail == unknown) {
+    if (unknown.equals(conEmail)) {
       conOrg = adminInstitution;
       conName = adminIndividualName;
       conPhone = adminPhone;
@@ -16031,21 +16033,23 @@ public abstract class EDDGrid extends EDD {
             + "      <browset>HTML</browset>\n"
             + "    </browse>\n");
 
-    if (contributorName != unknown
-        || contributorEmail != unknown
-        || contributorRole != unknown
-        || acknowledgement != unknown)
+    if (!unknown.equals(contributorName)
+        || !unknown.equals(contributorEmail)
+        || !unknown.equals(contributorRole)
+        || !unknown.equals(acknowledgement))
       writer.write(
           "    <datacred>"
               + XML.encodeAsXML(
-                  (contributorName == unknown ? "" : "Contributor Name: " + contributorName + "\n")
-                      + (contributorEmail == unknown
+                  (unknown.equals(contributorName)
+                          ? ""
+                          : "Contributor Name: " + contributorName + "\n")
+                      + (unknown.equals(contributorEmail)
                           ? ""
                           : "Contributor Email: " + contributorEmail + "\n")
-                      + (contributorRole == unknown
+                      + (unknown.equals(contributorRole)
                           ? ""
                           : "Contributor Role: " + contributorRole + "\n")
-                      + (acknowledgement == unknown
+                      + (unknown.equals(acknowledgement)
                           ? ""
                           : "Acknowledgement: " + acknowledgement + "\n"))
               + "    </datacred>\n");

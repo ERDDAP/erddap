@@ -152,9 +152,9 @@ class TestUtil {
         Math2.roundToLong(-9.223372036854776E18), -9223372036854775808L, "k-3"); // Long.MIN_VALUE
     Test.ensureEqual(
         Math2.longToDoubleNaN(9223372036854775806L), // Long.MAX_VALUE - 1
-        9223372036854774784.0,
+        9.223372036854775E+18,
         "k+"); // Not good, but best available
-    Test.ensureEqual(Math.rint(9223372036854774784.0), 9223372036854774784L, "k+");
+    Test.ensureEqual(Math.rint(9.223372036854775E+18), 9223372036854774784L, "k+");
 
     Test.ensureEqual(Math2.longToDoubleNaN(9223372036854775807L), Double.NaN, "kMV");
     Test.ensureEqual(Math2.longToDoubleNaN(Long.MAX_VALUE), Double.NaN, "kMV2");
@@ -376,9 +376,9 @@ class TestUtil {
         Math2.almostEqual(14, 0.00000000000000123, 0.00000000000000567), true, "b"); // almost 0
     Test.ensureEqual(
         Math2.almostEqual(14, 0.00000000000000123, 0.000000123), false, "c"); // not almost 0
-    Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234567, 0.12345678901234566), true, "d");
+    Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234568, 0.12345678901234566), true, "d");
     Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234, 0.12345678901235), false, "e");
-    Test.ensureEqual(Math2.almostEqual(14, 12345678901234567.0, 12345678901234566.0), true, "f");
+    Test.ensureEqual(Math2.almostEqual(14, 12345678901234568.0, 12345678901234566.0), true, "f");
     Test.ensureEqual(Math2.almostEqual(14, 12345678901234.0, 12345678901235.0), false, "g");
     Test.ensureEqual(Math2.almostEqual(14, Double.NaN, Double.NaN), false, "h");
     Test.ensureEqual(Math2.almostEqual(14, Double.POSITIVE_INFINITY, 1e300), false, "i");
@@ -535,7 +535,7 @@ class TestUtil {
     Test.ensureEqual(Math2.roundToLong(1.49), 1, "i");
     // MIN_VALUE -9223372036854775808.0
     Test.ensureEqual(
-        Math2.roundToLong(-9223372036854777000.0), Long.MAX_VALUE, "k"); // unusual: limited double
+        Math2.roundToLong(-9.223372036854778E+18), Long.MAX_VALUE, "k"); // unusual: limited double
     // precision throws this to mv
     Test.ensureEqual(
         Math2.roundToLong(Long.MIN_VALUE),
@@ -543,7 +543,7 @@ class TestUtil {
         "k"); // unusual: limited double precision
     // throws this to mv
     Test.ensureEqual(
-        Math2.roundToLong(9.223372036854774784E18), // largest that can do round trip
+        Math2.roundToLong(9.223372036854775E+18), // largest that can do round trip
         9223372036854774784L,
         "l");
     Test.ensureEqual(Math2.roundToLong(Long.MAX_VALUE), Long.MAX_VALUE, "l");
@@ -747,7 +747,7 @@ class TestUtil {
 
     // niceDouble
     String2.log("test niceDouble");
-    Test.ensureEqual(Math2.niceDouble(8.999999999999999, 7), 9, "a");
+    Test.ensureEqual(Math2.niceDouble(8.999999999999998, 7), 9, "a");
     Test.ensureEqual(Math2.niceDouble(-4f / 3, 7), -1.333333, "b");
 
     // random

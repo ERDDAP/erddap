@@ -1096,7 +1096,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       int tFileListPo = 0; // next one to look at
       int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
       long readFileCumTime = 0;
-      long removeCumTime = 0;
       int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
@@ -1110,7 +1109,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tFileNameRegex.contains("zarr")
                   || (tPathRegex != null && tPathRegex.contains("zarr"));
           if (isZarr) {
-            if (!isZarr || tDirI == Integer.MAX_VALUE) {
+            if (tDirI == Integer.MAX_VALUE) {
               tFileListPo++;
               // Skipping file name that is null or empty string and not in zarr.
               continue;

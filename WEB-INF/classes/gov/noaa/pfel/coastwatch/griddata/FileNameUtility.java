@@ -385,8 +385,9 @@ public class FileNameUtility {
       endGC.add(Calendar2.DATE, 1);
       centeredIsoDateTime =
           Calendar2.epochSecondsToIsoStringT(
-              Math2.roundToLong(
-                  ((startGC.getTimeInMillis() + endGC.getTimeInMillis()) / 2) / 1000.0));
+              (double)
+                  Math2.roundToLong(
+                      ((startGC.getTimeInMillis() + endGC.getTimeInMillis()) / 2.0) / 1000.0));
       int nDays =
           Math2.roundToInt(
               (endGC.getTimeInMillis() - startGC.getTimeInMillis() + 0.0)

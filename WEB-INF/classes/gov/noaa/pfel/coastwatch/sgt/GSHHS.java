@@ -8,7 +8,6 @@ import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.geom.GeneralPath;
 import java.io.*;
 import java.util.Collections;
@@ -51,7 +50,7 @@ public class GSHHS {
    * should have slash at end.
    */
   public static String gshhsDirectory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 

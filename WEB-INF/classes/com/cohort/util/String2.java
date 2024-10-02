@@ -5651,6 +5651,7 @@ public class String2 {
    * @param d
    * @return int[2]: [0]=m, [1]=t. (or {0, 0} if d=0, or {1, Integer.MAX_VALUE} if !finite(d))
    */
+  @SuppressWarnings("NarrowCalculation") // specifically tl / 10
   public static int[] toRational(double d) {
     if (d == 0) return new int[] {0, 0};
 

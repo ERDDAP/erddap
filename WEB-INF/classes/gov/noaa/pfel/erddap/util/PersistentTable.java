@@ -185,7 +185,7 @@ public class PersistentTable {
    * @return the number of rows after the rows are added
    */
   public int addRows(int n) throws IOException {
-    raf.seek(nRows * nBytesPerRow);
+    raf.seek(nRows * (long) nBytesPerRow);
     byte ar[] = new byte[nBytesPerRow];
     Arrays.fill(ar, (byte) 32);
     ar[nBytesPerRow - 1] = (byte) '\n';
@@ -205,7 +205,7 @@ public class PersistentTable {
   public void clearRow(int row) throws IOException {
     if (row < 0 || row >= nRows)
       throw new RuntimeException("row=" + row + " must be between 0 and " + (nRows - 1));
-    raf.seek(row * nBytesPerRow);
+    raf.seek(row * (long) nBytesPerRow);
     byte ar[] = new byte[nBytesPerRow - 1]; // -1 since \n won't be changed
     Arrays.fill(ar, (byte) 32);
     raf.write(ar);

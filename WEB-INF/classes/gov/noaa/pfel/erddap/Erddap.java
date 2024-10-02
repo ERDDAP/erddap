@@ -269,7 +269,7 @@ public class Erddap extends HttpServlet {
             + BPD
             + "\n"
             + "contextDirectory="
-            + EDStatic.getWebInfParentDirectory()
+            + File2.getWebInfParentDirectory()
             + "\n"
             + "available fonts="
             + String2.toCSSVString(
@@ -1670,7 +1670,7 @@ public class Erddap extends HttpServlet {
     // update the count of recent failed logins
     ia[0]++;
     // update the minute of the last failed login
-    ia[1] = Math2.roundToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE);
+    ia[1] = Math2.longToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE);
     if (wasNull) failedLogins.put(user, ia);
   }
 
@@ -1709,8 +1709,7 @@ public class Erddap extends HttpServlet {
     if (ia == null) return 0;
 
     // greater than 10 minutes since last attempt?
-    int minutesSince =
-        Math2.roundToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE - ia[1]);
+    int minutesSince = (int) (System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE - ia[1]);
     int minutesToGo = Math.max(0, 10 - minutesSince);
     if (minutesToGo == 0) {
       failedLogins.remove(user); // erase any info about failed logins
@@ -8492,7 +8491,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int bbox[] =
         String2.toIntArray(
             String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
-    int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
+    int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
     tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
     String e2b =
         "rs=EPSG:4326&#x26;width=360&#x26;height="
@@ -10983,7 +10982,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       int bbox[] =
           String2.toIntArray(
               String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
-      int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
+      int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
       tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
       String e2 =
           "&#x26;request=GetMap&#x26;bbox="
@@ -12797,7 +12796,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "Some characters are never allowed in requests.");
     }
-    String dir = EDStatic.getWebInfParentDirectory() + protocol + "/";
+    String dir = File2.getWebInfParentDirectory() + protocol + "/";
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -13174,7 +13173,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "SetDatasetFlag " + sf + ", IP Address (since last daily report)", ipAddress);
       EDStatic.tally.add("SetDatasetFlag " + sf + ", IP Address (since startup)", ipAddress);
 
-      Math2.sleep(delaySeconds * 1000);
+      Math2.sleep(delaySeconds * 1000L);
       writer.write(message);
       if (verbose) String2.log(message + " setDatasetFlag(" + ipAddress + ")");
 

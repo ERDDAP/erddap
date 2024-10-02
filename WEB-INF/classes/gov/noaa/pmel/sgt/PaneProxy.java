@@ -349,7 +349,7 @@ public class PaneProxy { // Bob Simons made public
     Component[] comps = pane_.getComponents();
     for (int i = 0; i < comps.length; i++) {
       if (comps[i] instanceof Layer) {
-        if (((Layer) comps[i]).getId() == id) return (Layer) comps[i];
+        if (java.util.Objects.equals(((Layer) comps[i]).getId(), id)) return (Layer) comps[i];
       } else if (comps[i] instanceof Panel) {
         if (((Panel) comps[i]).hasLayer(id)) return (Layer) ((Panel) comps[i]).getLayer(id);
       }

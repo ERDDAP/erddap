@@ -23,8 +23,6 @@
 
 package gov.noaa.pmel.sgt;
 
-import java.io.*;
-
 /**
  * A class for formatting numbers that follows printf conventions. Also implements C-like atoi and
  * atof functions
@@ -508,7 +506,7 @@ public class Format {
         else return sign * r;
       } else if (ch == 'e' || ch == 'E') {
         long e = (int) parseLong(s.substring(i + 1), 10);
-        return sign * r * Math.pow(10, e);
+        return sign * r * Math.pow(10, (double) e);
       } else return sign * r;
       i++;
     }

@@ -425,7 +425,7 @@ public class CompoundColorMap extends ColorMap {
         Calendar2.clearSmallerFields(tgc, majorTrigger); // beginning of next month
         // is time to next trigger relatively small?  then triggered=true
         if (Calendar2.gcToEpochSeconds(tgc) - Calendar2.gcToEpochSeconds(gc)
-            <= nth * Calendar2.SECONDS_PER_DAY / 2) {
+            <= Math2.divideNoRemainder(nth * Calendar2.SECONDS_PER_DAY, 2)) {
           triggered = true;
           gc.add(majorTrigger, 1); // clearSmallerFields done below
         }
@@ -814,7 +814,7 @@ public class CompoundColorMap extends ColorMap {
               double interval =
                   Math2.mantissa(
                       Math.abs(range) / sectionOptions[i]); // e.g., 7.0000001 or 6.99999999
-              if (Math2.almostEqual(9, interval, Math.round(interval))) {
+              if (Math2.almostEqual(9, interval, (double) Math.round(interval))) {
                 nSections = sectionOptions[i];
                 break;
               }
@@ -967,7 +967,7 @@ public class CompoundColorMap extends ColorMap {
           + cumulativeTotalTime
           + " (often significant, -1=not measured)\n"
           + "  sqrt(compoundColorMap.cumulativeCount)="
-          + Math2.roundToInt(Math.sqrt(cumulativeCount))
+          + Math2.roundToInt(Math.sqrt((double) cumulativeCount))
           + " (0=not measured)";
   }
 

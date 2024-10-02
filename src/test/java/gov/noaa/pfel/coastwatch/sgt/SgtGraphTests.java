@@ -9,7 +9,6 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -43,13 +42,12 @@ class SgtGraphTests {
     boolean xIsLogAxis = false;
     boolean yIsLogAxis = false;
     // AttributedString2.verbose = true;
-    long time = System.currentTimeMillis();
     String tempDir = SSR.getTempDirectory();
     SgtGraph sgtGraph =
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
 
@@ -91,7 +89,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_SMALL,
             0, // vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList<>();
     graphDataLayers1.add(graphDataLayer);
 
     // graph 1: plus 100 random points of each marker type
@@ -252,7 +250,7 @@ class SgtGraphTests {
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
     String baseImageName =
@@ -1028,7 +1026,7 @@ class SgtGraphTests {
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
     String imageDir =
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/";
 
@@ -1054,7 +1052,7 @@ class SgtGraphTests {
         new CompoundColorMap(
             // String baseDir, String palette, String scale, double minData,
             // double maxData, int nSections, boolean continuous, String resultDir)
-            EDStatic.getWebInfParentDirectory() + "WEB-INF/cptfiles/",
+            File2.getWebInfParentDirectory() + "WEB-INF/cptfiles/",
             "Rainbow",
             "linear",
             0,

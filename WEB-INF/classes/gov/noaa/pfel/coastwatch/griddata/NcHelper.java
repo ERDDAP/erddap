@@ -1843,7 +1843,7 @@ public class NcHelper {
     PrimitiveArray pa = getPrimitiveArray(array);
     Test.ensureEqual(
         pa.size(),
-        nX * nY * nZ * ((long) nT),
+        nX * (long) nY * nZ * ((long) nT),
         "NcHelper.get4DValues nFound!=nExpected.\n"
             + " name="
             + variable.getFullName()

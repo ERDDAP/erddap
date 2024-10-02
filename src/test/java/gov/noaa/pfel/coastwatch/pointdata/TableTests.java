@@ -1716,7 +1716,7 @@ public class TableTests {
               + attempt
               + " Done.\n"
               + "cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)"
               + "\ntime="
               + time
@@ -1766,7 +1766,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       msg =
           "*** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=2881 Java 1.7M4700, was 747)"
               + "\ntime="
               + time
@@ -1816,7 +1816,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       String2.log(
           "********** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual=31414 Java 1.7M4700, was 9679)"
               + "\ntime="
               + time
@@ -1885,7 +1885,7 @@ public class TableTests {
       time = System.currentTimeMillis() - time;
       String2.log(
           "********** Done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)"
               + "\ntime="
               + time
@@ -1927,7 +1927,7 @@ public class TableTests {
           "saveAsCsvASCII attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 796
               "\ntime="
               + time
@@ -1949,7 +1949,7 @@ public class TableTests {
           "saveAsJson attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 974
               "\ntime="
               + time
@@ -1971,7 +1971,7 @@ public class TableTests {
           "saveAsFlatNc attempt#"
               + attempt
               + " done. cells/ms="
-              + (table.nColumns() * table.nRows() / time)
+              + (table.nColumns() * ((long) table.nRows()) / time)
               + // 2190
               "\ntime="
               + time

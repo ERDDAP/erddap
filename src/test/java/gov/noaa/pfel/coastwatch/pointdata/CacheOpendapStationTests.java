@@ -266,15 +266,15 @@ class CacheOpendapStationTests {
     Test.ensureEqual(table.getColumnName(3), "time", "");
     Test.ensureEqual(table.getColumnName(4), "u_component_uncorrected", "");
     Test.ensureEqual(table.getColumnName(5), "v_component_uncorrected", "");
-    Test.ensureEqual(table.getFloatData(0, 0), -121.903333f, "");
-    Test.ensureEqual(table.getFloatData(1, 0), 36.833333f, "");
+    Test.ensureEqual(table.getFloatData(0, 0), -121.903336f, "");
+    Test.ensureEqual(table.getFloatData(1, 0), 36.833332f, "");
     Test.ensureEqual(table.getFloatData(2, 0), 6f, "");
     Test.ensureEqual(table.getDoubleData(3, 0), 1154396111, "");
     Test.ensureEqual(table.getFloatData(4, 0), 20.3f, "");
     Test.ensureEqual(table.getFloatData(5, 0), -24.3f, "");
 
-    Test.ensureEqual(table.getFloatData(0, 1), -121.903333f, "");
-    Test.ensureEqual(table.getFloatData(1, 1), 36.833333f, "");
+    Test.ensureEqual(table.getFloatData(0, 1), -121.903336f, "");
+    Test.ensureEqual(table.getFloatData(1, 1), 36.833332f, "");
     Test.ensureEqual(table.getFloatData(2, 1), 10f, "");
     Test.ensureEqual(table.getDoubleData(3, 1), 1154396111, "");
     Test.ensureEqual(table.getFloatData(4, 1), 6.9f, "");

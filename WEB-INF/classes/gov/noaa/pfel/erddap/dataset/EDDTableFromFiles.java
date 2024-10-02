@@ -1855,7 +1855,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       int tFileListPo = 0; // next one to look at
       int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
       long readFileCumTime = 0;
-      long removeCumTime = 0;
       int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
@@ -1869,7 +1868,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               tFileNameRegex.contains("zarr")
                   || (tPathRegex != null && tPathRegex.contains("zarr"));
           if (isZarr) {
-            if (!isZarr || tDirI == Integer.MAX_VALUE) {
+            if (tDirI == Integer.MAX_VALUE) {
               tFileListPo++;
               // Skipping file name that is null or empty string and not in zarr.
               continue;
@@ -4981,21 +4980,21 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       long total = Math.max(1, nNotRead + nReadHaveMatch + nReadNoMatch);
       String2.log(
           "     notRead="
-              + String2.right("" + (nNotRead * 100 / total), 3)
+              + String2.right("" + (nNotRead * 100L / total), 3)
               + "%    readHaveMatch="
-              + String2.right("" + (nReadHaveMatch * 100 / total), 3)
+              + String2.right("" + (nReadHaveMatch * 100L / total), 3)
               + "%    readNoMatch="
-              + String2.right("" + (nReadNoMatch * 100 / total), 3)
+              + String2.right("" + (nReadNoMatch * 100L / total), 3)
               + "%    total="
               + total);
       long cumTotal = Math.max(1, cumNNotRead + cumNReadHaveMatch + cumNReadNoMatch);
       String2.log(
           "  cumNotRead="
-              + String2.right("" + (cumNNotRead * 100 / cumTotal), 3)
+              + String2.right("" + (cumNNotRead * 100L / cumTotal), 3)
               + "% cumReadHaveMatch="
-              + String2.right("" + (cumNReadHaveMatch * 100 / cumTotal), 3)
+              + String2.right("" + (cumNReadHaveMatch * 100L / cumTotal), 3)
               + "% cumReadNoMatch="
-              + String2.right("" + (cumNReadNoMatch * 100 / cumTotal), 3)
+              + String2.right("" + (cumNReadNoMatch * 100L / cumTotal), 3)
               + "% cumTotal="
               + cumTotal
               + "  "

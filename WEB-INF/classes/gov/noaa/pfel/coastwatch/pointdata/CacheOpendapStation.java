@@ -642,7 +642,7 @@ public class CacheOpendapStation {
           dataPA[var] = pas[0];
           Test.ensureEqual(
               dataPA[var].size(),
-              (newOpendapTimeDimensionSize - opendapTimeDimensionSize) * depths.size(),
+              (newOpendapTimeDimensionSize - opendapTimeDimensionSize) * (long) depths.size(),
               errorInMethod + "Unexpected dataPA size for var=" + var);
         }
 

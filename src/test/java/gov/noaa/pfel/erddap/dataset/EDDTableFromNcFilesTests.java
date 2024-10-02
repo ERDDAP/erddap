@@ -7173,7 +7173,7 @@ class EDDTableFromNcFilesTests {
         String2.log(msg);
 
         // if not too slow or too fast, break
-        if (time > expectedMs[test] / 2 && time < expectedMs[test] * 2) break;
+        if (time > expectedMs[test] / 2 && time < expectedMs[test] * 2L) break;
       }
 
       if (test >= kmli) {
@@ -7193,7 +7193,7 @@ class EDDTableFromNcFilesTests {
       }
       if (resultLength < 0.9 * bytes[test]
           || resultLength > 1.2 * bytes[test]
-          || time > expectedMs[test] * 2) {
+          || time > expectedMs[test] * 2L) {
         msg = "Unexpected length or time: " + msg;
         String2.log(msg);
         errors.append(msg);
@@ -17932,7 +17932,7 @@ class EDDTableFromNcFilesTests {
           SSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
           // File2.deleteAllFiles(tempDir); //previous method
         }
-        Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000); // gtspp:
+        Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000L); // gtspp:
         // give OS
         // time to
         // settle

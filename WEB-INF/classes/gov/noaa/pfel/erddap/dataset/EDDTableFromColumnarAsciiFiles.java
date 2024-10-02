@@ -2456,7 +2456,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             + "datasetID=\""
             + datasetID
             + "\" active=\"true\">\n"
-            + (tAccessibleTo == null || tAccessibleTo == "null"
+            + (tAccessibleTo == null || "null".equals(tAccessibleTo)
                 ? ""
                 : "    <accessibleTo>" + tAccessibleTo + "</accessibleTo>\n")
             + "    <reloadEveryNMinutes>"

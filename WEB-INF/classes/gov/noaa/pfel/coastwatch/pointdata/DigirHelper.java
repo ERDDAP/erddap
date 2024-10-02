@@ -789,6 +789,7 @@ public class DigirHelper {
    *     diagnostic severity="fatal" or severity="error" message, an Exception if thrown and that
    *     message is used.
    */
+  @SuppressWarnings("ReferenceEquality") // below yes, simple "!=" is appropriate
   public static void searchDigir(
       String version,
       String xmlnsPrefix[],
@@ -1105,6 +1106,7 @@ public class DigirHelper {
    * @param table data is appended to table. If table has data, it must have the same includeXYZT
    *     and resultsVariables.
    */
+  @SuppressWarnings("ReferenceEquality") // below a simple "!=" test
   public static void searchObis(
       String resources[],
       String url,

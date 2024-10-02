@@ -2937,6 +2937,17 @@ public class Calendar2 {
     return millisToIsoStringTZ(millis);
   }
 
+  /**
+   * This converts seconds since 1970-01-01T00:00:00Z to an ISO Zulu dateTime String with 'T'.
+   *
+   * @param seconds with optional fractional part
+   * @return isoZuluString with 'T' and with the trailing Z)
+   * @throws RuntimeException if trouble (e.g., seconds is NaN)
+   */
+  public static String epochSecondsToIsoStringTZ(long seconds) {
+    return millisToIsoStringTZ(seconds * 1000);
+  }
+
   /** Like epochSecondsToIsoStringTZ, but without the trailing Z. */
   public static String epochSecondsToIsoStringT(double seconds) {
     String s = epochSecondsToIsoStringTZ(seconds);
@@ -5041,6 +5052,10 @@ public class Calendar2 {
     if (!Double.isFinite(millis)) return "infinity";
 
     long time = Math2.roundToLong(millis);
+    return elapsedTimeString(time);
+  }
+
+  public static String elapsedTimeString(long time) {
     if (time < Long.MIN_VALUE + 10000 || time > Long.MAX_VALUE - 10000) return "infinity";
     String negative = "";
     if (time < 0) {
@@ -5200,7 +5215,7 @@ public class Calendar2 {
       double sph = SECONDS_PER_HOUR;
       double spd = SECONDS_PER_DAY;
       double range = stop - start;
-      double mnv2 = maxNValues / 2; // double avoids int MAX_VALUE problem
+      double mnv2 = Math2.divideNoRemainder(maxNValues, 2); // double avoids int MAX_VALUE problem
       int field, biggerField, nice[];
       double divisor;
       if (range <= mnv2 * spm) {

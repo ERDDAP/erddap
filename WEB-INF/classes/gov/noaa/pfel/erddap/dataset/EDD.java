@@ -3090,7 +3090,8 @@ public abstract class EDD {
     if (!Double.isFinite(epochSecondsLastTime) || Math.abs(epochSecondsLastTime) > 1e18)
       return DEFAULT_RELOAD_EVERY_N_MINUTES; // DEFAULT is only returned as the default
     double daysAgo =
-        (System.currentTimeMillis() / 1000 - epochSecondsLastTime) / Calendar2.SECONDS_PER_DAY;
+        (Math2.divideNoRemainder(System.currentTimeMillis(), 1000) - epochSecondsLastTime)
+            / Calendar2.SECONDS_PER_DAY;
     int snm =
         daysAgo < -370
             ? Calendar2.MINUTES_PER_30DAYS

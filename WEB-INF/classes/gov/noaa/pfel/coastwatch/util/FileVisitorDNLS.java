@@ -2519,7 +2519,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         if (addLastModified) {
           sb.append(
               String2.left(
-                  cTime == Long.MAX_VALUE ? "" : Calendar2.epochSecondsToIsoStringTZ(cTime / 1000),
+                  cTime == Long.MAX_VALUE
+                      ? ""
+                      : Calendar2.epochSecondsToIsoStringTZ(Math2.divideNoRemainder(cTime, 1000)),
                   21)); // 21
           sb.append(' '); // 1
         }

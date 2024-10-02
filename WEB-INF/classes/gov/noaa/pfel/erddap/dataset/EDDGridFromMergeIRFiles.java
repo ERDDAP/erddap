@@ -321,8 +321,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 
               // set result
               DoubleArray ret = new DoubleArray(2, true);
-              ret.set(0, d0);
-              ret.set(1, d1);
+              ret.set(0, (double) d0);
+              ret.set(1, (double) d1);
 
               avPa[avi] = ret;
             }

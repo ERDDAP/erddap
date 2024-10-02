@@ -2019,7 +2019,7 @@ public class Grid {
     int nLat = lat.length;
     if (verbose) String2.log("Grid.makeLonPM180(" + pm180 + ") original grid." + lonInfoString());
     Test.ensureEqual(
-        data.length, nLon * nLat, "data.length != nLon(" + nLon + ") * nLat(" + nLat + ")");
+        data.length, nLon * (long) nLat, "data.length != nLon(" + nLon + ") * nLat(" + nLat + ")");
 
     double tLon[];
     if (pm180) {

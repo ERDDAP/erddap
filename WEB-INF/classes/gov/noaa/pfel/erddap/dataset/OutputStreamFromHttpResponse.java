@@ -468,9 +468,6 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
     } else if (extension.equals(".pyc")) {
       contentType = "application/x-bytecode.python";
 
-    } else if (extension.equals(".qt")) {
-      contentType = "video/quicktime";
-
     } else if (extension.equals(".ra")) {
       contentType = "audio/x-realaudio";
 

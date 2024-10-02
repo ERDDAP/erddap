@@ -56,11 +56,11 @@ class LongArrayTests {
     Test.ensureEqual(anArray.getString(0), "", "");
 
     anArray.set(0, Long.MIN_VALUE);
-    Test.ensureEqual(anArray.getUnsignedDouble(0), 9223372036854775808.0, "");
+    Test.ensureEqual(anArray.getUnsignedDouble(0), 9.223372036854776E+18, "");
     anArray.set(0, Long.MIN_VALUE + 1);
-    Test.ensureEqual(anArray.getUnsignedDouble(0), 9223372036854775809.0, "");
+    Test.ensureEqual(anArray.getUnsignedDouble(0), 9.223372036854776E+18, "");
     anArray.set(0, -1);
-    Test.ensureEqual(anArray.getUnsignedDouble(0), 18446744073709551615.0, "");
+    Test.ensureEqual(anArray.getUnsignedDouble(0), 1.8446744073709552E+19, "");
     anArray.clear();
 
     Test.ensureEqual(anArray.size(), 0, "");

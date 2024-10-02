@@ -122,7 +122,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @undirected
    * @label children
    */
-  private Vector children_;
+  private Vector<LayerChild> children_;
 
   private double pWidth_;
   private double pHeight_;
@@ -143,7 +143,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
         o.releaseResources();
       }
       if (children_ != null) {
-        Vector o = children_; // done this way to avoid infinite loop
+        Vector<LayerChild> o = children_; // done this way to avoid infinite loop
         children_ = null;
         for (Object o2 : o) ((LayerChild) o2).releaseResources();
         o.clear();
@@ -377,7 +377,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     ident_ = id;
     pWidth_ = psize.width;
     pHeight_ = psize.height;
-    children_ = new Vector(5, 5);
+    children_ = new Vector<>(5, 5);
   }
 
   /**
@@ -403,12 +403,12 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     // copy children
     //
-    newLayer.children_ = new Vector(5, 5);
+    newLayer.children_ = new Vector<>(5, 5);
     //
     if (!children_.isEmpty()) {
       LayerChild newChild;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        newChild = ((LayerChild) it.nextElement()).copy();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        newChild = it.nextElement().copy();
         newLayer.addChild(newChild);
       }
     }
@@ -479,8 +479,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     if (!children_.isEmpty()) {
       LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        child = it.nextElement();
         if (child instanceof Draggable) {
           try {
             child.draw(g);
@@ -545,8 +545,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
     if (!children_.isEmpty()) {
       LayerChild chld;
       boolean found = false;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        chld = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        chld = it.nextElement();
         if (chld.equals(child)) {
           children_.removeElement(child);
           found = true;
@@ -573,8 +573,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
     if (!children_.isEmpty()) {
       boolean found = false;
       LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        child = it.nextElement();
         if (child.getId().equals(labid)) {
           children_.removeElement(child);
           found = true;
@@ -596,8 +596,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public LayerChild findChild(String id) {
     LayerChild child = null;
-    for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-      child = (LayerChild) it.nextElement();
+    for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+      child = it.nextElement();
       if (child.getId().equals(id)) return child;
     }
     return null;
@@ -614,8 +614,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
     boolean found = false;
     if (!children_.isEmpty()) {
       LayerChild chld;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        chld = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        chld = it.nextElement();
         if (chld.equals(child)) {
           children_.removeElement(child);
           found = true;
@@ -646,9 +646,9 @@ public class Layer extends Component implements Cloneable, LayerControl {
   public LayerChild getChild(String labid) throws ChildNotFoundException {
     if (!children_.isEmpty()) {
       LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
-        if (child.getId() == labid) return child;
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        child = it.nextElement();
+        if (child.getId().equals(labid)) return child;
       }
       throw new ChildNotFoundException();
     } else {
@@ -667,14 +667,14 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @see ColorKey
    * @see Ruler
    */
-  public Enumeration childElements() {
+  public Enumeration<LayerChild> childElements() {
     return children_.elements();
   }
 
   /**
    * @since 3.0
    */
-  public Iterator childIterator() {
+  public Iterator<LayerChild> childIterator() {
     return children_.iterator();
   }
 
@@ -818,8 +818,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
     Object obj;
     if (!children_.isEmpty()) {
       LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        child = it.nextElement();
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
           if (child instanceof LineKey) {
@@ -855,13 +855,13 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public Object[] getObjectsAt(int x, int y, boolean check) {
     Point pt = new Point(x, y);
-    Vector obList = new Vector();
+    Vector<Object> obList = new Vector<>();
     Object obj = null;
     Rectangle bnds;
     if (!children_.isEmpty()) {
       LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
+      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
+        child = it.nextElement();
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
           if (child instanceof LineKey) {

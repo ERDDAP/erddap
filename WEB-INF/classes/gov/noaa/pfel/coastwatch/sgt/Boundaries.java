@@ -10,7 +10,6 @@ import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pmel.sgt.dm.*;
 import java.io.*;
 import java.util.Collections;
@@ -41,7 +40,7 @@ public class Boundaries {
   public static boolean debug = false;
 
   public static final String REF_DIRECTORY =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -52,7 +51,7 @@ public class Boundaries {
    * http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT landMaskDir should have slash at end.
    */
   public String directory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
