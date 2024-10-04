@@ -10,6 +10,9 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.HashSet;
 
 public class HandlerFactory {
@@ -32,97 +35,147 @@ public class HandlerFactory {
     EDStatic.cldStartMillis = timeToLoadThisDataset;
     EDStatic.cldDatasetID = datasetID;
 
-    nTry++;
-    context.getNTryAndDatasets()[0] = nTry;
-    switch (datasetType) {
-      case "EDDTableFromErddap" -> {
-        return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromEDDGrid" -> {
-        return new EDDTableFromEDDGridHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridFromDap" -> {
-        return new EDDGridFromDapHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDGridLonPM180" -> {
-        return new EDDGridLonPM180Handler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridFromErddap" -> {
-        return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromAsciiFiles",
-          "EDDTableFromNcFiles",
-          "EDDTableFromAudioFiles",
-          "EDDTableFromAwsXmlFiles",
-          "EDDTableFromColumnarAsciiFiles",
-          "EDDTableFromHttpGet",
-          "EDDTableFromInvalidCRAFiles",
-          "EDDTableFromJsonlCSVFiles",
-          "EDDTableFromMultidimNcFiles",
-          "EDDTableFromNcCFFiles",
-          "EDDTableFromNccsvFiles",
-          "EDDTableFromHyraxFiles",
-          "EDDTableFromThreddsFiles",
-          "EDDTableFromWFSFiles" -> {
-        return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
-      }
-      case "EDDGridAggregateExistingDimension" -> {
-        return new EDDGridAggregateExistingDimensionHandler(
-            saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridCopy" -> {
-        return new EDDGridCopyHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridFromEDDTable" -> {
-        return new EDDGridFromEDDTableHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridLon0360" -> {
-        return new EDDGridLon0360Handler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDGridSideBySide" -> {
-        return new EDDGridSideBySideHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDTableAggregateRows" -> {
-        return new EDDTableAggregateRowsHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDTableCopy" -> {
-        return new EDDTableCopyHandler(saxHandler, datasetID, completeState, context);
-      }
-      case "EDDTableFromCassandra" -> {
-        return new EDDTableFromCassandraHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromDapSequence" -> {
-        return new EDDTableFromDapSequenceHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromDatabase" -> {
-        return new EDDTableFromDatabaseHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromAsciiService" -> {
-        return new EDDTableFromAsciiServiceHandler(
-            saxHandler, datasetID, completeState, datasetType);
-      }
-      case "EDDTableFromOBIS" -> {
-        return new EDDTableFromOBISHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromSOS" -> {
-        return new EDDTableFromSOSHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDTableFromFileNames" -> {
-        return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
-      }
-      case "EDDGridFromAudioFiles",
-          "EDDGridFromNcFiles",
-          "EDDGridFromNcFilesUnpacked",
-          "EDDGridFromMergeIRFiles" -> {
-        return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
-      }
-      case "EDDGridFromEtopo" -> {
-        return new EDDGridFromEtopoHandler(saxHandler, datasetID, completeState);
-      }
-      default -> {
-        nTry--;
-        context.getNTryAndDatasets()[0] = nTry;
+    if (EDStatic.useEddReflection) {
+      // use reflection to discover handlers
+      EDD.EDDClassInfo eddClassInfo = EDD.EDD_CLASS_INFO_MAP.get(datasetType);
+      if (eddClassInfo == null || !eddClassInfo.hasSaxHandlerClass()) {
         throw new IllegalArgumentException("Unknown dataset type: " + datasetType);
+      }
+
+      nTry++;
+      context.getNTryAndDatasets()[0] = nTry;
+
+      // TODO using the first constructor here, should we scan through all to find the most
+      // appropriate one?
+      Constructor<?> constructor = eddClassInfo.getSaxHandlerClass().get().getConstructors()[0];
+
+      // Constructors for handlers don't have uniform signatures so we have to do some investigation
+      // TODO: standardize the constructor signatures or change to accept a config object?
+      Parameter[] parameters = constructor.getParameters();
+      if (parameters.length < 3
+          || !parameters[0].getType().equals(SaxHandler.class)
+          || !parameters[1].getType().equals(String.class)
+          || !parameters[2].getType().equals(State.class)) {
+        throw new IllegalArgumentException(
+            "First constructor for " + datasetType + " did not have a valid signature");
+      }
+
+      // build array of constructor arguments based on the constructor signature
+      Object[] constructorArgs = new Object[parameters.length];
+      constructorArgs[0] = saxHandler;
+      constructorArgs[1] = datasetID;
+      constructorArgs[2] = completeState;
+      for (int i = 3; i < parameters.length; i++) {
+        Class<?> parameterClass = parameters[i].getType();
+        if (parameterClass.equals(SaxParsingContext.class)) {
+          constructorArgs[i] = context;
+        } else if (parameterClass.equals(String.class)) {
+          constructorArgs[i] = datasetType;
+        } else {
+          throw new IllegalArgumentException(
+              "Unknown parameter type for " + datasetType + ": " + parameterClass);
+        }
+      }
+
+      try {
+        return (State) constructor.newInstance(constructorArgs);
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException("Error creating handler for " + datasetType, e);
+      }
+    } else {
+      // legacy hardcoded approach
+      nTry++;
+      context.getNTryAndDatasets()[0] = nTry;
+      switch (datasetType) {
+        case "EDDTableFromErddap" -> {
+          return new EDDTableFromErddapHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromEDDGrid" -> {
+          return new EDDTableFromEDDGridHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridFromDap" -> {
+          return new EDDGridFromDapHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDGridLonPM180" -> {
+          return new EDDGridLonPM180Handler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridFromErddap" -> {
+          return new EDDGridFromErddapHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromAsciiFiles",
+            "EDDTableFromNcFiles",
+            "EDDTableFromAudioFiles",
+            "EDDTableFromAwsXmlFiles",
+            "EDDTableFromColumnarAsciiFiles",
+            "EDDTableFromHttpGet",
+            "EDDTableFromInvalidCRAFiles",
+            "EDDTableFromJsonlCSVFiles",
+            "EDDTableFromMultidimNcFiles",
+            "EDDTableFromNcCFFiles",
+            "EDDTableFromNccsvFiles",
+            "EDDTableFromHyraxFiles",
+            "EDDTableFromThreddsFiles",
+            "EDDTableFromWFSFiles" -> {
+          return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
+        }
+        case "EDDGridAggregateExistingDimension" -> {
+          return new EDDGridAggregateExistingDimensionHandler(
+              saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridCopy" -> {
+          return new EDDGridCopyHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridFromEDDTable" -> {
+          return new EDDGridFromEDDTableHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridLon0360" -> {
+          return new EDDGridLon0360Handler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDGridSideBySide" -> {
+          return new EDDGridSideBySideHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDTableAggregateRows" -> {
+          return new EDDTableAggregateRowsHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDTableCopy" -> {
+          return new EDDTableCopyHandler(saxHandler, datasetID, completeState, context);
+        }
+        case "EDDTableFromCassandra" -> {
+          return new EDDTableFromCassandraHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromDapSequence" -> {
+          return new EDDTableFromDapSequenceHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromDatabase" -> {
+          return new EDDTableFromDatabaseHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromAsciiService" -> {
+          return new EDDTableFromAsciiServiceHandler(
+              saxHandler, datasetID, completeState, datasetType);
+        }
+        case "EDDTableFromOBIS" -> {
+          return new EDDTableFromOBISHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromSOS" -> {
+          return new EDDTableFromSOSHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDTableFromFileNames" -> {
+          return new EDDTableFromFileNamesHandler(saxHandler, datasetID, completeState);
+        }
+        case "EDDGridFromAudioFiles",
+            "EDDGridFromNcFiles",
+            "EDDGridFromNcFilesUnpacked",
+            "EDDGridFromMergeIRFiles" -> {
+          return new EDDGridFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
+        }
+        case "EDDGridFromEtopo" -> {
+          return new EDDGridFromEtopoHandler(saxHandler, datasetID, completeState);
+        }
+        default -> {
+          nTry--;
+          context.getNTryAndDatasets()[0] = nTry;
+          throw new IllegalArgumentException("Unknown dataset type: " + datasetType);
+        }
       }
     }
   }

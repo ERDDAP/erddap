@@ -33,6 +33,8 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.coastwatch.util.WatchUpdateHandler;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromFilesHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
@@ -60,6 +62,7 @@ import java.util.regex.*;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-04-12
  */
+@SaxHandlerClass(EDDTableFromFilesHandler.class)
 public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateHandler {
 
   public static final String MF_FIRST = "first", MF_LAST = "last";
@@ -198,6 +201,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromFiles fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

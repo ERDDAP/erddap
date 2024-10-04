@@ -735,7 +735,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
           throw new Exception(
               "type=\""
                   + datasetType
-                  + "\" needs to be added to EDDTableFromFiles.fromXml at end.");
+                  + "\" needs to be added to EDDTableFromFilesHandler.getDataset at end.");
     }
     return dataset;
   }

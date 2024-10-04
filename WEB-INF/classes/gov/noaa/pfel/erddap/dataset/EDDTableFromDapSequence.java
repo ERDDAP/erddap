@@ -23,6 +23,8 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromDapSequenceHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
@@ -34,6 +36,7 @@ import java.util.Enumeration;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
+@SaxHandlerClass(EDDTableFromDapSequenceHandler.class)
 public class EDDTableFromDapSequence extends EDDTable {
 
   protected String outerSequenceName, innerSequenceName;
@@ -58,6 +61,7 @@ public class EDDTableFromDapSequence extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromDapSequence fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

@@ -17,6 +17,8 @@ import gov.noaa.pfel.coastwatch.pointdata.DigirHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromOBISHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import java.util.HashSet;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-10-22
  */
+@SaxHandlerClass(EDDTableFromOBISHandler.class)
 public class EDDTableFromOBIS extends EDDTable {
 
   protected String sourceCode;
@@ -196,6 +199,7 @@ public class EDDTableFromOBIS extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromOBIS fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

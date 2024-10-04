@@ -25,6 +25,8 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromFileNamesHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-01-06
  */
+@SaxHandlerClass(EDDTableFromFileNamesHandler.class)
 public class EDDTableFromFileNames extends EDDTable {
 
   protected String fileDir; // has forward slashes and trailing slash
@@ -99,6 +102,7 @@ public class EDDTableFromFileNames extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromFileNames fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

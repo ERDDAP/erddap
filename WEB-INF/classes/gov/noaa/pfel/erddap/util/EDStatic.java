@@ -791,7 +791,8 @@ public class EDStatic {
       useLuceneSearchEngine,
       variablesMustHaveIoosCategory,
       verbose,
-      useSaxParser;
+      useSaxParser,
+      useEddReflection;
   public static String categoryAttributes[]; // as it appears in metadata (and used for hashmap)
   public static String categoryAttributesInURLs[]; // fileNameSafe (as used in URLs)
   public static boolean categoryIsGlobal[];
@@ -2269,6 +2270,7 @@ public class EDStatic {
       subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
       convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+      useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
       slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
       variablesMustHaveIoosCategory =
           getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);

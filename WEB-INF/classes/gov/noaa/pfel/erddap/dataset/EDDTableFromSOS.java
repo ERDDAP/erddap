@@ -24,6 +24,8 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromSOSHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -103,6 +105,7 @@ import java.util.HashSet;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-09-21
  */
+@SaxHandlerClass(EDDTableFromSOSHandler.class)
 public class EDDTableFromSOS extends EDDTable {
 
   /** stationTable */
@@ -179,6 +182,7 @@ public class EDDTableFromSOS extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromSOS fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     // data to be obtained (or not)

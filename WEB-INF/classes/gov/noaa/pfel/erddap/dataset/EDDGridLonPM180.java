@@ -21,6 +21,8 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDGridLonPM180Handler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -32,6 +34,7 @@ import java.text.MessageFormat;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-08-05
  */
+@SaxHandlerClass(EDDGridLonPM180Handler.class)
 public class EDDGridLonPM180 extends EDDGrid {
 
   private EDDGrid childDataset;
@@ -64,6 +67,7 @@ public class EDDGridLonPM180 extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridLonPM180 fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDGridLonPM180(xmlReader)...");

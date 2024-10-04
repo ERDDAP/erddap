@@ -37,8 +37,20 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
-import gov.noaa.pfel.erddap.util.*;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
+import gov.noaa.pfel.erddap.handlers.State;
+import gov.noaa.pfel.erddap.util.CfToFromGcmd;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.EmailThread;
+import gov.noaa.pfel.erddap.util.Subscriptions;
+import gov.noaa.pfel.erddap.util.TaskThread;
+import gov.noaa.pfel.erddap.util.TouchThread;
+import gov.noaa.pfel.erddap.variable.EDV;
+import io.github.classgraph.AnnotationClassRef;
+import io.github.classgraph.AnnotationInfo;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
@@ -47,6 +59,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,10 +68,15 @@ import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -405,6 +424,103 @@ public abstract class EDD {
     return filesInPrivateS3Bucket;
   }
 
+  /** Internal class for storing conrete EDD subclass information. */
+  public static final class EDDClassInfo {
+    private Class<EDD> eddClass;
+    private Optional<Method> fromXmlMethod;
+    private Optional<Class<State>> saxHandlerClass;
+
+    public EDDClassInfo(
+        Class<EDD> eddClass,
+        Optional<Method> fromXmlMethod,
+        Optional<Class<State>> saxHandlerClass) {
+      this.eddClass = eddClass;
+      this.fromXmlMethod = fromXmlMethod;
+      this.saxHandlerClass = saxHandlerClass;
+    }
+
+    public Class<EDD> getEddClass() {
+      return eddClass;
+    }
+
+    public boolean hasFromXmlMethod() {
+      return fromXmlMethod.isPresent();
+    }
+
+    public Optional<Method> getFromXmlMethod() {
+      return fromXmlMethod;
+    }
+
+    public boolean hasSaxHandlerClass() {
+      return saxHandlerClass.isPresent();
+    }
+
+    public Optional<Class<State>> getSaxHandlerClass() {
+      return saxHandlerClass;
+    }
+  }
+
+  /** List of all concrete/non-abstact EDD subclass EDDClassInfo */
+  public static final Map<String, EDDClassInfo> EDD_CLASS_INFO_MAP = initEddClassInfoMap();
+
+  /**
+   * Scan classpath for concrete/non-abstract EDD subclasses in package gov.noaa.pfel.erddap.dataset
+   * and store metadata for each discovered subclass in map of EDDClassInfo objects.
+   */
+  private static final Map<String, EDDClassInfo> initEddClassInfoMap() {
+    String2.log("Scanning EDD classes in package " + EDD.class.getPackageName());
+    try (ScanResult scanResult =
+        new ClassGraph()
+            .enableAnnotationInfo()
+            .enableClassInfo()
+            .enableMethodInfo()
+            .acceptPackages(EDD.class.getPackageName())
+            .scan()) {
+      return scanResult.getSubclasses(EDD.class).stream()
+          .filter(c -> !c.isAbstract())
+          .collect(
+              Collectors.toUnmodifiableMap(
+                  ClassInfo::getSimpleName,
+                  classInfo ->
+                      new EDDClassInfo(
+                          classInfo.loadClass(EDD.class),
+                          getFromXmlMethod(classInfo),
+                          getSaxHandler(classInfo))));
+    }
+  }
+
+  /**
+   * Get State (Sax handler) class for EDD class from annotation if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of a State subclass
+   */
+  private static final Optional<Class<State>> getSaxHandler(ClassInfo classInfo) {
+    return Stream.of(classInfo.getAnnotationInfo(SaxHandlerClass.class))
+        .filter(Objects::nonNull)
+        .map(AnnotationInfo::getParameterValues)
+        .map(parameterValues -> parameterValues.get("value"))
+        .filter(Objects::nonNull)
+        .map(annotationParameterValue -> (AnnotationClassRef) annotationParameterValue.getValue())
+        .filter(annotationClassRef -> annotationClassRef != null)
+        .map(annotationClassRef -> (Class<State>) annotationClassRef.loadClass())
+        .filter(Objects::nonNull)
+        .findFirst();
+  }
+
+  /**
+   * Get fromXml method annotated with EDDFromXmlMethod from EDD class if it exists
+   *
+   * @param eddClassInfo the ClassInfo object to check
+   * @return Optional of the fromXml method
+   */
+  private static final Optional<Method> getFromXmlMethod(ClassInfo classInfo) {
+    return classInfo.getMethodInfo("fromXml").stream()
+        .filter(mi -> mi.hasAnnotation(EDDFromXmlMethod.class))
+        .map(mi -> mi.loadClassAndGetMethod())
+        .findFirst();
+  }
+
   /**
    * This constructs an EDDXxx based on the information in an .xml file. This ignores the
    * &lt;dataset active=.... &gt; setting. All of the subclasses fromXml() methods ignore the
@@ -422,94 +538,125 @@ public abstract class EDD {
     String startStartError =
         "datasets.xml error on"; // does the error message already start with this?
     String startError = "datasets.xml error on or before line #";
-    if (type == null)
-      throw new SimpleException(
-          startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
-    try {
-      // FUTURE: classes could be added at runtime if I used reflection
-      if (type.equals("EDDGridAggregateExistingDimension"))
-        return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridCopy")) return EDDGridCopy.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromAudioFiles"))
-        return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromDap")) return EDDGridFromDap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromEDDTable")) return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromErddap")) return EDDGridFromErddap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromEtopo")) return EDDGridFromEtopo.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromMergeIRFiles"))
-        return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromNcFiles")) return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridFromNcFilesUnpacked"))
-        return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridLonPM180")) return EDDGridLonPM180.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridLon0360")) return EDDGridLon0360.fromXml(erddap, xmlReader);
-      if (type.equals("EDDGridSideBySide")) return EDDGridSideBySide.fromXml(erddap, xmlReader);
-
-      if (type.equals("EDDTableAggregateRows"))
-        return EDDTableAggregateRows.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableCopy")) return EDDTableCopy.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-      // xmlReader); //inactive
-      if (type.equals("EDDTableFromAsciiServiceNOS"))
-        return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-      // xmlReader); //inactive
-      if (type.equals("EDDTableFromCassandra"))
-        return EDDTableFromCassandra.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromDapSequence"))
-        return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromDatabase"))
-        return EDDTableFromDatabase.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromEDDGrid")) return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromErddap")) return EDDTableFromErddap.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromFileNames"))
-        return EDDTableFromFileNames.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-      // xmlReader); //inactive as of 2009-01-14
-      if (type.equals("EDDTableFromAsciiFiles"))
-        return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromAudioFiles"))
-        return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromAwsXmlFiles"))
-        return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromColumnarAsciiFiles"))
-        return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromHttpGet")) return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromInvalidCRAFiles"))
-        return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromJsonlCSVFiles"))
-        return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromHyraxFiles"))
-        return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromMultidimNcFiles"))
-        return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNcFiles")) return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNcCFFiles"))
-        return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromNccsvFiles"))
-        return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-      // xmlReader); //inactive 2010-09-08
-      // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-      // xmlReader); //inactive 2011-12-16
-      if (type.equals("EDDTableFromOBIS")) return EDDTableFromOBIS.fromXml(erddap, xmlReader);
-      // if (type.equals("EDDTableFromPostDatabase"))return EDDTableFromPostDatabase.fromXml(erddap,
-      // xmlReader);
-      // if (type.equals("EDDTableFromPostNcFiles")) return EDDTableFromPostNcFiles.fromXml(erddap,
-      // xmlReader);
-      if (type.equals("EDDTableFromSOS")) return EDDTableFromSOS.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromThreddsFiles"))
-        return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
-      if (type.equals("EDDTableFromWFSFiles"))
-        return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
-    } catch (Throwable t) {
-      String msg = MustBe.getShortErrorMessage(t);
-      throw new RuntimeException(
-          (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ") + msg,
-          t);
+    if (type == null) {
+      throw new SimpleException(startError + xmlReader.lineNumber() + ": Missing <dataset> type");
     }
-    throw new RuntimeException(
-        startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
+
+    if (EDStatic.useEddReflection) {
+      // use reflection to find the fromXml method
+      EDDClassInfo eddClassInfo = EDD_CLASS_INFO_MAP.get(type);
+      if (eddClassInfo == null || !eddClassInfo.hasFromXmlMethod()) {
+        throw new RuntimeException(
+            startError + xmlReader.lineNumber() + ": Unexpected <daFtaset> type=" + type + ".");
+      }
+
+      try {
+        return (EDD) eddClassInfo.getFromXmlMethod().get().invoke(null, erddap, xmlReader);
+      } catch (Throwable t) {
+        // unwrap InvocationTargetExceptions
+        if (t instanceof InvocationTargetException && t.getCause() != null) {
+          t = t.getCause();
+        }
+        String msg = MustBe.getShortErrorMessage(t);
+        throw new RuntimeException(
+            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
+                + msg,
+            t);
+      }
+    } else {
+      // legacy hardcoded approach
+      try {
+        if (type.equals("EDDGridAggregateExistingDimension"))
+          return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridCopy")) return EDDGridCopy.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromAudioFiles"))
+          return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromDap")) return EDDGridFromDap.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromEDDTable"))
+          return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromErddap")) return EDDGridFromErddap.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromEtopo")) return EDDGridFromEtopo.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromMergeIRFiles"))
+          return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromNcFiles")) return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridFromNcFilesUnpacked"))
+          return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridLonPM180")) return EDDGridLonPM180.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridLon0360")) return EDDGridLon0360.fromXml(erddap, xmlReader);
+        if (type.equals("EDDGridSideBySide")) return EDDGridSideBySide.fromXml(erddap, xmlReader);
+
+        if (type.equals("EDDTableAggregateRows"))
+          return EDDTableAggregateRows.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableCopy")) return EDDTableCopy.fromXml(erddap, xmlReader);
+        // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
+        // xmlReader); //inactive
+        if (type.equals("EDDTableFromAsciiServiceNOS"))
+          return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
+        // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
+        // xmlReader); //inactive
+        if (type.equals("EDDTableFromCassandra"))
+          return EDDTableFromCassandra.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromDapSequence"))
+          return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromDatabase"))
+          return EDDTableFromDatabase.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromEDDGrid"))
+          return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromErddap")) return EDDTableFromErddap.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromFileNames"))
+          return EDDTableFromFileNames.fromXml(erddap, xmlReader);
+        // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
+        // xmlReader); //inactive as of 2009-01-14
+        if (type.equals("EDDTableFromAsciiFiles"))
+          return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromAudioFiles"))
+          return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromAwsXmlFiles"))
+          return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromColumnarAsciiFiles"))
+          return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromHttpGet"))
+          return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromInvalidCRAFiles"))
+          return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromJsonlCSVFiles"))
+          return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromHyraxFiles"))
+          return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromMultidimNcFiles"))
+          return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromNcFiles"))
+          return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromNcCFFiles"))
+          return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromNccsvFiles"))
+          return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
+        // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
+        // xmlReader); //inactive 2010-09-08
+        // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
+        // xmlReader); //inactive 2011-12-16
+        if (type.equals("EDDTableFromOBIS")) return EDDTableFromOBIS.fromXml(erddap, xmlReader);
+        // if (type.equals("EDDTableFromPostDatabase"))return
+        // EDDTableFromPostDatabase.fromXml(erddap,
+        // xmlReader);
+        // if (type.equals("EDDTableFromPostNcFiles")) return
+        // EDDTableFromPostNcFiles.fromXml(erddap,
+        // xmlReader);
+        if (type.equals("EDDTableFromSOS")) return EDDTableFromSOS.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromThreddsFiles"))
+          return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromWFSFiles"))
+          return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
+      } catch (Throwable t) {
+        String msg = MustBe.getShortErrorMessage(t);
+        throw new RuntimeException(
+            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
+                + msg,
+            t);
+      }
+      throw new RuntimeException(
+          startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
+    }
   }
 
   /**
