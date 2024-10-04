@@ -2760,6 +2760,7 @@ Kwa mfano:
 <fileHelp_ncml>Tazama muundo na metadata ya seti ya data kama faili ya UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Pakua saa, latitudo, longitudo, Vigezo vingine kama Faili ya Lahajedwali ya ODV ya Ujumla (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Pakua longitudo, latitudo, wakati, Safuwima zingine kama Faili ya Lahajedwali ya ISO-8859-1 ODV Jenerali (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Tazama fomu ya HTML inayotumia utafutaji wa vipengele ili kurahisisha uchukuaji wa vikundi vidogo vya data.</fileHelp_subset>
 <fileHelp_timeGaps>Tazama orodha ya UTF-8 ya mapengo katika thamani za saa ambayo ni kubwa kuliko pengo la wastani.</fileHelp_timeGaps>
 <fileHelp_tsv>Pakua jedwali la maandishi lililotenganishwa na kichupo cha ISO-8859-1 (mstari wa 1: majina; mstari wa 2: vitengo; ISO 8601 mara).</fileHelp_tsv>

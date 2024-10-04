@@ -2982,6 +2982,7 @@ Par exemple:
 <fileHelp_ncml>Affichez la structure et les métadonnées de l&#39;ensemble de données sous forme de fichier UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Téléchargez l&#39;heure, la latitude, la longitude et d&#39;autres variables sous forme de fichier de feuille de calcul générique ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Téléchargez la longitude, la latitude, l&#39;heure et les autres colonnes sous forme de fichier de feuille de calcul générique ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Affichez un formulaire HTML qui utilise la recherche à facettes pour simplifier la sélection de sous-ensembles de données.</fileHelp_subset>
 <fileHelp_timeGaps>Affichez une liste UTF-8 des écarts dans les valeurs de temps qui sont supérieurs à l&#39;écart médian.</fileHelp_timeGaps>
 <fileHelp_tsv>Téléchargez un tableau de texte ISO-8859-1 séparé par des tabulations (ligne 1 : noms ; ligne 2 : unités ; ISO 8601 fois).</fileHelp_tsv>

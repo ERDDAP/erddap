@@ -731,6 +731,50 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
 
         dataset.creationTimeMillis = tCreationTime;
       }
+      case "EDDTableFromParquetFiles" -> {
+        dataset =
+            new EDDTableFromParquetFiles(
+                datasetID,
+                tAccessibleTo,
+                tGraphsAccessibleTo,
+                tOnChange,
+                tFgdcFile,
+                tIso19115File,
+                tSosOfferingPrefix,
+                tDefaultDataQuery,
+                tDefaultGraphQuery,
+                tGlobalAttributes,
+                ttDataVariables,
+                tReloadEveryNMinutes,
+                tUpdateEveryNMillis,
+                tFileDir,
+                tFileNameRegex,
+                tRecursive,
+                tPathRegex,
+                tMetadataFrom,
+                tCharset,
+                tSkipHeaderToRegex,
+                tSkipLinesRegex,
+                tColumnNamesRow,
+                tFirstDataRow,
+                tColumnSeparator,
+                tPreExtractRegex,
+                tPostExtractRegex,
+                tExtractRegex,
+                tColumnNameForExtract,
+                tSortedColumnSourceName,
+                tSortFilesBySourceNames,
+                tSourceNeedsExpandedFP_EQ,
+                tFileTableInMemory,
+                tAccessibleViaFiles,
+                tRemoveMVRows,
+                tStandardizeWhat,
+                tNThreads,
+                tCacheFromUrl,
+                tCacheSizeGB,
+                tCachePartialPathRegex,
+                tAddVariablesWhere);
+      }
       default ->
           throw new Exception(
               "type=\""

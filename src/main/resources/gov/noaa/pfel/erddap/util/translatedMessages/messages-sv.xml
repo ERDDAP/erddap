@@ -2767,6 +2767,7 @@ Till exempel:
 <fileHelp_ncml>Visa datauppsättningens struktur och metadata som en UTF-8 NCML .xml-fil.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Ladda ner tid, latitud, longitud, andra variabler som en ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Ladda ner longitud,latitud,time,otherColumns som en ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Visa ett HTML-formulär som använder facetterad sökning för att förenkla urval av delmängder av data.</fileHelp_subset>
 <fileHelp_timeGaps>Visa en UTF-8-lista över luckor i tidsvärdena som är större än mediangapet.</fileHelp_timeGaps>
 <fileHelp_tsv>Ladda ner en ISO-8859-1 tabbavgränsad texttabell (rad 1: namn; rad 2: enheter; ISO 8601 gånger).</fileHelp_tsv>

@@ -2995,6 +2995,7 @@ Na przykład:
 <fileHelp_ncml>Wyświetl strukturę i metadane zbioru danych w postaci pliku .xml w formacie UTF-8 NCML.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Pobierz czas, szerokość, długość geograficzną i inne zmienne jako ogólny plik arkusza kalkulacyjnego ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Pobierz długość geograficzną, szerokość geograficzną, czas i inne kolumny jako ogólny plik arkusza kalkulacyjnego ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Wyświetl formularz HTML, który wykorzystuje wyszukiwanie fasetowe, aby uprościć wybieranie podzbiorów danych.</fileHelp_subset>
 <fileHelp_timeGaps>Wyświetl listę przerw w formacie UTF-8 w wartościach czasu, które są większe niż mediana przerwy.</fileHelp_timeGaps>
 <fileHelp_tsv>Pobierz tabelę tekstu rozdzielanego tabulatorami ISO-8859-1 (wiersz 1: nazwy; wiersz 2: jednostki; czasy ISO 8601).</fileHelp_tsv>

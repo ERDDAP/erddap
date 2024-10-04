@@ -3119,6 +3119,7 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <fileHelp_ncml>데이터세트의 구조와 메타데이터를 UTF-8 NCML .xml 파일로 봅니다.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>시간, 위도, 경도, 기타 변수를 ODV 일반 스프레드시트 파일(.txt)로 다운로드합니다.</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>경도, 위도, 시간, 기타 열을 ISO-8859-1 ODV 일반 스프레드시트 파일(.txt)로 다운로드합니다.</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>데이터의 하위 집합 선택을 단순화하기 위해 패싯 검색을 사용하는 HTML 양식을 봅니다.</fileHelp_subset>
 <fileHelp_timeGaps>중앙값 간격보다 큰 시간 값의 간격에 대한 UTF-8 목록을 봅니다.</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 탭으로 구분된 텍스트 테이블(라인 1: 이름, 라인 2: 단위, ISO 8601 시간)을 다운로드합니다.</fileHelp_tsv>

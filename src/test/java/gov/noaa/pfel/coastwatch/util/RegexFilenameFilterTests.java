@@ -51,6 +51,7 @@ class RegexFilenameFilterTests {
           coastwatchDir + "netcheck/",
           coastwatchDir + "pointdata/",
           coastwatchDir + "pointdata/ScriptRow.class",
+          coastwatchDir + "pointdata/parquet/",
           coastwatchDir + "sgt/",
           coastwatchDir + "sgt/SGTPointsVector.class",
           coastwatchDir + "sgt/SgtGraph.class",

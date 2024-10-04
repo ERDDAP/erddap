@@ -621,6 +621,8 @@ public abstract class EDD {
           return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
         if (type.equals("EDDTableFromJsonlCSVFiles"))
           return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
+        if (type.equals("EDDTableFromParquetFiles"))
+          return EDDTableFromParquetFiles.fromXml(erddap, xmlReader);
         if (type.equals("EDDTableFromHyraxFiles"))
           return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
         if (type.equals("EDDTableFromMultidimNcFiles"))
@@ -12661,6 +12663,41 @@ public abstract class EDD {
           continue;
         } catch (Throwable t) {
           String2.log("> Attempt with EDDTableFromAscii failed:\n" + MustBe.throwableToString(t));
+        }
+      }
+
+      if (topExt.equals(".parquet")) {
+        try {
+          String xmlChunk =
+              EDDTableFromParquetFiles.generateDatasetsXml(
+                  tDir,
+                  ".*\\" + topExt,
+                  tDir + sampleName,
+                  -1,
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  0, // standardizeWhat=0, cacheFromUrl
+                  "",
+                  null); // other info
+          resultsSB.append(xmlChunk); // recursive=true
+          for (int diri2 = diri; diri2 < nDirs; diri2++)
+            if (dirs.get(diri2).startsWith(tDir)) dirDone.set(diri2);
+          String msg = topOfAre + "EDDTableFromParquetFiles";
+          dirInfo.set(diri, indent + msg);
+          String2.log(success + msg);
+          nTableAscii++;
+          nCreated++;
+          continue;
+        } catch (Throwable t) {
+          String2.log(
+              "> Attempt with EDDTableFromParquetFiles failed:\n" + MustBe.throwableToString(t));
         }
       }
 

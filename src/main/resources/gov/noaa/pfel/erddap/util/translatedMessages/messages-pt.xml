@@ -2779,6 +2779,7 @@ Por exemplo:
 <fileHelp_ncml>Visualize a estrutura e os metadados do conjunto de dados como um arquivo UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Baixe o tempo, latitude, longitude e outras variáveis como um arquivo de planilha ODV genérico (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Baixe longitude, latitude, hora e outras colunas como um arquivo de planilha genérica ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Visualize um formulário HTML que usa pesquisa facetada para simplificar a seleção de subconjuntos de dados.</fileHelp_subset>
 <fileHelp_timeGaps>Veja uma lista UTF-8 de lacunas nos valores de tempo que são maiores do que a lacuna média.</fileHelp_timeGaps>
 <fileHelp_tsv>Faça download de uma tabela de texto separada por tabulação ISO-8859-1 (linha 1: nomes; linha 2: unidades; ISO 8601 vezes).</fileHelp_tsv>

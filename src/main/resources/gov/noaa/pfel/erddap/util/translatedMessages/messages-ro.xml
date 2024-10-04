@@ -2755,6 +2755,7 @@ De exemplu:
 <fileHelp_ncml>Vizualizați structura și metadatele setului de date ca fișier UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Descărcați timpul, latitudinea, longitudinea, alteVariabile ca fișier ODV Generic Spreadsheet (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Descărcați longitudine, latitudine, timp, alte coloane ca fișier ISO-8859-1 ODV Generic Spreadsheet (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Vizualizați un formular HTML care utilizează căutarea fațetă pentru a simplifica alegerea subseturi de date.</fileHelp_subset>
 <fileHelp_timeGaps>Vizualizați o listă UTF-8 de goluri în valorile de timp care sunt mai mari decât decalajul median.</fileHelp_timeGaps>
 <fileHelp_tsv>Descărcați un tabel text ISO-8859-1 separat de file (linia 1: nume; rândul 2: unități; ISO 8601 ori).</fileHelp_tsv>

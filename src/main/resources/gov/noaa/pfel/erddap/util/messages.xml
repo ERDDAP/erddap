@@ -3111,6 +3111,7 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 <fileHelp_ncml>View the dataset's structure and metadata as a UTF-8 NCML .xml file.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>View an HTML form which uses faceted search to simplify picking subsets of the data.</fileHelp_subset>
 <fileHelp_timeGaps>View a UTF-8 list of gaps in the time values which are larger than the median gap.</fileHelp_timeGaps>
 <fileHelp_tsv>Download a ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>

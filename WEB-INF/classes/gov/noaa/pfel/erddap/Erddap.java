@@ -156,7 +156,7 @@ public class Erddap extends HttpServlet {
     ".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"
   };
   public static final String FILE_TYPES_184[] = {".dataTable", ".jsonlCSV1"};
-
+  public static final String FILE_TYPES_225[] = {".parquet"};
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -6149,6 +6149,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || (sourceVersion < 176 && String2.indexOf(FILE_TYPES_176, fileTypeName) >= 0)
           || (sourceVersion < 182 && jsonp != null)
           || (sourceVersion < 184 && String2.indexOf(FILE_TYPES_184, fileTypeName) >= 0)
+          || (sourceVersion < 225 && String2.indexOf(FILE_TYPES_225, fileTypeName) >= 0)
           || fileTypeName.equals(".subset")) {
         // handle locally
       } else {

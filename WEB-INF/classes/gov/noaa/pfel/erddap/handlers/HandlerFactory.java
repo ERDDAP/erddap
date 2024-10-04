@@ -115,7 +115,8 @@ public class HandlerFactory {
             "EDDTableFromNccsvFiles",
             "EDDTableFromHyraxFiles",
             "EDDTableFromThreddsFiles",
-            "EDDTableFromWFSFiles" -> {
+            "EDDTableFromWFSFiles",
+            "EDDTableFromParquetFiles" -> {
           return new EDDTableFromFilesHandler(saxHandler, datasetID, completeState, datasetType);
         }
         case "EDDGridAggregateExistingDimension" -> {

@@ -2959,6 +2959,7 @@ Mar shampla:
 <fileHelp_ncml>Féach ar struchtúr agus ar mheiteashonraí an tacair sonraí mar chomhad UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Íoslódáil am, domhanleithead, domhanfhad,Athróga eile mar Chomhad Scarbhileog Cineálach ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Íoslódáil domhanfhad, domhanleithead, am,Colúin eile mar Chomhad Scarbhileog Cineálach ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Féach ar fhoirm HTML a úsáideann cuardach ilghnéitheach chun roghnú fo-thacair na sonraí a shimpliú.</fileHelp_subset>
 <fileHelp_timeGaps>Féach ar liosta UTF-8 de bhearnaí sna luachanna ama atá níos mó ná an bhearna airmheánach.</fileHelp_timeGaps>
 <fileHelp_tsv>Íoslódáil tábla téacs deighilte ISO-8859-1 (líne 1: ainmneacha; líne 2: aonaid; amanna ISO 8601).</fileHelp_tsv>

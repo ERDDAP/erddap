@@ -2965,6 +2965,7 @@ Misalnya:
 <fileHelp_ncml>Lihat struktur dan metadata himpunan data sebagai file .xml UTF-8 NCML.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Unduh waktu, lintang, bujur, Variabel lain sebagai File Spreadsheet Generik ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Unduh bujur, lintang, waktu, kolom lain sebagai File Spreadsheet Generik ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Lihat formulir HTML yang menggunakan penelusuran tersaring untuk menyederhanakan pemilihan subkumpulan data.</fileHelp_subset>
 <fileHelp_timeGaps>Lihat daftar kesenjangan UTF-8 dalam nilai waktu yang lebih besar dari kesenjangan median.</fileHelp_timeGaps>
 <fileHelp_tsv>Unduh tabel teks yang dipisahkan tab ISO-8859-1 (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_tsv>

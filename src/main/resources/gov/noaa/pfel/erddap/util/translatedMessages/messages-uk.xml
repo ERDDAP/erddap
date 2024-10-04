@@ -2992,6 +2992,7 @@ ERDDAP — це сервер даних, який дає вам простий �
 <fileHelp_ncml>Перегляньте структуру набору даних і метадані як файл UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Завантажте time,latitude,longitude,otherVariables як ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Завантажте стовпці longitude,latitude,time,otherColumns як загальний файл електронної таблиці ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Перегляньте HTML-форму, яка використовує фасетний пошук для спрощення вибору підмножин даних.</fileHelp_subset>
 <fileHelp_timeGaps>Перегляньте список UTF-8 розривів у значеннях часу, які перевищують середній розрив.</fileHelp_timeGaps>
 <fileHelp_tsv>Завантажте текстову таблицю ISO-8859-1, розділену табуляціями (рядок 1: імена; рядок 2: одиниці; ISO 8601 раз).</fileHelp_tsv>
