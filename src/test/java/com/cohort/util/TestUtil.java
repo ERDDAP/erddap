@@ -8283,7 +8283,7 @@ class TestUtil {
     Test.ensureEqual(File2.getProtocolDomain("/"), "", "");
 
     // test File2.getFileInputStream(
-    String path = "src/test/resources/data";
+    String path = "test-data/data";
     File file = new File(path);
     String absolutePath = file.getAbsolutePath();
     String utff = absolutePath + "/compressed/AUTF8File";

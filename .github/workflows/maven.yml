@@ -1,0 +1,28 @@
+name: Build and test ERDDAP
+
+on:
+  push:
+    branches: [ "main", "gha-test" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build and test with Maven
+      run: >
+        mvn --batch-mode
+        -Dgcf.skipInstallHooks=true
+        -Dmaven.test.redirectTestOutputToFile=true
+        clean verify
+
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@v4

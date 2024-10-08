@@ -19,7 +19,7 @@ Subdirectories that will be created by ERDDAP are:
 The ERDDAP log file (log.txt) will be put in this directory.
 At ERD, we use '/u00/cwatch/erddap/' for releases.
 -->
-<bigParentDirectory>data</bigParentDirectory>
+<bigParentDirectory>target/data</bigParentDirectory>
 
 <!-- baseUrl is the start of the public url, to which "/erddap" 
 is appended. For example:
