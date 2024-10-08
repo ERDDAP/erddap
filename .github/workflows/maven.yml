@@ -17,12 +17,12 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
+    - name: Build and test with Maven
       run: >
         mvn --batch-mode
         -Dgcf.skipInstallHooks=true
         -Dmaven.test.redirectTestOutputToFile=true
-        clean test
+        clean verify
 
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@v4
