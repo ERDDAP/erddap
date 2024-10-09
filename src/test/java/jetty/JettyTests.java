@@ -14378,12 +14378,18 @@ class JettyTests {
     String dapQuery, tName, start, query, results, expected;
     int po;
 
+    String etopoFilePath = EDStatic.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
+
     // get /files/datasetID/.csv
     results =
         SSR.getUrlResponseStringNewline(
             "http://localhost:" + PORT + "/erddap/files/" + tDatasetID + "/.csv");
     expected =
-        "Name,Last modified,Size,Description\n" + "etopo1_ice_g_i2.bin,1642733858000,466624802,\n";
+        "Name,Last modified,Size,Description\n"
+            + "etopo1_ice_g_i2.bin,"
+            + etopoLastModifiedMillis
+            + ",466624802,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // get /files/datasetID/
@@ -17535,6 +17541,7 @@ class JettyTests {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());

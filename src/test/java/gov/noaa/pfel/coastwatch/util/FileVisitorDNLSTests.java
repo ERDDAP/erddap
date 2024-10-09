@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import tags.TagAWS;
 import tags.TagExternalOther;
 import tags.TagLargeFiles;
+import tags.TagMissingDataset;
 import tags.TagMissingFile;
 import tags.TagSlowTests;
 import tags.TagThredds;
@@ -979,6 +980,7 @@ class FileVisitorDNLSTests {
   /** This tests GPCP. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
+  @TagMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
   void testGpcp() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testGpcp()\n");
 

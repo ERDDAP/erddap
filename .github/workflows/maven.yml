@@ -2,7 +2,7 @@ name: Build and test ERDDAP
 
 on:
   push:
-    branches: [ "main", "gha-test" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
