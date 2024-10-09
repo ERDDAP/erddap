@@ -17541,6 +17541,7 @@ class JettyTests {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
