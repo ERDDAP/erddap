@@ -16029,7 +16029,7 @@ public class Table {
               // proper number of rows at the end.
               for (int index = valueCount; index < countInRow; index++) {
                 if (pas[field] != null) {
-                  pas[field].addString(null);
+                  pas[field].addString("");
                 }
               }
             }

@@ -962,11 +962,6 @@
             <artifactId>classgraph</artifactId>
             <version>4.8.176</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>3.4.0</version>
-        </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
@@ -977,24 +972,14 @@
             <artifactId>parquet-common</artifactId>
             <version>1.14.2</version>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-encoding</artifactId>
             <version>1.14.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-column</artifactId>
-            <version>1.14.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>1.14.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-avro</artifactId>
             <version>1.14.2</version>
         </dependency>
     </dependencies>
