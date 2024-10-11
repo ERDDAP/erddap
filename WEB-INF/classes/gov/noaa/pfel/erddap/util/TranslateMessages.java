@@ -240,11 +240,13 @@ public class TranslateMessages {
   }
 
   // path
-  public static String utilDir = "gov/noaa/pfel/erddap/util/";
-  public static URL translatedMessagesDir = Resources.getResource(utilDir + "translatedMessages/");
-  protected static URL messagesXmlFileName = Resources.getResource(utilDir + "messages.xml");
+  public static String utilDir = "/gov/noaa/pfel/erddap/util/";
+  public static URL translatedMessagesDir =
+      TranslateMessages.class.getResource(utilDir + "translatedMessages/");
+  protected static URL messagesXmlFileName =
+      TranslateMessages.class.getResource(utilDir + "messages.xml");
   private static URL oldMessagesXmlFileName =
-      Resources.getResource(utilDir + "translatedMessages/messagesOld.xml");
+      TranslateMessages.class.getResource(utilDir + "translatedMessages/messagesOld.xml");
 
   // translation settings
   private static HashSet<String> doNotTranslateSet =
