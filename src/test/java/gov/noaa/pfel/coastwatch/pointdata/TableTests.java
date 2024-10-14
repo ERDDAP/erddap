@@ -18898,7 +18898,7 @@ public class TableTests {
 
     String fileName =
         TableTests.class
-            .getResource("/parquet/GHG_national_2012_m1_v2.0.0_a8c5929.parquet")
+            .getResource("/data/parquet/GHG_national_2012_m1_v2.0.0_a8c5929.parquet")
             .getPath();
     // don't simplify
     Table table = new Table();

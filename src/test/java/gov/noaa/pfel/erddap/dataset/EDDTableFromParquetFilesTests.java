@@ -28,7 +28,7 @@ class EDDTableFromParquetFilesTests {
 
     String dataDir =
         File2.addSlash(
-            Path.of(EDDTableFromParquetFilesTests.class.getResource("/parquet/").toURI())
+            Path.of(EDDTableFromParquetFilesTests.class.getResource("/data/parquet/").toURI())
                 .toString());
     String fileNameRegex = ".*\\.parquet";
     String results =

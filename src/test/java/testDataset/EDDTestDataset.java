@@ -83653,7 +83653,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/parquet/").toURI()).toString()
+        + Path.of(EDDTestDataset.class.getResource("/data/parquet/").toURI()).toString()
         + "</fileDir>\n"
         + "    <fileNameRegex>.*\\.parquet</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
