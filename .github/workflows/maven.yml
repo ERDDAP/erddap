@@ -23,6 +23,3 @@ jobs:
         -Dgcf.skipInstallHooks=true
         -Dmaven.test.redirectTestOutputToFile=true
         clean verify
-
-    - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@v4
