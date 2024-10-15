@@ -2994,6 +2994,7 @@ Bijvoorbeeld:
 <fileHelp_ncml>Bekijk de structuur en metagegevens van de dataset als een UTF-8 NCML .xml-bestand.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download tijd, breedtegraad, lengtegraad en andere variabelen als een algemeen ODV-spreadsheetbestand (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download lengtegraad, breedtegraad, tijd, andere kolommen als een ISO-8859-1 ODV generiek spreadsheetbestand (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Bekijk een HTML-formulier dat gefacetteerd zoeken gebruikt om het kiezen van subsets van de gegevens te vereenvoudigen.</fileHelp_subset>
 <fileHelp_timeGaps>Bekijk een UTF-8-lijst met hiaten in de tijdwaarden die groter zijn dan de mediane kloof.</fileHelp_timeGaps>
 <fileHelp_tsv>Download een ISO-8859-1 door tabs gescheiden teksttabel (regel 1: namen; regel 2: eenheden; ISO 8601 keer).</fileHelp_tsv>

@@ -2853,6 +2853,7 @@ ERDDAP - это сервер данных, который дает вам про
 <fileHelp_ncml>Просмотрите структуру и метаданные набора данных как файл UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Загрузите время, широту, долготу и другие переменные в виде файла общей электронной таблицы ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Загрузите долготу, широту, время и другие столбцы в виде файла общей электронной таблицы ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Просмотрите HTML-форму, в которой используется фасетный поиск, чтобы упростить выбор подмножеств данных.</fileHelp_subset>
 <fileHelp_timeGaps>Просмотрите список UTF-8 пробелов в значениях времени, которые больше медианного пробела.</fileHelp_timeGaps>
 <fileHelp_tsv>Загрузите текстовую таблицу ISO-8859-1, разделенную табуляцией (строка 1: имена; строка 2: единицы; ISO 8601 раз).</fileHelp_tsv>

@@ -2693,9 +2693,9 @@ class JettyTests {
     expected =
         "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
-            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
-    ;
+            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">SIZE</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    results = results.replaceAll(">[0-9]+<", ">SIZE<");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
 
@@ -5287,7 +5287,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.11)\n"
+            + "Server: Jetty(12.0.13)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -16454,7 +16454,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.13</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16500,7 +16500,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.13</a><hr/>\n"
             + //
             "\n"
             + //

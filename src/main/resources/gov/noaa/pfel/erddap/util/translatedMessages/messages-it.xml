@@ -2993,6 +2993,7 @@ Per esempio:
 <fileHelp_ncml>Visualizza la struttura e i metadati del set di dati come file .xml NCML UTF-8.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Scarica ora, latitudine, longitudine e altre variabili come file di foglio di calcolo generico ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Scarica longitudine, latitudine, ora e altre colonne come file di foglio di calcolo generico ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Visualizza un modulo HTML che utilizza la ricerca sfaccettata per semplificare la selezione di sottoinsiemi di dati.</fileHelp_subset>
 <fileHelp_timeGaps>Visualizza un elenco UTF-8 di gap nei valori temporali che sono maggiori del gap mediano.</fileHelp_timeGaps>
 <fileHelp_tsv>Scarica una tabella di testo ISO-8859-1 separata da tabulazioni (riga 1: nomi; riga 2: unità; tempi ISO 8601).</fileHelp_tsv>

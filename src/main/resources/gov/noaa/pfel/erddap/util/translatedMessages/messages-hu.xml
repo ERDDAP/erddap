@@ -3074,6 +3074,7 @@ Például:
 <fileHelp_ncml>Tekintse meg az adatkészlet szerkezetét és metaadatait UTF-8 NCML .xml fájlként.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Letöltési idő, szélesség, hosszúság, egyéb változók általános ODV táblázatfájlként (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Hosszúság, szélesség, idő, egyéb oszlopok letöltése általános ISO-8859-1 ODV táblázatfájlként (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Tekintsen meg egy HTML-űrlapot, amely fazettált keresést használ az adatok részhalmazainak kiválasztásának egyszerűsítésére.</fileHelp_subset>
 <fileHelp_timeGaps>Tekintse meg az UTF-8-as listát az időértékek hézagairól, amelyek nagyobbak, mint a medián rés.</fileHelp_timeGaps>
 <fileHelp_tsv>Töltsön le egy ISO-8859-1 tabulátorral elválasztott szövegtáblázatot (1. sor: nevek; 2. sor: egységek; ISO 8601-szer).</fileHelp_tsv>

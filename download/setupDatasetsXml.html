@@ -2740,6 +2740,13 @@ currently recommend
         handles tabular data from NOS XML servers.
       <li><a rel="help" href="#EDDTableFromOBIS">EDDTableFromOBIS</a> 
         handles tabular data from OBIS servers.
+      <li><a rel="help" href="#EDDTableFromParquetFiles">EDDTableFromParquetFiles</a> 
+          handles data from 
+          <a rel="help"
+            href="https://parquet.apache.org/"
+            >Parquet<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>.
       <li><a rel="help" href="#EDDTableFromSOS">EDDTableFromSOS</a> 
         handles tabular data from SOS servers.
       <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> (DEPRECATED)
@@ -6995,6 +7002,14 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
     <a rel="help" href="https://erddap.github.io/NCCSV.html">NCCSV</a>
     ASCII .csv files.
 
+  <li><a rel="help" href="#EDDTableFromParquetFiles">EDDTableFromParquetFiles</a> 
+    handles data from 
+    <a rel="help"
+      href="https://parquet.apache.org/"
+      >Parquet<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+
   <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> (DEPRECATED)
     aggregates data from files with several variables with shared dimensions served by a 
     <a rel="help" 
@@ -9957,6 +9972,40 @@ It is possible that there are no more active servers which use this now out-of-d
 </pre>
 &nbsp;
 </ul>
+
+
+<p><a class="selfLink" id="EDDTableFromParquetFiles" href="#EDDTableFromParquetFiles" rel="bookmark"><strong>EDDTableFromParquetFiles</strong></a> 
+  handles data from 
+  <a rel="help"
+      href="https://parquet.apache.org/"
+      >Parquet<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+  See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+  for information on how this class works and how to use it.
+
+  <ul>
+  <li>Parquet is designed to compress very efficiently, so it may give you smaller 
+    file sizes than other formats.
+
+  <li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+
+  <li>WARNING: When ERDDAP™ reads Parquet data files, if it finds an error 
+  on a given line (e.g., incorrect number of items), it logs a warning message 
+  ("WARNING: Bad line(s) of data" ... with a list of the bad lines on subsequent lines) 
+  to the 
+  <a rel="help" href="https://erddap.github.io/setup.html#log">log.txt file</a> 
+  and then continues to read the rest of the data file.
+  Thus, it is your responsibility to look periodically (or write a script to do so)
+  for that message in the log.txt so that you can fix the problems in the data
+  files. ERDDAP™ is set up this way so that users can continue to read all of
+  the available valid data even though some lines of the file have flaws. 
+  <br>&nbsp;
+
+  </ul>
 
 
 <p><a class="selfLink" id="EDDTableFromSOS" href="#EDDTableFromSOS" rel="bookmark"><strong>EDDTableFromSOS</strong></a> handles data from a

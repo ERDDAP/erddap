@@ -279,6 +279,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosATempStationList() throws Throwable {
     // testVerboseOn();
 
@@ -1528,6 +1529,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testNosSosWLevel() throws Throwable {
     // testVerboseOn();
 
