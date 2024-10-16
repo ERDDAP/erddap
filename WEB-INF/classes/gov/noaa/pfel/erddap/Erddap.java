@@ -70,6 +70,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -16118,6 +16119,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + (System.currentTimeMillis() - luceneTime)
                   + "ms");
         luceneTime = System.currentTimeMillis();
+        StoredFields storedFields = indexSearcher.storedFields();
         for (int i = 0; i < nHits; i++) {
           // 3 ways to find datasetID:
 
@@ -16134,7 +16136,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           Integer docNI = Integer.valueOf(docN);
           String tDatasetID = EDStatic.luceneDocNToDatasetID.get(docNI);
           if (tDatasetID == null) { // not yet in luceneDocNToDatasetID
-            Document doc = indexSearcher.doc(docN);
+            Document doc = storedFields.document(docN);
             if (doc == null) // perhaps just removed from index
             continue;
             tDatasetID = doc.get("datasetID");

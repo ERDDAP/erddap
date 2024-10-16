@@ -2352,7 +2352,7 @@ class JettyTests {
             + //
             "      <gmd:maintenanceNote>\n"
             + //
-            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.24</gco:CharacterString>\n"
+            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.25</gco:CharacterString>\n"
             + //
             "      </gmd:maintenanceNote>\n"
             + //
@@ -2514,7 +2514,7 @@ class JettyTests {
             + //
             "          <pubplace>Nowhere, AK, USA</pubplace>\n"
             + //
-            "          <publish>ERDDAP, version 2.24, at ERDDAP Jetty Install</publish>\n"
+            "          <publish>ERDDAP, version 2.25, at ERDDAP Jetty Install</publish>\n"
             + //
             "          <publish_cntinfo>\n"
             + //
@@ -5287,7 +5287,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.13)\n"
+            + "Server: Jetty(12.0.14)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -16454,7 +16454,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.13</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.14</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16500,7 +16500,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.13</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.14</a><hr/>\n"
             + //
             "\n"
             + //
