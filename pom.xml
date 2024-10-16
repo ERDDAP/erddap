@@ -521,6 +521,42 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!--
+            The below are here to force updated dependencies of the hadoop libraries.
+            The default selections have security vulnerabilities. Ideally we wouldn't be including
+            hadoop at all, but parquet currently has dependencies on hadoop to read and write files.
+            -->
+            <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>1.12.0</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
+            <dependency>
+                <groupId>dnsjava</groupId>
+                <artifactId>dnsjava</artifactId>
+                <version>3.6.2</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.78.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-configuration2</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>9.41.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -966,6 +1002,12 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>3.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+            </exclusions> 
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
