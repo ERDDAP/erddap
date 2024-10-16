@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  Το messages.xml περιέχει μηνύματα κειμένου για το ERDDAP (τα οποία διαβάζονται στο EDStatic).
 Όταν εγκαθιστάτε το ERDDAP στον διακομιστή σας, όλα αυτά τα μηνύματα μπορούν να παραμείνουν ως έχουν,
 καθώς αυτά τα μηνύματα είναι συνήθως τα ίδια σε διαφορετικές εγκαταστάσεις ERDDAP.
@@ -30,7 +30,7 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
   Τα μηνύματα-de.xml και -ga έχουν πολλούς συνδέσμους διπλότυπους. Υποψιάζομαι ότι πολλοί άλλοι είναι έτσι.
 
  -->
-<erddapMessages>
+
 <!--  Αυτό επιστρέφει περιεχόμενο HTML που περιγράφει Αίτημα Συμπιεσμένων Αρχείων.
 Δείτε https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 που λέει ότι x-gzip=gzip και x-compress=συμπίεση
@@ -82,11 +82,13 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
   Εάν έχετε προτάσεις για επιπλέον συνδέσμους, επικοινωνήστε με <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Αυτό το σύνολο δεδομένων είναι ένας πίνακας που έχει μια σειρά πληροφοριών για κάθε σύνολο δεδομένων που είναι ενεργό αυτήν τη στιγμή σε αυτό το ERDDAP.</admSummary>
 <admTitle>Η λίστα όλων των ενεργών συνόλων δεδομένων σε αυτό το ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Ορισμένα σύνολα δεδομένων είναι δημόσια. Ορισμένα μπορεί να είναι ιδιωτικά και ίσως να μην είναι προσβάσιμα σε εσάς.</advc_accessible>
@@ -554,6 +556,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 <convertFipsCounty>Μετατρέψτε έναν κωδικό κομητείας FIPS σε/από όνομα κομητείας</convertFipsCounty>
 
 <!--  Μην αλλάζετε τα παραδείγματα (από defaultN...).  -->
+
 <!--  Ο &quot;κωδικός κομητείας FIPS&quot; ήταν ένας σύνδεσμος προς http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      στη συνέχεια https://www.census.gov/geo/reference/codes/cou.html 
      Τώρα το πιο κοντινό(?) είναι http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2711,7 +2714,7 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
      Ας ελπίσουμε ότι μπορείτε απλώς να αντικαταστήσετε το αναγνωριστικό δεδομένων σας για το &quot;jplMURSST41&quot;
      και τροποποιήστε το &quot;[0 32]&quot; (το εύρος δεδομένων για τη γραμμή χρώματος).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Τα μηνύματα EDDTable εμφανίζονται στην επιτραπέζια φόρμα πρόσβασης δεδομένων και Δημιουργία γραφήματος.  -->
 <EDDTableConstraints>Περιορισμοί</EDDTableConstraints>
@@ -2871,7 +2874,7 @@ what was axisVariable[0] (συνήθως &quot;time&quot;) έτσι ώστε τ�
 
 <!--  Αυτό είναι ένα παράδειγμα ερωτήματος που δημιουργεί ένα γράφημα. 
      Θα μπορούσατε να δημιουργήσετε το παράδειγμά σας μέσω της φόρμας Make A Graph του συνόλου δεδομένων σας στο ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Αυτό είναι ένα παράδειγμα ερωτήματος που δημιουργεί έναν χάρτη.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2975,7 +2978,7 @@ ERDDAP είναι ένας διακομιστής δεδομένων που σα
 <fileHelp_ncml>Προβάλετε τη δομή και τα μεταδεδομένα του συνόλου δεδομένων ως αρχείο UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Λήψη χρόνου, γεωγραφικού πλάτους, γεωγραφικού μήκους, άλλων μεταβλητών ως αρχείο γενικού υπολογιστικού φύλλου ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Λήψη γεωγραφικού μήκους, γεωγραφικού πλάτους, χρόνου, άλλων στηλών ως αρχείου γενικού υπολογιστικού φύλλου ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Λήψη ως parquet αρχείο.</fileHelp_parquet>
 <fileHelp_subset>Προβάλετε μια φόρμα HTML που χρησιμοποιεί πολύπλευρη αναζήτηση για να απλοποιήσει την επιλογή υποσυνόλων των δεδομένων.</fileHelp_subset>
 <fileHelp_timeGaps>Προβάλετε μια λίστα UTF-8 με κενά στις τιμές χρόνου που είναι μεγαλύτερες από το διάμεσο χάσμα.</fileHelp_timeGaps>
 <fileHelp_tsv>Κάντε λήψη ενός πίνακα κειμένου διαχωρισμένου με καρτέλες ISO-8859-1 (γραμμή 1: ονόματα, γραμμή 2: μονάδες, ISO 8601 φορές).</fileHelp_tsv>
@@ -3662,9 +3665,11 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Η προεπιλογή για τα ρολόγια είναι 8192. Η προεπιλογή για παράδειγμα είναι 128.</inotifyFix>
 
 <!--  μη μεταφράσεις  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Παρεμβάλλω</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4232,6 +4237,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <moreInformation>περισσότερες πληροφορίες</moreInformation>
 
 <!--  Αυτά τα μηνύματα τύπου MessageFormat προωθούνται στο MustBe.xxx.  -->
+
 <!--  Αυτό είναι ένα σημαντικό μήνυμα σφάλματος. Υποδεικνύει ότι το αίτημα ήταν έγκυρο,
 αλλά το αποτέλεσμα δεν ήταν δεδομένα. Οι πελάτες μπορεί να αναζητούν αυτό ακριβώς το μήνυμα.
 Προς το παρόν, είναι καλύτερο να μην το αλλάξετε αυτό.
@@ -4329,6 +4335,12 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--pageFirst> first</pageFirst>
+Προηγούμενο </pageΠροηγούμενο>
+< pageCurrent>τρέχον </ pageCurrent>
+<pageNext>next</pageNext>
+<pagelast>last</pageΤελευταία-->
 
 <!--  Αυτές είναι οι επιλογές παλέτας.
      Πρέπει να υπάρχει ένα αρχείο .cpt για καθένα στον κατάλογο erddap/WEB-INF/cptfiles.
@@ -5236,6 +5248,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: δείτε τον ίδιο πίνακα css στον Table.ERD_TABLE_CSS  -->
+
 <!--  Το startHeadHtml έχει την αρχή του εγγράφου HTML και τις ετικέτες &quot;head&quot;. 
 (ξεκινώντας από το &quot;&lt;!DOCTYPE&quot;, αλλά δεν περιλαμβάνει το &quot;&lt;/head&gt;&quot;) 
 για όλες τις ιστοσελίδες HTML. 
@@ -5272,6 +5285,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6153,11 +6167,14 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 θα μετατραπεί στην τιμή &quot;μετά&quot; UDUNITS.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>χρόνος</time>
 <timeoutOtherRequests>Χρονικό όριο αναμονής για επεξεργασία των άλλων αιτημάτων σας.</timeoutOtherRequests>
 
@@ -6168,7 +6185,8 @@ degrees_north</standardizeUdunits>
 θα μετατραπεί στην τιμή &quot;μετά&quot; UDUNITS.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6178,7 +6196,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Αυτός είναι ένας τρόπος παράκαμψης του μετατροπέα UDUNITS σε UCUM του ERDDAP
 παρέχοντας συγκεκριμένες μετατροπές. 
@@ -6187,7 +6207,8 @@ degrees_north</ucumToUdunits>
 θα μετατραπεί στην τιμή UCUM &#39;μετά&#39;.
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6209,7 +6230,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Αυτή είναι μια προσπάθεια αντιμετώπισης μεταδεδομένων πηγών URL μη ενημερωμένων.
 Το updateUrls εφαρμόζεται σε καθένα από τα χαρακτηριστικά μεταδεδομένων String ενός συνόλου δεδομένων 
@@ -6233,7 +6256,8 @@ deg{north}</udunitsToUcum>
 * Η μετατροπή http://www.csc.noaa.gov σε ακτή είναι ατελής: 
   έγγραφα σε διάφορα μέρη.  Αυτό είναι σύνηθες για μεγάλες αλλαγές στο όνομα τομέα.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7326,7 +7350,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Αυτές είναι διευθύνσεις URL http που πιθανότατα κάποια στιγμή θα είναι προσβάσιμες από το https.
 Παρατίθενται ως σχόλιο εδώ για γρήγορη δοκιμή.
@@ -7409,6 +7435,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Αυτή είναι μια λίστα ονομάτων χαρακτηριστικών διαχωρισμένη με κόμματα τα οποία θα παραλείψουν τα updateUrls. 
 Αυτό δεν μπορεί να είναι τίποτα. Έτσι, αν δεν θέλετε τίποτα, πληκτρολογήστε μια ανόητη λέξη που θα το κάνει
 να μην είναι ποτέ όνομα χαρακτηριστικού.  -->

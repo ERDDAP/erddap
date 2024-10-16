@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml मध्ये ERDDAP साठी मजकूर संदेश आहेत (जे EDStatic मध्ये वाचले जातात).
 जेव्हा तुम्ही तुमच्या सर्व्हरवर ERDDAP इंस्टॉल करता, तेव्हा हे सर्व संदेश जसेच्या तसे सोडले जाऊ शकतात,
 कारण हे संदेश सहसा वेगवेगळ्या ERDDAP इंस्टॉलेशन्सवर सारखे असतात.
@@ -30,7 +30,6 @@ https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html पहा
   messages-de.xml आणि -ga मध्ये अनेक दुवे डुप्लिकेट आहेत. मला शंका आहे की आणखी बरेच असे आहेत.
 
  -->
-<erddapMessages>
 <!--  हे संकुचित फाइल्सची विनंती करणारी HTML सामग्री परत करते.
 https://httpd.apache.org/docs/1.3/mod/mod_mime.html पहा
 जे म्हणते की x-gzip=gzip आणि x-compress=compress

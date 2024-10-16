@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml sisältää tekstiviestejä ERDDAP:lle (jotka luetaan EDStaticissa).
 Kun asennat ERDDAP:n palvelimellesi, kaikki nämä viestit voidaan jättää ennalleen,
 koska nämä viestit ovat yleensä samat eri ERDDAP-asennuksissa.
@@ -30,7 +30,7 @@ Käännösjärjestelmä VAATII, että &quot;pseudoEntity&quot; käyttää vain [
   messages-de.xml ja -ga sisältävät monia linkkejä päällekkäin. Epäilen, että tällaisia ​​on monia muitakin.
 
  -->
-<erddapMessages>
+
 <!--  Tämä palauttaa HTML-sisällön, joka kuvaa pakattujen tiedostojen pyytämistä.
 Katso https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 joka sanoo, että x-gzip=gzip ja x-compress=pakkaus
@@ -82,11 +82,13 @@ Sitten ERDDAP lisää kaikki
   Jos sinulla on ehdotuksia lisälinkkeistä, ota yhteyttä <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Tämä tietojoukko on taulukko, jossa on tietorivi jokaisesta tässä ERDDAP:ssa tällä hetkellä aktiivisesta tietojoukosta.</admSummary>
 <admTitle>Luettelo kaikista tämän ERDDAP:n aktiivisista tietojoukoista</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Jotkut tietojoukot ovat julkisia. Jotkut saattavat olla yksityisiä eivätkä ehkä ole käytettävissäsi.</advc_accessible>
@@ -556,6 +558,7 @@ On
 <convertFipsCounty>Muunna FIPS piirikoodi maakunnan nimeksi tai maakunnan nimestä</convertFipsCounty>
 
 <!--  Älä muuta esimerkkejä (oletusarvostaN...).  -->
+
 <!--  &quot;FIPS County Code&quot; oli linkki osoitteeseen http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      sitten https://www.census.gov/geo/reference/codes/cou.html 
      Nyt lähin(?) on http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2741,7 +2744,7 @@ Jos haluat esimerkkien viittaavan ERDDAP:hen, helpoin tapa on:
      Toivottavasti voit vain korvata datasetID:lläsi &quot;jplMURSST41&quot;
      ja muuta &quot;[0 32]&quot; (väripalkin tietoalue).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  EDDTable-viestit näkyvät tabledap Data Access Form ja Make A Graph -lomakkeessa.  -->
 <EDDTableConstraints>Rajoitukset</EDDTableConstraints>
@@ -2900,7 +2903,7 @@ Jos haluat esimerkkien viittaavan ERDDAP:hen, helpoin tapa on:
 
 <!--  Tämä on esimerkkikysely, joka luo kaavion. 
      Voit luoda esimerkkisi tietojoukosi Make A Graph -lomakkeella ERDDAP:ssa.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Tämä on esimerkkikysely, joka luo kartan.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3004,7 +3007,7 @@ Esimerkiksi:
 <fileHelp_ncml>Tarkastele tietojoukon rakennetta ja metatietoja UTF-8 NCML .xml -tiedostona.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Latausaika, leveysaste, pituusaste, muut muuttujat ODV:n yleisenä laskentataulukkotiedostona (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Lataa pituusaste, leveysaste, aika ja muut sarakkeet ISO-8859-1 ODV Generic Spreadsheet -tiedostona (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Lataa parquet-tiedostona.</fileHelp_parquet>
 <fileHelp_subset>Tarkastele HTML-lomaketta, joka käyttää fasetoitua hakua tietojen osajoukkojen poimimisen yksinkertaistamiseksi.</fileHelp_subset>
 <fileHelp_timeGaps>Tarkastele UTF-8-luetteloa aika-arvojen aukoista, jotka ovat suurempia kuin mediaaniväli.</fileHelp_timeGaps>
 <fileHelp_tsv>Lataa ISO-8859-1 sarkaimilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_tsv>
@@ -3704,9 +3707,11 @@ Tai käytä suurempia numeroita, jos ongelma jatkuu.
 Kellojen oletusarvo on 8192. Esineiden oletusarvo on 128.</inotifyFix>
 
 <!--  älä käännä  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpoloida</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4274,6 +4279,7 @@ Katso &quot;Ohita tämä lomake&quot; -linkki alla.
 <moreInformation>lisää tietoa</moreInformation>
 
 <!--  Nämä MessageFormat-tyyliset viestit työnnetään MustBe.xxx-tiedostoon.  -->
+
 <!--  Tämä on tärkeä virheilmoitus. Se osoittaa, että pyyntö oli pätevä,
 mutta tulos ei ollut dataa. Asiakkaat saattavat etsiä juuri tätä viestiä.
 Toistaiseksi on parasta olla muuttamatta tätä.
@@ -4372,6 +4378,12 @@ Katso Asetukset kyseisen verkkosivun alalaidasta.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--Etusivu > Ensimmäistä </pageFirst>
+<PagePrevious> Previous</pagePrevious
+<pageCurrent> Nykyinen </pageCurrent>
+<pageNext>next</pageNext>
+<pageLast> Last</pageLast-->
 
 <!--  Nämä ovat palettivaihtoehdot.
      Jokaiselle tiedostolle on oltava .cpt-tiedosto erddap/WEB-INF/cptfiles-hakemistossa.
@@ -5285,6 +5297,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: katso identtinen css-taulukko taulukossa Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml sisältää HTML-dokumentin alun ja head-tunnisteet 
 (alkaen merkinnästä &quot;&lt;!DOCTYPE&quot;, mutta ei sisällä &quot;&lt;/head&gt;&quot;) 
 kaikille HTML-verkkosivuille. 
@@ -5321,6 +5334,7 @@ tiedot.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6214,11 +6228,14 @@ Jos koko UDUNITS-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UDUNITS-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Aika</time>
 <timeoutOtherRequests>Aikakatkaisu odottaa muiden pyyntöjesi käsittelyä.</timeoutOtherRequests>
 
@@ -6229,7 +6246,8 @@ Jos koko UCUM-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UDUNITS-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6239,7 +6257,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Tämä on tapa ohittaa ERDDAP:n UDUNITS to UCUM -muunnin
 tarjoamalla tiettyjä konversioita. 
@@ -6248,7 +6268,8 @@ Jos koko UDUNITS-merkkijono vastaa &quot;ennen&quot;-merkkijonoa,
 se muunnetaan UCUM-arvon jälkeen.
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6270,7 +6291,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Tämä on yritys käsitellä vanhentuneita URL-osoitteiden lähteiden metatietoja.
 updateUrls on käytössä jokaisessa tietojoukon String-metatietoattribuutissa 
@@ -6294,7 +6317,8 @@ Huomautuksia:
 * http://www.csc.noaa.gov muunnos rannikolle on epätäydellinen: 
   asiakirjoja eri paikoissa.  Tämä on yleistä suurille verkkotunnuksen nimen muutoksille.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7387,7 +7411,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Nämä ovat http-URL-osoitteita, joihin https on luultavasti jonain päivänä käytettävissä.
 Ne on listattu tänne kommentteina nopeaa testausta varten.
@@ -7470,6 +7496,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Tämä on pilkuilla eroteltu luettelo määritteiden nimistä, jotka updateUrls ohittavat. 
 Tämä ei voi olla mitään. Joten jos et halua mitään, kirjoita hölmö sana, joka haluaa
 ei koskaan ole attribuutin nimi.  -->

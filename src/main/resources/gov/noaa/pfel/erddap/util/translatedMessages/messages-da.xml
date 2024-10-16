@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml indeholder tekstbeskeder til ERDDAP (som læses i EDStatic).
 Når du installerer ERDDAP på din server, kan alle disse beskeder efterlades som de er,
 da disse meddelelser normalt er de samme ved forskellige ERDDAP-installationer.
@@ -30,7 +30,8 @@ Oversættelsessystemet KRÆVER, at &quot;pseudoEntity&quot; kun bruger [a-zA-Z0-
   messages-de.xml og -ga har mange links duplikeret. Jeg formoder, at mange flere er sådan.
 
  -->
-<erddapMessages><!--  Dette returnerer HTML-indhold, der beskriver anmodning om komprimerede filer.
+
+<!--  Dette returnerer HTML-indhold, der beskriver anmodning om komprimerede filer.
 Se https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 som siger at x-gzip=gzip og x-compress=compress
 Dette gentages også i messages2.xml in
@@ -76,11 +77,13 @@ Derefter vil ERDDAP tilføje alle
 <additionalLinks><![CDATA[
 Hvis du har forslag til yderligere links, så kontakt <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Dette datasæt er en tabel, som har en række informationer for hvert datasæt, der i øjeblikket er aktivt i denne ERDDAP.</admSummary>
 <admTitle>Listen over alle aktive datasæt i denne ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Nogle datasæt er offentlige. Nogle kan være private og måske ikke tilgængelige for dig.</advc_accessible>
@@ -152,6 +155,7 @@ Måske er der ingen næsten-realtidsdatasæt i denne ERDDAP .
 <strong>Rutevejledning:</strong> Angiv så mange eller så få søgekriterier, som du ønsker, og klik derefter på <kbd>&searchButton;</kbd> .
 <br>Kun de datasæt, der matcher <strong>alle</strong> søgekriterierne, vises i resultaterne.
 ]]></advancedSearchDirections>
+
 <!--  Dette er en beskrivelse af avanceret søgning. -->
 <advancedSearchTooltip><![CDATA[
 Avanceret søgning kombinerer alle søgeteknikkerne og tilføjer søgninger efter datasæt, der har data inden for længde-, bredde- og tidsintervaller, så du kan søge efter datasæt baseret på mange forskellige kriterier samtidigt.
@@ -225,6 +229,7 @@ Dette er valgfrit.
 </ul>
 
 ]]></advancedSearchTimeTooltip>
+
 <!--  {0}=plainFileType (f.eks. .json) af avanceret søgeforespørgsel. -->
 <advancedSearchWithCriteria>En anmodning om {0} avanceret søgning skal indeholde et eller flere kriterier, f.eks.
 &quot;?page=1&amp;itemsPerPage=1000&amp;searchFor=vind+temperatur&quot;.</advancedSearchWithCriteria>
@@ -240,6 +245,7 @@ Fejlhåndtering:
 <br>For andre filtyper vil Avanceret søgning give en undtagelse, hvis en del af anmodningen er ugyldig.
 <br>Det er dog kun forventede parametre, der kontrolleres; uventede parametre ignoreres simpelthen.
 ]]></advancedSearchErrorHandling>
+
 <!--  Disse injiceres i PrimitiveArray.
      Disse bruger MessageFormat. -->
 <ArrayAddN>FEJL i {0}.addN:
@@ -268,6 +274,7 @@ Indsendte du ofte identiske anmodninger i løbet af kort tid?
 Har du indsendt et stort antal ugyldige anmodninger?
 Hvis du er klar til at undgå disse problemer, bedes du sende en e-mail til {0} for at anmode om at blive fjernet fra sortlisten.</blacklistMsg>
 <BroughtToYouBy>Bragt til dig af</BroughtToYouBy>
+
 <!--  Disse meddelelser er relateret til Søg efter kategori. -->
 <categoryTitleHtml>Søg efter datasæt efter kategori</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -319,15 +326,18 @@ skibe + CTD&#39;er eller profileringssvævefly.
 <br>&nbsp;&nbsp;Eksempler:
 laboratorieanalyser eller fiskelandinger efter havnenavn (hvis ingen lat,lon).
 ]]></cdmDataTypeHelp>
+
 <!--  Denne besked bruges som et værktøjstip til &quot;adgangs&quot;-links på HTML-sider
 når en tabel med datasæt vises (f.eks. når du laver en fuldtekstsøgning efter datasæt).
  -->
 <clickAccess>Klik for at se en OPeNDAP-dataadgangsformular for dette datasæt, så du kan anmode om data.</clickAccess>
+
 <!--  Denne besked bruges som et værktøjstip til &quot;baggrund&quot;-linket på HTML-sider
 når en tabel med datasæt vises (f.eks. når du laver en fuldtekstsøgning efter datasæt).
  -->
 <clickBackgroundInfo>Klik for at se baggrundsoplysninger fra kilden til dette datasæt.</clickBackgroundInfo>
 <clickERDDAP>Klik her for at vende tilbage til ERDDAP-hjemmesiden.</clickERDDAP>
+
 <!--  Denne besked bruges som et værktøjstip til &quot;info&quot;-linket på HTML-sider når som helst
 en tabel med datasæt vises (f.eks. når du laver en fuldtekstsøgning efter datasæt).
  -->
@@ -391,9 +401,11 @@ Eller
 <strong>Konverter fra {0} til et variabelnavn.</strong>
 ]]></convertToVariableName>
 <converterWebService>ERDDAP tilbyder flere konvertere som websider og som webtjenester:</converterWebService>
+
 <!--  Disse HTML-meddelelser bruges til at beskrive &quot;konverter&quot;-mulighederne generelt og individuelt. -->
 <convertOAAcronyms>Oceaniske/atmosfæriske akronymer</convertOAAcronyms>
 <convertOAAcronymsToFrom>Konverter et almindeligt oceanisk/atmosfærisk akronym til/fra et fulde navn</convertOAAcronymsToFrom>
+
 <!--  Ændre ikke eksemplerne (fra defaultN...). -->
 <convertOAAcronymsIntro><![CDATA[
 Denne webside lader dig konvertere et almindeligt oceanisk/atmosfærisk akronym til/fra et fulde navn.
@@ -424,6 +436,7 @@ Hvis du vil tilføje et fælles akronym eller lave en rettelse, bedes du sende d
 </ul>
 
 ]]></convertOAAcronymsNotes>
+
 <!--  Ændre ikke eksemplerne (fra defaultN, ...). -->
 <convertOAAcronymsService><![CDATA[
 
@@ -461,6 +474,7 @@ Der er
 ]]></convertOAAcronymsService>
 <convertOAVariableNames>Navne på oceaniske/atmosfæriske variabler</convertOAVariableNames>
 <convertOAVariableNamesToFrom>Konverter et fælles oceanisk/atmosfærisk variabelnavn til/fra et fuldt navn</convertOAVariableNamesToFrom>
+
 <!--  Ændre ikke eksemplerne (fra defaultN...). -->
 <convertOAVariableNamesIntro><![CDATA[
 Denne webside lader dig konvertere et almindeligt oceanisk/atmosfærisk variabelnavn til/fra et fuldt navn.
@@ -489,6 +503,7 @@ Hvis du vil tilføje et almindeligt anvendt variabelnavn eller lave en rettelse,
 </ul>
 
 ]]></convertOAVariableNamesNotes>
+
 <!--  Ændre ikke eksemplerne (fra defaultN, ...). -->
 <convertOAVariableNamesService><![CDATA[
 
@@ -520,7 +535,9 @@ Der er
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></convertOAVariableNamesService>
 <convertFipsCounty>Konverter en FIPS-amtskode til/fra et amtsnavn</convertFipsCounty>
+
 <!--  Ændre ikke eksemplerne (fra defaultN...). -->
+
 <!--  &quot;FIPS county code&quot; var et link til http://www.itl.nist.gov/fipspubs/fip6-4.htm
      derefter https://www.census.gov/geo/reference/codes/cou.html
      Nu tættest på (?) er http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -582,6 +599,7 @@ Enheder på statsniveau er:
 </ul>
 
 ]]></convertFipsCountyNotes>
+
 <!--  Ændre ikke eksemplerne (fra defaultN, ...). -->
 <convertFipsCountyService><![CDATA[
 
@@ -804,8 +822,10 @@ Der er
     src="../images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></convertInterpolateService>
+
 <!--  Disse HTML-meddelelser bruges til at beskrive &quot;konverter&quot;-mulighederne generelt og individuelt. -->
 <convertKeywords>Konverter et CF-standardnavn til/fra et GCMD Science-søgeord</convertKeywords>
+
 <!--  Ændre ikke eksemplerne (fra defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Denne webside giver dig mulighed for at konvertere et
@@ -850,6 +870,7 @@ Andre er kun passende under visse omstændigheder.
 </ul>
 
 ]]></convertKeywordsNotes>
+
 <!--  Ændre ikke eksemplerne (fra defaultN, ...). -->
 <convertKeywordsService><![CDATA[
 
@@ -889,6 +910,7 @@ Forsøger du at oversætte et delvist eller ugyldigt CF-standardnavn eller GCMD 
 ERDDAP har
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">en service til at konvertere en strengtid til/fra en numerisk tid</a> .
 ]]></convertTimeReference>
+
 <!--  Ændre ikke eksempelværdierne (fra standardN...). -->
 <convertTimeIntro><![CDATA[
 På forskellige steder i ERDDAP kan et tidspunkt repræsenteres som enten:
@@ -1133,6 +1155,7 @@ Men det er den måde, ERDDAP fungerer på i øjeblikket.
 </ul>
 
 ]]></convertTimeNotes>
+
 <!--  Ændre ikke eksemplerne (fra defaultN, ...). -->
 <convertTimeService><![CDATA[
 
@@ -1219,6 +1242,7 @@ Du kan også bruge andre almindelige formater til basistiden.
 Årsværdien skal være 4 cifre - brug 0-polstring hvis nødvendigt.
 Bemærk, at #/#/# fortolkes som måned/dato/år, ikke dato/måned/år.
 ]]></convertTimeUnitsTooltip>
+
 <!--  Eksemplet på den første linje er EDV.TIME_UNITS. -->
 <convertTimeUnitsHelp><![CDATA[
 For eksempel &quot;seconds since 1970-01-01T00:00:00Z&quot; .
@@ -1657,6 +1681,7 @@ Der er
     src="../images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></convertURLsService>
+
 <!--  cookiesHjælp sidst opdateret 2019-12-19 -->
 <cookiesHelp><![CDATA[
 Sørg for, at din browser er indstillet til at tillade
@@ -1717,6 +1742,7 @@ Hver række repræsenterer en anden stikprøve af dataene (f.eks.
 fra et andet tidspunkt eller sted).
 ]]></dafTableTooltip>
 <dasTitle>Datasætattributstrukturen (.das) for dette datasæt</dasTitle>
+
 <!--  Meddelelsen, der skal vises, hvis dataene ikke kan downloades (f.eks. SeaWiFS &lt;=14 dage gammel). -->
 <dataAccessNotAllowed>[Undskyld. Disse data kan ikke downloades.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Kan ikke oprette forbindelse til databasen.</databaseUnableToConnect>
@@ -1990,6 +2016,7 @@ wind_to_direction,
 x_wind,
 y_wind</DEFAULT_commonStandardNames>
 <disabled>&quot;{0}&quot;-systemet er blevet deaktiveret på denne ERDDAP.</disabled>
+
 <!--  Dette er værktøjstip på EDDTable Data Access Form og Lav en graf
      for den udvalgte widget, der skubber en særskilt værdi ind i begrænsning #1.
      [3. linjeslut var: andet end den første (&quot;&quot;), ]
@@ -2001,6 +2028,7 @@ Hvis du vælger en værdi nedenfor, vil denne værdi blive brugt til begrænsnin
 <p>Eller overvej at bruge undersæt-websiden for dette datasæt (se linket ovenfor), som gør det nemt at vælge undersæt af dette datasæt ved at vælge kombinationer af forskellige værdier.
 ]]></distinctValuesTooltip>
 <documentation>Dokumentation</documentation>
+
 <!--  Dette bruger &ssUse; og &erddapUrl; -->
 <doWithGraphs><![CDATA[
 
@@ -2018,6 +2046,7 @@ Men nogle ting du måske ikke har overvejet er:
 </ul>
 
 ]]></doWithGraphs>
+
 <!--  DPF = Data Provider Form -->
 <dpf_submit><![CDATA[
 
@@ -2341,6 +2370,7 @@ Dette datasæts indsendelses tidsstempel er &tTimestamp; .
 <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">indsende et andet datasæt</a> eller gå tilbage til
 <a rel="bookmark" href="&tErddapUrl;/index.html">ERDDAP -hjemmesiden</a> .
 ]]></dpf_congratulation>
+
 <!--  Datasættabel (f.eks. en liste over datasæt) -->
 <dtAccessible><![CDATA[
 <strong>Er dette datasæt tilgængeligt for dig?</strong>
@@ -2359,6 +2389,7 @@ Dette datasæts indsendelses tidsstempel er &tTimestamp; .
 <dtWCS>Klik for at finde ud af, hvordan du får data og/eller kort via dette datasæts webdækningstjeneste.</dtWCS>
 <dtWMS>Klik for at finde ud af, hvordan du laver kort over disse data via dette datasæts webkorttjeneste.</dtWMS>
 <EasierAccessToScientificData>Lettere adgang til videnskabelige data</EasierAccessToScientificData>
+
 <!--  EDD-meddelelserne vises på tabledap- og griddap-dataadgangsformularerne. -->
 <EDDClickOnSubmitHtml><![CDATA[
 Klik på <kbd>Submit</kbd> .
@@ -2407,6 +2438,7 @@ Klik på <kbd>Submit</kbd> .
 <EDDChangedTableToGrid>Den nye version er en EDDGrid. Den gamle version er ikke!</EDDChangedTableToGrid>
 <EDDSimilarDifferentNVar>EDD.similar: Det andet datasæt har et andet antal variabler</EDDSimilarDifferentNVar>
 <EDDSimilarDifferent>EDD.similar: Det andet datasæt har en anden {0} for dataVariable {1} {2}</EDDSimilarDifferent>
+
 <!--  EDDGrid-meddelelserne vises på griddap-dataadgangsformularen. -->
 <EDDGridDapDescription>Griddap lader dig bruge OPeNDAP hyperslab-protokollen til at anmode om dataundersæt, grafer og kort fra gitterdatasæt (f.eks. satellitdata og klimamodeldata).</EDDGridDapDescription>
 <EDDGridDapLongDescription><![CDATA[
@@ -2505,6 +2537,7 @@ Vælg en eller flere af gittervariablerne.
 <EDDGridCheckAllTooltip>Klik her for at vælge alle datavariabler.</EDDGridCheckAllTooltip>
 <EDDGridUncheckAll>Fjern markeringen af alle</EDDGridUncheckAll>
 <EDDGridUncheckAllTooltip>Klik her for at fravælge alle datavariabler.</EDDGridUncheckAllTooltip>
+
 <!-- Griddap-eksempler Denne gruppe af indstillinger bruges til at lave eksempler til griddap-dokumentationen, der vises på [baseUrl]/erddap/griddap/documentation.html og andre steder.
 Specialtegn (f.eks.
 &amp; &lt; &gt;) skal være HTML-kodet.
@@ -2513,6 +2546,7 @@ Hvis du ønsker, at eksemplerne skal pege på din ERDDAP, er den nemmeste metode
 <dataset type=" EDDGrid FromErddap&quot;<span translate="no">datasetID =&quot;jplMU RSS T41&quot;active=&quot;true&quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2) Tilføj dette tag til din setup.xml, men skift URL&#39;en til din ERDDAP &#39;s (https?) URL:
 &lt; EDDGrid ErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrlExample&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
+
 <!--  Dette er datasæt-id&#39;et for et EDDGrid-datasæt, der betjenes af din ERDDAP.
      Dette datasæt bruges som grundlag for alle EDDGrid-eksemplerne nedenfor.
      Ideelt set er det et datasæt, der (i det mindste) har tids-, bredde- og længdegradsdimensioner.
@@ -2520,37 +2554,47 @@ Hvis du ønsker, at eksemplerne skal pege på din ERDDAP, er den nemmeste metode
      Længdegradsværdierne, der bruges i eksemplerne nedenfor, må ikke spænde over 180 (for at arbejde med .esriAscii).
      (Det er okay, hvis datasættet er 0 til 360 - brug bare delen 0 til 180 (eller 180 til 360).) -->
 <EDDGridIdExample>jplMURSST41</EDDGridIdExample>
+
 <!--  Dette er en komplet forespørgselsstreng til at hente nogle aksedata fra eksempelgitterdatasættet. -->
 <EDDGridDimensionExample>latitude[0:100:1000]</EDDGridDimensionExample>
+
 <!--  Dette er navnet på en datavariabel i eksempelgitterdatasættet. -->
 <EDDGridNoHyperExample>analysed_sst</EDDGridNoHyperExample>
+
 <!--  Dette bruges til at navngive/forklare/beskrive alle dimensionerne i eksempelgitterdatasættet. -->
 <EDDGridDimNamesExample>[time][latitude][longitude]</EDDGridDimNamesExample>
+
 <!--  Dette er et eksempel på dataforespørgsel, der bruger ERDDAP&#39;s () notation og ISO-formateret tid.
      Det er rart (ikke påkrævet), at denne delmængde er egnet til at lave et kort (se EDDGridMapExample nedenfor).
      De anvendte længdegradsværdier må ikke spænde over 180 (for at arbejde med .esriAscii).
      Brugen af &quot;:1000:&quot; undgår at sende brugeren et væld af data.
      Du kan generere dit eksempel via dit datasæts dataadgangsformular i ERDDAP. -->
 <EDDGridDataTimeExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataTimeExample>
+
 <!--  Dette er et tilsvarende eksempel på dataforespørgsel, men som angiver tiden som sekunder-siden-1970-01-01.
      Hvis du skal konvertere en dato/tid til sekunder-siden-1970-01-01, skal du bruge
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html. -->
 <EDDGridDataValueExample>analysed_sst[(1022922000)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataValueExample>
+
 <!--  Dette er et tilsvarende eksempel på dataforespørgsel, men som kun bruger den traditionelle opendap-indeks-stil notation. -->
 <EDDGridDataIndexExample>analysed_sst[0][0:1000:16383][0:1000:32767]</EDDGridDataIndexExample>
+
 <!--  Dette er et eksempel på en forespørgsel, der genererer en graf.
      Du kan generere dit eksempel via dit datasæts Make A Graph-formular i ERDDAP. -->
 <EDDGridGraphExample>analysed_sst[(2002-06-01T09:00:00Z):(2002-07-01T09:00:00Z)][(29)][(-135)]&amp;.draw=linesAndMarkers&amp;.vars=time|analysed_sst|&amp;.marker=1|3&amp;.color=0xFF9900&amp;.colorBar=|C|Linear|||</EDDGridGraphExample>
+
 <!--  Dette er et eksempel på en forespørgsel, der genererer et kort.
      &quot;Kort&quot;-eksemplet skal have en længdegrad, der ikke spænder over 180 for .esriAscii.
      Brugen af &quot;:1000:&quot; undgår at sende brugeren et væld af data.
      &quot;:1000:&quot; er irrelevant, når der anmodes om en .png, men relevant, hvis brugeren får de faktiske data (f.eks. .csv). -->
 <EDDGridMapExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|analysed_sst&amp;.colorBar=Rainbow|C|Linear|0|32|</EDDGridMapExample>
+
 <!--  Dette er et 2-linjers Matlab-eksempel, som bruger data fra EDDGridMapExample.
      Forhåbentlig kan du bare erstatte dit datasæt-ID med &quot;jplMURSST41&quot;
      og modificer &quot;[0 32]&quot; (dataområdet for farvebjælken). -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
+
 <!--  EDDTable-meddelelserne vises på tabeldap-dataadgangsformularen og Lav en graf. -->
 <EDDTableConstraints>Begrænsninger</EDDTableConstraints>
 <EDDTableDapDescription>Tabledap lader dig bruge OPeNDAP-begrænsnings-/udvælgelsesprotokollen til at anmode om dataundersæt, grafer og kort fra tabeldatasæt (f.eks. bøjedata).</EDDTableDapDescription>
@@ -2656,6 +2700,7 @@ Hvis du vælger en værdi, vil den blive brugt til begrænsning #1.
 Hvis du vælger en specifik værdi for mere end én variabel, er det muligt, at der ikke vil være nogen matchende data.
 Overvej at bruge <kbd>Subset</kbd>, som gør det nemt at finde gyldige kombinationer.
 ]]></EDDTableSelectConstraintTooltip>
+
 <!--  Eksempler på tabeloversigt
 Denne gruppe af indstillinger bruges til at lave eksempler til tabledap-dokumentationen
 der vises på [baseUrl]/erddap/tabledap/documentation.html og andre steder.
@@ -2670,31 +2715,39 @@ Hvis du vil have eksemplerne til at pege på din ERDDAP, er den nemmeste metode:
 &lt;EDDTableErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/&lt;/EDDTableErddapUrlExample&gt;
  -->
 <EDDTableErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDTableErddapUrlExample>
+
 <!--  Dette er datasæt-id&#39;et for et EDDTable-datasæt, der betjenes af din ERDDAP.
      Dette datasæt bruges som grundlag for alle EDDGrid-eksemplerne nedenfor.
      Ideelt set er det et datasæt, der har længdegrad, breddegrad og tidsvariable (blandt andre).
      (&#39;tid&#39; giver mulighed for at lave en tidsseriegraf. &#39;breddegrad&#39; og &#39;længdegrad&#39; giver mulighed for at lave et kort.)
      Datasættet kan have længdegradsværdier -180 til 180 eller 0 til 360. -->
 <EDDTableIdExample>pmelTaoDySst</EDDTableIdExample>
+
 <!--  Dette er en kommasepareret liste over variabler fra datasættet.
      Det er nyttigt, hvis det er &quot;længdegrad, breddegrad, tid,&quot; plus et datavariabelnavn. -->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
+
 <!--  Dette er begrænsningseksemplet, som er tilføjet til EDDTableVariablesExample.
   DETTE FEJLLER i SSR.testForBrokenLinks, MEN lykkes med at bruge det på tabledap-dokumentationswebsiden. Så lad være. -->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
+
 <!--  Dette er et eksempel på en dataforespørgsel, der bruger en ISO-formateret tid.
      Du kan generere dit eksempel via dit datasæts dataadgangsformular i ERDDAP.
   DETTE FEJLLER i SSR.testForBrokenLinks, MEN lykkes med at bruge det på tabledap-dokumentationswebsiden. Så lad være. -->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
+
 <!--  Dette er et tilsvarende eksempel på dataforespørgsel, men som angiver tiden som sekunder-siden-1970-01-01.
      Hvis du skal konvertere en dato/tid til &quot;sekunder siden 1970-01-01&quot;, brug
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html -->
 <EDDTableDataValueExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=1432382400&amp;time&lt;=1433073600</EDDTableDataValueExample>
+
 <!--  Dette er et eksempel på en forespørgsel, der genererer en graf.
      Du kan generere dit eksempel via dit datasæts Make A Graph-formular i ERDDAP. -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+
 <!--  Dette er et eksempel på en forespørgsel, der genererer et kort. -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
+
 <!--  Dette er et Matlab-eksempel, som bruger data fra EDDTableGraphExample.
      Bemærk Matlab-notationen datasetName.variableName. -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
@@ -2722,6 +2775,7 @@ For eksempel:
 <br>&versionStringResponse;
 <br>Hvis du får en <kbd>HTTP 404 Not-Found</kbd> fejlmeddelelse, skal du behandle ERDDAP som version 1.80 eller lavere.
 ]]></erddapVersionHTML>
+
 <!--  Disse meddelelser vises, når der vises en fejlmeddelelse. -->
 <errorTitle>Fejl</errorTitle>
 <errorRequestUrl>Din anmodnings URL:</errorRequestUrl>
@@ -2731,6 +2785,7 @@ For eksempel:
 <errorFileNotFound>Filen blev ikke fundet: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Filen blev ikke fundet i cachen. Genskab billedet, og prøv igen.</errorFileNotFoundImage>
 <errorInternal>Intern fejl:</errorInternal>
+
 <!--  Inkluder ikke det ugyldige (ondsindede?) funktionsnavn i fejlmeddelelsen. -->
 <errorJsonpFunctionName>Det jsonp funktionsnavn er ikke tilladt. Det første tegn skal være et ISO 8859-1 bogstav eller &quot;_&quot;. Hvert valgfrit efterfølgende tegn skal være et ISO 8859-1 bogstav, &quot;_&quot;, et ciffer eller &quot;.&quot;.</errorJsonpFunctionName>
 <errorJsonpNotAllowed>En jsonp-anmodning er ikke tilladt for denne filtype.</errorJsonpNotAllowed>
@@ -2740,6 +2795,7 @@ For eksempel:
 <errorOdvLLTGrid>For en ODV .txt-fil SKAL datasættet indeholde længde-, bredde- og tidsakser.</errorOdvLLTGrid>
 <errorOdvLLTTable>Dataanmodninger for ODV .txt-filer skal omfatte længdegrad, breddegrad og tidsdata.</errorOdvLLTTable>
 <errorOnWebPage>Der opstod en fejl under skrivning af denne webside:</errorOnWebPage>
+
 <!--  Disse er også i/kopieret til HtmlWidgets -->
 <errorXWasntSpecified>Fejl: &quot;{0}&quot; blev ikke angivet.</errorXWasntSpecified>
 <errorXWasTooLong>Fejl: &quot;{0}&quot; var mere end {1} tegn langt.</errorXWasTooLong>
@@ -2787,7 +2843,7 @@ For eksempel:
 <fileHelp_ncml>Se datasættets struktur og metadata som en UTF-8 NCML .xml-fil.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download tid, breddegrad, længdegrad, andre variabler som en generisk ODV-regnearkfil (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download længdegrad, breddegrad, tid, andre kolonner som en ISO-8859-1 ODV generisk regnearksfil (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Hent som en parket fil.</fileHelp_parquet>
 <fileHelp_subset>Se en HTML-formular, der bruger facetteret søgning til at forenkle udvælgelsen af delmængder af dataene.</fileHelp_subset>
 <fileHelp_timeGaps>Se en UTF-8-liste over huller i tidsværdierne, der er større end mediangabet.</fileHelp_timeGaps>
 <fileHelp_tsv>Download en ISO-8859-1 fane-separeret teksttabel (linje 1: navne; linje 2: enheder; ISO 8601 gange).</fileHelp_tsv>
@@ -2805,6 +2861,7 @@ For eksempel:
 <fileHelp_png>Se en standard, mellemstor .png-billedfil med en graf eller et kort.</fileHelp_png>
 <fileHelp_largePng>Se en stor .png-billedfil med en graf eller et kort.</fileHelp_largePng>
 <fileHelp_transparentPng>Se en .png-billedfil (kun dataene uden akser, landmaske eller forklaring).</fileHelp_transparentPng>
+
 <!--  Beskrivelsen og advarselsformuleringen er vag for at tillade et eller mange datasæt. -->
 <filesDescription>ERDDAPs &quot;filer&quot;-system lader dig gennemse et virtuelt filsystem og downloade kildedatafiler.</filesDescription>
 <filesSort>Klik på en overskrift (f.eks. Navn, Sidst ændret, Størrelse) for at ændre sorteringsrækkefølgen. &quot;Sidst ændret&quot; bruger Zulu-tidszonen.</filesSort>
@@ -3192,6 +3249,7 @@ Det er det DAP er til for.
 ]]></filesDocumentation>
 <FIPSCountyCodes>FIPS amtskoder</FIPSCountyCodes>
 <functions>Server-side funktioner</functions>
+
 <!--  {0}=distinct() så det er ikke oversat -->
 <functionTooltip><![CDATA[
 Tabel DAP understøtter nogle funktioner på serversiden, der ændrer dataresultattabellen.
@@ -3201,6 +3259,7 @@ Bortset fra &quot;{0}&quot; er de <strong>sjældent nødvendige</strong> .
 Hvis du bruger mere end én funktion, vil de blive anvendt i den rækkefølge, som de vises i anmodningen.
 ]]></functionTooltip>
 <functionDistinctCheck>Marker dette, hvis du vil bruge distinct()-funktionen.</functionDistinctCheck>
+
 <!--  {0}=distinct() så det er ikke oversat -->
 <functionDistinctTooltip><![CDATA[
 Ved at markere &quot;{0}&quot; får ERDDAP på at sortere resultattabellen efter alle de variabler, der er valgt ovenfor (hvor den øverste/første variabel valgt ovenfor er den vigtigste, og andre valgte variabler kun bruges til at bryde bånd) og fjerne alle duplikerede rækker fra svartabellen.
@@ -3294,6 +3353,7 @@ ArcGIS Server</strong>
 </ol>
 
 ]]></geoServicesDescription>
+
 <!--  Kom i gang vises i højre side af startsiden.
 &quot;Kom godt i gang med ERDDAP&quot;.
  -->
@@ -3302,6 +3362,7 @@ ArcGIS Server</strong>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;Søg efter interessante datasæt</span>
 ]]></getStartedHtml>
 <help>Hjælp</help>
+
 <!--  Dette forhindrer naive anmodninger om store mængder data i en HTML-tabel
 fra at gå ned i brugerens browser.
 Dette bruges til at tilsidesætte TableWriterHtmlTable.htmlTableMaxMB.
@@ -3317,6 +3378,7 @@ For at undgå at crashe din browser, blev nogle yderligere data ikke vist.
 <br>Eller download en fil, som kan ses i et program, der kan håndtere store filer (f.eks.
 en .csv-fil i en teksteditor).
 ]]></htmlTableMaxMessage>
+
 <!--  ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries* og stateBoundaries*
 filer skal være i SSR.getContextDirectory() + &quot;WEB-INF/ref/&quot;.
 Jeg fik stats- og nationale grænser fra GMT:
@@ -3327,6 +3389,7 @@ hvor &quot;N1&quot; (nationalt) kan ændres til &quot;N2&quot; (stat)
 De resulterende filer bruger GMT_FORMAT.
  -->
 <imageDataCourtesyOf>Data udlånt af {0}</imageDataCourtesyOf>
+
 <!--  For hver billedstørrelse er der en imageWidth og imageHeight (i pixels).
 Bredde er i forholdet 2:3:6, hvilket tillader visning af 3, 2 eller 1 pr. række i et grafikprogram.
  -->
@@ -3417,6 +3480,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
   title="Dette link til et eksternt websted udgør ikke en godkendelse."/></a> og klik på&quot;Ansøg om medlemskab&quot;.
 Når du er medlem, kan du stille dit spørgsmål der eller søge for at se, om spørgsmålet allerede er stillet og besvaret.</div>
 ]]></imagesEmbed>
+
 <!--  tekst til højre i index.html -->
 <indexViewAll>Se en liste over alle {0} datasæt</indexViewAll>
 <indexSearchWith>Søg efter datasæt med {0}</indexSearchWith>
@@ -3435,8 +3499,10 @@ kan søge efter datasæt via</indexDevelopersSearch>
 <indexAllDatasetsSearch>ERDDAPs allDatasets-tabeldatasæt, der har en række informationer for hvert datasæt</indexAllDatasetsSearch>
 <indexOpenSearch>ERDDAPs OpenSearch 1.1-tjeneste</indexOpenSearch>
 <indexMetadata>Metadata</indexMetadata>
+
 <!--  {0} {1} er et link til kun én af FGDC eller ISO 19115 WAF -->
 <indexWAF1>ERDDAP har en {0} med {1} metadatafiler for alle de geospatiale datasæt i denne ERDDAP.</indexWAF1>
+
 <!--  links til både FGDC og ISO 19115 WAF&#39;er -->
 <indexWAF2>ERDDAP har en {0} med {1} metadatafiler og en {2} med {3} metadatafiler for alle de geospatiale datasæt i denne ERDDAP.</indexWAF2>
 <indexConverters>Konvertere</indexConverters>
@@ -3456,10 +3522,13 @@ Matlab, R eller et program, der du skriver) og endda fra websider (via HTML-bill
 {0}
 Eller brug højere tal, hvis problemet fortsætter.
 Standarden for ure er 8192. Standarden for forekomster er 128.</inotifyFix>
+
 <!--  oversæt ikke -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpoler</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3470,6 +3539,7 @@ Dine Java -programmer kan hente data fra denne kopi af ERDDAP .
 Se
 <a rel="help" href="https://erddap.github.io/setup.html">Konfigurer din egen ERDDAP</a> .
 ]]></javaProgramsHTML>
+
 <!--  JustGenerateAndView-meddelelserne bruges til knappen justGenerateAndView
 på dataadgangsformularerne.
 JustGenerateAndViewHtml-meddelelsen kan indeholde &protocolName; .
@@ -3501,6 +3571,7 @@ For mere information om dannelse af URL&#39;er, klik på linket <kbd>Bypass this
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>Nøgleord</keywords>
 <langCode>da</langCode>
+
 <!--  Dette vises på erddap/legal.html-websiden efter den generelle ansvarsfraskrivelse.
 Du kan erstatte enhver af [standardParts] med din egen HTML.
 [standardKontakt] refererer til adminE-mailen. -->
@@ -3519,6 +3590,7 @@ Du kan erstatte enhver af [standardParts] med din egen HTML.
 <h2><a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Ansvarsfraskrivelser</a></h2>
 ]]></legalNotices>
 <legalNoticesTitle>Juridiske meddelelser</legalNoticesTitle>
+
 <!--  Titlen på kortets forklaring (eller ingenting, hvis du ikke vil have en legendeTitel).
 Hos ERD bruger vi ikke dette. Du kan bruge legendTitle1 og/eller legendTitle2 (den anden linje).
 For ERDDAPs horisontale forklaring er legendTitle1 og 2 sat på samme linje.
@@ -3530,6 +3602,7 @@ Standarden er ingenting (ubrugt).
 <legendTitle2></legendTitle2>
 <license>Licens</license>
 <likeThis>sådan her</likeThis>
+
 <!--  f.eks. {0}=WMS eller listAll -->
 <listOfDatasets>Liste over {0} datasæt</listOfDatasets>
 <listAll>Alle</listAll>
@@ -3704,6 +3777,7 @@ Det er muligt, at nogle datasæt ikke er tilgængelige i øjeblikket, eller at d
 <LogOut>Log ud</LogOut>
 <logout>Log ud</logout>
 <logoutOpenID>Log ud fra din OpenID-udbyder.</logoutOpenID>
+
 <!--  logoutSuccess sidst opdateret 2019-12-19 -->
 <logoutSuccess>Du har logget ud.
 
@@ -3764,6 +3838,7 @@ Klik <kbd>Redraw the Graph</kbd> lige før du klikker her, så de nyeste indstil
 ]]></magDownloadTooltip>
 <magFileType>Indstil derefter filtypen</magFileType>
 <magGraphType>Graftype</magGraphType>
+
 <!--  Oversæt ikke graphType-navnene -->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>Graftype</strong>
@@ -3875,6 +3950,7 @@ angiv kun 1 værdi →
 ]]></magJust1Value>
 <magRange>Rækkevidde</magRange>
 <magRangeTo>til</magRangeTo>
+
 <!--  f.eks. fra 0 til 100 -->
 <magRedraw>Tegn grafen igen</magRedraw>
 <magRedrawTooltip>Tegn grafen igen baseret på indstillingerne ovenfor.</magRedrawTooltip>
@@ -3941,6 +4017,7 @@ Denne Make A Graph-webside forenkler blot oprettelsen af tabledap URL&#39;er med
 <br>Så behøver du ikke bruge denne formular for at få data.
 Se linket &quot;Omgå denne formular&quot; nedenfor.
 ]]></magTableTooltip>
+
 <!--  hukommelsesrelaterede fejl skal indeholde dette ord. Dette bør kun være små bogstaver (for case-ufølsom test). -->
 <memory>hukommelse</memory>
 <memoryTooMuchData>Din forespørgsel producerede for mange data. Prøv at anmode om færre data. [hukommelse]</memoryTooMuchData>
@@ -3949,7 +4026,9 @@ Se linket &quot;Omgå denne formular&quot; nedenfor.
 <memoryThanSafe>Anmodningen kræver mere hukommelse ({0} MB), end der nogensinde er sikkert tilgængelig i denne Java-opsætning ({1} MB).</memoryThanSafe>
 <metadataDownload>Klik for at downloade {0}-metadata.</metadataDownload>
 <moreInformation>mere information</moreInformation>
+
 <!--  Disse beskeder i MessageFormat-stil skubbes ind i MustBe.xxx. -->
+
 <!--  Dette er en vigtig fejlmeddelelse. Det angiver, at anmodningen var gyldig,
 men resultatet var ingen data. Kunder leder muligvis efter netop denne besked.
 For nu er det bedst ikke at ændre dette.
@@ -3958,11 +4037,13 @@ Men dods.dap.DODSException har ingen relevant undtagelse.
 Bedre at returnere en tom fil? Men .nc og andre tillader ikke 0-længde data.
  -->
 <MustBeThereIsNoData>Din forespørgsel gav ingen matchende resultater.</MustBeThereIsNoData>
+
 <!--  Mange filtyper sætter en grænse for, hvor meget data en fil kan indeholde (f.eks. 2 GB). -->
 <MustBeNotNull>{0} må ikke være null.</MustBeNotNull>
 <MustBeNotEmpty>{0} må ikke være en tom streng.</MustBeNotEmpty>
 <MustBeInternalError>Intern fejl</MustBeInternalError>
 <MustBeOutOfMemoryError>Hukommelse fuld fejl</MustBeOutOfMemoryError>
+
 <!--  Disse kan have HTML-indhold -->
 <nMatching1>1 matchende datasæt.</nMatching1>
 <nMatching>{0} matchende datasæt.</nMatching>
@@ -3972,8 +4053,10 @@ Bedre at returnere en tom fil? Men .nc og andre tillader ikke 0-længde data.
 <nMatchingCurrent>nuværende</nMatchingCurrent>
 <noDataFixedValue>Fixed value variable={0} mislykkedes i testen {1}.</noDataFixedValue>
 <noDataNoLL>Der er ingen gyldige længde- eller breddegradsværdier.</noDataNoLL>
+
 <!--  f.eks. {0}=&quot;protocol=griddap&quot; -->
 <noDatasetWith>I øjeblikket er der ingen datasæt med {0}.</noDatasetWith>
+
 <!--  {0}=side {1}=sidste side -->
 <noPage1>Du har anmodet om resultatside={0}, men den sidste side er {1}.</noPage1>
 <noPage2>Anmod om en side fra 1 til og med {1}.</noPage2>
@@ -3982,6 +4065,7 @@ Bedre at returnere en tom fil? Men .nc og andre tillader ikke 0-længde data.
 <notAuthorizedForData>loggedInAs={0} er ikke autoriseret til at få adgang til data fra datasetID={1}, men er autoriseret til at få adgang til grafer og metadata.</notAuthorizedForData>
 <notAvailable>I øjeblikket er datasetID={0} ikke tilgængelig.</notAvailable>
 <note>BEMÆRK!</note>
+
 <!--  Xxx er Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
 <noXxx>Dette datasæt er aldrig tilgængeligt via {0}.</noXxx>
 <noXxxBecause>Dette datasæt er aldrig tilgængeligt via {0}, fordi {1}.</noXxxBecause>
@@ -4039,6 +4123,13 @@ Udviklere af computerprogrammer og Java Scripted-websider kan få adgang til ERD
 Se Indstillinger nederst på den pågældende webside.
 <br>&nbsp;
 ]]></outOfDateKeepTrack>
+
+<!--Første </pageFørste>
+<pagePrevious>tidligere </pagePrevious>
+<pageCurrent>strøm </pageCurrent>
+<pageNext>næste </pageNæste>
+<page>Sidst</Sidst-->
+
 <!--  Disse er paletmulighederne.
      Der skal være en .cpt-fil for hver i mappen erddap/WEB-INF/cptfiles.
   Standardpaletterne er angivet i &#39;paletter&#39; i Bobs messages.xml,
@@ -4054,6 +4145,7 @@ KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
 KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Vær tålmodig. Det kan tage et stykke tid at få dataene.)</patientData>
 <patientYourGraph>[Graffen du har angivet. Vær tålmodig.]</patientYourGraph>
+
 <!--  For hver billedstørrelse er der en pdfWidth og pdfHeight (i 1/144ths tomme).
 Stor størrelse er maks. for at passe på siden (0,5&quot; LR-margener, 1&quot; TB-margener giver den bedste forklaringsstørrelse).
 Bredde er i forholdet 1:2:3.
@@ -4075,6 +4167,7 @@ Der er
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></percentEncode>
 <pickADataset>Vælg et datasæt</pickADataset>
+
 <!--  Meddelelser relateret til protokolbaserede datasætsøgninger. -->
 <protocolSearchHtml>Søg efter datasæt efter protokol</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -4430,8 +4523,10 @@ Se
 <searchDoFullTextHtml>Foretag en fuldtekstsøgning efter datasæt</searchDoFullTextHtml>
 <searchFullTextHtml>Fuld tekstsøgning efter datasæt</searchFullTextHtml>
 <searchButton>Søg</searchButton>
+
 <!--  Værktøjstipteksten til fuldtekstsøgningens Send-knap. -->
 <searchClickTip>Klik her for at indsende din søgeanmodning.</searchClickTip>
+
 <!--  Dette er html&#39;en til at beskrive detaljerne i fuldtekstsøgning.
   EDStatic ændrer dette og tilføjer derefter &lt;div class=&quot;standard_max_width&quot;&gt;. -->
 <searchHintsTooltip><![CDATA[
@@ -4483,13 +4578,16 @@ Der er to uofficielle måder at søge i flere ERDDAP efter datasæt:
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
 ]]></searchMultipleERDDAPsDescription>
 <searchNotAvailable>Undskyld. Søgesystemet er ikke tilgængeligt lige nu.</searchNotAvailable>
+
 <!--  Værktøjstipteksten til fuldtekstsøgningens tekstfelt. -->
 <searchTip>Ligesom Google-søgning skal du indtaste mellemrumsadskilte ord, f.eks.
 &quot;{0}&quot;.</searchTip>
 <searchSpelling>Tjek stavningen af det eller de ord, du søgte efter.</searchSpelling>
 <searchFewerWords>Prøv at bruge færre søgeord.</searchFewerWords>
+
 <!--  {0}=plainFileType af en søgeforespørgsel, {1}=eksempelforespørgslen. -->
 <searchWithQuery>En {0} søgeanmodning skal indeholde en forespørgsel, f.eks. &quot;{1}&quot;.</searchWithQuery>
+
 <!--  Ja, &#39;&#39; er korrekt. {0}=url {1}=protokol med store bogstaver -->
 <seeProtocolDocumentation><![CDATA[
 For detaljer, se
@@ -4550,6 +4648,7 @@ Nogle dele skal specificeres separat.
 ]]></sosLongDescriptionHtml>
 <sparqlP01toP02pre>https://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
 <sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
+
 <!--  SlideSorter-meddelelser -->
 <ssUse><![CDATA[
 
@@ -4580,6 +4679,7 @@ Open</kbd> for at åbne kopien på din harddisk og bogmærke den.
 </ol>
 
 ]]></ssInstructionsHtml>
+
 <!--  Standardlicensen føjes til mange datasæts globale metadata (se datasets.xml) -->
 <standardLicense>Dataene kan bruges og videredistribueres gratis, men er ikke beregnet
 til lovlig brug, da den kan indeholde unøjagtigheder. Heller ikke data
@@ -4588,6 +4688,7 @@ af deres ansatte eller entreprenører, giver enhver garanti, udtrykkelig eller
 underforstået, herunder garantier for salgbarhed og egnethed til en
 særlige formål eller påtager sig ethvert juridisk ansvar for nøjagtigheden,
 fuldstændigheden eller anvendeligheden af disse oplysninger.</standardLicense>
+
 <!--  Dette bruges af &lt;legal&gt; i setup.xml. -->
 <standardContact><![CDATA[
 
@@ -4597,6 +4698,7 @@ fuldstændigheden eller anvendeligheden af disse oplysninger.</standardLicense>
 Spørgsmål, kommentarer, forslag?
 Send venligst en e-mail til <kbd>&adminEmail;</kbd>&nbsp;.
 ]]></standardContact>
+
 <!--  Dette bruges af &lt;legal&gt; i setup.xml. -->
 <standardDataLicenses><![CDATA[
 
@@ -4606,6 +4708,7 @@ Send venligst en e-mail til <kbd>&adminEmail;</kbd>&nbsp;.
 Dataene fra nogle datasæt kan være underlagt brugsbegrænsninger eller begrænsninger.
 Se datasættets &license; metadata, som kan findes på datasættets Data Access Form (.html), Make A Graph (.graph) og Dataset Attribute Structure (.das) websider.
 ]]></standardDataLicenses>
+
 <!--  Dette bruges af &lt;legal&gt; i setup.xml. -->
 <standardDisclaimerOfEndorsement><![CDATA[
 
@@ -4613,6 +4716,7 @@ Se datasættets &license; metadata, som kan findes på datasættets Data Access 
 Enhver henvisning fra denne server til et specifikt produkt, proces eller service udgør eller indebærer ikke en godkendelse fra de personer eller organisationer, der er knyttet til denne hjemmeside, af produktet, processen eller tjenesten eller dets producent eller udbyder.
 De synspunkter og meninger, der er udtrykt i ethvert refereret dokument, angiver eller afspejler ikke nødvendigvis de personer eller organisationer, der er knyttet til denne hjemmeside.
 ]]></standardDisclaimerOfEndorsement>
+
 <!--  Dette bruges af &lt;legal&gt; i setup.xml.
   Dette er baseret på https://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
 <standardDisclaimerOfExternalLinks><![CDATA[
@@ -4622,6 +4726,7 @@ Forekomsten af eksterne links på denne World Wide Web-side er ikke ensbetydende
 De personer og organisationer, der er knyttet til dette websted, udøver ikke nogen redaktionel kontrol over de oplysninger, du kan finde på disse steder.
 Disse links leveres i overensstemmelse med det erklærede formål med denne hjemmeside.
 ]]></standardDisclaimerOfExternalLinks>
+
 <!-- Dette bruges af<legal> i setup.xml.
 Dette er fra BSD plus to forekomster af &quot;, WEB SERVICE OG/ELLER DATA&quot;.
 Før 2010-08-05 var
@@ -4636,6 +4741,7 @@ Før 2010-08-05 var
 UNDER INGEN OMSTÆNDIGHEDER KAN OPHAVSRETSEJEREN ELLER BIDRAGENDE ER ANSVARLIG FOR NOGEN DIREKTE, INDIREKTE, TILFÆLDELIGE, SÆRLIGE, EKSEMPELISKE ELLER FØLGESKADER (INKLUSIVE, MEN IKKE BEGRÆNSET TIL, INDKØB AF ERSTATNINGSSERVICE GODER, DATA; ELLER VIRKSOMHEDSAFBRYDELSE), HVORDAN FORÅRSAGET OG PÅ ENHVER MÅDE OM ANSVAR, HVANDEN I KONTRAKT, STRIKT ANSVAR ELLER TORT (HERunder uagtsomhed ELLER ANDEN MÅDE), SOM OPSTÅR PÅ NOGEN MÅDE VED BRUG AF DENNE WEBSERVICE, EVENTUELLE DETTE SERVICE, EVENTS.
 MULIGHEDEN FOR SÅDAN SKADE.</kbd>
 ]]></standardGeneralDisclaimer>
+
 <!--  Dette bruges af &lt;legal&gt; i setup.xml. -->
 <standardPrivacyPolicy><![CDATA[
 
@@ -4649,6 +4755,7 @@ ERDDAP følger NOAAs
 <status>Status</status>
 <statusHtml>Status-websiden er en hurtig måde at kontrollere den aktuelle status/helbred på
 af denne ERDDAP, inklusive en liste over datasæt, som ikke kunne indlæses.</statusHtml>
+
 <!--  Tekst til knappen Send på forskellige formularer. -->
 <submit>Indsend</submit>
 <submitTooltip>Indsend oplysningerne på denne formular og begynd at downloade dataene.</submitTooltip>
@@ -4724,6 +4831,7 @@ Derefter vil datasetID blive udfyldt for dig.
 <subscriptionEmailInvalid>Den e-mailadresse, du har angivet, er ikke gyldig.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>Den e-mailadresse, du har indsendt, er for lang.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>Du har ikke angivet din e-mailadresse.</subscriptionEmailUnspecified>
+
 <!--  ID bruges til datasæt-ID og abonnements-ID. -->
 <subscriptionIDInvalid>Det ID, du har indsendt, er ikke gyldigt.</subscriptionIDInvalid>
 <subscriptionIDTooLong>Det id, du har indsendt, er for langt.</subscriptionIDTooLong>
@@ -4796,6 +4904,7 @@ Du vil klikke på et link i den e-mail, som ERDDAP sender dig, efter du har anmo
 <p><span class="successColor"><strong>Din anmodning om at validere et abonnement blev modtaget.</strong>
 <br>Hvis nøglen er korrekt, og abonnementet ikke allerede er gyldigt, vil abonnementet blive valideret.</span>
 ]]></subscriptionValidateSuccess>
+
 <!--  Dette er den korte beskrivelse af ERDDAP, som bruges på midten af
 venstre side af ERDDAPs hjemmeside.
 Dette kan henvise til &erddapUrl;
@@ -4878,7 +4987,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> inkluderer ERDDAP i sin liste over anbefalede dataservere til brug for grupper inden for NOAA .
 ]]></standardShortDescriptionHtml>
+
 <!--  Bob: se identisk tabel css i Table.ERD_TABLE_CSS -->
+
 <!--  startHeadHtml har starten på HTML-dokumentet og &#39;head&#39;-tags
 (startende ved &quot;&lt;!DOCTYPE&quot;, men ikke inklusive &quot;&lt;/head&gt;&quot;)
 for alle HTML-websider.
@@ -4915,6 +5026,7 @@ Information.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -4945,6 +5057,7 @@ Information.
   </tr> 
 </table>
 ]]></startBodyHtml5>
+
 <!-- Dette er den korte beskrivelse af ERDDAP, som bruges i midten af venstre side af ERDDAP hjemmeside.
 Dette kan henvise til &erddapUrl;, [theShort1], [theShort2] og [standardShortDescriptionHtml] (fra [tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml ).
 Hvis din ERDDAP kan bruge https, skal alle refererede billedfiler osv.
@@ -4962,6 +5075,7 @@ Hvis du ikke bruger [standardShortDescriptionHtml], skal du i det mindste inklud
 Denne særlige ERDDAP installation har oceanografiske data (f.eks.
 data fra satellitter og bøjer).
 ]]></thisParticularErddap>
+
 <!--  Du kan ændre andre ting, men behold venligst &quot;ERDDAP, Version &erddapVersion;&quot; og
      disse henvisninger til ansvarsfraskrivelser og privatlivspolitik. -->
 <endBodyHtml5><![CDATA[
@@ -5005,6 +5119,7 @@ For at se {0},
 <subsetViewSelectRelatedCounts>de relaterede data tæller</subsetViewSelectRelatedCounts>
 <subsetWhen>Når {0},</subsetWhen>
 <subsetWhenNoConstraints>Når der ikke er nogen begrænsninger,</subsetWhenNoConstraints>
+
 <!--  Det følgende tag er indledt med 1 af de 2 foregående tags.
   {0} er subsetViewSelectDistintCombos eller subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} for {1} værdierne af &quot;{2}&quot; er:</subsetWhenCounts>
@@ -5084,6 +5199,7 @@ title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse." /></a> 
 <theKey>Nøglen</theKey>
 <theSubscriptionID>Abonnements-ID</theSubscriptionID>
 <theUrlAction>URL&#39;en/handlingen</theUrlAction>
+
 <!--  Dette er den lange beskrivelse af ERDDAP, som bruges på websiden med baggrundsoplysninger.
 Dette kan henvise til &erddapUrl;, &ssUse; .
  -->
@@ -5771,6 +5887,7 @@ Udtalelserne på denne webside er Bob Simons&#39; personlige meninger og afspejl
 ]]></theLongDescriptionHtml>
 <Then>Derefter</Then>
 <twoClickMapDefaultTooltip>Angiv et rektangel ved at klikke på to diagonale hjørner. Gør det igen, hvis det er nødvendigt.</twoClickMapDefaultTooltip>
+
 <!--  Dette er en måde at tilsidesætte ERDDAP&#39;s Standardize UDUnits-konverter
 ved at levere specifikke konverteringer.
 standardizeUdunits har trillinger af linjer: før, efter og blank.
@@ -5778,13 +5895,17 @@ Hvis en hel UDUNITS-streng matcher en &#39;før&#39;-streng,
 den vil blive konverteret til &#39;efter&#39; UDUNITS-værdien.
 De tomme linjer sikrer, at de andre linjer er &#39;før&#39; og &#39;efter&#39; linjer.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Tid</time>
 <timeoutOtherRequests>Timeout venter på, at dine andre anmodninger behandles.</timeoutOtherRequests>
+
 <!--  Dette er en måde at tilsidesætte ERDDAP&#39;s UCUM til UDUNITS-konverter
 ved at levere specifikke konverteringer.
 ucumToUdunits har trillinger af linjer: før, efter og blank.
@@ -5792,7 +5913,8 @@ Hvis en hel UCUM-streng matcher en &#39;før&#39;-streng,
 den vil blive konverteret til &#39;efter&#39; UDUNITS-værdien.
 De tomme linjer sikrer, at de andre linjer er &#39;før&#39; og &#39;efter&#39; linjer.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5802,7 +5924,10 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
+
 <!--  Dette er en måde at tilsidesætte ERDDAP&#39;s UDUNITS til UCUM-konverter
 ved at levere specifikke konverteringer.
 udunitsToUcum har trillinger af linjer: før, efter og blank.
@@ -5810,7 +5935,8 @@ Hvis en hel UDUNITS-streng matcher en &#39;før&#39;-streng,
 den vil blive konverteret til &#39;efter&#39; UCUM-værdien.
 De tomme linjer sikrer, at de andre linjer er &#39;før&#39; og &#39;efter&#39; linjer.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5832,7 +5958,10 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
+
 <!-- Dette er et forsøg på at håndtere forældede URL-kildemetadata.
 updateUrls anvendes på hver af et datasæts String-metadataattributter (global og variabel), hver gang datasættet indlæses.
 updateUrls har trillinger af linjer:
@@ -5852,7 +5981,8 @@ Meget vigtigt! * marinemetadata.org/cf# er til standardnavn opslag.
 //www.csc.noaa.gov til kystkonvertering er ufuldkommen:
 dokumenter forskellige steder.
 Dette er almindeligt for store ændringer af domænenavn. -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6945,7 +7075,10 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
+
 <!-- Disse er http-URL&#39;er, som sandsynligvis en dag vil være tilgængelige for https.
 Der er angivet som en kommentar her for hurtig test.
 !!! NÅR EN BLIVER GYLDIG, flytter Bob den til updateUrls ovenfor og foretager ændringen til relevant kildekode, .html-sider, messages.xml og mine datasets.xml .
@@ -6964,6 +7097,7 @@ noaa.gov https://www.godac.jamstec.go.jp https://www.globec.org http://www.isotc
 De er til URI&#39;er i 19115 docs.
 https://www.j2eeprogrammer.com https://www.jdom.org https://www.libpng.org https://www.marine-geo.org https://www.myocean.eu https:/ /www.myroms.org/erddap/index.html https://myroms.org er okay https://www.nanoos.org https://www.neracoos.org https://www.ogcnetwork.net https:
 //www.opengis.net https://www.openwebfoundation.org https://www.remss.com https://www.schemacentral.com https://www.slf4j.org https://www.usgin .org -->
+
 <!-- Dette er en kommasepareret liste over attributnavne, som updateUrls vil springe over.
 Det kan ikke være noget.
 Så hvis du ikke ønsker noget, skal du indtaste et volapykord, der aldrig vil være et attributnavn. -->

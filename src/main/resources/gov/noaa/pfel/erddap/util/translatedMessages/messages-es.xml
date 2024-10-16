@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  message.xml contiene mensajes de texto para ERDDAP (que se leen en EDStatic).
 Cuando instala ERDDAP en su servidor, todos estos mensajes se pueden dejar como están,
 ya que estos mensajes suelen ser los mismos en diferentes instalaciones de ERDDAP.
@@ -30,7 +30,7 @@ El sistema de traducción REQUIERE que &quot;pseudoEntidad&quot; solo use [a-zA-
   message-de.xml y -ga tienen muchos enlaces duplicados. Sospecho que muchos más son así.
 
  -->
-<erddapMessages>
+
 <!--  Esto devuelve contenido HTML que describe la solicitud de archivos comprimidos.
 Consulte https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 que dice que x-gzip=gzip y x-compress=compress
@@ -81,11 +81,13 @@ Luego, ERDDAP agregará todos
   Si tiene sugerencias de enlaces adicionales, comuníquese con <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Este conjunto de datos es una tabla que tiene una fila de información para cada conjunto de datos actualmente activo en este ERDDAP.</admSummary>
 <admTitle>La lista de todos los conjuntos de datos activos en este ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Algunos conjuntos de datos son públicos. Algunas pueden ser privadas y quizás no accesibles para usted.</advc_accessible>
@@ -564,6 +566,7 @@ Hay
 <convertFipsCounty>Convertir un código de condado FIPS a/desde un nombre de condado</convertFipsCounty>
 
 <!--  No cambie los ejemplos (de defaultN...).  -->
+
 <!--  El &quot;código de condado FIPS&quot; era un enlace a http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      luego https://www.census.gov/geo/reference/codes/cou.html 
      Ahora lo más cercano (?) es http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2798,7 +2801,7 @@ Si desea que los ejemplos apunten a su ERDDAP, el método más sencillo es:
      Con suerte, puedes sustituir tu ID de conjunto de datos por &quot;jplMURSST41&quot;.
      y modifique &quot;[0 32]&quot; (el rango de datos para la barra de colores).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Los mensajes de EDDTable se muestran en el formulario de acceso a datos de tabledap y en Hacer un gráfico.  -->
 <EDDTableConstraints>Restricciones</EDDTableConstraints>
@@ -2956,7 +2959,7 @@ Si desea que los ejemplos apunten a su ERDDAP, el método más sencillo es:
 
 <!--  Esta es una consulta de ejemplo que genera un gráfico. 
      Puede generar su ejemplo a través del formulario Hacer un gráfico de su conjunto de datos en ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Esta es una consulta de ejemplo que genera un mapa.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3060,7 +3063,7 @@ Por ejemplo:
 <fileHelp_ncml>Vea la estructura y los metadatos del conjunto de datos como un archivo UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Descargue tiempo, latitud, longitud y otras variables como un archivo de hoja de cálculo genérico ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Descargue longitud, latitud, hora y otras columnas como un archivo de hoja de cálculo genérico ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Descarga como archivo de parquet.</fileHelp_parquet>
 <fileHelp_subset>Vea un formulario HTML que utiliza búsqueda por facetas para simplificar la selección de subconjuntos de datos.</fileHelp_subset>
 <fileHelp_timeGaps>Vea una lista UTF-8 de espacios en los valores de tiempo que son mayores que el espacio medio.</fileHelp_timeGaps>
 <fileHelp_tsv>Descargue una tabla de texto separado por tabulaciones ISO-8859-1 (línea 1: nombres; línea 2: unidades; tiempos ISO 8601).</fileHelp_tsv>
@@ -3756,9 +3759,11 @@ O utilice números más altos si el problema persiste.
 El valor predeterminado para relojes es 8192. El valor predeterminado para instancias es 128.</inotifyFix>
 
 <!--  No traducir  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpolar</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4326,6 +4331,7 @@ Consulte el enlace &quot;Omitir este formulario&quot; a continuación.
 <moreInformation>más información</moreInformation>
 
 <!--  Estos mensajes de estilo MessageFormat se envían a MustBe.xxx.  -->
+
 <!--  Este es un mensaje de error importante. Indica que la solicitud era válida,
 pero el resultado fue que no había datos. Los clientes pueden estar buscando este mensaje exacto.
 Por ahora lo mejor es no cambiar esto.
@@ -4423,6 +4429,12 @@ Consulte las Opciones en la parte inferior de esa página web.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--páginaPrimero contacto primero
+&gt; &gt;
+c) Current consistcurrent
+NextpageSiguiente contacto realizado/páginaSiguiente contacto
+&gt; &gt; &gt; &gt; &gt; &gt;-->
 
 <!--  Estas son las opciones de paleta.
      Debe haber un archivo .cpt para cada uno en el directorio erddap/WEB-INF/cptfiles.
@@ -5348,6 +5360,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: ver tabla CSS idéntica en Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml tiene el inicio del documento HTML y las etiquetas &#39;head&#39; 
 (comenzando en &quot;&lt;!DOCTYPE&quot;, pero sin incluir &quot;&lt;/head&gt;&quot;) 
 para todas las páginas web HTML. 
@@ -5384,6 +5397,7 @@ información.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6277,11 +6291,14 @@ Si una cadena UDUNITS completa coincide con una cadena &#39;antes&#39;,
 se convertirá al valor UDUNITS &#39;después&#39;.
 Las líneas en blanco garantizan que las otras líneas sean líneas &quot;antes&quot; y &quot;después&quot;.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Tiempo</time>
 <timeoutOtherRequests>Tiempo de espera a que se procesen sus otras solicitudes.</timeoutOtherRequests>
 
@@ -6292,7 +6309,8 @@ Si una cadena UCUM completa coincide con una cadena &#39;antes&#39;,
 se convertirá al valor UDUNITS &#39;después&#39;.
 Las líneas en blanco garantizan que las otras líneas sean líneas &quot;antes&quot; y &quot;después&quot;.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6302,7 +6320,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Esta es una forma de anular el convertidor UDUNITS a UCUM de ERDDAP
 proporcionando conversiones específicas. 
@@ -6311,7 +6331,8 @@ Si una cadena UDUNITS completa coincide con una cadena &#39;antes&#39;,
 se convertirá al valor UCUM &#39;después&#39;.
 Las líneas en blanco garantizan que las otras líneas sean líneas &quot;antes&quot; y &quot;después&quot;.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6333,7 +6354,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Este es un intento de abordar los metadatos de origen de URL desactualizados.
 updateUrls se aplica a cada uno de los atributos de metadatos de cadena de un conjunto de datos. 
@@ -6357,7 +6380,8 @@ Notas:
 * La conversión de http://www.csc.noaa.gov a costa es imperfecta: 
   documentos en diferentes lugares.  Esto es común para grandes cambios en el nombre de dominio.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7450,7 +7474,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Estas son URL http a las que probablemente algún día se podrá acceder mediante https.
 Se enumeran como comentarios aquí para realizar pruebas rápidas.
@@ -7533,6 +7559,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Esta es una lista de nombres de atributos separados por comas que updateUrls omitirá. 
 Esto no puede ser nada. Entonces, si no quieres nada, ingresa una palabra galimatías que
 nunca será un nombre de atributo.  -->

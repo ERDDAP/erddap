@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  Az messages.xml szöveges üzeneteket tartalmaz az ERDDAP számára (amelyek az EDStaticban olvashatók).
 Amikor telepíti az ERDDAP-ot a szerverére, ezeket az üzeneteket minden olyan állapotban hagyhatja,
 mivel ezek az üzenetek általában ugyanazok a különböző ERDDAP-telepítéseknél.
@@ -30,7 +30,7 @@ A fordítórendszer KÖVETELME, hogy a „pseudoEntity” csak az [a-zA-Z0-9]-t 
   A messages-de.xml és -ga számos hivatkozást duplikál. Gyanítom még sok ilyen van.
 
  -->
-<erddapMessages>
+
 <!--  Ez a Tömörített fájlok kérését leíró HTML-tartalmat adja vissza.
 Lásd: https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 amely szerint x-gzip=gzip és x-compress=compress
@@ -82,11 +82,13 @@ Ezután ERDDAP hozzáadja az összeset
   Ha további linkekre vonatkozó javaslatai vannak, forduljon <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Ez az adatkészlet egy táblázat, amely egy sor információt tartalmaz az ERDDAP-ban jelenleg aktív összes adatkészlethez.</admSummary>
 <admTitle>Az összes aktív adatkészlet listája ebben az ERDDAP-ban</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Egyes adatkészletek nyilvánosak. Néhányuk privát lehet, és előfordulhat, hogy nem érhető el az Ön számára.</advc_accessible>
@@ -558,6 +560,7 @@ Vannak
 <convertFipsCounty>Átalakítsa a FIPS megyei kódot megyenévvé/megyenévvé</convertFipsCounty>
 
 <!--  Ne változtassa meg a példákat (az alapértelmezett N...-től).  -->
+
 <!--  A „FIPS megyekód” a http://www.itl.nist.gov/fipspubs/fip6-4.htm címre mutató hivatkozás volt 
      majd https://www.census.gov/geo/reference/codes/cou.html 
      Most a legközelebbi(?) a http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2807,7 +2810,7 @@ Ha azt szeretné, hogy a példák az ERDDAP-ra mutassanak, a legegyszerűbb mód
      Remélhetőleg lecserélheti az adatkészlet-azonosítóját a „jplMURSST41”-re
      és módosítsa a „[0 32]” értéket (a színsáv adattartományát).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Az EDDTable üzenetek megjelennek a tabledap adatelérési űrlapon és a grafikon készítésén.  -->
 <EDDTableConstraints>Korlátok</EDDTableConstraints>
@@ -2970,7 +2973,7 @@ Ha azt szeretné, hogy a példák az ERDDAP-ra mutassanak, a legegyszerűbb mód
 
 <!--  Ez egy példalekérdezés, amely grafikont generál. 
      A példát létrehozhatja az adatkészlet Make A Graph űrlapján keresztül az ERDDAP-ban.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Ez egy példalekérdezés, amely egy térképet generál.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3074,7 +3077,7 @@ Például:
 <fileHelp_ncml>Tekintse meg az adatkészlet szerkezetét és metaadatait UTF-8 NCML .xml fájlként.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Letöltési idő, szélesség, hosszúság, egyéb változók általános ODV táblázatfájlként (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Hosszúság, szélesség, idő, egyéb oszlopok letöltése általános ISO-8859-1 ODV táblázatfájlként (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Töltse le, mint egy parquet fájl.</fileHelp_parquet>
 <fileHelp_subset>Tekintsen meg egy HTML-űrlapot, amely fazettált keresést használ az adatok részhalmazainak kiválasztásának egyszerűsítésére.</fileHelp_subset>
 <fileHelp_timeGaps>Tekintse meg az UTF-8-as listát az időértékek hézagairól, amelyek nagyobbak, mint a medián rés.</fileHelp_timeGaps>
 <fileHelp_tsv>Töltsön le egy ISO-8859-1 tabulátorral elválasztott szövegtáblázatot (1. sor: nevek; 2. sor: egységek; ISO 8601-szer).</fileHelp_tsv>
@@ -3782,9 +3785,11 @@ Vagy használjon nagyobb számokat, ha a probléma továbbra is fennáll.
 Az órák alapértelmezett értéke 8192. A példányok alapértelmezett értéke 128.</inotifyFix>
 
 <!--  ne fordítsd le  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpolál</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4352,6 +4357,7 @@ Lásd az alábbi „Az űrlap megkerülése” linket.
 <moreInformation>több információ</moreInformation>
 
 <!--  Ezek a MessageFormat stílusú üzenetek a MustBe.xxx fájlba kerülnek.  -->
+
 <!--  Ez egy fontos hibaüzenet. Azt jelzi, hogy a kérelem érvényes volt,
 de az eredmény nem volt adat. Lehetséges, hogy az ügyfelek pontosan ezt az üzenetet keresik.
 Egyelőre jobb, ha nem változtat ezen.
@@ -4449,6 +4455,12 @@ Tekintse meg a weboldal alján található Beállításokat.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--First>First</pageFirst>
+<pagePrevious>previous</pagePrevious>
+<pageCurrent>current</pageCurrent>
+<pageNext>next</pageNext>
+<pageLast>last</pageLast-->
 
 <!--  Ezek a paletta opciók.
      Mindegyikhez egy .cpt fájlnak kell lennie az erddap/WEB-INF/cptfiles könyvtárban.
@@ -5361,6 +5373,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: lásd az azonos css táblázatot a Table.ERD_TABLE_CSS-ben  -->
+
 <!--  A startHeadHtml tartalmazza a HTML dokumentum elejét és a „head” címkéket 
 (a &quot;&lt;!DOCTYPE&quot; karakterrel kezdődik, de nem tartalmazza a &quot;&lt;/head&gt;&quot; szöveget) 
 minden HTML weboldalhoz. 
@@ -5397,6 +5410,7 @@ információ.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6308,11 +6322,14 @@ Ha egy teljes UDUNITS karakterlánc egyezik egy „előtte” karakterlánccal,
 az UDUNITS „után” értékre lesz konvertálva.
 Az üres sorok biztosítják, hogy a többi sor „előtte” és „utána” legyen.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Idő</time>
 <timeoutOtherRequests>Időtúllépés vár a többi kérés feldolgozására.</timeoutOtherRequests>
 
@@ -6323,7 +6340,8 @@ Ha egy teljes UCUM karakterlánc egyezik egy &quot;előtte&quot; karakterláncca
 az UDUNITS „után” értékre lesz konvertálva.
 Az üres sorok biztosítják, hogy a többi sor „előtte” és „utána” legyen.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6333,7 +6351,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Ez egy módja annak, hogy felülbírálja az ERDDAP UDUNITS UCUM konverterét
 konkrét konverziók biztosításával. 
@@ -6342,7 +6362,8 @@ Ha egy teljes UDUNITS karakterlánc egyezik egy „előtte” karakterlánccal,
 az „után” UCUM értékre lesz konvertálva.
 Az üres sorok biztosítják, hogy a többi sor „előtte” és „utána” legyen.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6364,7 +6385,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Ez egy kísérlet az elavult URL-forrás metaadatainak kezelésére.
 Az updateUrls az adatkészlet minden egyes String metaadat-attribútumára vonatkozik 
@@ -6388,7 +6411,8 @@ Megjegyzések:
 * A http://www.csc.noaa.gov part menti konverzió tökéletlen: 
   dokumentumok különböző helyeken.  Ez gyakori a domain név nagy változásainál.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7481,7 +7505,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Ezek http URL-ek, amelyek valószínűleg egy nap elérhetőek lesznek a https segítségével.
 Itt megjegyzésként vannak felsorolva a gyors tesztelés érdekében.
@@ -7564,6 +7590,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Ez az attribútumnevek vesszővel elválasztott listája, amelyet az updateUrls kihagy. 
 Ez nem lehet semmi. Tehát, ha nem akar semmit, írjon be egy halandzsa szót, amely megteszi
 soha ne legyen attribútumnév.  -->

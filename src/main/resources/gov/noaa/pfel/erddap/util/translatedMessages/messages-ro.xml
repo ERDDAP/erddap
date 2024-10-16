@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml conține mesaje text pentru ERDDAP (care sunt citite în EDStatic).
 Când instalați ERDDAP pe serverul dvs., toate aceste mesaje pot fi lăsate așa cum sunt,
 deoarece aceste mesaje sunt de obicei aceleași la diferite instalații ERDDAP.
@@ -30,7 +30,8 @@ Sistemul de traducere NECESITĂ ca „pseudoEntity” să folosească numai [a-z
   messages-de.xml și -ga au multe legături duplicate. Bănuiesc că multe altele sunt așa.
 
  -->
-<erddapMessages><!--  Aceasta returnează conținut HTML care descrie Solicitarea fișierelor comprimate.
+
+<!--  Aceasta returnează conținut HTML care descrie Solicitarea fișierelor comprimate.
 Consultați https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 care spune că x-gzip=gzip și x-compress=compress
 Acest lucru se repetă și în messages2.xml în
@@ -75,11 +76,13 @@ Apoi, ERDDAP va adăuga toate
 <additionalLinks><![CDATA[
 Dacă aveți sugestii pentru linkuri suplimentare, contactați <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Acest set de date este un tabel care are un rând de informații pentru fiecare set de date activ în prezent în acest ERDDAP.</admSummary>
 <admTitle>Lista tuturor seturilor de date active din acest ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Unele seturi de date sunt publice. Unele pot fi private și poate nu vă sunt accesibile.</advc_accessible>
@@ -151,6 +154,7 @@ Poate că în acest ERDDAP nu există seturi de date aproape în timp real.
 <strong>Indicații:</strong> specificați câte criterii de căutare doriți, apoi faceți clic pe <kbd>&searchButton;</kbd> .
 <br>Doar seturile de date care corespund <strong>tuturor</strong> criteriilor de căutare vor apărea în rezultate.
 ]]></advancedSearchDirections>
+
 <!--  Aceasta este o descriere a Căutării avansate. -->
 <advancedSearchTooltip><![CDATA[
 Căutarea avansată combină toate tehnicile de căutare și adaugă căutări pentru seturi de date care au date în intervale de longitudine, latitudine și timp, astfel încât să poți căuta seturi de date pe baza mai multor criterii diferite simultan.
@@ -219,6 +223,7 @@ Acest lucru este opțional.
 </ul>
 
 ]]></advancedSearchTimeTooltip>
+
 <!--  {0}=plainFileType (de exemplu, .json) al interogării de căutare avansată. -->
 <advancedSearchWithCriteria>O solicitare de căutare avansată {0} trebuie să includă unul sau mai multe criterii, de exemplu, „?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature”.</advancedSearchWithCriteria>
 <advancedSearchFewerCriteria>Încercați să utilizați mai puține criterii de căutare și/sau mai largi.</advancedSearchFewerCriteria>
@@ -233,6 +238,7 @@ Eroare de manipulare:
 <br>Pentru alte tipuri de fișiere, Căutarea avansată va arunca o excepție dacă orice parte a cererii este nevalidă.
 <br>Cu toate acestea, sunt verificați doar parametrii așteptați; parametrii neaștepți sunt pur și simplu ignorați.
 ]]></advancedSearchErrorHandling>
+
 <!--  Acestea sunt injectate în PrimitiveArray.
      Acestea folosesc MessageFormat. -->
 <ArrayAddN>EROARE în {0}.addN:
@@ -261,6 +267,7 @@ Ați depus adesea cereri identice într-o perioadă scurtă de timp?
 Ați trimis un număr mare de solicitări nevalide?
 Dacă sunteți gata să evitați aceste probleme, vă rugăm să trimiteți un e-mail la {0} pentru a solicita eliminarea de pe lista neagră.</blacklistMsg>
 <BroughtToYouBy>Adus vouă de</BroughtToYouBy>
+
 <!--  Aceste mesaje sunt legate de Căutare după categorie. -->
 <categoryTitleHtml>Căutați seturi de date după categorie</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -312,15 +319,18 @@ nave + CTD-uri sau planoare de profilare.
 <br>&nbsp;&nbsp;Exemple:
 analize de laborator sau debarcări de pește după numele portului (dacă nu lat,lon).
 ]]></cdmDataTypeHelp>
+
 <!--  Acest mesaj este folosit ca indicație pentru link-urile de „acces” pe paginile HTML
 ori de câte ori este afișat un tabel de seturi de date (de exemplu, atunci când efectuați o căutare de text complet pentru seturi de date).
  -->
 <clickAccess>Faceți clic pentru a vedea un formular de acces la date OPeNDAP pentru acest set de date, astfel încât să puteți solicita date.</clickAccess>
+
 <!--  Acest mesaj este folosit ca indicație pentru linkul „de fundal” pe paginile HTML
 ori de câte ori este afișat un tabel de seturi de date (de exemplu, atunci când efectuați o căutare de text complet pentru seturi de date).
  -->
 <clickBackgroundInfo>Faceți clic pentru a vedea informații de fundal din sursa acestui set de date.</clickBackgroundInfo>
 <clickERDDAP>Faceți clic aici pentru a reveni la pagina principală a ERDDAP.</clickERDDAP>
+
 <!--  Acest mesaj este folosit ca indicație pentru linkul „informații” de pe paginile HTML oricând
 se afișează un tabel cu seturi de date (de exemplu, când efectuați o căutare cu text complet pentru seturi de date).
  -->
@@ -384,9 +394,11 @@ Sau
 <strong>Convertiți din {0} într-un nume de variabilă.</strong>
 ]]></convertToVariableName>
 <converterWebService>ERDDAP oferă mai multe convertoare ca pagini web și ca servicii web:</converterWebService>
+
 <!--  Aceste mesaje HTML sunt folosite pentru a descrie opțiunile de „conversie” în general și individual. -->
 <convertOAAcronyms>Acronime oceanice/atmosferice</convertOAAcronyms>
 <convertOAAcronymsToFrom>Convertiți un acronim comun oceanic/atmosferic într-un nume complet</convertOAAcronymsToFrom>
+
 <!--  Nu modificați exemplele (din defaultN...). -->
 <convertOAAcronymsIntro><![CDATA[
 Această pagină web vă permite să convertiți un acronim obișnuit oceanic/atmosferic în/din un nume complet.
@@ -416,6 +428,7 @@ Dacă doriți să adăugați un acronim comun sau să faceți o corecție, vă r
 </ul>
 
 ]]></convertOAAcronymsNotes>
+
 <!--  Nu modificați exemplele (din defaultN, ...). -->
 <convertOAAcronymsService><![CDATA[
 
@@ -452,6 +465,7 @@ Există
 ]]></convertOAAcronymsService>
 <convertOAVariableNames>Nume de variabile oceanice/atmosferice</convertOAVariableNames>
 <convertOAVariableNamesToFrom>Convertiți un nume de variabilă oceanică/atmosferică comună într-un nume complet</convertOAVariableNamesToFrom>
+
 <!--  Nu modificați exemplele (din defaultN...). -->
 <convertOAVariableNamesIntro><![CDATA[
 Această pagină web vă permite să convertiți un nume obișnuit de variabilă oceanică/atmosferică într-un nume complet.
@@ -481,6 +495,7 @@ Dacă doriți să adăugați un nume de variabilă folosit în mod obișnuit sau
 </ul>
 
 ]]></convertOAVariableNamesNotes>
+
 <!--  Nu modificați exemplele (din defaultN, ...). -->
 <convertOAVariableNamesService><![CDATA[
 
@@ -512,7 +527,9 @@ Există
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></convertOAVariableNamesService>
 <convertFipsCounty>Convertiți un cod de județ FIPS la/din un nume de județ</convertFipsCounty>
+
 <!--  Nu modificați exemplele (din defaultN...). -->
+
 <!--  „Codul de județ FIPS” era un link către http://www.itl.nist.gov/fipspubs/fip6-4.htm
      apoi https://www.census.gov/geo/reference/codes/cou.html
      Acum, cel mai apropiat(?) este http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -574,6 +591,7 @@ Entitățile la nivel de stat sunt:
 </ul>
 
 ]]></convertFipsCountyNotes>
+
 <!--  Nu modificați exemplele (din defaultN, ...). -->
 <convertFipsCountyService><![CDATA[
 
@@ -795,8 +813,10 @@ Există
     src="../images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></convertInterpolateService>
+
 <!--  Aceste mesaje HTML sunt folosite pentru a descrie opțiunile de „conversie” în general și individual. -->
 <convertKeywords>Convertiți un nume standard CF la/din un cuvânt cheie știință GCMD</convertKeywords>
+
 <!--  Nu modificați exemplele (din defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Această pagină web vă permite să convertiți un
@@ -841,6 +861,7 @@ site-ul web.
 </ul>
 
 ]]></convertKeywordsNotes>
+
 <!--  Nu modificați exemplele (din defaultN, ...). -->
 <convertKeywordsService><![CDATA[
 
@@ -880,6 +901,7 @@ Există
 ERDDAP are
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">un serviciu de conversie a unui șir de timp în/din o oră numerică</a> .
 ]]></convertTimeReference>
+
 <!--  Nu modificați valorile exemplu (de la defaultN...). -->
 <convertTimeIntro><![CDATA[
 În diferite locuri în ERDDAP, un moment în timp poate fi reprezentat ca:
@@ -1114,6 +1136,7 @@ Dar așa funcționează ERDDAP în prezent.
 </ul>
 
 ]]></convertTimeNotes>
+
 <!--  Nu modificați exemplele (din defaultN, ...). -->
 <convertTimeService><![CDATA[
 
@@ -1200,6 +1223,7 @@ Puteți utiliza și alte formate comune pentru ora de bază.
 Valoarea anului trebuie să fie de 4 cifre - utilizați 0-padding dacă este necesar.
 Rețineți că #/#/# este interpretat ca lună/data/an, nu ca dată/lună/an.
 ]]></convertTimeUnitsTooltip>
+
 <!--  Exemplul de pe prima linie este EDV.TIME_UNITS. -->
 <convertTimeUnitsHelp><![CDATA[
 De exemplu, &quot;seconds since 1970-01-01T00:00:00Z&quot; .
@@ -1623,6 +1647,7 @@ Există
     src="../images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></convertURLsService>
+
 <!--  cookieAjutor ultima actualizare 2019-12-19 -->
 <cookiesHelp><![CDATA[
 Asigurați-vă că browserul dvs.
@@ -1683,6 +1708,7 @@ Fiecare coloană (o variabilă) are un tip de date (de exemplu, Sea Surface Temp
 Fiecare rând reprezintă un eșantion diferit de date (de exemplu, dintr-o altă oră sau locație).
 ]]></dafTableTooltip>
 <dasTitle>Structura atributelor setului de date (.das) pentru acest set de date</dasTitle>
+
 <!--  Mesajul care va fi afișat dacă datele nu pot fi descărcate (de exemplu, SeaWiFS &lt;=14 zile). -->
 <dataAccessNotAllowed>[Îmi pare rău. Datele respective nu pot fi descărcate.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Nu se poate conecta la baza de date.</databaseUnableToConnect>
@@ -1959,6 +1985,7 @@ wind_to_direction,
 x_wind,
 y_wind</DEFAULT_commonStandardNames>
 <disabled>Sistemul „{0}” a fost dezactivat pe acest ERDDAP.</disabled>
+
 <!--  Acesta este sfatul explicativ pentru Formularul de acces la date EDDTable și Creați un grafic
      pentru widget-ul de selectare care împinge o valoare distinctă în Constrângerea #1.
      [Sfârșitul liniei a treia a fost: altul decât primul (&quot;&quot;), ]
@@ -1970,6 +1997,7 @@ Dacă selectați o valoare de mai jos, acea valoare va fi folosită pentru Const
 <p>Sau, luați în considerare utilizarea paginii web Subset pentru acest set de date (consultați linkul de mai sus), ceea ce facilitează selectarea subseturilor acestui set de date prin selectarea combinațiilor de valori distincte.
 ]]></distinctValuesTooltip>
 <documentation>Documentație</documentation>
+
 <!--  Aceasta folosește &ssUse; și &erddapUrl; -->
 <doWithGraphs><![CDATA[
 
@@ -1987,6 +2015,7 @@ Dar unele lucruri pe care poate nu le-ați luat în considerare sunt:
 </ul>
 
 ]]></doWithGraphs>
+
 <!--  DPF = Formular furnizor de date -->
 <dpf_submit><![CDATA[
 
@@ -2311,6 +2340,7 @@ Marca temporală a acestui set de date este &tTimestamp; .
 <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">trimite un alt set de date</a> sau puteți reveni la
 <a rel="bookmark" href="&tErddapUrl;/index.html">pagina principală ERDDAP</a> .
 ]]></dpf_congratulation>
+
 <!--  Tabel de seturi de date (de exemplu, o listă de seturi de date) -->
 <dtAccessible><![CDATA[
 <strong>Vă este accesibil acest set de date?</strong>
@@ -2329,6 +2359,7 @@ Marca temporală a acestui set de date este &tTimestamp; .
 <dtWCS>Faceți clic pentru a afla despre obținerea de date și/sau hărți prin serviciul de acoperire web al acestui set de date.</dtWCS>
 <dtWMS>Faceți clic pentru a afla despre realizarea hărților acestor date prin serviciul de hărți web al acestui set de date.</dtWMS>
 <EasierAccessToScientificData>Acces mai ușor la datele științifice</EasierAccessToScientificData>
+
 <!--  Mesajele EDD sunt afișate pe formularele de acces la date tabledap și griddap. -->
 <EDDClickOnSubmitHtml><![CDATA[
 Faceți clic pe <kbd>Submit</kbd> .
@@ -2377,6 +2408,7 @@ Faceți clic pe <kbd>Submit</kbd> .
 <EDDChangedTableToGrid>Noua versiune este un EDDGrid. Vechea versiune nu este!</EDDChangedTableToGrid>
 <EDDSimilarDifferentNVar>EDD.similar: Celălalt set de date are un număr diferit de variabile</EDDSimilarDifferentNVar>
 <EDDSimilarDifferent>EDD.similar: celălalt set de date are un alt {0} pentru dataVariable {1} {2}</EDDSimilarDifferent>
+
 <!--  Mesajele EDDGrid sunt afișate pe formularul de acces la date griddap. -->
 <EDDGridDapDescription>Griddap vă permite să utilizați protocolul OPeNDAP hyperslab pentru a solicita subseturi de date, grafice și hărți din seturi de date grilă (de exemplu, date satelitare și date modele climatice).</EDDGridDapDescription>
 <EDDGridDapLongDescription><![CDATA[
@@ -2475,6 +2507,7 @@ selectați una sau mai multe dintre variabilele grilei.
 <EDDGridCheckAllTooltip>Faceți clic aici pentru a selecta toate variabilele de date.</EDDGridCheckAllTooltip>
 <EDDGridUncheckAll>Deselecteaza tot</EDDGridUncheckAll>
 <EDDGridUncheckAllTooltip>Faceți clic aici pentru a deselecta toate variabilele de date.</EDDGridUncheckAllTooltip>
+
 <!-- Exemple Griddap Acest grup de setări este folosit pentru a face exemple pentru documentația griddap care apare la [baseUrl]/erddap/griddap/documentation.html și în altă parte.
 Caracterele speciale (de exemplu, &amp; &lt; &gt;) trebuie să fie codificate HTML.
 Dacă doriți ca exemplele să indice ERDDAP dvs., cea mai ușoară metodă este:
@@ -2482,6 +2515,7 @@ Dacă doriți ca exemplele să indice ERDDAP dvs., cea mai ușoară metodă este
 <dataset type=" EDDGrid FromErddap&quot;<span translate="no">datasetID =&quot;jplMU RSS T41&quot;active=&quot;true&quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2) Adăugați această etichetă la setup.xml, dar schimbați adresa URL la adresa URL a ERDDAP (https?):
 &lt; EDDGrid ErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrlExample&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
+
 <!--  Acesta este datasetID pentru un set de date EDDGrid care este deservit de ERDDAP.
      Acest set de date este folosit ca bază pentru toate exemplele EDDGrid de mai jos.
      În mod ideal, este un set de date care (cel puțin) are dimensiuni de timp, latitudine și longitudine.
@@ -2489,37 +2523,47 @@ Dacă doriți ca exemplele să indice ERDDAP dvs., cea mai ușoară metodă este
      Valorile de longitudine utilizate în exemplele de mai jos nu trebuie să se întinde pe 180 (pentru a lucra cu .esriAscii).
      (Este în regulă dacă setul de date este de la 0 la 360 - utilizați doar porțiunea de la 0 la 180 (sau de la 180 la 360).) -->
 <EDDGridIdExample>jplMURSST41</EDDGridIdExample>
+
 <!--  Acesta este un șir de interogare complet pentru obținerea unor date despre axe din exemplul setului de date grilă. -->
 <EDDGridDimensionExample>latitude[0:100:1000]</EDDGridDimensionExample>
+
 <!--  Acesta este numele unei variabile de date din exemplul setului de date grilă. -->
 <EDDGridNoHyperExample>analysed_sst</EDDGridNoHyperExample>
+
 <!--  Acesta este folosit pentru a denumi/explica/descrie toate dimensiunile din setul de date de tip grilă. -->
 <EDDGridDimNamesExample>[time][latitude][longitude]</EDDGridDimNamesExample>
+
 <!--  Acesta este un exemplu de interogare de date folosind notația () ERDDAP și ora formatată ISO.
      Este frumos (nu este necesar) ca acest subset să fie potrivit pentru realizarea unei hărți (vezi EDDGridMapExample de mai jos).
      Valorile de longitudine utilizate nu trebuie să se întinde pe 180 (pentru a lucra cu .esriAscii).
      Utilizarea „:1000:” evită trimiterea utilizatorului a o mulțime de date.
      Puteți genera exemplul dvs. prin Formularul de acces la date al setului de date în ERDDAP. -->
 <EDDGridDataTimeExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataTimeExample>
+
 <!--  Acesta este un exemplu echivalent de interogare de date, dar care specifică timpul ca secunde-de-1970-01-01.
      Dacă trebuie să convertiți o dată/oră în secunde-de-1970-01-01, utilizați
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html . -->
 <EDDGridDataValueExample>analysed_sst[(1022922000)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataValueExample>
+
 <!--  Acesta este un exemplu echivalent de interogare de date, dar care utilizează doar notația tradițională în stilul indicilor opendap. -->
 <EDDGridDataIndexExample>analysed_sst[0][0:1000:16383][0:1000:32767]</EDDGridDataIndexExample>
+
 <!--  Acesta este un exemplu de interogare care generează un grafic.
      Puteți genera exemplul dvs. prin formularul Make A Graph al setului de date în ERDDAP. -->
 <EDDGridGraphExample>analysed_sst[(2002-06-01T09:00:00Z):(2002-07-01T09:00:00Z)][(29)][(-135)]&amp;.draw=linesAndMarkers&amp;.vars=time|analysed_sst|&amp;.marker=1|3&amp;.color=0xFF9900&amp;.colorBar=|C|Linear|||</EDDGridGraphExample>
+
 <!--  Acesta este un exemplu de interogare care generează o hartă.
      Exemplul de „hartă” trebuie să aibă longitudine care nu se întinde pe 180 pentru .esriAscii.
      Utilizarea „:1000:” evită trimiterea utilizatorului a o mulțime de date.
      „:1000:” este irelevant când se solicită un .png, dar relevant dacă utilizatorul primește datele reale (de exemplu, .csv). -->
 <EDDGridMapExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|analysed_sst&amp;.colorBar=Rainbow|C|Linear|0|32|</EDDGridMapExample>
+
 <!--  Acesta este un exemplu Matlab cu 2 linii care utilizează date din EDDGridMapExample.
      Sperăm că puteți înlocui ID-ul setului de date cu „jplMURSST41”
      și modificați „[0 32]” (intervalul de date pentru bara de culori). -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
+
 <!--  Mesajele EDDTable sunt afișate pe formularul de acces la date tabledap și Creați un grafic. -->
 <EDDTableConstraints>Constrângeri</EDDTableConstraints>
 <EDDTableDapDescription>Tabledap vă permite să utilizați protocolul de constrângere/selectare OPeNDAP pentru a solicita subseturi de date, grafice și hărți din seturi de date tabelare (de exemplu, date geamanduri).</EDDTableDapDescription>
@@ -2624,6 +2668,7 @@ Dacă alegeți o valoare, aceasta va fi folosită pentru constrângerea #1.
 Dacă alegeți o anumită valoare pentru mai mult de o variabilă, este posibil să nu existe date potrivite.
 Luați în considerare utilizarea <kbd>Subset</kbd>, ceea ce face ușor să găsiți combinații valide.
 ]]></EDDTableSelectConstraintTooltip>
+
 <!--  Exemple Tabledap
 Acest grup de setări este folosit pentru a face exemple pentru documentația tabledap
 care apare la [baseUrl]/erddap/tabledap/documentation.html și în altă parte.
@@ -2638,31 +2683,39 @@ Dacă doriți ca exemplele să indice ERDDAP dvs., cea mai ușoară metodă este
 &lt;EDDTableErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/&lt;/EDDTableErddapUrlExample&gt;
  -->
 <EDDTableErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDTableErddapUrlExample>
+
 <!--  Acesta este ID-ul setului de date pentru un set de date EDDTable care este furnizat de ERDDAP.
      Acest set de date este folosit ca bază pentru toate exemplele EDDGrid de mai jos.
      În mod ideal, este un set de date care are variabile de longitudine, latitudine și timp (printre altele).
      („timpul” permite realizarea unui grafic de serie temporală. „latitudinea” și „longitudinea” permit realizarea unei hărți.)
      Setul de date poate avea valori de longitudine de la -180 la 180 sau de la 0 la 360. -->
 <EDDTableIdExample>pmelTaoDySst</EDDTableIdExample>
+
 <!--  Aceasta este o listă de variabile separate prin virgulă din setul de date.
      Este util dacă este „longitudine, latitudine, timp”, plus un nume de variabilă de date. -->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
+
 <!--  Acesta este exemplul de constrângeri care este atașat la EDDTableVariablesExample.
   ACEST EȘUCĂ în SSR.testForBrokenLinks DAR REUSE folosindu-l pe pagina web de documentație tabledap. Asa ca lasa. -->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
+
 <!--  Acesta este un exemplu de interogare de date folosind o oră în format ISO.
      Puteți genera exemplul dvs. prin Formularul de acces la date al setului de date în ERDDAP.
   ACEST EȘUCĂ în SSR.testForBrokenLinks DAR REUSE folosindu-l pe pagina web de documentație tabledap. Asa ca lasa. -->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
+
 <!--  Acesta este un exemplu echivalent de interogare de date, dar care specifică timpul ca secunde-de-1970-01-01.
      Dacă trebuie să convertiți o dată/oră în „secunde de la 1970-01-01”, utilizați
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html -->
 <EDDTableDataValueExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=1432382400&amp;time&lt;=1433073600</EDDTableDataValueExample>
+
 <!--  Acesta este un exemplu de interogare care generează un grafic.
      Puteți genera exemplul dvs. prin formularul Make A Graph al setului de date în ERDDAP. -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+
 <!--  Acesta este un exemplu de interogare care generează o hartă. -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
+
 <!--  Acesta este un exemplu Matlab care utilizează date din EDDTableGraphExample.
      Notați notația Matlab datasetName.variableName. -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
@@ -2690,6 +2743,7 @@ De exemplu:
 <br>&versionStringResponse;
 <br>Dacă primiți un mesaj de eroare <kbd>HTTP 404 Not-Found</kbd>, tratați ERDDAP ca versiunea 1.80 sau mai mică.
 ]]></erddapVersionHTML>
+
 <!--  Aceste mesaje sunt afișate atunci când este afișat un mesaj de eroare. -->
 <errorTitle>Eroare</errorTitle>
 <errorRequestUrl>Adresa URL a cererii dvs.:</errorRequestUrl>
@@ -2699,6 +2753,7 @@ De exemplu:
 <errorFileNotFound>Fișierul nu a fost găsit: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Fișierul nu a fost găsit în cache. Recreează imaginea și încearcă din nou.</errorFileNotFoundImage>
 <errorInternal>Eroare internă:</errorInternal>
+
 <!--  Nu includeți funcția nevalidă (răușitoare?) în mesajul de eroare. -->
 <errorJsonpFunctionName>Acel jsonp functionName nu este permis. Primul caracter trebuie să fie o literă ISO 8859-1 sau „_”. Fiecare caracter ulterior opțional trebuie să fie o literă ISO 8859-1, „_”, o cifră sau „.”.</errorJsonpFunctionName>
 <errorJsonpNotAllowed>O solicitare jsonp nu este permisă pentru acest tip de fișier.</errorJsonpNotAllowed>
@@ -2708,6 +2763,7 @@ De exemplu:
 <errorOdvLLTGrid>Pentru un fișier ODV .txt, setul de date TREBUIE să includă axe de longitudine, latitudine și timp.</errorOdvLLTGrid>
 <errorOdvLLTTable>Solicitările de date pentru fișierele ODV .txt trebuie să includă date despre longitudine, latitudine și oră.</errorOdvLLTTable>
 <errorOnWebPage>A apărut o eroare la scrierea acestei pagini web:</errorOnWebPage>
+
 <!--  Acestea sunt, de asemenea, în/copiate în HtmlWidgets -->
 <errorXWasntSpecified>Eroare: „{0}” nu a fost specificat.</errorXWasntSpecified>
 <errorXWasTooLong>Eroare: „{0}” avea mai mult de {1} caractere.</errorXWasTooLong>
@@ -2755,7 +2811,7 @@ De exemplu:
 <fileHelp_ncml>Vizualizați structura și metadatele setului de date ca fișier UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Descărcați timpul, latitudinea, longitudinea, alteVariabile ca fișier ODV Generic Spreadsheet (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Descărcați longitudine, latitudine, timp, alte coloane ca fișier ISO-8859-1 ODV Generic Spreadsheet (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Descărcați ca un fișier parchet.</fileHelp_parquet>
 <fileHelp_subset>Vizualizați un formular HTML care utilizează căutarea fațetă pentru a simplifica alegerea subseturi de date.</fileHelp_subset>
 <fileHelp_timeGaps>Vizualizați o listă UTF-8 de goluri în valorile de timp care sunt mai mari decât decalajul median.</fileHelp_timeGaps>
 <fileHelp_tsv>Descărcați un tabel text ISO-8859-1 separat de file (linia 1: nume; rândul 2: unități; ISO 8601 ori).</fileHelp_tsv>
@@ -2773,6 +2829,7 @@ De exemplu:
 <fileHelp_png>Vizualizați un fișier imagine .png standard, de dimensiune medie, cu un grafic sau o hartă.</fileHelp_png>
 <fileHelp_largePng>Vizualizați un fișier imagine .png mare cu un grafic sau o hartă.</fileHelp_largePng>
 <fileHelp_transparentPng>Vizualizați un fișier imagine .png (doar datele, fără axe, landmask sau legendă).</fileHelp_transparentPng>
+
 <!--  Formularea Descriere și Avertisment este vagă pentru a permite unul sau mai multe seturi de date. -->
 <filesDescription>Sistemul de „fișiere” al ERDDAP vă permite să răsfoiți un sistem de fișiere virtual și să descărcați fișiere de date sursă.</filesDescription>
 <filesSort>Faceți clic pe un titlu (de exemplu, Nume, Ultima modificare, Dimensiune) pentru a modifica ordinea de sortare. „Ultima modificare” folosește fusul orar Zulu.</filesSort>
@@ -3153,6 +3210,7 @@ pentru a descărca întregul fișier din sistemul &quot;files&quot;, apoi accesa
 ]]></filesDocumentation>
 <FIPSCountyCodes>Codurile de județ FIPS</FIPSCountyCodes>
 <functions>Funcții pe partea serverului</functions>
+
 <!--  {0}=distinct() deci nu este tradus -->
 <functionTooltip><![CDATA[
 Table DAP acceptă unele funcții de pe partea serverului care modifică tabelul cu rezultatele datelor.
@@ -3162,6 +3220,7 @@ Sunt <strong>optionale</strong> .
 Dacă utilizați mai multe funcții, acestea vor fi aplicate în ordinea în care apar în cerere.
 ]]></functionTooltip>
 <functionDistinctCheck>Bifați acest lucru dacă doriți să utilizați funcția distinct().</functionDistinctCheck>
+
 <!--  {0}=distinct() deci nu este tradus -->
 <functionDistinctTooltip><![CDATA[
 Bifarea &quot;{0}&quot; îi spune ERDDAP să sorteze tabelul cu rezultate după toate variabilele selectate mai sus (cu variabila de sus/prima selectată mai sus fiind cea mai importantă, iar alte variabile selectate fiind folosite doar pentru a rupe legăturile) și să elimine toate rândurile duplicat din tabelul de răspunsuri.
@@ -3251,6 +3310,7 @@ ArcGIS Server</strong>
 </ol>
 
 ]]></geoServicesDescription>
+
 <!--  Începeți apare în partea dreaptă a paginii de pornire.
 „Începeți cu ERDDAP”.
  -->
@@ -3259,6 +3319,7 @@ ArcGIS Server</strong>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;Căutați seturi de date interesante</span>
 ]]></getStartedHtml>
 <help>Ajutor</help>
+
 <!--  Acest lucru previne solicitările naive pentru cantități mari de date într-un HtmlTable
 de la blocarea browserului utilizatorului.
 Acesta este folosit pentru a înlocui TableWriterHtmlTable.htmlTableMaxMB.
@@ -3273,6 +3334,7 @@ Pentru a evita blocarea browserului, unele date suplimentare nu au fost afișate
 <br>Puteți evita acest lucru limitând și mai mult solicitarea, astfel încât răspunsul să aibă mai puține date.
 <br>Sau, descărcați un fișier care poate fi vizualizat într-un program care poate gestiona fișiere mari (de exemplu, un fișier .csv într-un editor de text).
 ]]></htmlTableMaxMessage>
+
 <!--  ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries* și stateBoundaries*
 fișierele trebuie să fie în SSR.getContextDirectory() + „WEB-INF/ref/”.
 Am primit granițe de stat și naționale de la GMT:
@@ -3283,6 +3345,7 @@ unde „N1” (național) poate fi schimbat în „N2” (stat)
 Fișierele rezultate folosesc GMT_FORMAT.
  -->
 <imageDataCourtesyOf>Datele oferite de {0}</imageDataCourtesyOf>
+
 <!--  Pentru fiecare imageSize, există o imagineWidth și imageHeight (în pixeli).
 Lățimile sunt în raportul 2:3:6, ceea ce permite afișarea a 3, 2 sau 1 pe rând într-un program de grafică.
  -->
@@ -3374,6 +3437,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Odată ce sunteți membru, puteți posta întrebarea dvs.
 acolo sau puteți căuta pentru a vedea dacă întrebarea a fost deja pusă și a răspuns.</div>
 ]]></imagesEmbed>
+
 <!--  text pentru partea dreaptă a index.html -->
 <indexViewAll>Vizualizați o listă cu toate cele {0} seturi de date</indexViewAll>
 <indexSearchWith>Căutați seturi de date cu {0}</indexSearchWith>
@@ -3392,8 +3456,10 @@ poate căuta seturi de date prin</indexDevelopersSearch>
 <indexAllDatasetsSearch>Setul de date tabelar allDatasets al ERDDAP care are un rând de informații pentru fiecare set de date</indexAllDatasetsSearch>
 <indexOpenSearch>Serviciul OpenSearch 1.1 al ERDDAP</indexOpenSearch>
 <indexMetadata>Metadate</indexMetadata>
+
 <!--  {0} {1} este un link către doar unul dintre FGDC sau ISO 19115 WAF -->
 <indexWAF1>ERDDAP are un {0} cu {1} fișiere de metadate pentru toate seturile de date geospațiale din acest ERDDAP.</indexWAF1>
+
 <!--  legături la FGDC și ISO 19115 WAF -->
 <indexWAF2>ERDDAP are un {0} cu {1} fișiere de metadate și un {2} cu {3} fișiere de metadate pentru toate seturile de date geospațiale din acest ERDDAP.</indexWAF2>
 <indexConverters>Convertoare</indexConverters>
@@ -3411,10 +3477,13 @@ Puteți ocoli paginile web ale ERDDAP și puteți utiliza serviciile web RESTful
 {0}
 Sau folosiți numere mai mari dacă problema persistă.
 Valoarea implicită pentru ceasuri este 8192. Valoarea implicită pentru instanțe este 128.</inotifyFix>
+
 <!--  nu traduce -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpola</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3426,6 +3495,7 @@ Java pot obține date din acea copie a ERDDAP .
 Consultați
 <a rel="help" href="https://erddap.github.io/setup.html">Configurați-vă propriul ERDDAP</a> .
 ]]></javaProgramsHTML>
+
 <!--  Mesajele justGenerateAndView sunt folosite pentru butonul justGenerateAndView
 pe formularele de acces la date.
 Mesajul justGenerateAndViewHtml poate include &protocolName; .
@@ -3457,6 +3527,7 @@ Pentru mai multe informații despre formarea adreselor URL, faceți clic pe link
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>Cuvinte cheie</keywords>
 <langCode>ro</langCode>
+
 <!--  Acesta apare pe pagina web erddap/legal.html după declinarea răspunderii generale.
 Puteți înlocui oricare dintre [standardParts] cu propriul dvs. HTML.
 [standardContact] face referire la adresa de e-mail admin. -->
@@ -3475,6 +3546,7 @@ Puteți înlocui oricare dintre [standardParts] cu propriul dvs. HTML.
 <h2><a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Declinări de răspundere</a></h2>
 ]]></legalNotices>
 <legalNoticesTitle>Mențiuni legale</legalNoticesTitle>
+
 <!--  Titlul pentru legenda hărții (sau nimic dacă nu doriți o legendaTitle).
 La ERD, nu folosim asta. Puteți utiliza legendTitle1 și/sau legendTitle2 (a doua linie).
 Pentru legenda orizontală a ERDDAP, legendTitle1 și 2 sunt puse pe aceeași linie.
@@ -3486,6 +3558,7 @@ Valoarea implicită este nimic (neutilizat).
 <legendTitle2></legendTitle2>
 <license>Licență</license>
 <likeThis>asa</likeThis>
+
 <!--  de ex., {0}=WMS sau listAll -->
 <listOfDatasets>Lista de {0} seturi de date</listOfDatasets>
 <listAll>Toate</listAll>
@@ -3666,6 +3739,7 @@ Este posibil ca unele seturi de date să nu fie disponibile în prezent sau să 
 <LogOut>Deconectați-vă</LogOut>
 <logout>deconectați-vă</logout>
 <logoutOpenID>Deconectați-vă de la furnizorul dvs. OpenID.</logoutOpenID>
+
 <!--  logoutSuccess ultima actualizare 2019-12-19 -->
 <logoutSuccess>Te-ai deconectat cu succes.
 
@@ -3726,6 +3800,7 @@ Faceți clic pe <kbd>Redraw the Graph</kbd> chiar înainte de a face clic aici, 
 ]]></magDownloadTooltip>
 <magFileType>Apoi setați tipul fișierului</magFileType>
 <magGraphType>Tipul de grafic</magGraphType>
+
 <!--  Nu traduce numele graphType -->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>Tipul de grafic</strong>
@@ -3836,6 +3911,7 @@ specificați doar 1 valoare →
 ]]></magJust1Value>
 <magRange>Gamă</magRange>
 <magRangeTo>la</magRangeTo>
+
 <!--  de exemplu, de la 0 la 100 -->
 <magRedraw>Redesenați graficul</magRedraw>
 <magRedrawTooltip>Redesenați graficul pe baza setărilor de mai sus.</magRedrawTooltip>
@@ -3901,6 +3977,7 @@ Această pagină web Make A Graph simplifică doar crearea de adrese URL tableda
 <br>Atunci nu trebuie să utilizați acest formular pentru a obține date.
 Consultați linkul „Ocoliți acest formular” de mai jos.
 ]]></magTableTooltip>
+
 <!--  erorile legate de memorie trebuie să conțină acest cuvânt. Acestea ar trebui să fie toate cu litere mici (pentru testarea fără majuscule). -->
 <memory>memorie</memory>
 <memoryTooMuchData>Interogarea dvs. a produs prea multe date. Încercați să solicitați mai puține date. [memorie]</memoryTooMuchData>
@@ -3909,7 +3986,9 @@ Consultați linkul „Ocoliți acest formular” de mai jos.
 <memoryThanSafe>Solicitarea necesită mai multă memorie ({0} MB) decât este disponibilă vreodată în siguranță în această configurare Java ({1} MB).</memoryThanSafe>
 <metadataDownload>Faceți clic pentru a descărca metadatele {0}.</metadataDownload>
 <moreInformation>mai multe informatii</moreInformation>
+
 <!--  Aceste mesaje în stil MessageFormat sunt introduse în MustBe.xxx. -->
+
 <!--  Acesta este un mesaj de eroare important. Indică că cererea a fost validă,
 dar rezultatul a fost lipsa datelor. Clienții pot căuta exact acest mesaj.
 Deocamdată, cel mai bine este să nu schimbi acest lucru.
@@ -3918,11 +3997,13 @@ Dar dods.dap.DODSException nu are nicio excepție relevantă.
 Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lungimea 0.
  -->
 <MustBeThereIsNoData>Interogarea dvs. nu a produs niciun rezultat potrivit.</MustBeThereIsNoData>
+
 <!--  Multe tipuri de fișiere stabilesc o limită pentru cantitatea de date pe care un fișier poate conține (de exemplu, 2 GB). -->
 <MustBeNotNull>{0} nu trebuie să fie nul.</MustBeNotNull>
 <MustBeNotEmpty>{0} nu trebuie să fie un șir gol.</MustBeNotEmpty>
 <MustBeInternalError>Eroare internă</MustBeInternalError>
 <MustBeOutOfMemoryError>Eroare de memorie lipsită</MustBeOutOfMemoryError>
+
 <!--  Acestea pot avea conținut HTML -->
 <nMatching1>1 set de date potrivit.</nMatching1>
 <nMatching>{0} seturi de date potrivite.</nMatching>
@@ -3932,8 +4013,10 @@ Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lun
 <nMatchingCurrent>actual</nMatchingCurrent>
 <noDataFixedValue>Variabila cu valoare fixă={0} a eșuat testul {1}.</noDataFixedValue>
 <noDataNoLL>Nu există valori valide de longitudine sau latitudine.</noDataNoLL>
+
 <!--  de ex., {0}=&quot;protocol=griddap&quot; -->
 <noDatasetWith>În prezent, nu există seturi de date cu {0}.</noDatasetWith>
+
 <!--  {0}=pagina {1}=ultimaPagină -->
 <noPage1>Ați solicitat pagina de rezultate={0}, dar ultima pagină este {1}.</noPage1>
 <noPage2>Vă rugăm să solicitați o pagină de la 1 la {1}.</noPage2>
@@ -3942,6 +4025,7 @@ Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lun
 <notAuthorizedForData>loggedInAs={0} nu este autorizat să acceseze datele din datasetID={1}, dar este autorizat să acceseze grafice și metadate.</notAuthorizedForData>
 <notAvailable>În prezent, datasetID={0} nu este disponibil.</notAvailable>
 <note>NOTĂ!</note>
+
 <!--  Xxx este Crearea unui grafic, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
 <noXxx>Acest set de date nu este niciodată disponibil prin {0}.</noXxx>
 <noXxxBecause>Acest set de date nu este niciodată disponibil prin {0} deoarece {1}.</noXxxBecause>
@@ -4000,6 +4084,13 @@ Dezvoltatorii de programe de calculator și pagini web Java Scripted pot accesa 
 Consultați Opțiunile din partea de jos a acelei pagini web.
 <br>&nbsp;
 ]]></outOfDateKeepTrack>
+
+<!--Prima pagină
+<pagePrecedent >precedent </pagePrecedent >
+<pageCurrent>current</pageCurrent>
+<paginăUrmătorul >următorul </paginăUrmătorul >
+<pageUltima > ultima </pageUltima-->
+
 <!--  Acestea sunt opțiunile paletei.
      Trebuie să existe un fișier .cpt pentru fiecare în directorul erddap/WEB-INF/cptfiles.
   Paletele standard sunt listate în „palettes” în mesajul lui Bob messages.xml,
@@ -4015,6 +4106,7 @@ KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
 KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Vă rugăm să aveți răbdare. Poate dura ceva timp pentru a obține datele.)</patientData>
 <patientYourGraph>[Graficul specificat. Te rog fii rabdator.]</patientYourGraph>
+
 <!--  Pentru fiecare imagineSize, există un pdfWidth și pdfHeight (în 1/144ths inch).
 Dimensiunea mare este maximă pentru a se potrivi pe pagină (margini LR de 0,5&quot;, marjele TB de 1&quot; oferă cea mai bună dimensiune a legendei).
 Lățimile sunt în raportul 1:2:3.
@@ -4038,6 +4130,7 @@ Există
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></percentEncode>
 <pickADataset>Alegeți un set de date</pickADataset>
+
 <!--  Mesaje legate de căutările de seturi de date bazate pe protocol. -->
 <protocolSearchHtml>Căutați seturi de date după protocol</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -4391,8 +4484,10 @@ Vedea
 <searchDoFullTextHtml>Efectuați o căutare cu text complet pentru seturi de date</searchDoFullTextHtml>
 <searchFullTextHtml>Căutare text integral pentru seturi de date</searchFullTextHtml>
 <searchButton>Căutare</searchButton>
+
 <!--  Textul indicativ pentru butonul Trimitere al căutării text integral. -->
 <searchClickTip>Faceți clic aici pentru a trimite cererea dvs. de căutare.</searchClickTip>
+
 <!--  Acesta este codul HTML pentru descrierea detaliilor căutării text integral.
   EDStatic modifică acest lucru, apoi adaugă &lt;div class=&quot;standard_max_width&quot;&gt;. -->
 <searchHintsTooltip><![CDATA[
@@ -4442,12 +4537,15 @@ Există două moduri neoficiale de a căuta mai multe ERDDAP uri pentru seturi d
     title="Acest link către un site extern nu constituie o aprobare."></a> .
 ]]></searchMultipleERDDAPsDescription>
 <searchNotAvailable>Îmi pare rău. Sistemul de căutare nu este disponibil momentan.</searchNotAvailable>
+
 <!--  Textul indicativ pentru câmpul text al căutării de text complet. -->
 <searchTip>La fel ca căutarea Google, introduceți cuvânt(e) separate prin spațiu, de exemplu, „{0}”.</searchTip>
 <searchSpelling>Verificați ortografia cuvântului (cuvintele) pe care le-ați căutat.</searchSpelling>
 <searchFewerWords>Încercați să utilizați mai puține cuvinte de căutare.</searchFewerWords>
+
 <!--  {0}=plainFileType a unei interogări de căutare, {1}=eșantionul de interogare. -->
 <searchWithQuery>O solicitare de căutare {0} trebuie să includă o interogare, de exemplu, „{1}”.</searchWithQuery>
+
 <!--  Da, &#39;&#39; este corect. {0}=url {1}=uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 Pentru detalii, consultați
@@ -4506,6 +4604,7 @@ Unele piese trebuie specificate separat.
 ]]></sosLongDescriptionHtml>
 <sparqlP01toP02pre>https://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
 <sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
+
 <!--  Mesaje SlideSorter -->
 <ssUse><![CDATA[
 
@@ -4537,6 +4636,7 @@ Open</kbd> pentru a deschide copia de pe hard disk și marcați-o.
 </ol>
 
 ]]></ssInstructionsHtml>
+
 <!--  Licența standard este adăugată la metadatele globale ale multor seturi de date (consultați datasets.xml) -->
 <standardLicense>Datele pot fi utilizate și redistribuite gratuit, dar nu sunt destinate
 pentru uz legal, deoarece poate conține inexactități. Nici datele
@@ -4545,6 +4645,7 @@ a angajaților sau contractorilor acestora, oferă orice garanție, expresă sau
 implicite, inclusiv garanții de vandabilitate și potrivire pentru a
 un anumit scop sau își asumă orice răspundere legală pentru acuratețe,
 completitudinea sau utilitatea acestor informații.</standardLicense>
+
 <!--  Acesta este folosit de &lt;legal&gt; în setup.xml. -->
 <standardContact><![CDATA[
 
@@ -4554,6 +4655,7 @@ completitudinea sau utilitatea acestor informații.</standardLicense>
 Întrebări, comentarii, sugestii?
 Vă rugăm să trimiteți un e-mail la <kbd>&adminEmail;</kbd>&nbsp;.
 ]]></standardContact>
+
 <!--  Acesta este folosit de &lt;legal&gt; în setup.xml. -->
 <standardDataLicenses><![CDATA[
 
@@ -4563,6 +4665,7 @@ Vă rugăm să trimiteți un e-mail la <kbd>&adminEmail;</kbd>&nbsp;.
 Datele din unele seturi de date pot fi supuse unor limitări sau restricții de utilizare.
 Vedeți &license; metadatele, care pot fi găsite pe paginile web Formularul de acces la date (.html), Crearea unui grafic (.graph) și Structura atributelor setului de date (.das) ale setului de date.
 ]]></standardDataLicenses>
+
 <!--  Acesta este folosit de &lt;legal&gt; în setup.xml. -->
 <standardDisclaimerOfEndorsement><![CDATA[
 
@@ -4570,6 +4673,7 @@ Vedeți &license; metadatele, care pot fi găsite pe paginile web Formularul de 
 Orice referință obținută de pe acest server la un anumit produs, proces sau serviciu nu constituie și nu implică o aprobare de către persoanele sau organizațiile asociate cu acest site web a produsului, procesului sau serviciului sau a producătorului sau furnizorului acestuia.
 Părerile și opiniile exprimate în orice document la care se face referire nu le afirmă sau le reflectă în mod necesar pe cele ale persoanelor sau organizațiilor asociate cu acest site web.
 ]]></standardDisclaimerOfEndorsement>
+
 <!--  Acesta este folosit de &lt;legal&gt; în setup.xml.
   Aceasta se bazează pe https://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
 <standardDisclaimerOfExternalLinks><![CDATA[
@@ -4579,6 +4683,7 @@ Apariția unor legături externe pe acest site World Wide Web nu constituie apro
 Persoanele și organizațiile asociate cu acest site web nu exercită niciun control editorial asupra informațiilor pe care le puteți găsi în aceste locații.
 Aceste link-uri sunt furnizate în concordanță cu scopul declarat al acestui site web.
 ]]></standardDisclaimerOfExternalLinks>
+
 <!-- Acesta este folosit de<legal> în setup.xml.
 Acesta este de la BSD plus două instanțe de „, SERVICIUL WEB și/SAU DATE”.
 Înainte de 2010-08-05 a fost
@@ -4592,6 +4697,7 @@ Acesta este de la BSD plus două instanțe de „, SERVICIUL WEB și/SAU DATE”
 <kbd>ACEST SOFTWARE, SERVICIU WEB ȘI DATE SUNT FURNIZATE DE DEȚINĂTORII DE DREPTURI DE AUTOR ȘI DE CONTRIBUITORI „CA AȘA ESTE” ȘI ORICE GARANȚII EXPRESE SAU IMPLICITE, INCLUSIV, DAR FĂRĂ A SE LIMITĂ LA, GARANȚII IMPLICITE DE VANTABILITATE ȘI ADECVENȚĂ PENTRU O PARTICULAȚIE PARTICULATĂ.
 ÎN NICIO CAZ DEȚINĂRUL DREPTURILOR DE AUTOR SAU CONTRIBUTORII NU VA FI RESPONSABILĂ PENTRU ORICE DAUNE DIRECTE, INDIRECTE, INCIDENTALE, SPECIALE, EXEMPLARE SAU CONSECUȚIONALE (INCLUSIV, DAR FĂRĂ A SE LIMITĂ LA, ACHIZIȚIA DE BUNURI SAU SERVICII DE SUBSTITUȚIE, PIERDERI DE PROFIT DE UTILIZARE DE SERVICII; SAU ÎNTRERUPEREA AFACERII) ORIENTA CAUZATE ȘI PENTRU ORICE TEORIE A RĂSPUNDERII, FIEA ÎN CONTRACTUL, RĂSPUNDEREA STRICTĂ SAU DELICIT (INCLUSIV NEGLIGENȚA SAU ALLT MOD) DECORIT ÎN ORICE MOD DIN UTILIZAREA ACESTUI SOFTWARE, SERVICIUL WEB, CHIAR DE INFORMAȚII POSIBILITATEA ACESTELOR DAUNE.</kbd>
 ]]></standardGeneralDisclaimer>
+
 <!--  Acesta este folosit de &lt;legal&gt; în setup.xml. -->
 <standardPrivacyPolicy><![CDATA[
 
@@ -4605,6 +4711,7 @@ ERDDAP urmează
 <status>stare</status>
 <statusHtml>Pagina web Stare este o modalitate rapidă de a verifica starea/sănătatea curentă
 din acest ERDDAP, inclusiv o listă de seturi de date care nu s-au încărcat.</statusHtml>
+
 <!--  Text pentru butonul Trimite pe diferite formulare. -->
 <submit>Trimite</submit>
 <submitTooltip>Trimiteți informațiile din acest formular și începeți să descărcați datele.</submitTooltip>
@@ -4683,6 +4790,7 @@ de a adăuga un abonament a fost trimisă cu succes.</strong>
 <subscriptionEmailInvalid>Adresa de e-mail pe care ați trimis-o nu este validă.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>Adresa de e-mail pe care ați trimis-o este prea lungă.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>Nu ai specificat adresa ta de e-mail.</subscriptionEmailUnspecified>
+
 <!--  ID-ul este folosit pentru datasetID și subscriptionID. -->
 <subscriptionIDInvalid>ID-ul pe care l-ați trimis nu este valid.</subscriptionIDInvalid>
 <subscriptionIDTooLong>ID-ul pe care l-ați trimis este prea lung.</subscriptionIDTooLong>
@@ -4762,6 +4870,7 @@ Veți face clic pe un link din e-mailul pe care vi-l trimite ERDDAP după ce sol
 de validare a unui abonament a fost primită.</strong>
 <br>Dacă cheia este corectă și abonamentul nu este deja valid, abonamentul va fi validat.</span>
 ]]></subscriptionValidateSuccess>
+
 <!--  Aceasta este o scurtă descriere a ERDDAP, care este folosită la mijlocul
 partea stângă a paginii de start a ERDDAP.
 Aceasta se poate referi la &erddapUrl;
@@ -4842,7 +4951,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> include ERDDAP în lista sa de servere de date recomandate pentru utilizarea de către grupuri din cadrul NOAA .
 ]]></standardShortDescriptionHtml>
+
 <!--  Bob: vezi tabelul identic css în Table.ERD_TABLE_CSS -->
+
 <!--  startHeadHtml are începutul documentului HTML și etichetele „head”.
 (începând cu „&lt;!DOCTYPE”, dar fără a include „&lt;/head&gt;”)
 pentru toate paginile web HTML.
@@ -4879,6 +4990,7 @@ informație.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -4909,6 +5021,7 @@ informație.
   </tr> 
 </table>
 ]]></startBodyHtml5>
+
 <!-- Aceasta este o scurtă descriere a ERDDAP, care este folosită în mijlocul părții stângi a paginii de start a ERDDAP .
 Aceasta se poate referi la &erddapUrl;, [theShort1], [theShort2] și [standardShortDescriptionHtml] (de la [tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml ).
 Dacă ERDDAP -ul dvs.
@@ -4926,6 +5039,7 @@ Dacă nu utilizați [standardShortDescriptionHtml], includeți cel puțin un lin
 <thisParticularErddap><![CDATA[
 Această instalație specială ERDDAP are date oceanografice (de exemplu, date de la sateliți și geamanduri).
 ]]></thisParticularErddap>
+
 <!--  Puteți schimba alte lucruri, dar vă rugăm să păstrați „ERDDAP, Versiune &erddapVersion;” și
      aceste referințe la declinarea răspunderii și la Politica de confidențialitate. -->
 <endBodyHtml5><![CDATA[
@@ -4969,6 +5083,7 @@ Pentru a vizualiza {0},
 <subsetViewSelectRelatedCounts>datele aferente contează</subsetViewSelectRelatedCounts>
 <subsetWhen>Când {0},</subsetWhen>
 <subsetWhenNoConstraints>Când nu există constrângeri,</subsetWhenNoConstraints>
+
 <!--  Următoarea etichetă este precedată de una dintre cele 2 etichete precedente.
   {0} este subsetViewSelectDistintCombos sau subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} pentru valorile {1} ale lui „{2}” sunt:</subsetWhenCounts>
@@ -5048,6 +5163,7 @@ title="Acest link către un site extern nu constituie o aprobare." /></a> .
 <theKey>Cheia</theKey>
 <theSubscriptionID>ID-ul abonamentului</theSubscriptionID>
 <theUrlAction>URL-ul/Acțiunea</theUrlAction>
+
 <!--  Aceasta este descrierea lungă a ERDDAP, care este utilizată pe pagina web Informații generale.
 Aceasta se poate referi la &erddapUrl;, &ssUse; .
  -->
@@ -5722,6 +5838,7 @@ Opiniile de pe această pagină web sunt opiniile personale ale lui Bob Simons �
 ]]></theLongDescriptionHtml>
 <Then>Atunci</Then>
 <twoClickMapDefaultTooltip>Specificați un dreptunghi făcând clic pe două colțuri diagonale. Fă-o din nou dacă este nevoie.</twoClickMapDefaultTooltip>
+
 <!--  Aceasta este o modalitate de a suprascrie convertorul Standardize UDUnits al ERDDAP
 prin furnizarea de conversii specifice.
 standardizeUdunits are triplete de linii: înainte, după și necompletat.
@@ -5729,13 +5846,17 @@ Dacă un întreg șir UDUNITS se potrivește cu un șir „înainte”,
 va fi convertit la valoarea „după” UDUNITS.
 Liniile goale asigură că celelalte linii sunt linii „înainte” și „după”.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Timp</time>
 <timeoutOtherRequests>Timeout în așteptarea procesării celorlalte solicitări.</timeoutOtherRequests>
+
 <!--  Aceasta este o modalitate de a suprascrie convertorul UCUM în UDUNITS al ERDDAP
 prin furnizarea de conversii specifice.
 ucumToUdunits are triplete de linii: înainte, după și necompletat.
@@ -5743,7 +5864,8 @@ Dacă un întreg șir UCUM se potrivește cu un șir „înainte”,
 va fi convertit la valoarea „după” UDUNITS.
 Liniile goale asigură că celelalte linii sunt linii „înainte” și „după”.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5753,7 +5875,10 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
+
 <!--  Aceasta este o modalitate de a suprascrie convertorul UDUNITS în UCUM al ERDDAP
 prin furnizarea de conversii specifice.
 udunitsToUcum are triplete de linii: înainte, după și necompletat.
@@ -5761,7 +5886,8 @@ Dacă un întreg șir UDUNITS se potrivește cu un șir „înainte”,
 va fi convertit la valoarea UCUM „după”.
 Liniile goale asigură că celelalte linii sunt linii „înainte” și „după”.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5783,7 +5909,10 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
+
 <!-- Aceasta este o încercare de a trata metadatele sursă a URL-urilor învechite.
 updateUrls este aplicat fiecăruia dintre atributele de metadate String ale unui set de date (global și variabil) de fiecare dată când setul de date este încărcat.
 updateUrls are triplete de linii:
@@ -5802,7 +5931,8 @@ Foarte important! * marinemetadata.org/cf# este pentru căutări standard_name.
 //www.csc.noaa.gov conversia la coasta este imperfectă:
 documente în locuri diferite.
 Acest lucru este obișnuit pentru schimbări mari ale numelui de domeniu. -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6895,7 +7025,10 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
+
 <!-- Acestea sunt URL-uri http care probabil vor fi accesibile într-o zi prin https.
 Sunt enumerate ca comentarii aici pentru testare rapidă.
 !!! CÂND UNUL DEvine VALID, Bob îl va muta în updateUrls de mai sus și va schimba codul sursă relevant, paginile .html, messages.xml și my datasets.xml .
@@ -6913,6 +7046,7 @@ noaa.gov https://www.godac.jamstec.go.jp https://www.globec.org http://www.isotc
 Sunt pentru URI-uri din 19115 documente.
 https://www.j2eeprogrammer.com https://www.jdom.org https://www.libpng.org https://www.marine-geo.org https://www.myocean.eu https:/ /www.myroms.org/erddap/index.html https://myroms.org este în regulă https://www.nanoos.org https://www.neracoos.org https://www.ogcnetwork.net https:
 //www.opengis.net https://www.openwebfoundation.org https://www.remss.com https://www.schemacentral.com https://www.slf4j.org https://www.usgin .org -->
+
 <!-- Aceasta este o listă de nume de atribute separate prin virgulă pe care updateUrls le va omite.
 Asta nu poate fi nimic.
 Așa că, dacă nu doriți nimic, introduceți un cuvânt farfurios care nu va fi niciodată un nume de atribut. -->

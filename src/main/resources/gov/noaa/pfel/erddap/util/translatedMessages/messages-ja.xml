@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!-- ERDDAP のテキスト メッセージ (EDStatic で読み取られる) が、messages.xml に含まれています。
 
 ERDDAP をサーバーにインストールする場合、これらのメッセージは通常、異なる ERDDAP インストールで同じであるため、これらのメッセージはすべてそのままにしておくことができます。
@@ -35,7 +35,7 @@ https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html を参照
 messages-de.xml と -ga では、多くのリンクが重複しています。他にもこのようなリンクがたくさんあると思います。
 
  -->
-<erddapMessages>
+
 <!-- これは、圧縮ファイルの要求を説明する HTML コンテンツを返します。
 https://httpd.apache.org/docs/1.3/mod/mod_mime.html を参照してください。
 x-gzip=gzip および x-compress=compress と記載されています。
@@ -75,11 +75,13 @@ x-gzip=gzip および x-compress=compress と記載されています。
   追加のリンクの提案がある場合は、 <kbd>erd dot data at noaa dot gov</kbd>ご連絡ください。
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>このデータセットは、この ERDDAP で現在アクティブな各データセットに関する情報の行を持つテーブルです。</admSummary>
 <admTitle>この ERDDAP のすべてのアクティブなデータセットのリスト</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>一部のデータセットは公開されています。一部は非公開で、アクセスできない可能性があります。</advc_accessible>
@@ -512,6 +514,7 @@ A-Za-z0-9_-!.~&#39;()* 以外のすべての文字は %HH としてエンコー�
 <convertFipsCounty>FIPS 郡コードを郡名に変換する</convertFipsCounty>
 
 <!-- 例を変更しないでください (defaultN から...)。 -->
+
 <!-- 「FIPS 郡コード」は、http://www.itl.nist.gov/fipspubs/fip6-4.htm へのリンクでした。
 その後、https://www.census.gov/geo/reference/codes/cou.html にリンクされました。
 現在、最も近い(?)のは http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html です。
@@ -2403,7 +2406,7 @@ ERDDAP のデータセットのグラフ作成フォームを使用してサン�
 
 「jplMURSST41」の代わりにデータセット ID を使用し、&quot;[0 32]&quot; (カラー バーのデータ範囲) を変更するだけで済みます。 -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!-- EDDTable メッセージは、テーブル DAP データ アクセス フォームおよびグラフ作成に表示されます。 -->
 <EDDTableConstraints>制約</EDDTableConstraints>
@@ -2546,7 +2549,7 @@ https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html を使用します。 
 
 <!-- これはグラフを生成するサンプルクエリです。
 ERDDAP のデータセットのグラフ作成フォームを使用してサンプルを生成できます。 -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!-- これはマップを生成するクエリの例です。 -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2645,7 +2648,7 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <fileHelp_ncml>データセットの構造とメタデータを UTF-8 NCML .xml ファイルとして表示します。</fileHelp_ncml>
 <fileHelpGrid_odvTxt>時間、緯度、経度、その他の変数を ODV 汎用スプレッドシート ファイル (.txt) としてダウンロードします。</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>経度、緯度、時間、その他の列を ISO-8859-1 ODV 汎用スプレッドシート ファイル (.txt) としてダウンロードします。</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>パーケットファイルとしてダウンロードします。</fileHelp_parquet>
 <fileHelp_subset>ファセット検索を使用してデータのサブセットの選択を簡素化する HTML フォームを表示します。</fileHelp_subset>
 <fileHelp_timeGaps>中央値のギャップより大きい時間値のギャップの UTF-8 リストを表示します。</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 タブ区切りテキスト テーブル (行 1: 名前、行 2: 単位、ISO 8601 時間) をダウンロードします。</fileHelp_tsv>
@@ -3239,9 +3242,11 @@ ERDDAPの Web ページをバイパスして、任意のコンピュータ プ�
 ウォッチのデフォルトは 8192 です。インスタンスのデフォルトは 128 です。</inotifyFix>
 
 <!-- 翻訳しない -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>補間</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3755,6 +3760,7 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 <moreInformation>詳しくは</moreInformation>
 
 <!-- これらの MessageFormat スタイルのメッセージは MustBe.xxx にプッシュされます。 -->
+
 <!-- これは重要なエラー メッセージです。リクエストは有効でしたが、結果はデー​​タなしだったことを示しています。クライアントはまさにこのメッセージを探している可能性があります。
 今のところ、これを変更しないことをお勧めします。
 !!! これには少なくともエラー番号が必要なので、特定のテキストに依存しません!!!
@@ -3847,6 +3853,12 @@ ERDDAP の水平凡例の場合、legendTitle1 と 2 は同じ行に配置され
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--pageFirst>first</pageFirst>
+<ページ前回>前のページ>
+<pageCurrent>現在の</pageCurrent>
+<pageNext>次の</pageNext>
+<pageLast>last</pageLast></pageLast></pageLast></></></></></></></>-->
 
 <!-- これらはパレット オプションです。
 erddap/WEB-INF/cptfiles ディレクトリにそれぞれ .cpt ファイルが必要です。
@@ -4606,6 +4618,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!-- Bob: Table.ERD_TABLE_CSS で同一のテーブル CSS を参照してください -->
+
 <!-- startHeadHtml には、すべての HTML Web ページの HTML ドキュメントの開始と「head」タグ (「&lt;!DOCTYPE」で始まり、「&lt;/head&gt;」は含まない) が含まれます。
 これには &erddapUrl; が含まれる場合があり、これは [baseUrl]/erddap
 (またはユーザーがログインしている場合は [baseUttpsUrl]/erddap) に展開されます。
@@ -4630,6 +4643,7 @@ ERDDAP は http: および https: Web ページに同じ .css ファイルを使
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5283,11 +5297,14 @@ UDUNITS 文字列全体が &#39;before&#39; 文字列と一致する場合、
 &#39;after&#39; UDUNITS 値に変換されます。
 空白行により、他の行が &#39;before&#39; 行と &#39;after&#39; 行であることが保証されます。
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>時間</time>
 <timeoutOtherRequests>他のリクエストの処理を待機中にタイムアウトになりました。</timeoutOtherRequests>
 
@@ -5297,7 +5314,8 @@ UCUM 文字列全体が「前」の文字列と一致する場合、
 「後」の UDUNITS 値に変換されます。
 空白行により、他の行が「前」と「後」の行であることが保証されます。
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5307,7 +5325,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!-- これは、特定の変換を提供することで、ERDDAP の UDUNITS から UCUM へのコンバーターをオーバーライドする方法です。
 udunitsToUcum には、前、後、空白の 3 つの行があります。
@@ -5315,7 +5335,8 @@ UDUNITS 文字列全体が「前」の文字列と一致する場合、
 「後」の UCUM 値に変換されます。
 空白行により、他の行が「前」と「後」の行であることが保証されます。
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5337,7 +5358,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!-- これは、古い URL ソース メタデータを処理するための試みです。
 updateUrls は、データセットがロードされるたびに、データセットの文字列メタデータ属性 (グローバルおよび変数) のそれぞれに適用されます。
@@ -5358,7 +5381,8 @@ http から https への変更は重要です。一部の Web サイトにはリ
 * http://www.csc.noaa.gov から coast への変換は不完全です。
 ドキュメントが別の場所にあります。これは、ドメイン名の大きな変更でよく見られます。
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6451,7 +6475,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!-- これらは、おそらくいつか https でアクセスできるようになる http URL です。
 簡単なテストのために、ここにコメントとしてリストされています。
@@ -6533,6 +6559,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!-- これは、updateUrls がスキップする属性名のコンマ区切りリストです。
 何も指定できません。何も指定しない場合は、属性名にならない意味不明な単語を入力してください。 -->
 <updateUrlsSkipAttributes>ソースURL</updateUrlsSkipAttributes>
