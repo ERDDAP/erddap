@@ -66,16 +66,15 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
-import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.io.ColumnIOFactory;
 import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.io.LocalOutputFile;
 import org.apache.parquet.io.MessageColumnIO;
 import org.apache.parquet.io.RecordReader;
@@ -15956,10 +15955,7 @@ public class Table {
       String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
       throws Exception {
     clear();
-    Path filePath = new Path(fullFileName);
-    Configuration conf = new Configuration();
-
-    InputFile parquetFile = HadoopInputFile.fromPath(filePath, conf);
+    InputFile parquetFile = new LocalInputFile(java.nio.file.Path.of(fullFileName));
     ParquetFileReader fileReader =
         new ParquetFileReader(parquetFile, ParquetReadOptions.builder().build());
     try {
