@@ -522,6 +522,14 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- This is needed due to indirect dependency in cdm-core -->
+            <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.5</version>
+            </dependency>
+
             <!--
             The below are here to force updated dependencies of the hadoop libraries.
             The default selections have security vulnerabilities. Ideally we wouldn't be including
