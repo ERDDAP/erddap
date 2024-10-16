@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml chứa tin nhắn văn bản cho ERDDAP (được đọc trong EDStatic).
 Khi bạn cài đặt ERDDAP trên máy chủ của mình, tất cả các thông báo này có thể được giữ nguyên,
 vì những thông báo này thường giống nhau ở các bản cài đặt ERDDAP khác nhau.
@@ -30,7 +30,6 @@ Hệ thống dịch YÊU CẦU &quot;thực thể giả&quot; chỉ sử dụng 
   messages-de.xml và -ga có nhiều liên kết trùng lặp. Tôi nghi ngờ nhiều người khác cũng như thế này.
 
  -->
-<erddapMessages>
 <!--  Điều này trả về nội dung HTML mô tả Yêu cầu tệp nén.
 Xem https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 trong đó nói rằng x-gzip=gzip và x-compress=compress

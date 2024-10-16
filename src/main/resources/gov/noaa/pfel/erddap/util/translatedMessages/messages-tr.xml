@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  message.xml, ERDDAP için (EDStatic&#39;te okunan) metin mesajlarını içerir.
 Sunucunuza ERDDAP yüklediğinizde bu mesajların tamamı olduğu gibi bırakılabilir,
 çünkü bu mesajlar genellikle farklı ERDDAP kurulumlarında aynıdır.
@@ -30,7 +30,7 @@ Yerine değiştirilecek bir şeyin yerine geçmek.
   message-de.xml ve -ga&#39;da kopyalanan birçok bağlantı var. Daha pek çok kişinin bu şekilde olduğundan şüpheleniyorum.
 
  -->
-<erddapMessages>
+
 <!--  Bu, Sıkıştırılmış Dosyaların İsteğini açıklayan HTML içeriğini döndürür.
 Bkz. https://httpd.Apache.org/docs/1.3/mod/mod_mime.html
 bu, x-gzip=gzip ve x-compress=compress olduğunu söylüyor
@@ -82,11 +82,13 @@ Daha sonra ERDDAP bunların hepsini ekleyecektir.
   Ek bağlantı önerileriniz varsa <kbd>erd dot data at noaa dot gov</kbd> iletişime geçin.
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Bu veri seti, bu ERDDAP&#39;ta halihazırda aktif olan her veri seti için bir satır bilgi içeren bir tablodur.</admSummary>
 <admTitle>Bu ERDDAP&#39;taki Tüm Aktif Veri Kümelerinin Listesi</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Bazı veri kümeleri herkese açıktır. Bazıları özel olabilir ve belki de sizin erişiminize açık olmayabilir.</advc_accessible>
@@ -554,6 +556,7 @@ A-Za-z0-9_-!.~&#39;()* dışındaki tüm karakterler %HH olarak kodlanmalıdır;
 <convertFipsCounty>FIPS İlçe Kodunu İlçe Adına/İlçe Adından Dönüştürme</convertFipsCounty>
 
 <!--  Örnekleri değiştirmeyin (varsayılanN...&#39;den).  -->
+
 <!--  &quot;FIPS ilçe kodu&quot; http://www.itl.nist.gov/fipspubs/fip6-4.htm adresine bir bağlantıydı 
      sonra https://www.census.gov/geo/reference/codes/cou.html 
      Şimdi en yakın(?) http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2760,7 +2763,7 @@ Bu ayar grubu griddap belgelerine örnek oluşturmak için kullanılır
      Umarım &quot;jplMURSST41&quot; yerine veri kümesi kimliğinizi kullanabilirsiniz.
      ve &quot;[0 32]&quot;yi (renk çubuğunun veri aralığı) değiştirin.   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  EDDTable mesajları tabledap Veri Erişim Formu ve Grafik Oluştur üzerinde görüntülenir.  -->
 <EDDTableConstraints>Kısıtlamalar</EDDTableConstraints>
@@ -2919,7 +2922,7 @@ Bu ayar grubu, tablo verilerinin belgelerine örnek oluşturmak için kullanıl�
 
 <!--  Bu bir grafik oluşturan örnek bir sorgudur. 
      Örneğinizi, veri kümenizin ERDDAP&#39;taki Grafik Yap formunu kullanarak oluşturabilirsiniz.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Bu bir harita oluşturan örnek bir sorgudur.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3023,7 +3026,7 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelp_ncml>Veri kümesinin yapısını ve meta verilerini UTF-8 NCML .xml dosyası olarak görüntüleyin.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>time,latitude,longitude,otherVariables&#39;ı ODV Genel Elektronik Tablo Dosyası (.txt) olarak indirin.</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Longitude,latitude,time,otherColumns&#39;u ISO-8859-1 ODV Genel Elektronik Tablo Dosyası (.txt) olarak indirin.</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Bir parke dosyası olarak indirin.</fileHelp_parquet>
 <fileHelp_subset>Verilerin alt kümelerini seçmeyi kolaylaştırmak için yönlü aramayı kullanan bir HTML formunu görüntüleyin.</fileHelp_subset>
 <fileHelp_timeGaps>Zaman değerlerinde medyan boşluktan daha büyük olan boşlukların UTF-8 listesini görüntüleyin.</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 sekmeyle ayrılmış bir metin tablosu indirin (1. satır: adlar; 2. satır: birimler; ISO 8601 kez).</fileHelp_tsv>
@@ -3735,9 +3738,11 @@ Veya sorun devam ederse daha yüksek sayılar kullanın.
 Saatler için varsayılan değer 8192&#39;dir. Örnekler için varsayılan değer 128&#39;dir.</inotifyFix>
 
 <!--  çevirme  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Enterpolasyon</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4307,6 +4312,7 @@ Aşağıdaki &quot;Bu formu atla&quot; bağlantısına bakın.
 <moreInformation>daha fazla bilgi</moreInformation>
 
 <!--  BuMessageFormat tarzı mesajlar MustBe.xxx&#39;e aktarılır.  -->
+
 <!--  Bu önemli bir hata mesajıdır. İsteğin geçerli olduğunu gösterir,
 ancak sonuçta veri yoktu. Müşteriler tam olarak bu mesajı arıyor olabilir.
 Şimdilik bunu değiştirmemek en iyisi.
@@ -4404,6 +4410,12 @@ Bu web sayfasının altındaki Seçeneklere bakın.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--Sayfaİlk>ilk</ pageFirst>
+<pageÖnceki>previous</pageÖnceki>
+<pageCurrent>current</pageCurrent>
+<page Next>Sonraki</ pageSonraki>
+< pageLast>last</ pageLast-->
 
 <!--  Bunlar palet seçenekleridir.
      Erddap/WEB-INF/cptfiles dizininde her biri için bir .cpt dosyası bulunmalıdır.
@@ -5321,6 +5333,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: Tablo.ERD_TABLE_CSS&#39;deki aynı tablo css&#39;sine bakın  -->
+
 <!--  startHeadHtml, HTML belgesinin başlangıcını ve &#39;head&#39; etiketlerini içerir 
 (&quot;&lt;!DOCTYPE&quot; ile başlar ancak &quot;&lt;/head&gt; hariç)&quot; 
 tüm HTML web sayfaları için. 
@@ -5357,6 +5370,7 @@ bilgi.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6261,11 +6275,14 @@ UDUNITS dizesinin tamamı &#39;önce&#39; dizesiyle eşleşiyorsa,
 &#39;sonraki&#39; UDUNITS değerine dönüştürülecektir.
 Boş satırlar, diğer satırların &#39;önce&#39; ve &#39;sonra&#39; satırları olmasını sağlar.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Zaman</time>
 <timeoutOtherRequests>Diğer isteklerinizin işlenmesini beklerken zaman aşımı oluştu.</timeoutOtherRequests>
 
@@ -6276,7 +6293,8 @@ Bir UCUM dizisinin tamamı &#39;önce&#39; dizesiyle eşleşiyorsa,
 &#39;sonraki&#39; UDUNITS değerine dönüştürülecektir.
 Boş satırlar diğer satırların &#39;önce&#39; ve &#39;sonra&#39; satırları olmasını sağlar.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6286,7 +6304,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Bu, ERDDAP&#39;ın UDUNITS&#39;ini UCUM dönüştürücüsüne geçersiz kılmanın bir yoludur
 belirli dönüşümler sağlayarak. 
@@ -6295,7 +6315,8 @@ UDUNITS dizesinin tamamı &#39;önce&#39; dizesiyle eşleşiyorsa,
 &#39;sonraki&#39; UCUM değerine dönüştürülecektir.
 Boş satırlar diğer satırların &#39;önce&#39; ve &#39;sonra&#39; satırları olmasını sağlar.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6317,7 +6338,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Bu, güncel olmayan URL&#39;lerin kaynak meta verileriyle ilgilenmeye yönelik bir girişimdir.
 updateUrls, bir veri kümesinin Dize meta veri niteliklerinin her birine uygulanır 
@@ -6341,7 +6364,8 @@ Notlar:
 * http://www.csc.noaa.gov&#39;dan kıyıya dönüşüm kusurlu: 
   Belgeler farklı yerlerde.  Bu, alan adındaki büyük değişiklikler için yaygın bir durumdur.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7434,7 +7458,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Bunlar muhtemelen bir gün https aracılığıyla erişilebilecek http URL&#39;leridir.
 Hızlı test için burada yorum olarak listelenmiştir.
@@ -7517,6 +7543,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Bu, updateUrls&#39;in atlayacağı özellik adlarının virgülle ayrılmış bir listesidir. 
 Bu hiçbir şey olamaz. Yani hiçbir şey istemiyorsanız, anlamsız bir kelime girin
 asla bir özellik adı olmayın.  -->

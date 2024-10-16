@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml માં ERDDAP (જે EDStatic માં વાંચવામાં આવે છે) માટે ટેક્સ્ટ સંદેશાઓ છે.
 જ્યારે તમે તમારા સર્વર પર ERDDAP ઇન્સ્ટોલ કરો છો, ત્યારે આ બધા સંદેશાઓ જેમ છે તેમ છોડી શકાય છે,
 કારણ કે આ સંદેશાઓ સામાન્ય રીતે વિવિધ ERDDAP સ્થાપનો પર સમાન હોય છે.
@@ -30,7 +30,6 @@ https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html જુઓ
   messages-de.xml અને -ga પાસે ઘણી લિંક ડુપ્લિકેટ છે. મને શંકા છે કે બીજા ઘણા આવા છે.
 
  -->
-<erddapMessages>
 <!--  આ સંકુચિત ફાઇલોની વિનંતી કરતી HTML સામગ્રીનું વર્ણન કરે છે.
 https://httpd.apache.org/docs/1.3/mod/mod_mime.html જુઓ
 જે કહે છે કે x-gzip=gzip અને x-compress=compress

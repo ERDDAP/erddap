@@ -901,45 +901,11 @@
             <version>0.30.0</version>
         </dependency>
 
-
-        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
-        <!-- Added by Qi for translation purpose -->
-        <!-- WARNING:
-             2022-02-07 2.1.10 caused a timeout error. Revert to 2.1.7 again.
-             2021-12-22 2.1.8 caused:   Exception in thread "grpc-default-executor-0" java.lang.NoSuchMethodError: 
-             com.google.protobuf.GeneratedMessageV3.isStringEmpty(Ljava/lang/Object;)Z
-             so revert to 2.1.7 for now -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-translate</artifactId>
-            <version>2.46.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.25.5</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
-        <!-- Added by Bob for translation project -->
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.46.0</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
             <version>1.24.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
-        <dependency>
-            <groupId>com.google.api</groupId>
-            <artifactId>gax</artifactId>
-            <version>2.50.0</version>
         </dependency>
 
         <dependency>

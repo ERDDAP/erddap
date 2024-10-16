@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml 包含 ERDDAP 的文字訊息（在 EDStatic 中讀取）。
 當您在伺服器上安裝 ERDDAP 時，所有這些訊息都可以保留原樣，
 因為這些訊息在不同的 ERDDAP 安裝中通常是相同的。
@@ -30,7 +30,7 @@ HTML 與否？
   messages-de.xml 和 -ga 有許多重複的連結。我懷疑還有更多類似的情況。
 
  -->
-<erddapMessages>
+
 <!--  這將傳回描述請求壓縮檔案的 HTML 內容。
 請參閱https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 這表示 x-gzip=gzip 和 x-compress=compress
@@ -71,11 +71,13 @@ HTML 與否？
   如果您對其他連結有建議，請聯絡<kbd>erd dot data at noaa dot gov</kbd> 。
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>該資料集是一個表，其中包含該 ERDDAP 中目前活動的每個資料集的一行資訊。</admSummary>
 <admTitle>此 ERDDAP 中所有活動資料集的列表</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>有些資料集是公開的。有些可能是私人的，您可能無法訪問。</advc_accessible>
@@ -495,6 +497,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 <convertFipsCounty>將 FIPS 縣代碼與縣名稱相互轉換</convertFipsCounty>
 
 <!--  不要更改範例（從 defaultN...）。  -->
+
 <!--  「FIPS 縣代碼」是 http://www.itl.nist.gov/fipspubs/fip6-4.htm 的鏈接 
      然後 https://www.census.gov/geo/reference/codes/cou.html 
      現在最接近的（？）是http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2293,7 +2296,7 @@ griddap 使用<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img
      希望您可以將您的 datasetID 替換為“jplMURSST41”
      並修改「[0 32]」（色條的資料範圍）。   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  EDDTable 訊息顯示在 tabledap 資料存取表單和製作圖表上。  -->
 <EDDTableConstraints>約束條件</EDDTableConstraints>
@@ -2434,7 +2437,7 @@ axisVariable[0]（通常是「時間」）是什麼，以便資料不超過 {1}
 
 <!--  這是產生圖表的範例查詢。 
      您可以透過 ERDDAP 中資料集的「製作圖表」表單產生範例。   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  這是產生地圖的範例查詢。  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2533,7 +2536,7 @@ ERDDAP是一個資料伺服器，它為您提供了一種簡單、一致的方�
 <fileHelp_ncml>以 UTF-8 NCML .xml 檔案形式檢視資料集的結構和元資料。</fileHelp_ncml>
 <fileHelpGrid_odvTxt>將時間、緯度、經度和其他變數下載為 ODV 通用電子表格檔案 (.txt)。</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>下載經度、緯度、時間、其他欄位作為 ISO-8859-1 ODV 通用電子表格檔案 (.txt)。</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
+<fileHelp_parquet>下載為 parquet 檔案 。</fileHelp_parquet>
 <fileHelp_subset>查看 HTML 表單，該表單使用分面搜尋來簡化資料子集的選取。</fileHelp_subset>
 <fileHelp_timeGaps>查看大於中位數間隙的時間值間隙的 UTF-8 清單。</fileHelp_timeGaps>
 <fileHelp_tsv>下載 ISO-8859-1 製表符分隔的文字表（第 1 行：名稱；第 2 行：單位；ISO 8601 時間）。</fileHelp_tsv>
@@ -3080,9 +3083,11 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 監視的預設值為 8192。</inotifyFix>
 
 <!--  不翻譯  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>插</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3117,7 +3122,7 @@ URL 標識資料集、回應所需的文件類型、要查看的資料子集以�
 
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>關鍵字</keywords>
-<langCode>zh-TW</langCode>
+<langCode>zt</langCode>
 
 <!--  這齣現在 erddap/legal.html 網頁上的一般免責聲明之後。 
 您可以用您自己的 HTML 替換任何 [standardParts]。 
@@ -3585,6 +3590,7 @@ URL 標識資料集、回應所需的文件類型、要查看的資料子集以�
 <moreInformation>更多資訊</moreInformation>
 
 <!--  這些 MessageFormat 樣式的訊息被推送到 MustBe.xxx 中。  -->
+
 <!--  這是一條重要的錯誤訊息。它表明請求有效，
 但結果是沒有數據。客戶可能正在尋找這確切的訊息。
 目前，最好不要改變這一點。
@@ -3677,6 +3683,12 @@ URL 標識資料集、回應所需的文件類型、要查看的資料子集以�
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--首頁>首頁</首頁>
+<page上 > 上 > 上 > / 上 >
+<pageCurrent> 当前 </pageCurrent>
+< pageNext > next </pageNext >
+< page last > last </page > last-->
 
 <!--  這些是調色板選項。
      erddap/WEB-INF/cptfiles 目錄中必須有每個檔案的 .cpt 檔案。
@@ -4447,6 +4459,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob：在 Table.ERD_TABLE_CSS 中查看相同的表格 css  -->
+
 <!--  startHeadHtml 有 HTML 文件的開頭和「head」標籤 
 （從“&lt;!DOCTYPE”開始，但不包括“&lt;/head&gt;”） 
 適用於所有 HTML 網頁。 
@@ -4483,6 +4496,7 @@ favicon.ico 是瀏覽器與您的網站關聯的圖像。
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5097,11 +5111,14 @@ standardizeUdunits 有三行：之前、之後和空白。
 它將轉換為“之後”UDUNITS 值。
 空白行確保其他行位於「之前」和「之後」行。
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>時間</time>
 <timeoutOtherRequests>等待處理其他請求逾時。</timeoutOtherRequests>
 
@@ -5112,7 +5129,8 @@ ucumToUdunits 有三行：之前、之後和空白。
 它將轉換為“之後”UDUNITS 值。
 空白行確保其他行位於「之前」和「之後」行。
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5122,7 +5140,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  這是覆蓋 ERDDAP 的 UDUNITS 到 UCUM 轉換器的方法
 透過提供特定的轉換。 
@@ -5131,7 +5151,8 @@ udunitsToUcum 有三行：之前、之後和空白。
 它將轉換為「之後」的 UCUM 值。
 空白行確保其他行位於「之前」和「之後」行。
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5153,7 +5174,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  這是處理過時的 URL 來源元資料的嘗試。
 updateUrls 應用於資料集的每個字串元資料屬性 
@@ -5177,7 +5200,8 @@ updateUrls 有三行：之前、之後和空白。
 * http://www.csc.noaa.gov 到海岸的轉換不完全： 
   不同地方的文檔。  這對於域名的重大更改很常見。
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6270,7 +6294,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  這些是 http URL，將來可能可以透過 https 存取。
 這裡列出了註釋以供快速測試。
@@ -6353,6 +6379,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  這是 updateUrls 將跳過的以逗號分隔的屬性名稱清單。 
 這不可能沒什麼。因此，如果您什麼都不想要，請輸入一個亂碼
 永遠不要是屬性名稱。  -->
