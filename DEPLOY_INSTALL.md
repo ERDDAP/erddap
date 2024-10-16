@@ -27,7 +27,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
     
     ERDDAP™ works with Java from other sources, but we recommend Adoptium because it is the main, community-supported, free (as in beer and speech) version of Java 21 that offers Long Term Support (free upgrades for many years past the initial release). For security reasons, please update your ERDDAP's version of Java periodically as new versions of Java 21 become available from Adoptium.
     
-    ERDDAP™ has been tested and used extensively with Java 17 and 21, not other versions. For various reasons, we don't test with nor support other versions of Java.  
+    ERDDAP™ has been tested and used extensively with 21, not other versions. For various reasons, we don't test with nor support other versions of Java.  
      
     
 2.  [Set up](#tomcat) [Tomcat](https://tomcat.apache.org).  
@@ -37,7 +37,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
      
     
     *   Download Tomcat and unpack it on your server or PC.  
-        For security reasons, it is almost always best to use the latest version of Tomcat 10 (version 9 and below are not acceptable) which is designed to work with Java 17 or newer. Below, the Tomcat directory will be referred to as _tomcat_.
+        For security reasons, it is almost always best to use the latest version of Tomcat 10 (version 9 and below are not acceptable) which is designed to work with Java 21 or newer. Below, the Tomcat directory will be referred to as _tomcat_.
         
         Warning! If you already have a Tomcat running some other web application (especially THREDDS), we recommend that you install ERDDAP™ in [a second Tomcat](#secondTomcat), because ERDDAP™ needs different Tomcat settings and shouldn't have to contend with other applications for memory.
         
@@ -173,7 +173,7 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
         *   Or, you can join the [ERDDAP™ Google Group / Mailing List](#ERDDAPMailingList) and post your question there.  
              
 3.  [Set up the _tomcat_/content/erddap configuration files.](#erddapContent)  
-    On Linux, Mac, and Windows, download [erddapContent.zip](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddapContent.zip) (version 2.23, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
+    On Linux, Mac, and Windows, download [erddapContent.zip](https://github.com/ERDDAP/erddapContent/releases/download/content1.0.0/erddapContent.zip) (version 1.0.0, 20333 bytes, MD5=2B8D2A5AE5ED73E3A42B529C168C60B5, dated 2024-10-14) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
     
     [Other Directory:](#erddapContentDirectory) For Red Hat Enterprise Linux (RHEL) or for other situations where you aren't allowed to modify the Tomcat directory or where you want/need to put the ERDDAP™ content directory in some other location for some other reason (for example, if you use Jetty instead of Tomcat), unzip erddapContent.zip into the desired directory (to which only user=tomcat has access) and set the erddapContentDirectory system property (e.g., erddapContentDirectory=~tomcat/content/erddap) so ERDDAP™ can find this new content directory.
     
@@ -181,7 +181,8 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
     [2.17](https://github.com/ERDDAP/erddap/releases/download/v2.17/erddapContent.zip) (19,792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)  
     [2.18](https://github.com/ERDDAP/erddap/releases/download/v2.18/erddapContent.zip) (19,792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)  
     [2.21](https://github.com/ERDDAP/erddap/releases/download/v2.21/erddapContent.zip) (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-10-09)  
-    [2.22](https://github.com/ERDDAP/erddap/releases/download/v2.22/erddapContent.zip) (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-12-08)  
+    [2.22](https://github.com/ERDDAP/erddap/releases/download/v2.22/erddapContent.zip) (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-12-08)
+    [2.23](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddapContent.zip) (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27)
     and unzip it into _tomcat_, creating _tomcat_/content/erddap . \]
     
     Then,
