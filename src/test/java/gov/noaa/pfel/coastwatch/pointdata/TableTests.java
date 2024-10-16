@@ -18897,8 +18897,10 @@ public class TableTests {
   void testReadParquet() throws Exception {
 
     String fileName =
-        TableTests.class
-            .getResource("/data/parquet/GHG_national_2012_m1_v2.0.0_a8c5929.parquet")
+        new java.io.File(
+                TableTests.class
+                    .getResource("/data/parquet/GHG_national_2012_m1_v2.0.0_a8c5929.parquet")
+                    .getFile())
             .getPath();
     // don't simplify
     Table table = new Table();
