@@ -211,8 +211,9 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
     ERDDAP™ will not work correctly if the setup.xml or datasets.xml file isn't a well-formed XML file. So, after you edit these files, it is a good idea to verify that the result is well-formed XML by pasting the XML text into an XML checker like [xmlvalidation(https://www.xmlvalidation.com/).  
      
 4.  [Install the erddap.war file.](#erddap.war)  
-    On Linux, Mac, and Windows, download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.24/erddap.war) into _tomcat_/webapps .  
-    (version 2.24, 568,748,187 bytes, MD5=970fbee172e28b0b8a07756eecbc898e, dated 2024-06-07)
+    On Linux, Mac, and Windows, download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.25/erddap.war) into _tomcat_/webapps .  
+    (version 2.25, 592,429,675 bytes, MD5=0D93F045A3F38018117C0BB5BA419C99, dated 2024-10-17) 
+    
     The .war file is big because it contains high resolution coastline, boundary, and elevation data needed to create maps.
     
     \[Some previous versions are also available.  
@@ -220,7 +221,9 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
     [2.18](https://github.com/ERDDAP/erddap/releases/download/v2.18/erddap.war) (551,069,844 bytes, MD5=461325E97E7577EC671DD50246CCFB8B, dated 2022-02-23)  
     [2.21](https://github.com/ERDDAP/erddap/releases/download/v2.21/erddap.war) (568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated 2022-10-09)  
     [2.22](https://github.com/ERDDAP/erddap/releases/download/v2.22/erddap.war) (567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated 2022-12-08)
-    [2.23](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddap.war)(version 2.23, 572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated 2023-03-03) \]
+    [2.23](https://github.com/ERDDAP/erddap/releases/download/v2.23/erddap.war) (572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated 2023-03-03)
+    [2.24](https://github.com/ERDDAP/erddap/releases/download/v2.24/erddap.war) (568,748,187 bytes, MD5=970fbee172e28b0b8a07756eecbc898e, dated 2024-06-07)
+    \]
     
 5.  [Use ProxyPass](#ProxyPass) so users don't have to put the port number, e.g., :8080, in the URL.  
     On Linux computers, if Tomcat is running in Apache, please modify the Apache httpd.conf file (usually in /etc/httpd/conf/ ) to allow HTTP traffic to/from ERDDAP™ without requiring the port number, e.g., :8080, in the URL. As the root user:
