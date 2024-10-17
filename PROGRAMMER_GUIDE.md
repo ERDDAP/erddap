@@ -17,7 +17,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - [ref\_files.zip](https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/1.0.0/ref_files.zip) and unzip it into /WEB-INF/ref/ .
 
-  - [erddapContent.zip](https://github.com/ERDDAP/erddap/releases/download/v2.24/erddapContent.zip) (version 2.24, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2024-06-07) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
+  - [erddapContent.zip](https://github.com/ERDDAP/erddapContent/releases/download/content1.0.0/erddapContent.zip) (version 1.0.0, 20333 bytes, MD5=2B8D2A5AE5ED73E3A42B529C168C60B5, dated 2024-10-14) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
 
 NOTE: Maven caches downloads but will unzip the downloaded archives on each execution, which takes time. To skip downloading
 and unzipping archives, you may specify the `skipResourceDownload` property to Maven (e.g. `mvn -DskipResourceDownload package`).

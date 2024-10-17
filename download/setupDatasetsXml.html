@@ -81,7 +81,6 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP™ in
   <li><a rel="help" href="#AwsS3Files">AWS S3 Files</a>
   <li><a rel="help" href="#NcML">NcML</a>
   <li><a rel="help" href="#NCO">NCO</a>
-  <li><a rel="help" href="#include">No &lt;include&gt; Option</a> 
   <li><a rel="help" href="#limits">Limits to the Size of a Dataset</a>
   <li><a rel="help" href="#switchToACDD13">Switch to ACDD-1.3</a> 
   <li><a rel="help" href="#Zarr">Zarr</a>
@@ -2312,58 +2311,6 @@ to change the units in all of the files to be identical with
 <br>[For many problems like this in EDDTableFrom...Files datasets, you can now use 
 <a rel="help" href="#EDDTableFromFiles_standardizeWhat">standardizeWhat</a> to tell ERDDAP
 to standardize the source files as they are read into ERDDAP.]
-
-<li><strong><a class="selfLink" id="include" href="#include" rel="bookmark">No &lt;include&gt; Option</a></strong>
-<br>All of the setup information for all of the datasets must be in one file: datasets.xml .
-
-  <p>The biggest advantage of this approach for ERDDAP™ is: 
-  ERDDAP™ frequently needs to work through this entire file, for example,
-  to reload a set of flagged datasets. Since all of the information is in one file, 
-  ERDDAP™ can do this very quickly.
-  When parsing the datasets.xml file, ERDDAP™ has a system to jump very quickly 
-  to a corresponding 
-  &lt;/dataset&gt; tag, allowing it to rapidly parse even very large 
-  datasets.xml files.
-
-  <p>The biggest advantage of this approach for administrators is: 
-  if you want to make the same or similar changes to multiple datasets,
-  you can do it quickly and easily, without opening and editing numerous files.
-
-  <p>Think of datasets.xml as an interface between your system and ERDDAP.
-  ERDDAP™ doesn't care how you make datasets.xml, so you may create it any way you like:
-  <ul>
-  <li>by hand in a text editor,
-  <li>by a script which concatenates numerous files, each with the datasets.xml 
-    chunk for one dataset, 
-  <li>or by a script which generates datasets.xml based on metadata 
-    for all datasets stored in a relational database. 
-  </ul>  
-
-  <p>Some people have asked for datasets.xml to support references to external 
-  files which have 
-  chunks of XML which define one or more datasets, for example, 
-  <br><kbd>&lt;include dataset1.xml/&gt;</kbd>
-  <br>ERDDAP™ doesn't support that, mostly because each reference to an external
-  file would be a separate file that ERDDAP™ has to open. 
-  If there were a large number of references, that would greatly slow down
-  ERDDAP's processing of datasets.xml.
-
-  <p>Fortunately, there is a good compromise: 
-  <ol>
-  <li>Make several sub-files, for example, start.xml, datasets1.xml, 
-      datasets2.xml, ... end.xml
-    <br>Use whatever names you want for the files.
-  <li>Write a Linux script or DOS batch (.bat) file to concatenate the files into one file.
-    <br>Linux example:&nbsp; <kbd>cat start.xml datasets1.xml datasets2.xml end.xml &gt; datasets.xml</kbd>
-    <br>DOS example: <kbd>type start.xml datasets1.xml datasets2.xml end.xml &gt; datasets.xml</kbd>
-  <li>Then, whenever you make a change to one of the sub-files,
-    rerun the script to regenerate the complete datasets.xml file.
-    You know when one of the sub-files has changed, so it makes sense 
-    that you use that information to trigger the recreation of the 
-    complete datasets.xml file.
-    <br>&nbsp;
-  </ol>
-
 
 <li><strong><a class="selfLink" id="limits" href="#limits" rel="bookmark">Limits to the Size of a Dataset</a></strong>
 <br>You'll see many references to "2 billion" below. 
@@ -15858,7 +15805,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.24
+<p>ERDDAP, Version 2.25
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>
