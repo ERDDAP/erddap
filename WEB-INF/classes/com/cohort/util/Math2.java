@@ -48,7 +48,7 @@ public class Math2 {
   public static final BigInteger LONG_MAX_VALUE = new BigInteger("" + Long.MAX_VALUE);
   public static final BigInteger ULONG_MAX_VALUE = new BigInteger("18446744073709551615");
   public static final double ULONG_MAX_VALUE_AS_DOUBLE =
-      18446744073709551615.0; // trouble: won't be stored exactly
+      1.8446744073709552E+19; // rounded to what double can store
   public static final int Binary0 = -2000; // less than -980-980
   public static final int BinaryLimit = 980; // 2^980 = ~1e295
   public static final int BytesPerKB = 1024;

@@ -65,7 +65,8 @@ public class Boundaries {
    */
   public static final int CACHE_SIZE = 100;
 
-  private Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
+  private Map<String, SGTLine> cache =
+      Collections.synchronizedMap(new LRUCache<String, SGTLine>(CACHE_SIZE));
   private int nCoarse = 0;
   private int nSuccesses = 0;
   private int nTossed = 0;
@@ -195,7 +196,7 @@ public class Boundaries {
       try {
 
         // *** is SGTLine in cache?
-        sgtLine = (SGTLine) cache.get(cachedName);
+        sgtLine = cache.get(cachedName);
         if (sgtLine == null) {
 
           // not in cache, make SgtLine

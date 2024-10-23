@@ -4895,7 +4895,7 @@ public class String2 {
     return "" + Math2.roundToLong(d);
 
     // >10e6
-    if (Math.abs(d) >= 999999.99999999995) {
+    if (Math.abs(d) >= 1000000.0) {
       synchronized (genExpFormat10) {
         return genExpFormat10.format(d);
       }

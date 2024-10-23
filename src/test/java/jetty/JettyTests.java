@@ -6973,7 +6973,7 @@ class JettyTests {
         continue;
       } else {
         try {
-          Thread.sleep(1000 * (i + 1) * ((long) (i + 1)));
+          Thread.sleep(1000l * (i + 1) * ((long) (i + 1)));
           msg = null;
         } catch (InterruptedException e) {
           return msg;

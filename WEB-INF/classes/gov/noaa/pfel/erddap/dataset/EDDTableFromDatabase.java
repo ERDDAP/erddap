@@ -378,6 +378,9 @@ public class EDDTableFromDatabase extends EDDTable {
    * @param tSourceNeedsExpandedFP_EQ
    * @throws Throwable if trouble
    */
+  // The lookup we're performing is from data trusted by the admin (datasets.xml).
+  // So while JNDI can be dangerous, this usage is ok.
+  @SuppressWarnings("BanJNDI")
   public EDDTableFromDatabase(
       String tDatasetID,
       String tAccessibleTo,

@@ -35,6 +35,9 @@ import org.json.JSONTokener;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-02-13
  */
+// This file is litered with unicode escape sequences. They should be replaced with their proper
+// characters.
+@SuppressWarnings("UnicodeEscape")
 public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
   /** Used to ensure that all non-axis variables in all files have the same leftmost dimension. */

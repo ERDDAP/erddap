@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class ThreadedWorkManager<T> {
@@ -28,7 +29,7 @@ public class ThreadedWorkManager<T> {
       FutureTask<T> task = new FutureTask<T>(callable);
       taskList.add(task);
       if (executorService != null) {
-        executorService.submit(task);
+        Future<?> unused = executorService.submit(task);
       }
     } else {
       // No threading here, just do the work and process it.

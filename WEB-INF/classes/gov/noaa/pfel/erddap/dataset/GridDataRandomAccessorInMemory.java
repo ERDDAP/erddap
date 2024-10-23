@@ -71,7 +71,7 @@ public class GridDataRandomAccessorInMemory {
       }
       gdaTotalIndex = gridDataAccessor.totalIndex();
     } finally {
-      gridDataAccessor.releaseGetResources();
+      gridDataAccessor.close();
     }
   }
 

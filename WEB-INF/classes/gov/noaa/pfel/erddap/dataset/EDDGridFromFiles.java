@@ -2120,7 +2120,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     if (watchDirectory == null) return false; // no changes
 
     // get the file events
-    ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
+    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
     StringArray contexts = new StringArray();
     int nEvents = watchDirectory.getEvents(eventKinds, contexts);
     if (nEvents == 0) {

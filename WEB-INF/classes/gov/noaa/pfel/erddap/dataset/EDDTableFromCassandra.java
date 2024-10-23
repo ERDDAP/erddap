@@ -225,6 +225,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
@@ -1614,7 +1615,9 @@ public class EDDTableFromCassandra extends EDDTable {
     // https://docs.datastax.com/en/drivers/java/3.0/com/datastax/driver/core/ResultSet.html#one--
     Iterator<Row> iter = rs.iterator();
     while (iter.hasNext()) {
-      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) rs.fetchMoreResults();
+      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) {
+        ListenableFuture<ResultSet> unused = rs.fetchMoreResults();
+      }
       Row row = iter.next();
 
       stats[1]++;

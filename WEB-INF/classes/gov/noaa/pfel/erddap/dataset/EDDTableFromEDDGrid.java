@@ -600,97 +600,98 @@ public class EDDTableFromEDDGrid extends EDDTable {
         }
       }
       if (debugMode) String2.log(">>nDvNames > 0, gridDapQuery=" + gridDapQuery);
-      GridDataAccessor gda =
+
+      try (GridDataAccessor gda =
           new GridDataAccessor(
               language,
               tChildDataset,
               gridRequestUrl,
               gridDapQuery.toString(),
               true, // rowMajor
-              false); // convertToNaN (would be true, but TableWriterSeparatedValue will do it)
+              false)) { // convertToNaN (would be true, but TableWriterSeparatedValue will do it)
 
-      // test maxAxis0
-      if (maxAxis0 >= 1) {
-        int nAxis0 = gda.totalIndex().shape()[0];
-        if (maxAxis0 < nAxis0) {
-          String ax0Name = tChildDataset.axisVariableDestinationNames()[0];
-          throw new SimpleException(
-              Math2.memoryTooMuchData
-                  + ": Your request for data from "
-                  + nAxis0
-                  + " axis[0] ("
-                  + ax0Name
-                  + ") values exceeds the maximum allowed for this dataset ("
-                  + maxAxis0
-                  + "). Please add tighter constraints on the "
-                  + ax0Name
-                  + " variable.");
-        }
-      }
-
-      EDV queryDV[] = gda.dataVariables();
-      int nQueryDV = queryDV.length;
-      EDV sourceTableVars[] = new EDV[childDatasetNAV + nQueryDV];
-      for (int av = 0; av < childDatasetNAV; av++)
-        sourceTableVars[av] = dataVariables[childDatasetNAV - av - 1];
-      for (int dv = 0; dv < nQueryDV; dv++)
-        sourceTableVars[childDatasetNAV + dv] =
-            findDataVariableByDestinationName(queryDV[dv].destinationName());
-
-      // make a table to hold a chunk of the results
-      int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
-      Table tTable =
-          makeEmptySourceTable(
-              sourceTableVars,
-              chunkNRows); // source table, but source here is tChildDataset's destination
-      PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
-      PAOne paOne[] = new PAOne[tTable.nColumns()];
-      for (int col = 0; col < tTable.nColumns(); col++) {
-        paAr[col] = tTable.getColumn(col);
-        paOne[col] = new PAOne(paAr[col]);
-      }
-
-      // walk through it, periodically saving to tableWriter
-      int cumNRows = 0;
-      while (gda.increment()) {
-        for (int av = 0; av < childDatasetNAV; av++)
-          gda.getAxisValueAsPAOne(av, paOne[av]).addTo(paAr[av]);
-        for (int dv = 0; dv < nQueryDV; dv++)
-          gda.getDataValueAsPAOne(dv, paOne[childDatasetNAV + dv])
-              .addTo(paAr[childDatasetNAV + dv]);
-        if (++cumNRows >= chunkNRows) {
-          if (debugMode) String2.log(tTable.dataToString(5));
-          if (Thread.currentThread().isInterrupted())
+        // test maxAxis0
+        if (maxAxis0 >= 1) {
+          int nAxis0 = gda.totalIndex().shape()[0];
+          if (maxAxis0 < nAxis0) {
+            String ax0Name = tChildDataset.axisVariableDestinationNames()[0];
             throw new SimpleException(
-                "EDDTableFromEDDGrid.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                Math2.memoryTooMuchData
+                    + ": Your request for data from "
+                    + nAxis0
+                    + " axis[0] ("
+                    + ax0Name
+                    + ") values exceeds the maximum allowed for this dataset ("
+                    + maxAxis0
+                    + "). Please add tighter constraints on the "
+                    + ax0Name
+                    + " variable.");
+          }
+        }
 
+        EDV queryDV[] = gda.dataVariables();
+        int nQueryDV = queryDV.length;
+        EDV sourceTableVars[] = new EDV[childDatasetNAV + nQueryDV];
+        for (int av = 0; av < childDatasetNAV; av++)
+          sourceTableVars[av] = dataVariables[childDatasetNAV - av - 1];
+        for (int dv = 0; dv < nQueryDV; dv++)
+          sourceTableVars[childDatasetNAV + dv] =
+              findDataVariableByDestinationName(queryDV[dv].destinationName());
+
+        // make a table to hold a chunk of the results
+        int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
+        Table tTable =
+            makeEmptySourceTable(
+                sourceTableVars,
+                chunkNRows); // source table, but source here is tChildDataset's destination
+        PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
+        PAOne paOne[] = new PAOne[tTable.nColumns()];
+        for (int col = 0; col < tTable.nColumns(); col++) {
+          paAr[col] = tTable.getColumn(col);
+          paOne[col] = new PAOne(paAr[col]);
+        }
+
+        // walk through it, periodically saving to tableWriter
+        int cumNRows = 0;
+        while (gda.increment()) {
+          for (int av = 0; av < childDatasetNAV; av++)
+            gda.getAxisValueAsPAOne(av, paOne[av]).addTo(paAr[av]);
+          for (int dv = 0; dv < nQueryDV; dv++)
+            gda.getDataValueAsPAOne(dv, paOne[childDatasetNAV + dv])
+                .addTo(paAr[childDatasetNAV + dv]);
+          if (++cumNRows >= chunkNRows) {
+            if (debugMode) String2.log(tTable.dataToString(5));
+            if (Thread.currentThread().isInterrupted())
+              throw new SimpleException(
+                  "EDDTableFromEDDGrid.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+
+            standardizeResultsTable(
+                language,
+                requestUrl, // applies all constraints
+                userDapQuery,
+                tTable);
+            tableWriter.writeSome(tTable);
+            tTable = makeEmptySourceTable(sourceTableVars, chunkNRows);
+            for (int col = 0; col < tTable.nColumns(); col++) paAr[col] = tTable.getColumn(col);
+            cumNRows = 0;
+            if (tableWriter.noMoreDataPlease) {
+              tableWriter.logCaughtNoMoreDataPlease(datasetID);
+              break;
+            }
+          }
+        }
+
+        // finish
+        if (tTable.nRows() > 0) {
           standardizeResultsTable(
               language,
               requestUrl, // applies all constraints
               userDapQuery,
               tTable);
           tableWriter.writeSome(tTable);
-          tTable = makeEmptySourceTable(sourceTableVars, chunkNRows);
-          for (int col = 0; col < tTable.nColumns(); col++) paAr[col] = tTable.getColumn(col);
-          cumNRows = 0;
-          if (tableWriter.noMoreDataPlease) {
-            tableWriter.logCaughtNoMoreDataPlease(datasetID);
-            break;
-          }
         }
+        tableWriter.finish();
       }
-      gda.releaseResources();
-
-      // finish
-      if (tTable.nRows() > 0) {
-        standardizeResultsTable(
-            language,
-            requestUrl, // applies all constraints
-            userDapQuery,
-            tTable);
-        tableWriter.writeSome(tTable);
-      }
-      tableWriter.finish();
 
     } else if (resultsAvNames.size() >= 1) {
       // handle a request for multiple axis variables (no data variables anywhere)

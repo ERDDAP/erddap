@@ -40,7 +40,7 @@ import java.util.Arrays;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-12-02
  */
-public class PersistentTable {
+public class PersistentTable implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -131,12 +131,43 @@ public class PersistentTable {
     if (verbose)
       String2.log(
           "PersistentTable " + fullFileName + " is open.\n" + "mode=" + mode + " nRows=" + nRows);
+
+    EDStatic.cleaner.register(this, new CleanupPersistentTable(raf));
+  }
+
+  private static class CleanupPersistentTable implements Runnable {
+
+    private RandomAccessFile raf;
+
+    private CleanupPersistentTable(RandomAccessFile raf) {
+      this.raf = raf;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (raf != null) {
+          try {
+            raf.getChannel().force(true);
+          } catch (Exception e) {
+          }
+          try {
+            raf.close();
+          } catch (Exception e) {
+          }
+          raf = null;
+        }
+      } catch (Throwable t1) {
+        // do nothing, so nothing can go wrong.
+      }
+    }
   }
 
   /**
    * This flushes and closes the file. You don't have to do this -- it will be done automatically
    * when a program shuts down. Future attempts to read/write will throw null pointer exceptions.
    */
+  @Override
   public void close() throws IOException {
     if (raf != null) {
       try {
@@ -157,18 +188,6 @@ public class PersistentTable {
    */
   public void flush() throws IOException {
     raf.getChannel().force(true);
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use close() instead. Java calls this when an object
-   * is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
-    try { // extra insurance
-      close();
-    } catch (Throwable t) {
-    }
-    super.finalize();
   }
 
   /** Returns the current number of rows. */

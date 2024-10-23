@@ -70,6 +70,7 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -97,7 +98,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
@@ -105,6 +105,8 @@ import software.amazon.awssdk.transfer.s3.S3TransferManager;
  * used by all the other ERDDAP classes.
  */
 public class EDStatic {
+
+  public static final Cleaner cleaner = Cleaner.create();
 
   /**
    * These are options used to control behavior for testing. They should be their default values
@@ -5972,6 +5974,9 @@ public class EDStatic {
   public static void destroy() {
     long time = System.currentTimeMillis();
     try {
+      if (subscriptions != null) {
+        subscriptions.close();
+      }
       String names[] = String2.toStringArray(runningThreads.keySet().toArray());
       String2.log(
           "\nEDStatic.destroy will try to interrupt nThreads="

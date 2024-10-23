@@ -133,7 +133,7 @@ public class SgtGraph {
    *     originX,endX,originY,endY. (The returnAL isn't extensively tested yet.)
    * @throws Exception
    */
-  public ArrayList makeGraph(
+  public ArrayList<PrimitiveArray> makeGraph(
       boolean transparent,
       String xAxisTitle,
       String yAxisTitle,
@@ -183,7 +183,7 @@ public class SgtGraph {
     IntArray returnPointScreen = new IntArray();
     IntArray returnIntWESN = new IntArray();
     DoubleArray returnDoubleWESN = new DoubleArray();
-    ArrayList returnAL = new ArrayList();
+    ArrayList<PrimitiveArray> returnAL = new ArrayList<>();
     returnAL.add(returnMinX);
     returnAL.add(returnMaxX);
     returnAL.add(returnMinY);
@@ -997,7 +997,7 @@ public class SgtGraph {
             g2.setColor(gdl.lineColor);
             IntArray markerXs = new IntArray();
             IntArray markerYs = new IntArray();
-            ArrayList markerInteriorColors = new ArrayList();
+            ArrayList<Color> markerInteriorColors = new ArrayList<>();
             if (reallyVerbose)
               String2.log("  draw=" + GraphDataLayer.DRAW_NAMES[gdl.draw] + " n=" + n);
             long accumTime = System.currentTimeMillis();
@@ -1085,7 +1085,7 @@ public class SgtGraph {
                       tMarkerSize,
                       xarray[i],
                       yarray[i],
-                      (Color) markerInteriorColors.get(i),
+                      markerInteriorColors.get(i),
                       gdl.lineColor);
                 }
               }
@@ -1096,7 +1096,7 @@ public class SgtGraph {
                   tMarkerSize,
                   xarray[nMarkerXs1],
                   yarray[nMarkerXs1],
-                  (Color) markerInteriorColors.get(nMarkerXs1),
+                  markerInteriorColors.get(nMarkerXs1),
                   gdl.lineColor);
               if (reallyVerbose)
                 String2.log(

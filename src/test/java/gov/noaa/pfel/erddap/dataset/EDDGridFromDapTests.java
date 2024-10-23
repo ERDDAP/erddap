@@ -1593,45 +1593,46 @@ class EDDGridFromDapTests {
     GridDataAccessor gda =
         new GridDataAccessor(language, gridDataset, "", userDapQuery, true, true); // rowMajor
     // toNaN
-    GridDataRandomAccessor gdra = new GridDataRandomAccessor(gda);
-    // maka a new rowMajor gda and test if same data
-    gda =
-        new GridDataAccessor(language, gridDataset, "", userDapQuery, true, true); // rowMajor toNaN
-    PAOne gdaPAOne = new PAOne(gda.dataVariables()[0].sourceDataPAType());
-    PAOne gdraPAOne = new PAOne(gdra.dataPAType(0));
-    int current[] = gda.totalIndex().getCurrent(); // the internal object that changes
-    int count = 0;
-    while (gda.increment()) {
-      // String2.log(String2.toCSSVString(current)); //to prove that access is
-      // rowMajor
-      Test.ensureEqual(
-          gda.getDataValueAsPAOne(0, gdaPAOne),
-          gdra.getDataValueAsPAOne(current, 0, gdraPAOne),
-          "count=" + count);
-      count++;
+    try (GridDataRandomAccessor gdra = new GridDataRandomAccessor(gda)) {
+      // maka a new rowMajor gda and test if same data
+      gda =
+          new GridDataAccessor(
+              language, gridDataset, "", userDapQuery, true, true); // rowMajor toNaN
+      PAOne gdaPAOne = new PAOne(gda.dataVariables()[0].sourceDataPAType());
+      PAOne gdraPAOne = new PAOne(gdra.dataPAType(0));
+      int current[] = gda.totalIndex().getCurrent(); // the internal object that changes
+      int count = 0;
+      while (gda.increment()) {
+        // String2.log(String2.toCSSVString(current)); //to prove that access is
+        // rowMajor
+        Test.ensureEqual(
+            gda.getDataValueAsPAOne(0, gdaPAOne),
+            gdra.getDataValueAsPAOne(current, 0, gdraPAOne),
+            "count=" + count);
+        count++;
+      }
+      String2.log("Test of GridDataRandomAccess rowMajor succeeded. count=" + count);
+      gda.close();
+      // maka a new columnMajor gda and test if same data
+      gda =
+          new GridDataAccessor(
+              language, gridDataset, "", userDapQuery, false, true); // rowMajor toNaN
+      gdaPAOne = new PAOne(gda.dataVariables()[0].sourceDataPAType());
+      gdraPAOne = new PAOne(gdra.dataPAType(0));
+      current = gda.totalIndex().getCurrent(); // the internal object that changes
+      count = 0;
+      while (gda.increment()) {
+        // String2.log(String2.toCSSVString(current)); //to prove that access is
+        // columnMajor
+        Test.ensureEqual(
+            gda.getDataValueAsPAOne(0, gdaPAOne),
+            gdra.getDataValueAsPAOne(current, 0, gdraPAOne),
+            "count=" + count);
+        count++;
+      }
+      String2.log("Test of GridDataRandomAccess columnMajor succeeded. count=" + count);
+      gda.close();
     }
-    String2.log("Test of GridDataRandomAccess rowMajor succeeded. count=" + count);
-    // maka a new columnMajor gda and test if same data
-    gda =
-        new GridDataAccessor(
-            language, gridDataset, "", userDapQuery, false, true); // rowMajor toNaN
-    gdaPAOne = new PAOne(gda.dataVariables()[0].sourceDataPAType());
-    gdraPAOne = new PAOne(gdra.dataPAType(0));
-    current = gda.totalIndex().getCurrent(); // the internal object that changes
-    count = 0;
-    while (gda.increment()) {
-      // String2.log(String2.toCSSVString(current)); //to prove that access is
-      // columnMajor
-      Test.ensureEqual(
-          gda.getDataValueAsPAOne(0, gdaPAOne),
-          gdra.getDataValueAsPAOne(current, 0, gdraPAOne),
-          "count=" + count);
-      count++;
-    }
-    String2.log("Test of GridDataRandomAccess columnMajor succeeded. count=" + count);
-    gdra.releaseResources();
-    gda.releaseResources();
-
     // ********************************************** test getting grid data
     // .asc
     String2.log("\n*** EDDGridFromDap test get .ASC data\n");

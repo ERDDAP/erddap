@@ -68,7 +68,8 @@ public class GSHHS {
    */
   public static final int CACHE_SIZE = 100;
 
-  private static Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
+  private static Map<String, GeneralPath> cache =
+      Collections.synchronizedMap(new LRUCache<String, GeneralPath>(CACHE_SIZE));
   private static int nCoarse = 0;
   private static int nSuccesses = 0;
   private static int nTossed = 0;
@@ -156,7 +157,7 @@ public class GSHHS {
       try {
 
         // *** is GeneralPath in cache?
-        path = (GeneralPath) cache.get(cachedName);
+        path = cache.get(cachedName);
         if (path == null) {
 
           // not in cache, so make GeneralPath

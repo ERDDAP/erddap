@@ -371,7 +371,8 @@ public class NetCheck {
           testThread.interrupt();
           testThread.join(5000); // wait 5 seconds more
           if (testThread.isAlive()) {
-            testThread.stop(); // stop it
+            testThread
+                .interrupt(); // used to be the deprecated stop(), now just try interrupt again.
             testThread.join(5000); // wait 5 seconds more
             warning = "  WARNING: thread '" + netCheckTest.getTitle() + "' was stopped.\n";
           } else {

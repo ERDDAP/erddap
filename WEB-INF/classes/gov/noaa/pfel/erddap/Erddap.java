@@ -103,7 +103,7 @@ import org.json.JSONTokener;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-20
  */
-public class Erddap extends HttpServlet {
+public class Erddap extends HttpServlet implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -341,6 +341,18 @@ public class Erddap extends HttpServlet {
         "\n\\\\\\\\**** Erddap constructor finished. TIME="
             + (System.currentTimeMillis() - constructorMillis)
             + "ms");
+
+    EDStatic.cleaner.register(this, new CleanupErddap());
+  }
+
+  private static class CleanupErddap implements Runnable {
+
+    private CleanupErddap() {}
+
+    @Override
+    public void run() {
+      EDStatic.destroy();
+    }
   }
 
   /**
@@ -9666,27 +9678,27 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
+        Grid grid = new Grid();
         // get the data
-        GridDataAccessor gda =
+        try (GridDataAccessor gda =
             new GridDataAccessor(
                 language,
                 eddGrid,
                 "/" + EDStatic.warName + "/griddap/" + datasetID + ".dods",
                 tQuery.toString(),
                 false, // Grid needs column-major order
-                true); // convertToNaN
-        long requestNL = gda.totalIndex().size();
-        Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
-        int nBytesPerElement = 8;
-        int requestN = (int) requestNL; // safe since checked by ensureArraySizeOkay above
-        Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");
-        Grid grid = new Grid();
-        grid.data = new double[requestN];
-        int po = 0;
-        while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
-        grid.lon = gda.axisValues(eddGrid.lonIndex()).toDoubleArray();
-        grid.lat = gda.axisValues(eddGrid.latIndex()).toDoubleArray();
-        gda = null; // free up memory if possible
+                true)) { // convertToNaN
+          long requestNL = gda.totalIndex().size();
+          Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
+          int nBytesPerElement = 8;
+          int requestN = (int) requestNL; // safe since checked by ensureArraySizeOkay above
+          Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");
+          grid.data = new double[requestN];
+          int po = 0;
+          while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
+          grid.lon = gda.axisValues(eddGrid.lonIndex()).toDoubleArray();
+          grid.lat = gda.axisValues(eddGrid.latIndex()).toDoubleArray();
+        }
 
         // make the palette
         // I checked hasColorBarMinMax above.
@@ -23782,16 +23794,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     datasetIDs.clear();
   }
 
-  /**
-   * This is an attempt to assist Tomcat/Java in shutting down erddap. Tomcat/Java will call this;
-   * no one else should. Java calls this when an object is no longer used, just before garbage
-   * collection.
-   */
-  protected void finalize() throws Throwable {
-    try { // extra assistance/insurance
-      EDStatic.destroy(); // but Tomcat should call ERDDAP.destroy, which calls EDStatic.destroy().
-    } catch (Throwable t) {
-    }
-    super.finalize();
+  @Override
+  public void close() {
+    EDStatic.destroy();
   }
 }

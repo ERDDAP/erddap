@@ -302,7 +302,7 @@ public class SgtMap {
    * This is an alternative version of makeMap which just plots grid data. The parameters match the
    * same-named parameters for the main makeMap.
    */
-  public static ArrayList makeMap(
+  public static ArrayList<PrimitiveArray> makeMap(
       int legendPosition,
       String legendTitle1,
       String legendTitle2,
@@ -448,7 +448,7 @@ public class SgtMap {
    * @throws Exception
    */
   @SuppressWarnings("ReferenceEquality") // below gridGrid == contourGrid
-  public static ArrayList makeMap(
+  public static ArrayList<PrimitiveArray> makeMap(
       boolean transparent,
       int legendPosition,
       String legendTitle1,
@@ -868,7 +868,7 @@ public class SgtMap {
       IntArray resultPointScreen = new IntArray();
       IntArray graphIntWESN = new IntArray();
       DoubleArray graphDoubleWESN = new DoubleArray();
-      ArrayList results = new ArrayList();
+      ArrayList<PrimitiveArray> results = new ArrayList<>();
       results.add(resultMinX);
       results.add(resultMaxX);
       results.add(resultMinY);
@@ -906,7 +906,7 @@ public class SgtMap {
           new Dimension2D(
               baseULXPixel / dpi + imageWidthInches, baseULYPixel / dpi + imageHeightInches);
       StringArray layerNames = new StringArray();
-      ArrayList vectorPointsRenderers = new ArrayList();
+      ArrayList<VectorPointsRenderer> vectorPointsRenderers = new ArrayList<>();
 
       if (drawLakesAndRivers < NO_LAKES_AND_RIVERS) drawLakesAndRivers = NO_LAKES_AND_RIVERS;
       if (drawLakesAndRivers > FILL_LAKES_AND_RIVERS) drawLakesAndRivers = FILL_LAKES_AND_RIVERS;
@@ -1787,8 +1787,7 @@ public class SgtMap {
 
         // gather up all of the data for the user map
         for (int i = 0; i < vectorPointsRenderers.size(); i++) {
-          VectorPointsRenderer vectorPointsRenderer =
-              (VectorPointsRenderer) vectorPointsRenderers.get(i);
+          VectorPointsRenderer vectorPointsRenderer = vectorPointsRenderers.get(i);
           int tn = vectorPointsRenderer.resultBaseX.size();
           int halfBox = 4; // half of box size, in pixels
           for (int ti = 0; ti < tn; ti++) {

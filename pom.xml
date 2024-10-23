@@ -112,7 +112,7 @@
                     <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
-                        <arg>-Xplugin:ErrorProne -Xep:JdkObsolete:OFF -Xep:ReferenceEquality:OFF -Xep:MutablePublicArray:OFF -Xep:AlreadyChecked:OFF -Xep:NarrowCalculation:OFF -Xep:JavaUtilDate:OFF -Xep:NonApiType:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:DefaultCharset:OFF -Xep:EmptyCatch:OFF -Xep:UnusedVariable:OFF -Xep:FloatingPointLiteralPrecision:OFF -Xep:LongDoubleConversion:OFF -Xep:StaticGuardedByInstance:OFF -Xep:BanJNDI:OFF -Xep:IncrementInForLoopAndHeader:OFF -Xep:StaticAssignmentInConstructor:OFF -Xep:UnicodeEscape:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:FutureReturnValueIgnored:OFF -Xep:Finalize:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:JdkObsolete:OFF -Xep:MutablePublicArray:OFF -Xep:AlreadyChecked:OFF -Xep:JavaUtilDate:OFF -Xep:NonApiType:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:DefaultCharset:OFF -Xep:EmptyCatch:OFF -Xep:UnusedVariable:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
                     </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
