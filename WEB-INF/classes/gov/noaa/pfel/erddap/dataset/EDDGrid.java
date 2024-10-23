@@ -4397,16 +4397,15 @@ public abstract class EDDGrid extends EDD {
         graphQuery.append("&.marker=" + SSR.minimalPercentEncode(mType + "|" + mSizes[mSize]));
       }
 
-      String colors[] = HtmlWidgets.PALETTE17;
       if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors) {
 
         // color
         paramName = "colr"; // not color, to avoid possible conflict
         partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
         int colori =
-            String2.indexOf(
-                colors, partValue == null ? "" : partValue.substring(partName.length()));
-        if (colori < 0) colori = String2.indexOf(colors, "000000");
+            HtmlWidgets.PALETTE17.indexOf(
+                partValue == null ? "" : partValue.substring(partName.length()));
+        if (colori < 0) colori = HtmlWidgets.PALETTE17.indexOf("000000");
         writer.write(
             "  <tr>\n"
                 + "    <td>"
@@ -4417,7 +4416,7 @@ public abstract class EDDGrid extends EDD {
         writer.write("</td>\n" + "  </tr>\n");
 
         // add to graphQuery
-        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
+        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
       }
 
       if (drawLinesAndMarkers || drawMarkers || drawSurface) {
@@ -4583,7 +4582,7 @@ public abstract class EDDGrid extends EDD {
         partValue = String2.stringStartsWith(queryParts, partName = ".land=");
         if (partValue != null) {
           partValue = partValue.substring(6);
-          tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
+          tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
         }
         writer.write(
             "  <tr>\n"
@@ -4596,7 +4595,7 @@ public abstract class EDDGrid extends EDD {
                 "land",
                 EDStatic.magGSLandMaskTooltipGridAr[language],
                 1,
-                SgtMap.drawLandMask_OPTIONS,
+                String2.immutableListToArray(SgtMap.drawLandMask_OPTIONS),
                 tLand,
                 ""));
         writer.write(
@@ -4608,7 +4607,7 @@ public abstract class EDDGrid extends EDD {
                 + "</tr>\n");
 
         // add to graphQuery
-        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS[tLand]);
+        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS.get(tLand));
       }
 
       // bgColor
@@ -4790,7 +4789,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "    q += \"&.color=0x\"; \n"
                 + "    for (var rb = 0; rb < "
-                + colors.length
+                + HtmlWidgets.PALETTE17.size()
                 + "; rb++) \n"
                 + "      if (d.f1.colr[rb].checked) q += d.f1.colr[rb].value; \n"); // always: one
       // will be
@@ -7236,7 +7235,7 @@ public abstract class EDDGrid extends EDD {
           // .land
         } else if (ampPart.startsWith(".land=")) {
           String gt = ampPart.substring(6);
-          int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
+          int which = SgtMap.drawLandMask_OPTIONS.indexOf(gt);
           if (which >= 1) currentDrawLandMask = gt;
           if (reallyVerbose) String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
 

@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import com.cohort.util.StringHolder;
 import com.cohort.util.StringHolderComparator;
 import com.cohort.util.StringHolderComparatorIgnoreCase;
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -161,6 +162,18 @@ public class StringArray extends PrimitiveArray {
     array = new StringHolder[al];
     size = 0;
     for (int i = 0; i < al; i++) add(anArray[i]);
+  }
+
+  /**
+   * A constructor which gets values from an ImmutableList<String>.
+   *
+   * @param anArray
+   */
+  public StringArray(final ImmutableList<String> immutableList) {
+    int al = immutableList.size();
+    array = new StringHolder[al];
+    size = 0;
+    for (int i = 0; i < al; i++) add(immutableList.get(i));
   }
 
   /**

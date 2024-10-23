@@ -6,6 +6,7 @@
 package com.cohort.array;
 
 import com.cohort.util.*;
+import com.google.common.collect.ImmutableList;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -120,6 +121,17 @@ public class DoubleArray extends PrimitiveArray {
   public DoubleArray(final double[] anArray) {
     array = anArray;
     size = anArray.length;
+  }
+
+  /**
+   * A constructor that converts an ImmutableList<Double>.
+   *
+   * @param anArray the array to be used as this object's array.
+   */
+  public DoubleArray(final ImmutableList<Double> immutableList) {
+    size = immutableList.size();
+    Math2.ensureMemoryAvailable(8L * size, "DoubleArray");
+    array = immutableList.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
   /**

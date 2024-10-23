@@ -9,6 +9,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.File;
 import java.text.MessageFormat;
@@ -73,10 +74,10 @@ public class HtmlWidgets {
   public static final int BUTTONS_0n = -1, BUTTONS_1 = -2, BUTTONS_100 = -8, BUTTONS_1000 = -16;
 
   /** One line: white,grays,black, then one rainbow. */
-  public static final String PALETTE17[] = {
-    "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
-    "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"
-  };
+  public static final ImmutableList<String> PALETTE17 =
+      ImmutableList.of(
+          "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
+          "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF");
 
   /**
    * This will display a message to the user if JavaScript is not supported or disabled. Last
@@ -968,7 +969,8 @@ public class HtmlWidgets {
    * @return the HTML code to display 17 radio buttons with colored backgrounds.
    */
   public String color17(String htmlLabel, String name, String tooltip, int selected, String other) {
-    return color(PALETTE17, 17, htmlLabel, name, tooltip, selected, other);
+    return color(
+        String2.immutableListToArray(PALETTE17), 17, htmlLabel, name, tooltip, selected, other);
   }
 
   /**

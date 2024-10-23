@@ -5,6 +5,7 @@
 package com.cohort.util;
 
 import com.cohort.array.StringComparatorIgnoreCase;
+import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -125,9 +126,8 @@ public class String2 {
 
   public static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
 
-  public static final String ACDD_CONTACT_TYPES[] = {
-    "person", "group", "institution", "position"
-  }; // ACDD 1.3
+  public static final ImmutableList<String> ACDD_CONTACT_TYPES =
+      ImmutableList.of("person", "group", "institution", "position"); // ACDD 1.3
 
   // in the order they are used...
   public static final String ACDD_PERSON_REGEX1 = "(DHYRENBACH|JFPIOLLE|JLH|ZHIJIN)";
@@ -3210,6 +3210,23 @@ public class String2 {
   }
 
   /**
+   * This finds the first element in Object[] where ar[i].toString().toLowerCase() equals to
+   * s.toLowerCase(). This could have been called indexOfIgnoreCase().
+   *
+   * @param ar the array of Objects
+   * @param s the String to be found
+   * @return the element number of ar which is equal to s (or -1 if s is null or not found)
+   */
+  public static int caseInsensitiveIndexOf(final ImmutableList<?> ar, String s) {
+    if (ar == null || s == null) return -1;
+    final int n = ar.size();
+    s = s.toLowerCase();
+    for (int i = 0; i < n; i++)
+      if (ar.get(i) != null && s.equals(ar.get(i).toString().toLowerCase())) return i;
+    return -1;
+  }
+
+  /**
    * This finds the first element in Object[] where the ar[i].toString value contains the substring
    * s.
    *
@@ -5529,13 +5546,12 @@ public class String2 {
   }
 
   /** Java only guarantees that the first 3 of these will be supported. */
-  public static final String FILE_DIGEST_OPTIONS[] = {
-    "MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512"
-  };
+  public static final ImmutableList<String> FILE_DIGEST_OPTIONS =
+      ImmutableList.of("MD5", "SHA-1", "SHA-256", "SHA-384", "SHA-512");
 
-  public static final String FILE_DIGEST_EXTENSIONS[] = {
-    ".md5", ".sha1", ".sha256", ".sha384", ".sha512"
-  }; // Bagit likes these (after the '.')
+  public static final ImmutableList<String> FILE_DIGEST_EXTENSIONS =
+      ImmutableList.of(
+          ".md5", ".sha1", ".sha256", ".sha384", ".sha512"); // Bagit likes these (after the '.')
 
   /**
    * This returns a hash digest of fullFileName (read as bytes) as a String of lowercase hex digits.
@@ -6430,7 +6446,7 @@ public class String2 {
    */
   public static String validateAcddContactType(String value) {
     int which = caseInsensitiveIndexOf(ACDD_CONTACT_TYPES, value);
-    return which < 0 ? null : ACDD_CONTACT_TYPES[which];
+    return which < 0 ? null : ACDD_CONTACT_TYPES.get(which);
   }
 
   /** Guess the ACDD contact type, or return null if new pretty sure. */
@@ -6504,5 +6520,11 @@ public class String2 {
       sb.append(ch);
     }
     return sb.toString();
+  }
+
+  public static String[] immutableListToArray(ImmutableList<String> list) {
+    String[] array = new String[list.size()];
+    array = list.toArray(array);
+    return array;
   }
 } // End of String2 class.

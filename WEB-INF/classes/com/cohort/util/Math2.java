@@ -4,6 +4,7 @@
  */
 package com.cohort.util;
 
+import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -130,99 +131,116 @@ public class Math2 {
   public static final double kmPerNMile = 1.852; // #exact in UDUNITS
 
   /** <tt>two</tt> defines powers of two, e.g., Two[0]=1, Two[1]=2, Two[2]=4, ... Two[31]. */
-  public static final int[] Two = {
-    0x1,
-    0x2,
-    0x4,
-    0x8,
-    0x10,
-    0x20,
-    0x40,
-    0x80,
-    0x100,
-    0x200,
-    0x400,
-    0x800,
-    0x1000,
-    0x2000,
-    0x4000,
-    0x8000,
-    0x10000,
-    0x20000,
-    0x40000,
-    0x80000,
-    0x100000,
-    0x200000,
-    0x400000,
-    0x800000,
-    0x1000000,
-    0x2000000,
-    0x4000000,
-    0x8000000,
-    0x10000000,
-    0x20000000,
-    0x40000000,
-    0x80000000
-  };
+  public static final ImmutableList<Integer> Two =
+      ImmutableList.of(
+          0x1,
+          0x2,
+          0x4,
+          0x8,
+          0x10,
+          0x20,
+          0x40,
+          0x80,
+          0x100,
+          0x200,
+          0x400,
+          0x800,
+          0x1000,
+          0x2000,
+          0x4000,
+          0x8000,
+          0x10000,
+          0x20000,
+          0x40000,
+          0x80000,
+          0x100000,
+          0x200000,
+          0x400000,
+          0x800000,
+          0x1000000,
+          0x2000000,
+          0x4000000,
+          0x8000000,
+          0x10000000,
+          0x20000000,
+          0x40000000,
+          0x80000000);
 
   /** This defines powers of ten. e.g., Ten[0]=1, Ten[1]=10, Ten[2]=100... Ten[18] */
-  public static final double[] Ten = {
-    1.0,
-    10.0,
-    100.0,
-    1000.0,
-    10000.0,
-    100000.0,
-    1000000.0,
-    10000000.0,
-    100000000.0,
-    1000000000.0,
-    10000000000.0,
-    100000000000.0,
-    1000000000000.0,
-    10000000000000.0,
-    100000000000000.0,
-    1000000000000000.0,
-    10000000000000000.0,
-    100000000000000000.0,
-    1000000000000000000.0
-  };
+  public static final ImmutableList<Double> Ten =
+      ImmutableList.of(
+          1.0,
+          10.0,
+          100.0,
+          1000.0,
+          10000.0,
+          100000.0,
+          1000000.0,
+          10000000.0,
+          100000000.0,
+          1000000000.0,
+          10000000000.0,
+          100000000000.0,
+          1000000000000.0,
+          10000000000000.0,
+          100000000000000.0,
+          1000000000000000.0,
+          10000000000000000.0,
+          100000000000000000.0,
+          1000000000000000000.0);
 
   /**
    * This defines inverse powers of ten. e.g., InverseTen[0]=1, InverseTen[1]=.01,
    * InverseTen[2]=.001... InverseTen[18]
    */
-  public static final double[] InverseTen = {
-    1.0,
-    0.1,
-    0.01,
-    0.001,
-    .0001,
-    .00001,
-    .000001,
-    .0000001,
-    .00000001,
-    .000000001,
-    .0000000001,
-    .00000000001,
-    .000000000001,
-    .0000000000001,
-    .00000000000001,
-    .000000000000001,
-    .0000000000000001,
-    .00000000000000001,
-    .000000000000000001
-  };
+  public static final ImmutableList<Double> InverseTen =
+      ImmutableList.of(
+          1.0,
+          0.1,
+          0.01,
+          0.001,
+          .0001,
+          .00001,
+          .000001,
+          .0000001,
+          .00000001,
+          .000000001,
+          .0000000001,
+          .00000000001,
+          .000000000001,
+          .0000000000001,
+          .00000000000001,
+          .000000000000001,
+          .0000000000000001,
+          .00000000000000001,
+          .000000000000000001);
 
-  private static final int[] niceNumbers = {
-    -110, -100, -90, -80, -70, -60, -50, -45, -40, -35, -30, -25, -22, -20, -18, -16, -14, -12, -11,
-    -10, -9, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110
-  };
+  private static final ImmutableList<Integer> niceNumbers =
+      ImmutableList.of(
+          -110, -100, -90, -80, -70, -60, -50, -45, -40, -35, -30, -25, -22, -20, -18, -16, -14,
+          -12, -11, -10, -9, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 70, 80,
+          90, 100, 110);
 
-  public static final double[] COMMON_MV9 = {
-    -99, -99.9, -99.99, -999, -999.9, -9999, -99999, -999999, -9999999, 99, 99.9, 99.99, 999, 999.9,
-    9999, 99999, 999999, 9999999
-  };
+  public static final ImmutableList<Double> COMMON_MV9 =
+      ImmutableList.of(
+          -99.0,
+          -99.9,
+          -99.99,
+          -999.0,
+          -999.9,
+          -9999.0,
+          -99999.0,
+          -999999.0,
+          -9999999.0,
+          99.0,
+          99.9,
+          99.99,
+          999.0,
+          999.9,
+          9999.0,
+          99999.0,
+          999999.0,
+          9999999.0);
 
   /**
    * This returns the truncated part of a double.
@@ -593,7 +611,7 @@ public class Math2 {
    * @return 10^toThe
    */
   public static double ten(final int toThe) {
-    if ((toThe >= 0) && (toThe <= 18)) return Ten[toThe];
+    if ((toThe >= 0) && (toThe <= 18)) return Ten.get(toThe);
 
     return Math.pow(10.0, toThe);
   }
@@ -685,11 +703,11 @@ public class Math2 {
       // This won't overflow, since d1 can't be <eps.
       return (Math.abs(d1) < eps)
           ? true
-          : Math.rint(d2 / d1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+          : Math.rint(d2 / d1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since d2 can't be <eps.
-    return Math.rint(d1 / d2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+    return Math.rint(d1 / d2 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
   }
 
   /**
@@ -708,11 +726,11 @@ public class Math2 {
       // This won't overflow, since f1 can't be <eps.
       return (Math.abs(f1) < fEps)
           ? true
-          : Math.rint(f2 / f1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+          : Math.rint(f2 / f1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since f2 can't be <eps.
-    return Math.rint(f1 / f2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+    return Math.rint(f1 / f2 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
   }
 
   /**
@@ -1673,9 +1691,9 @@ public class Math2 {
     final int m = roundToInt(mantissa(d) * 10); // -100..-10, 10..100
     int i = 0;
 
-    while (niceNumbers[i] <= m) i++;
+    while (niceNumbers.get(i) <= m) i++;
 
-    return (niceNumbers[i] * exponent(d)) / 10;
+    return (niceNumbers.get(i) * exponent(d)) / 10;
   }
 
   /**
@@ -1691,11 +1709,11 @@ public class Math2 {
     if (almost0(d)) return -0.01;
 
     int m = roundToInt(mantissa(d) * 10); // -100..-10, 10..100
-    int i = niceNumbers.length - 1;
+    int i = niceNumbers.size() - 1;
 
-    while (niceNumbers[i] >= m) i--;
+    while (niceNumbers.get(i) >= m) i--;
 
-    return (niceNumbers[i] * exponent(d)) / 10;
+    return (niceNumbers.get(i) * exponent(d)) / 10;
   }
 
   /**

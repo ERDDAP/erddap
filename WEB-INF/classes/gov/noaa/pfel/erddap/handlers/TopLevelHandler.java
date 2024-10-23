@@ -207,9 +207,9 @@ public class TopLevelHandler extends State {
       }
       case "drawLandMask" -> {
         String ts = data.toString();
-        int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
+        int tnt = SgtMap.drawLandMask_OPTIONS.indexOf(ts);
         EDStatic.drawLandMask =
-            tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt];
+            tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS.get(tnt);
 
         if (reallyVerbose) {
           String2.log("drawLandMask=" + EDStatic.drawLandMask);

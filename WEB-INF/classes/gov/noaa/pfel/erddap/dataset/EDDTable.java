@@ -25,6 +25,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -376,10 +377,10 @@ public abstract class EDDTable extends EDD {
 
   // ** And there are analogous arrays for image formats (enable these when variables can be
   // accessed separately)
-  public static final String sosImageResponseFormats[] = {
-    OutputStreamFromHttpResponse.KML_MIME_TYPE, "application/pdf", "image/png"
-  };
-  public static final String sosTabledapImageResponseTypes[] = {".kml", ".pdf", ".png"};
+  public static final ImmutableList<String> sosImageResponseFormats =
+      ImmutableList.of(OutputStreamFromHttpResponse.KML_MIME_TYPE, "application/pdf", "image/png");
+  public static final ImmutableList<String> sosTabledapImageResponseTypes =
+      ImmutableList.of(".kml", ".pdf", ".png");
 
   protected Table minMaxTable;
 
@@ -536,8 +537,8 @@ public abstract class EDDTable extends EDD {
         sosTabledapDataResponseTypes.length,
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
     Test.ensureEqual(
-        sosImageResponseFormats.length,
-        sosTabledapImageResponseTypes.length,
+        sosImageResponseFormats.size(),
+        sosTabledapImageResponseTypes.size(),
         "'sosImageResponseFormats.length' not equal to 'sosTabledapImageResponseTypes.length'.");
   }
 
@@ -556,7 +557,8 @@ public abstract class EDDTable extends EDD {
    */
   public static final int CONSTRAIN_NO = 0, CONSTRAIN_PARTIAL = 1, CONSTRAIN_YES = 2;
 
-  public static final String CONSTRAIN_NO_PARTIAL_YES[] = new String[] {"no", "partial", "yes"};
+  public static final ImmutableList<String> CONSTRAIN_NO_PARTIAL_YES =
+      ImmutableList.of("no", "partial", "yes");
   protected int sourceCanConstrainNumericData = -1; // not set
   protected int sourceCanConstrainStringData = -1; // not set
 
@@ -582,7 +584,7 @@ public abstract class EDDTable extends EDD {
    */
   public static int getNoPartialYes(String s) {
     s = String2.isSomething(s) ? s.trim().toLowerCase() : "";
-    return String2.indexOf(CONSTRAIN_NO_PARTIAL_YES, s);
+    return CONSTRAIN_NO_PARTIAL_YES.indexOf(s);
   }
 
   /**
@@ -2638,7 +2640,7 @@ public abstract class EDDTable extends EDD {
 
       if (debugMode) String2.log(">> constraint: " + tName + OPERATORS[op] + tValue);
 
-      if (OPERATORS[op] != PrimitiveArray.REGEX_OP
+      if (!PrimitiveArray.REGEX_OP.equals(OPERATORS[op])
           && (tValue.startsWith("min(") || tValue.startsWith("max("))) {
         // min() and max()
         try {
@@ -2705,7 +2707,7 @@ public abstract class EDDTable extends EDD {
         }
 
         // if not for regex, convert isoString to epochSeconds
-        if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
+        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
           if (Calendar2.isIsoDate(tValue)) {
             conValueD =
                 repair
@@ -2771,7 +2773,7 @@ public abstract class EDDTable extends EDD {
         // numeric variables
 
         // if op=regex, value must have "'s around it
-        if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
+        if (PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
           if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
             // repair if needed
             if (!tValue.startsWith("\"")) tValue = "\"" + tValue;
@@ -5161,7 +5163,7 @@ public abstract class EDDTable extends EDD {
           // .land
         } else if (ampPart.startsWith(".land=")) {
           String gt = ampPart.substring(6);
-          int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
+          int which = SgtMap.drawLandMask_OPTIONS.indexOf(gt);
           if (which >= 1) currentDrawLandMask = gt;
           if (reallyVerbose) String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
 
@@ -5702,7 +5704,7 @@ public abstract class EDDTable extends EDD {
                 ? SgtMap.topographyCptFullName
                 : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
         String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
-        ArrayList mmal =
+        ArrayList<PrimitiveArray> mmal =
             SgtMap.makeMap(
                 transparentPng,
                 SgtUtil.LEGEND_BELOW,
@@ -12215,11 +12217,11 @@ public abstract class EDDTable extends EDD {
 
       // color
       paramName = "colr";
-      String colors[] = HtmlWidgets.PALETTE17;
       partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
       int colori =
-          String2.indexOf(colors, partValue == null ? "" : partValue.substring(partName.length()));
-      if (colori < 0) colori = String2.indexOf(colors, "000000");
+          HtmlWidgets.PALETTE17.indexOf(
+              partValue == null ? "" : partValue.substring(partName.length()));
+      if (colori < 0) colori = HtmlWidgets.PALETTE17.indexOf("000000");
       writer.write(
           "  <tr>\n"
               + "    <td>"
@@ -12231,9 +12233,9 @@ public abstract class EDDTable extends EDD {
               + "  </tr>\n");
 
       // add to graphQuery
-      graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
-      graphQueryNoLatLon.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
-      graphQueryNoTime.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
+      graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
+      graphQueryNoLatLon.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
+      graphQueryNoTime.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
 
       // color bar
       int palette = 0, continuous = 0, scale = 0, pSections = 0;
@@ -12394,7 +12396,7 @@ public abstract class EDDTable extends EDD {
         partValue = String2.stringStartsWith(queryParts, partName = ".land=");
         if (partValue != null) {
           partValue = partValue.substring(6);
-          tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
+          tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
         }
         writer.write(
             "  <tr>\n"
@@ -12406,7 +12408,7 @@ public abstract class EDDTable extends EDD {
                     "land",
                     EDStatic.magGSLandMaskTooltipTableAr[language],
                     1,
-                    SgtMap.drawLandMask_OPTIONS,
+                    String2.immutableListToArray(SgtMap.drawLandMask_OPTIONS),
                     tLand,
                     "")
                 + "</td>\n"
@@ -12418,7 +12420,7 @@ public abstract class EDDTable extends EDD {
 
         // add to graphQuery
         if (tLand > 0) {
-          String tq = "&.land=" + SgtMap.drawLandMask_OPTIONS[tLand];
+          String tq = "&.land=" + SgtMap.drawLandMask_OPTIONS.get(tLand);
           graphQuery.append(tq);
           graphQueryNoLatLon.append(tq);
           graphQueryNoTime.append(tq);
@@ -12640,7 +12642,7 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "    q2 += \"\\x26.color=0x\"; \n"
               + "    for (var rb = 0; rb < "
-              + colors.length
+              + HtmlWidgets.PALETTE17.size()
               + "; rb++) \n"
               + "      if (d.f1.colr[rb].checked) q2 += d.f1.colr[rb].value; \n"); // always: one
       // will be
@@ -17598,8 +17600,8 @@ public abstract class EDDTable extends EDD {
     if (responseFormat == null) return null;
     int po = String2.indexOf(sosDataResponseFormats, responseFormat);
     if (po >= 0) return sosTabledapDataResponseTypes[po];
-    po = String2.indexOf(sosImageResponseFormats, responseFormat);
-    if (po >= 0) return sosTabledapImageResponseTypes[po];
+    po = sosImageResponseFormats.indexOf(responseFormat);
+    if (po >= 0) return sosTabledapImageResponseTypes.get(po);
     return null;
   }
 
@@ -18033,7 +18035,7 @@ public abstract class EDDTable extends EDD {
 
       // GoogleEarth -- always all variables
 
-    } else if (String2.indexOf(sosImageResponseFormats, responseFormat) >= 0) {
+    } else if (sosImageResponseFormats.indexOf(responseFormat) >= 0) {
 
       // Note that any requestedVars will be dv names (not the dataset name, which leads to
       // requestedVars="")
@@ -20180,7 +20182,7 @@ public abstract class EDDTable extends EDD {
     writer.write(
         "<li><a class=\"selfLink\" id=\"kml\" href=\"#kml\" rel=\"bookmark\"><strong>Google Earth .kml</strong></a>"
             + "  - If <kbd>responseFormat="
-            + XML.encodeAsHTML(sosImageResponseFormats[0])
+            + XML.encodeAsHTML(sosImageResponseFormats.get(0))
             + "</kbd>,\n"
             + "<br>the response will be a .kml file with all of the data (regardless of <kbd>observedProperty</kbd>)\n"
             + "<br>for the latest time available (within the time range you specify).\n");
@@ -20191,9 +20193,10 @@ public abstract class EDDTable extends EDD {
           "  <br>For example:\n"
               + "  <a href=\""
               + XML.encodeAsHTMLAttribute(
-                  getImageObsAllStations1Var + SSR.minimalPercentEncode(sosImageResponseFormats[0]))
+                  getImageObsAllStations1Var
+                      + SSR.minimalPercentEncode(sosImageResponseFormats.get(0)))
               + "\">"
-              + XML.encodeAsHTML(sosImageResponseFormats[0])
+              + XML.encodeAsHTML(sosImageResponseFormats.get(0))
               + "</a>");
       writer.write(
           ".\n"
@@ -20213,15 +20216,15 @@ public abstract class EDDTable extends EDD {
       writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     } else {
       writer.write("  <br>For example:");
-      for (int f = 1; f < sosImageResponseFormats.length; f++) // skip 0=kml
+      for (int f = 1; f < sosImageResponseFormats.size(); f++) // skip 0=kml
       writer.write(
             (f == 1 ? "\n" : ",\n")
                 + "<a href=\""
                 + XML.encodeAsHTMLAttribute(
                     getImageObsAllStations1Var
-                        + SSR.minimalPercentEncode(sosImageResponseFormats[f]))
+                        + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)))
                 + "\">"
-                + XML.encodeAsHTML(sosImageResponseFormats[f])
+                + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(
           ".\n"
@@ -20243,15 +20246,15 @@ public abstract class EDDTable extends EDD {
     if (dvu < 0) writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     else {
       writer.write("  <br>For example:");
-      for (int f = 1; f < sosImageResponseFormats.length; f++) // skip 0=kml
+      for (int f = 1; f < sosImageResponseFormats.size(); f++) // skip 0=kml
       writer.write(
             (f == 1 ? "\n" : ",\n")
                 + "<a href=\""
                 + XML.encodeAsHTMLAttribute(
                     getImageObsAllStationsVector
-                        + SSR.minimalPercentEncode(sosImageResponseFormats[f]))
+                        + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)))
                 + "\">"
-                + XML.encodeAsHTML(sosImageResponseFormats[f])
+                + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(
           ".\n"
@@ -20269,14 +20272,15 @@ public abstract class EDDTable extends EDD {
       writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     } else {
       writer.write("  <br>For example:");
-      for (int f = 1; f < sosImageResponseFormats.length; f++) // skip 0=kml
+      for (int f = 1; f < sosImageResponseFormats.size(); f++) // skip 0=kml
       writer.write(
             (f == 1 ? "\n" : ",\n")
                 + "<a href=\""
                 + XML.encodeAsHTMLAttribute(
-                    getImageObs1Station1Var + SSR.minimalPercentEncode(sosImageResponseFormats[f]))
+                    getImageObs1Station1Var
+                        + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)))
                 + "\">"
-                + XML.encodeAsHTML(sosImageResponseFormats[f])
+                + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(".\n");
     }
@@ -20290,14 +20294,15 @@ public abstract class EDDTable extends EDD {
     if (dvu < 0) writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     else {
       writer.write("  <br>For example:");
-      for (int f = 1; f < sosImageResponseFormats.length; f++) // skip 0=kml
+      for (int f = 1; f < sosImageResponseFormats.size(); f++) // skip 0=kml
       writer.write(
             (f == 1 ? "\n" : ",\n")
                 + "<a href=\""
                 + XML.encodeAsHTMLAttribute(
-                    getImageObs1Station2Var + SSR.minimalPercentEncode(sosImageResponseFormats[f]))
+                    getImageObs1Station2Var
+                        + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)))
                 + "\">"
-                + XML.encodeAsHTML(sosImageResponseFormats[f])
+                + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(".\n");
     }
@@ -20313,15 +20318,15 @@ public abstract class EDDTable extends EDD {
     if (dvu < 0) writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     else {
       writer.write("  <br>For example:");
-      for (int f = 1; f < sosImageResponseFormats.length; f++) // skip 0=kml
+      for (int f = 1; f < sosImageResponseFormats.size(); f++) // skip 0=kml
       writer.write(
             (f == 1 ? "\n" : ",\n")
                 + "<a href=\""
                 + XML.encodeAsHTMLAttribute(
                     getImageObs1StationVector
-                        + SSR.minimalPercentEncode(sosImageResponseFormats[f]))
+                        + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)))
                 + "\">"
-                + XML.encodeAsHTML(sosImageResponseFormats[f])
+                + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(".\n");
     }
@@ -20510,9 +20515,9 @@ public abstract class EDDTable extends EDD {
             + "      <br>IOOS SOS XML format.)\n"
             + "      <br>The image responseFormats are:\n"
             + "      <br>");
-    for (int f = 0; f < sosImageResponseFormats.length; f++) {
+    for (int f = 0; f < sosImageResponseFormats.size(); f++) {
       if (f > 0) writer.write(", ");
-      writer.write("\"" + SSR.minimalPercentEncode(sosImageResponseFormats[f]) + "\"");
+      writer.write("\"" + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)) + "\"");
     }
     writer.write(
         ".\n"

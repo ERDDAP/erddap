@@ -113,7 +113,7 @@ public class ArchiveADataset {
     String digestPrompt =
         "Which type of file digest (checksum) do you want\n"
             + "(specify one of "
-            + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS)
+            + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS.toArray())
             + ")";
     String bagitDigestPrompt =
         digestPrompt + "\n" + "(BagIt spec recommends MD5 and SHA-1. NCEI prefers SHA-256.)";
@@ -343,9 +343,9 @@ public class ArchiveADataset {
                 whichArg++,
                 bagitMode ? bagitDigestDefault : digestDefault,
                 bagitMode ? bagitDigestPrompt : digestPrompt);
-        int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
+        int whichDigest = String2.FILE_DIGEST_OPTIONS.indexOf(digestType);
         if (whichDigest < 0) throw new RuntimeException("Invalid file digest type.");
-        digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+        digestExtension = String2.FILE_DIGEST_EXTENSIONS.get(whichDigest);
         digestExtension1 = digestExtension.substring(1);
 
         // *** write info about this archiving to archiveDir
@@ -615,9 +615,9 @@ public class ArchiveADataset {
                 whichArg++,
                 bagitMode ? bagitDigestDefault : digestDefault,
                 bagitMode ? bagitDigestPrompt : digestPrompt);
-        int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
+        int whichDigest = String2.FILE_DIGEST_OPTIONS.indexOf(digestType);
         if (whichDigest < 0) throw new RuntimeException("Invalid file digest type.");
-        digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+        digestExtension = String2.FILE_DIGEST_EXTENSIONS.get(whichDigest);
         digestExtension1 = digestExtension.substring(1);
 
         // *** write info about this archiving to archiveDir

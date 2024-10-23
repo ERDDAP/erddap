@@ -17039,13 +17039,13 @@ class EDDGridFromNcFilesTests {
     String tDir = EDStatic.fullTestCacheDirectory;
 
     for (int i = 1; i <= 4; i++) {
-      String baseName = "EDDGridFromNcFiles_testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i];
+      String baseName = "EDDGridFromNcFiles_testIslandShift_" + SgtMap.drawLandMask_OPTIONS.get(i);
       tName =
           eddGrid.makeNewFileForDapQuery(
               language,
               null,
               null,
-              "&.land=" + SgtMap.drawLandMask_OPTIONS[i],
+              "&.land=" + SgtMap.drawLandMask_OPTIONS.get(i),
               tDir,
               baseName,
               ".png");

@@ -11,6 +11,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
@@ -86,7 +87,8 @@ public class SgtMap {
   public static final int NO_LAKES_AND_RIVERS = 0; // used for drawLakesAndRivers
   public static final int STROKE_LAKES_AND_RIVERS = 1; // strokes lakes and rivers
   public static final int FILL_LAKES_AND_RIVERS = 2; // fills+strokes lakes, strokes rivers
-  public static final String[] drawLandMask_OPTIONS = {"", "under", "over", "outline", "off"};
+  public static final ImmutableList<String> drawLandMask_OPTIONS =
+      ImmutableList.of("", "under", "over", "outline", "off");
 
   public static final double PDF_FONTSCALE = 1.5;
   public static final int FULL_RESOLUTION = 0;

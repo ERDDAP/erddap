@@ -2211,7 +2211,7 @@ public class EDStatic {
       drawLandMask =
             getSetupEVString(
                 setup, ev, "drawLand", DEFAULT_drawLandMask); // old name. DEFAULT...="under"
-      int tdlm = String2.indexOf(SgtMap.drawLandMask_OPTIONS, drawLandMask);
+      int tdlm = SgtMap.drawLandMask_OPTIONS.indexOf(drawLandMask);
       if (tdlm < 1) drawLandMask = DEFAULT_drawLandMask; // "under"
       flagKeyKey = getSetupEVNotNothingString(setup, ev, "flagKeyKey", errorInMethod);
       if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)

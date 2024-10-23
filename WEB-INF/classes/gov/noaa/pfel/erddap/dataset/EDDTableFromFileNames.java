@@ -932,7 +932,7 @@ public class EDDTableFromFileNames extends EDDTable {
       table3.readJsonlCSV(
           fromFilesCache3LevelFileTable_FileName(),
           new StringArray(FileVisitorDNLS.DNLS_COLUMN_NAMES),
-          FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL,
+          String2.immutableListToArray(FileVisitorDNLS.DNLS_COLUMN_TYPES_SSLL),
           false); // simplify
       return table3;
     } catch (Exception e) {

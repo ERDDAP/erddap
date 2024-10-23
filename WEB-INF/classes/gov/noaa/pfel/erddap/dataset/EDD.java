@@ -2450,7 +2450,7 @@ public abstract class EDD {
    */
   public String defaultDrawLandMask() {
     String dlm = combinedGlobalAttributes().getString("drawLandMask");
-    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
+    int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
     return which < 1 ? EDStatic.drawLandMask : dlm;
   }
 
@@ -9541,7 +9541,7 @@ public abstract class EDD {
                   : PrimitiveArray.factory(PAType.INT, StringArray.wordsAndQuotedPhrases(s));
         }
         double d = pa.getDouble(pa.size() - 1);
-        if (Double.isNaN(d)) d = Math2.Two[pa.size()];
+        if (Double.isNaN(d)) d = Math2.Two.get(pa.size());
         double d2[] = Math2.suggestLowHigh(0, d);
         tMin = d2[0];
         tMax = d2[1];
@@ -9558,7 +9558,7 @@ public abstract class EDD {
                   : PrimitiveArray.factory(PAType.INT, StringArray.wordsAndQuotedPhrases(s));
         }
         double d = pa.getDouble(pa.size() - 1);
-        if (Double.isNaN(d)) d = Math2.Two[pa.size()];
+        if (Double.isNaN(d)) d = Math2.Two.get(pa.size());
         double d2[] = Math2.suggestLowHigh(0, d);
         tMin = d2[0];
         tMax = d2[1];

@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -95,8 +96,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static final String NAME = "name";
   public static final String LASTMODIFIED = "lastModified";
   public static final String SIZE = "size";
-  public static final String DNLS_COLUMN_NAMES[] = {DIRECTORY, NAME, LASTMODIFIED, SIZE};
-  public static final String DNLS_COLUMN_TYPES_SSLL[] = {"String", "String", "long", "long"};
+  public static final ImmutableList<String> DNLS_COLUMN_NAMES =
+      ImmutableList.of(DIRECTORY, NAME, LASTMODIFIED, SIZE);
+  public static final ImmutableList<String> DNLS_COLUMN_TYPES_SSLL =
+      ImmutableList.of("String", "String", "long", "long");
 
   public static final String URL = "url"; // in place of directory for oneStepAccessibleViaFiles
 

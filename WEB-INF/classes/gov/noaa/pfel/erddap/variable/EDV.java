@@ -385,7 +385,7 @@ public class EDV {
     if (longName == null) longName = destinationName;
     units = combinedAttributes().getString("units"); // may be null; already canonical
     decimal_digits = combinedAttributes().getInt(DECIMAL_DIGITS); // may be null -> MAX_VALUE
-    if (decimal_digits < 0 || decimal_digits >= Math2.Ten.length)
+    if (decimal_digits < 0 || decimal_digits >= Math2.Ten.size())
       decimal_digits = Integer.MAX_VALUE;
 
     // extractScaleAddOffset     It sets destinationDataType and destinationDataPAType
@@ -815,7 +815,7 @@ public class EDV {
 
     if ((destinationDataPAType == PAType.FLOAT || destinationDataPAType == PAType.DOUBLE)
         && decimal_digits >= 0
-        && decimal_digits < Math2.Ten.length) {
+        && decimal_digits < Math2.Ten.size()) {
       // okay
     } else {
       decimal_digits = Integer.MAX_VALUE;
@@ -1395,7 +1395,7 @@ public class EDV {
    */
   public String drawLandMask(String eddDefaultDrawLandMask) {
     String dlm = combinedAttributes().getString("drawLandMask");
-    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
+    int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
     return which < 1 ? eddDefaultDrawLandMask : dlm;
   }
 
