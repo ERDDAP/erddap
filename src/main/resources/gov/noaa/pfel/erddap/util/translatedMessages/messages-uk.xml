@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml містить текстові повідомлення для ERDDAP (які читаються в EDStatic).
 Коли ви інсталюєте ERDDAP на своєму сервері, усі ці повідомлення можна залишити як є,
 оскільки ці повідомлення зазвичай однакові в різних інсталяціях ERDDAP.
@@ -30,7 +30,7 @@ HTML чи ні?
   messages-de.xml і -ga мають багато дубльованих посилань. Я підозрюю, що таких ще багато.
 
  -->
-<erddapMessages>
+
 <!--  Це повертає вміст HTML із описом запиту стиснутих файлів.
 Див. https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 який говорить, що x-gzip=gzip і x-compress=стиснути
@@ -81,11 +81,13 @@ HTML чи ні?
   Якщо у вас є пропозиції щодо додаткових посилань, зв’яжіться з <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Цей набір даних є таблицею, яка містить рядок інформації для кожного набору даних, який зараз активний у цьому ERDDAP.</admSummary>
 <admTitle>Список усіх активних наборів даних у цьому ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Деякі набори даних є загальнодоступними. Деякі з них можуть бути приватними та недоступними для вас.</advc_accessible>
@@ -553,6 +555,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 <convertFipsCounty>Перетворення коду округу FIPS на/з назви округу</convertFipsCounty>
 
 <!--  Не змінюйте приклади (за умовчаннямN...).  -->
+
 <!--  «Код округу FІPS» був посиланням на http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      потім https://www.census.gov/geo/reference/codes/cou.html 
      Тепер найближчим (?) є http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2731,7 +2734,7 @@ griddap використовує
      Сподіваємось, ви можете просто замінити свій ідентифікатор набору даних на &quot;jplMURSST41&quot;
      і змініть &quot;[0 32]&quot; (діапазон даних для кольорової панелі).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Повідомлення EDDTable відображаються у формі доступу до даних tabledap і створюють графік.  -->
 <EDDTableConstraints>обмеження</EDDTableConstraints>
@@ -2888,7 +2891,7 @@ tabledap використовує
 
 <!--  Це приклад запиту, який створює графік. 
      Ви можете створити свій приклад за допомогою форми Make A Graph свого набору даних в ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Це приклад запиту, який створює карту.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2992,6 +2995,7 @@ ERDDAP — це сервер даних, який дає вам простий �
 <fileHelp_ncml>Перегляньте структуру набору даних і метадані як файл UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Завантажте time,latitude,longitude,otherVariables як ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Завантажте стовпці longitude,latitude,time,otherColumns як загальний файл електронної таблиці ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Завантажити як файл паркету.</fileHelp_parquet>
 <fileHelp_subset>Перегляньте HTML-форму, яка використовує фасетний пошук для спрощення вибору підмножин даних.</fileHelp_subset>
 <fileHelp_timeGaps>Перегляньте список UTF-8 розривів у значеннях часу, які перевищують середній розрив.</fileHelp_timeGaps>
 <fileHelp_tsv>Завантажте текстову таблицю ISO-8859-1, розділену табуляціями (рядок 1: імена; рядок 2: одиниці; ISO 8601 раз).</fileHelp_tsv>
@@ -3674,9 +3678,11 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 За замовчуванням для годинників — 8192. За замовчуванням для екземплярів — 128.</inotifyFix>
 
 <!--  не перекладати  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Інтерполяція</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4244,6 +4250,7 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, з
 <moreInformation>більше інформації</moreInformation>
 
 <!--  Ці повідомлення у стилі MessageFormat надсилаються в MustBe.xxx.  -->
+
 <!--  Це важливе повідомлення про помилку. Це означає, що запит був дійсним,
 але в результаті не було даних. Клієнти можуть шукати саме це повідомлення.
 Поки що краще цього не змінювати.
@@ -4341,6 +4348,12 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, з
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--СторінкаПерший>перший</pageFirst>
+<pagePrevious>попередній</pagePrevious>
+<pageCurrent>поточна</pageCurrent>
+<pageНаступ>next</pageНаступ>
+<pageLast>last</pageLast-->
 
 <!--  Це варіанти палітри.
      Для кожного в каталозі erddap/WEB-INF/cptfiles має бути файл .cpt.
@@ -5247,6 +5260,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Боб: дивіться ідентичну таблицю css у Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml містить початок документа HTML і теги &#39;head&#39; 
 (починаючи з &quot;&lt;!DOCTYPE&quot;, але не включаючи &quot;&lt;/head&gt;&quot;) 
 для всіх веб-сторінок HTML. 
@@ -5283,6 +5297,7 @@ favicon.ico — це зображення, яке браузери асоцію�
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6168,11 +6183,14 @@ standardizeUdunits містить трійки рядків: до, після т
 воно буде перетворено на значення «після» UDUNITS.
 Порожні рядки гарантують, що інші рядки є рядками «до» та «після».
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>час</time>
 <timeoutOtherRequests>Час очікування на обробку інших ваших запитів.</timeoutOtherRequests>
 
@@ -6183,7 +6201,8 @@ ucumToUdunits містить трійки рядків: до, після та п
 воно буде перетворено на значення «після» UDUNITS.
 Порожні рядки гарантують, що інші рядки є рядками «до» та «після».
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6193,7 +6212,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Це спосіб замінити конвертер UDUNITS у UCUM ERDDAP
 шляхом надання конкретних перетворень. 
@@ -6202,7 +6223,8 @@ udunitsToUcum містить трійки рядків: до, після та п
 воно буде перетворено на значення UCUM «після».
 Порожні рядки гарантують, що інші рядки є рядками «до» та «після».
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6224,7 +6246,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Це спроба впоратися із застарілими метаданими джерела URL-адрес.
 updateUrls застосовується до кожного атрибута метаданих String набору даних 
@@ -6248,7 +6272,8 @@ updateUrls містить трійку рядків: до, після та по�
 * Перетворення http://www.csc.noaa.gov на узбережжя недосконале: 
   документи в різних місцях.  Це типово для великих змін доменного імені.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7341,7 +7366,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Це http URL-адреси, які, ймовірно, колись будуть доступні через https.
 Тут наведено коментарі для швидкого тестування.
@@ -7424,6 +7451,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Це список імен атрибутів, розділених комами, які updateUrls пропускатиме. 
 Це не може бути нічого. Отже, якщо ви нічого не хочете, введіть тарабарське слово, яке буде
 ніколи не бути назвою атрибута.  -->

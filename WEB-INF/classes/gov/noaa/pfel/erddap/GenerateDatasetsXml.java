@@ -218,6 +218,7 @@ public class GenerateDatasetsXml {
         "EDDTableFromNcCFFiles",
         "EDDTableFromNccsvFiles",
         "EDDTableFromOBIS",
+        "EDDTableFromParquetFiles",
         "EDDTableFromSOS",
         "EDDTableFromThreddsFiles",
         "EDDTableFromWFSFiles",
@@ -850,6 +851,42 @@ public class GenerateDatasetsXml {
             String2.log("working...");
             printToBoth(
                 EDDTableFromJsonlCSVFiles.generateDatasetsXml(
+                    s1,
+                    s2,
+                    s3,
+                    String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
+                    s5,
+                    s6,
+                    s7,
+                    s8,
+                    s9,
+                    s10,
+                    s11,
+                    s12,
+                    s13,
+                    String2.parseInt(s14),
+                    s15,
+                    null));
+
+          } else if (eddType.equals("EDDTableFromParquetFiles")) {
+            s1 = get(args, 1, s1, "Starting directory");
+            s2 = get(args, 2, s2, "File name regex (e.g., \".*\\.csv\")");
+            s3 = get(args, 3, s3, sampleFileNamePrompt);
+            s4 = get(args, 4, s4, reloadEveryNMinutesMessage);
+            s5 = get(args, 5, s5, "PreExtractRegex");
+            s6 = get(args, 6, s6, "PostExtractRegex");
+            s7 = get(args, 7, s7, "ExtractRegex");
+            s8 = get(args, 8, s8, "Column name for extract");
+            s9 = get(args, 9, s9, "Sort files by sourceNames");
+            s10 = get(args, 10, s10, "infoUrl");
+            s11 = get(args, 11, s11, "institution");
+            s12 = get(args, 12, s12, "summary");
+            s13 = get(args, 13, s13, "title");
+            s14 = get(args, 14, s14, standardizeWhatPrompt);
+            s15 = get(args, 15, s15, cacheFromUrlPrompt);
+            String2.log("working...");
+            printToBoth(
+                EDDTableFromParquetFiles.generateDatasetsXml(
                     s1,
                     s2,
                     s3,

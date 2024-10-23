@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml ina jumbe za maandishi za ERDDAP (ambazo zinasomwa katika EDStatic).
 Unaposakinisha ERDDAP kwenye seva yako, ujumbe huu wote unaweza kuachwa kama ulivyo,
 kwa kuwa barua pepe hizi kawaida huwa sawa katika usakinishaji tofauti wa ERDDAP.
@@ -30,7 +30,7 @@ Mfumo wa tafsiri UNAHITAJI kwamba &quot;pseudoEntity&quot; itumie [a-zA-Z0-9] pe
   messages-de.xml na -ga zina viungo vingi vilivyorudiwa. Nashuku wengi zaidi wako hivi.
 
  -->
-<erddapMessages><!--  Hii inarejesha maudhui ya HTML yanayoelezea Kuomba Faili Zilizobanwa.
+<!--  Hii inarejesha maudhui ya HTML yanayoelezea Kuomba Faili Zilizobanwa.
 Tazama https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 ambayo inasema kwamba x-gzip=gzip na x-compress=compress
 Hii pia inarudiwa katika messages2.xml in
@@ -2760,6 +2760,7 @@ Kwa mfano:
 <fileHelp_ncml>Tazama muundo na metadata ya seti ya data kama faili ya UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Pakua saa, latitudo, longitudo, Vigezo vingine kama Faili ya Lahajedwali ya ODV ya Ujumla (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Pakua longitudo, latitudo, wakati, Safuwima zingine kama Faili ya Lahajedwali ya ISO-8859-1 ODV Jenerali (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Tazama fomu ya HTML inayotumia utafutaji wa vipengele ili kurahisisha uchukuaji wa vikundi vidogo vya data.</fileHelp_subset>
 <fileHelp_timeGaps>Tazama orodha ya UTF-8 ya mapengo katika thamani za saa ambayo ni kubwa kuliko pengo la wastani.</fileHelp_timeGaps>
 <fileHelp_tsv>Pakua jedwali la maandishi lililotenganishwa na kichupo cha ISO-8859-1 (mstari wa 1: majina; mstari wa 2: vitengo; ISO 8601 mara).</fileHelp_tsv>

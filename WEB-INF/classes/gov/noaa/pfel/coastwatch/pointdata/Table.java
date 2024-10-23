@@ -12,6 +12,7 @@ import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.pointdata.parquet.ParquetWriterBuilder;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -64,6 +65,22 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.parquet.io.ColumnIOFactory;
+import org.apache.parquet.io.InputFile;
+import org.apache.parquet.io.LocalInputFile;
+import org.apache.parquet.io.LocalOutputFile;
+import org.apache.parquet.io.MessageColumnIO;
+import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import ucar.ma2.*;
@@ -15921,6 +15938,259 @@ public class Table {
         } catch (Throwable t2) {
         }
       }
+      File2.delete(fullFileName + randomInt);
+      File2.delete(fullFileName);
+
+      String2.log(msg);
+      throw e;
+    }
+  }
+
+  /**
+   * This reads a table from a parquet file. Currently this does not support compressed files.
+   *
+   * @throws Exception if serious trouble
+   */
+  public void readParquet(
+      String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
+      throws Exception {
+    clear();
+    InputFile parquetFile = new LocalInputFile(java.nio.file.Path.of(fullFileName));
+    ParquetFileReader fileReader =
+        new ParquetFileReader(parquetFile, ParquetReadOptions.builder().build());
+    try {
+      MessageType schema = fileReader.getFileMetaData().getSchema();
+
+      List<Type> fields = schema.getFields();
+      int numFields = fields.size();
+      PrimitiveArray pas[] = new PrimitiveArray[numFields];
+      boolean isBoolean[] = new boolean[numFields]; // all false
+      for (int c = 0; c < numFields; c++) {
+        Type field = fields.get(c);
+        String tFieldName = field.getName();
+        tFieldName = tFieldName.equals("null") ? "" : tFieldName;
+        PrimitiveArray pa = null;
+        // POTENTIAL IMPROVEMENT Could this be more efficient if we used field type to make a
+        // properly typed PrimitiveArray?
+        if (colNames == null) {
+          pa = new StringArray();
+        } else {
+          int which = colNames.indexOf(tFieldName);
+          if (which >= 0) {
+            if (colTypes == null) {
+              pa = new StringArray();
+            } else {
+              PAType tPAType = PAType.fromCohortString(colTypes[which]); // it handles boolean
+              pa = PrimitiveArray.factory(tPAType, 8, false);
+              isBoolean[c] = "boolean".equals(colTypes[which]);
+            }
+          }
+        }
+        if (pa != null) {
+          pas[c] = pa;
+          addColumn(tFieldName, pa);
+        }
+      }
+
+      PageReadStore pages = null;
+
+      StringBuilder warnings = new StringBuilder();
+      while (null != (pages = fileReader.readNextRowGroup())) {
+        try {
+          final long rows = pages.getRowCount();
+          // POTENTIAL IMPROVEMENT can we use filters to prevent reading clumns we don't care about?
+          final MessageColumnIO columnIO = new ColumnIOFactory().getColumnIO(schema);
+          final RecordReader<org.apache.parquet.example.data.Group> recordReader =
+              columnIO.getRecordReader(pages, new GroupRecordConverter(schema));
+          for (int i = 0; i < rows; i++) {
+            final org.apache.parquet.example.data.Group g = recordReader.read();
+            int fieldCount = g.getType().getFieldCount();
+            int countInRow = -1;
+            for (int field = 0; field < fieldCount; field++) {
+              countInRow = Math.max(g.getFieldRepetitionCount(field), countInRow);
+            }
+            for (int field = 0; field < fieldCount; field++) {
+              int valueCount = g.getFieldRepetitionCount(field);
+              for (int index = 0; index < valueCount; index++) {
+                if (pas[field] != null) {
+                  // POTENTIAL IMPROVEMENT use field types to avoid going to string and back?
+                  String tValue = g.getValueToString(field, index);
+                  if (tValue.equals("null")) tValue = "";
+                  else if (isBoolean[field]) tValue = "true".equals(tValue) ? "1" : "0";
+                  // else leave as is
+                  pas[field].addString(tValue);
+                }
+              }
+              // This is adding missing values to a column to ensure all columns have the
+              // proper number of rows at the end.
+              for (int index = valueCount; index < countInRow; index++) {
+                if (pas[field] != null) {
+                  pas[field].addString("");
+                }
+              }
+            }
+          }
+        } catch (Exception e) {
+          warnings.append("  rowIndex #" + pages.getRowIndexes() + ": " + e.getMessage() + "\n");
+        }
+      }
+      if (warnings.length() > 0)
+        String2.log(
+            WARNING_BAD_LINE_OF_DATA_IN
+                + "readParquet("
+                + fullFileName
+                + "):\n"
+                + warnings.toString());
+    } finally {
+      fileReader.close();
+    }
+
+    if (colNames != null) reorderColumns(colNames, false);
+
+    if (colTypes == null && simplify) {
+      int nc = nColumns(); // may be different from previous use of nc / fewer columns
+      int nr = nRows();
+      String s;
+      for (int c = 0; c < nc; c++) {
+        PrimitiveArray pa = getColumn(c);
+
+        // are they all quoted strings?
+        boolean isString = true;
+        for (int r = 0; r < nr; r++) {
+          s = pa.getString(r);
+          if (s != null && s.length() > 0 && s.charAt(0) != '\"') {
+            isString = false;
+            break;
+          }
+        }
+        if (isString) {
+          ((StringArray) pa).fromJson();
+
+        } else {
+          // are they all true|false?
+          boolean tIsBoolean = true;
+          for (int r = 0; r < nr; r++) {
+            s = pa.getString(r);
+            if (s != null && s.length() > 0 && !"true".equals(s) && !"false".equals(s)) {
+              tIsBoolean = false;
+              break;
+            }
+          }
+
+          if (tIsBoolean) {
+            setColumn(c, ByteArray.toBooleanToByte(pa));
+
+          } else {
+            // It has numbers. It shouldn't have any quoted strings.
+            simplify(c);
+          }
+        }
+      }
+    }
+  }
+
+  private MessageType getParquetSchemaForTable(String name) {
+    String schemaProto = "message m {";
+    for (int j = 0; j < nColumns(); j++) {
+      String schemaType = "String";
+      switch (getColumn(j).elementType()) {
+        case BYTE:
+          schemaType = "INT32";
+          break;
+        case SHORT:
+          schemaType = "INT32";
+          break;
+        case CHAR:
+          schemaType = "BINARY";
+          break;
+        case INT:
+          schemaType = "INT32";
+          break;
+        case LONG:
+          schemaType = "INT64";
+          break;
+        case FLOAT:
+          schemaType = "FLOAT";
+          break;
+        case DOUBLE:
+          schemaType = "DOUBLE";
+          break;
+        case STRING:
+          schemaType = "BINARY";
+          break;
+        case UBYTE:
+          schemaType = "INT32";
+          break;
+        case USHORT:
+          schemaType = "INT32";
+          break;
+        case UINT:
+          schemaType = "INT64";
+          break;
+        case ULONG:
+          schemaType = "DOUBLE";
+          break;
+      }
+      schemaProto += "    optional " + schemaType + " " + getColumnName(j) + ";\n";
+    }
+    schemaProto += "}";
+    return MessageTypeParser.parseMessageType(schemaProto);
+  }
+
+  /**
+   * This writes a table to a Parquet UTF-8 file.
+   *
+   * @param fullFileName This is just used for error messages.
+   * @throws Exception if trouble, including observed nItems != expected nItems.
+   */
+  public void writeParquet(String fullFileName) throws Exception {
+    String msg = "  Table.writeParquet " + fullFileName;
+    long time = System.currentTimeMillis();
+
+    int randomInt = Math2.random(Integer.MAX_VALUE);
+
+    int nameStart = fullFileName.lastIndexOf('/');
+    if (nameStart == -1) {
+      nameStart = fullFileName.lastIndexOf('\\');
+    }
+    int nameEnd = fullFileName.lastIndexOf('.');
+    String name = fullFileName.substring(nameStart + 1, nameEnd);
+    MessageType schema = getParquetSchemaForTable(name);
+
+    try (ParquetWriter<List<PAOne>> writer =
+        new ParquetWriterBuilder(
+                schema, new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)))
+            .withCompressionCodec(CompressionCodecName.SNAPPY)
+            .withRowGroupSize(ParquetWriter.DEFAULT_BLOCK_SIZE)
+            .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)
+            .withConf(new Configuration())
+            .withValidation(false)
+            .withDictionaryEncoding(false)
+            .build()) {
+
+      for (int row = 0; row < nRows(); row++) {
+        ArrayList<PAOne> record = new ArrayList<>();
+        for (int j = 0; j < nColumns(); j++) {
+          record.add(getPAOneData(j, row));
+        }
+        writer.write(record);
+      }
+      writer.close();
+
+      File2.rename(fullFileName + randomInt, fullFileName); // throws Exception if trouble
+
+      if (reallyVerbose)
+        String2.log(
+            msg
+                + " finished. nColumns="
+                + nColumns()
+                + " nRows="
+                + nRows()
+                + " TIME="
+                + (System.currentTimeMillis() - time)
+                + "ms");
+
+    } catch (Exception e) {
       File2.delete(fullFileName + randomInt);
       File2.delete(fullFileName);
 

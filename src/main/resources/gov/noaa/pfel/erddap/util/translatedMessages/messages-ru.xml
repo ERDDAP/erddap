@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml содержит текстовые сообщения для ERDDAP (которые читаются в EDStatic).
 Когда вы устанавливаете ERDDAP на свой сервер, все эти сообщения можно оставить как есть.
 поскольку эти сообщения обычно одинаковы при разных установках ERDDAP.
@@ -30,7 +30,8 @@ HTML или нет?
   messages-de.xml и -ga содержат много дублированных ссылок. Я подозреваю, что многие другие такие же.
 
  -->
-<erddapMessages><!--  Это возвращает содержимое HTML, описывающее запрос сжатых файлов.
+
+<!--  Это возвращает содержимое HTML, описывающее запрос сжатых файлов.
 См. Https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 который говорит, что x-gzip = gzip и x-compress = compress
 Это также повторяется в messages2.xml в
@@ -75,11 +76,13 @@ HTML или нет?
 <additionalLinks><![CDATA[
 Если у вас есть предложения по дополнительным ссылкам, свяжитесь с <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Этот набор данных представляет собой таблицу, в которой содержится ряд информации для каждого набора данных, который в настоящее время активен в этом ERDDAP.</admSummary>
 <admTitle>Список всех активных наборов данных в этом ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Некоторые наборы данных являются общедоступными. Некоторые из них могут быть конфиденциальными и недоступными для вас.</advc_accessible>
@@ -151,6 +154,7 @@ HTML или нет?
 <strong>Маршруты.</strong> Укажите любое количество критериев поиска или их количество, затем нажмите кнопку <kbd>&searchButton;</kbd> .
 <br>В результатах появятся только наборы данных, соответствующие <strong>всем</strong> критериям поиска.
 ]]></advancedSearchDirections>
+
 <!--  Это описание расширенного поиска. -->
 <advancedSearchTooltip><![CDATA[
 Расширенный поиск сочетает в себе все методы поиска и добавляет поиск наборов данных, которые содержат данные в пределах долготы, широты и временного диапазона, поэтому вы можете искать наборы данных одновременно по множеству различных критериев.
@@ -224,6 +228,7 @@ HH и T.
 </ul>
 
 ]]></advancedSearchTimeTooltip>
+
 <!--  {0} = plainFileType (например, .json) расширенного поискового запроса. -->
 <advancedSearchWithCriteria>Запрос расширенного поиска {0} должен включать один или несколько критериев, например:
 «?
@@ -240,6 +245,7 @@ Page = 1 &amp; itemsPerPage = 1000 &amp; searchFor = wind + temperature».</adva
 <br>Для других типов файлов расширенный поиск выдаст исключение, если какая-либо часть запроса окажется недопустимой.
 <br>Однако проверяются только ожидаемые параметры; неожиданные параметры просто игнорируются.
 ]]></advancedSearchErrorHandling>
+
 <!--  Они вводятся в PrimitiveArray.
      Они используют MessageFormat. -->
 <ArrayAddN>ОШИБКА в {0} .addN:
@@ -268,6 +274,7 @@ index ({1})&gt; = size ({2}).</ArrayRemove>
 Вы отправили большое количество недействительных запросов?
 Если вы готовы избежать этих проблем, отправьте электронное письмо {0}, чтобы запросить исключение из черного списка.</blacklistMsg>
 <BroughtToYouBy>Привлечены к вам</BroughtToYouBy>
+
 <!--  Эти сообщения связаны с поиском по категории. -->
 <categoryTitleHtml>Поиск наборов данных по категориям</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -319,15 +326,18 @@ CTD, если они не связаны с <kbd>TimeSeries</kbd> или <kbd>Tr
 <br>&nbsp;&nbsp;Примеры:
 лабораторные анализы или выгрузка рыбы по названию порта (если нет широты, долготы).
 ]]></cdmDataTypeHelp>
+
 <!--  Это сообщение используется как всплывающая подсказка для ссылок &quot;доступа&quot; на HTML-страницах.
 всякий раз, когда отображается таблица наборов данных (например, когда вы выполняете полнотекстовый поиск наборов данных).
  -->
 <clickAccess>Щелкните, чтобы просмотреть форму доступа к данным OPeNDAP для этого набора данных, чтобы вы могли запросить данные.</clickAccess>
+
 <!--  Это сообщение используется как всплывающая подсказка для &quot;фоновой&quot; ссылки на HTML-страницах.
 всякий раз, когда отображается таблица наборов данных (например, когда вы выполняете полнотекстовый поиск наборов данных).
  -->
 <clickBackgroundInfo>Щелкните, чтобы просмотреть справочную информацию из источника этого набора данных.</clickBackgroundInfo>
 <clickERDDAP>Щелкните здесь, чтобы вернуться на домашнюю страницу ERDDAP.</clickERDDAP>
+
 <!--  Это сообщение используется как всплывающая подсказка для ссылки &quot;информация&quot; на HTML-страницах всякий раз, когда
 отображается таблица наборов данных (например, при полнотекстовом поиске наборов данных).
  -->
@@ -391,9 +401,11 @@ CTD, если они не связаны с <kbd>TimeSeries</kbd> или <kbd>Tr
 <strong>Преобразовать из {0} в имя переменной.</strong>
 ]]></convertToVariableName>
 <converterWebService>ERDDAP предлагает несколько конвертеров в виде веб-страниц и веб-сервисов:</converterWebService>
+
 <!--  Эти HTML-сообщения используются для описания опций &quot;преобразования&quot; в целом и по отдельности. -->
 <convertOAAcronyms>Акронимы океанических / атмосферных</convertOAAcronyms>
 <convertOAAcronymsToFrom>Преобразование общего акронима океанических / атмосферных явлений в / из полного имени</convertOAAcronymsToFrom>
+
 <!--  Не меняйте примеры (по умолчанию N ...). -->
 <convertOAAcronymsIntro><![CDATA[
 Эта веб-страница позволяет преобразовать обычную акрониму океана / атмосферы в полное название или наоборот.
@@ -423,6 +435,7 @@ CTD, если они не связаны с <kbd>TimeSeries</kbd> или <kbd>Tr
 </ul>
 
 ]]></convertOAAcronymsNotes>
+
 <!--  Не меняйте примеры (по умолчаниюN, ...). -->
 <convertOAAcronymsService><![CDATA[
 
@@ -460,6 +473,7 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
 ]]></convertOAAcronymsService>
 <convertOAVariableNames>Имена океанических / атмосферных переменных</convertOAVariableNames>
 <convertOAVariableNamesToFrom>Преобразование общего имени океанической / атмосферной переменной в / из полного имени</convertOAVariableNamesToFrom>
+
 <!--  Не меняйте примеры (по умолчаниюN ...). -->
 <convertOAVariableNamesIntro><![CDATA[
 Эта веб-страница позволяет преобразовать общее имя океанической / атмосферной переменной в / из полного имени.
@@ -488,6 +502,7 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
 </ul>
 
 ]]></convertOAVariableNamesNotes>
+
 <!--  Не меняйте примеры (по умолчаниюN, ...). -->
 <convertOAVariableNamesService><![CDATA[
 
@@ -521,7 +536,9 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> .
 ]]></convertOAVariableNamesService>
 <convertFipsCounty>Преобразование кода округа FIPS в / из названия округа</convertFipsCounty>
+
 <!--  Не меняйте примеры (по умолчанию N ...). -->
+
 <!--  «Код округа FIPS» был ссылкой на http://www.itl.nist.gov/fipspubs/fip6-4.htm.
      затем https://www.census.gov/geo/reference/codes/cou.html
      Теперь ближайший (?) - http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -584,6 +601,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 </ul>
 
 ]]></convertFipsCountyNotes>
+
 <!--  Не меняйте примеры (по умолчаниюN, ...). -->
 <convertFipsCountyService><![CDATA[
 
@@ -814,8 +832,10 @@ New York, New York.
     src="../images/external.png" alt=" (external link)" 
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> .
 ]]></convertInterpolateService>
+
 <!--  Эти HTML-сообщения используются для описания опций &quot;преобразования&quot; в целом и по отдельности. -->
 <convertKeywords>Преобразование стандартного имени CF в / из научного ключевого слова GCMD</convertKeywords>
+
 <!--  Не меняйте примеры (по умолчанию N ...). -->
 <convertKeywordsIntro><![CDATA[
 Эта веб-страница позволяет преобразовать
@@ -861,6 +881,7 @@ New York, New York.
 </ul>
 
 ]]></convertKeywordsNotes>
+
 <!--  Не меняйте примеры (по умолчаниюN, ...). -->
 <convertKeywordsService><![CDATA[
 
@@ -902,6 +923,7 @@ href="{0}/convert/keywords.txt?gcmd=Earth%20Science%20%3e%20Atmosphere%20%3e%20A
 ERDDAP есть
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">служба для преобразования строкового времени в / из числового времени</a> .
 ]]></convertTimeReference>
+
 <!--  Не меняйте значения примера (по умолчаниюN ...). -->
 <convertTimeIntro><![CDATA[
 В разных местах ERDDAP момент времени может быть представлен как:
@@ -1196,6 +1218,7 @@ UTC время от времени использует дополнительн
 </ul>
 
 ]]></convertTimeNotes>
+
 <!--  Не меняйте примеры (по умолчаниюN, ...). -->
 <convertTimeService><![CDATA[
 
@@ -1284,6 +1307,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 Значение года должно состоять из 4 цифр - при необходимости используйте 0-заполнитель.
 Обратите внимание, что # / # / # интерпретируется как месяц / число / год, а не число / месяц / год.
 ]]></convertTimeUnitsTooltip>
+
 <!--  Пример в первой строке - EDV.TIME_UNITS. -->
 <convertTimeUnitsHelp><![CDATA[
 Например, &quot;seconds since 1970-01-01T00:00:00Z&quot; .
@@ -1722,6 +1746,7 @@ UDUNITS = градус% 20 метр-1</a>
     src="../images/external.png" alt=" (external link)" 
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> .
 ]]></convertURLsService>
+
 <!--  cookiesHelp последнее обновление 2019-12-19 -->
 <cookiesHelp><![CDATA[
 Убедитесь, что в вашем браузере разрешены
@@ -1783,6 +1808,7 @@ UDUNITS = градус% 20 метр-1</a>
 Каждая строка представляет разные выборки данных (например, из другого времени или места).
 ]]></dafTableTooltip>
 <dasTitle>Структура атрибутов набора данных (.das) для этого набора данных</dasTitle>
+
 <!--  Сообщение, отображаемое, если данные не могут быть загружены (например, SeaWiFS &lt;= 14 дней назад). -->
 <dataAccessNotAllowed>[Извините. Эти данные не могут быть загружены.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Невозможно подключиться к базе данных.</databaseUnableToConnect>
@@ -2052,6 +2078,7 @@ wind_to_direction,
 x_wind,
 y_wind</DEFAULT_commonStandardNames>
 <disabled>Система &quot;{0}&quot; отключена на этом ERDDAP.</disabled>
+
 <!--  Это всплывающая подсказка к форме доступа к данным EDDTable и построению графика.
      для виджета select, который помещает отдельное значение в ограничение №1.
      [Конец третьей строки: кроме первой (&quot;&quot;),]
@@ -2064,6 +2091,7 @@ y_wind</DEFAULT_commonStandardNames>
 Ссылку выше), которая упрощает выбор подмножеств этого набора данных путем выбора комбинаций различных значений.
 ]]></distinctValuesTooltip>
 <documentation>Документация</documentation>
+
 <!--  Здесь используется &amp; ssUse; и &amp; erddapUrl; -->
 <doWithGraphs><![CDATA[
 
@@ -2081,6 +2109,7 @@ y_wind</DEFAULT_commonStandardNames>
 </ul>
 
 ]]></doWithGraphs>
+
 <!--  DPF = Форма поставщика данных -->
 <dpf_submit><![CDATA[
 
@@ -2405,6 +2434,7 @@ ERDDAP преобразует их в байты, 1 или 0.
 <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">отправить другой набор данных</a> или вернуться на
 <a rel="bookmark" href="&tErddapUrl;/index.html">домашнюю страницу ERDDAP</a> .
 ]]></dpf_congratulation>
+
 <!--  Таблица набора данных (например, список наборов данных) -->
 <dtAccessible><![CDATA[
 <strong>Доступен ли вам этот набор данных?</strong>
@@ -2423,6 +2453,7 @@ ERDDAP преобразует их в байты, 1 или 0.
 <dtWCS>Щелкните здесь, чтобы узнать о получении данных и / или карт с помощью службы веб-покрытия этого набора данных.</dtWCS>
 <dtWMS>Щелкните здесь, чтобы узнать о создании карт на основе этих данных с помощью веб-картографической службы этого набора данных.</dtWMS>
 <EasierAccessToScientificData>Более легкий доступ к научным данным</EasierAccessToScientificData>
+
 <!--  Сообщения EDD отображаются в формах доступа к данным tabledap и griddap. -->
 <EDDClickOnSubmitHtml><![CDATA[
 Нажмите <kbd>Submit</kbd> .
@@ -2471,6 +2502,7 @@ ERDDAP преобразует их в байты, 1 или 0.
 <EDDChangedTableToGrid>Новая версия - EDDGrid. В старой версии нет!</EDDChangedTableToGrid>
 <EDDSimilarDifferentNVar>EDD.similar: другой набор данных имеет другое количество переменных.</EDDSimilarDifferentNVar>
 <EDDSimilarDifferent>EDD.similar: другой набор данных имеет другой {0} для dataVariable {1} {2}</EDDSimilarDifferent>
+
 <!--  Сообщения EDDGrid отображаются в форме доступа к данным griddap. -->
 <EDDGridDapDescription>Griddap позволяет использовать протокол OPeNDAP hyperslab для запроса подмножеств данных, графиков и карт из наборов данных с координатной привязкой (например, спутниковые данные и данные климатических моделей).</EDDGridDapDescription>
 <EDDGridDapLongDescription><![CDATA[
@@ -2570,6 +2602,7 @@ griddap использует
 <EDDGridCheckAllTooltip>Щелкните здесь, чтобы выбрать все переменные данных.</EDDGridCheckAllTooltip>
 <EDDGridUncheckAll>Снять все</EDDGridUncheckAll>
 <EDDGridUncheckAllTooltip>Щелкните здесь, чтобы отменить выбор всех переменных данных.</EDDGridUncheckAllTooltip>
+
 <!-- Примеры Griddap Эта группа настроек используется для создания примеров для документации griddap, которая находится по адресу [baseUrl] /erddap/griddap/documentation.html и в других местах.
 Специальные символы (например, &amp; &lt;&gt;) должны быть в кодировке HTML.
 Если вы хотите, чтобы примеры указывали на ваш ERDDAP, самый простой способ:
@@ -2577,6 +2610,7 @@ griddap использует
 <dataset type=" EDDGrid FromErddap &quot;<span translate="no">datasetID =&quot; jplMU RSS T41 &quot;active =&quot; true &quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2) Добавьте этот тег в свой setup.xml, но измените URL-адрес на URL-адрес вашего ERDDAP (https?):
 &lt; EDDGrid ErddapUrlExample&gt; https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrlExample&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
+
 <!--  Это идентификатор набора данных для набора данных EDDGrid, который обслуживается вашим ERDDAP.
      Этот набор данных используется в качестве основы для всех приведенных ниже примеров EDDGrid.
      В идеале это набор данных, который (по крайней мере) имеет измерения времени, широты и долготы.
@@ -2584,37 +2618,47 @@ griddap использует
      Значения долготы, используемые в примерах ниже, не должны превышать 180 (для работы с .esriAscii).
      (Это нормально, если набор данных составляет от 0 до 360 - просто используйте часть от 0 до 180 (или от 180 до 360).) -->
 <EDDGridIdExample>jplMURSST41</EDDGridIdExample>
+
 <!--  Это полная строка запроса для получения некоторых данных оси из примера набора данных сетки. -->
 <EDDGridDimensionExample>latitude[0:100:1000]</EDDGridDimensionExample>
+
 <!--  Это имя переменной данных в примере набора данных сетки. -->
 <EDDGridNoHyperExample>analysed_sst</EDDGridNoHyperExample>
+
 <!--  Это используется для наименования / объяснения / описания всех измерений в примере набора данных сетки. -->
 <EDDGridDimNamesExample>[time][latitude][longitude]</EDDGridDimNamesExample>
+
 <!--  Это пример запроса данных с использованием нотации ERDDAP () и времени в формате ISO.
      Приятно (не обязательно), что это подмножество подходит для создания карты (см. EDDGridMapExample ниже).
      Используемые значения долготы не должны охватывать 180 (для работы с .esriAscii).
      Использование &quot;: 1000:&quot; позволяет избежать отправки пользователю тонны данных.
      Вы можете создать свой пример с помощью формы доступа к данным вашего набора данных в ERDDAP. -->
 <EDDGridDataTimeExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataTimeExample>
+
 <!--  Это эквивалентный пример запроса данных, но в котором время указывается в секундах с 1970-01-01.
      Если вам нужно преобразовать дату / время в секунды с 1970-01-01, используйте
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html. -->
 <EDDGridDataValueExample>analysed_sst[(1022922000)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataValueExample>
+
 <!--  Это эквивалентный пример запроса данных, но в котором используется только традиционная нотация в стиле индексов opendap. -->
 <EDDGridDataIndexExample>analysed_sst[0][0:1000:16383][0:1000:32767]</EDDGridDataIndexExample>
+
 <!--  Это пример запроса, который генерирует график.
      Вы можете создать свой пример с помощью формы Make A Graph вашего набора данных в ERDDAP. -->
 <EDDGridGraphExample>analysed_sst[(2002-06-01T09:00:00Z):(2002-07-01T09:00:00Z)][(29)][(-135)]&amp;.draw=linesAndMarkers&amp;.vars=time|analysed_sst|&amp;.marker=1|3&amp;.color=0xFF9900&amp;.colorBar=|C|Linear|||</EDDGridGraphExample>
+
 <!--  Это пример запроса, который генерирует карту.
      В примере &quot;карта&quot; должна быть долгота, которая не охватывает 180 для .esriAscii.
      Использование &quot;: 1000:&quot; позволяет избежать отправки пользователю тонны данных.
      &quot;: 1000:&quot; не имеет значения при запросе .png, но актуально, если пользователь получает фактические данные (например, .csv). -->
 <EDDGridMapExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|analysed_sst&amp;.colorBar=Rainbow|C|Linear|0|32|</EDDGridMapExample>
+
 <!--  Это двухстрочный пример Matlab, в котором используются данные из EDDGridMapExample.
      Надеюсь, вы можете просто заменить свой datasetID на &quot;jplMURSST41&quot;
      и измените «[0 32]» (диапазон данных для цветной полосы). -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
+
 <!--  Сообщения EDDTable отображаются в форме доступа к данным tabledap и в виде графика. -->
 <EDDTableConstraints>Ограничения</EDDTableConstraints>
 <EDDTableDapDescription>Tabledap позволяет использовать протокол ограничения / выбора OPeNDAP для запроса подмножеств данных, графиков и карт из табличных наборов данных (например, данных буев).</EDDTableDapDescription>
@@ -2722,6 +2766,7 @@ tabledap использует
 Если вы выберете конкретное значение для нескольких переменных, возможно, не будет никаких совпадающих данных.
 Рассмотрите возможность использования <kbd>Subset</kbd>, которое упрощает поиск действительных комбинаций.
 ]]></EDDTableSelectConstraintTooltip>
+
 <!--  Примеры Tabledap
 Эта группа настроек используется для создания примеров для документации tabledap.
 который отображается в [baseUrl] /erddap/tabledap/documentation.html и в других местах.
@@ -2736,31 +2781,39 @@ tabledap использует
 &lt;EDDTableErddapUrlExample&gt; https://coastwatch.pfeg.noaa.gov/erddap/ &lt;/EDDTableErddapUrlExample&gt;
  -->
 <EDDTableErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDTableErddapUrlExample>
+
 <!--  Это идентификатор набора данных для набора данных EDDTable, который обслуживается вашим ERDDAP.
      Этот набор данных используется в качестве основы для всех приведенных ниже примеров EDDGrid.
      В идеале это набор данных, содержащий переменные долготы, широты и времени (среди прочего).
      («время» позволяет построить график временных рядов. «широта» и «долгота» позволяют построить карту.)
      Набор данных может иметь значения долготы от -180 до 180 или от 0 до 360. -->
 <EDDTableIdExample>pmelTaoDySst</EDDTableIdExample>
+
 <!--  Это список переменных из набора данных, разделенных запятыми.
      Полезно, если это «долгота, широта, время» плюс имя переменной данных. -->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
+
 <!--  Это пример ограничений, добавленный к EDDTableVariablesExample.
   ЭТО НЕ ИСПОЛЬЗУЕТСЯ в SSR.testForBrokenLinks, НО УДАЕТСЯ, используя его на веб-странице документации tabledap. Так что оставь это. -->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
+
 <!--  Это пример запроса данных с использованием времени в формате ISO.
      Вы можете создать свой пример с помощью формы доступа к данным вашего набора данных в ERDDAP.
   ЭТО НЕ ИСПОЛЬЗУЕТСЯ в SSR.testForBrokenLinks, НО УДАЕТСЯ, используя его на веб-странице документации tabledap. Так что оставь это. -->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
+
 <!--  Это эквивалентный пример запроса данных, но в котором время указывается в секундах с 1970-01-01.
      Если вам нужно преобразовать дату / время в «секунды с 01.01.1970», используйте
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html -->
 <EDDTableDataValueExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=1432382400&amp;time&lt;=1433073600</EDDTableDataValueExample>
+
 <!--  Это пример запроса, который генерирует график.
      Вы можете создать свой пример с помощью формы Make A Graph вашего набора данных в ERDDAP. -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+
 <!--  Это пример запроса, который генерирует карту. -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
+
 <!--  Это пример Matlab, который использует данные из EDDTableGraphExample.
      Обратите внимание на нотацию Matlab datasetName.variableName. -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
@@ -2788,6 +2841,7 @@ ERDDAP - это сервер данных, который дает вам про
 <br>&versionStringResponse;
 <br>Если вы получаете сообщение об ошибке <kbd>HTTP 404 Not-Found</kbd>, относитесь к ERDDAP как к версии 1.80 или ниже.
 ]]></erddapVersionHTML>
+
 <!--  Эти сообщения отображаются при отображении сообщения об ошибке. -->
 <errorTitle>Ошибка</errorTitle>
 <errorRequestUrl>URL вашего запроса:</errorRequestUrl>
@@ -2797,6 +2851,7 @@ ERDDAP - это сервер данных, который дает вам про
 <errorFileNotFound>Файл не найден: {0}.</errorFileNotFound>
 <errorFileNotFoundImage>Файл не найден в кеше. Восстановите изображение и попробуйте еще раз.</errorFileNotFoundImage>
 <errorInternal>Внутренняя ошибка:</errorInternal>
+
 <!--  Не включайте недопустимое (вредоносное?) Имя функции в сообщение об ошибке. -->
 <errorJsonpFunctionName>Это jsonp functionName недопустимо. Первый символ должен быть буквой ISO 8859-1 или «_». Каждый необязательный последующий символ должен быть буквой ISO 8859-1, «_», цифрой или «.».</errorJsonpFunctionName>
 <errorJsonpNotAllowed>Запрос jsonp не разрешен для этого типа файла.</errorJsonpNotAllowed>
@@ -2806,6 +2861,7 @@ ERDDAP - это сервер данных, который дает вам про
 <errorOdvLLTGrid>Для файла ODV .txt набор данных ДОЛЖЕН включать долготу, широту и оси времени.</errorOdvLLTGrid>
 <errorOdvLLTTable>Запросы данных для файлов ODV .txt должны включать данные о долготе, широте и времени.</errorOdvLLTTable>
 <errorOnWebPage>Произошла ошибка при написании этой веб-страницы:</errorOnWebPage>
+
 <!--  Они также находятся в / копируются в HtmlWidgets -->
 <errorXWasntSpecified>Ошибка: &quot;{0}&quot; не указано.</errorXWasntSpecified>
 <errorXWasTooLong>Ошибка: длина &quot;{0}&quot; превышает {1} симв.</errorXWasTooLong>
@@ -2853,6 +2909,7 @@ ERDDAP - это сервер данных, который дает вам про
 <fileHelp_ncml>Просмотрите структуру и метаданные набора данных как файл UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Загрузите время, широту, долготу и другие переменные в виде файла общей электронной таблицы ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Загрузите долготу, широту, время и другие столбцы в виде файла общей электронной таблицы ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Скачать как файл паркета.</fileHelp_parquet>
 <fileHelp_subset>Просмотрите HTML-форму, в которой используется фасетный поиск, чтобы упростить выбор подмножеств данных.</fileHelp_subset>
 <fileHelp_timeGaps>Просмотрите список UTF-8 пробелов в значениях времени, которые больше медианного пробела.</fileHelp_timeGaps>
 <fileHelp_tsv>Загрузите текстовую таблицу ISO-8859-1, разделенную табуляцией (строка 1: имена; строка 2: единицы; ISO 8601 раз).</fileHelp_tsv>
@@ -2870,6 +2927,7 @@ ERDDAP - это сервер данных, который дает вам про
 <fileHelp_png>Просмотрите стандартный файл изображения .png среднего размера с графиком или картой.</fileHelp_png>
 <fileHelp_largePng>Просмотр большого файла изображения .png с графиком или картой.</fileHelp_largePng>
 <fileHelp_transparentPng>Просмотр файла изображения .png (только данные, без осей, наземной маски или легенды).</fileHelp_transparentPng>
+
 <!--  Формулировки описания и предупреждения расплывчаты, что позволяет использовать один или несколько наборов данных. -->
 <filesDescription>Система «файлов» ERDDAP позволяет просматривать виртуальную файловую систему и загружать файлы исходных данных.</filesDescription>
 <filesSort>Щелкните заголовок (например, «Имя», «Последнее изменение», «Размер»), чтобы изменить порядок сортировки. «Последнее изменение» использует часовой пояс Зулу.</filesSort>
@@ -3254,6 +3312,7 @@ ERDDAP + curl невероятно мощный и позволяет испол
 ]]></filesDocumentation>
 <FIPSCountyCodes>Коды округов FIPS</FIPSCountyCodes>
 <functions>Серверные функции</functions>
+
 <!--  {0} = отличное (), поэтому он не переведен -->
 <functionTooltip><![CDATA[
 Таблица DAP поддерживает некоторые серверные функции, которые изменяют таблицу результатов данных.
@@ -3263,6 +3322,7 @@ ERDDAP + curl невероятно мощный и позволяет испол
 Если вы используете более одной функции, они будут применяться в том порядке, в котором они указаны в запросе.
 ]]></functionTooltip>
 <functionDistinctCheck>Отметьте это, если хотите использовать функцию unique ().</functionDistinctCheck>
+
 <!--  {0} = отличное (), поэтому он не переведен -->
 <functionDistinctTooltip><![CDATA[
 Установка флажка &quot;{0}&quot; указывает ERDDAP отсортировать таблицу результатов по всем выбранным выше переменным (при этом верхняя / первая выбранная выше переменная является наиболее важной, а другие выбранные переменные используются только для разрыва связей) и удалить все повторяющиеся строки.
@@ -3351,6 +3411,7 @@ ArcGIS Server</strong>
 </ol>
 
 ]]></geoServicesDescription>
+
 <!--  Начать работу отображается в правой части домашней страницы.
 «Начать работу с ERDDAP».
  -->
@@ -3359,6 +3420,7 @@ ArcGIS Server</strong>
 <br>&nbsp;&nbsp;&nbsp;&nbsp;Поиск интересных наборов данных</span>
 ]]></getStartedHtml>
 <help>Помощь</help>
+
 <!--  Это предотвращает наивные запросы больших объемов данных в HtmlTable.
 от сбоя браузера пользователя.
 Это используется для переопределения TableWriterHtmlTable.htmlTableMaxMB.
@@ -3373,6 +3435,7 @@ IE в Windows XP мучительно медленный.
 <br>Вы можете избежать этого, дополнительно ограничив свой запрос, чтобы в ответе было меньше данных.
 <br>Или загрузите файл, который можно просмотреть в программе, которая может обрабатывать большие файлы (например, файл .csv в текстовом редакторе).
 ]]></htmlTableMaxMessage>
+
 <!--  ETOPO2v2g_MSB.raw, gshhs *, nationalBoundaries * и stateBoundaries *
 файлы должны быть в SSR.getContextDirectory () + &quot;WEB-INF / ref /&quot;.
 Я получил государственные и национальные границы по Гринвичу:
@@ -3383,6 +3446,7 @@ IE в Windows XP мучительно медленный.
 В полученных файлах используется формат GMT_FORMAT.
  -->
 <imageDataCourtesyOf>Данные любезно предоставлены {0}</imageDataCourtesyOf>
+
 <!--  Для каждого imageSize есть imageWidth и imageHeight (в пикселях).
 Ширина находится в соотношении 2: 3: 6, что позволяет отображать 3, 2 или 1 строку в графической программе.
  -->
@@ -3474,6 +3538,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
   title="Эта ссылка на внешний веб-сайт не означает одобрения."/></a> и нажав «Подать заявку на членство».
 Став участником, вы можете разместить там свой вопрос или выполнить поиск, чтобы узнать, был ли уже задан вопрос и на него дан ответ.</div>
 ]]></imagesEmbed>
+
 <!--  текст в правой части index.html -->
 <indexViewAll>Просмотреть список всех {0} наборов данных</indexViewAll>
 <indexSearchWith>Поиск наборов данных с помощью {0}</indexSearchWith>
@@ -3492,8 +3557,10 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <indexAllDatasetsSearch>Табличный набор данных ERDDAP allDatasets, содержащий ряд информации для каждого набора данных</indexAllDatasetsSearch>
 <indexOpenSearch>Служба OpenSearch 1.1 ERDDAP</indexOpenSearch>
 <indexMetadata>Метаданные</indexMetadata>
+
 <!--  {0} {1} - это ссылка только на один из FGDC или ISO 19115 WAF -->
 <indexWAF1>ERDDAP имеет {0} с {1} файлами метаданных для всех наборов геопространственных данных в этом ERDDAP.</indexWAF1>
+
 <!--  ссылки на WAF FGDC и ISO 19115 -->
 <indexWAF2>ERDDAP имеет {0} с {1} файлами метаданных и {2} с {3} файлами метаданных для всех наборов геопространственных данных в этом ERDDAP.</indexWAF2>
 <indexConverters>Конвертеры</indexConverters>
@@ -3511,10 +3578,13 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 {0}
 Или используйте более высокие числа, если проблема не исчезнет.
 Значение по умолчанию для часов - 8192. Значение по умолчанию для экземпляров - 128.</inotifyFix>
+
 <!--  не переводить -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Интерполировать</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3526,6 +3596,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 Раздел
 <a rel="help" href="https://erddap.github.io/setup.html">Настройка собственного ERDDAP</a> .
 ]]></javaProgramsHTML>
+
 <!--  Сообщения justGenerateAndView используются для кнопки justGenerateAndView
 в формах доступа к данным.
 Сообщение justGenerateAndViewHtml может включать &amp; protocolName; .
@@ -3557,6 +3628,7 @@ URL-адрес, который вы видите здесь, является UR
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>Ключевые слова</keywords>
 <langCode>ru</langCode>
+
 <!--  Он появляется на веб-странице erddap / legal.html после Общего заявления об отказе от ответственности.
 Вы можете заменить любой из [standardParts] своим собственным HTML.
 [standardContact] ссылается на adminEmail. -->
@@ -3575,6 +3647,7 @@ URL-адрес, который вы видите здесь, является UR
 <h2><a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Отказ от ответственности</a></h2>
 ]]></legalNotices>
 <legalNoticesTitle>Юридические Уведомления</legalNoticesTitle>
+
 <!--  Название легенды карты (или ничего, если вам не нужна legendTitle).
 В ERD мы этим не пользуемся. Вы можете использовать legendTitle1 и / или legendTitle2 (вторая строка).
 Для горизонтальной легенды ERDDAP, legendTitle1 и 2 помещаются в одну строку.
@@ -3586,6 +3659,7 @@ URL-адрес, который вы видите здесь, является UR
 <legendTitle2></legendTitle2>
 <license>Лицензия</license>
 <likeThis>нравится</likeThis>
+
 <!--  например, {0} = WMS или listAll -->
 <listOfDatasets>Список {0} наборов данных</listOfDatasets>
 <listAll>Все</listAll>
@@ -3761,6 +3835,7 @@ URL-адрес, который вы видите здесь, является UR
 <LogOut>Выйти</LogOut>
 <logout>выйти</logout>
 <logoutOpenID>Выйдите из системы вашего провайдера OpenID.</logoutOpenID>
+
 <!--  logoutSuccess последнее обновление 2019-12-19 -->
 <logoutSuccess>Вы успешно вышли из системы.
 
@@ -3821,6 +3896,7 @@ URL-адрес, который вы видите здесь, является UR
 ]]></magDownloadTooltip>
 <magFileType>Затем установите Тип файла</magFileType>
 <magGraphType>Тип графика</magGraphType>
+
 <!--  Не переводите имена типов графов -->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>Тип графика</strong>
@@ -3933,6 +4009,7 @@ URL-адрес, который вы видите здесь, является UR
 ]]></magJust1Value>
 <magRange>Диапазон</magRange>
 <magRangeTo>к</magRangeTo>
+
 <!--  например, от 0 до 100 -->
 <magRedraw>Перерисуйте график</magRedraw>
 <magRedrawTooltip>Перерисуйте график в соответствии с настройками выше.</magRedrawTooltip>
@@ -4000,6 +4077,7 @@ URL-адрес, который вы видите здесь, является UR
 См.
 Ссылку «Обойти эту форму» ниже.
 ]]></magTableTooltip>
+
 <!--  Ошибки, связанные с памятью, должны содержать это слово. Это должно быть все в нижнем регистре (для тестирования без учета регистра). -->
 <memory>объем памяти</memory>
 <memoryTooMuchData>Ваш запрос произвел слишком много данных. Попробуйте запросить меньше данных. [объем памяти]</memoryTooMuchData>
@@ -4008,7 +4086,9 @@ URL-адрес, который вы видите здесь, является UR
 <memoryThanSafe>Запросу требуется больше памяти ({0} МБ), чем когда-либо безопасно доступно в этой настройке Java ({1} МБ).</memoryThanSafe>
 <metadataDownload>Нажмите, чтобы загрузить метаданные {0}.</metadataDownload>
 <moreInformation>больше информации</moreInformation>
+
 <!--  Эти сообщения в стиле MessageFormat помещаются в MustBe.xxx. -->
+
 <!--  Это важное сообщение об ошибке. Это указывает на то, что запрос был действителен,
 но по результату не было данных. Клиенты могут искать именно это сообщение.
 На данный момент лучше не менять это.
@@ -4017,11 +4097,13 @@ URL-адрес, который вы видите здесь, является UR
 Лучше вернуть пустой файл? Но .nc и другие не допускают данных нулевой длины.
  -->
 <MustBeThereIsNoData>Ваш запрос не дал подходящих результатов.</MustBeThereIsNoData>
+
 <!--  Многие типы файлов ограничивают объем данных, которые может содержать файл (например, 2 ГБ). -->
 <MustBeNotNull>{0} не может быть пустым.</MustBeNotNull>
 <MustBeNotEmpty>{0} не может быть пустой строкой.</MustBeNotEmpty>
 <MustBeInternalError>Внутренняя ошибка</MustBeInternalError>
 <MustBeOutOfMemoryError>Ошибка нехватки памяти</MustBeOutOfMemoryError>
+
 <!--  Они могут иметь HTML-контент -->
 <nMatching1>1 соответствующий набор данных.</nMatching1>
 <nMatching>{0} совпадающих наборов данных.</nMatching>
@@ -4031,8 +4113,10 @@ URL-адрес, который вы видите здесь, является UR
 <nMatchingCurrent>Текущий</nMatchingCurrent>
 <noDataFixedValue>Переменная с фиксированным значением = {0} не прошла тест {1}.</noDataFixedValue>
 <noDataNoLL>Нет действительных значений долготы или широты.</noDataNoLL>
+
 <!--  например, {0} = &quot;protocol = griddap&quot; -->
 <noDatasetWith>В настоящее время нет наборов данных с {0}.</noDatasetWith>
+
 <!--  {0} = страница {1} = lastPage -->
 <noPage1>Вы запросили страницу результатов = {0}, но последняя страница - {1}.</noPage1>
 <noPage2>Запросите страницу с 1 по {1}.</noPage2>
@@ -4041,6 +4125,7 @@ URL-адрес, который вы видите здесь, является UR
 <notAuthorizedForData>loggedInAs = {0} не авторизован для доступа к данным из datasetID = {1}, но авторизован для доступа к графикам и метаданным.</notAuthorizedForData>
 <notAvailable>В настоящее время datasetID = {0} недоступен.</notAvailable>
 <note>ПРИМЕЧАНИЕ!</note>
+
 <!--  Xxx - это сделать график, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
 <noXxx>Этот набор данных никогда не доступен через {0}.</noXxx>
 <noXxxBecause>Этот набор данных никогда не доступен через {0}, потому что {1}.</noXxxBecause>
@@ -4099,6 +4184,13 @@ URL-адрес, который вы видите здесь, является UR
 Параметры внизу этой веб-страницы.
 <br>&nbsp;
 ]]></outOfDateKeepTrack>
+
+<!--pageFirst>first</pageFirst>
+<pagePrevious>Предыдущее</pagePrevious>
+<pageCurrent>current</pageCurrent>
+<pageNext>next</pageNext>
+<pageLast>last</pageLast-->
+
 <!--  Это варианты палитры.
      Для каждого в каталоге erddap / WEB-INF / cptfiles должен быть файл .cpt.
   Стандартные палитры перечислены в «палитрах» в файле messages.xml Боба,
@@ -4114,6 +4206,7 @@ KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
 KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <patientData>(Наберитесь терпения. Получение данных может занять некоторое время.)</patientData>
 <patientYourGraph>[График, который вы указали. Пожалуйста, проявите терпение.]</patientYourGraph>
+
 <!--  Для каждого imageSize есть pdfWidth и pdfHeight (в 1/144 дюйма).
 Максимальный размер, который может поместиться на странице (поля 0,5 дюйма LR, поля размером 1 ТБ дают наилучший размер легенды).
 Ширина в соотношении 1: 2: 3.
@@ -4137,6 +4230,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> .
 ]]></percentEncode>
 <pickADataset>Выберите набор данных</pickADataset>
+
 <!--  Сообщения, относящиеся к поиску наборов данных на основе протоколов. -->
 <protocolSearchHtml>Поиск наборов данных по протоколу</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -4490,8 +4584,10 @@ ERDDAP имеет следующие точки доступа URL-адресо�
 <searchDoFullTextHtml>Полнотекстовый поиск наборов данных</searchDoFullTextHtml>
 <searchFullTextHtml>Полнотекстовый поиск наборов данных</searchFullTextHtml>
 <searchButton>Поиск</searchButton>
+
 <!--  Текст всплывающей подсказки для кнопки «Отправить» для полнотекстового поиска. -->
 <searchClickTip>Щелкните здесь, чтобы отправить свой поисковый запрос.</searchClickTip>
+
 <!--  Это HTML-код для описания деталей полнотекстового поиска.
   EDStatic изменяет это, а затем добавляет &lt;div class = &quot;standard_max_width&quot;&gt;. -->
 <searchHintsTooltip><![CDATA[
@@ -4541,12 +4637,15 @@ ERDDAP будет искать слова отдельно, а не как фр�
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> .
 ]]></searchMultipleERDDAPsDescription>
 <searchNotAvailable>Извините. Поисковая система сейчас недоступна.</searchNotAvailable>
+
 <!--  Текст всплывающей подсказки для текстового поля полнотекстового поиска. -->
 <searchTip>Как и в поиске Google, введите слова, разделенные пробелами, например &quot;{0}&quot;.</searchTip>
 <searchSpelling>Проверьте написание искомых слов.</searchSpelling>
 <searchFewerWords>Попробуйте использовать меньше поисковых слов.</searchFewerWords>
+
 <!--  {0} = plainFileType поискового запроса, {1} = образец запроса. -->
 <searchWithQuery>Поисковый запрос {0} должен включать запрос, например &quot;{1}&quot;.</searchWithQuery>
+
 <!--  Да, это правильно. {0} = url {1} = uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 Подробнее см.
@@ -4605,6 +4704,7 @@ valid_max, valid_min, valid_range</signedToUnsignedAttNames>
 ]]></sosLongDescriptionHtml>
 <sparqlP01toP02pre>https://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
 <sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
+
 <!--  Сообщения SlideSorter -->
 <ssUse><![CDATA[
 
@@ -4636,6 +4736,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 </ol>
 
 ]]></ssInstructionsHtml>
+
 <!--  Стандартная лицензия добавляется ко многим глобальным метаданным наборов данных (см. Datasets.xml). -->
 <standardLicense>Данные могут использоваться и распространяться бесплатно, но не предназначены
 для легального использования, так как он может содержать неточности. Ни данные
@@ -4644,6 +4745,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 подразумеваемые, включая гарантии товарной пригодности и пригодности для
 конкретной цели или принимает на себя любую юридическую ответственность за точность,
 полнота или полезность этой информации.</standardLicense>
+
 <!--  Это используется &lt;legal&gt; в setup.xml. -->
 <standardContact><![CDATA[
 
@@ -4653,6 +4755,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 Вопросы, комментарии, предложения?
 Отправьте электронное письмо на адрес <kbd>&adminEmail;</kbd>&nbsp;.
 ]]></standardContact>
+
 <!--  Это используется &lt;legal&gt; в setup.xml. -->
 <standardDataLicenses><![CDATA[
 
@@ -4663,6 +4766,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 См.
 &license; метаданные, которые можно найти на веб-страницах формы доступа к данным (.html), создания диаграммы (.graph) и структуры атрибутов набора данных (.das).
 ]]></standardDataLicenses>
+
 <!--  Это используется &lt;legal&gt; в setup.xml. -->
 <standardDisclaimerOfEndorsement><![CDATA[
 
@@ -4670,6 +4774,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 Любая ссылка, полученная с этого сервера на конкретный продукт, процесс или услугу, не означает и не подразумевает одобрения отдельными лицами или организациями, связанными с этим веб-сайтом, продукта, процесса или услуги, либо их производителя или поставщика.
 Взгляды и мнения, выраженные в любом упомянутом документе, не обязательно отражают или отражают взгляды отдельных лиц или организаций, связанных с этим веб-сайтом.
 ]]></standardDisclaimerOfEndorsement>
+
 <!--  Это используется &lt;legal&gt; в setup.xml.
   Это основано на https://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
 <standardDisclaimerOfExternalLinks><![CDATA[
@@ -4679,6 +4784,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 Физические лица и организации, связанные с этим веб-сайтом, не осуществляют никакого редакционного контроля над информацией, которую вы можете найти в этих местах.
 Эти ссылки предоставляются в соответствии с заявленной целью этого веб-сайта.
 ]]></standardDisclaimerOfExternalLinks>
+
 <!-- Это используется<legal> в setup.xml.
 Это от BSD плюс два экземпляра «, WEB SERVICE, AND / OR DATA».
 До 05.08.2010 было
@@ -4692,6 +4798,7 @@ Open</kbd>, чтобы открыть копию на жестком диске 
 <kbd>НАСТОЯЩЕЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ, ВЕБ-СЕРВИС И ДАННЫЕ ПРЕДОСТАВЛЯЮТСЯ ОБЛАДАТЕЛЯМИ АВТОРСКИХ ПРАВ И СОСТАВЛЯЮЩИМИ «КАК ЕСТЬ» И ЛЮБЫМИ ЯВНЫМИ ИЛИ ПОДРАЗУМЕВАЕМЫМИ ГАРАНТИЯМИ, ВКЛЮЧАЯ, НЕ ОГРАНИЧИВАЯСЬ, ПОДРАЗУМЕВАЕМЫЕ ГАРАНТИИ КОММЕРЧЕСКОЙ ЦЕННОСТИ И ПРИГОДНОСТИ ДЛЯ ОПРЕДЕЛЕННОЙ ПРИГОДНОСТИ.
 ВЛАДЕЛЕЦ АВТОРСКИХ ПРАВ ИЛИ СОСТАВНИКИ НИ ПРИ КАКИХ ОБСТОЯТЕЛЬСТВАХ НЕ НЕСЕТ ОТВЕТСТВЕННОСТИ ЗА ЛЮБЫЕ ПРЯМЫЕ, КОСВЕННЫЕ, СЛУЧАЙНЫЕ, СПЕЦИАЛЬНЫЕ, ПРИМЕРНЫЕ ИЛИ КОСВЕННЫЕ УБЫТКИ (ВКЛЮЧАЯ, НО НЕ ОГРАНИЧИВАЯСЬ, ЗАКУПКИ ТОВАРОВ ИЛИ УСЛУГ; ПОТЕРЮ ИСПОЛЬЗОВАНИЯ ИЛИ ИСПОЛЬЗОВАНИЯ ДАННЫХ, НО НЕ ОГРАНИЧИВАЮТСЯ) ИЛИ ПЕРЕРЫВ В ДЕЯТЕЛЬНОСТИ), ОДНАКО ВЫЗВАННОЙ И ПО ЛЮБОЙ ТЕОРИИ ОТВЕТСТВЕННОСТИ, ЛИБО ПО КОНТРАКТУ, СТРОГОЙ ОТВЕТСТВЕННОСТИ ИЛИ ПЕРЕДАЧИ (ВКЛЮЧАЯ НЕБРЕЖНОСТЬ ИЛИ Иным образом), ВОЗНИКАЮЩИЕ ЛЮБОЙ СПОСОБ ПРИ ИСПОЛЬЗОВАНИИ ДАННОГО ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ, ВЕБ-СЛУЖБЫ ИЛИ РЕКОМЕНДАЦИИ ВОЗМОЖНОСТЬ ТАКОГО ПОВРЕЖДЕНИЯ.</kbd>
 ]]></standardGeneralDisclaimer>
+
 <!--  Это используется &lt;legal&gt; в setup.xml. -->
 <standardPrivacyPolicy><![CDATA[
 
@@ -4705,6 +4812,7 @@ ERDDAP следует
 <status>Положение дел</status>
 <statusHtml>Веб-страница состояния - это быстрый способ проверить текущий статус / состояние
 этого ERDDAP, включая список наборов данных, которые не удалось загрузить.</statusHtml>
+
 <!--  Текст для кнопки «Отправить» в различных формах. -->
 <submit>Представлять на рассмотрение</submit>
 <submitTooltip>Отправьте информацию в эту форму и начните загрузку данных.</submitTooltip>
@@ -4781,6 +4889,7 @@ ERDDAP немедленно обнаружит, когда этот набор �
 <subscriptionEmailInvalid>Отправленный вами адрес электронной почты недействителен.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>Отправленный вами адрес электронной почты слишком длинный.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>Вы не указали свой адрес электронной почты.</subscriptionEmailUnspecified>
+
 <!--  Идентификатор используется для идентификатора набора данных и идентификатора подписки. -->
 <subscriptionIDInvalid>Отправленный вами идентификатор недействителен.</subscriptionIDInvalid>
 <subscriptionIDTooLong>Отправленный вами идентификатор слишком длинный.</subscriptionIDTooLong>
@@ -4856,6 +4965,7 @@ URL / действие недействительно.
 <p><span class="successColor"><strong>Ваш запрос на подтверждение подписки был получен.</strong>
 <br>Если ключ правильный, а подписка еще не действительна, подписка будет подтверждена.</span>
 ]]></subscriptionValidateSuccess>
+
 <!--  Это краткое описание ERDDAP, которое используется в середине
 левая часть домашней страницы ERDDAP.
 Это может относиться к &amp; erddapUrl;
@@ -4939,7 +5049,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> включает ERDDAP в список рекомендуемых серверов данных для использования группами в NOAA .
 ]]></standardShortDescriptionHtml>
+
 <!--  Боб: см. Идентичную таблицу css в Table.ERD_TABLE_CSS -->
+
 <!--  startHeadHtml имеет начало HTML-документа и теги head.
 (начиная с «&lt;! DOCTYPE», но не включая «&lt;/head&gt;»)
 для всех веб-страниц HTML.
@@ -4976,6 +5088,7 @@ favicon.ico - это изображение, которое браузеры с�
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -5006,6 +5119,7 @@ favicon.ico - это изображение, которое браузеры с�
   </tr> 
 </table>
 ]]></startBodyHtml5>
+
 <!-- Это краткое описание ERDDAP, которое используется в середине левой части домашней страницы ERDDAP .
 Это может относиться к &erddapUrl;, [theShort1], [theShort2] и [standardShortDescriptionHtml] (из [tomcat] /webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml).
 Если ваш ERDDAP может использовать https, все файлы изображений, на которые есть ссылки, и т.
@@ -5023,6 +5137,7 @@ favicon.ico - это изображение, которое браузеры с�
 <thisParticularErddap><![CDATA[
 Эта конкретная установка ERDDAP имеет океанографические данные (например, данные со спутников и буев).
 ]]></thisParticularErddap>
+
 <!--  Вы можете изменить другие параметры, но сохраните &quot;ERDDAP, Version &amp; erddapVersion;&quot; а также
      эти ссылки на Заявление об отказе от ответственности и Политику конфиденциальности. -->
 <endBodyHtml5><![CDATA[
@@ -5066,6 +5181,7 @@ favicon.ico - это изображение, которое браузеры с�
 <subsetViewSelectRelatedCounts>количество связанных данных</subsetViewSelectRelatedCounts>
 <subsetWhen>Когда {0},</subsetWhen>
 <subsetWhenNoConstraints>Когда нет ограничений,</subsetWhenNoConstraints>
+
 <!--  Следующему тегу предшествует один из двух предыдущих тегов.
   {0} - это subsetViewSelectDistintCombos или subsetViewSelectRelatedCounts. -->
 <subsetWhenCounts>{0} для {1} значений &quot;{2}&quot;:</subsetWhenCounts>
@@ -5146,6 +5262,7 @@ title="Эта ссылка на внешний веб-сайт не означа
 <theKey>Ключ</theKey>
 <theSubscriptionID>Идентификатор подписки</theSubscriptionID>
 <theUrlAction>URL / действие</theUrlAction>
+
 <!--  Это подробное описание ERDDAP, которое используется на веб-странице справочной информации.
 Это может относиться к &amp; erddapUrl ;, &amp; ssUse; .
  -->
@@ -5839,6 +5956,7 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 ]]></theLongDescriptionHtml>
 <Then>потом</Then>
 <twoClickMapDefaultTooltip>Укажите прямоугольник, щелкнув по двум диагональным углам. При необходимости сделайте это снова.</twoClickMapDefaultTooltip>
+
 <!--  Это способ переопределить преобразователь стандартизации UDUnits ERDDAP.
 путем предоставления конкретных преобразований.
 standardizeUdunits имеет тройку строк: до, после и пустую.
@@ -5846,13 +5964,17 @@ standardizeUdunits имеет тройку строк: до, после и пу�
 он будет преобразован в значение UDUNITS &quot;после&quot;.
 Пустые строки гарантируют, что остальные строки будут строками «до» и «после».
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Время</time>
 <timeoutOtherRequests>Тайм-аут ожидания обработки других ваших запросов.</timeoutOtherRequests>
+
 <!--  Это способ переопределить преобразователь UCUM в UDUNITS ERDDAP.
 путем предоставления конкретных преобразований.
 ucumToUdunits имеет тройку строк: до, после и пустую.
@@ -5860,7 +5982,8 @@ ucumToUdunits имеет тройку строк: до, после и пусту
 он будет преобразован в значение UDUNITS &quot;после&quot;.
 Пустые строки гарантируют, что остальные строки будут строками «до» и «после».
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -5870,7 +5993,10 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
+
 <!--  Это способ переопределить преобразователь UDUNITS в UCUM ERDDAP.
 путем предоставления конкретных преобразований.
 udunitsToUcum имеет тройку строк: до, после и пустую.
@@ -5878,7 +6004,8 @@ udunitsToUcum имеет тройку строк: до, после и пусту
 он будет преобразован в значение UCUM «после».
 Пустые строки гарантируют, что остальные строки будут строками «до» и «после».
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5900,7 +6027,10 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
+
 <!-- Это попытка справиться с устаревшими исходными метаданными URL-адресов.
 updateUrls применяется к каждому атрибуту метаданных String набора данных (глобальному и переменному) каждый раз при загрузке набора данных.
 updateUrls имеет тройку строк:
@@ -5919,7 +6049,8 @@ updateUrls имеет тройку строк:
 //www.csc.noaa.gov на побережье конвертация несовершенная:
 документы в разных местах.
 Это обычное дело для больших изменений доменного имени. -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7012,7 +7143,10 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
+
 <!-- Это URL-адреса http, которые, вероятно, когда-нибудь будут доступны по https.
 Они перечислены здесь в качестве комментария для быстрого тестирования.
 !!! КОГДА ОДИН СТАНОВИТСЯ ДЕЙСТВИТЕЛЬНЫМ, Боб переместит его в updateUrls выше и внесет изменения в соответствующий исходный код, страницы .html, messages.xml и мой datasets.xml .
@@ -7040,6 +7174,7 @@ https://www.j2eeprogrammer.com https://www.jdom.org https://www.libpng.org https
 / /www.myroms.org/erddap/index.html https://myroms.org в порядке https://www.nanoos.org https://www.neracoos.org https://www.ogcnetwork.net https:
 //www.opengis.net https://www.openwebfoundation.org https://www.remss.com https://www.schemacentral.com https://www.slf4j.org https:
 //www.usgin .org -->
+
 <!-- Это список имен атрибутов, разделенных запятыми, которые updateUrls пропускает.
 Это не может быть ничего.
 Поэтому, если вам ничего не нужно, введите тарабарщину, которая никогда не будет именем атрибута. -->

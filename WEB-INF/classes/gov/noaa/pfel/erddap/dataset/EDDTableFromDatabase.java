@@ -21,6 +21,8 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromDatabaseHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.math.BigDecimal;
@@ -47,6 +49,7 @@ import javax.sql.DataSource;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
+@SaxHandlerClass(EDDTableFromDatabaseHandler.class)
 public class EDDTableFromDatabase extends EDDTable {
 
   /** set by the constructor */
@@ -79,6 +82,7 @@ public class EDDTableFromDatabase extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromDatabase fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
     return lowFromXml(erddap, xmlReader, "");

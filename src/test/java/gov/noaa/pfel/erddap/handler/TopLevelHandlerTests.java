@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,10 +29,17 @@ public class TopLevelHandlerTests {
   private static InputStream inputStream;
   private static SaxHandler saxHandler;
   private static SaxParsingContext context;
+  private static HashSet<String> preservedAngularDegreeUnitsSet;
 
   @BeforeAll
   static void initAll() throws Throwable {
     Initialization.edStatic();
+
+    // FIXME: Tests should not alter EDStatic state which other tests depend on
+    //        because test execution order is not guaranteed. As a temporary fix,
+    //        preserve the original angularDegreeUnitsSet and restore it after the tests.
+    preservedAngularDegreeUnitsSet = new HashSet<>(EDStatic.angularDegreeUnitsSet);
+
     context = new SaxParsingContext();
 
     context.setNTryAndDatasets(new int[2]);
@@ -40,6 +48,8 @@ public class TopLevelHandlerTests {
     context.setDatasetIDSet(new HashSet<>());
     context.setDuplicateDatasetIDs(new StringArray());
     context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
+    context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
@@ -54,6 +64,13 @@ public class TopLevelHandlerTests {
     saxHandler = new SaxHandler(context);
     topLevelHandler = new TopLevelHandler(saxHandler, context);
     saxHandler.setState(topLevelHandler);
+  }
+
+  @AfterAll
+  static void tearDownAll() throws IOException {
+    // restore altered angularDegreeUnitsSet because other tests depend on it
+    // (e.g. EDDTableFromNcFilesTests#testOrderByMean2)
+    EDStatic.angularDegreeUnitsSet = preservedAngularDegreeUnitsSet;
   }
 
   @BeforeEach

@@ -54,6 +54,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -196,6 +197,7 @@ public abstract class EDDTable extends EDD {
     ".nccsvMetadata",
     ".ncoJson",
     ".odvTxt",
+    ".parquet",
     ".subset",
     ".tsv",
     ".tsvp",
@@ -238,6 +240,7 @@ public abstract class EDDTable extends EDD {
     ".csv",
     ".json",
     ".txt",
+    ".parquet",
     ".html",
     ".tsv",
     ".tsv",
@@ -287,6 +290,7 @@ public abstract class EDDTable extends EDD {
     "https://erddap.github.io/NCCSV.html",
     "https://nco.sourceforge.net/nco.html#json",
     "https://odv.awi.de/en/documentation/", // odv
+    "https://parquet.apache.org/",
     "https://en.wikipedia.org/wiki/Faceted_search", // subset
     "https://jkorpela.fi/TSV.html", // tsv
     "https://jkorpela.fi/TSV.html", // tsv
@@ -450,6 +454,7 @@ public abstract class EDDTable extends EDD {
             EDStatic.fileHelp_nccsvMetadataAr[tl],
             EDStatic.fileHelp_ncoJsonAr[tl],
             EDStatic.fileHelpTable_odvTxtAr[tl],
+            EDStatic.fileHelp_parquetAr[tl],
             EDStatic.fileHelp_subsetAr[tl],
             EDStatic.fileHelp_tsvAr[tl],
             EDStatic.fileHelp_tsvpAr[tl],
@@ -3657,6 +3662,11 @@ public abstract class EDDTable extends EDD {
           new TableWriterAllWithMetadata(
               language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
       tableWriter = twawm;
+    } else if (fileTypeName.equals(".parquet")) {
+      twawm =
+          new TableWriterAllWithMetadata(
+              language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
+      tableWriter = twawm;
     } else if (fileTypeName.equals(".tsv"))
       tableWriter =
           new TableWriterSeparatedValue(
@@ -3736,13 +3746,17 @@ public abstract class EDDTable extends EDD {
       // special case: for these, tableWriter=twawm
       //  so (unlike e.g., tableWriter is a TableWriterJson), we aren't quite finished.
       //  Data is in twawm and we need to save it to file.
-      if (fileTypeName.equals(".mat")) saveAsMatlab(language, outputStreamSource, twawm, datasetID);
-      else if (fileTypeName.equals(".itx"))
+      if (fileTypeName.equals(".mat")) {
+        saveAsMatlab(language, outputStreamSource, twawm, datasetID);
+      } else if (fileTypeName.equals(".itx")) {
         saveAsIgor(language, outputStreamSource, twawm, datasetID);
-      else if (fileTypeName.equals(".ncoJson"))
+      } else if (fileTypeName.equals(".ncoJson")) {
         saveAsNcoJson(language, outputStreamSource, twawm, jsonp);
-      else if (fileTypeName.equals(".odvTxt"))
+      } else if (fileTypeName.equals(".odvTxt")) {
         saveAsODV(language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
+      } else if (fileTypeName.equals(".parquet")) {
+        saveAsParquet(language, outputStreamSource, twawm, datasetID);
+      }
       return;
     }
 
@@ -7873,6 +7887,35 @@ public abstract class EDDTable extends EDD {
     if (reallyVerbose)
       String2.log(
           "  EDDTable.saveAsODV done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+  }
+
+  public static void saveAsParquet(
+      int language,
+      OutputStreamSource outputStreamSource,
+      TableWriterAllWithMetadata twawm,
+      String datasetID)
+      throws Throwable {
+    Table table = twawm.cumulativeTable();
+    twawm.releaseResources();
+    String parquetTempFileName =
+        Path.of(
+                EDStatic.fullTestCacheDirectory,
+                datasetID + Math2.random(Integer.MAX_VALUE) + ".parquet")
+            .toString();
+    table.writeParquet(parquetTempFileName);
+
+    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+    try {
+      if (!File2.copy(parquetTempFileName, out))
+        throw new SimpleException(String2.ERROR + " while transmitting file.");
+    } finally {
+      try {
+        out.close();
+      } catch (Exception e) {
+      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+    }
+
+    File2.delete(parquetTempFileName);
   }
 
   /**

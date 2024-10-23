@@ -15,6 +15,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableAggregateRowsHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-02-19
  */
+@SaxHandlerClass(EDDTableAggregateRowsHandler.class)
 public class EDDTableAggregateRows extends EDDTable {
 
   protected int nChildren;
@@ -48,6 +51,7 @@ public class EDDTableAggregateRows extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableAggregateRows fromXml(Erddap tErddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

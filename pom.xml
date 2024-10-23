@@ -35,7 +35,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.24</version>
+    <version>2.25</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -43,11 +43,11 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <erddapcontent.download.version>v2.25</erddapcontent.download.version>
+        <erddapcontent.download.version>content1.0.0</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.6.0</netcdfJavaVersion>
-        <test.resources.version>test1.03</test.resources.version>
-        <jettyVersion>12.0.11</jettyVersion>
+        <test.resources.version>test1.04</test.resources.version>
+        <jettyVersion>12.0.14</jettyVersion>
         <error-prone.version>2.27.0</error-prone.version>
     </properties>
 
@@ -90,7 +90,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -158,19 +158,38 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.5.0</version>
                 <executions>
-                <execution>
-                    <id>enforce-maven</id>
-                    <goals>
-                    <goal>enforce</goal>
-                    </goals>
-                    <configuration>
-                    <rules>
-                        <requireMavenVersion>
-                            <version>3.6.3</version>
-                        </requireMavenVersion>
-                    </rules>    
-                    </configuration>
-                </execution>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>no-test-data-in-src-test-resources</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireFilesDontExist>
+                                    <message>Test data directories should be removed from src/test/resources</message>
+                                    <files>
+                                        <file>${project.basedir}/src/test/resources/data</file>
+                                        <file>${project.basedir}/src/test/resources/largeFiles</file>
+                                        <file>${project.basedir}/src/test/resources/largePoints</file>
+                                        <file>${project.basedir}/src/test/resources/largeSatellite</file>
+                                    </files>
+                                </requireFilesDontExist>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -180,9 +199,24 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
+                    <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, download_cache/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, *.*, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
@@ -216,7 +250,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <mkdir dir="${project.basedir}/data"/>
+                                <mkdir dir="${project.basedir}/target/data"/>
                             </target>
                         </configuration>
                     </execution>
@@ -225,7 +259,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.9.0</version>
+                <version>1.11.0</version>
                 <executions>
                     <execution>
                         <id>download-content</id>
@@ -237,7 +271,6 @@
                             <url>https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -251,7 +284,6 @@
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -265,7 +297,6 @@
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -279,8 +310,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -293,8 +323,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -307,8 +336,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -321,8 +349,7 @@
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/src/test/resources/</outputDirectory>
-                            <cacheDirectory>${project.basedir}/download_cache</cacheDirectory>
+                            <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
                     </execution>
@@ -330,16 +357,19 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.1</version>
                 <configuration>
                     <argLine>${surefire.jacoco.args}</argLine>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
                     <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -348,6 +378,9 @@
                         </goals>
                         <configuration>
                             <argLine>${failsafe.jacoco.args}</argLine>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                            </additionalClasspathElements>
                             <groups>Jetty, Slow</groups>
                             <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
                             <includes>
@@ -363,7 +396,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.6.0</version>
+                <version>4.8.6.4</version>
                 <configuration>
                     <maxHeap>2048</maxHeap>
                     <includeFilterFile>spotbugs-security-include.xml</includeFilterFile>
@@ -514,17 +547,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>3.8.0</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>4.0.1</version>
+                    <version>4.0.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.13.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -538,7 +571,7 @@
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.26.22</version> <!-- and same number several places below -->
+              <version>2.28.23</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -546,9 +579,53 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.11.0-M2</version>
+                <version>5.11.2</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- This is needed due to indirect dependency in cdm-core -->
+            <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.5</version>
+            </dependency>
+
+            <!--
+            The below are here to force updated dependencies of the hadoop libraries.
+            The default selections have security vulnerabilities. Ideally we wouldn't be including
+            hadoop at all, but parquet currently has dependencies on hadoop to read and write files.
+            -->
+            <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>1.12.0</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
+            <dependency>
+                <groupId>dnsjava</groupId>
+                <artifactId>dnsjava</artifactId>
+                <version>3.6.2</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.78.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-configuration2</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>9.41.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -607,7 +684,7 @@
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.3</version>
         </dependency>
 
         <!-- Kyle had this: 
@@ -623,7 +700,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>9.11.1</version>
+            <version>10.0.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -631,7 +708,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>9.11.1</version>
+            <version>10.0.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -687,7 +764,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.26.2</version>
+            <version>1.27.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging
@@ -825,7 +902,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.3</version>
+            <version>42.7.4</version>
         </dependency>
 
 
@@ -845,7 +922,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.2.1-jre</version>
+            <version>33.3.1-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -861,7 +938,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.26</version>
+            <version>4.2.28</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -869,7 +946,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.112.Final</version>
+            <version>4.1.114.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -877,7 +954,7 @@
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.10.5</version>
+            <version>1.1.10.7</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
@@ -901,7 +978,7 @@
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.26.22</version>
+          <version>2.28.23</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -909,7 +986,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.26.22</version>
+            <version>2.28.23</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -917,7 +994,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.26.22</version>
+            <version>2.28.23</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
@@ -927,48 +1004,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.30.0</version>
+            <version>0.31.3</version>
         </dependency>
 
-
-        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
-        <!-- Added by Qi for translation purpose -->
-        <!-- WARNING:
-             2022-02-07 2.1.10 caused a timeout error. Revert to 2.1.7 again.
-             2021-12-22 2.1.8 caused:   Exception in thread "grpc-default-executor-0" java.lang.NoSuchMethodError: 
-             com.google.protobuf.GeneratedMessageV3.isStringEmpty(Ljava/lang/Object;)Z
-             so revert to 2.1.7 for now -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-translate</artifactId>
-            <version>2.46.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.25.5</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
-        <!-- Added by Bob for translation project -->
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.46.0</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.24.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
-        <dependency>
-            <groupId>com.google.api</groupId>
-            <artifactId>gax</artifactId>
-            <version>2.50.0</version>
+            <version>1.28.0</version>
         </dependency>
 
         <dependency>
@@ -986,6 +1029,37 @@
             <artifactId>prometheus-metrics-exporter-servlet-jakarta</artifactId>
             <version>1.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.177</version>
+        </dependency>
+         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>3.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+            </exclusions> 
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-common</artifactId>
+            <version>1.14.3</version>
+        </dependency>
+         <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-encoding</artifactId>
+            <version>1.14.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>1.14.3</version>
+        </dependency>
     </dependencies>
 
     <reporting>
@@ -993,12 +1067,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
                 <reportSets>
                     <reportSet>
                         <id>integration-tests</id>

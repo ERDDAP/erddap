@@ -229,6 +229,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromCassandraHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -261,6 +263,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-11-03
  */
+@SaxHandlerClass(EDDTableFromCassandraHandler.class)
 public class EDDTableFromCassandra extends EDDTable {
 
   // see getSession
@@ -318,6 +321,7 @@ public class EDDTableFromCassandra extends EDDTable {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromCassandra fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

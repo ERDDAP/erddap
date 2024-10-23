@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml berisi pesan teks untuk ERDDAP (yang dibaca di EDStatic).
 Saat Anda menginstal ERDDAP di server Anda, semua pesan ini dapat dibiarkan apa adanya,
 karena pesan-pesan ini biasanya sama pada instalasi ERDDAP yang berbeda.
@@ -30,7 +30,7 @@ Sistem terjemahan MEMERLUKAN &quot;pseudoEntity&quot; hanya menggunakan [a-zA-Z0
   messages-de.xml dan -ga memiliki banyak tautan yang diduplikasi. Saya yakin masih banyak lagi yang seperti ini.
 
  -->
-<erddapMessages>
+
 <!--  Ini mengembalikan konten HTML yang menjelaskan Meminta File Terkompresi.
 Lihat https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 yang mengatakan bahwa x-gzip=gzip dan x-compress=compress
@@ -81,11 +81,13 @@ Kemudian, ERDDAP akan menambahkan semuanya
   Jika Anda memiliki saran untuk tautan tambahan, hubungi <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Dataset ini berupa tabel yang berisi deretan informasi untuk setiap dataset yang sedang aktif di ERDDAP ini.</admSummary>
 <admTitle>Daftar Semua Dataset Aktif di ERDDAP ini</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Beberapa kumpulan data bersifat publik. Beberapa mungkin bersifat pribadi dan mungkin tidak dapat Anda akses.</advc_accessible>
@@ -553,6 +555,7 @@ Ada
 <convertFipsCounty>Konversikan Kode Wilayah FIPS ke/dari Nama Wilayah</convertFipsCounty>
 
 <!--  Jangan ubah contoh (dari defaultN...).  -->
+
 <!--  &quot;Kode wilayah FIPS&quot; adalah tautan ke http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      lalu https://www.census.gov/geo/reference/codes/cou.html 
      Sekarang yang terdekat(?) adalah http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2704,7 +2707,7 @@ Jika Anda ingin contoh mengarah ke ERDDAP Anda, cara termudah adalah:
      Mudah-mudahan, Anda bisa mengganti datasetID Anda dengan &quot;jplMURSST41&quot;
      dan ubah &quot;[0 32]&quot; (rentang data untuk bilah warna).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  Pesan EDDTable ditampilkan pada tabledap Formulir Akses Data dan Buat Grafik.  -->
 <EDDTableConstraints>Kendala</EDDTableConstraints>
@@ -2861,7 +2864,7 @@ Jika Anda ingin contoh mengarah ke ERDDAP Anda, cara termudah adalah:
 
 <!--  Ini adalah contoh kueri yang menghasilkan grafik. 
      Anda dapat membuat contoh melalui formulir Make A Graph kumpulan data Anda di ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Ini adalah contoh kueri yang menghasilkan peta.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2965,6 +2968,7 @@ Misalnya:
 <fileHelp_ncml>Lihat struktur dan metadata himpunan data sebagai file .xml UTF-8 NCML.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Unduh waktu, lintang, bujur, Variabel lain sebagai File Spreadsheet Generik ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Unduh bujur, lintang, waktu, kolom lain sebagai File Spreadsheet Generik ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Unduh sebagai file parket.</fileHelp_parquet>
 <fileHelp_subset>Lihat formulir HTML yang menggunakan penelusuran tersaring untuk menyederhanakan pemilihan subkumpulan data.</fileHelp_subset>
 <fileHelp_timeGaps>Lihat daftar kesenjangan UTF-8 dalam nilai waktu yang lebih besar dari kesenjangan median.</fileHelp_timeGaps>
 <fileHelp_tsv>Unduh tabel teks yang dipisahkan tab ISO-8859-1 (baris 1: nama; baris 2: unit; ISO 8601 kali).</fileHelp_tsv>
@@ -3651,9 +3655,11 @@ Atau, gunakan angka yang lebih tinggi jika masalah terus berlanjut.
 Default untuk jam tangan adalah 8192. Default untuk instance adalah 128.</inotifyFix>
 
 <!--  jangan terjemahkan  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Menambah</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4220,6 +4226,7 @@ Lihat tautan &quot;Abaikan formulir ini&quot; di bawah.
 <moreInformation>informasi lebih lanjut</moreInformation>
 
 <!--  Pesan bergaya MessageFormat ini dimasukkan ke MustBe.xxx.  -->
+
 <!--  Ini adalah pesan kesalahan yang penting. Ini menunjukkan permintaan itu valid,
 tapi hasilnya tidak ada data. Klien mungkin mencari pesan persis seperti ini.
 Untuk saat ini, yang terbaik adalah tidak mengubahnya.
@@ -4317,6 +4324,12 @@ Lihat Opsi di bagian bawah halaman web itu.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--halamanPertama>pertama</pageFirst>
+<pageSebelumnya>previous</pageSebelumnya>
+<pageCurrent>current</pageCurrent>
+<pageNext></pageNext>
+<pageLast> terakhir</pageLast-->
 
 <!--  Ini adalah pilihan palet.
      Harus ada file .cpt untuk masing-masing di direktori erddap/WEB-INF/cptfiles.
@@ -5225,6 +5238,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: lihat tabel css yang identik di Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml memiliki awal dokumen HTML dan tag &#39;head&#39; 
 (dimulai dari &quot;&lt;!DOCTYPE&quot;, tetapi tidak termasuk &quot;&lt;/head&gt;&quot;) 
 untuk semua halaman web HTML. 
@@ -5261,6 +5275,7 @@ informasi.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6140,11 +6155,14 @@ Jika seluruh string UDUNITS cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UDUNITS &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Waktu</time>
 <timeoutOtherRequests>Batas waktu menunggu permintaan Anda yang lain diproses.</timeoutOtherRequests>
 
@@ -6155,7 +6173,8 @@ Jika seluruh string UCUM cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UDUNITS &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6165,7 +6184,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Ini adalah cara untuk mengganti konverter UDUNITS ke UCUM ERDDAP
 dengan memberikan konversi tertentu. 
@@ -6174,7 +6195,8 @@ Jika seluruh string UDUNITS cocok dengan string &#39;sebelum&#39;,
 itu akan dikonversi ke nilai UCUM &#39;setelah&#39;.
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6196,7 +6218,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Ini merupakan upaya untuk menangani metadata sumber URL yang kedaluwarsa.
 updateUrls diterapkan ke setiap atribut metadata String kumpulan data 
@@ -6220,7 +6244,8 @@ Catatan:
 * Konversi http://www.csc.noaa.gov ke pantai tidak sempurna: 
   dokumen di tempat yang berbeda.  Hal ini biasa terjadi pada perubahan besar pada nama domain.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7313,7 +7338,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Ini adalah URL http yang suatu saat mungkin dapat diakses melalui https.
 Ada yang terdaftar sebagai komentar di sini untuk pengujian cepat.
@@ -7396,6 +7423,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Ini adalah daftar nama atribut yang dipisahkan koma yang akan dilewati oleh updateUrls. 
 Ini tidak mungkin apa-apa. Jadi jika Anda tidak menginginkan apa pun, masukkan kata yang tidak masuk akal
 tidak pernah menjadi nama atribut.  -->

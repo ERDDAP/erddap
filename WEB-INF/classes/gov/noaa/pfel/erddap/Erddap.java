@@ -70,6 +70,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -156,7 +157,7 @@ public class Erddap extends HttpServlet implements AutoCloseable {
     ".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"
   };
   public static final String FILE_TYPES_184[] = {".dataTable", ".jsonlCSV1"};
-
+  public static final String FILE_TYPES_225[] = {".parquet"};
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -6146,6 +6147,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || (sourceVersion < 176 && String2.indexOf(FILE_TYPES_176, fileTypeName) >= 0)
           || (sourceVersion < 182 && jsonp != null)
           || (sourceVersion < 184 && String2.indexOf(FILE_TYPES_184, fileTypeName) >= 0)
+          || (sourceVersion < 225 && String2.indexOf(FILE_TYPES_225, fileTypeName) >= 0)
           || fileTypeName.equals(".subset")) {
         // handle locally
       } else {
@@ -16114,6 +16116,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + (System.currentTimeMillis() - luceneTime)
                   + "ms");
         luceneTime = System.currentTimeMillis();
+        StoredFields storedFields = indexSearcher.storedFields();
         for (int i = 0; i < nHits; i++) {
           // 3 ways to find datasetID:
 
@@ -16130,7 +16133,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           Integer docNI = Integer.valueOf(docN);
           String tDatasetID = EDStatic.luceneDocNToDatasetID.get(docNI);
           if (tDatasetID == null) { // not yet in luceneDocNToDatasetID
-            Document doc = indexSearcher.doc(docN);
+            Document doc = storedFields.document(docN);
             if (doc == null) // perhaps just removed from index
             continue;
             tDatasetID = doc.get("datasetID");

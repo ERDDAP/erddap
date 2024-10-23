@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml chứa tin nhắn văn bản cho ERDDAP (được đọc trong EDStatic).
 Khi bạn cài đặt ERDDAP trên máy chủ của mình, tất cả các thông báo này có thể được giữ nguyên,
 vì những thông báo này thường giống nhau ở các bản cài đặt ERDDAP khác nhau.
@@ -30,7 +30,6 @@ Hệ thống dịch YÊU CẦU &quot;thực thể giả&quot; chỉ sử dụng 
   messages-de.xml và -ga có nhiều liên kết trùng lặp. Tôi nghi ngờ nhiều người khác cũng như thế này.
 
  -->
-<erddapMessages>
 <!--  Điều này trả về nội dung HTML mô tả Yêu cầu tệp nén.
 Xem https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 trong đó nói rằng x-gzip=gzip và x-compress=compress
@@ -3052,6 +3051,7 @@ Ví dụ:
 <fileHelp_ncml>Xem cấu trúc và siêu dữ liệu của tập dữ liệu dưới dạng tệp .xml UTF-8 NCML.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Tải xuống thời gian, vĩ độ, kinh độ, các biến khác dưới dạng Tệp bảng tính chung ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Tải xuống kinh độ, vĩ độ, thời gian, các cột khác dưới dạng Tệp bảng tính chung ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download as a parquet file.</fileHelp_parquet>
 <fileHelp_subset>Xem biểu mẫu HTML sử dụng tìm kiếm theo khía cạnh để đơn giản hóa việc chọn các tập hợp con dữ liệu.</fileHelp_subset>
 <fileHelp_timeGaps>Xem danh sách các khoảng trống UTF-8 trong các giá trị thời gian lớn hơn khoảng cách trung bình.</fileHelp_timeGaps>
 <fileHelp_tsv>Tải xuống bảng văn bản được phân tách bằng tab ISO-8859-1 (dòng 1: tên; dòng 2: đơn vị; ISO 8601 lần).</fileHelp_tsv>

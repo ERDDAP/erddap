@@ -200,7 +200,8 @@ public class EDStatic {
    * 2.21 released on 2022-10-09 <br>
    * 2.22 released on 2022-12-08 <br>
    * 2.23 released on 2023-02-27 <br>
-   * 2.24 released on 2024-06-07
+   * 2.24 released on 2024-06-07 <br>
+   * 2.25 released on 2024-10-16 <br>
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -210,7 +211,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static String erddapVersion = "2.24"; // see comment above
+  public static String erddapVersion = "2.25"; // see comment above
 
   /**
    * This is almost always false. During development, Bob sets this to true. No one else needs to.
@@ -793,7 +794,8 @@ public class EDStatic {
       useLuceneSearchEngine,
       variablesMustHaveIoosCategory,
       verbose,
-      useSaxParser;
+      useSaxParser,
+      useEddReflection;
   public static String categoryAttributes[]; // as it appears in metadata (and used for hashmap)
   public static String categoryAttributesInURLs[]; // fileNameSafe (as used in URLs)
   public static boolean categoryIsGlobal[];
@@ -1296,6 +1298,7 @@ public class EDStatic {
       fileHelp_ncoJsonAr,
       fileHelpGrid_odvTxtAr,
       fileHelpTable_odvTxtAr,
+      fileHelp_parquetAr,
       fileHelp_subsetAr,
       fileHelp_timeGapsAr,
       fileHelp_tsvAr,
@@ -1806,7 +1809,7 @@ public class EDStatic {
   private static Table gdxAcronymsTable;
 
   private static HashMap<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
-  public static boolean useSharedWatchService = false;
+  public static boolean useSharedWatchService = true;
 
   /**
    * This static block reads this class's static String values from contentDirectory, which must
@@ -2269,11 +2272,12 @@ public class EDStatic {
       subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
       convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+      useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
       slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
       variablesMustHaveIoosCategory =
           getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
       warName = getSetupEVString(setup, ev, "warName", "erddap");
-      useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", false);
+      useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
 
       // use Lucence?
       if (searchEngine.equals("lucene")) {
@@ -3228,6 +3232,7 @@ public class EDStatic {
       fileHelpGrid_odvTxtAr = getNotNothingString(messagesAr, "fileHelpGrid_odvTxt", errorInMethod);
       fileHelpTable_odvTxtAr =
           getNotNothingString(messagesAr, "fileHelpTable_odvTxt", errorInMethod);
+      fileHelp_parquetAr = getNotNothingString(messagesAr, "fileHelp_parquet", errorInMethod);
       fileHelp_subsetAr = getNotNothingString(messagesAr, "fileHelp_subset", errorInMethod);
       fileHelp_timeGapsAr = getNotNothingString(messagesAr, "fileHelp_timeGaps", errorInMethod);
       fileHelp_tsvAr = getNotNothingString(messagesAr, "fileHelp_tsv", errorInMethod);

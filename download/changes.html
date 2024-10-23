@@ -70,7 +70,6 @@ those great suggestions coming!
 
 <!-- ****************************************************************************** -->
 
-<!-- TODO Make sure github.io site is updated with all the latest documentation for release -->
 <h2><a class="selfLink" id="changes2.25" href="#changes2.25" rel="bookmark">Changes</a>
   in ERDDAP™ version 2.25 (released TBD)</h2>
 <ul>
@@ -81,6 +80,15 @@ those great suggestions coming!
     </ul>
   <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong>
     <ul>
+      <li>We recommend upgradding to Java 21 or newer. This is the LTS version and has been available for over a year. Development
+        of ERDDAP™ version 2.25 was done with Java 21.
+        <br>&nbsp;
+      <li>The SharedWatchService is now the default. If you need to disable it, please contact chris.john at noaa.gov to let me know,
+        so I can improve it in future versions and add:
+        <br><kbd>
+          &lt;useSharedWatchService&gt;false&lt;/useSharedWatchService&gt;
+        </kbd> to your setup.xml.
+        <br>&nbsp;
       <li>The ERDDAP™ servlet will now start at server startup. Which means datasets will begin loading immediately instead of
         waiting until a request is made.
         <br>&nbsp;
@@ -90,6 +98,10 @@ those great suggestions coming!
           <br>&nbsp;
       <li>Datasets (EDDTableFromNcFiles and EDDGridFromNcFiles) using zarr files are now supported. They must include "zarr"
         in either the fileNameRegex or pathRegex. See the <a href="https://erddap.github.io/setupDatasetsXml.html#zarr">zarr
+        secion in the datasets documentation</a> for more details.
+        <br>&nbsp;
+      <li>New dataset type, EDDTableFromParquetFiles is now supported. See the
+        <a href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromParquetFiles">EDDTableFromParquetFiles
         secion in the datasets documentation</a> for more details.
         <br>&nbsp;
       <li><a href="https://prometheus.io/">Prometheus metrics</a> are now available at <kbd>/erddap/metrics</kbd>.
@@ -145,9 +157,9 @@ those great suggestions coming!
         threads used to watch for changes. It does mean all datasets get updated together instead of each dataset
         having its own update frequency. Most likely this will mean more frequent updates for most datasets.
 
-        <br>To enable this add <kbd>
-          <useSharedWatchService>true</useSharedWatchService>
-        </kbd> to your setup.xml.
+        <br><p>To enable this add <kbd>
+          &lt;useSharedWatchService&gt;true&lt;/useSharedWatchService&gt;
+        </kbd> to your setup.xml.</p>
 
         <br>Please do try this and report back how it works for you to chris.john at noaa.gov.
         <br>&nbsp;
@@ -157,6 +169,18 @@ those great suggestions coming!
       <li>Some small changes and bug fixes.
         <br>&nbsp;
     </ul>
+    <li><strong>Improvements for ERDDAP™ developers:</strong>
+      <ul>
+        <li>Support for local development using Docker.
+        Thanks Matt Hopson and Roje.
+        <br>&nbsp;
+        <li>Support for local development using Jetty and documentation improvements.
+          Thanks Micah Wengren.
+          <br>&nbsp;
+        <li>Changes to tests to reduce issues cross platform.
+          Thanks Shane St. Savage.
+          <br>&nbsp;
+      </ul>
 </ul>
 
 <!-- ****************************************************************************** -->
@@ -7133,7 +7157,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.24
+<p>ERDDAP, Version 2.25
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

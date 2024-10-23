@@ -133,6 +133,7 @@ public abstract class EDDGrid extends EDD {
     ".nccsvMetadata",
     ".ncoJson",
     ".odvTxt",
+    ".parquet",
     ".timeGaps",
     ".tsv",
     ".tsvp",
@@ -171,6 +172,7 @@ public abstract class EDDGrid extends EDD {
     ".json",
     // .subset currently isn't included
     ".txt",
+    ".parquet",
     ".asc",
     ".tsv",
     ".tsv",
@@ -216,6 +218,7 @@ public abstract class EDDGrid extends EDD {
     "https://erddap.github.io/NCCSV.html",
     "https://nco.sourceforge.net/nco.html#json",
     "https://odv.awi.de/en/documentation/", // odv
+    "https://parquet.apache.org/",
     "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps", // .timeGaps
     "https://jkorpela.fi/TSV.html", // tsv
     "https://jkorpela.fi/TSV.html", // tsv
@@ -310,6 +313,7 @@ public abstract class EDDGrid extends EDD {
             EDStatic.fileHelp_nccsvMetadataAr[tl],
             EDStatic.fileHelp_ncoJsonAr[tl],
             EDStatic.fileHelpGrid_odvTxtAr[tl],
+            EDStatic.fileHelp_parquetAr[tl],
             EDStatic.fileHelp_timeGapsAr[tl],
             EDStatic.fileHelp_tsvAr[tl],
             EDStatic.fileHelp_tsvpAr[tl],
@@ -3118,6 +3122,11 @@ public abstract class EDDGrid extends EDD {
 
       if (fileTypeName.equals(".odvTxt")) {
         saveAsODV(language, requestUrl, userDapQuery, outputStreamSource);
+        return;
+      }
+
+      if (fileTypeName.equals(".parquet")) {
+        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource);
         return;
       }
 
@@ -11304,6 +11313,54 @@ public abstract class EDDGrid extends EDD {
     // diagnostic
     if (reallyVerbose)
       String2.log("  EDDGrid.saveAsODV done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+  }
+
+  /**
+   * This writes grid data (not just axis data) to the outputStream in a parquet file Format
+   * .parquet file. If no exception is thrown, the data was successfully written.
+   *
+   * @param language the index of the selected language
+   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
+   *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
+   * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
+   *     the results. At the end of this method the outputStream is flushed, not closed.
+   * @throws Throwable if trouble.
+   */
+  public void saveAsParquet(
+      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
+      throws Throwable {
+
+    if (reallyVerbose) String2.log("  EDDGrid.saveAsParquet");
+    long time = System.currentTimeMillis();
+
+    boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
+    // write the data to the tableWriterAllWithMetadata
+    TableWriterAllWithMetadata twawm =
+        new TableWriterAllWithMetadata(
+            language,
+            this,
+            getNewHistory(requestUrl, userDapQuery),
+            cacheDirectory(),
+            "parquet"); // A random number will be added to it for safety.
+    if (isAxisDapQuery) {
+      AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
+      saveAsTableWriter(ada, twawm);
+    } else {
+      GridDataAccessor gda =
+          new GridDataAccessor(
+              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
+      saveAsTableWriter(gda, twawm);
+      gda.releaseResources();
+    }
+
+    // write the .parquet file
+    EDDTable.saveAsParquet(language, outputStreamSource, twawm, datasetID);
+
+    // diagnostic
+    if (reallyVerbose)
+      String2.log(
+          "  EDDGrid.saveAsParquet done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
   }
 
   /**

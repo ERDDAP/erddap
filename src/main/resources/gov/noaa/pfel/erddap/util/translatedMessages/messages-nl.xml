@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  messages.xml bevat tekstberichten voor ERDDAP (die worden ingelezen in EDStatic).
 Wanneer u ERDDAP op uw server installeert, kunnen al deze berichten ongewijzigd blijven.
 aangezien deze berichten meestal hetzelfde zijn bij verschillende ERDDAP-installaties.
@@ -30,7 +30,7 @@ Het vertaalsysteem VEREIST dat &quot;pseudoEntity&quot; alleen [a-zA-Z0-9] gebru
   messages-de.xml en -ga bevatten veel dubbele links. Ik vermoed dat er nog veel meer zo zijn.
 
  -->
-<erddapMessages>
+
 <!--  Dit retourneert HTML-inhoud die het aanvragen van gecomprimeerde bestanden beschrijft.
 Zie https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 waarin staat dat x-gzip=gzip en x-compress=comprimeren
@@ -81,11 +81,13 @@ Vervolgens zal ERDDAP alles toevoegen
   Als u suggesties heeft voor aanvullende links, neem dan contact op met <kbd>erd dot data at noaa dot gov</kbd> .
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Deze dataset is een tabel met een rij informatie voor elke dataset die momenteel actief is in dit ERDDAP.</admSummary>
 <admTitle>De lijst met alle actieve datasets in dit ERDDAP</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Sommige datasets zijn openbaar. Sommige zijn mogelijk privé en misschien niet toegankelijk voor u.</advc_accessible>
@@ -554,6 +556,7 @@ Er zijn
 <convertFipsCounty>Converteer een FIPS-provinciecode naar/van een provincienaam</convertFipsCounty>
 
 <!--  Wijzig de voorbeelden niet (van defaultN...).  -->
+
 <!--  &quot;FIPS-provinciecode&quot; was een link naar http://www.itl.nist.gov/fipspubs/fip6-4.htm 
      vervolgens https://www.census.gov/geo/reference/codes/cou.html 
      Het dichtstbijzijnde (?) is http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2731,7 +2734,7 @@ Als u wilt dat de voorbeelden naar uw ERDDAP verwijzen, is de eenvoudigste metho
      Hopelijk kun je gewoon je datasetID vervangen door &quot;jplMURSST41&quot;
      en wijzig &quot;[0 32]&quot; (het gegevensbereik voor de kleurenbalk).   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  De EDDTable-berichten worden weergegeven op het tabledap Data Access Form en Make A Graph.  -->
 <EDDTableConstraints>Beperkingen</EDDTableConstraints>
@@ -2890,7 +2893,7 @@ Als u wilt dat de voorbeelden naar uw ERDDAP verwijzen, is de eenvoudigste metho
 
 <!--  Dit is een voorbeeldquery die een grafiek genereert. 
      U kunt uw voorbeeld genereren via het Make A Graph-formulier van uw dataset in ERDDAP.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  Dit is een voorbeeldquery die een kaart genereert.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2994,6 +2997,7 @@ Bijvoorbeeld:
 <fileHelp_ncml>Bekijk de structuur en metagegevens van de dataset als een UTF-8 NCML .xml-bestand.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download tijd, breedtegraad, lengtegraad en andere variabelen als een algemeen ODV-spreadsheetbestand (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download lengtegraad, breedtegraad, tijd, andere kolommen als een ISO-8859-1 ODV generiek spreadsheetbestand (.txt).</fileHelpTable_odvTxt>
+<fileHelp_parquet>Download als parketbestand.</fileHelp_parquet>
 <fileHelp_subset>Bekijk een HTML-formulier dat gefacetteerd zoeken gebruikt om het kiezen van subsets van de gegevens te vereenvoudigen.</fileHelp_subset>
 <fileHelp_timeGaps>Bekijk een UTF-8-lijst met hiaten in de tijdwaarden die groter zijn dan de mediane kloof.</fileHelp_timeGaps>
 <fileHelp_tsv>Download een ISO-8859-1 door tabs gescheiden teksttabel (regel 1: namen; regel 2: eenheden; ISO 8601 keer).</fileHelp_tsv>
@@ -3684,9 +3688,11 @@ Of gebruik hogere cijfers als het probleem zich blijft voordoen.
 De standaardwaarde voor horloges is 8192. De standaardwaarde voor instances is 128.</inotifyFix>
 
 <!--  vertaal niet  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>Interpoleren</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4253,6 +4259,7 @@ Zie de link &#39;Dit formulier overslaan&#39; hieronder.
 <moreInformation>meer informatie</moreInformation>
 
 <!--  Deze berichten in MessageFormat-stijl worden in MustBe.xxx gepusht.  -->
+
 <!--  Dit is een belangrijke foutmelding. Het geeft aan dat het verzoek geldig was,
 maar het resultaat was geen gegevens. Het kan zijn dat klanten op zoek zijn naar deze exacte boodschap.
 Voorlopig kun je dit het beste niet veranderen.
@@ -4350,6 +4357,12 @@ Zie de Opties onderaan die webpagina.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--paginaEerst>eerste</paginaEerste>
+<pageVorige>vorige</pageVorige>
+<pageCurrent>current</pageCurrent>
+<pageVolgende>volgende</pageVolgende>
+<pageLast>last</pageLaatst-->
 
 <!--  Dit zijn de paletopties.
      Er moet voor elk een .cpt-bestand aanwezig zijn in de map erddap/WEB-INF/cptfiles.
@@ -5262,6 +5275,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: zie identieke tabel css in Table.ERD_TABLE_CSS  -->
+
 <!--  startHeadHtml heeft het begin van het HTML-document en de &#39;head&#39;-tags 
 (beginnend bij &quot;&lt;!DOCTYPE&quot;, maar exclusief &quot;&lt;/head&gt;&quot;) 
 voor alle HTML-webpagina&#39;s. 
@@ -5298,6 +5312,7 @@ informatie.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6191,11 +6206,14 @@ Als een volledige UDUNITS-reeks overeenkomt met een &#39;before&#39;-reeks,
 het wordt geconverteerd naar de &#39;na&#39; UDUNITS-waarde.
 De lege regels zorgen ervoor dat de overige regels &#39;voor&#39; en &#39;na&#39; regels zijn.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>Tijd</time>
 <timeoutOtherRequests>Time-out bij het wachten tot uw andere verzoeken zijn verwerkt.</timeoutOtherRequests>
 
@@ -6206,7 +6224,8 @@ Als een volledige UCUM-reeks overeenkomt met een &#39;before&#39;-reeks,
 het wordt geconverteerd naar de &#39;na&#39; UDUNITS-waarde.
 De lege regels zorgen ervoor dat de overige regels &#39;voor&#39; en &#39;na&#39; regels zijn.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6216,7 +6235,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  Dit is een manier om de UDUNITS naar UCUM-converter van ERDDAP te overschrijven
 door specifieke conversies aan te bieden. 
@@ -6225,7 +6246,8 @@ Als een volledige UDUNITS-reeks overeenkomt met een &#39;before&#39;-reeks,
 het wordt geconverteerd naar de &#39;na&#39; UCUM-waarde.
 De lege regels zorgen ervoor dat de overige regels &#39;voor&#39; en &#39;na&#39; regels zijn.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6247,7 +6269,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  Dit is een poging om met verouderde bronmetagegevens van URL&#39;s om te gaan.
 updateUrls wordt toegepast op elk van de String-metagegevenskenmerken van een gegevensset 
@@ -6271,7 +6295,8 @@ Opmerkingen:
 * De conversie van http://www.csc.noaa.gov naar kust is niet perfect: 
   documenten op verschillende plaatsen.  Dit is gebruikelijk bij grote wijzigingen aan de domeinnaam.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7364,7 +7389,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  Dit zijn http-URL&#39;s die waarschijnlijk ooit toegankelijk zullen zijn via https.
 Ze worden hier als commentaar vermeld voor snel testen.
@@ -7447,6 +7474,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  Dit is een door komma&#39;s gescheiden lijst met attribuutnamen die updateUrls overslaat. 
 Dit kan niet niets zijn. Dus als je niets wilt, voer dan een wartaal woord in dat dat wel wil
 mag nooit een attribuutnaam zijn.  -->

@@ -360,7 +360,7 @@ public class TableWriterHtmlTable extends TableWriter {
           writer.write(s);
         } else {
           s = colPA[col].getString(row);
-          if (s.length() == 0) {
+          if (s == null || s.length() == 0) {
             writer.write("<td>");
 
           } else if (isCharOrString[col]) {

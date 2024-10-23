@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!--  message.xml에는 ERDDAP에 대한 텍스트 메시지가 포함되어 있습니다(EDStatic에서 읽음).
 서버에 ERDDAP를 설치하면 이러한 메시지는 모두 그대로 남을 수 있습니다.
 이러한 메시지는 일반적으로 다른 ERDDAP 설치에서 동일하기 때문입니다.
@@ -30,7 +30,7 @@ https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html을 참조
   message-de.xml 및 -ga에는 중복된 링크가 많이 있습니다. 나는 더 많은 사람들이 이와 같다고 생각합니다.
 
  -->
-<erddapMessages>
+
 <!--  그러면 압축 파일 요청을 설명하는 HTML 콘텐츠가 반환됩니다.
 https://httpd.apache.org/docs/1.3/mod/mod_mime.html을 참조하세요.
 x-gzip=gzip 및 x-compress=압축이라고 나와 있습니다.
@@ -85,11 +85,13 @@ addEntry, closeEntry 문제로 인해 \&quot;compress\&quot;, \&quot;x-compress\
   추가 링크에 대한 제안 사항이 있는 경우 <kbd>erd dot data at noaa dot gov</kbd> 문의하세요.
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>이 데이터세트는 이 ERDDAP에서 현재 활성화된 각 데이터세트에 대한 정보 행이 있는 테이블입니다.</admSummary>
 <admTitle>이 ERDDAP의 모든 활성 데이터 세트 목록</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>일부 데이터세트는 공개되어 있습니다. 일부는 비공개일 수 있으며 귀하가 접근할 수 없을 수도 있습니다.</advc_accessible>
@@ -570,6 +572,7 @@ A-Za-z0-9_-!.~&#39;()*를 제외한 모든 문자는 %HH로 인코딩되어야 �
 <convertFipsCounty>FIPS 카운티 코드를 카운티 이름으로/에서 변환</convertFipsCounty>
 
 <!--  예제를 변경하지 마세요(defaultN...에서).  -->
+
 <!--  &quot;FIPS 카운티 코드&quot;는 http://www.itl.nist.gov/fipspubs/fip6-4.htm에 대한 링크였습니다. 
      그런 다음 https://www.census.gov/geo/reference/codes/cou.html 
      이제 가장 가까운(?)은 http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html입니다.
@@ -2853,7 +2856,7 @@ Griddap은
      &quot;jplMURSST41&quot;을 데이터세트ID로 대체할 수 있기를 바랍니다.
      &quot;[0 32]&quot;(색상 막대의 데이터 범위)를 수정합니다.   -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!--  EDDTable 메시지는 tabledap 데이터 액세스 양식 및 그래프 만들기에 표시됩니다.  -->
 <EDDTableConstraints>제약</EDDTableConstraints>
@@ -3014,7 +3017,7 @@ ISO-8601 형식의 시간을 입력하세요(예:
 
 <!--  그래프를 생성하는 쿼리 예시입니다. 
      ERDDAP에서 데이터 세트의 Make A Graph 양식을 통해 예제를 생성할 수 있습니다.   -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!--  이는 지도를 생성하는 쿼리 예시입니다.  -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -3119,6 +3122,7 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <fileHelp_ncml>데이터세트의 구조와 메타데이터를 UTF-8 NCML .xml 파일로 봅니다.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>시간, 위도, 경도, 기타 변수를 ODV 일반 스프레드시트 파일(.txt)로 다운로드합니다.</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>경도, 위도, 시간, 기타 열을 ISO-8859-1 ODV 일반 스프레드시트 파일(.txt)로 다운로드합니다.</fileHelpTable_odvTxt>
+<fileHelp_parquet>파일로 다운로드.</fileHelp_parquet>
 <fileHelp_subset>데이터의 하위 집합 선택을 단순화하기 위해 패싯 검색을 사용하는 HTML 양식을 봅니다.</fileHelp_subset>
 <fileHelp_timeGaps>중앙값 간격보다 큰 시간 값의 간격에 대한 UTF-8 목록을 봅니다.</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 탭으로 구분된 텍스트 테이블(라인 1: 이름, 라인 2: 단위, ISO 8601 시간)을 다운로드합니다.</fileHelp_tsv>
@@ -3860,9 +3864,11 @@ Matlab, R 또는 다음을 수행하는 프로그램)에서 직접 ERDDAP 의 RE
 시계의 기본값은 8192입니다. 인스턴스의 기본값은 128입니다.</inotifyFix>
 
 <!--  번역하지 마세요  -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>보간하다</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -4430,6 +4436,7 @@ X=경도, Y=위도이면 지도가 생성됩니다.
 <moreInformation>추가 정보</moreInformation>
 
 <!--  이러한 MessageFormat 스타일 메시지는 MustBe.xxx로 푸시됩니다.  -->
+
 <!--  이는 중요한 오류 메시지입니다. 요청이 유효했음을 나타냅니다.
 하지만 결과는 데이터가 없었습니다. 클라이언트는 바로 이 메시지를 찾고 있을 수 있습니다.
 지금은 이를 변경하지 않는 것이 가장 좋습니다.
@@ -4528,6 +4535,12 @@ X=경도, Y=위도이면 지도가 생성됩니다.
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--페이지첫 번째>첫 번째</pageFirst>
+<pagePrevious>이전</page이전>
+<pageCurrent>current</page현재>
+<pageNext>다음</page다음>
+<pageLast>마지막</page마지막-->
 
 <!--  팔레트 옵션입니다.
      erddap/WEB-INF/cptfiles 디렉터리에 각각에 대한 .cpt 파일이 있어야 합니다.
@@ -5475,6 +5488,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!--  Bob: Table.ERD_TABLE_CSS에서 동일한 테이블 CSS를 참조하세요.  -->
+
 <!--  startHeadHtml에는 HTML 문서의 시작 부분과 &#39;head&#39; 태그가 있습니다. 
 (&quot;&lt;!DOCTYPE&quot;에서 시작하지만 &quot;&lt;/head&gt;&quot;는 포함하지 않음) 
 모든 HTML 웹 페이지에 대해. 
@@ -5511,6 +5525,7 @@ ERDDAP는 http: 및 https: 웹 페이지에 동일한 .css 파일을 사용하�
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -6442,11 +6457,14 @@ StandardizeUdunits에는 세 줄(앞, 뒤, 공백)이 있습니다.
 &#39;after&#39; UDUNITS 값으로 변환됩니다.
 빈 줄은 다른 줄이 &#39;이전&#39; 및 &#39;이후&#39; 줄임을 보장합니다.
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>시간</time>
 <timeoutOtherRequests>다른 요청이 처리되기를 기다리는 동안 시간이 초과되었습니다.</timeoutOtherRequests>
 
@@ -6457,7 +6475,8 @@ ucumToUdunits에는 세 줄(앞, 뒤, 공백)이 있습니다.
 &#39;after&#39; UDUNITS 값으로 변환됩니다.
 빈 줄은 다른 줄이 &#39;이전&#39; 및 &#39;이후&#39; 줄임을 보장합니다.
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -6467,7 +6486,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!--  이는 ERDDAP의 UDUNITS를 UCUM 변환기로 재정의하는 방법입니다.
 구체적인 전환을 제공함으로써 
@@ -6476,7 +6497,8 @@ udunitsToUcum에는 세 줄(앞, 뒤, 공백)이 있습니다.
 &#39;이후&#39; UCUM 값으로 변환됩니다.
 빈 줄은 다른 줄이 &#39;이전&#39; 및 &#39;이후&#39; 줄임을 보장합니다.
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -6498,7 +6520,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!--  이는 오래된 URL 소스 메타데이터를 처리하려는 시도입니다.
 updateUrls는 데이터세트의 각 문자열 메타데이터 속성에 적용됩니다. 
@@ -6522,7 +6546,8 @@ updateUrls에는 세 줄(앞, 뒤, 공백)이 있습니다.
 * http://www.csc.noaa.gov에서 해안으로의 변환은 불완전합니다. 
   다른 장소에 있는 문서.  이는 도메인 이름이 크게 변경되는 경우에 일반적입니다.
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -7615,7 +7640,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!--  이는 아마도 언젠가는 https를 통해 액세스할 수 있는 http URL입니다.
 빠른 테스트를 위해 여기에 주석으로 나열되어 있습니다.
@@ -7698,6 +7725,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!--  이는 updateUrls가 건너뛸 속성 이름의 쉼표로 구분된 목록입니다. 
 이것은 아무것도 아닐 수 없습니다. 그러니 아무것도 원하지 않으면 횡설수설하는 단어를 입력하세요.
 속성 이름이 되어서는 안 됩니다.  -->

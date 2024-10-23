@@ -15,6 +15,8 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDGridSideBySideHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
@@ -36,6 +38,7 @@ import java.util.Arrays;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
+@SaxHandlerClass(EDDGridSideBySideHandler.class)
 public class EDDGridSideBySide extends EDDGrid {
 
   protected EDDGrid childDatasets[];
@@ -59,6 +62,7 @@ public class EDDGridSideBySide extends EDDGrid {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDGridSideBySide fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

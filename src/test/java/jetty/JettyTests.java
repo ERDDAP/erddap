@@ -2352,7 +2352,7 @@ class JettyTests {
             + //
             "      <gmd:maintenanceNote>\n"
             + //
-            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.24</gco:CharacterString>\n"
+            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.25</gco:CharacterString>\n"
             + //
             "      </gmd:maintenanceNote>\n"
             + //
@@ -2514,7 +2514,7 @@ class JettyTests {
             + //
             "          <pubplace>Nowhere, AK, USA</pubplace>\n"
             + //
-            "          <publish>ERDDAP, version 2.24, at ERDDAP Jetty Install</publish>\n"
+            "          <publish>ERDDAP, version 2.25, at ERDDAP Jetty Install</publish>\n"
             + //
             "          <publish_cntinfo>\n"
             + //
@@ -2693,9 +2693,9 @@ class JettyTests {
     expected =
         "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
-            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">71098</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
-    ;
+            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;fgdc&#x2e;xml\">erdMH1chlamday&#x5f;fgdc&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">SIZE</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>\n";
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
+    results = results.replaceAll(">[0-9]+<", ">SIZE<");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
 
@@ -5287,7 +5287,7 @@ class JettyTests {
     results = results.substring(0, po + 7);
     expected =
         "HTTP/1.1 200 OK\n"
-            + "Server: Jetty(12.0.11)\n"
+            + "Server: Jetty(12.0.14)\n"
             + "Date: Today\n"
             + "Content-Type: application/javascript;charset=utf-8\n"
             + "Content-Encoding: identity\n"
@@ -14378,12 +14378,18 @@ class JettyTests {
     String dapQuery, tName, start, query, results, expected;
     int po;
 
+    String etopoFilePath = EDStatic.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
+
     // get /files/datasetID/.csv
     results =
         SSR.getUrlResponseStringNewline(
             "http://localhost:" + PORT + "/erddap/files/" + tDatasetID + "/.csv");
     expected =
-        "Name,Last modified,Size,Description\n" + "etopo1_ice_g_i2.bin,1642733858000,466624802,\n";
+        "Name,Last modified,Size,Description\n"
+            + "etopo1_ice_g_i2.bin,"
+            + etopoLastModifiedMillis
+            + ",466624802,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // get /files/datasetID/
@@ -16448,7 +16454,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.14</a><hr/>\n"
             + //
             "\n"
             + //
@@ -16494,7 +16500,7 @@ class JettyTests {
             + //
             "</table>\n"
             + //
-            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.11</a><hr/>\n"
+            "<hr/><a href=\"https://jetty.org/\">Powered by Jetty:// 12.0.14</a><hr/>\n"
             + //
             "\n"
             + //
@@ -17535,6 +17541,7 @@ class JettyTests {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
+    context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.settUserHashMap(new HashMap<String, Object[]>());
     context.setMajorLoad(false);
     context.setErddap(new Erddap());

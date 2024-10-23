@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<erddapMessages>
 <!-- messages.xml 包含 ERDDAP 的文本消息（在 EDStatic 中读取）。
 当您在服务器上安装 ERDDAP 时，所有这些消息都可以保持原样，
 因为这些消息在不同的 ERDDAP 安装中通常是相同的。
@@ -30,7 +30,7 @@ MessageFormat 占位符
 messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的情况。
 
  -->
-<erddapMessages>
+
 <!-- 这将返回描述请求压缩文件的 HTML 内容。
 请参阅 https://httpd.apache.org/docs/1.3/mod/mod_mime.html
 其中说明 x-gzip=gzip 和 x-compress=compress
@@ -70,11 +70,13 @@ messages-de.xml 和 -ga 有许多链接重复。我怀疑还有更多这样的�
   如果您对更多链接有建议，请联系<kbd>erd dot data at noaa dot gov</kbd> 。
   
 ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>该数据集是一个表，其中包含此 ERDDAP 中当前活动的每个数据集的一行信息。</admSummary>
 <admTitle>此 ERDDAP 中所有活动数据集的列表</admTitle>
+
 <!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>有些数据集是公开的，有些则可能是私有的，也许您无法访问。</advc_accessible>
@@ -489,6 +491,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
 <convertFipsCounty>将 FIPS 县代码转换为县名/将县名转换为 FIPS 县代码</convertFipsCounty>
 
 <!-- 不要改变示例（从 defaultN...）。 -->
+
 <!-- “FIPS 县代码”是指向 http://www.itl.nist.gov/fipspubs/fip6-4.htm 
 然后是 https://www.census.gov/geo/reference/codes/cou.html 
 现在最接近的(?) 是 http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html
@@ -2237,7 +2240,7 @@ https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html 。 -->
 希望您可以将数据集 ID 替换为“jplMURSST41”
 并修改“[0 32]”（颜色条的数据范围）。 -->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
-set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
+set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 <!-- EDDTable 消息显示在 tabledap 数据访问表单和制作图表上。 -->
 <EDDTableConstraints>约束</EDDTableConstraints>
@@ -2366,7 +2369,7 @@ https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html -->
 
 <!-- 这是一个生成图表的示例查询。
 您可以通过 ERDDAP 中数据集的“制作图表”表单生成示例。 -->
-<EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
+<EDDTableGraphExample>time,T_25&amp;station=&quot;0n0e&quot;&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
 
 <!-- 这是一个生成地图的示例查询。 -->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
@@ -2465,6 +2468,7 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <fileHelp_ncml>以 UTF-8 NCML .xml 文件的形式查看数据集的结构和元数据。</fileHelp_ncml>
 <fileHelpGrid_odvTxt>将时间、纬度、经度、其他变量下载为 ODV 通用电子表格文件 (.txt)。</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>将经度、纬度、时间、其他列下载为 ISO-8859-1 ODV 通用电子表格文件 (.txt)。</fileHelpTable_odvTxt>
+<fileHelp_parquet>下载为 parquet 文件 。</fileHelp_parquet>
 <fileHelp_subset>查看使用分面搜索来简化选择数据子集的 HTML 表单。</fileHelp_subset>
 <fileHelp_timeGaps>查看时间值中大于中位差距的差距的 UTF-8 列表。</fileHelp_timeGaps>
 <fileHelp_tsv>下载 ISO-8859-1 制表符分隔的文本表（第 1 行：名称；第 2 行：单位；ISO 8601 时间）。</fileHelp_tsv>
@@ -3003,9 +3007,11 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 监视的默认值为 8192。实例的默认值为 128。</inotifyFix>
 
 <!-- 不翻译 -->
-<inotifyFixCommands>sudo sysctl fs.inotify.max_user_watches=65536
+<inotifyFixCommands>
+  sudo sysctl fs.inotify.max_user_watches=65536
   sudo sysctl fs.inotify.max_user_instances=1024
-  sudo sysctl -p</inotifyFixCommands>
+  sudo sysctl -p
+</inotifyFixCommands>
 <interpolate>插</interpolate>
 <javaProgramsHTML><![CDATA[
 
@@ -3037,7 +3043,7 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 
 ]]></justGenerateAndViewGraphUrlTooltip>
 <keywords>关键词</keywords>
-<langCode>zh-CN</langCode>
+<langCode>zh</langCode>
 
 <!-- 这出现在 erddap/legal.html 网页的一般免责声明之后。
 您可以用自己的 HTML 替换任何 [standardParts]。
@@ -3503,6 +3509,7 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 <moreInformation>更多信息</moreInformation>
 
 <!-- 这些 MessageFormat 样式的消息被推送到 MustBe.xxx。 -->
+
 <!-- 这是一个重要的错误消息。它表明请求有效，
 但结果没有数据。客户端可能正在寻找此确切消息。
 目前，最好不要更改它。
@@ -3595,6 +3602,12 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; 。
 <br>&nbsp;
   
 ]]></outOfDateKeepTrack>
+
+<!--第一页 > 第一页 </第一页 >
+<页前>页前<页前>页前<页前>
+<pageCurrent> 当前 </pageCurrent>
+<pageNext > ext </pageNext > 页面
+< page last > last </page > 最后一页-->
 
 <!-- 这些是调色板选项。
 erddap/WEB-INF/cptfiles 目录中必须有一个 .cpt 文件。
@@ -4335,6 +4348,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
 ]]></standardShortDescriptionHtml>
 
 <!-- Bob：在 Table.ERD_TABLE_CSS 中看到相同的表格 CSS -->
+
 <!-- startHeadHtml 包含 HTML 文档的开头和“head”标签（从“&lt;!DOCTYPE”开始，但不包括“&lt;/head&gt;”），适用于所有 HTML 网页。
 这可能包括 &erddapUrl;，它扩展为 [baseUrl]/erddap
 （如果用户已登录，则扩展为 [baseUttpsUrl]/erddap）。
@@ -4367,6 +4381,7 @@ favicon.ico 是浏览器与您的网站关联的图像。
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
+
 <!-- The standard startBodyHtml -->
 <startBodyHtml5><![CDATA[
 <body>
@@ -4961,11 +4976,14 @@ standardizeUdunits 有三行：前行、后行和空白行。
 空白行确保其他行是“前行”和“后行”。
 
  -->
-<standardizeUdunits>degrees +E
+<standardizeUdunits>
+degrees +E
 degrees_east
 
 degrees +N
-degrees_north</standardizeUdunits>
+degrees_north
+
+</standardizeUdunits>
 <time>时间</time>
 <timeoutOtherRequests>等待其他请求处理时超时。</timeoutOtherRequests>
 
@@ -4975,7 +4993,8 @@ ucumToUdunits 有三行：前、后和空白。
 它将被转换为“后”UDUNITS 值。
 空白行确保其他行是“前”和“后”行。
  -->
-<ucumToUdunits>%.{cover}
+<ucumToUdunits>
+%.{cover}
 % cover
 
 deg{azimuth}
@@ -4985,7 +5004,9 @@ deg east
 degrees_east
 
 deg north 
-degrees_north</ucumToUdunits>
+degrees_north 
+
+</ucumToUdunits>
 
 <!-- 这是通过提供特定转换来覆盖 ERDDAP 的 UDUNITS 到 UCUM 转换器的一种方法。
 udunitsToUcum 有三行：前、后和空白。
@@ -4993,7 +5014,8 @@ udunitsToUcum 有三行：前、后和空白。
 它将被转换为“后”UCUM 值。
 空白行确保其他行是“前”和“后”行。
  -->
-<udunitsToUcum>degrees +E
+<udunitsToUcum>
+degrees +E
 deg{east}
 
 degrees (+E)
@@ -5015,7 +5037,9 @@ degrees-north
 deg{north}
 
 degrees north
-deg{north}</udunitsToUcum>
+deg{north}
+
+</udunitsToUcum>
 
 <!-- 这是处理过期 URL 源元数据的尝试。
 每次加载数据集时，updateUrls 都会应用于数据集的每个字符串元数据属性 
@@ -5039,7 +5063,8 @@ http 到 https 的更改很重要，因为有些网站没有重定向，
 * http://www.csc.noaa.gov 到 coast 的转换不完美：
 文件在不同的地方。这对于域名的重大更改很常见。
  -->
-<updateUrls>http://accession.nodc.noaa.gov/
+<updateUrls>
+http://accession.nodc.noaa.gov/
 https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:
 
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
@@ -6132,7 +6157,9 @@ http://xerial.org
 https://xerial.org
 
 http://xkcd.com
-https://xkcd.com</updateUrls>
+https://xkcd.com
+
+</updateUrls>
 
 <!-- 这些是 http URL，将来可能可以通过 https 访问。
 这里列出了注释，以便快速测试。
@@ -6214,6 +6241,7 @@ https://www.slf4j.org
 https://www.usgin.org
 
  -->
+
 <!-- 这是 updateUrls 将跳过的属性名称的逗号分隔列表。
 这不能是空的。因此，如果您不想要空的，请输入一个永远不会成为属性名称的乱码单词。 -->
 <updateUrlsSkipAttributes>源网址</updateUrlsSkipAttributes>

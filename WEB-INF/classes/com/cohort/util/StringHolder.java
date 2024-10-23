@@ -99,7 +99,7 @@ public class StringHolder implements Comparable<StringHolder> {
     // see String compareTo documentation
     final char other[] = ((StringHolder) o).charArray();
     final int thisSize = car == null ? 0 : car.length;
-    final int otherSize = other.length;
+    final int otherSize = other == null ? 0 : other.length;
     final int min = Math.min(thisSize, otherSize);
     for (int po = 0; po < min; po++) {
       final int result = car[po] - other[po];

@@ -22,6 +22,8 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
+import gov.noaa.pfel.erddap.handlers.EDDTableFromErddapHandler;
+import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
@@ -29,16 +31,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
-import ucar.ma2.*;
-import ucar.nc2.*;
-// import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
 
 /**
  * This class represents a table of data from an opendap sequence source.
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
+@SaxHandlerClass(EDDTableFromErddapHandler.class)
 public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
   protected double sourceErddapVersion =
@@ -66,6 +65,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
    *     &lt;erddapDatasets&gt;&lt;/dataset&gt; .
    * @throws Throwable if trouble
    */
+  @EDDFromXmlMethod
   public static EDDTableFromErddap fromXml(Erddap erddap, SimpleXMLReader xmlReader)
       throws Throwable {
 

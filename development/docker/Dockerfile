@@ -7,7 +7,7 @@
 # ERDDAP should then be available at http://localhost:8080/erddap
 
 # Set up build env.
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 RUN mkdir /app/
 WORKDIR /app/
@@ -21,11 +21,12 @@ ADD download ./download
 ADD images ./images
 ADD src ./src
 ADD WEB-INF ./WEB-INF
+ADD .mvn ./.mvn
 COPY pom.xml .
-RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository --mount=type=cache,id=download_cache,target=download_cache mvn -f pom.xml package
+RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository mvn package -Dgcf.skipInstallHooks
 
 # Run the built erddap war via a tomcat instance.
-FROM tomcat:10.1.19-jdk17-temurin-jammy
+FROM tomcat:10.1.19-jdk21-temurin-jammy
 RUN mkdir /usr/local/tomcat/content/erddap/ -p
 RUN mkdir /usr/local/erddap_data/
 COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/erddap.war
