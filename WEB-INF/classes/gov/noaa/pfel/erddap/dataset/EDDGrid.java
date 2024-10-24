@@ -11347,11 +11347,11 @@ public abstract class EDDGrid extends EDD {
       AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
       saveAsTableWriter(ada, twawm);
     } else {
-      GridDataAccessor gda =
+      try (GridDataAccessor gda =
           new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-      saveAsTableWriter(gda, twawm);
-      gda.releaseResources();
+              language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+        saveAsTableWriter(gda, twawm);
+      }
     }
 
     // write the .parquet file

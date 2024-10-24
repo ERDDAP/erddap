@@ -16130,6 +16130,9 @@ public class Table {
         case ULONG:
           schemaType = "DOUBLE";
           break;
+        case BOOLEAN:
+          schemaType = "BOOLEAN";
+          break;
       }
       schemaProto += "    optional " + schemaType + " " + getColumnName(j) + ";\n";
     }

@@ -14378,7 +14378,7 @@ class JettyTests {
     String dapQuery, tName, start, query, results, expected;
     int po;
 
-    String etopoFilePath = EDStatic.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    String etopoFilePath = File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
     long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
 
     // get /files/datasetID/.csv
