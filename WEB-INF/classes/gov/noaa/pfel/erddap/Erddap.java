@@ -24,6 +24,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -148,16 +149,17 @@ public class Erddap extends HttpServlet implements AutoCloseable {
   public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
   // version when new file types added
-  public static final String FILE_TYPES_124[] =
-  // for old remote erddaps, make .png locally so pngInfo is available
-  {".csvp", ".tsvp", "odvTxt", ".png"};
-  public static final String FILE_TYPES_148[] = {".csv0", ".tsv0"};
-  public static final String FILE_TYPES_174[] = {".itx"};
-  public static final String FILE_TYPES_176[] = {
-    ".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"
-  };
-  public static final String FILE_TYPES_184[] = {".dataTable", ".jsonlCSV1"};
-  public static final String FILE_TYPES_225[] = {".parquet"};
+  public static final ImmutableList<String> FILE_TYPES_124 =
+      ImmutableList.of(
+          // for old remote erddaps, make .png locally so pngInfo is available
+          ".csvp", ".tsvp", "odvTxt", ".png");
+  public static final ImmutableList<String> FILE_TYPES_148 = ImmutableList.of(".csv0", ".tsv0");
+  public static final ImmutableList<String> FILE_TYPES_174 = ImmutableList.of(".itx");
+  public static final ImmutableList<String> FILE_TYPES_176 =
+      ImmutableList.of(".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata");
+  public static final ImmutableList<String> FILE_TYPES_184 =
+      ImmutableList.of(".dataTable", ".jsonlCSV1");
+  public static final ImmutableList<String> FILE_TYPES_225 = ImmutableList.of(".parquet");
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -3926,7 +3928,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         "(unknown)", "String", "boolean", "byte", "short", "int", "long", "float", "double"
       };
       String dataTypeHelp = EDStatic.dpf_dataTypeHelpAr[language];
-      int ioosUnknown = String2.indexOf(EDV.IOOS_CATEGORIES, "Unknown");
+      int ioosUnknown = EDV.IOOS_CATEGORIES.indexOf("Unknown");
       String ioosCategoryHelp = EDStatic.dpf_ioosCategoryHelpAr[language];
 
       String tYourName = request.getParameter("yourName"),
@@ -3964,7 +3966,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         tDataType[var] =
             Math.max(0, String2.indexOf(dataTypeOptions, request.getParameter("dataType" + var)));
         tIoosCategory[var] =
-            String2.indexOf(EDV.IOOS_CATEGORIES, request.getParameter("ioos_category" + var));
+            EDV.IOOS_CATEGORIES.indexOf(request.getParameter("ioos_category" + var));
         if (tIoosCategory[var] < 0) tIoosCategory[var] = ioosUnknown;
       }
 
@@ -4074,7 +4076,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsXML(tFillValue[var])
                   + "</att>\n"
                   + "            <att name=\"ioos_category\">"
-                  + XML.encodeAsXML(EDV.IOOS_CATEGORIES[tIoosCategory[var]])
+                  + XML.encodeAsXML(EDV.IOOS_CATEGORIES.get(tIoosCategory[var]))
                   + "</att>\n"
                   + "            <att name=\"long_name\">"
                   + XML.encodeAsXML(tLongName[var])
@@ -5151,8 +5153,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", //8
               EDStatic.encodedDefaultPIppQuery)
               */ );
-      int tDasIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".das");
-      int tDdsIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".dds");
+      int tDasIndex = EDDTable.dataFileTypeNames.indexOf(".das");
+      int tDdsIndex = EDDTable.dataFileTypeNames.indexOf(".dds");
       String restfulGetAllDataset =
           EDStatic.restfulGetAllDatasetAr[language]
               .replace(
@@ -5206,13 +5208,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replace(
                   "&dataFiletypeInfo1;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]))
+                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDdsIndex)))
               .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&griddapExample;", griddapExample)
               .replaceAll("&tabledapExample;", tabledapExample)
               .replace(
                   "&dataFiletypeInfo2;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDasIndex]));
+                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDasIndex)));
 
       writer.write(restfulHTMLContinued /*
                 "  <br>&nbsp;\n" +
@@ -6141,13 +6143,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || // pngInfo EDD.readPngInfo makes local file in all cases
           fileTypeName.endsWith("dfInfo")
           || // pdfInfo
-          (sourceVersion < 124 && String2.indexOf(FILE_TYPES_124, fileTypeName) >= 0)
-          || (sourceVersion < 148 && String2.indexOf(FILE_TYPES_148, fileTypeName) >= 0)
-          || (sourceVersion < 174 && String2.indexOf(FILE_TYPES_174, fileTypeName) >= 0)
-          || (sourceVersion < 176 && String2.indexOf(FILE_TYPES_176, fileTypeName) >= 0)
+          (sourceVersion < 124 && FILE_TYPES_124.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 148 && FILE_TYPES_148.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 174 && FILE_TYPES_174.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 176 && FILE_TYPES_176.indexOf(fileTypeName) >= 0)
           || (sourceVersion < 182 && jsonp != null)
-          || (sourceVersion < 184 && String2.indexOf(FILE_TYPES_184, fileTypeName) >= 0)
-          || (sourceVersion < 225 && String2.indexOf(FILE_TYPES_225, fileTypeName) >= 0)
+          || (sourceVersion < 184 && FILE_TYPES_184.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 225 && FILE_TYPES_225.indexOf(fileTypeName) >= 0)
           || fileTypeName.equals(".subset")) {
         // handle locally
       } else {
@@ -7495,11 +7497,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
           extension = ".xml";
         } else {
-          int po = String2.indexOf(EDDTable.dataFileTypeNames, fileTypeName);
-          if (po >= 0) extension = EDDTable.dataFileTypeExtensions[po];
+          int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
+          if (po >= 0) extension = EDDTable.dataFileTypeExtensions.get(po);
           else {
-            po = String2.indexOf(EDDTable.imageFileTypeNames, fileTypeName);
-            extension = EDDTable.imageFileTypeExtensions[po];
+            po = EDDTable.imageFileTypeNames.indexOf(fileTypeName);
+            extension = EDDTable.imageFileTypeExtensions.get(po);
           }
         }
 
@@ -7926,28 +7928,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // e.g., ?service=WCS&request=GetCoverage
         // format
         String requestFormat = queryMap.get("format"); // test name.toLowerCase()
-        String tRequestFormats[] =
-            EDDGrid
-                .wcsRequestFormats100; // version100? wcsRequestFormats100  : wcsRequestFormats112;
-        String tResponseFormats[] =
-            EDDGrid.wcsResponseFormats100; // version100? wcsResponseFormats100 :
-        // wcsResponseFormats112;
-        int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
+
+        int fi = String2.caseInsensitiveIndexOf(EDDGrid.wcsRequestFormats100, requestFormat);
         if (fi < 0)
           throw new SimpleException(
               EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                   + "format="
                   + requestFormat
                   + " isn't supported.");
-        String erddapFormat = tResponseFormats[fi];
-        int efe = String2.indexOf(EDDGrid.dataFileTypeNames, erddapFormat);
+        String erddapFormat = EDDGrid.wcsResponseFormats100.get(fi);
+        int efe = EDDGrid.dataFileTypeNames.indexOf(erddapFormat);
         String fileExtension;
         if (efe >= 0) {
-          fileExtension = EDDGrid.dataFileTypeExtensions[efe];
+          fileExtension = EDDGrid.dataFileTypeExtensions.get(efe);
         } else {
-          efe = String2.indexOf(EDDGrid.imageFileTypeNames, erddapFormat);
+          efe = EDDGrid.imageFileTypeNames.indexOf(erddapFormat);
           if (efe >= 0) {
-            fileExtension = EDDGrid.imageFileTypeExtensions[efe];
+            fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
           } else {
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
@@ -9716,7 +9713,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             String2.parseBoolean( // defaults to true
                 tDataVariable.combinedAttributes().getString("colorBarContinuous"));
         String scale = tDataVariable.combinedAttributes().getString("colorBarScale");
-        if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
+        if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
                 EDStatic.fullPaletteDirectory,
@@ -23330,8 +23327,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // get outSource
-    int po = String2.indexOf(EDDTable.dataFileTypeNames, fileTypeName);
-    String fileTypeExtension = EDDTable.dataFileTypeExtensions[po];
+    int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
+    String fileTypeExtension = EDDTable.dataFileTypeExtensions.get(po);
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(
             request,

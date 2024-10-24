@@ -20,6 +20,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -149,10 +150,14 @@ public class EDDTableFromSOS extends EDDTable {
   public static final String SosServerTypeIoosNos = "IOOS_NOS";
   public static final String SosServerTypeOostethys = "OOSTethys";
   public static final String SosServerTypeWhoi = "WHOI";
-  public static final String[] SosServerTypes = { // order not important
-    SosServerTypeIoos52N, SosServerTypeIoosNdbc, SosServerTypeIoosNcSOS,
-    SosServerTypeIoosNos, SosServerTypeOostethys, SosServerTypeWhoi
-  };
+  public static final ImmutableList<String> SosServerTypes =
+      ImmutableList.of( // order not important
+          SosServerTypeIoos52N,
+          SosServerTypeIoosNdbc,
+          SosServerTypeIoosNcSOS,
+          SosServerTypeIoosNos,
+          SosServerTypeOostethys,
+          SosServerTypeWhoi);
   public static final String slowSummaryWarning =
       "\n\nThe source SOS server for this dataset is very slow, so requests will "
           + "take minutes to be fulfilled or will fail because of a timeout.";

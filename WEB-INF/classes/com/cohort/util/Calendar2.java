@@ -95,29 +95,37 @@ public class Calendar2 {
   public static final TimeZone zuluTimeZone = TimeZone.getTimeZone(zulu);
   public static final ZoneId zuluZoneId = ZoneId.of(zulu);
 
-  private static final String[] MONTH_3 = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  };
-  private static final String[] MONTH_FULL = {
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  };
-  private static final String[] DAY_OF_WEEK_3 = { // corresponding to DAY_OF_WEEK values
-    "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-  };
-  private static final String[] DAY_OF_WEEK_FULL = {
-    "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
-  };
+  private static final ImmutableList<String> MONTH_3 =
+      ImmutableList.of(
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+  private static final ImmutableList<String> MONTH_FULL =
+      ImmutableList.of(
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December");
+  private static final ImmutableList<String> DAY_OF_WEEK_3 =
+      ImmutableList.of( // corresponding to DAY_OF_WEEK values
+          "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+  private static final ImmutableList<String> DAY_OF_WEEK_FULL =
+      ImmutableList.of(
+          "",
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday");
 
   // These are the CF "calendar" attribute values which are supported.
   // No value (default = "gregorian" = "standard") is also supported.
@@ -3072,7 +3080,7 @@ public class Calendar2 {
    * @throws RuntimeException if month is out of range
    */
   public static String getMonthName3(int month) {
-    return MONTH_3[month - 1];
+    return MONTH_3.get(month - 1);
   }
 
   /**
@@ -3082,7 +3090,7 @@ public class Calendar2 {
    * @throws RuntimeException if month is out of range
    */
   public static String getMonthName(int month) {
-    return MONTH_FULL[month - 1];
+    return MONTH_FULL.get(month - 1);
   }
 
   /**
@@ -3689,7 +3697,7 @@ public class Calendar2 {
   public static String formatAsDDMonYYYY(GregorianCalendar gc) {
     return String2.zeroPad("" + gc.get(DATE), 2)
         + "-"
-        + MONTH_3[gc.get(MONTH)]
+        + MONTH_3.get(gc.get(MONTH))
         + "-"
         + // 0 based
         formatAsISOYear(gc)
@@ -3735,11 +3743,11 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
   public static String formatAsRFC822GMT(GregorianCalendar gc) {
-    return DAY_OF_WEEK_3[gc.get(Calendar.DAY_OF_WEEK)]
+    return DAY_OF_WEEK_3.get(gc.get(Calendar.DAY_OF_WEEK))
         + ", "
         + String2.zeroPad("" + gc.get(DATE), 2)
         + " "
-        + MONTH_3[gc.get(MONTH)]
+        + MONTH_3.get(gc.get(MONTH))
         + " "
         + // 0 based
         formatAsISOYear(gc)
@@ -4198,8 +4206,8 @@ public class Calendar2 {
         } else if (ch == 'M') {
           // MMM and MMMM support 3-letter or full length
           int i =
-              String2.indexOf( // both are titleCase
-                  s2.length() == 3 ? MONTH_3 : MONTH_FULL, s2);
+              // both are titleCase
+              (s2.length() == 3 ? MONTH_3 : MONTH_FULL).indexOf(s2);
           // String2.log(">>    i=" + i);
           if (i >= 0) gc.set(MONTH, i); // month is 0..
           else throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
@@ -4207,8 +4215,8 @@ public class Calendar2 {
         } else if (ch == 'E') {
           // EEE and EEEE support 3-letter or full length
           int i =
-              String2.indexOf( // both are titleCase
-                  s2.length() == 3 ? DAY_OF_WEEK_3 : DAY_OF_WEEK_FULL, s2);
+              // both are titleCase
+              (s2.length() == 3 ? DAY_OF_WEEK_3 : DAY_OF_WEEK_FULL).indexOf(s2);
           // don't use it, just ensure it matches a valid value
           if (i < 1) // [0]=""
           throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
@@ -4598,7 +4606,7 @@ public class Calendar2 {
     String month = s.substring(3, 6).toLowerCase();
     int mon = 0;
     while (mon < 12) {
-      if (MONTH_3[mon].toLowerCase().equals(month)) break;
+      if (MONTH_3.get(mon).toLowerCase().equals(month)) break;
       mon++;
     }
     if (mon == 12)

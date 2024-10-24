@@ -22,6 +22,7 @@ import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -467,7 +468,7 @@ public class EDStatic {
    * doesPasswordMatch() and getRoles(). MD5'd and SHA'd passwords should all already be lowercase.
    * No need to be thread-safe: one thread writes it, then put here where read only.
    */
-  private static HashMap userHashMap = new HashMap();
+  private static HashMap<String, Object[]> userHashMap = new HashMap<>();
 
   /**
    * This is a HashMap of key=id value=thread that need to be interrupted/killed when erddap is
@@ -760,7 +761,7 @@ public class EDStatic {
 
   public static final String loggedInAsSuperuser = "\tsuperuser"; // final so not changeable
   public static final String anyoneLoggedIn = "[anyoneLoggedIn]"; // final so not changeable
-  public static final String anyoneLoggedInRoles[] = new String[] {anyoneLoggedIn};
+  public static final ImmutableList<String> anyoneLoggedInRoles = ImmutableList.of(anyoneLoggedIn);
   public static final int minimumPasswordLength = 8;
 
   // these are all non-null if in awsS3Output mode, otherwise all are null
@@ -5473,7 +5474,7 @@ public class EDStatic {
    * getUserHashMap (so info remains private). MD5'd and SHA256'd passwords should all already be
    * lowercase.
    */
-  public static void setUserHashMap(HashMap tUserHashMap) {
+  public static void setUserHashMap(HashMap<String, Object[]> tUserHashMap) {
     userHashMap = tUserHashMap;
   }
 
@@ -5572,7 +5573,7 @@ public class EDStatic {
       return false;
     }
 
-    Object oar[] = (Object[]) userHashMap.get(username);
+    Object oar[] = userHashMap.get(username);
     if (oar == null) {
       String2.log("username=" + username + " not found in userHashMap.");
       return false;
@@ -5629,8 +5630,11 @@ public class EDStatic {
 
     // all other authentication methods
     Object oar[] = (Object[]) userHashMap.get(loggedInAs);
-    if (oar == null)
-      return anyoneLoggedInRoles; // no <user> tag, but still gets role=[anyoneLoggedIn]
+    if (oar == null) {
+      String[] roles = new String[anyoneLoggedInRoles.size()];
+      return anyoneLoggedInRoles.toArray(
+          roles); // no <user> tag, but still gets role=[anyoneLoggedIn]
+    }
     return (String[]) oar[1];
   }
 

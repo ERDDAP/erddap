@@ -10,6 +10,7 @@ import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pmel.sgt.dm.*;
 import java.io.*;
 import java.util.Collections;
@@ -100,31 +101,30 @@ public class Boundaries {
   // !!!EEK!!! no Sacramento River! gshhs is based on 2 datasets:
   //  World Vector Shorelines (WVS) and CIA World Data Bank II (WDBII).
   //  Perhaps each thinks the other is responsible for it.
-  private String[] fileNames;
+  private ImmutableList<String> fileNames;
 
-  public static final String NATIONAL_FILE_NAMES[] = {
-    "nationalBoundariesf.double",
-    "nationalBoundariesh.double",
-    "nationalBoundariesi.double",
-    "nationalBoundariesl.double",
-    "nationalBoundariesc.double"
-  };
+  public static final ImmutableList<String> NATIONAL_FILE_NAMES =
+      ImmutableList.of(
+          "nationalBoundariesf.double",
+          "nationalBoundariesh.double",
+          "nationalBoundariesi.double",
+          "nationalBoundariesl.double",
+          "nationalBoundariesc.double");
   // ??? Why are there state boundaries for all of Americas, but not Australia? Mistake on my
   // part???
-  public static final String STATE_FILE_NAMES[] = {
-    "stateBoundariesf.double",
-    "stateBoundariesh.double",
-    "stateBoundariesi.double",
-    "stateBoundariesl.double",
-    "stateBoundariesc.double"
-  };
-  public static final String RIVER_FILE_NAMES[] = {
-    "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double"
-  };
+  public static final ImmutableList<String> STATE_FILE_NAMES =
+      ImmutableList.of(
+          "stateBoundariesf.double",
+          "stateBoundariesh.double",
+          "stateBoundariesi.double",
+          "stateBoundariesl.double",
+          "stateBoundariesc.double");
+  public static final ImmutableList<String> RIVER_FILE_NAMES =
+      ImmutableList.of(
+          "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double");
 
   public static final int MATLAB_FORMAT = 0;
   public static final int GMT_FORMAT = 1;
-  private int fileFormat = GMT_FORMAT;
 
   /**
    * The constructor.
@@ -134,11 +134,10 @@ public class Boundaries {
    * @param fileNames the 5 file names
    * @param fileFormat MATLAB_FORMAT or GMT_FORMAT
    */
-  public Boundaries(String id, String directory, String fileNames[], int fileFormat) {
+  public Boundaries(String id, String directory, ImmutableList<String> fileNames) {
     this.id = id;
     this.directory = directory;
     this.fileNames = fileNames;
-    this.fileFormat = fileFormat;
   }
 
   /**
@@ -180,7 +179,7 @@ public class Boundaries {
       // And the request is usually a large part of whole world. Most paths will be used.
       nCoarse++;
       tCoarse = "*";
-      sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+      sgtLine = readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
 
     } else {
 
@@ -200,7 +199,8 @@ public class Boundaries {
         if (sgtLine == null) {
 
           // not in cache, make SgtLine
-          sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+          sgtLine =
+              readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
 
           // cache full?
           if (cache.size() == CACHE_SIZE) {
@@ -703,16 +703,16 @@ public class Boundaries {
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getNationalBoundaries() {
-    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES);
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getStateBoundaries() {
-    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES);
   }
 
   /** This is a convenience method to construct a rivers object. */
   public static Boundaries getRivers() {
-    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES);
   }
 }

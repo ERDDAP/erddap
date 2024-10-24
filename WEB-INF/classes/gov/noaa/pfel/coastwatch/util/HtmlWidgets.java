@@ -1043,6 +1043,35 @@ public class HtmlWidgets {
    * @return the HTML code for a list in a box or a dropdown list.
    */
   public String select(
+      String name,
+      String tooltip,
+      int nRows,
+      ImmutableList<String> options,
+      int selected,
+      String other) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    return select(name, tooltip, nRows, arrOptions, null, selected, other, false, "");
+  }
+
+  /**
+   * This creates the HTML code for a list in a box or a dropdown list. If nRows &lt; 0, this uses a
+   * table to bring the elements close together, and so may need to be in an enclosing table if you
+   * want other items on same line.
+   *
+   * @param name the name of the widget (name=value is returned when the form is submitted)
+   * @param tooltip If htmlTooltips is true, this is already html. If it is false, this is plain
+   *     text. Or "" if no tooltip.
+   * @param nRows &gt; 1 (e.g. 8) to display many options, <br>
+   *     1=1 row with no buttons, <br>
+   *     nRows is negative implies some combination of BUTTONS_0n, BUTTONS_1, BUTTONS_100,
+   *     BUTTONS_1000
+   * @param options which provides the plain text to be displayed for each of the options.
+   * @param selected the index of the selected item or -1 if none
+   * @param other e.g., "onchange=\"pleaseWait();\"" For select(), use onchange, not onclick.
+   * @return the HTML code for a list in a box or a dropdown list.
+   */
+  public String select(
       String name, String tooltip, int nRows, String options[], int selected, String other) {
 
     return select(name, tooltip, nRows, options, null, selected, other, false, "");
@@ -1087,6 +1116,31 @@ public class HtmlWidgets {
       String buttonJS) {
 
     return select(name, tooltip, nRows, options, null, selected, other, encodeSpaces, buttonJS);
+  }
+
+  /**
+   * This variant of select adds a values parameter.
+   *
+   * @param values this should parallel options, or be null (usually).
+   * @param buttonJS is addtional javascript to be done when a button is pushed, most commonly "
+   *     sel.onchange();" which triggers the select widget's onchange javascript.
+   */
+  public String select(
+      String name,
+      String tooltip,
+      int nRows,
+      ImmutableList<String> options,
+      ImmutableList<String> values,
+      int selected,
+      String other,
+      boolean encodeSpaces,
+      String buttonJS) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    String[] arrValues = new String[values.size()];
+    arrValues = values.toArray(arrValues);
+    return select(
+        name, tooltip, nRows, arrOptions, arrValues, selected, other, encodeSpaces, buttonJS);
   }
 
   /**

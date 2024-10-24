@@ -51,10 +51,6 @@ public class TaskThread extends Thread {
    */
   public static final Integer TASK_DOWNLOAD = Integer.valueOf(4);
 
-  /** TASK_NAMES parallels the TASK Integers. */
-  public static final String[] TASK_NAMES =
-      new String[] {"MAKE_A_DATAFILE", "SET_FLAG", "DAP_TO_NC", "ALL_DAP_TO_NC", "DOWNLOAD"};
-
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.

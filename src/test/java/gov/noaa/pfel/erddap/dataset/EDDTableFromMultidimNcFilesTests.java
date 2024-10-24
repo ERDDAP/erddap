@@ -3998,8 +3998,7 @@ class EDDTableFromMultidimNcFilesTests {
      */
     // make nc4
     Test.ensureTrue(
-        String2.indexOf(EDDTableFromMultidimNcFiles.dataFileTypeNames, ".nc4") >= 0,
-        "Enable .nc4?");
+        EDDTableFromMultidimNcFiles.dataFileTypeNames.indexOf(".nc4") >= 0, "Enable .nc4?");
 
     userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
     tName =

@@ -5325,8 +5325,8 @@ class EDDGridFromDapTests {
     expected = "No error.";
     // was "SimpleException: Query error: For variable=temp axis#1=depth
     // Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
-    for (int i = 0; i < EDDGridFromDap.dataFileTypeNames.length; i++) {
-      String fileType = EDDGridFromDap.dataFileTypeNames[i];
+    for (int i = 0; i < EDDGridFromDap.dataFileTypeNames.size(); i++) {
+      String fileType = EDDGridFromDap.dataFileTypeNames.get(i);
 
       // skip the fileTypes that don't look at the query (or don't object to errors in
       // it)

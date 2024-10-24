@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -2461,6 +2462,10 @@ public class String2 {
     final Object ar[] = set.toArray();
     Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
     return toCSVString(ar);
+  }
+
+  public static String toCSSVString(final List<?> list) {
+    return toSVString(list.toArray(), ", ", false);
   }
 
   /**

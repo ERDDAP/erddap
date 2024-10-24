@@ -361,12 +361,12 @@ public class FileNameUtility {
       // center 25 and 33hour files  GA2005069_120000h_t24h
       String fourName = daveName.substring(18, 22);
       if (fourNameIs25Hour(fourName)) {
-        timePeriodInFileName = TimePeriods.IN_FILE_NAMES[TimePeriods._25HOUR_INDEX];
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._25HOUR_INDEX);
         centeredIsoDateTime =
             Calendar2.formatAsISODateTimeT(
                 Calendar2.isoDateTimeAdd(fileIsoDateTime, -25 * 60 / 2, Calendar2.MINUTE));
       } else if (fourNameIs33Hour(fourName)) {
-        timePeriodInFileName = TimePeriods.IN_FILE_NAMES[TimePeriods._33HOUR_INDEX];
+        timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(TimePeriods._33HOUR_INDEX);
         centeredIsoDateTime =
             Calendar2.formatAsISODateTimeT(
                 Calendar2.isoDateTimeAdd(fileIsoDateTime, -33 * 60 / 2, Calendar2.MINUTE));
@@ -420,10 +420,10 @@ public class FileNameUtility {
         timePeriodIndex = TimePeriods.closestTimePeriod(nDays * 24, TimePeriods.OPTIONS);
         Test.ensureEqual(
             nDays,
-            TimePeriods.N_HOURS[timePeriodIndex] / 24,
+            TimePeriods.N_HOURS.get(timePeriodIndex) / 24,
             errorIn + nDays + "-day time period not yet supported.");
       }
-      timePeriodInFileName = TimePeriods.IN_FILE_NAMES[timePeriodIndex];
+      timePeriodInFileName = TimePeriods.IN_FILE_NAMES.get(timePeriodIndex);
     }
     String centeredDateTime = Calendar2.removeSpacesDashesColons(centeredIsoDateTime);
 
@@ -664,7 +664,7 @@ public class FileNameUtility {
    */
   public static int getTimePeriodIndex(String fileName) throws Exception {
     String s = getTimePeriodString(fileName);
-    int i = String2.indexOf(TimePeriods.IN_FILE_NAMES, s);
+    int i = TimePeriods.IN_FILE_NAMES.indexOf(s);
     if (i == -1)
       throw new RuntimeException(
           String2.ERROR
@@ -685,7 +685,7 @@ public class FileNameUtility {
    * @throws Exception if trouble
    */
   public static int getTimePeriodNHours(String fileName) throws Exception {
-    return TimePeriods.N_HOURS[getTimePeriodIndex(fileName)];
+    return TimePeriods.N_HOURS.get(getTimePeriodIndex(fileName));
   }
 
   /**
@@ -726,7 +726,7 @@ public class FileNameUtility {
    */
   public static GregorianCalendar getEndCalendar(String fileName) throws Exception {
     return TimePeriods.getEndCalendar(
-        TimePeriods.OPTIONS[getTimePeriodIndex(fileName)],
+        TimePeriods.OPTIONS.get(getTimePeriodIndex(fileName)),
         Calendar2.formatAsISODateTimeT(getCenteredCalendar(fileName)),
         null);
   }
@@ -741,7 +741,7 @@ public class FileNameUtility {
    */
   public static GregorianCalendar getStartCalendar(String fileName) throws Exception {
     return TimePeriods.getStartCalendar(
-        TimePeriods.OPTIONS[getTimePeriodIndex(fileName)],
+        TimePeriods.OPTIONS.get(getTimePeriodIndex(fileName)),
         Calendar2.formatAsISODateTimeT(getCenteredCalendar(fileName)),
         null);
   }

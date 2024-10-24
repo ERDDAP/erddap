@@ -22,6 +22,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -193,32 +194,32 @@ public abstract class EDD {
    * added in alphabetic order.) Note that CF 1.6 section 9.4 says "The value assigned to the
    * featureType attribute is case-insensitive".
    */
-  public static final String[] CDM_TYPES = {
-    CDM_GRID,
-    CDM_MOVINGGRID,
-    CDM_OTHER,
-    CDM_POINT,
-    CDM_PROFILE,
-    CDM_RADIALSWEEP,
-    CDM_TIMESERIES,
-    CDM_TIMESERIESPROFILE,
-    CDM_SWATH,
-    CDM_TRAJECTORY,
-    CDM_TRAJECTORYPROFILE
-  };
+  public static final ImmutableList<String> CDM_TYPES =
+      ImmutableList.of(
+          CDM_GRID,
+          CDM_MOVINGGRID,
+          CDM_OTHER,
+          CDM_POINT,
+          CDM_PROFILE,
+          CDM_RADIALSWEEP,
+          CDM_TIMESERIES,
+          CDM_TIMESERIESPROFILE,
+          CDM_SWATH,
+          CDM_TRAJECTORY,
+          CDM_TRAJECTORYPROFILE);
 
   /**
    * The CF 1.6 standard featureTypes are just the point CDM_TYPES. See featureType definition and
    * table 9.1 in the CF standard.
    */
-  public static final String[] CF_FEATURE_TYPES = {
-    CDM_POINT,
-    CDM_PROFILE,
-    CDM_TIMESERIES,
-    CDM_TIMESERIESPROFILE,
-    CDM_TRAJECTORY,
-    CDM_TRAJECTORYPROFILE
-  };
+  public static final ImmutableList<String> CF_FEATURE_TYPES =
+      ImmutableList.of(
+          CDM_POINT,
+          CDM_PROFILE,
+          CDM_TIMESERIES,
+          CDM_TIMESERIESPROFILE,
+          CDM_TRAJECTORY,
+          CDM_TRAJECTORYPROFILE);
 
   /**
    * LEGEND constants define the options for legend placements on graphs "Bottom" is the default.
@@ -263,36 +264,47 @@ public abstract class EDD {
 
   public static final String STANDARDIZEWHAT = "standardizeWhat";
 
-  public static final String ONE_WORD_CF_STANDARD_NAMES[] = {
-    "altitude",
-    "cakes123",
-    "depth",
-    "geopotential",
-    "height",
-    "latitude",
-    "longitude",
-    "omega",
-    "realization",
-    "region",
-    "time"
-  };
+  public static final ImmutableList<String> ONE_WORD_CF_STANDARD_NAMES =
+      ImmutableList.of(
+          "altitude",
+          "cakes123",
+          "depth",
+          "geopotential",
+          "height",
+          "latitude",
+          "longitude",
+          "omega",
+          "realization",
+          "region",
+          "time");
   public static final int LONGEST_ONE_WORD_CF_STANDARD_NAMES = 12; // characters
 
   public static final byte[] NOT_ORIGINAL_SEARCH_ENGINE_BYTES =
       String2.stringToUtf8Bytes("In setup.xml, <searchEngine> is not 'original'.");
 
-  public static final String KEEP_SHORT_KEYWORDS[] = {"u", "v", "w", "xi"};
-  public static final String KEEP_SHORT_UC_KEYWORDS[] = {"hf", "l2", "l3", "l4", "o2", "us"};
+  public static final ImmutableList<String> KEEP_SHORT_KEYWORDS =
+      ImmutableList.of("u", "v", "w", "xi");
+  public static final ImmutableList<String> KEEP_SHORT_UC_KEYWORDS =
+      ImmutableList.of("hf", "l2", "l3", "l4", "o2", "us");
 
   public static final String GCMD_EARTH_SCIENCE = "Earth Science > "; // title case
   public static final String GCMD_EARTH_SCIENCE_LC = "earth science > "; // lower case
-  public static final String GCMD_LEVEL1[] = { // lower case
-    "agriculture > ", "atmosphere > ", "biological classification > ",
-    "biosphere > ", "climate Indicators > ", "cryosphere > ",
-    "human dimensions > ", "land surface > ", "oceans > ",
-    "paleoclimate > ", "solid earth > ", "spectral/engineering > ",
-    "sun-earth interactions > ", "terrestrial hydrosphere > "
-  };
+  public static final ImmutableList<String> GCMD_LEVEL1 =
+      ImmutableList.of( // lower case
+          "agriculture > ",
+          "atmosphere > ",
+          "biological classification > ",
+          "biosphere > ",
+          "climate Indicators > ",
+          "cryosphere > ",
+          "human dimensions > ",
+          "land surface > ",
+          "oceans > ",
+          "paleoclimate > ",
+          "solid earth > ",
+          "spectral/engineering > ",
+          "sun-earth interactions > ",
+          "terrestrial hydrosphere > ");
 
   /**
    * suggestReloadEveryNMinutes multiplies the original suggestion by this factor. So, e.g., using
@@ -989,12 +1001,12 @@ public abstract class EDD {
       addGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
       combinedGlobalAttributes.set("defaultGraphQuery", defaultGraphQuery);
     }
-    int cdmPo = String2.indexOf(CDM_TYPES, cdmDataType());
+    int cdmPo = CDM_TYPES.indexOf(cdmDataType());
     if (cdmPo < 0) {
       // if cdm_data_type is just a different case, fix it
       cdmPo = String2.caseInsensitiveIndexOf(CDM_TYPES, cdmDataType());
       if (cdmPo >= 0) {
-        cdmDataType = CDM_TYPES[cdmPo];
+        cdmDataType = CDM_TYPES.get(cdmPo);
         combinedGlobalAttributes.set("cdm_data_type", cdmDataType);
       }
     }
@@ -1006,7 +1018,7 @@ public abstract class EDD {
             + " isn't one of the standard CDM types ("
             + String2.toCSSVString(CDM_TYPES)
             + ").");
-    if (String2.indexOf(CF_FEATURE_TYPES, cdmDataType) >= 0)
+    if (CF_FEATURE_TYPES.indexOf(cdmDataType) >= 0)
       combinedGlobalAttributes.set(
           "featureType",
           cdmDataType); // case-insensitive (see CF 1.6, section 9.4), so match ERDDAP's name
@@ -3080,7 +3092,7 @@ public abstract class EDD {
    *
    * @return the types of data files that this dataset can be returned as (e.g., ".nc").
    */
-  public abstract String[] dataFileTypeNames();
+  public abstract ImmutableList<String> dataFileTypeNames();
 
   /**
    * This returns the file extensions corresponding to the dataFileTypes. E.g.,
@@ -3088,7 +3100,7 @@ public abstract class EDD {
    *
    * @return the file extensions corresponding to the dataFileTypes (e.g., ".nc").
    */
-  public abstract String[] dataFileTypeExtensions();
+  public abstract ImmutableList<String> dataFileTypeExtensions();
 
   /**
    * This returns descriptions (up to 80 characters long, suitable for a tooltip) corresponding to
@@ -3104,7 +3116,7 @@ public abstract class EDD {
    *
    * @return an info URL corresponding to the dataFileTypes (an element is "" if not not available)
    */
-  public abstract String[] dataFileTypeInfo();
+  public abstract ImmutableList<String> dataFileTypeInfo();
 
   /**
    * This returns the types of image files that this dataset can be returned as. These are short
@@ -3113,7 +3125,7 @@ public abstract class EDD {
    *
    * @return the types of image files that this dataset can be returned as (e.g., ".largePng").
    */
-  public abstract String[] imageFileTypeNames();
+  public abstract ImmutableList<String> imageFileTypeNames();
 
   /**
    * This returns the file extensions corresponding to the imageFileTypes, e.g.,
@@ -3121,7 +3133,7 @@ public abstract class EDD {
    *
    * @return the file extensions corresponding to the imageFileTypes (e.g., ".png").
    */
-  public abstract String[] imageFileTypeExtensions();
+  public abstract ImmutableList<String> imageFileTypeExtensions();
 
   /**
    * This returns descriptions corresponding to the imageFileTypes (each is suitable for a tooltip).
@@ -3136,7 +3148,7 @@ public abstract class EDD {
    *
    * @return an info URL corresponding to the imageFileTypes.
    */
-  public abstract String[] imageFileTypeInfo();
+  public abstract ImmutableList<String> imageFileTypeInfo();
 
   /**
    * This returns the "[name] - [description]" for all dataFileTypes and imageFileTypes.
@@ -3156,11 +3168,11 @@ public abstract class EDD {
    */
   public String fileTypeExtension(int language, String fileTypeName) throws Throwable {
     // if there is need for speed in the future: use hashmap
-    int po = String2.indexOf(dataFileTypeNames(), fileTypeName);
-    if (po >= 0) return dataFileTypeExtensions()[po];
+    int po = dataFileTypeNames().indexOf(fileTypeName);
+    if (po >= 0) return dataFileTypeExtensions().get(po);
 
-    po = String2.indexOf(imageFileTypeNames(), fileTypeName);
-    if (po >= 0) return imageFileTypeExtensions()[po];
+    po = imageFileTypeNames().indexOf(fileTypeName);
+    if (po >= 0) return imageFileTypeExtensions().get(po);
 
     // The pngInfo fileTypeNames could be in regular list,
     //  but audience is so small, and normal audience might be confused
@@ -3853,7 +3865,9 @@ public abstract class EDD {
     if (!String2.isSomething2(value))
       sourceAtts.add(
           name,
-          tCdmDataType == null ? "???" + String2.toSVString(CDM_TYPES, "|", false) : tCdmDataType);
+          tCdmDataType == null
+              ? "???" + String2.toSVString(CDM_TYPES.toArray(), "|", false)
+              : tCdmDataType);
 
     name = "Conventions";
     value = sourceAtts.getString(name);
@@ -4459,8 +4473,7 @@ public abstract class EDD {
       if (s.length() > 2) {
         // String2.log("  add " + s);
         hashSet.add(s);
-      } else if (String2.indexOf(KEEP_SHORT_KEYWORDS, s) >= 0
-          || String2.indexOf(KEEP_SHORT_UC_KEYWORDS, s) >= 0) {
+      } else if (KEEP_SHORT_KEYWORDS.indexOf(s) >= 0 || KEEP_SHORT_UC_KEYWORDS.indexOf(s) >= 0) {
         hashSet.add(s); // uppercase will be upper-cased when written to generateDatasetsXml
       }
 
@@ -4576,7 +4589,7 @@ public abstract class EDD {
       kw = kw.substring(0, kw.length() - 3) + " pH"; // only occurs at end of keywords
       return kw;
     }
-    if (String2.indexOf(GCMD_LEVEL1, kwlc.substring(0, gtpo + 3)) >= 0) { // everything is lowercase
+    if (GCMD_LEVEL1.indexOf(kwlc.substring(0, gtpo + 3)) >= 0) { // everything is lowercase
       // add missing level 0 "Earth Science > "
       kw = GCMD_EARTH_SCIENCE + String2.toTitleCase(kw);
       if (kw.endsWith(" Ph")) // flaw in toTitleCase
@@ -5789,7 +5802,7 @@ public abstract class EDD {
       // make sure it is correct case
       int which = String2.caseInsensitiveIndexOf(CDM_TYPES, value);
       if (which >= 0) {
-        value = CDM_TYPES[which];
+        value = CDM_TYPES.get(which);
       } else {
         // outdated synonym?
         String valueLC = value.toLowerCase();
@@ -7581,10 +7594,10 @@ public abstract class EDD {
         if (kw.length() > 2) { // lose lots of junk and a few greek letters
           sb.append(kw);
           sb.append(", ");
-        } else if (String2.indexOf(KEEP_SHORT_KEYWORDS, kw) >= 0) {
+        } else if (KEEP_SHORT_KEYWORDS.indexOf(kw) >= 0) {
           sb.append(kw);
           sb.append(", ");
-        } else if (String2.indexOf(KEEP_SHORT_UC_KEYWORDS, kw) >= 0) {
+        } else if (KEEP_SHORT_UC_KEYWORDS.indexOf(kw) >= 0) {
           sb.append(kw.toUpperCase());
           sb.append(", ");
         }
@@ -10547,7 +10560,7 @@ public abstract class EDD {
 
       // ensure valid / fix wrong case
       int ti = String2.caseInsensitiveIndexOf(EDV.IOOS_CATEGORIES, oIoosCat);
-      oIoosCat = ti < 0 ? null : EDV.IOOS_CATEGORIES[ti];
+      oIoosCat = ti < 0 ? null : EDV.IOOS_CATEGORIES.get(ti);
 
       // save it
       if (oIoosCat == null) addAtts.add("ioos_category", "null");

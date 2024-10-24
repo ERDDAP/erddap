@@ -999,7 +999,7 @@ public class SgtGraph {
             IntArray markerYs = new IntArray();
             ArrayList<Color> markerInteriorColors = new ArrayList<>();
             if (reallyVerbose)
-              String2.log("  draw=" + GraphDataLayer.DRAW_NAMES[gdl.draw] + " n=" + n);
+              String2.log("  draw=" + GraphDataLayer.DRAW_NAMES.get(gdl.draw) + " n=" + n);
             long accumTime = System.currentTimeMillis();
             int oitx, oity;
             for (int ni = 0; ni < n; ni++) {

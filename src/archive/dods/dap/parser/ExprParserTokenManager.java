@@ -316,14 +316,11 @@ public class ExprParserTokenManager implements ExprParserConstants {
   static final int[] jjnextStates = {
     15, 17, 18, 19, 21, 9, 10, 11, 9, 10, 2, 15, 17, 18, 5, 6, 19, 21,
   };
-  public static final String[] jjstrLiteralImages = {
+  public static final ImmutableList<String> jjstrLiteralImages = ImmutableList.of(
     "", null, null, null, null, "\75", "\41\75", "\76", "\76\75", "\74", "\74\75",
     "\176\75", "\133", "\135", "\72", "\52", "\54", "\46", "\50", "\51", "\173", "\175",
-    "\56", null, null, null, null, null, null, null, null, null,
-  };
-  public static final String[] lexStateNames = {
-    "DEFAULT",
-  };
+    "\56", null, null, null, null, null, null, null, null, null
+  );
   static final long[] jjtoToken = {
     0x93ffffe1L,
   };
@@ -376,7 +373,7 @@ public class ExprParserTokenManager implements ExprParserConstants {
   private final Token jjFillToken() {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
-    String im = jjstrLiteralImages[jjmatchedKind];
+    String im = jjstrLiteralImages.get(jjmatchedKind);
     t.image = (im == null) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();

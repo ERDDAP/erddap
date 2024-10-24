@@ -737,7 +737,7 @@ public class EDDTableFromOBIS extends EDDTable {
         constraintValues.remove(c);
 
       } else if (edv.sourceDataPAType() == PAType.STRING
-          && String2.indexOf(GTLT_OPERATORS, constraintOps.get(c)) >= 0) {
+          && GTLT_OPERATORS.indexOf(constraintOps.get(c)) >= 0) {
         // remove >, >=, <, <= ops for String variables
         constraintVariables.remove(c);
         constraintOps.remove(c);
@@ -757,8 +757,8 @@ public class EDDTableFromOBIS extends EDDTable {
 
     // convert constraintOps to words
     for (int i = 0; i < constraintOps.size(); i++) {
-      int po = String2.indexOf(DigirHelper.COP_SYMBOLS, constraintOps.get(i));
-      if (po >= 0) constraintOps.set(i, DigirHelper.COP_NAMES[po]);
+      int po = DigirHelper.COP_SYMBOLS.indexOf(constraintOps.get(i));
+      if (po >= 0) constraintOps.set(i, DigirHelper.COP_NAMES.get(po));
       else throw new IllegalArgumentException("Unexpected constraintOp=" + constraintOps.get(i));
     }
 

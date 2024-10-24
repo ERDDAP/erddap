@@ -67,11 +67,13 @@ class DigirHelperTests {
 
     // test getOpendapConstraint
     filterCops.set(7, "in");
+    String[] copNames = new String[DigirHelper.COP_NAMES.size()];
+    copNames = DigirHelper.COP_NAMES.toArray(copNames);
     Test.ensureEqual(
         DigirHelper.getOpendapConstraint(
             resultsVariables.toArray(),
             filterVariables.toArray(),
-            DigirHelper.COP_NAMES,
+            copNames,
             filterValues.toArray()),
         query,
         "");

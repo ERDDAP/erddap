@@ -20,6 +20,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -54,13 +55,16 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
   public static final String TIMESTAMP = "timestamp"; // epic seconds as double
   public static final String AUTHOR = "author"; // String
   public static final String COMMAND = "command"; // byte
-  public static final String SPECIAL_VAR_NAMES[] = {TIMESTAMP, AUTHOR, COMMAND};
-  public static final String SPECIAL_VAR_TYPES[] = {"double", "String", "byte"};
-  public static final String SPECIAL_VAR_UNITS[] = {Calendar2.SECONDS_SINCE_1970, null, null};
+  public static final ImmutableList<String> SPECIAL_VAR_NAMES =
+      ImmutableList.of(TIMESTAMP, AUTHOR, COMMAND);
+  public static final ImmutableList<String> SPECIAL_VAR_TYPES =
+      ImmutableList.of("double", "String", "byte");
+  public static final ImmutableList<String> SPECIAL_VAR_UNITS =
+      ImmutableList.of(Calendar2.SECONDS_SINCE_1970, "", "");
   // COMMAND needs CF FLAG attributes 0=insert, 1=delete
   public static final byte INSERT_COMMAND = 0;
   public static final byte DELETE_COMMAND = 1;
-  public static final String NO_PROCESS_COMMANDS[] = {">", ">=", "="};
+  public static final ImmutableList<String> NO_PROCESS_COMMANDS = ImmutableList.of(">", ">=", "=");
 
   public static final String NUMERIC_TIMESTAMP_REGEX =
       "numericTimestamp\":(\\d\\.\\d{2,12}E9),?\\n";
@@ -251,30 +255,33 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
     // Check last 3 var SPECIAL_VAR_NAMES: TIMESTAMP, AUTHOR, COMMAND
     for (int i = 0; i < 3; i++) {
-      int which = String2.indexOf(dataVariableSourceNames, SPECIAL_VAR_NAMES[i]);
+      int which = String2.indexOf(dataVariableSourceNames, SPECIAL_VAR_NAMES.get(i));
       if (which < 0)
         throw new SimpleException(
-            msg + "One of the variables must have the name \"" + SPECIAL_VAR_NAMES[which] + "\".");
+            msg
+                + "One of the variables must have the name \""
+                + SPECIAL_VAR_NAMES.get(which)
+                + "\".");
 
-      if (!SPECIAL_VAR_TYPES[i].equals(dataVariables[which].sourceDataType()))
+      if (!SPECIAL_VAR_TYPES.get(i).equals(dataVariables[which].sourceDataType()))
         throw new SimpleException(
             msg
                 + "Variable="
-                + SPECIAL_VAR_NAMES[i]
+                + SPECIAL_VAR_NAMES.get(i)
                 + " must have dataType="
-                + SPECIAL_VAR_TYPES[i]
+                + SPECIAL_VAR_TYPES.get(i)
                 + ", not \""
                 + dataVariables[which].sourceDataType()
                 + "\".");
 
-      if (SPECIAL_VAR_UNITS[i] != null
-          && !SPECIAL_VAR_UNITS[i].equals(dataVariables[which].units()))
+      if (!SPECIAL_VAR_UNITS.get(i).isEmpty()
+          && !SPECIAL_VAR_UNITS.get(i).equals(dataVariables[which].units()))
         throw new SimpleException(
             msg
                 + "Variable="
-                + SPECIAL_VAR_NAMES[i]
+                + SPECIAL_VAR_NAMES.get(i)
                 + " must have units="
-                + SPECIAL_VAR_UNITS[i]
+                + SPECIAL_VAR_UNITS.get(i)
                 + ", not \""
                 + dataVariables[which].units()
                 + "\".");
@@ -372,8 +379,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String scVar = sourceConVars.get(i);
         if (TIMESTAMP.equals(scVar)) {
           String tOp = sourceConOps.get(i);
-          if (String2.indexOf(NO_PROCESS_COMMANDS, tOp)
-              >= 0) { // timestamp> >= or = leads to no processing
+          if (NO_PROCESS_COMMANDS.indexOf(tOp) >= 0) { // timestamp> >= or = leads to no processing
             process = false;
             break;
           } else if (tOp.equals(PrimitiveArray.REGEX_OP)) {
@@ -1576,10 +1582,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
     // 3 required columns: TIMESTAMP, AUTHOR, COMMAND
     for (int i = 0; i < 3; i++) {
-      int which = dataSourceTable.findColumnNumber(SPECIAL_VAR_NAMES[i]);
+      int which = dataSourceTable.findColumnNumber(SPECIAL_VAR_NAMES.get(i));
       if (which < 0)
         throw new SimpleException(
-            "One of the variables must have the name \"" + SPECIAL_VAR_NAMES[which] + "\".");
+            "One of the variables must have the name \"" + SPECIAL_VAR_NAMES.get(which) + "\".");
     }
 
     Table dataAddTable = new Table();

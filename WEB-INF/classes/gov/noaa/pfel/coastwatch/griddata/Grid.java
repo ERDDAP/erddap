@@ -11,6 +11,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.hdf.HdfConstants;
 import gov.noaa.pfel.coastwatch.hdf.HdfScientificData;
 import gov.noaa.pfel.coastwatch.hdf.SdsReader;
@@ -2634,7 +2635,7 @@ public class Grid {
     long time = System.currentTimeMillis();
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_ASCII]; // fortunately same as ESRI_ASCII
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_ASCII); // fortunately same as ESRI_ASCII
     File2.delete(directory + name + ext);
 
     // make sure there is data
@@ -2800,7 +2801,7 @@ public class Grid {
       int randomInt = Math2.random(Integer.MAX_VALUE));
 
       //delete any existing file
-      String ext = SAVE_AS_EXTENSIONS[SAVE_AS_GEOTIFF];
+      String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_GEOTIFF);
       File2.delete(directory + name + ext);
 
       //make sure there is data
@@ -2844,7 +2845,7 @@ public class Grid {
     long time = System.currentTimeMillis();
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_GRD];
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_GRD);
     File2.delete(directory + name + ext);
 
     // make sure there is data
@@ -3099,7 +3100,7 @@ public class Grid {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_HDF];
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_HDF);
     File2.delete(directory + name + ext);
 
     // make sure there is data
@@ -3464,7 +3465,7 @@ public class Grid {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_MATLAB];
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_MATLAB);
     File2.delete(directory + name + ext);
 
     // make sure there is data
@@ -3756,7 +3757,7 @@ public class Grid {
     long time = System.currentTimeMillis();
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_NETCDF];
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_NETCDF);
     File2.delete(directory + name + ext);
 
     // make sure there is data
@@ -4006,7 +4007,7 @@ public class Grid {
     long time = System.currentTimeMillis();
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS[SAVE_AS_XYZ];
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_XYZ);
     File2.delete(directory + name);
 
     // make sure there is data
@@ -4085,9 +4086,8 @@ public class Grid {
   public static final int SAVE_AS_GEOTIFF = 5;
   public static final int SAVE_AS_NETCDF = 6;
   public static final int SAVE_AS_ASCII = 7; // lon values unchanged
-  public static final String SAVE_AS_EXTENSIONS[] = {
-    ".grd", ".asc", ".hdf", ".mat", ".xyz", ".tif", ".nc", ".asc"
-  };
+  public static final ImmutableList<String> SAVE_AS_EXTENSIONS =
+      ImmutableList.of(".grd", ".asc", ".hdf", ".mat", ".xyz", ".tif", ".nc", ".asc");
 
   /**
    * This saves the current grid in some type of file. If the file already exists, it is touched,
@@ -4118,7 +4118,7 @@ public class Grid {
       throw new RuntimeException(
           String2.ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
 
-    String ext = SAVE_AS_EXTENSIONS[saveAsType];
+    String ext = SAVE_AS_EXTENSIONS.get(saveAsType);
 
     // does the file already exist?
     String finalName = directory + fileName + ext + (zipIt ? ".zip" : "");
@@ -4353,7 +4353,7 @@ public class Grid {
                 + grid.lat.length);
 
         // write the output file (use outCWName since saveAsHDF requires that)
-        int saveAsType = String2.indexOf(Grid.SAVE_AS_EXTENSIONS, outExt);
+        int saveAsType = SAVE_AS_EXTENSIONS.indexOf(outExt);
         grid.saveAs(
             outDir,
             tOutCWName,

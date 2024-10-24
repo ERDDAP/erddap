@@ -4,15 +4,11 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
-import com.cohort.array.*;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import dods.dap.*;
-import ucar.ma2.*;
-import ucar.nc2.*;
-import ucar.nc2.util.*;
+import com.google.common.collect.ImmutableList;
 
 /**
  * This class has some static convenience methods related to the other Data classes.
@@ -63,25 +59,8 @@ public class DataHelper {
    * PointDataSet.makeSubset results table: {"LON", "LAT", "DEPTH", "TIME", "ID"}. Dapper and DChart
    * like these exact names.
    */
-  public static final String[] TABLE_VARIABLE_NAMES = {"LON", "LAT", "DEPTH", "TIME", "ID"};
-
-  /**
-   * The standard long names of the first 5 columns in the TableDataSet.makeSubset and
-   * PointDataSet.makeSubset results table: {"Longitude", "Latitude", "Depth", "Time",
-   * "Identifier"}. Dapper and DChart like these exact names.
-   */
-  public static final String[] TABLE_LONG_NAMES = {
-    "Longitude", "Latitude", "Depth", "Time", "Identifier"
-  };
-
-  /**
-   * The standard UD units for the first 5 columns in the TableDataSet.makeSubset and
-   * PointDataSet.makeSubset results table, e.g., "degrees_east". Dapper and DChart like these exact
-   * names.
-   */
-  public static final String[] TABLE_UNITS = {
-    "degrees_east", "degrees_north", "m", Calendar2.SECONDS_SINCE_1970, UNITLESS
-  };
+  public static final ImmutableList<String> TABLE_VARIABLE_NAMES =
+      ImmutableList.of("LON", "LAT", "DEPTH", "TIME", "ID");
 
   /**
    * The returns a new, revised, history attribute. This avoids adding a second entries for today

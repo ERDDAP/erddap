@@ -95,36 +95,33 @@ public abstract class EDDTable extends EDD {
    * source supports numeric =~ testing, and no source supports string &lt; &lt;= &gt; &gt;=
    * testing), ERDDAP will just get all the relevant data and do the test itself.
    */
-  public static final String OPERATORS[] = Table.OPERATORS;
+  public static final ImmutableList<String> OPERATORS = Table.OPERATORS;
 
   // EDDTableFromFiles.isOK relies on this order
   // "!=", PrimitiveArray.REGEX_OP, "<=", ">=",
   // "=", "<", ">"};
   /** Partially Percent Encoded Operators ('=' is not encoded) */
-  public static final String PPE_OPERATORS[] = {
-    // EDDTableFromFiles.isOK relies on this order
-    "!=", PrimitiveArray.REGEX_OP, "%3C=", "%3E=", "=", "%3C", "%3E"
-  };
+  public static final ImmutableList<String> PPE_OPERATORS =
+      ImmutableList.of(
+          // EDDTableFromFiles.isOK relies on this order
+          "!=", PrimitiveArray.REGEX_OP, "%3C=", "%3E=", "=", "%3C", "%3E");
 
-  private static final int opDefaults[] = {
-    String2.indexOf(OPERATORS, ">="), String2.indexOf(OPERATORS, "<=")
-  };
+  private static final int opDefaults[] = {OPERATORS.indexOf(">="), OPERATORS.indexOf("<=")};
 
   /**
    * These parallel OPERATORS, but &gt; and &lt; operators are reversed. These are used when
    * converting altitude constraints to depth constraints.
    */
-  public static final String REVERSED_OPERATORS[] = {
-    "!=", PrimitiveArray.REGEX_OP, ">=", "<=", "=", ">", "<"
-  };
+  public static final ImmutableList<String> REVERSED_OPERATORS =
+      ImmutableList.of("!=", PrimitiveArray.REGEX_OP, ">=", "<=", "=", ">", "<");
 
   /**
    * A list of the greater-than less-than operators, which some sources can't handle for strings.
    */
-  public static final String GTLT_OPERATORS[] = {"<=", ">=", "<", ">"};
+  public static final ImmutableList<String> GTLT_OPERATORS = ImmutableList.of("<=", ">=", "<", ">");
 
   /** The index of REGEX_OP in OPERATORS. */
-  public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, PrimitiveArray.REGEX_OP);
+  public static int REGEX_OP_INDEX = OPERATORS.indexOf(PrimitiveArray.REGEX_OP);
 
   /**
    * The orderBy options. The order/positions may change as new ones are added. No codes depends on
@@ -161,161 +158,169 @@ public abstract class EDDTable extends EDD {
   public static final String ROW_NAME = "row"; // see also Table.ROW_NAME
 
   /** These are needed for EDD-required methods of the same name. */
-  public static final String[] dataFileTypeNames = {
-    // If add new type and not actual-data type (e.g., .das),
-    //  add to graphsAccessibleToFileTypeNames below
-    ".asc",
-    ".csv",
-    ".csvp",
-    ".csv0",
-    ".dataTable",
-    ".das",
-    ".dds",
-    ".dods",
-    ".esriCsv",
-    ".fgdc",
-    ".geoJson",
-    ".graph",
-    ".help",
-    ".html",
-    ".htmlTable",
-    ".iso19115",
-    ".itx",
-    ".json",
-    ".jsonlCSV1",
-    ".jsonlCSV",
-    ".jsonlKVP",
-    ".mat",
-    ".nc",
-    ".ncHeader",
-    ".ncCF",
-    ".ncCFHeader",
-    ".ncCFMA",
-    ".ncCFMAHeader",
-    //        ".nc4", ".nc4Header",
-    ".nccsv",
-    ".nccsvMetadata",
-    ".ncoJson",
-    ".odvTxt",
-    ".parquet",
-    ".subset",
-    ".tsv",
-    ".tsvp",
-    ".tsv0",
-    ".wav",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> dataFileTypeNames =
+      ImmutableList.of(
+          // If add new type and not actual-data type (e.g., .das),
+          //  add to graphsAccessibleToFileTypeNames below
+          ".asc",
+          ".csv",
+          ".csvp",
+          ".csv0",
+          ".dataTable",
+          ".das",
+          ".dds",
+          ".dods",
+          ".esriCsv",
+          ".fgdc",
+          ".geoJson",
+          ".graph",
+          ".help",
+          ".html",
+          ".htmlTable",
+          ".iso19115",
+          ".itx",
+          ".json",
+          ".jsonlCSV1",
+          ".jsonlCSV",
+          ".jsonlKVP",
+          ".mat",
+          ".nc",
+          ".ncHeader",
+          ".ncCF",
+          ".ncCFHeader",
+          ".ncCFMA",
+          ".ncCFMAHeader",
+          //        ".nc4", ".nc4Header",
+          ".nccsv",
+          ".nccsvMetadata",
+          ".ncoJson",
+          ".odvTxt",
+          ".parquet",
+          ".subset",
+          ".tsv",
+          ".tsvp",
+          ".tsv0",
+          ".wav",
+          ".xhtml");
 
-  public static final String[] dataFileTypeExtensions = {
-    ".asc",
-    ".csv",
-    ".csv",
-    ".csv",
-    ".json",
-    ".das",
-    ".dds",
-    ".dods",
-    ".csv",
-    ".xml",
-    ".json",
-    ".html",
-    ".html",
-    ".html",
-    ".html",
-    ".xml",
-    ".itx",
-    ".json",
-    ".jsonl",
-    ".jsonl",
-    ".jsonl",
-    ".mat",
-    ".nc",
-    ".txt",
-    ".nc",
-    ".txt",
-    ".nc",
-    ".txt",
-    //        ".nc", ".txt",
-    ".csv",
-    ".csv",
-    ".json",
-    ".txt",
-    ".parquet",
-    ".html",
-    ".tsv",
-    ".tsv",
-    ".tsv",
-    ".wav",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> dataFileTypeExtensions =
+      ImmutableList.of(
+          ".asc",
+          ".csv",
+          ".csv",
+          ".csv",
+          ".json",
+          ".das",
+          ".dds",
+          ".dods",
+          ".csv",
+          ".xml",
+          ".json",
+          ".html",
+          ".html",
+          ".html",
+          ".html",
+          ".xml",
+          ".itx",
+          ".json",
+          ".jsonl",
+          ".jsonl",
+          ".jsonl",
+          ".mat",
+          ".nc",
+          ".txt",
+          ".nc",
+          ".txt",
+          ".nc",
+          ".txt",
+          //        ".nc", ".txt",
+          ".csv",
+          ".csv",
+          ".json",
+          ".txt",
+          ".parquet",
+          ".html",
+          ".tsv",
+          ".tsv",
+          ".tsv",
+          ".wav",
+          ".xhtml");
   // These all used to have " (It may take a while. Please be patient.)" at the end.
   public static String[][] dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
   // These are encoded for use as HTML attributes (href)
-  public static String[] dataFileTypeInfo = { // "" if not available
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP ascii
-    // csv: also see https://www.ietf.org/rfc/rfc4180.txt
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://developers.google.com/chart/interactive/docs/reference#dataparam",
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
-    "https://support.esri.com/technical-article/000012745", // .esriCsv
-    "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
-    "http://wiki.geojson.org/Main_Page", // geoJSON
-    "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", // GraphicsCommands
-    "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
-    "https://www.w3schools.com/html/html_tables.asp", // htmlTable
-    "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
-    "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
-    "https://www.json.org/", // json
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlKVP
-    "https://www.mathworks.com/", // mat
-    "https://www.unidata.ucar.edu/software/netcdf/", // nc
-    "https://linux.die.net/man/1/ncdump", // ncHeader
-    "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", // ncCF Discrete Sampling Geometries
-    "https://linux.die.net/man/1/ncdump", // ncCFHeader
-    "https://www.ncei.noaa.gov/netcdf-templates", // .ncCFMA
-    "https://linux.die.net/man/1/ncdump", // ncCFMAHeader
-    //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-    //        "https://linux.die.net/man/1/ncdump", //nc4Header
-    "https://erddap.github.io/NCCSV.html",
-    "https://erddap.github.io/NCCSV.html",
-    "https://nco.sourceforge.net/nco.html#json",
-    "https://odv.awi.de/en/documentation/", // odv
-    "https://parquet.apache.org/",
-    "https://en.wikipedia.org/wiki/Faceted_search", // subset
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://en.wikipedia.org/wiki/WAV", // wav
-    "https://www.w3schools.com/html/html_tables.asp"
-  }; // xhtml
+  public static ImmutableList<String> dataFileTypeInfo =
+      ImmutableList.of( // "" if not available
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
+          // ascii
+          // csv: also see https://www.ietf.org/rfc/rfc4180.txt
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://developers.google.com/chart/interactive/docs/reference#dataparam",
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
+          "https://support.esri.com/technical-article/000012745", // .esriCsv
+          "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
+          "http://wiki.geojson.org/Main_Page", // geoJSON
+          "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", // GraphicsCommands
+          "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
+          "https://www.w3schools.com/html/html_tables.asp", // htmlTable
+          "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
+          "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
+          "https://www.json.org/", // json
+          "https://jsonlines.org/", // jsonlCSV
+          "https://jsonlines.org/", // jsonlCSV
+          "https://jsonlines.org/", // jsonlKVP
+          "https://www.mathworks.com/", // mat
+          "https://www.unidata.ucar.edu/software/netcdf/", // nc
+          "https://linux.die.net/man/1/ncdump", // ncHeader
+          "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", // ncCF Discrete Sampling Geometries
+          "https://linux.die.net/man/1/ncdump", // ncCFHeader
+          "https://www.ncei.noaa.gov/netcdf-templates", // .ncCFMA
+          "https://linux.die.net/man/1/ncdump", // ncCFMAHeader
+          //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
+          //        "https://linux.die.net/man/1/ncdump", //nc4Header
+          "https://erddap.github.io/NCCSV.html",
+          "https://erddap.github.io/NCCSV.html",
+          "https://nco.sourceforge.net/nco.html#json",
+          "https://odv.awi.de/en/documentation/", // odv
+          "https://parquet.apache.org/",
+          "https://en.wikipedia.org/wiki/Faceted_search", // subset
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://en.wikipedia.org/wiki/WAV", // wav
+          "https://www.w3schools.com/html/html_tables.asp"); // xhtml
 
-  public static final String[] imageFileTypeNames = {
-    ".kml", ".smallPdf", ".pdf", ".largePdf", ".smallPng", ".png", ".largePng", ".transparentPng"
-  };
-  public static final String[] imageFileTypeExtensions = {
-    ".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png"
-  };
+  public static final ImmutableList<String> imageFileTypeNames =
+      ImmutableList.of(
+          ".kml",
+          ".smallPdf",
+          ".pdf",
+          ".largePdf",
+          ".smallPng",
+          ".png",
+          ".largePng",
+          ".transparentPng");
+  public static final ImmutableList<String> imageFileTypeExtensions =
+      ImmutableList.of(".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
   public static String[][] imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static String[] imageFileTypeInfo = {
-    "https://developers.google.com/kml/", // kml
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/" // png
-  };
+  public static ImmutableList<String> imageFileTypeInfo =
+      ImmutableList.of(
+          "https://developers.google.com/kml/", // kml
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/" // png
+          );
 
   private static String[][] allFileTypeOptionsAr;
   private static String[] allFileTypeNames;
@@ -337,47 +342,48 @@ public abstract class EDDTable extends EDD {
   public static final int sosDefaultDataResponseFormat = 13; // tsv
 
   public static final int sosOostethysDataResponseFormat = 2;
-  public static final String sosDataResponseFormats[] = {
-    "text/xml;schema=\"ioos/0.6.1\"", // two names for the same IOOS SOS XML format
-    "application/ioos+xml;version=0.6.1", // "ioos" in the names is detected by
-    // OutputStreamFromHttpResponse
-    "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style  pre 2010-04-30 was application/com-xml
-    "text/csv",
-    "application/json;subtype=geojson",
-    "text/html", // no way to distinguish an html table vs html document in general
-    "application/json",
-    "application/x-matlab-mat", // ??? made up, x=nonstandard
-    "application/x-netcdf", // see https://www.wussu.com/various/mimetype.htm
-    "application/x-netcdf", // ncCF, see https://www.wussu.com/various/mimetype.htm
-    "application/x-netcdf", // ncCFMA
-    "application/json", // ncoJson
-    "text/plain", // odv
-    "text/tab-separated-values",
-    "application/xhtml+xml"
-  };
+  public static final ImmutableList<String> sosDataResponseFormats =
+      ImmutableList.of(
+          "text/xml;schema=\"ioos/0.6.1\"", // two names for the same IOOS SOS XML format
+          "application/ioos+xml;version=0.6.1", // "ioos" in the names is detected by
+          // OutputStreamFromHttpResponse
+          "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style  pre 2010-04-30 was
+          // application/com-xml
+          "text/csv",
+          "application/json;subtype=geojson",
+          "text/html", // no way to distinguish an html table vs html document in general
+          "application/json",
+          "application/x-matlab-mat", // ??? made up, x=nonstandard
+          "application/x-netcdf", // see https://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf", // ncCF, see https://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf", // ncCFMA
+          "application/json", // ncoJson
+          "text/plain", // odv
+          "text/tab-separated-values",
+          "application/xhtml+xml");
 
   /** These are the corresponding tabledap dataFileTypeNames, not the final file extensions. */
-  public static final String sosTabledapDataResponseTypes[] = {
-    // *** ADDING A FORMAT? Add support for it in sosGetObservation().
-    // see isIoosSosXmlResponseFormat()
-    "text/xml;schema=\"ioos/0.6.1\"", // needed by OutputStreamFromHttpResponse
-    "application/ioos+xml;version=0.6.1", // needed by OutputStreamFromHttpResponse
-    // see isOosethysXmlResponseFormat()
-    "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style //checked for by
-    // OutputStreamFromHttpResponse, was application/com-xml
-    ".csvp",
-    ".geoJson",
-    ".htmlTable",
-    ".json",
-    ".mat",
-    ".nc",
-    ".ncCF",
-    ".ncCFMA",
-    ".ncoJson",
-    ".odvTxt",
-    ".tsvp",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> sosTabledapDataResponseTypes =
+      ImmutableList.of(
+          // *** ADDING A FORMAT? Add support for it in sosGetObservation().
+          // see isIoosSosXmlResponseFormat()
+          "text/xml;schema=\"ioos/0.6.1\"", // needed by OutputStreamFromHttpResponse
+          "application/ioos+xml;version=0.6.1", // needed by OutputStreamFromHttpResponse
+          // see isOosethysXmlResponseFormat()
+          "text/xml; subtype=\"om/1.0.0\"", // Oostethys-style //checked for by
+          // OutputStreamFromHttpResponse, was application/com-xml
+          ".csvp",
+          ".geoJson",
+          ".htmlTable",
+          ".json",
+          ".mat",
+          ".nc",
+          ".ncCF",
+          ".ncCFMA",
+          ".ncoJson",
+          ".odvTxt",
+          ".tsvp",
+          ".xhtml");
 
   // ** And there are analogous arrays for image formats (enable these when variables can be
   // accessed separately)
@@ -411,8 +417,8 @@ public abstract class EDDTable extends EDD {
 
   // static constructor
   static {
-    int nDFTN = dataFileTypeNames.length;
-    int nIFTN = imageFileTypeNames.length;
+    int nDFTN = dataFileTypeNames.size();
+    int nIFTN = imageFileTypeNames.size();
 
     dataFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nDFTN];
     imageFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nIFTN];
@@ -475,18 +481,18 @@ public abstract class EDDTable extends EDD {
           };
     }
 
-    int nSDRF = sosDataResponseFormats.length;
+    int nSDRF = sosDataResponseFormats.size();
     Test.ensureEqual(
         nDFTN,
         dataFileTypeDescriptionsAr[0].length,
         "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptionsAr[0].length'.");
     Test.ensureEqual(
         nDFTN,
-        dataFileTypeExtensions.length,
+        dataFileTypeExtensions.size(),
         "'dataFileTypeNames.length' not equal to 'dataFileTypeExtensions.length'.");
     Test.ensureEqual(
         nDFTN,
-        dataFileTypeInfo.length,
+        dataFileTypeInfo.size(),
         "'dataFileTypeNames.length' not equal to 'dataFileTypeInfo.length'.");
     Test.ensureEqual(
         nIFTN,
@@ -494,17 +500,17 @@ public abstract class EDDTable extends EDD {
         "'imageFileTypeNames.length' not equal to 'imageFileTypeDescriptionsAr[0].length'.");
     Test.ensureEqual(
         nIFTN,
-        imageFileTypeExtensions.length,
+        imageFileTypeExtensions.size(),
         "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");
     Test.ensureEqual(
         nIFTN,
-        imageFileTypeInfo.length,
+        imageFileTypeInfo.size(),
         "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");
     Test.ensureEqual(
         nSDRF,
-        sosTabledapDataResponseTypes.length,
+        sosTabledapDataResponseTypes.size(),
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
-    defaultFileTypeOption = String2.indexOf(dataFileTypeNames, ".htmlTable");
+    defaultFileTypeOption = dataFileTypeNames.indexOf(".htmlTable");
 
     int tExtra = 6;
     publicGraphFileTypeNames = new String[tExtra + nIFTN];
@@ -521,15 +527,15 @@ public abstract class EDDTable extends EDD {
     for (int i = 0; i < nDFTN; i++) {
       for (int tl = 0; tl < EDStatic.nLanguages; tl++)
         allFileTypeOptionsAr[tl][i] =
-            dataFileTypeNames[i] + " - " + dataFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[i] = dataFileTypeNames[i];
+            dataFileTypeNames.get(i) + " - " + dataFileTypeDescriptionsAr[tl][i];
+      allFileTypeNames[i] = dataFileTypeNames.get(i);
     }
     for (int i = 0; i < nIFTN; i++) {
       for (int tl = 0; tl < EDStatic.nLanguages; tl++)
         allFileTypeOptionsAr[tl][nDFTN + i] =
-            imageFileTypeNames[i] + " - " + imageFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[nDFTN + i] = imageFileTypeNames[i];
-      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames[i];
+            imageFileTypeNames.get(i) + " - " + imageFileTypeDescriptionsAr[tl][i];
+      allFileTypeNames[nDFTN + i] = imageFileTypeNames.get(i);
+      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames.get(i);
     }
 
     graphsAccessibleTo_fileTypeNames = new HashSet(); // read only, so needn't be thread-safe
@@ -538,8 +544,8 @@ public abstract class EDDTable extends EDD {
     defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
 
     Test.ensureEqual(
-        sosDataResponseFormats.length,
-        sosTabledapDataResponseTypes.length,
+        sosDataResponseFormats.size(),
+        sosTabledapDataResponseTypes.size(),
         "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");
     Test.ensureEqual(
         sosImageResponseFormats.size(),
@@ -1572,8 +1578,8 @@ public abstract class EDDTable extends EDD {
 
         // *if* scale_factor < 0, reverse > and < operators
         if (edv.scaleFactor() < 0) {
-          int copi = String2.indexOf(OPERATORS, constraintOps.get(cv));
-          constraintOps.set(cv, REVERSED_OPERATORS[copi]);
+          int copi = OPERATORS.indexOf(constraintOps.get(cv));
+          constraintOps.set(cv, REVERSED_OPERATORS.get(copi));
         }
       }
     }
@@ -2075,7 +2081,7 @@ public abstract class EDDTable extends EDD {
    * @return the types of data files that this dataset can be returned as.
    */
   @Override
-  public String[] dataFileTypeNames() {
+  public ImmutableList<String> dataFileTypeNames() {
     return dataFileTypeNames;
   }
 
@@ -2086,7 +2092,7 @@ public abstract class EDDTable extends EDD {
    * @return the file extensions corresponding to the dataFileTypes.
    */
   @Override
-  public String[] dataFileTypeExtensions() {
+  public ImmutableList<String> dataFileTypeExtensions() {
     return dataFileTypeExtensions;
   }
 
@@ -2108,7 +2114,7 @@ public abstract class EDDTable extends EDD {
    * @return an info URL corresponding to the dataFileTypes (an element is "" if not available).
    */
   @Override
-  public String[] dataFileTypeInfo() {
+  public ImmutableList<String> dataFileTypeInfo() {
     return dataFileTypeInfo;
   }
 
@@ -2120,7 +2126,7 @@ public abstract class EDDTable extends EDD {
    * @return the types of image files that this dataset can be returned as.
    */
   @Override
-  public String[] imageFileTypeNames() {
+  public ImmutableList<String> imageFileTypeNames() {
     return imageFileTypeNames;
   }
 
@@ -2131,7 +2137,7 @@ public abstract class EDDTable extends EDD {
    * @return the file extensions corresponding to the imageFileTypes.
    */
   @Override
-  public String[] imageFileTypeExtensions() {
+  public ImmutableList<String> imageFileTypeExtensions() {
     return imageFileTypeExtensions;
   }
 
@@ -2152,7 +2158,7 @@ public abstract class EDDTable extends EDD {
    * @return an info URL corresponding to the imageFileTypes.
    */
   @Override
-  public String[] imageFileTypeInfo() {
+  public ImmutableList<String> imageFileTypeInfo() {
     return imageFileTypeInfo;
   }
 
@@ -2310,13 +2316,13 @@ public abstract class EDDTable extends EDD {
                       + "If "
                       + SEQUENCE_NAME
                       + " is requested, it must be the only requested variable.");
-            for (int op = 0; op < OPERATORS.length; op++) {
-              int opPo = tVar.indexOf(OPERATORS[op]);
+            for (int op = 0; op < OPERATORS.size(); op++) {
+              int opPo = tVar.indexOf(OPERATORS.get(op));
               if (opPo >= 0)
                 throw new SimpleException(
                     EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                         + "All constraints (including \""
-                        + tVar.substring(0, opPo + OPERATORS[op].length())
+                        + tVar.substring(0, opPo + OPERATORS.get(op).length())
                         + "...\") must be preceded by '&'.");
             }
             throw new SimpleException(
@@ -2605,8 +2611,8 @@ public abstract class EDDTable extends EDD {
       // find the valid op within constraintBeforeQuotes
       int op = 0;
       int opPo = -1;
-      while (op < OPERATORS.length && (opPo = constraintBeforeQuotes.indexOf(OPERATORS[op])) < 0)
-        op++;
+      while (op < OPERATORS.size()
+          && (opPo = constraintBeforeQuotes.indexOf(OPERATORS.get(op))) < 0) op++;
       if (opPo < 0) {
         if (repair) continue; // was IllegalArgumentException
         else
@@ -2638,14 +2644,14 @@ public abstract class EDDTable extends EDD {
       EDV conEdv = dataVariables[dvi];
       boolean conEdvIsTimeStamp = conEdv instanceof EDVTimeStamp;
       constraintVariables.add(tName);
-      constraintOps.add(OPERATORS[op]);
-      String tValue = constraint.substring(opPo + OPERATORS[op].length());
+      constraintOps.add(OPERATORS.get(op));
+      String tValue = constraint.substring(opPo + OPERATORS.get(op).length());
       constraintValues.add(tValue);
       double conValueD = Double.NaN;
 
-      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS[op] + tValue);
+      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS.get(op) + tValue);
 
-      if (!PrimitiveArray.REGEX_OP.equals(OPERATORS[op])
+      if (!PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))
           && (tValue.startsWith("min(") || tValue.startsWith("max("))) {
         // min() and max()
         try {
@@ -2712,7 +2718,7 @@ public abstract class EDDTable extends EDD {
         }
 
         // if not for regex, convert isoString to epochSeconds
-        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
+        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if (Calendar2.isIsoDate(tValue)) {
             conValueD =
                 repair
@@ -2778,7 +2784,7 @@ public abstract class EDDTable extends EDD {
         // numeric variables
 
         // if op=regex, value must have "'s around it
-        if (PrimitiveArray.REGEX_OP.equals(OPERATORS[op])) {
+        if (PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
             // repair if needed
             if (!tValue.startsWith("\"")) tValue = "\"" + tValue;
@@ -2850,7 +2856,7 @@ public abstract class EDDTable extends EDD {
           // maxTime is within last 48hrs, so setting maxTime to NaN (i.e., Now).
           destMax = Double.NaN;
         }
-        String constraintOp = OPERATORS[op];
+        String constraintOp = OPERATORS.get(op);
         // non-timestamp tests are troubled by float/double/slight differences
         if (tPassed && Double.isFinite(destMin)) {
           if (constraintOp.equals("=") || constraintOp.startsWith("<")) {
@@ -3160,7 +3166,7 @@ public abstract class EDDTable extends EDD {
       sb.append(
           "&"
               + SSR.minimalPercentEncode(constraintVariables[i])
-              + PPE_OPERATORS[String2.indexOf(OPERATORS, constraintOps[i])]
+              + PPE_OPERATORS.get(OPERATORS.indexOf(constraintOps[i]))
               + SSR.minimalPercentEncode(
                   constraintValues[
                       i])); // !!!bug??? Strings should be String2.toJson() so within " "
@@ -3912,7 +3918,7 @@ public abstract class EDDTable extends EDD {
           if (fileTypeName.equals(".kml")) {
             ok = saveAsKml(language, loggedInAs, requestUrl, userDapQuery, dir, fileName, osss);
 
-          } else if (String2.indexOf(imageFileTypeNames, fileTypeName) >= 0) {
+          } else if (imageFileTypeNames.indexOf(fileTypeName) >= 0) {
             // pdf and png  //do last so .kml caught above
             ok =
                 saveAsImage(
@@ -5120,7 +5126,7 @@ public abstract class EDDTable extends EDD {
             paletteMax = String2.parseDouble(pParts[4]);
           if (pParts.length > 5 && pParts[5].length() > 0) nSections = String2.parseInt(pParts[5]);
           if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
-          if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
+          if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
           if (nSections < 0 || nSections >= 100) nSections = -1;
           if (reallyVerbose)
             String2.log(
@@ -5198,7 +5204,7 @@ public abstract class EDDTable extends EDD {
           if (pParts == null) pParts = new String[0];
           if (pParts.length > 0) markerType = String2.parseInt(pParts[0]);
           if (pParts.length > 1) markerSize = String2.parseInt(pParts[1]);
-          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.length)
+          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.size())
             markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
           if (markerSize < 1 || markerSize > 50) markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
           if (reallyVerbose) String2.log(".marker= type=" + markerType + " size=" + markerSize);
@@ -8340,7 +8346,7 @@ public abstract class EDDTable extends EDD {
                 1,
                 OPERATORS,
                 PPE_OPERATORS,
-                String2.indexOf(OPERATORS, tOp[con]),
+                OPERATORS.indexOf(tOp[con]),
                 "",
                 false,
                 ""));
@@ -8392,7 +8398,7 @@ public abstract class EDDTable extends EDD {
                         + ".op"
                         + dv
                         + "_0.selectedIndex="
-                        + String2.indexOf(OPERATORS, "=")
+                        + OPERATORS.indexOf("=")
                         + ";"
                         + " "
                         + docFormName
@@ -8430,7 +8436,7 @@ public abstract class EDDTable extends EDD {
                 + ".op"
                 + dv
                 + "_0.selectedIndex="
-                + String2.indexOf(OPERATORS, "=")
+                + OPERATORS.indexOf("=")
                 + ";\n"
                 + "      "
                 + docFormName
@@ -8465,7 +8471,7 @@ public abstract class EDDTable extends EDD {
                 + ".op"
                 + dv
                 + "_0.selectedIndex="
-                + String2.indexOf(OPERATORS, "=")
+                + OPERATORS.indexOf("=")
                 + ";\n"
                 + "      "
                 + docFormName
@@ -9060,8 +9066,8 @@ public abstract class EDDTable extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < dataFileTypeNames.length; i++) {
-      String ft = dataFileTypeNames[i];
+    for (int i = 0; i < dataFileTypeNames.size(); i++) {
+      String ft = dataFileTypeNames.get(i);
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -9076,17 +9082,17 @@ public abstract class EDDTable extends EDD {
               + dataFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo[i].equals("")
+              + (dataFileTypeInfo.get(i).equals("")
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo[i])
+                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
                       + "\">info"
                       + EDStatic.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + dataFileTypeNames[i]
+              + dataFileTypeNames.get(i)
               + "?"
               + EDStatic.EDDTableDataTimeExampleHA
               + "\">example</a></td>\n"
@@ -9693,8 +9699,8 @@ public abstract class EDDTable extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of table data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < imageFileTypeNames.length; i++) {
-      String ft = imageFileTypeNames[i];
+    for (int i = 0; i < imageFileTypeNames.size(); i++) {
+      String ft = imageFileTypeNames.get(i);
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -9709,10 +9715,10 @@ public abstract class EDDTable extends EDD {
               + imageFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")
+              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).equals("")
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + imageFileTypeInfo[i]
+                      + imageFileTypeInfo.get(i)
                       + "\">info"
                       + EDStatic.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
@@ -9720,7 +9726,7 @@ public abstract class EDDTable extends EDD {
               + // must be mapExample below because kml doesn't work with graphExample
               "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + imageFileTypeNames[i]
+              + imageFileTypeNames.get(i)
               + "?"
               + EDStatic.EDDTableMapExampleHA
               + "\">example</a></td>\n"
@@ -11770,7 +11776,7 @@ public abstract class EDDTable extends EDD {
           // parse() ensured that all constraintVariables and Ops are valid
           conVar[cv] = String2.indexOf(dvNames0, constraintVariables.get(0)); // yes, 0 (see above)
           boolean use1 = constraintOps.get(0).startsWith("<");
-          conOp[cv][use1 ? 1 : 0] = String2.indexOf(OPERATORS, constraintOps.get(0));
+          conOp[cv][use1 ? 1 : 0] = OPERATORS.indexOf(constraintOps.get(0));
           conVal[cv][use1 ? 1 : 0] = constraintValues.get(0);
           constraintVariables.remove(0); // yes, 0 (see above)
           constraintOps.remove(0);
@@ -11778,7 +11784,7 @@ public abstract class EDDTable extends EDD {
           // another constraint for same var?
           conPo = constraintVariables.indexOf(dvNames0[conVar[cv]]);
           if (conPo >= 0) {
-            conOp[cv][use1 ? 0 : 1] = String2.indexOf(OPERATORS, constraintOps.get(conPo));
+            conOp[cv][use1 ? 0 : 1] = OPERATORS.indexOf(constraintOps.get(conPo));
             conVal[cv][use1 ? 0 : 1] = constraintValues.get(conPo);
             constraintVariables.remove(conPo);
             constraintOps.remove(conPo);
@@ -11883,9 +11889,9 @@ public abstract class EDDTable extends EDD {
                       + cv
                       + "a.selectedIndex="
                       + "(sv>=0?"
-                      + String2.indexOf(OPERATORS, "=")
+                      + OPERATORS.indexOf("=")
                       + ":"
-                      + String2.indexOf(OPERATORS, ">=")
+                      + OPERATORS.indexOf(">=")
                       + ");"
                       + " if (sv>=0) {"
                       +
@@ -11967,7 +11973,7 @@ public abstract class EDDTable extends EDD {
             String tq =
                 "&"
                     + dvNames0[conVar[cv]]
-                    + PPE_OPERATORS[conOp[cv][con]]
+                    + PPE_OPERATORS.get(conOp[cv][con])
                     + SSR.minimalPercentEncode(tVal);
             graphQuery.append(tq);
             if (!(conEdv instanceof EDVLat) && !(conEdv instanceof EDVLon))
@@ -11979,7 +11985,7 @@ public abstract class EDDTable extends EDD {
                 && // this constraint is for the x axis variable
                 (zoomXCv < 0 || zoomXCv == cv)) { // both constraints must be from 1 constraints row
               zoomXCv = cv;
-              String top = OPERATORS[conOp[cv][con]];
+              String top = OPERATORS.get(conOp[cv][con]);
               if (top.indexOf('>') >= 0) zoomXMin = String2.parseDouble(tVal);
               else if (top.indexOf('<') >= 0) zoomXMax = String2.parseDouble(tVal);
             }
@@ -12220,7 +12226,7 @@ public abstract class EDDTable extends EDD {
 
         // markerType
         paramName = "mType";
-        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.length)
+        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.size())
           mType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
         // if (varName[2].length() > 0 &&
         //    GraphDataLayer.MARKER_TYPES[mType].toLowerCase().indexOf("filled") < 0)
@@ -12344,9 +12350,7 @@ public abstract class EDDTable extends EDD {
         paramName = "ps";
         String defaultScale = "";
         scale =
-            Math.max(
-                0,
-                String2.indexOf(EDV.VALID_SCALES0, pParts.length > 2 ? pParts[2] : defaultScale));
+            Math.max(0, EDV.VALID_SCALES0.indexOf(pParts.length > 2 ? pParts[2] : defaultScale));
         writer.write(
             "    <td>&nbsp;"
                 + EDStatic.magGSScaleAr[language]
@@ -12416,7 +12420,7 @@ public abstract class EDDTable extends EDD {
                         + "|"
                         + (conDisAr[continuous].length() == 0 ? "" : conDisAr[continuous].charAt(0))
                         + "|"
-                        + EDV.VALID_SCALES0[scale]
+                        + EDV.VALID_SCALES0.get(scale)
                         + "|"
                         + palMin
                         + "|"
@@ -16782,8 +16786,8 @@ public abstract class EDDTable extends EDD {
               + "      </ows:Parameter>\n"
               + "      <ows:Parameter name=\"responseFormat\">\n"
               + "        <ows:AllowedValues>\n");
-      for (int i = 0; i < sosDataResponseFormats.length; i++)
-        writer.write("          <ows:Value>" + sosDataResponseFormats[i] + "</ows:Value>\n");
+      for (int i = 0; i < sosDataResponseFormats.size(); i++)
+        writer.write("          <ows:Value>" + sosDataResponseFormats.get(i) + "</ows:Value>\n");
       writer.write(
           "        </ows:AllowedValues>\n"
               + "      </ows:Parameter>\n"
@@ -17641,8 +17645,8 @@ public abstract class EDDTable extends EDD {
    */
   public static String sosResponseFormatToFileTypeName(String responseFormat) {
     if (responseFormat == null) return null;
-    int po = String2.indexOf(sosDataResponseFormats, responseFormat);
-    if (po >= 0) return sosTabledapDataResponseTypes[po];
+    int po = sosDataResponseFormats.indexOf(responseFormat);
+    if (po >= 0) return sosTabledapDataResponseTypes.get(po);
     po = sosImageResponseFormats.indexOf(responseFormat);
     if (po >= 0) return sosTabledapImageResponseTypes.get(po);
     return null;
@@ -17679,7 +17683,7 @@ public abstract class EDDTable extends EDD {
    * @throws SimpleException if trouble (e.g., not a valid responseFormat)
    */
   public static boolean isOostethysSosXmlResponseFormat(int language, String responseFormat) {
-    return sosDataResponseFormats[sosOostethysDataResponseFormat].equals(responseFormat);
+    return sosDataResponseFormats.get(sosOostethysDataResponseFormat).equals(responseFormat);
   }
 
   /**
@@ -19796,7 +19800,8 @@ public abstract class EDDTable extends EDD {
     String getObservationHtml =
         XML.encodeAsHTML(
             getObs
-                + SSR.minimalPercentEncode(sosDataResponseFormats[sosDefaultDataResponseFormat]));
+                + SSR.minimalPercentEncode(
+                    sosDataResponseFormats.get(sosDefaultDataResponseFormat)));
     String bbox =
         "&featureOfInterest=BBOX:"
             + // show upper left quadrant
@@ -19925,7 +19930,8 @@ public abstract class EDDTable extends EDD {
                 + maxTimeS
                 + bbox
                 + "&responseFormat="
-                + SSR.minimalPercentEncode(sosDataResponseFormats[sosDefaultDataResponseFormat]));
+                + SSR.minimalPercentEncode(
+                    sosDataResponseFormats.get(sosDefaultDataResponseFormat)));
 
     // observedPropertyOptions
     StringBuilder opoSB =
@@ -20208,15 +20214,15 @@ public abstract class EDDTable extends EDD {
             "<p><a class=\"selfLink\" id=\"responseFormat\" href=\"#responseFormat\" rel=\"bookmark\">responseFormat</a>"
             + "  - By changing the responseFormat, you can get the results in a different file formats.\n"
             + "  <br>The data file formats are:");
-    for (int f = 0; f < sosDataResponseFormats.length; f++)
+    for (int f = 0; f < sosDataResponseFormats.size(); f++)
       writer.write(
           (f == 0 ? "\n" : ",\n")
               + (f % 4 == 2 ? "<br>" : "")
               + "<a href=\""
               + XML.encodeAsHTMLAttribute(
-                  getObs + SSR.minimalPercentEncode(sosDataResponseFormats[f]))
+                  getObs + SSR.minimalPercentEncode(sosDataResponseFormats.get(f)))
               + "\">"
-              + XML.encodeAsHTML(sosDataResponseFormats[f])
+              + XML.encodeAsHTML(sosDataResponseFormats.get(f))
               + "</a>");
     writer.write(".\n");
     writer.write("<br>The image file formats are:\n" + "<ul>\n");
@@ -20543,9 +20549,9 @@ public abstract class EDDTable extends EDD {
             + "</a>.\n"
             + "      <br>The data responseFormats are:<br>");
     charsWritten = 0;
-    for (int f = 0; f < sosDataResponseFormats.length; f++) {
+    for (int f = 0; f < sosDataResponseFormats.size(); f++) {
       if (f > 0) writer.write(", ");
-      String ts = "\"" + SSR.minimalPercentEncode(sosDataResponseFormats[f]) + "\"";
+      String ts = "\"" + SSR.minimalPercentEncode(sosDataResponseFormats.get(f)) + "\"";
       if (charsWritten + ts.length() > 60) {
         writer.write("\n      <br>");
         charsWritten = 0;
@@ -21548,18 +21554,18 @@ public abstract class EDDTable extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    for (int ft = 0; ft < dataFileTypeNames.length; ft++)
+    for (int ft = 0; ft < dataFileTypeNames.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + dataFileTypeNames[ft]
+              + dataFileTypeNames.get(ft)
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo[ft])
+                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo.get(ft))
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -21581,18 +21587,18 @@ public abstract class EDDTable extends EDD {
               + "      </digform>\n");
 
     // image file types
-    for (int ft = 0; ft < imageFileTypeNames.length; ft++)
+    for (int ft = 0; ft < imageFileTypeNames.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + imageFileTypeNames[ft]
+              + imageFileTypeNames.get(ft)
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo[ft])
+                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo.get(ft))
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -22353,8 +22359,7 @@ public abstract class EDDTable extends EDD {
 
             } else if (kari.length() <= LONGEST_ONE_WORD_CF_STANDARD_NAMES
                 && // quick accept if short enough
-                String2.indexOf(ONE_WORD_CF_STANDARD_NAMES, kari)
-                    >= 0) { // few, so linear search is quick
+                ONE_WORD_CF_STANDARD_NAMES.indexOf(kari) >= 0) { // few, so linear search is quick
               kar.remove(i); // a one word CF Standard Name
             }
           }

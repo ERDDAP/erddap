@@ -85,8 +85,8 @@ class Temperature implements java.io.Serializable {
   //
   // degC = scale*origUnits + offset
   //
-  private static final String[] name =
-  {"C", "degC", "K", "degK", "F", "degF", "k", "deg_c", "deg_k"};
+  private static final ImmutableList<String> name =ImmutableList.of(
+  "C", "degC", "K", "degK", "F", "degF", "k", "deg_c", "deg_k");
   private static final double[] scale =
   {1.0, 1.0, 1.0, 1.0, 5.0/9.0, 5.0/9.0, 1.0, 1.0, 1.0};
   private static final double[] offset =
