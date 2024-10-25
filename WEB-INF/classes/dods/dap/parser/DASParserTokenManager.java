@@ -649,10 +649,32 @@ public class DASParserTokenManager implements DASParserConstants {
           15, 16, 18, 15, 16, 20, 18, 158, 167, 171, 174, 140, 143, 146, 149, 121, 126, 131, 136,
           92, 96, 100, 104, 108, 112, 114, 115, 81, 87, 67, 72, 74, 57, 61, 48, 52, 36, 38, 28, 32,
           17, 19, 21);
+  private static final String jjstrLiteralImagesNull = "null";
   public static final ImmutableList<String> jjstrLiteralImages =
       ImmutableList.of(
-          "", null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-          null, null, null, null, "\173", "\175", "\54", "\73");
+          "",
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          "\173",
+          "\175",
+          "\54",
+          "\73");
   static final ImmutableList<Long> jjtoToken = ImmutableList.of(0x7fffc1L);
   private SimpleCharStream input_stream;
   private final int[] jjrounds = new int[175];
@@ -701,7 +723,7 @@ public class DASParserTokenManager implements DASParserConstants {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
     String im = jjstrLiteralImages.get(jjmatchedKind);
-    t.image = (im == null) ? input_stream.GetImage() : im;
+    t.image = (jjstrLiteralImagesNull.equals(im)) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();
     t.endLine = input_stream.getEndLine();

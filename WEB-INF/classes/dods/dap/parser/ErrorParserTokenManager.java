@@ -509,10 +509,29 @@ public class ErrorParserTokenManager implements ErrorParserConstants {
       ImmutableList.of(
           65, 67, 68, 69, 71, 65, 67, 68, 81, 92, 102, 107, 113, 57, 63, 41, 45, 34, 37, 25, 31, 69,
           71);
+  private static final String jjstrLiteralImagesNull = "null";
   public static final ImmutableList<String> jjstrLiteralImages =
       ImmutableList.of(
-          "", null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-          null, "\173", "\175", "\73", "\75");
+          "",
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          "\173",
+          "\175",
+          "\73",
+          "\75");
   static final ImmutableList<Long> jjtoToken = ImmutableList.of(0xf9fc1L);
   private SimpleCharStream input_stream;
   private final int[] jjrounds = new int[114];
@@ -561,7 +580,7 @@ public class ErrorParserTokenManager implements ErrorParserConstants {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
     String im = jjstrLiteralImages.get(jjmatchedKind);
-    t.image = (im == null) ? input_stream.GetImage() : im;
+    t.image = (jjstrLiteralImagesNull.equals(im)) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();
     t.endLine = input_stream.getEndLine();

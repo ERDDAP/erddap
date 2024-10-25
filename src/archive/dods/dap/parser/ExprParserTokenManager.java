@@ -109,7 +109,7 @@ public class ExprParserTokenManager implements ExprParserConstants {
 
   private final void jjAddStates(int start, int end) {
     do {
-      jjstateSet[jjnewStateCnt++] = jjnextStates[start];
+      jjstateSet[jjnewStateCnt++] = jjnextStates.get(start);
     } while (start++ != end);
   }
 
@@ -120,7 +120,7 @@ public class ExprParserTokenManager implements ExprParserConstants {
 
   private final void jjCheckNAddStates(int start, int end) {
     do {
-      jjCheckNAdd(jjnextStates[start]);
+      jjCheckNAdd(jjnextStates.get(start));
     } while (start++ != end);
   }
 
@@ -313,20 +313,18 @@ public class ExprParserTokenManager implements ExprParserConstants {
     }
   }
 
-  static final int[] jjnextStates = {
-    15, 17, 18, 19, 21, 9, 10, 11, 9, 10, 2, 15, 17, 18, 5, 6, 19, 21,
-  };
-  public static final ImmutableList<String> jjstrLiteralImages = ImmutableList.of(
-    "", null, null, null, null, "\75", "\41\75", "\76", "\76\75", "\74", "\74\75",
-    "\176\75", "\133", "\135", "\72", "\52", "\54", "\46", "\50", "\51", "\173", "\175",
-    "\56", null, null, null, null, null, null, null, null, null
+  static final ImmutableList<Integer> jjnextStates = ImmutableList.of(
+    15, 17, 18, 19, 21, 9, 10, 11, 9, 10, 2, 15, 17, 18, 5, 6, 19, 21
   );
-  static final long[] jjtoToken = {
-    0x93ffffe1L,
-  };
-  static final long[] jjtoSkip = {
-    0x1eL,
-  };
+  private static final String jjstrLiteralImagesNull = "null";
+  public static final ImmutableList<String> jjstrLiteralImages = ImmutableList.of(
+    "", jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, "\75", "\41\75", "\76", "\76\75", "\74", "\74\75",
+    "\176\75", "\133", "\135", "\72", "\52", "\54", "\46", "\50", "\51", "\173", "\175",
+    "\56", jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull, jjstrLiteralImagesNull
+  );
+  static final ImmutableList<Long> jjtoToken = ImmutableList.of(
+    0x93ffffe1L
+  );
   private SimpleCharStream input_stream;
   private final int[] jjrounds = new int[22];
   private final int[] jjstateSet = new int[44];
@@ -374,7 +372,7 @@ public class ExprParserTokenManager implements ExprParserConstants {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
     String im = jjstrLiteralImages.get(jjmatchedKind);
-    t.image = (im == null) ? input_stream.GetImage() : im;
+    t.image = (jjstrLiteralImagesNull.equals(im)) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();
     t.endLine = input_stream.getEndLine();
@@ -417,7 +415,7 @@ public class ExprParserTokenManager implements ExprParserConstants {
       curPos = jjMoveStringLiteralDfa0_0();
       if (jjmatchedKind != 0x7fffffff) {
         if (jjmatchedPos + 1 < curPos) input_stream.backup(curPos - jjmatchedPos - 1);
-        if ((jjtoToken[jjmatchedKind >> 6] & (1L << (jjmatchedKind & 077))) != 0L) {
+        if ((jjtoToken.get(jjmatchedKind >> 6) & (1L << (jjmatchedKind & 077))) != 0L) {
           matchedToken = jjFillToken();
           return matchedToken;
         } else {

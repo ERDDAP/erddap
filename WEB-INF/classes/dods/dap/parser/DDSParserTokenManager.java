@@ -728,10 +728,37 @@ public class DDSParserTokenManager implements DDSParserConstants {
       ImmutableList.of(
           195, 198, 201, 204, 176, 181, 186, 191, 140, 146, 154, 161, 166, 170, 113, 117, 121, 125,
           129, 131, 132, 102, 108, 88, 93, 95, 78, 82, 60, 68, 73, 47, 52, 38, 40, 32, 34, 26, 28);
+  private static final String jjstrLiteralImagesNull = "null";
   public static final ImmutableList<String> jjstrLiteralImages =
       ImmutableList.of(
-          "", null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-          null, null, null, null, null, null, "\173", "\175", "\73", "\72", "\133", "\135", "\75");
+          "",
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          jjstrLiteralImagesNull,
+          "\173",
+          "\175",
+          "\73",
+          "\72",
+          "\133",
+          "\135",
+          "\75");
   static final ImmutableList<Long> jjtoToken = ImmutableList.of(0xfffffc1L);
   private SimpleCharStream input_stream;
   private final int[] jjrounds = new int[205];
@@ -780,7 +807,7 @@ public class DDSParserTokenManager implements DDSParserConstants {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
     String im = jjstrLiteralImages.get(jjmatchedKind);
-    t.image = (im == null) ? input_stream.GetImage() : im;
+    t.image = (jjstrLiteralImagesNull.equals(im)) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();
     t.endLine = input_stream.getEndLine();
