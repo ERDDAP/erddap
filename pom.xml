@@ -259,7 +259,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.11.0</version>
+                <version>1.11.1</version>
                 <executions>
                     <execution>
                         <id>download-content</id>
@@ -269,7 +269,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapContent/releases/download/${erddapcontent.download.version}/erddapContent.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
@@ -282,7 +282,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
@@ -295,7 +295,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/WEB-INF/ref/</outputDirectory>
                             <skip>${skipResourceDownload}</skip>
                         </configuration>
@@ -309,7 +309,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/data.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
@@ -322,7 +322,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeFiles.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
@@ -335,7 +335,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largePoints.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
@@ -348,7 +348,7 @@
                         </goals>
                         <configuration>
                             <url>https://github.com/ERDDAP/erddapTest/releases/download/${test.resources.version}/largeSatellite.zip</url>
-                            <unpack>true</unpack>
+                            <unpackWhenChanged>true</unpackWhenChanged>
                             <outputDirectory>${project.basedir}/test-data</outputDirectory>
                             <skip>${skipTestResourceDownload}</skip>
                         </configuration>
