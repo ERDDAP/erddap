@@ -2,6 +2,7 @@ package gov.noaa.pfel.coastwatch.pointdata.parquet;
 
 import com.cohort.array.PAOne;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.api.WriteSupport;
@@ -12,9 +13,9 @@ public class ParquetWriterBuilder extends ParquetWriter.Builder<List<PAOne>, Par
 
   private CustomWriteSupport writeSupport;
 
-  public ParquetWriterBuilder(MessageType schema, OutputFile file) {
+  public ParquetWriterBuilder(MessageType schema, OutputFile file, Map<String, String> metadata) {
     super(file);
-    writeSupport = new CustomWriteSupport(schema);
+    writeSupport = new CustomWriteSupport(schema, metadata);
   }
 
   @Override

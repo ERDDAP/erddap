@@ -588,7 +588,7 @@ public class Table {
   public static BitSet ncCFcc = null; // null=inactive, new BitSet() = active
 
   /** An arrayList to hold 0 or more PrimitiveArray's with data. */
-  protected ArrayList<PrimitiveArray> columns = new ArrayList();
+  protected ArrayList<PrimitiveArray> columns = new ArrayList<>();
 
   /** An arrayList to hold the column names. */
   protected StringArray columnNames = new StringArray();
@@ -605,7 +605,7 @@ public class Table {
    * Although a HashTable is more appropriate for name=value pairs, this uses ArrayList to preserve
    * the order of the attributes. This may be null if not in use.
    */
-  protected ArrayList<Attributes> columnAttributes = new ArrayList();
+  protected ArrayList<Attributes> columnAttributes = new ArrayList<>();
 
   /** The one known valid url for readIobis. */
   public static final String IOBIS_URL = "http://www.iobis.org/OBISWEB/ObisControllerServlet";
@@ -16089,7 +16089,7 @@ public class Table {
     }
   }
 
-  private MessageType getParquetSchemaForTable(String name) {
+  private MessageType getParquetSchemaForTable() {
     String schemaProto = "message m {";
     for (int j = 0; j < nColumns(); j++) {
       String schemaType = "String";
@@ -16137,29 +16137,66 @@ public class Table {
     return MessageTypeParser.parseMessageType(schemaProto);
   }
 
+  private void addMetadata(Map<String, String> metadata, Attributes attributes, String prefix) {
+    String names[] = attributes.getNames();
+    for (int ni = 0; ni < names.length; ni++) {
+      String tName = names[ni];
+      if (!String2.isSomething(tName)) {
+        continue;
+      }
+      PrimitiveArray tValue = attributes.get(tName);
+      if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
+        continue; // do nothing
+      }
+      metadata.put(prefix + tName, tValue.toCSVString());
+    }
+  }
+
   /**
    * This writes a table to a Parquet UTF-8 file.
    *
    * @param fullFileName This is just used for error messages.
    * @throws Exception if trouble, including observed nItems != expected nItems.
    */
-  public void writeParquet(String fullFileName) throws Exception {
+  public void writeParquet(String fullFileName, boolean fullMetadata) throws Exception {
     String msg = "  Table.writeParquet " + fullFileName;
     long time = System.currentTimeMillis();
 
     int randomInt = Math2.random(Integer.MAX_VALUE);
+    MessageType schema = getParquetSchemaForTable();
 
-    int nameStart = fullFileName.lastIndexOf('/');
-    if (nameStart == -1) {
-      nameStart = fullFileName.lastIndexOf('\\');
+    Map<String, String> metadata = new HashMap<>();
+    if (fullMetadata) {
+      addMetadata(metadata, globalAttributes, "");
+      for (int col = 0; col < nColumns(); col++) {
+        Attributes colAttributes = columnAttributes.get(col);
+        if (colAttributes == null) {
+          continue;
+        }
+        addMetadata(metadata, colAttributes, getColumnName(col) + "_");
+      }
     }
-    int nameEnd = fullFileName.lastIndexOf('.');
-    String name = fullFileName.substring(nameStart + 1, nameEnd);
-    MessageType schema = getParquetSchemaForTable(name);
-
+    String columnNames = "";
+    String columnUnits = "";
+    for (int col = 0; col < nColumns(); col++) {
+      Attributes colAttributes = columnAttributes.get(col);
+      if (colAttributes == null) {
+        continue;
+      }
+      if (columnNames.length() > 0) {
+        columnNames += ",";
+        columnUnits += ",";
+      }
+      columnNames += getColumnName(col);
+      columnUnits += colAttributes.getString("units");
+    }
+    metadata.put("column_names", columnNames);
+    metadata.put("column_units", columnUnits);
     try (ParquetWriter<List<PAOne>> writer =
         new ParquetWriterBuilder(
-                schema, new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)))
+                schema,
+                new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)),
+                metadata)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withRowGroupSize(ParquetWriter.DEFAULT_BLOCK_SIZE)
             .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)

@@ -157,7 +157,7 @@ public class Erddap extends HttpServlet {
     ".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"
   };
   public static final String FILE_TYPES_184[] = {".dataTable", ".jsonlCSV1"};
-  public static final String FILE_TYPES_225[] = {".parquet"};
+  public static final String FILE_TYPES_225[] = {".parquet", ".parquetWMeta"};
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width

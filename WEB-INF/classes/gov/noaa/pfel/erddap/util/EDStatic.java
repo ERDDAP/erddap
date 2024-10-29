@@ -1299,6 +1299,7 @@ public class EDStatic {
       fileHelpGrid_odvTxtAr,
       fileHelpTable_odvTxtAr,
       fileHelp_parquetAr,
+      fileHelp_parquet_with_metaAr,
       fileHelp_subsetAr,
       fileHelp_timeGapsAr,
       fileHelp_tsvAr,
@@ -3230,6 +3231,8 @@ public class EDStatic {
       fileHelpTable_odvTxtAr =
           getNotNothingString(messagesAr, "fileHelpTable_odvTxt", errorInMethod);
       fileHelp_parquetAr = getNotNothingString(messagesAr, "fileHelp_parquet", errorInMethod);
+      fileHelp_parquet_with_metaAr =
+          getNotNothingString(messagesAr, "fileHelp_parquet_with_meta", errorInMethod);
       fileHelp_subsetAr = getNotNothingString(messagesAr, "fileHelp_subset", errorInMethod);
       fileHelp_timeGapsAr = getNotNothingString(messagesAr, "fileHelp_timeGaps", errorInMethod);
       fileHelp_tsvAr = getNotNothingString(messagesAr, "fileHelp_tsv", errorInMethod);

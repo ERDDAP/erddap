@@ -2848,7 +2848,8 @@ Například:
 <fileHelp_ncml>Zobrazte strukturu a metadata datové sady jako soubor .xml NCML UTF-8.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Čas stahování, zeměpisná šířka, délka, další proměnné jako generický tabulkový soubor ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Stáhněte si zeměpisnou délku, šířku, čas, ostatní sloupce jako obecný soubor tabulky ISO-8859-1 ODV (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Stáhnout jako parketový soubor.</fileHelp_parquet>
+<fileHelp_parquet>Stáhnout jako parketový soubor. Metadata obsahuje názvy sloupců (&quot;sloupce_názvy&quot;) a jednotky (&quot;sloupce_jednotky&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Stáhnout jako parketový soubor s podrobnými metadaty.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Zobrazte formulář HTML, který používá fasetované vyhledávání ke zjednodušení výběru podmnožin dat.</fileHelp_subset>
 <fileHelp_timeGaps>Prohlédněte si UTF-8 seznam mezer v hodnotách času, které jsou větší než střední mezera.</fileHelp_timeGaps>
 <fileHelp_tsv>Stáhněte si textovou tabulku ISO-8859-1 oddělenou tabulátory (řádek 1: názvy; řádek 2: jednotky; ISO 8601 krát).</fileHelp_tsv>

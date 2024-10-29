@@ -2648,7 +2648,8 @@ ERDDAPは、科学データセットのサブセットを一般的なファイ�
 <fileHelp_ncml>データセットの構造とメタデータを UTF-8 NCML .xml ファイルとして表示します。</fileHelp_ncml>
 <fileHelpGrid_odvTxt>時間、緯度、経度、その他の変数を ODV 汎用スプレッドシート ファイル (.txt) としてダウンロードします。</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>経度、緯度、時間、その他の列を ISO-8859-1 ODV 汎用スプレッドシート ファイル (.txt) としてダウンロードします。</fileHelpTable_odvTxt>
-<fileHelp_parquet>パーケットファイルとしてダウンロードします。</fileHelp_parquet>
+<fileHelp_parquet>パーケットファイルとしてダウンロードします。 Metadataには、カラム名(「column_names」)とユニット(「column_units」)が含まれています。</fileHelp_parquet>
+<fileHelp_parquet_with_meta>詳細なメタデータでパーケットファイルとしてダウンロードします。</fileHelp_parquet_with_meta>
 <fileHelp_subset>ファセット検索を使用してデータのサブセットの選択を簡素化する HTML フォームを表示します。</fileHelp_subset>
 <fileHelp_timeGaps>中央値のギャップより大きい時間値のギャップの UTF-8 リストを表示します。</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 タブ区切りテキスト テーブル (行 1: 名前、行 2: 単位、ISO 8601 時間) をダウンロードします。</fileHelp_tsv>

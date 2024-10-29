@@ -197,6 +197,7 @@ public abstract class EDDTable extends EDD {
     ".ncoJson",
     ".odvTxt",
     ".parquet",
+    ".parquetWMeta",
     ".subset",
     ".tsv",
     ".tsvp",
@@ -239,6 +240,7 @@ public abstract class EDDTable extends EDD {
     ".csv",
     ".json",
     ".txt",
+    ".parquet",
     ".parquet",
     ".html",
     ".tsv",
@@ -289,6 +291,7 @@ public abstract class EDDTable extends EDD {
     "https://erddap.github.io/NCCSV.html",
     "https://nco.sourceforge.net/nco.html#json",
     "https://odv.awi.de/en/documentation/", // odv
+    "https://parquet.apache.org/",
     "https://parquet.apache.org/",
     "https://en.wikipedia.org/wiki/Faceted_search", // subset
     "https://jkorpela.fi/TSV.html", // tsv
@@ -454,6 +457,7 @@ public abstract class EDDTable extends EDD {
             EDStatic.fileHelp_ncoJsonAr[tl],
             EDStatic.fileHelpTable_odvTxtAr[tl],
             EDStatic.fileHelp_parquetAr[tl],
+            EDStatic.fileHelp_parquet_with_metaAr[tl],
             EDStatic.fileHelp_subsetAr[tl],
             EDStatic.fileHelp_tsvAr[tl],
             EDStatic.fileHelp_tsvpAr[tl],
@@ -3660,7 +3664,7 @@ public abstract class EDDTable extends EDD {
           new TableWriterAllWithMetadata(
               language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
       tableWriter = twawm;
-    } else if (fileTypeName.equals(".parquet")) {
+    } else if (fileTypeName.equals(".parquet") || fileTypeName.equals(".parquetWMeta")) {
       twawm =
           new TableWriterAllWithMetadata(
               language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
@@ -3753,7 +3757,9 @@ public abstract class EDDTable extends EDD {
       } else if (fileTypeName.equals(".odvTxt")) {
         saveAsODV(language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
       } else if (fileTypeName.equals(".parquet")) {
-        saveAsParquet(language, outputStreamSource, twawm, datasetID);
+        saveAsParquet(language, outputStreamSource, twawm, datasetID, false);
+      } else if (fileTypeName.equals(".parquetWMeta")) {
+        saveAsParquet(language, outputStreamSource, twawm, datasetID, true);
       }
       return;
     }
@@ -7891,7 +7897,8 @@ public abstract class EDDTable extends EDD {
       int language,
       OutputStreamSource outputStreamSource,
       TableWriterAllWithMetadata twawm,
-      String datasetID)
+      String datasetID,
+      boolean fullMetadata)
       throws Throwable {
     Table table = twawm.cumulativeTable();
     twawm.releaseResources();
@@ -7900,19 +7907,22 @@ public abstract class EDDTable extends EDD {
                 EDStatic.fullTestCacheDirectory,
                 datasetID + Math2.random(Integer.MAX_VALUE) + ".parquet")
             .toString();
-    table.writeParquet(parquetTempFileName);
+    table.writeParquet(parquetTempFileName, fullMetadata);
 
-    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+    OutputStream out = outputStreamSource.outputStream("");
     try {
-      if (!File2.copy(parquetTempFileName, out))
+      if (!File2.copy(parquetTempFileName, out)) {
+        // outputStream contentType already set,
+        // so I can't go back to html and display error message
+        // note than the message is thrown if user cancels the transmission; so don't email to me
         throw new SimpleException(String2.ERROR + " while transmitting file.");
+      }
     } finally {
       try {
         out.close();
       } catch (Exception e) {
       } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
-
     File2.delete(parquetTempFileName);
   }
 
