@@ -10820,6 +10820,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
+  @TagThredds // external server is failing to respond, so disable the test for now
   void testActualRange() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testActualRange");
     int language = 0;
