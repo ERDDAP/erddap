@@ -80,8 +80,7 @@ those great suggestions coming!
     </ul>
   <li><strong>Things ERDDAP™ Administrators Need to Know and Do:</strong>
     <ul>
-      <li>We recommend upgradding to Java 21 or newer. This is the LTS version and has been available for over a year. Development
-        of ERDDAP™ version 2.25 was done with Java 21.
+      <li>Version 2.25 requires Java 21 or newer. This is the LTS version and has been available for over a year.
         <br>&nbsp;
       <li>The SharedWatchService is now the default. If you need to disable it, please contact chris.john at noaa.gov to let me know,
         so I can improve it in future versions and add:
@@ -111,6 +110,12 @@ those great suggestions coming!
         <br>&nbsp;
       <li>New parameter in datasets.xml to control unusual activity emails. unusualActivityFailPercent defaults to the old value of 25%.
         Thanks to Ayush Singh for the feature.
+        <br>&nbsp;
+      <li>New parameter in setup.xml that controls if dataset loading errors are shown on the status.html page. It defaults to true, to
+        disable dataset errors on the status page, set showLoadErrorsOnStatusPage to false:
+        <kbd>
+          &lt;showLoadErrorsOnStatusPage&gt;false&lt;/showLoadErrorsOnStatusPage&gt;
+        </kbd>
         <br>&nbsp;
       <li>Some small changes and bug fixes.
         <br>&nbsp;
