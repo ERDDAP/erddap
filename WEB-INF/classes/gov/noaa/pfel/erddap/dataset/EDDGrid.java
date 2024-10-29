@@ -173,7 +173,7 @@ public abstract class EDDGrid extends EDD {
     // .subset currently isn't included
     ".txt",
     ".parquet",
-    ",parquet",
+    ".parquet",
     ".asc",
     ".tsv",
     ".tsv",
