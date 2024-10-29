@@ -404,6 +404,7 @@ public class EDStatic {
   public static final int DEFAULT_unusualActivity = 10000;
   public static final int DEFAULT_updateMaxEvents = 10;
   public static final int DEFAULT_unusualActivityFailPercent = 25;
+  public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public static String drawLandMask = DEFAULT_drawLandMask;
   public static boolean emailDiagnosticsToErdData = true;
@@ -420,6 +421,7 @@ public class EDStatic {
   public static int unusualActivity = DEFAULT_unusualActivity;
   public static int updateMaxEvents = DEFAULT_updateMaxEvents;
   public static int unusualActivityFailPercent = DEFAULT_unusualActivityFailPercent;
+  public static boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
   // not translated
   public static
@@ -2260,6 +2262,9 @@ public class EDStatic {
       partialRequestMaxCells =
           getSetupEVInt(setup, ev, "partialRequestMaxCells", DEFAULT_partialRequestMaxCells);
       unusualActivity = getSetupEVInt(setup, ev, "unusualActivity", DEFAULT_unusualActivity);
+      showLoadErrorsOnStatusPage =
+          getSetupEVBoolean(
+              setup, ev, "showLoadErrorsOnStatusPage", DEFAULT_showLoadErrorsOnStatusPage);
 
       lowResLogoImageFile =
           getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
@@ -5125,7 +5130,7 @@ public class EDStatic {
   }
 
   /** This adds the common, publicly accessible statistics to the StringBuilder. */
-  public static void addIntroStatistics(StringBuilder sb) {
+  public static void addIntroStatistics(StringBuilder sb, boolean includeErrors) {
     sb.append("Current time is " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
     sb.append("Startup was at  " + startupLocalDateTime + "\n");
     long loadTime = lastMajorLoadDatasetsStopTimeMillis - lastMajorLoadDatasetsStartTimeMillis;
@@ -5170,7 +5175,9 @@ public class EDStatic {
     sb.append("nTableDatasets = " + tnTableDatasets + "\n");
     sb.append("nTotalDatasets = " + (tnGridDatasets + tnTableDatasets) + "\n");
     sb.append(datasetsThatFailedToLoad);
-    sb.append(failedDatasetsWithErrors);
+    if (includeErrors) {
+      sb.append(failedDatasetsWithErrors);
+    }
     sb.append(errorsDuringMajorReload);
     sb.append(
         "Unique users (since startup)                            n = "

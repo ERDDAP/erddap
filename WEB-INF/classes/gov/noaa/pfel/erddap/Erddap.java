@@ -4752,7 +4752,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.youAreHere(language, loggedInAs, EDStatic.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb);
+      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
