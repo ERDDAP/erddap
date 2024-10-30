@@ -78,9 +78,12 @@ import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.io.LocalOutputFile;
 import org.apache.parquet.io.MessageColumnIO;
 import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import ucar.ma2.*;
@@ -16089,52 +16092,71 @@ public class Table {
     }
   }
 
+  private boolean isTimeColumn(int col) {
+    return "time".equalsIgnoreCase(getColumnName(col))
+        && Calendar2.SECONDS_SINCE_1970.equals(columnAttributes.get(col).getString("units"));
+  }
+
   private MessageType getParquetSchemaForTable() {
-    String schemaProto = "message m {";
+    MessageTypeBuilder schemaBuilder = org.apache.parquet.schema.Types.buildMessage();
     for (int j = 0; j < nColumns(); j++) {
-      String schemaType = "String";
+      String columnName = getColumnName(j);
+      if (isTimeColumn(j)) {
+        schemaBuilder
+            .optional(PrimitiveTypeName.INT64)
+            .as(LogicalTypeAnnotation.timestampType(true, TimeUnit.MILLIS))
+            .named(columnName);
+        continue;
+      }
       switch (getColumn(j).elementType()) {
         case BYTE:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case SHORT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case CHAR:
-          schemaType = "BINARY";
+          schemaBuilder
+              .optional(PrimitiveTypeName.BINARY)
+              .as(LogicalTypeAnnotation.stringType())
+              .named(columnName);
           break;
         case INT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case LONG:
-          schemaType = "INT64";
+          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
           break;
         case FLOAT:
-          schemaType = "FLOAT";
+          schemaBuilder.optional(PrimitiveTypeName.FLOAT).named(columnName);
           break;
         case DOUBLE:
-          schemaType = "DOUBLE";
+          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
           break;
         case STRING:
-          schemaType = "BINARY";
+          schemaBuilder
+              .optional(PrimitiveTypeName.BINARY)
+              .as(LogicalTypeAnnotation.stringType())
+              .named(columnName);
           break;
         case UBYTE:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case USHORT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case UINT:
-          schemaType = "INT64";
+          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
           break;
         case ULONG:
-          schemaType = "DOUBLE";
+          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
+          break;
+        case BOOLEAN:
+          schemaBuilder.optional(PrimitiveTypeName.BOOLEAN).named(columnName);
           break;
       }
-      schemaProto += "    optional " + schemaType + " " + getColumnName(j) + ";\n";
     }
-    schemaProto += "}";
-    return MessageTypeParser.parseMessageType(schemaProto);
+    return schemaBuilder.named("m");
   }
 
   private void addMetadata(Map<String, String> metadata, Attributes attributes, String prefix) {
@@ -16148,7 +16170,12 @@ public class Table {
       if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
         continue; // do nothing
       }
-      metadata.put(prefix + tName, tValue.toCSVString());
+      if ("time_".equalsIgnoreCase(prefix)
+          && Calendar2.SECONDS_SINCE_1970.equals(attributes.getString(tName))) {
+        metadata.put(prefix + tName, Calendar2.MILLISECONDS_SINCE_1970);
+      } else {
+        metadata.put(prefix + tName, tValue.toCSVString());
+      }
     }
   }
 
@@ -16188,7 +16215,11 @@ public class Table {
         columnUnits += ",";
       }
       columnNames += getColumnName(col);
-      columnUnits += colAttributes.getString("units");
+      if (isTimeColumn(col)) {
+        columnUnits += Calendar2.MILLISECONDS_SINCE_1970;
+      } else {
+        columnUnits += colAttributes.getString("units");
+      }
     }
     metadata.put("column_names", columnNames);
     metadata.put("column_units", columnUnits);
@@ -16208,7 +16239,12 @@ public class Table {
       for (int row = 0; row < nRows(); row++) {
         ArrayList<PAOne> record = new ArrayList<>();
         for (int j = 0; j < nColumns(); j++) {
-          record.add(getPAOneData(j, row));
+          if (isTimeColumn(j)) {
+            // Convert from seconds since epoch to millis since epoch.
+            record.add(getPAOneData(j, row).multiply(PAOne.fromInt(1000)));
+          } else {
+            record.add(getPAOneData(j, row));
+          }
         }
         writer.write(record);
       }

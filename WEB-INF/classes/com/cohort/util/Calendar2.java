@@ -90,6 +90,7 @@ public class Calendar2 {
   public static final long MILLIS_PER_DAY = SECONDS_PER_DAY * 1000L;
 
   public static final String SECONDS_SINCE_1970 = "seconds since 1970-01-01T00:00:00Z";
+  public static final String MILLISECONDS_SINCE_1970 = "milliseconds since 1970-01-01T00:00:00Z";
 
   public static final String zulu = "Zulu";
   public static final TimeZone zuluTimeZone = TimeZone.getTimeZone(zulu);

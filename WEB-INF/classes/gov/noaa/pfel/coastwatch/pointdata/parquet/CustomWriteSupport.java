@@ -53,7 +53,7 @@ public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
       // val.length() == 0 indicates a NULL value.
       if (val != null && !val.isMissingValue()) {
         recordConsumer.startField(cols.get(i).getPath()[0], i);
-        switch (cols.get(i).getType()) {
+        switch (cols.get(i).getPrimitiveType().getPrimitiveTypeName()) {
           case BOOLEAN:
             recordConsumer.addBoolean(Boolean.parseBoolean(val.getString()));
             break;

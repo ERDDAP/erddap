@@ -7909,7 +7909,7 @@ public abstract class EDDTable extends EDD {
             .toString();
     table.writeParquet(parquetTempFileName, fullMetadata);
 
-    OutputStream out = outputStreamSource.outputStream("");
+    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
     try {
       if (!File2.copy(parquetTempFileName, out)) {
         // outputStream contentType already set,
