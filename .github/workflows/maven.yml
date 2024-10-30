@@ -22,4 +22,6 @@ jobs:
         mvn --batch-mode
         -Dgcf.skipInstallHooks=true
         -Dmaven.test.redirectTestOutputToFile=true
+        -Ddownload.unpack=true
+        -Ddownload.unpackWhenChanged=false
         clean verify

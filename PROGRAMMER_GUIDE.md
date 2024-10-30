@@ -19,7 +19,7 @@ ERDDAP™ uses Maven to load code dependencies as well as some static reference 
 
   - [erddapContent.zip](https://github.com/ERDDAP/erddapContent/releases/download/content1.0.0/erddapContent.zip) (version 1.0.0, 20333 bytes, MD5=2B8D2A5AE5ED73E3A42B529C168C60B5, dated 2024-10-14) and unzip it into _tomcat_, creating _tomcat_/content/erddap .
 
-NOTE: By default Maven will cache static reference and test data archive downloads and only extract them when a new version is downloaded. To skip downloading entirely, you may set the `skipResourceDownload` and/or `skipTestResourceDownload` properties to Maven (e.g. `mvn -DskipResourceDownload package`). To force extraction, set `-Ddownload.unpack`.
+NOTE: By default Maven will cache static reference and test data archive downloads and only extract them when a new version is downloaded. To skip downloading entirely, you may set the `skipResourceDownload` and/or `skipTestResourceDownload` properties to Maven (e.g. `mvn -DskipResourceDownload package`). To force extraction, set `-Ddownload.unpack=true` and `-Ddownload.unpackWhenChanged=false`.
 
 - ERDDAP™ and its subcomponents have very liberal, open-source [licenses](https://erddap.github.io/setup.html#license), so you can use and modify the source code for any purpose, for-profit or not-for-profit. Note that ERDDAP™ and many subcomponents have licenses that require that you acknowledge the source of the code that you are using. See [Credits](https://erddap.github.io/setup.html#credits). Whether required or not, it is just good form to acknowledge all of these contributors.
    
