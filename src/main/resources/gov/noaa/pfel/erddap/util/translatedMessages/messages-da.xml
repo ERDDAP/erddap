@@ -2843,7 +2843,8 @@ For eksempel:
 <fileHelp_ncml>Se datasættets struktur og metadata som en UTF-8 NCML .xml-fil.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download tid, breddegrad, længdegrad, andre variabler som en generisk ODV-regnearkfil (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download længdegrad, breddegrad, tid, andre kolonner som en ISO-8859-1 ODV generisk regnearksfil (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Hent som en parket fil.</fileHelp_parquet>
+<fileHelp_parquet>Hent som en parket fil. Metadata indeholder kolonnenavne (&quot;column_names&quot;) og enheder (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Hent som en parket fil med detaljerede metadata.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Se en HTML-formular, der bruger facetteret søgning til at forenkle udvælgelsen af delmængder af dataene.</fileHelp_subset>
 <fileHelp_timeGaps>Se en UTF-8-liste over huller i tidsværdierne, der er større end mediangabet.</fileHelp_timeGaps>
 <fileHelp_tsv>Download en ISO-8859-1 fane-separeret teksttabel (linje 1: navne; linje 2: enheder; ISO 8601 gange).</fileHelp_tsv>

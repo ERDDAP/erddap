@@ -196,7 +196,7 @@ public class EDStatic {
    * 2.22 released on 2022-12-08 <br>
    * 2.23 released on 2023-02-27 <br>
    * 2.24 released on 2024-06-07 <br>
-   * 2.25 released on 2024-10-16 <br>
+   * 2.25 first RC on 2024-10-16 released on 2024-10-31 <br>
    *
    * <p>For main branch releases, this will be a floating point number with 2 decimal digits, with
    * no additional text. !!! In general, people other than the main ERDDAP developer (Bob) should
@@ -404,6 +404,7 @@ public class EDStatic {
   public static final int DEFAULT_unusualActivity = 10000;
   public static final int DEFAULT_updateMaxEvents = 10;
   public static final int DEFAULT_unusualActivityFailPercent = 25;
+  public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public static String drawLandMask = DEFAULT_drawLandMask;
   public static boolean emailDiagnosticsToErdData = true;
@@ -420,6 +421,7 @@ public class EDStatic {
   public static int unusualActivity = DEFAULT_unusualActivity;
   public static int updateMaxEvents = DEFAULT_updateMaxEvents;
   public static int unusualActivityFailPercent = DEFAULT_unusualActivityFailPercent;
+  public static boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
   // not translated
   public static
@@ -1297,6 +1299,7 @@ public class EDStatic {
       fileHelpGrid_odvTxtAr,
       fileHelpTable_odvTxtAr,
       fileHelp_parquetAr,
+      fileHelp_parquet_with_metaAr,
       fileHelp_subsetAr,
       fileHelp_timeGapsAr,
       fileHelp_tsvAr,
@@ -2260,6 +2263,9 @@ public class EDStatic {
       partialRequestMaxCells =
           getSetupEVInt(setup, ev, "partialRequestMaxCells", DEFAULT_partialRequestMaxCells);
       unusualActivity = getSetupEVInt(setup, ev, "unusualActivity", DEFAULT_unusualActivity);
+      showLoadErrorsOnStatusPage =
+          getSetupEVBoolean(
+              setup, ev, "showLoadErrorsOnStatusPage", DEFAULT_showLoadErrorsOnStatusPage);
 
       lowResLogoImageFile =
           getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
@@ -3225,6 +3231,8 @@ public class EDStatic {
       fileHelpTable_odvTxtAr =
           getNotNothingString(messagesAr, "fileHelpTable_odvTxt", errorInMethod);
       fileHelp_parquetAr = getNotNothingString(messagesAr, "fileHelp_parquet", errorInMethod);
+      fileHelp_parquet_with_metaAr =
+          getNotNothingString(messagesAr, "fileHelp_parquet_with_meta", errorInMethod);
       fileHelp_subsetAr = getNotNothingString(messagesAr, "fileHelp_subset", errorInMethod);
       fileHelp_timeGapsAr = getNotNothingString(messagesAr, "fileHelp_timeGaps", errorInMethod);
       fileHelp_tsvAr = getNotNothingString(messagesAr, "fileHelp_tsv", errorInMethod);
@@ -5125,7 +5133,7 @@ public class EDStatic {
   }
 
   /** This adds the common, publicly accessible statistics to the StringBuilder. */
-  public static void addIntroStatistics(StringBuilder sb) {
+  public static void addIntroStatistics(StringBuilder sb, boolean includeErrors) {
     sb.append("Current time is " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
     sb.append("Startup was at  " + startupLocalDateTime + "\n");
     long loadTime = lastMajorLoadDatasetsStopTimeMillis - lastMajorLoadDatasetsStartTimeMillis;
@@ -5170,7 +5178,9 @@ public class EDStatic {
     sb.append("nTableDatasets = " + tnTableDatasets + "\n");
     sb.append("nTotalDatasets = " + (tnGridDatasets + tnTableDatasets) + "\n");
     sb.append(datasetsThatFailedToLoad);
-    sb.append(failedDatasetsWithErrors);
+    if (includeErrors) {
+      sb.append(failedDatasetsWithErrors);
+    }
     sb.append(errorsDuringMajorReload);
     sb.append(
         "Unique users (since startup)                            n = "

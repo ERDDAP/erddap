@@ -1,8 +1,8 @@
 package gov.noaa.pfel.coastwatch.pointdata.parquet;
 
 import com.cohort.array.PAOne;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.hadoop.api.WriteSupport;
@@ -15,15 +15,17 @@ public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
   MessageType schema;
   RecordConsumer recordConsumer;
   List<ColumnDescriptor> cols;
+  private Map<String, String> metadata;
 
-  CustomWriteSupport(MessageType schema) {
+  CustomWriteSupport(MessageType schema, Map<String, String> metadata) {
     this.schema = schema;
     this.cols = schema.getColumns();
+    this.metadata = metadata;
   }
 
   @Override
   public WriteContext init(Configuration config) {
-    return new WriteContext(schema, new HashMap<String, String>());
+    return new WriteContext(schema, metadata);
   }
 
   @Override
@@ -51,7 +53,7 @@ public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
       // val.length() == 0 indicates a NULL value.
       if (val != null && !val.isMissingValue()) {
         recordConsumer.startField(cols.get(i).getPath()[0], i);
-        switch (cols.get(i).getType()) {
+        switch (cols.get(i).getPrimitiveType().getPrimitiveTypeName()) {
           case BOOLEAN:
             recordConsumer.addBoolean(Boolean.parseBoolean(val.getString()));
             break;
