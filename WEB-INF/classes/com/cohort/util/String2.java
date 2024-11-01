@@ -6215,6 +6215,11 @@ public class String2 {
     return sb.toString();
   }
 
+  /** Simple null-safe lower case string transformation. */
+  public static String toLowerCase(String s) {
+    return s == null ? null : s.toLowerCase();
+  }
+
   /**
    * This suggests a camel-case variable name.
    *

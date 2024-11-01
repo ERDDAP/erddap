@@ -13213,15 +13213,40 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   public void doVersion(HttpServletRequest request, HttpServletResponse response) throws Throwable {
     // see also EDD.flagUrl()
 
-    // generate text response
+    // determine if response should be text or json response
+    // requests with header Accept: application/json or query parameter format=json will get json
+    // response
+    String acceptHeader = request.getHeader("Accept");
+    String formatParameter = request.getParameter("format");
+    String extension = ".txt";
+    boolean isJsonResponse = false;
+    if ((String2.isSomething(acceptHeader) && acceptHeader.equalsIgnoreCase("application/json"))
+        || (String2.isSomething(formatParameter) && formatParameter.equalsIgnoreCase("json"))) {
+      isJsonResponse = true;
+      extension = ".json";
+    }
+
+    // generate response
     OutputStreamSource outSource =
-        new OutputStreamFromHttpResponse(request, response, "version", ".txt", ".txt");
+        new OutputStreamFromHttpResponse(request, response, "version", extension, extension);
     OutputStream out = outSource.outputStream(File2.UTF_8);
     try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       String ev = EDStatic.erddapVersion;
       int po = ev.indexOf('_');
       if (po >= 0) ev = ev.substring(0, po);
-      writer.write("ERDDAP_version=" + ev + "\n");
+
+      if (isJsonResponse) {
+        writer.write(
+            """
+        {
+          "version": "%s",
+          "version_full": "%s",
+          "deployment_info": "%s"
+        }"""
+                .formatted(ev, EDStatic.erddapVersion, EDStatic.deploymentInfo));
+      } else {
+        writer.write("ERDDAP_version=" + ev + "\n");
+      }
     }
     // it calls writer.flush then out.close();
   }

@@ -1,0 +1,30 @@
+services:
+  erddap:
+    build: .
+    ports:
+      - "${ERDDAP_PORT:-8080}:8080"
+      - "${ERDDAP_DEBUG_PORT:-8000}:8000"
+    volumes:
+      - data:/erddapData
+    environment:
+      ERDDAP_MEMORY: "${ERDDAP_MEMORY:-4g}"
+      ERDDAP_baseUrl: "http://${ERDDAP_HOST:-localhost}:${ERDDAP_PORT:-8080}"
+      ERDDAP_enableCors: "true"
+      #ERDDAP_corsAllowOrigin: "https://some-allowed-domain.com,http://this-one-also.org:8080"
+      #JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+    mem_limit: "${ERDDAP_CONTAINER_MEM_LIMIT:-6g}"
+    healthcheck:
+      test: ["CMD", "curl", "-fl", "http://localhost:8080/erddap/index.html"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  logs:
+    image: debian:bookworm-slim
+    volumes:
+      - data:/erddapData:ro
+    mem_limit: 256m
+    command: tail -F /erddapData/logs/log.txt
+
+volumes:
+  data:
