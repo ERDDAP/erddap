@@ -3007,7 +3007,8 @@ Esimerkiksi:
 <fileHelp_ncml>Tarkastele tietojoukon rakennetta ja metatietoja UTF-8 NCML .xml -tiedostona.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Latausaika, leveysaste, pituusaste, muut muuttujat ODV:n yleisenä laskentataulukkotiedostona (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Lataa pituusaste, leveysaste, aika ja muut sarakkeet ISO-8859-1 ODV Generic Spreadsheet -tiedostona (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Lataa parquet-tiedostona.</fileHelp_parquet>
+<fileHelp_parquet>Lataa parquet-tiedostona. Metadata sisältää sarakkeiden nimiä (&quot;kolumn_nimet&quot;) ja yksiköitä (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Download &quot;Parquet-tiedosto, jossa on yksityiskohtaiset metatiedot.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Tarkastele HTML-lomaketta, joka käyttää fasetoitua hakua tietojen osajoukkojen poimimisen yksinkertaistamiseksi.</fileHelp_subset>
 <fileHelp_timeGaps>Tarkastele UTF-8-luetteloa aika-arvojen aukoista, jotka ovat suurempia kuin mediaaniväli.</fileHelp_timeGaps>
 <fileHelp_tsv>Lataa ISO-8859-1 sarkaimilla eroteltu tekstitaulukko (rivi 1: nimet; rivi 2: yksiköt; ISO 8601 kertaa).</fileHelp_tsv>

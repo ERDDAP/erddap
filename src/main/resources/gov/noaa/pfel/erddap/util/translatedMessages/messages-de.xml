@@ -2857,7 +2857,8 @@ Zum Beispiel:
 <fileHelp_ncml>Zeigen Sie die Struktur und die Metadaten des Datasets als UTF-8-NCML-XML-Datei an.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Laden Sie Zeit, Breite, Länge, andere Variablen als generische ODV-Tabellenkalkulationsdatei (.txt) herunter.</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Laden Sie Längengrad, Breitengrad, Zeit, andere Spalten als ISO-8859-1 ODV Generic Spreadsheet File (.txt) herunter.</fileHelpTable_odvTxt>
-<fileHelp_parquet>Download als Parkett-Datei.</fileHelp_parquet>
+<fileHelp_parquet>Download als Parkett-Datei. Metadaten enthalten Spaltennamen (&quot;column_names&quot;) und Einheiten (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Download als Parkettdatei mit detaillierten Metadaten.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Zeigen Sie ein HTML-Formular an, das die Facettensuche verwendet, um die Auswahl von Teilmengen der Daten zu vereinfachen.</fileHelp_subset>
 <fileHelp_timeGaps>Zeigen Sie eine UTF-8-Liste mit Lücken in den Zeitwerten an, die größer als die Medianlücke sind.</fileHelp_timeGaps>
 <fileHelp_tsv>Laden Sie eine durch Tabulatoren getrennte Texttabelle nach ISO-8859-1 herunter (Zeile 1: Namen; Zeile 2: Einheiten; ISO 8601-Zeiten).</fileHelp_tsv>

@@ -3063,7 +3063,8 @@ Por ejemplo:
 <fileHelp_ncml>Vea la estructura y los metadatos del conjunto de datos como un archivo UTF-8 NCML .xml.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Descargue tiempo, latitud, longitud y otras variables como un archivo de hoja de cálculo genérico ODV (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Descargue longitud, latitud, hora y otras columnas como un archivo de hoja de cálculo genérico ODV ISO-8859-1 (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Descarga como archivo de parquet.</fileHelp_parquet>
+<fileHelp_parquet>Descarga como archivo de parquet. Los metadatos contienen nombres de columna (&quot;column_names&quot;) y unidades (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Descarga como archivo de parquet con metadatos detallados.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Vea un formulario HTML que utiliza búsqueda por facetas para simplificar la selección de subconjuntos de datos.</fileHelp_subset>
 <fileHelp_timeGaps>Vea una lista UTF-8 de espacios en los valores de tiempo que son mayores que el espacio medio.</fileHelp_timeGaps>
 <fileHelp_tsv>Descargue una tabla de texto separado por tabulaciones ISO-8859-1 (línea 1: nombres; línea 2: unidades; tiempos ISO 8601).</fileHelp_tsv>

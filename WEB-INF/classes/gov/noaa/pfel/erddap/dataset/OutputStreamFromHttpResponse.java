@@ -404,7 +404,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
     } else if (extension.equals(".ots")) {
       contentType = "application/vnd.oasis.opendocument.spreadsheet-template";
-
+    } else if (extension.equals(".parquet") || extension.equals(".parquetWMeta")) {
+      contentType = "application/parquet";
     } else if (extension.equals(".pbm")) {
       contentType = "image/x-portable-bitmap";
 
@@ -763,7 +764,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         || extension.equals(".nc")
         || fileType.equals(".odvTxt")
         || // don't force Save As for other .txt, but do for .odvTxt
-        extension.equals(".pdf")
+        extension.equals(".parquet")
+        || extension.equals(".pdf")
         || extension.equals(".tif")
         || extension.equals(".tsv")
         || extension.equals(".xml");
@@ -828,8 +830,11 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
       response.setCharacterEncoding(characterEncoding);
 
     // specify the file's name  (this encourages showing File Save As dialog box in user's browser)
-    if (showFileSaveAs(genericCompressed, fileType, extension))
+    // More importantly this is what actually sets the downloaded filename (even if the browser
+    // doesn't show the save as dialog).
+    if (showFileSaveAs(genericCompressed, fileType, extension)) {
       response.setHeader("Content-Disposition", "attachment;filename=" + fileName + extension);
+    }
 
     // Compress the output stream if user request says it is allowed.
     // See http://www.websiteoptimization.com/speed/tweak/compress/  (gone?!)

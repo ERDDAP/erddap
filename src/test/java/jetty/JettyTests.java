@@ -12074,6 +12074,7 @@ class JettyTests {
   /** This tests saveAsKml. */
   @org.junit.jupiter.api.Test
   @TagJetty
+  @TagThredds // external server is failing to respond, so disable the test for now
   void testKml() throws Throwable {
     // testVerboseOn();
     int language = 0;

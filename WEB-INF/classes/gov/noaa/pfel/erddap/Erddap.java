@@ -159,7 +159,8 @@ public class Erddap extends HttpServlet implements AutoCloseable {
       ImmutableList.of(".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata");
   public static final ImmutableList<String> FILE_TYPES_184 =
       ImmutableList.of(".dataTable", ".jsonlCSV1");
-  public static final ImmutableList<String> FILE_TYPES_225 = ImmutableList.of(".parquet");
+  public static final ImmutableList<String> FILE_TYPES_225 =
+      ImmutableList.of(".parquet", ".parquetWMeta");
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -4751,7 +4752,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.youAreHere(language, loggedInAs, EDStatic.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, this);
+      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage, this);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);

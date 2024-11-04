@@ -2468,7 +2468,8 @@ ERDDAP是一个数据服务器，它为您提供一种简单、一致的方式�
 <fileHelp_ncml>以 UTF-8 NCML .xml 文件的形式查看数据集的结构和元数据。</fileHelp_ncml>
 <fileHelpGrid_odvTxt>将时间、纬度、经度、其他变量下载为 ODV 通用电子表格文件 (.txt)。</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>将经度、纬度、时间、其他列下载为 ISO-8859-1 ODV 通用电子表格文件 (.txt)。</fileHelpTable_odvTxt>
-<fileHelp_parquet>下载为 parquet 文件 。</fileHelp_parquet>
+<fileHelp_parquet>下载为 parquet 文件 。 元数据包含列名(&quot;列_名称&quot;)和单位(&quot;列_单位&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>下载为带有详细元数据的 parquet 文件 。</fileHelp_parquet_with_meta>
 <fileHelp_subset>查看使用分面搜索来简化选择数据子集的 HTML 表单。</fileHelp_subset>
 <fileHelp_timeGaps>查看时间值中大于中位差距的差距的 UTF-8 列表。</fileHelp_timeGaps>
 <fileHelp_tsv>下载 ISO-8859-1 制表符分隔的文本表（第 1 行：名称；第 2 行：单位；ISO 8601 时间）。</fileHelp_tsv>

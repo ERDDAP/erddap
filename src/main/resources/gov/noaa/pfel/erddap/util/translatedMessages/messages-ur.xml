@@ -2475,7 +2475,8 @@ ERDDAP ایک ڈیٹا سرور ہے جو آپ کو عام فائل فارمیٹ
 <fileHelp_ncml>ڈیٹاسیٹ کی ساخت اور میٹا ڈیٹا کو UTF-8 NCML .xml فائل کے طور پر دیکھیں۔</fileHelp_ncml>
 <fileHelpGrid_odvTxt>وقت، عرض البلد، طول البلد، دیگر متغیرات کو ODV جنرک اسپریڈشیٹ فائل (.txt) کے بطور ڈاؤن لوڈ کریں۔</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>طول البلد، عرض البلد، وقت، دیگر کالموں کو ISO-8859-1 ODV جنرک اسپریڈشیٹ فائل (.txt) کے بطور ڈاؤن لوڈ کریں۔</fileHelpTable_odvTxt>
-<fileHelp_parquet>ایک پیراکی فائل کے طور پر نیچے گر.</fileHelp_parquet>
+<fileHelp_parquet>ایک پیراکی فائل کے طور پر نیچے گر. Metadata میں ستونوں کے نام (&quot;East_ames&quot;) اور یونٹس (انگریزی:</fileHelp_parquet>
+<fileHelp_parquet_with_meta>ایک پیراکی فائل کے طور پر اتاری گئی جس میں تفصیلی metata ہے۔</fileHelp_parquet_with_meta>
 <fileHelp_subset>ایک HTML فارم دیکھیں جو ڈیٹا کے سب سیٹوں کو چننے کو آسان بنانے کے لیے جہتی تلاش کا استعمال کرتا ہے۔</fileHelp_subset>
 <fileHelp_timeGaps>وقت کی قدروں میں فرقوں کی UTF-8 فہرست دیکھیں جو درمیانی فرق سے زیادہ ہیں۔</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 ٹیب سے الگ کردہ ٹیکسٹ ٹیبل ڈاؤن لوڈ کریں (لائن 1: نام؛ لائن 2: یونٹس؛ ISO 8601 بار)۔</fileHelp_tsv>

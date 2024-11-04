@@ -3026,7 +3026,8 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelp_ncml>Veri kümesinin yapısını ve meta verilerini UTF-8 NCML .xml dosyası olarak görüntüleyin.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>time,latitude,longitude,otherVariables&#39;ı ODV Genel Elektronik Tablo Dosyası (.txt) olarak indirin.</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Longitude,latitude,time,otherColumns&#39;u ISO-8859-1 ODV Genel Elektronik Tablo Dosyası (.txt) olarak indirin.</fileHelpTable_odvTxt>
-<fileHelp_parquet>Bir parke dosyası olarak indirin.</fileHelp_parquet>
+<fileHelp_parquet>Bir parke dosyası olarak indirin. Metadata sütun isimleri (&quot;column_names&quot;) ve birimler (&quot;column_units&quot;) içerir.</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Detaylı metadata ile bir parke dosyası olarak indirin.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Verilerin alt kümelerini seçmeyi kolaylaştırmak için yönlü aramayı kullanan bir HTML formunu görüntüleyin.</fileHelp_subset>
 <fileHelp_timeGaps>Zaman değerlerinde medyan boşluktan daha büyük olan boşlukların UTF-8 listesini görüntüleyin.</fileHelp_timeGaps>
 <fileHelp_tsv>ISO-8859-1 sekmeyle ayrılmış bir metin tablosu indirin (1. satır: adlar; 2. satır: birimler; ISO 8601 kez).</fileHelp_tsv>

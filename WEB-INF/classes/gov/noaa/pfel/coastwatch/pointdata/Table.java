@@ -79,9 +79,12 @@ import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.io.LocalOutputFile;
 import org.apache.parquet.io.MessageColumnIO;
 import org.apache.parquet.io.RecordReader;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import ucar.ma2.*;
@@ -591,7 +594,7 @@ public class Table {
   public static BitSet ncCFcc = null; // null=inactive, new BitSet() = active
 
   /** An arrayList to hold 0 or more PrimitiveArray's with data. */
-  protected ArrayList<PrimitiveArray> columns = new ArrayList();
+  protected ArrayList<PrimitiveArray> columns = new ArrayList<>();
 
   /** An arrayList to hold the column names. */
   protected StringArray columnNames = new StringArray();
@@ -608,7 +611,7 @@ public class Table {
    * Although a HashTable is more appropriate for name=value pairs, this uses ArrayList to preserve
    * the order of the attributes. This may be null if not in use.
    */
-  protected ArrayList<Attributes> columnAttributes = new ArrayList();
+  protected ArrayList<Attributes> columnAttributes = new ArrayList<>();
 
   /** The one known valid url for readIobis. */
   public static final String IOBIS_URL = "http://www.iobis.org/OBISWEB/ObisControllerServlet";
@@ -16094,55 +16097,94 @@ public class Table {
     }
   }
 
-  private MessageType getParquetSchemaForTable(String name) {
-    String schemaProto = "message m {";
+  private boolean isTimeColumn(int col) {
+    return "time".equalsIgnoreCase(getColumnName(col))
+        && Calendar2.SECONDS_SINCE_1970.equals(columnAttributes.get(col).getString("units"));
+  }
+
+  private MessageType getParquetSchemaForTable() {
+    MessageTypeBuilder schemaBuilder = org.apache.parquet.schema.Types.buildMessage();
     for (int j = 0; j < nColumns(); j++) {
-      String schemaType = "String";
+      String columnName = getColumnName(j);
+      if (isTimeColumn(j)) {
+        schemaBuilder
+            .optional(PrimitiveTypeName.INT64)
+            .as(LogicalTypeAnnotation.timestampType(true, TimeUnit.MILLIS))
+            .named(columnName);
+        continue;
+      }
       switch (getColumn(j).elementType()) {
         case BYTE:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case SHORT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case CHAR:
-          schemaType = "BINARY";
+          schemaBuilder
+              .optional(PrimitiveTypeName.BINARY)
+              .as(LogicalTypeAnnotation.stringType())
+              .named(columnName);
           break;
         case INT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case LONG:
-          schemaType = "INT64";
+          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
           break;
         case FLOAT:
-          schemaType = "FLOAT";
+          schemaBuilder.optional(PrimitiveTypeName.FLOAT).named(columnName);
           break;
         case DOUBLE:
-          schemaType = "DOUBLE";
+          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
           break;
         case STRING:
-          schemaType = "BINARY";
+          schemaBuilder
+              .optional(PrimitiveTypeName.BINARY)
+              .as(LogicalTypeAnnotation.stringType())
+              .named(columnName);
           break;
         case UBYTE:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case USHORT:
-          schemaType = "INT32";
+          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
         case UINT:
-          schemaType = "INT64";
+          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
           break;
         case ULONG:
-          schemaType = "DOUBLE";
+          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
+          break;
+        case BOOLEAN:
+          schemaBuilder.optional(PrimitiveTypeName.BOOLEAN).named(columnName);
           break;
         case BOOLEAN:
           schemaType = "BOOLEAN";
           break;
       }
-      schemaProto += "    optional " + schemaType + " " + getColumnName(j) + ";\n";
     }
-    schemaProto += "}";
-    return MessageTypeParser.parseMessageType(schemaProto);
+    return schemaBuilder.named("m");
+  }
+
+  private void addMetadata(Map<String, String> metadata, Attributes attributes, String prefix) {
+    String names[] = attributes.getNames();
+    for (int ni = 0; ni < names.length; ni++) {
+      String tName = names[ni];
+      if (!String2.isSomething(tName)) {
+        continue;
+      }
+      PrimitiveArray tValue = attributes.get(tName);
+      if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
+        continue; // do nothing
+      }
+      if ("time_".equalsIgnoreCase(prefix)
+          && Calendar2.SECONDS_SINCE_1970.equals(attributes.getString(tName))) {
+        metadata.put(prefix + tName, Calendar2.MILLISECONDS_SINCE_1970);
+      } else {
+        metadata.put(prefix + tName, tValue.toCSVString());
+      }
+    }
   }
 
   /**
@@ -16151,23 +16193,49 @@ public class Table {
    * @param fullFileName This is just used for error messages.
    * @throws Exception if trouble, including observed nItems != expected nItems.
    */
-  public void writeParquet(String fullFileName) throws Exception {
+  public void writeParquet(String fullFileName, boolean fullMetadata) throws Exception {
     String msg = "  Table.writeParquet " + fullFileName;
     long time = System.currentTimeMillis();
 
     int randomInt = Math2.random(Integer.MAX_VALUE);
+    MessageType schema = getParquetSchemaForTable();
 
-    int nameStart = fullFileName.lastIndexOf('/');
-    if (nameStart == -1) {
-      nameStart = fullFileName.lastIndexOf('\\');
+    Map<String, String> metadata = new HashMap<>();
+    if (fullMetadata) {
+      addMetadata(metadata, globalAttributes, "");
+      for (int col = 0; col < nColumns(); col++) {
+        Attributes colAttributes = columnAttributes.get(col);
+        if (colAttributes == null) {
+          continue;
+        }
+        addMetadata(metadata, colAttributes, getColumnName(col) + "_");
+      }
     }
-    int nameEnd = fullFileName.lastIndexOf('.');
-    String name = fullFileName.substring(nameStart + 1, nameEnd);
-    MessageType schema = getParquetSchemaForTable(name);
-
+    String columnNames = "";
+    String columnUnits = "";
+    for (int col = 0; col < nColumns(); col++) {
+      Attributes colAttributes = columnAttributes.get(col);
+      if (colAttributes == null) {
+        continue;
+      }
+      if (columnNames.length() > 0) {
+        columnNames += ",";
+        columnUnits += ",";
+      }
+      columnNames += getColumnName(col);
+      if (isTimeColumn(col)) {
+        columnUnits += Calendar2.MILLISECONDS_SINCE_1970;
+      } else {
+        columnUnits += colAttributes.getString("units");
+      }
+    }
+    metadata.put("column_names", columnNames);
+    metadata.put("column_units", columnUnits);
     try (ParquetWriter<List<PAOne>> writer =
         new ParquetWriterBuilder(
-                schema, new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)))
+                schema,
+                new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)),
+                metadata)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withRowGroupSize(ParquetWriter.DEFAULT_BLOCK_SIZE)
             .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)
@@ -16179,7 +16247,12 @@ public class Table {
       for (int row = 0; row < nRows(); row++) {
         ArrayList<PAOne> record = new ArrayList<>();
         for (int j = 0; j < nColumns(); j++) {
-          record.add(getPAOneData(j, row));
+          if (isTimeColumn(j)) {
+            // Convert from seconds since epoch to millis since epoch.
+            record.add(getPAOneData(j, row).multiply(PAOne.fromInt(1000)));
+          } else {
+            record.add(getPAOneData(j, row));
+          }
         }
         writer.write(record);
       }

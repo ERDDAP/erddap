@@ -2953,7 +2953,8 @@ Halimbawa:
 <fileHelp_ncml>Tingnan ang istraktura at metadata ng dataset bilang isang UTF-8 NCML .xml file.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Oras ng pag-download, latitude, longitude, iba pang mga Variable bilang isang ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>I-download ang longitude,latitude,time,otherColumn bilang ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
-<fileHelp_parquet>Ihulog bilang parquet file.</fileHelp_parquet>
+<fileHelp_parquet>Ihulog bilang parquet file. Ang Metadata ay naglalaman ng mga pangalan ng tudling (&quot;column_names&quot;) at mga yunit (&quot;column_units&quot;).</fileHelp_parquet>
+<fileHelp_parquet_with_meta>Download bilang isang parquet file na may detalyadong metadata.</fileHelp_parquet_with_meta>
 <fileHelp_subset>Tingnan ang isang HTML form na gumagamit ng faceted na paghahanap upang pasimplehin ang pagpili ng mga subset ng data.</fileHelp_subset>
 <fileHelp_timeGaps>Tingnan ang isang UTF-8 na listahan ng mga gaps sa mga halaga ng oras na mas malaki kaysa sa median gap.</fileHelp_timeGaps>
 <fileHelp_tsv>Mag-download ng ISO-8859-1 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>

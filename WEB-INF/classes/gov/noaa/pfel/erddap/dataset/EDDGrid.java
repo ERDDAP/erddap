@@ -136,6 +136,7 @@ public abstract class EDDGrid extends EDD {
           ".ncoJson",
           ".odvTxt",
           ".parquet",
+          ".parquetWMeta",
           ".timeGaps",
           ".tsv",
           ".tsvp",
@@ -174,6 +175,7 @@ public abstract class EDDGrid extends EDD {
           ".json",
           // .subset currently isn't included
           ".txt",
+          ".parquet",
           ".parquet",
           ".asc",
           ".tsv",
@@ -221,6 +223,7 @@ public abstract class EDDGrid extends EDD {
           "https://erddap.github.io/NCCSV.html",
           "https://nco.sourceforge.net/nco.html#json",
           "https://odv.awi.de/en/documentation/", // odv
+          "https://parquet.apache.org/",
           "https://parquet.apache.org/",
           "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps", // .timeGaps
           "https://jkorpela.fi/TSV.html", // tsv
@@ -319,6 +322,7 @@ public abstract class EDDGrid extends EDD {
             EDStatic.fileHelp_ncoJsonAr[tl],
             EDStatic.fileHelpGrid_odvTxtAr[tl],
             EDStatic.fileHelp_parquetAr[tl],
+            EDStatic.fileHelp_parquet_with_metaAr[tl],
             EDStatic.fileHelp_timeGapsAr[tl],
             EDStatic.fileHelp_tsvAr[tl],
             EDStatic.fileHelp_tsvpAr[tl],
@@ -3131,7 +3135,12 @@ public abstract class EDDGrid extends EDD {
       }
 
       if (fileTypeName.equals(".parquet")) {
-        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource);
+        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, false);
+        return;
+      }
+
+      if (fileTypeName.equals(".parquetWMeta")) {
+        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, true);
         return;
       }
 
@@ -11331,7 +11340,11 @@ public abstract class EDDGrid extends EDD {
    * @throws Throwable if trouble.
    */
   public void saveAsParquet(
-      int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
+      int language,
+      String requestUrl,
+      String userDapQuery,
+      OutputStreamSource outputStreamSource,
+      boolean fullMetadata)
       throws Throwable {
 
     if (reallyVerbose) String2.log("  EDDGrid.saveAsParquet");
@@ -11358,7 +11371,7 @@ public abstract class EDDGrid extends EDD {
     }
 
     // write the .parquet file
-    EDDTable.saveAsParquet(language, outputStreamSource, twawm, datasetID);
+    EDDTable.saveAsParquet(language, outputStreamSource, twawm, datasetID, fullMetadata);
 
     // diagnostic
     if (reallyVerbose)
