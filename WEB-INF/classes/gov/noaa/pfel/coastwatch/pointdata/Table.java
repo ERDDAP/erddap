@@ -16159,9 +16159,6 @@ public class Table {
         case BOOLEAN:
           schemaBuilder.optional(PrimitiveTypeName.BOOLEAN).named(columnName);
           break;
-        case BOOLEAN:
-          schemaType = "BOOLEAN";
-          break;
       }
     }
     return schemaBuilder.named("m");

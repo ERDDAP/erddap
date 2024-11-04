@@ -12693,7 +12693,11 @@ class JettyTests {
               + //
               "  :geospatial_lon_units = \"degrees_east\";\n"
               + //
-              "  :history = \"Tue Apr 30 05:42:52 HST 2024 : imported by GrADS Data Server 2.0\n";
+              "  :history = \"DDD MMM dd hh:mm:ss ZZZ YYYY : imported by GrADS Data Server 2.0\n";
+      results =
+          results.replaceAll(
+              "\\w{3} \\w{3} \\d{2} \\d{2}:\\d{2}:\\d{2} \\w{3} \\d{4}",
+              "DDD MMM dd hh:mm:ss ZZZ YYYY");
       // int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
       // Test.ensureTrue(po > 0, "RESULTS=\n" + results);
       // Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" +
