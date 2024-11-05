@@ -637,9 +637,9 @@ public class Matlab {
 
     // open the file
     if (verbose) String2.log("readMatlabFile: " + fullFileName);
-    DataInputStream stream =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-    try {
+
+    try (DataInputStream stream =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
       if (verbose) String2.log("bytes available=" + stream.available());
 
       // read the header
@@ -869,8 +869,6 @@ public class Matlab {
 
       if (verbose) String2.log("end of Matlab file\n");
       return vector;
-    } finally {
-      stream.close();
     }
   }
 }

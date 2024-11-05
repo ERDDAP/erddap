@@ -20,7 +20,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
-public abstract class TableWriter {
+public abstract class TableWriter implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if

@@ -28,7 +28,7 @@ import java.io.FileOutputStream;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
-public class TableWriterAll extends TableWriter implements AutoCloseable {
+public class TableWriterAll extends TableWriter {
   public static String attributeTo = "gathering data in TableWriterAll";
 
   protected int randomInt = Math2.random(Integer.MAX_VALUE);
@@ -385,7 +385,6 @@ public class TableWriterAll extends TableWriter implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    System.out.println("Closing Table Writer All");
     releaseResources();
   }
 }

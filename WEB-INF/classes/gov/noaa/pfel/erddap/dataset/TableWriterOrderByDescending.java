@@ -123,4 +123,12 @@ public class TableWriterOrderByDescending extends TableWriterAll {
 
     table.sort(keys, ascending);
   }
+
+  @Override
+  public void close() throws Exception {
+    super.close();
+    if (otherTableWriter != null) {
+      otherTableWriter.close();
+    }
+  }
 }

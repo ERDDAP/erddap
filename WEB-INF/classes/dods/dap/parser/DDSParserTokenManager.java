@@ -807,7 +807,7 @@ public class DDSParserTokenManager implements DDSParserConstants {
     Token t = Token.newToken(jjmatchedKind);
     t.kind = jjmatchedKind;
     String im = jjstrLiteralImages.get(jjmatchedKind);
-    t.image = (jjstrLiteralImagesNull.equals(im)) ? input_stream.GetImage() : im;
+    t.image = jjstrLiteralImagesNull.equals(im) ? input_stream.GetImage() : im;
     t.beginLine = input_stream.getBeginLine();
     t.beginColumn = input_stream.getBeginColumn();
     t.endLine = input_stream.getEndLine();

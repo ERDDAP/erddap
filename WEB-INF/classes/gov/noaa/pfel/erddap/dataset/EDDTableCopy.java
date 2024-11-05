@@ -373,6 +373,7 @@ public class EDDTableCopy extends EDDTable {
               query,
               tw); // "" is requestUrl, not relevant here
           Table table = twa.cumulativeTable(); // has the distinct results
+          tw.close();
           tw = null;
           twa.releaseResources();
           int nRows = table.nRows(); // nRows = 0 will throw an exception above

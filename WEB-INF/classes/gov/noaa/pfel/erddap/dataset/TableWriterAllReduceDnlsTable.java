@@ -21,7 +21,7 @@ import java.util.HashSet;
 public class TableWriterAllReduceDnlsTable extends TableWriterAll {
 
   String oneDir;
-  HashSet<String> subdirHash = new HashSet();
+  HashSet<String> subdirHash = new HashSet<>();
 
   /**
    * The constructor.

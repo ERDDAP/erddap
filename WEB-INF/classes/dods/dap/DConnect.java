@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import dods.dap.parser.ParseException;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.*;
 import java.net.*;
 import java.util.zip.InflaterInputStream;
@@ -116,6 +117,28 @@ public class DConnect {
         throw new FileNotFoundException(urlString);
       }
     }
+
+    EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
+  }
+
+  private static class CleanupConnect implements Runnable {
+
+    private InputStream inputStream;
+
+    private CleanupConnect(InputStream input) {
+      this.inputStream = input;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (inputStream != null) {
+          inputStream.close();
+        }
+      } catch (Throwable t1) {
+        // do nothing, so nothing can go wrong.
+      }
+    }
   }
 
   /**
@@ -147,6 +170,7 @@ public class DConnect {
    */
   public DConnect(InputStream is) {
     this.fileStream = is;
+    EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
   }
 
   /**

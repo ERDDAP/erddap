@@ -105,7 +105,7 @@ import org.json.JSONTokener;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-20
  */
-public class Erddap extends HttpServlet implements AutoCloseable {
+public class Erddap extends HttpServlet {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -23793,10 +23793,5 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDStatic.luceneIndexSearcher();
     }
     datasetIDs.clear();
-  }
-
-  @Override
-  public void close() {
-    EDStatic.destroy();
   }
 }

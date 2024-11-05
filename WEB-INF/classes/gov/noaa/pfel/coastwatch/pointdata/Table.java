@@ -4391,6 +4391,8 @@ public class Table {
               + " TIME="
               + (System.currentTimeMillis() - time)
               + "ms");
+
+    xml.close();
   }
 
   /**
@@ -10062,8 +10064,8 @@ public class Table {
             // littleEndian
             props);
 
-    DataInputStream dis = new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName)); ) {
 
       // create the .wav
       AudioInputStream ais = new AudioInputStream(dis, af, nRow); // nFrames
@@ -10076,7 +10078,6 @@ public class Table {
       }
 
       dis.close();
-      dis = null;
       File2.rename(fullOutName + randomInt, fullOutName); // throws Exception if trouble
 
       if (reallyVerbose)
@@ -10099,12 +10100,6 @@ public class Table {
 
     } catch (Exception e) {
       String2.log(msg);
-      if (dis != null)
-        try {
-          dis.close();
-        } catch (Throwable t) {
-        }
-      ;
       File2.delete(fullOutName + randomInt);
       throw e;
     }
@@ -15689,11 +15684,9 @@ public class Table {
       String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
       throws Exception {
     clear();
-    BufferedReader reader = File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8);
-    try {
+    try (BufferedReader reader =
+        File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8); ) {
       readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
-    } finally {
-      reader.close();
     }
   }
 

@@ -187,5 +187,11 @@ public class TableWriterOrderByCount extends TableWriterAll {
   }
 
   // This uses super.writeAllAndFinish() because writeSome stores processed info
-
+  @Override
+  public void close() throws Exception {
+    super.close();
+    if (otherTableWriter != null) {
+      otherTableWriter.close();
+    }
+  }
 }

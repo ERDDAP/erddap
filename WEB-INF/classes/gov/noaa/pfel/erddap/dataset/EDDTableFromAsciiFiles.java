@@ -1584,6 +1584,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
       }
     }
 
+    if (xmlReader != null) {
+      xmlReader.close();
+    }
+
     // desired whichChild not found?
     if (whichChild > 0 && !whichChildFound)
       throw new RuntimeException(
@@ -2291,6 +2295,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         sourceTable.readASCII(
             tsvName, br, "", "", 0, 1, "\t", null, null, null, null,
             false); // don't simplify until "nd" removed
+        br.close();
+        br = null;
         // custom alternative to sourceTable.convertIsSomething2(); //convert e.g., "nd" to ""
         for (int col = 0; col < sourceTable.nColumns(); col++)
           sourceTable.getColumn(col).switchFromTo("nd", ""); // the universal BCO-DMO missing value?

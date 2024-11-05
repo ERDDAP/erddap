@@ -472,4 +472,12 @@ public class TableWriterOrderByMean extends TableWriterAll {
     if (ignoreFinish) return;
     finish();
   }
+
+  @Override
+  public void close() throws Exception {
+    super.close();
+    if (otherTableWriter != null) {
+      otherTableWriter.close();
+    }
+  }
 }

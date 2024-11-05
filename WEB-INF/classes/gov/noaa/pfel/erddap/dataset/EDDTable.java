@@ -3769,6 +3769,11 @@ public abstract class EDDTable extends EDD {
       } else if (fileTypeName.equals(".parquetWMeta")) {
         saveAsParquet(language, outputStreamSource, twawm, datasetID, true);
       }
+      if (twawm != null) {
+        twawm.close();
+      }
+      tTableWriter.close();
+      tableWriter.close();
       return;
     }
 
@@ -3823,7 +3828,7 @@ public abstract class EDDTable extends EDD {
         File2.isFile(
             cacheFullName,
             5); // for possible waiting thread, wait till file is visible via operating system
-
+        twawm.close();
       } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
 
         if (EDStatic.accessibleViaNC4.length() > 0)
@@ -3844,7 +3849,7 @@ public abstract class EDDTable extends EDD {
         File2.isFile(
             cacheFullName,
             5); // for possible waiting thread, wait till file is visible via operating system
-
+        twawm.close();
       } else if (fileTypeName.equals(".ncCF")
           || fileTypeName.equals(".ncCFHeader")
           || fileTypeName.equals(".ncCFMA")
@@ -3913,7 +3918,7 @@ public abstract class EDDTable extends EDD {
         File2.isFile(
             cacheFullName,
             5); // for possible waiting thread, wait till file is visible via operating system
-
+        twawm.close();
       } else {
         // all other types
         // create random file; and if error, only random file will be created
@@ -4137,14 +4142,15 @@ public abstract class EDDTable extends EDD {
         tableWriter = twob;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twob.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twob.orderBy[ob]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twob.orderBy[ob]) < 0) {
+            twob.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderBy' variable="
                     + twob.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
-
       } else if (p.startsWith("orderByDescending(\"") && p.endsWith("\")")) {
         TableWriterOrderByDescending twobd =
             new TableWriterOrderByDescending(
@@ -4158,14 +4164,15 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobd;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twobd.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobd.orderBy[ob]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobd.orderBy[ob]) < 0) {
+            twobd.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderByDescending' variable="
                     + twobd.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
-
       } else if (p.startsWith("orderByClosest(\"") && p.endsWith("\")")) {
         TableWriterOrderByClosest twobc =
             new TableWriterOrderByClosest(
@@ -4179,13 +4186,16 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobc;
         // minimal test: ensure orderBy columns (except last) are valid column names
         for (int ob = 0; ob < twobc.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0])
+              < 0) {
+            twobc.close();
             throw new SimpleException(
                 EDStatic.bilingual(
                         language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr)
                     + "\nunknown column name="
                     + twobc.orderBy[ob]
                     + ".");
+          }
         }
 
       } else if (p.startsWith("orderByCount(\"") && p.endsWith("\")")) {
@@ -4201,12 +4211,15 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobc;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twobc.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0])
+              < 0) {
+            twobc.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderByCount' variable="
                     + twobc.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
 
       } else if (p.startsWith("orderByLimit(\"") && p.endsWith("\")")) {
@@ -4222,17 +4235,19 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobl;
         // minimal test: ensure orderBy columns (except last) are valid column names
         for (int ob = 0; ob < twobl.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobl.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobl.orderBy[ob].split("/")[0])
+              < 0) {
+            twobl.close();
             throw new SimpleException(
                 EDStatic.bilingual(
                         language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr)
                     + "\nunknown column name="
                     + twobl.orderBy[ob]
                     + ".");
+          }
         }
-
       } else if (p.startsWith("orderByMean(\"") && p.endsWith("\")")) {
-        TableWriterOrderByMean twobm =
+        tableWriter =
             new TableWriterOrderByMean(
                 language,
                 part == firstActiveDistinctOrOrderBy ? this : null,
@@ -4241,10 +4256,8 @@ public abstract class EDDTable extends EDD {
                 fileName,
                 tableWriter,
                 p.substring(13, p.length() - 2));
-        tableWriter = twobm;
-
       } else if (p.startsWith("orderBySum(\"") && p.endsWith("\")")) {
-        TableWriterOrderBySum twobm =
+        tableWriter =
             new TableWriterOrderBySum(
                 language,
                 part == firstActiveDistinctOrOrderBy ? this : null,
@@ -4253,8 +4266,6 @@ public abstract class EDDTable extends EDD {
                 fileName,
                 tableWriter,
                 p.substring(12, p.length() - 2));
-        tableWriter = twobm;
-
       } else if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) {
         TableWriterOrderByMax twobm =
             new TableWriterOrderByMax(
@@ -4268,12 +4279,15 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobm;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0])
+              < 0) {
+            twobm.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderByMax' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
 
       } else if (p.startsWith("orderByMin(\"") && p.endsWith("\")")) {
@@ -4289,14 +4303,16 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobm;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0])
+              < 0) {
+            twobm.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderByMin' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
-
       } else if (p.startsWith("orderByMinMax(\"") && p.endsWith("\")")) {
         TableWriterOrderByMinMax twobm =
             new TableWriterOrderByMinMax(
@@ -4310,20 +4326,22 @@ public abstract class EDDTable extends EDD {
         tableWriter = twobm;
         // minimal test: ensure orderBy columns are valid column names
         for (int ob = 0; ob < twobm.orderBy.length; ob++) {
-          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0]) < 0)
+          if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob].split("/")[0])
+              < 0) {
+            twobm.close();
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "'orderByMinMax' variable="
                     + twobm.orderBy[ob]
                     + " isn't in the dataset.");
+          }
         }
-
       } else if (p.startsWith("units(\"") && p.endsWith("\")")) {
         String fromUnits = EDStatic.units_standard;
         String toUnits = p.substring(7, p.length() - 2);
         TableWriterUnits.checkFromToUnits(language, fromUnits, toUnits);
         if (!fromUnits.equals(toUnits)) {
-          TableWriterUnits twu =
+          tableWriter =
               new TableWriterUnits(
                   language,
                   part == firstActiveDistinctOrOrderBy ? this : null,
@@ -4331,7 +4349,6 @@ public abstract class EDDTable extends EDD {
                   tableWriter,
                   fromUnits,
                   toUnits);
-          tableWriter = twu;
         }
       }
     }
@@ -4544,6 +4561,7 @@ public abstract class EDDTable extends EDD {
         getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
     Table table = twawm.cumulativeTable();
     twawm.releaseResources();
+    twawm.close();
     table.convertToStandardMissingValues(); // so stored as NaNs
 
     // double check that lon and lat were found
@@ -5054,6 +5072,7 @@ public abstract class EDDTable extends EDD {
           getTwawmForDapQuery(language, loggedInAs, requestUrl, userDapQuery);
       Table table = twawm.cumulativeTable();
       twawm.releaseResources();
+      twawm.close();
       table.convertToStandardMissingValues();
       if (debugMode) String2.log("saveAsImage 3");
 
@@ -6207,8 +6226,7 @@ public abstract class EDDTable extends EDD {
                 + "\",\n");
         writer.write(atts.toNcoJsonString("      "));
         writer.write("      \"data\": [");
-        DataInputStream dis = twawm.dataInputStream(col);
-        try {
+        try (DataInputStream dis = twawm.dataInputStream(col); ) {
           // create the bufferPA
           PrimitiveArray pa = null;
           long nRowsRead = 0;
@@ -6259,8 +6277,6 @@ public abstract class EDDTable extends EDD {
             }
             nRowsRead += nToRead;
           }
-        } finally {
-          dis.close();
         }
         if (isChar) writer.write('\"'); // terminate the string
         writer.write(
@@ -6405,8 +6421,7 @@ public abstract class EDDTable extends EDD {
         int ncOffset = 0;
         int bufferSize = EDStatic.partialRequestMaxCells;
         PrimitiveArray pa = null;
-        DataInputStream dis = twawm.dataInputStream(col);
-        try {
+        try (DataInputStream dis = twawm.dataInputStream(col); ) {
           PAType colType = twawm.columnType(col);
           Array array;
 
@@ -6477,8 +6492,6 @@ public abstract class EDDTable extends EDD {
             // String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType ==
             // PAType.STRING));
           }
-        } finally {
-          dis.close();
         }
       }
 
@@ -7991,6 +8004,7 @@ public abstract class EDDTable extends EDD {
         getTwawmForDapQuery(language, loggedInAs, "", query.toString());
     Table table = twawm.cumulativeTable();
     twawm.releaseResources();
+    twawm.close();
     String2.log("  downloadTime=" + (System.currentTimeMillis() - downloadTime) + "ms");
     String2.log("  found nRows=" + table.nRows());
     for (int col = 0; col < table.nColumns(); col++) {
@@ -8074,6 +8088,7 @@ public abstract class EDDTable extends EDD {
         getTwawmForDapQuery(language, loggedInAs, "", query.toString());
     Table table = twawm.makeEmptyTable(); // no need for twawm.cumulativeTable();
     twawm.releaseResources();
+    twawm.close();
     int timeCol = table.findColumnNumber(EDV.TIME_NAME);
     PAOne tMin = twawm.columnMinValue(timeCol);
     PAOne tMax = twawm.columnMaxValue(timeCol);
@@ -17789,6 +17804,7 @@ public abstract class EDDTable extends EDD {
         } finally {
           try {
             twawm.releaseResources();
+            twawm.close();
           } catch (Exception e) {
           }
         }

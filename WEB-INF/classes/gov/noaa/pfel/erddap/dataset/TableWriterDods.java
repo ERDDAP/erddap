@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -126,5 +127,12 @@ public class TableWriterDods extends TableWriter {
     // diagnostic
     if (verbose)
       String2.log("TableWriterDods done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (dos != null) {
+      dos.close();
+    }
   }
 }

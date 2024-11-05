@@ -1754,7 +1754,6 @@ public class File2 {
   public static ArrayList<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
       throws Exception {
 
-    long time = System.currentTimeMillis();
     BufferedReader bufferedReader = null;
     try {
       for (int i = 0; i < maxAttempt; i++) {
@@ -1766,7 +1765,7 @@ public class File2 {
           Math2.sleep(100);
         }
       }
-      ArrayList<String> al = new ArrayList();
+      ArrayList<String> al = new ArrayList<>();
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         al.add(s);
@@ -1796,29 +1795,24 @@ public class File2 {
   public static ArrayList<String> readLinesFromFile(
       URL resourceFile, String charset, int maxAttempt) throws Exception {
 
-    long time = System.currentTimeMillis();
-    BufferedReader bufferedReader = null;
-    try {
-      for (int i = 0; i < maxAttempt; i++) {
-        try {
-          InputStream is = getDecompressedBufferedInputStream(resourceFile);
-          bufferedReader = new BufferedReader(new InputStreamReader(is, charset));
-          break; // success
-        } catch (RuntimeException e) {
-          if (i == maxAttempt - 1) throw e;
-          Math2.sleep(100);
+    for (int i = 0; i < maxAttempt; i++) {
+      try (InputStream is = getDecompressedBufferedInputStream(resourceFile);
+          BufferedReader bufferedReader =
+              new BufferedReader(new InputStreamReader(is, charset)); ) {
+        ArrayList<String> al = new ArrayList<>();
+        String s = bufferedReader.readLine();
+        while (s != null) { // null = end-of-file
+          al.add(s);
+          s = bufferedReader.readLine();
         }
+        return al;
+      } catch (RuntimeException e) {
+        if (i == maxAttempt - 1) throw e;
+        Math2.sleep(100);
       }
-      ArrayList<String> al = new ArrayList();
-      String s = bufferedReader.readLine();
-      while (s != null) { // null = end-of-file
-        al.add(s);
-        s = bufferedReader.readLine();
-      }
-      return al;
-    } finally {
-      if (bufferedReader != null) bufferedReader.close();
     }
+
+    return null;
   }
 
   /*
@@ -2043,15 +2037,12 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String hexDump(String fullFileName, int nBytes) throws Exception {
-    InputStream fis = getDecompressedBufferedInputStream(fullFileName);
-    try {
+    try (InputStream fis = getDecompressedBufferedInputStream(fullFileName); ) {
       nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); // max 2GB
       byte ba[] = new byte[nBytes];
       int bytesRead = 0;
       while (bytesRead < nBytes) bytesRead += fis.read(ba, bytesRead, nBytes - bytesRead);
       return String2.hexDump(ba);
-    } finally {
-      fis.close();
     }
   }
 

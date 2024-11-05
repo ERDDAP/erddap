@@ -435,10 +435,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
               + total);
     int indexOut = 0; // index in data array
 
-    InputStream inStream =
-        File2.getDecompressedBufferedInputStream(tFullName); // may throw exception
-
-    try {
+    try (InputStream inStream = File2.getDecompressedBufferedInputStream(tFullName); ) {
 
       byte[] in = new byte[NLON * NLAT * 2];
       short[] out1 = new short[total];
@@ -463,7 +460,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
       if (verbose) String2.log("read file in " + (System.currentTimeMillis() - t0) + "ms");
       if (reallyVerbose) String2.logNoNewline("Closing file...");
       inStream.close(); // I care about this exception
-      inStream = null; // indicate it closed successfully
       if (reallyVerbose) String2.log("Done");
 
       if (reallyVerbose) String2.logNoNewline("Copy filtered data...");
@@ -507,15 +503,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
       } // else 0
 
     } catch (Throwable t) {
-      // make sure it is explicitly closed
-      if (inStream != null) {
-        try {
-          inStream.close();
-        } catch (Throwable t2) {
-          if (verbose)
-            String2.log("2nd attempt to close also failed:\n" + MustBe.throwableToShortString(t2));
-        }
-      }
       if (verbose) String2.log("Error while reading " + tFullName);
       throw t;
     }

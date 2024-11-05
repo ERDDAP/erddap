@@ -17,6 +17,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -186,5 +187,13 @@ public class TableWriterWav extends TableWriter {
 
     TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, tNewHistory, tOutputStreamSource);
     twn.writeAllAndFinish(table);
+    twn.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (dos != null) {
+      dos.close();
+    }
   }
 }

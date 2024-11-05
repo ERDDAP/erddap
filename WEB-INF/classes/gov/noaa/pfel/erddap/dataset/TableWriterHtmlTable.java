@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 
 /**
  * TableWriterHtmlTable provides a way to write a table to an HTML or XHTML Table outputStream in
@@ -560,5 +561,13 @@ public class TableWriterHtmlTable extends TableWriter {
             tShowFirstNRows,
             EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
     tw.writeAllAndFinish(table);
+    tw.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

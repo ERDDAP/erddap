@@ -43,9 +43,8 @@ public class SdsReader {
     String errorIn = String2.ERROR + " in SdsReader.read(" + hdfFileName + "): ";
 
     // first thing in file is magic number
-    DataInputStream stream =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(hdfFileName));
-    try {
+    try (DataInputStream stream =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(hdfFileName)); ) {
       int offset = 0;
       int magicNumber = stream.readInt();
       if (magicNumber != 0x0e031301)
@@ -135,8 +134,6 @@ public class SdsReader {
         }
 
       } while (offsetOfNextDB != 0);
-    } finally {
-      stream.close();
     }
   }
 

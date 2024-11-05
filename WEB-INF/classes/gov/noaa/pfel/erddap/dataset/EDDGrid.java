@@ -10937,11 +10937,8 @@ public abstract class EDDGrid extends EDD {
           if (dv.destinationDataPAType() == PAType.STRING) {
             int max = 1;
             long n = gda.totalIndex().size();
-            DataInputStream dis = gdaa.getDataInputStream(dvi);
-            try {
+            try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
               for (int i = 0; i < n; i++) max = Math.max(max, dis.readUTF().length());
-            } finally {
-              dis.close();
             }
             writer.write(
                 ",\n"
@@ -11043,8 +11040,7 @@ public abstract class EDDGrid extends EDD {
 
         writer.write("      \"data\":\n");
         for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
-        DataInputStream dis = gdaa.getDataInputStream(dvi);
-        try {
+        try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
 
           // create the bufferPA
           PrimitiveArray pa =
@@ -11106,8 +11102,6 @@ public abstract class EDDGrid extends EDD {
               }
             } // else it is the end of the data. Handle brackets specially below...
           } // end of data
-        } finally {
-          dis.close();
         }
         if (isChar) writer.write("\""); // start the string
         for (int avi = 0; avi < nAV; avi++) writer.write(" ]");

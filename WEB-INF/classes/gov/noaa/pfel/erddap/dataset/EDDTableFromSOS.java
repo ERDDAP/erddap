@@ -3827,39 +3827,40 @@ public class EDDTableFromSOS extends EDDTable {
     } else {
 
       // read the file
-      BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null);
-      /* needs fix to work with BufferedReader
-      if (reallyVerbose) {
-          String2.log("ASCII response=");
-          int stop = Math.min(100, sa.size());
-          for (int i = 0; i < stop; i++)
-              String2.log(sa.get(i));
-          String2.log("...\n");
-      }*/
+      try (BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null); ) {
+        /* needs fix to work with BufferedReader
+        if (reallyVerbose) {
+            String2.log("ASCII response=");
+            int stop = Math.min(100, sa.size());
+            for (int i = 0; i < stop; i++)
+                String2.log(sa.get(i));
+            String2.log("...\n");
+        }*/
 
-      // is it an xml file (presumably an error report)?
-      br.mark(10000); // max read-ahead bytes
-      String s = br.readLine();
-      if (s.startsWith("<?xml")) {
-        StringBuilder sb = new StringBuilder();
-        while (s != null) { // initially, s has first line
-          sb.append(s);
-          sb.append('\n');
-          s = br.readLine();
+        // is it an xml file (presumably an error report)?
+        br.mark(10000); // max read-ahead bytes
+        String s = br.readLine();
+        if (s.startsWith("<?xml")) {
+          StringBuilder sb = new StringBuilder();
+          while (s != null) { // initially, s has first line
+            sb.append(s);
+            sb.append('\n');
+            s = br.readLine();
+          }
+          throw new SimpleException(sb.toString());
         }
-        throw new SimpleException(sb.toString());
-      }
-      br.reset();
+        br.reset();
 
-      // read into sosTable
-      boolean simplify = true;
-      sosTable = new Table();
-      sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
-      timeSourceName = "date_time";
-      longitudeSourceName = "longitude (degree)";
-      latitudeSourceName = "latitude (degree)";
-      altitudeSourceName = "depth (m)";
-      altitudeMPSU = -1;
+        // read into sosTable
+        boolean simplify = true;
+        sosTable = new Table();
+        sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
+        timeSourceName = "date_time";
+        longitudeSourceName = "longitude (degree)";
+        latitudeSourceName = "latitude (degree)";
+        altitudeSourceName = "depth (m)";
+        altitudeMPSU = -1;
+      }
     }
     if (reallyVerbose) String2.log("response table=\n" + sosTable.toString(4));
 

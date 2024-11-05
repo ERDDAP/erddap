@@ -134,4 +134,12 @@ public class TableWriterDistinct extends TableWriterAll {
     // removeDuplicates
     table.removeDuplicates();
   }
+
+  @Override
+  public void close() throws Exception {
+    super.close();
+    if (otherTableWriter != null) {
+      otherTableWriter.close();
+    }
+  }
 }

@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 
 /**
  * TableWriterGeoJson provides a way to write a longitude,latitude,otherColumns table to a GeoJSON
@@ -352,5 +353,13 @@ public class TableWriterGeoJson extends TableWriter {
     TableWriterGeoJson twgj =
         new TableWriterGeoJson(language, tEdd, tNewHistory, outputStreamSource, tJsonp);
     twgj.writeAllAndFinish(table);
+    twgj.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

@@ -13,6 +13,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
@@ -155,5 +156,12 @@ public class TableWriterDodsAscii extends TableWriter {
     if (verbose)
       String2.log(
           "TableWriterDodsAscii done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

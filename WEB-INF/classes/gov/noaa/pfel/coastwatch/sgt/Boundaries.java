@@ -283,9 +283,8 @@ public class Boundaries {
     }
     int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
 
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
       // double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4
       // maxMaxLon=359.99969482
       while (true) {
@@ -453,8 +452,6 @@ public class Boundaries {
           }
         }
       }
-    } finally {
-      dis.close();
     }
     if (reallyVerbose)
       String2.log(

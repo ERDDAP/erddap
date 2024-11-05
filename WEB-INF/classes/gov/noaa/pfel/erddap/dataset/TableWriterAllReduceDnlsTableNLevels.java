@@ -24,7 +24,7 @@ public class TableWriterAllReduceDnlsTableNLevels extends TableWriterAll {
 
   String baseDir;
   int nLevels;
-  HashSet<String> subdirHash = new HashSet();
+  HashSet<String> subdirHash = new HashSet<>();
 
   /**
    * The constructor.

@@ -344,15 +344,13 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (File2.isFile(cacheName)) {
           // this dataset doesn't change, so keep files that are recently used
           File2.touch(cacheName);
-          DataInputStream dis = null;
-          try {
-            dis = new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName));
+          try (DataInputStream dis =
+              new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName)); ) {
             for (int i = 0; i < nLatsLons; i++) {
               data[i] = dis.readShort();
               // if (i < 10) String2.log(i + "=" + data[i]);
             }
             dis.close();
-            dis = null;
             nReadFromCache++;
             if (verbose)
               String2.log(
@@ -362,12 +360,6 @@ public class EDDGridFromEtopo extends EDDGrid {
                       + "ms");
             return results;
           } catch (Throwable t) {
-            if (dis != null) {
-              try {
-                dis.close();
-              } catch (Throwable t2) {
-              }
-            }
             nFailed++;
             File2.delete(cacheName);
             String2.log(

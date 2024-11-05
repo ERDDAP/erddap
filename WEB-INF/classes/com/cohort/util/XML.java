@@ -793,8 +793,9 @@ public class XML {
    * @throws Exception if trouble
    */
   public static Document parseXml(String fileName, boolean validating) throws Exception {
-    BufferedReader reader = File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8);
-    return parseXml(new InputSource(reader), validating);
+    try (BufferedReader reader = File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8); ) {
+      return parseXml(new InputSource(reader), validating);
+    }
   }
 
   /**
@@ -807,9 +808,11 @@ public class XML {
    * @throws Exception if trouble
    */
   public static Document parseXml(URL resourceFile, boolean validating) throws Exception {
-    InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-    InputStreamReader reader = new InputStreamReader(decompressedStream, StandardCharsets.UTF_8);
-    return parseXml(new InputSource(new BufferedReader(reader)), validating);
+    try (InputStream decompressedStream =
+        File2.getDecompressedBufferedInputStream(resourceFile); ) {
+      InputStreamReader reader = new InputStreamReader(decompressedStream, StandardCharsets.UTF_8);
+      return parseXml(new InputSource(new BufferedReader(reader)), validating);
+    }
   }
 
   /**
