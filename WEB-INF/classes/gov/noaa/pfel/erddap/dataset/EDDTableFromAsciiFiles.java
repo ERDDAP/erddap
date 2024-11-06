@@ -26,6 +26,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -831,7 +832,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     int nIssues = 0;
     StringBuilder issues = new StringBuilder();
     String issuesPre = "";
-    HashSet<String> keywords = new HashSet();
+    Set<String> keywords = new HashSet<>();
     StringBuilder license = new StringBuilder();
     int lineageSourceN = 0;
     String lineageStepN = "", lineageName = "", lineageEmail = "", lineageDescription = "";

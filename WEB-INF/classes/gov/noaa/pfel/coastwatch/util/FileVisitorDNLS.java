@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EnumSet;
@@ -40,6 +39,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -2383,7 +2383,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 + nLinesMatched);
       try {
         String fullName = dirs.get(filei) + names.get(filei);
-        ArrayList<String> lines = SSR.getUrlResponseArrayList(fullName);
+        List<String> lines = SSR.getUrlResponseArrayList(fullName);
         int nLines = lines.size();
         for (int linei = 0; linei < nLines; linei++) {
           Matcher matcher = linePattern.matcher(lines.get(linei));
@@ -2623,7 +2623,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * short names as a String[].
    */
   public static String[] reduceDnlsTableToOneDir(Table dnlsTable, String oneDir) {
-    HashSet<String> subdirHash = new HashSet();
+    HashSet<String> subdirHash = new HashSet<>();
     reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
 
     String subDirs[] = (String[]) subdirHash.toArray(new String[0]);
@@ -2644,7 +2644,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * @param subdirHash to collect (additional) subsir (short) names.
    */
   public static void reduceDnlsTableToOneDir(
-      Table dnlsTable, String oneDir, HashSet<String> subdirHash) {
+      Table dnlsTable, String oneDir, Set<String> subdirHash) {
     int nRows = dnlsTable.nRows();
     if (nRows == 0) return;
     char separator = oneDir.indexOf('\\') >= 0 ? '\\' : '/';

@@ -10,6 +10,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -317,7 +318,7 @@ public class TopLevelHandler extends State {
             String2.isSomething(tContent)
                 ? String2.split(tContent, ',')
                 : EDStatic.DEFAULT_palettes;
-        HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
+        Set<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
         if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
           throw new RuntimeException(
               "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");

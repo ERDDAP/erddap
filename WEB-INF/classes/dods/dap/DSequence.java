@@ -76,7 +76,7 @@ public class DSequence extends DConstructor implements ClientIO {
    * @return a clone of this <code>DSequence</code>.
    */
   @Override
-  public Object clone() {
+  public DSequence clone() {
 
     DSequence s = (DSequence) super.clone();
 

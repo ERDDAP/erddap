@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -889,7 +889,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       StringArray tDirStructureColumnNames,
       IntArray tDirStructureNs,
       IntArray tDirStructureCalendars,
-      HashSet<String> keys,
+      Set<String> keys,
       Attributes tGlobalAttributes,
       String columnNames[],
       String columnUnits[],

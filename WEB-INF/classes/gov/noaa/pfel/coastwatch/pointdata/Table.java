@@ -6891,7 +6891,7 @@ public class Table {
     // if loadVariableNames was specified,
     if (loadVariableNames.size() > 0) {
       // ENSURE all conNames are in loadVariableNames
-      HashSet<String> loadVarHS = loadVariableNames.toHashSet();
+      Set<String> loadVarHS = loadVariableNames.toHashSet();
       for (int c = 0; c < conNames.size(); c++) {
         if (!loadVarHS.contains(conNames.get(c)))
           throw new RuntimeException(
@@ -16278,7 +16278,7 @@ public class Table {
    * @param colNamesHashset
    * @return the safe name.
    */
-  public static String makeUniqueIgorColumnName(String colName, HashSet<String> colNamesHashset) {
+  public static String makeUniqueIgorColumnName(String colName, Set<String> colNamesHashset) {
     colName = String2.encodeMatlabNameSafe(colName);
     for (int i = 1; i < 1000000; i++) {
       String tColName = colName + (i == 1 ? "" : "" + i);

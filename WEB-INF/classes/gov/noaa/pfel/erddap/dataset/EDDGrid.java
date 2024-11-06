@@ -56,8 +56,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -8504,7 +8505,7 @@ public abstract class EDDGrid extends EDD {
           if (currentDrawLandMask == null)
             currentDrawLandMask = vars[2].drawLandMask(defaultDrawLandMask());
 
-          ArrayList<PrimitiveArray> mmal =
+          List<PrimitiveArray> mmal =
               SgtMap.makeMap(
                   false,
                   SgtUtil.LEGEND_BELOW,
@@ -8544,7 +8545,7 @@ public abstract class EDDGrid extends EDD {
                   "",
                   "",
                   "", // plot contour
-                  new ArrayList(),
+                  new ArrayList<>(),
                   g2,
                   0,
                   0,
@@ -8567,7 +8568,7 @@ public abstract class EDDGrid extends EDD {
           currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
         }
 
-        ArrayList<PrimitiveArray> mmal =
+        List<PrimitiveArray> mmal =
             isMap
                 ? SgtMap.makeMap(
                     transparentPng,
@@ -14446,7 +14447,7 @@ public abstract class EDDGrid extends EDD {
    * @return [0]=dapQuery, [1]=format (e.g., .nc)
    * @throws Exception if trouble (e.g., invalid query parameter)
    */
-  public String[] wcsQueryToDapQuery(int language, HashMap<String, String> wcsQueryMap)
+  public String[] wcsQueryToDapQuery(int language, Map<String, String> wcsQueryMap)
       throws Throwable {
 
     // parse the query and build the dapQuery

@@ -46,6 +46,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -117,7 +119,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   protected StringArray sourceDataNames;
   protected StringArray safeSourceDataNames;
   protected String sourceDataTypes[];
-  protected HashMap<String, HashSet<String>> scriptNeedsColumns = new HashMap(); // <sourceName,
+  protected Map<String, Set<String>> scriptNeedsColumns = new HashMap<>(); // <sourceName,
   // otherSourceColumnNames>
 
   // arrays to hold expected source add_offset, fillValue, missingValue,
@@ -169,7 +171,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
   protected String[] httpGetRequiredVariableNames; // e.g., stationID, time
   protected String[] httpGetRequiredVariableTypes; // e.g., String, double
-  protected HashSet<String> httpGetKeys = new HashSet();
+  protected HashSet<String> httpGetKeys = new HashSet<>();
 
   // this has the parsed httpGetDirectoryStructure specification
   // with 1 item per directory and the last item being for the file names
@@ -3943,8 +3945,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       StringArray sourceNames,
       StringArray sourceTypes,
       SourceDataInfo sourceInfo,
-      HashSet<String> needOtherSourceNames,
-      HashSet<String> sourceNamesSet) {
+      Set<String> needOtherSourceNames,
+      Set<String> sourceNamesSet) {
     // grab any "global:..." and "variable:..." sourceDataNames
     int nSourceDataNames = sourceDataNames.size();
     for (int i = 0; i < nSourceDataNames; i++) {

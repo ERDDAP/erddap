@@ -38,7 +38,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -63,8 +65,8 @@ public class EDDTableFromDatabase extends EDDTable {
   protected String tableName;
   protected String columnNameQuotes = "\""; // may also be ' or empty string
   protected String orderBy[];
-  protected HashMap<String, HashSet<String>> scriptNeedsColumns =
-      new HashMap(); // <sourceName, otherSourceColumnNames>
+  protected Map<String, Set<String>> scriptNeedsColumns =
+      new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   protected String catalogSeparator;
 
@@ -847,7 +849,7 @@ public class EDDTableFromDatabase extends EDDTable {
                               tQueryOrderBy.get(oi))));
             String tSourceName = dataVariableSourceNames()[v];
             tQueryOrderBy.set(oi, tSourceName);
-            HashSet<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
+            Set<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
             if (tNeedsColumns != null
                 && tNeedsColumns.size() > 0) { // actually refers to another variable
               foundScript = true;

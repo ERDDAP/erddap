@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -1751,7 +1752,7 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
+  public static List<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
       throws Exception {
 
     BufferedReader bufferedReader = null;
@@ -1792,8 +1793,8 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(
-      URL resourceFile, String charset, int maxAttempt) throws Exception {
+  public static List<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
+      throws Exception {
 
     for (int i = 0; i < maxAttempt; i++) {
       try (InputStream is = getDecompressedBufferedInputStream(resourceFile);

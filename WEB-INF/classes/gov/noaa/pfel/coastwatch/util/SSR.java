@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -200,7 +201,7 @@ public class SSR {
    *     error)
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    */
-  public static ArrayList dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
     if (String2.OSIsWindows) {
       // commandLine = String2.replaceAll(commandLine, "/", "\\");
       return dosShell(commandLine, timeOutSeconds);
@@ -220,7 +221,7 @@ public class SSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static ArrayList dosShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("dosShell        in: " + commandLine);
     PipeToStringArray outCatcher = new PipeToStringArray();
     PipeToStringArray errCatcher = new PipeToStringArray();
@@ -259,7 +260,7 @@ public class SSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static ArrayList cShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> cShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("cShell        in: " + commandLine);
     PipeToStringArray outCatcher;
     PipeToStringArray errCatcher;
@@ -2180,14 +2181,14 @@ public class SSR {
    *     assumption that basically all the lines of the file are different).
    * @throws Exception if error occurs
    */
-  public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
+  public static List<String> getUrlResponseArrayList(String urlString) throws Exception {
     try {
       if (!String2.isUrl(urlString)) return File2.readLinesFromFile(urlString, File2.UTF_8, 1);
 
       long time = System.currentTimeMillis();
       BufferedReader in = getBufferedUrlReader(urlString);
       try {
-        ArrayList<String> sa = new ArrayList();
+        ArrayList<String> sa = new ArrayList<>();
         String s;
         while ((s = in.readLine()) != null) {
           sa.add(s);

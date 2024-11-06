@@ -22,8 +22,8 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This class represents a table of data from a collection of Columnar / Fixed Length / Fixed Format
@@ -234,7 +234,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
       throws Exception {
 
     // read the lines of the sample file
-    ArrayList<String> lines = File2.readLinesFromFile(sampleFileName, charset, 2);
+    List<String> lines = File2.readLinesFromFile(sampleFileName, charset, 2);
 
     // hueristic: col with low usage then col with high usage (or vice versa)
     //  indicates new column

@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.security.MessageDigest;
 import java.text.MessageFormat;
-import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagImageComparison;
 import tags.TagIncompleteTest;
@@ -764,9 +764,9 @@ class EDDGridTests {
             + "&format=png"
             + "&time=2008-08-01T00:00:00Z"
             + "&bbox=220,20,250,50";
-    HashMap<String, String> wcsQueryMap1 = EDD.userQueryHashMap(wcsQuery1, true);
-    HashMap<String, String> wcsQueryMap2 = EDD.userQueryHashMap(wcsQuery2, true);
-    HashMap<String, String> wcsQueryMap3 = EDD.userQueryHashMap(wcsQuery3, true);
+    Map<String, String> wcsQueryMap1 = EDD.userQueryHashMap(wcsQuery1, true);
+    Map<String, String> wcsQueryMap2 = EDD.userQueryHashMap(wcsQuery2, true);
+    Map<String, String> wcsQueryMap3 = EDD.userQueryHashMap(wcsQuery3, true);
 
     String dapQuery1[] = eddGrid.wcsQueryToDapQuery(0, wcsQueryMap1);
     String2.log("\nwcsQuery1=" + wcsQuery1 + "\n\ndapQuery1=" + dapQuery1[0]);

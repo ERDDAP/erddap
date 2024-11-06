@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
@@ -29,7 +30,7 @@ public class TableFromMultidimNcFile {
   private VarData cachedVarData[];
   private boolean haveConstraints;
   private String warningInMethod;
-  private HashSet<Dimension> notStringLengthDims;
+  private Set<Dimension> notStringLengthDims;
   private Dimension tDimsAs[][];
   private NetcdfFile ncFile;
   private StringArray loadVarNames;
@@ -709,8 +710,8 @@ public class TableFromMultidimNcFile {
       StringArray loadVarNames,
       int standardizeWhat,
       int nd0,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
+      List<Dimension> loadDims,
       int nLoadVars,
       BitSet loaded,
       Table allIndicesTable,
@@ -739,7 +740,7 @@ public class TableFromMultidimNcFile {
 
   private void addVarAndIndicies(
       int nd0,
-      ArrayList<Dimension> loadDims,
+      List<Dimension> loadDims,
       BitSet loaded,
       Table allIndicesTable,
       Table lut,
@@ -785,8 +786,8 @@ public class TableFromMultidimNcFile {
       StringArray loadVarNames,
       int standardizeWhat,
       int nd0,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
+      List<Dimension> loadDims,
       int nLoadVars,
       BitSet loaded,
       Table table,
@@ -829,7 +830,7 @@ public class TableFromMultidimNcFile {
     return true;
   }
 
-  private HashSet<Dimension> findNonStringLengthDims(List<Variable> allVars, int nAllVars) {
+  private Set<Dimension> findNonStringLengthDims(List<Variable> allVars, int nAllVars) {
     HashSet<Dimension> notStringLengthDims = new HashSet<>();
     for (int v = 0; v < nAllVars; v++) {
       Variable tVar = allVars.get(v);
@@ -910,8 +911,8 @@ public class TableFromMultidimNcFile {
   private void loadVars(
       StringArray loadVarNames,
       StringArray loadDimNames,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
+      List<Dimension> loadDims,
       int nd0,
       int nAllVars,
       List<Variable> allVars) {

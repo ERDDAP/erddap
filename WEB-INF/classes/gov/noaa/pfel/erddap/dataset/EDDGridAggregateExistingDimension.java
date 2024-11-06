@@ -25,7 +25,7 @@ import gov.noaa.pfel.erddap.handlers.SaxHandlerClass;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a grid dataset created by aggregating for first existing dimension of other
@@ -443,7 +443,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     if (pathRegex == null || pathRegex.length() == 0) pathRegex = ".*";
     int onSourceUrls = sourceUrls.size();
     String regexHtml = regex + "\\.html"; // link href will have .html at end
-    ArrayList<String> lines = null;
+    List<String> lines = null;
     try {
       lines = SSR.getUrlResponseArrayList(startUrl);
     } catch (Throwable t) {

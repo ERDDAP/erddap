@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import thredds.client.catalog.Access;
 import thredds.client.catalog.Catalog;
 import thredds.client.catalog.Dataset;
@@ -2404,7 +2405,7 @@ public class EDDGridFromDap extends EDDGrid {
    */
   public static void processThreddsDataset(
       Dataset dataset,
-      HashSet<String> set,
+      Set<String> set,
       String datasetNameRegex,
       String pathRegex,
       String negativePathRegex,

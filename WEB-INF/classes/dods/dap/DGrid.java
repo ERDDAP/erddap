@@ -82,10 +82,10 @@ public class DGrid extends DConstructor implements ClientIO {
    * @return a clone of this <code>DGrid</code>.
    */
   @Override
-  public Object clone() {
+  public DGrid clone() {
     DGrid g = (DGrid) super.clone();
     g.arrayVar = (DArray) arrayVar.clone();
-    g.mapVars = new Vector();
+    g.mapVars = new Vector<>();
     for (int i = 0; i < mapVars.size(); i++) {
       BaseType bt = (BaseType) mapVars.elementAt(i);
       g.mapVars.addElement(bt.clone());
@@ -249,7 +249,7 @@ public class DGrid extends DConstructor implements ClientIO {
    * @return An Enumeration
    */
   @Override
-  public Enumeration getVariables() {
+  public Enumeration<DArray> getVariables() {
     return new EnumerateDGrid();
   }
 

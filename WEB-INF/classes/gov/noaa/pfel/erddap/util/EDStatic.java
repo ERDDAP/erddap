@@ -326,7 +326,7 @@ public class EDStatic {
       DEFAULT_ipAddressMaxRequests; // in datasets.xml //more requests will see Too Many Requests
   // error. This must be at least 6 because browsers make up to 6
   // simultaneous requests.
-  public static HashSet<String>
+  public static Set<String>
       ipAddressUnlimited = // in datasets.xml  //read only. New one is swapped into place. You can
           // add and remove addresses as needed.
           new HashSet<String>(
@@ -383,7 +383,7 @@ public class EDStatic {
   public static final int DEFAULT_nGridThreads = 1;
   public static final int DEFAULT_nTableThreads = 1;
   public static String DEFAULT_palettes[] = null; // set when messages.xml is read
-  public static HashSet<String> DEFAULT_palettes_set = null; // set when messages.xml is read
+  public static Set<String> DEFAULT_palettes_set = null; // set when messages.xml is read
   public static int decompressedCacheMaxGB = DEFAULT_decompressedCacheMaxGB;
   public static int decompressedCacheMaxMinutesOld = DEFAULT_decompressedCacheMaxMinutesOld;
   public static int nGridThreads = DEFAULT_nGridThreads; // will be a valid number 1+
@@ -470,7 +470,7 @@ public class EDStatic {
    * doesPasswordMatch() and getRoles(). MD5'd and SHA'd passwords should all already be lowercase.
    * No need to be thread-safe: one thread writes it, then put here where read only.
    */
-  private static HashMap<String, Object[]> userHashMap = new HashMap<>();
+  private static Map<String, Object[]> userHashMap = new HashMap<>();
 
   /**
    * This is a HashMap of key=id value=thread that need to be interrupted/killed when erddap is
@@ -1812,7 +1812,7 @@ public class EDStatic {
    */
   private static Table gdxAcronymsTable;
 
-  private static HashMap<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
+  private static Map<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
   public static boolean useSharedWatchService = true;
 
   /**
@@ -5484,7 +5484,7 @@ public class EDStatic {
    * getUserHashMap (so info remains private). MD5'd and SHA256'd passwords should all already be
    * lowercase.
    */
-  public static void setUserHashMap(HashMap<String, Object[]> tUserHashMap) {
+  public static void setUserHashMap(Map<String, Object[]> tUserHashMap) {
     userHashMap = tUserHashMap;
   }
 
@@ -6471,13 +6471,13 @@ public class EDStatic {
    * @return the oceanic/atmospheric variable names table as a HashMap
    * @throws Exception if trouble (e.g., file not found)
    */
-  public static HashMap<String, String> gdxAcronymsHashMap() throws Exception {
+  public static Map<String, String> gdxAcronymsHashMap() throws Exception {
     if (gdxAcronymsHashMap == null) {
       Table table = gdxAcronymsTable();
       StringArray acronymSA = (StringArray) table.getColumn(0);
       StringArray fullNameSA = (StringArray) table.getColumn(1);
       int n = table.nRows();
-      HashMap<String, String> hm = new HashMap();
+      Map<String, String> hm = new HashMap<>();
       for (int i = 1; i < n; i++) hm.put(acronymSA.get(i), fullNameSA.get(i));
       gdxAcronymsHashMap = hm; // swap into place
     }
@@ -6491,13 +6491,13 @@ public class EDStatic {
    * @return the oceanic/atmospheric variable names table as a HashMap
    * @throws Exception if trouble (e.g., file not found)
    */
-  public static HashMap<String, String> gdxVariableNamesHashMap() throws Exception {
+  public static Map<String, String> gdxVariableNamesHashMap() throws Exception {
     if (gdxVariableNamesHashMap == null) {
       Table table = oceanicAtmosphericVariableNamesTable();
       StringArray varNameSA = (StringArray) table.getColumn(0);
       StringArray fullNameSA = (StringArray) table.getColumn(1);
       int n = table.nRows();
-      HashMap<String, String> hm = new HashMap();
+      Map<String, String> hm = new HashMap<>();
       for (int i = 1; i < n; i++) hm.put(varNameSA.get(i), fullNameSA.get(i));
       gdxVariableNamesHashMap = hm; // swap into place
     }

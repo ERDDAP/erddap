@@ -15,6 +15,8 @@ import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This is a command line application which tests the ongoing availability and proper functioning of
@@ -79,12 +81,12 @@ public class NetCheck {
   private String smtpFromAddress;
   private int memoryWarningMB;
   // emailAdministrator is just one person, but is an ArrayList to standardize subscriber lists
-  private ArrayList emailAdministrator = new ArrayList();
-  private ArrayList emailStatusTo = new ArrayList();
-  private ArrayList emailStatusHeadlinesTo = new ArrayList();
-  private ArrayList emailChangesTo = new ArrayList();
-  private ArrayList emailChangeHeadlinesTo = new ArrayList();
-  private ArrayList netCheckTests = new ArrayList();
+  private ArrayList<String> emailAdministrator = new ArrayList<>();
+  private ArrayList<String> emailStatusTo = new ArrayList<>();
+  private ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
+  private ArrayList<String> emailChangesTo = new ArrayList<>();
+  private ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
+  private ArrayList<NetCheckTest> netCheckTests = new ArrayList<>();
   private String lastResult[]; // initially all ""
   private int nPass[];
   private int nTry[];
@@ -335,14 +337,14 @@ public class NetCheck {
 
     try {
       // set up the email lists
-      ArrayList<String> emailRecipients = new ArrayList();
-      ArrayList<StringBuilder> emailContents = new ArrayList(); // parallels emailRecipients
+      ArrayList<String> emailRecipients = new ArrayList<>();
+      ArrayList<StringBuilder> emailContents = new ArrayList<>(); // parallels emailRecipients
 
       // do the tests
       for (int i = 0; i < netCheckTests.size(); i++) {
 
         // do a test in a separate thread
-        NetCheckTest netCheckTest = (NetCheckTest) netCheckTests.get(i);
+        NetCheckTest netCheckTest = netCheckTests.get(i);
         if (verbose)
           String2.log(
               "\n"
@@ -607,10 +609,10 @@ public class NetCheck {
    * @param result is the result string for one test
    */
   private static void addResults(
-      ArrayList<String> emailRecipients,
-      ArrayList<StringBuilder> emailContents,
-      ArrayList<String> subscribers,
-      HashSet<String> notifiedReThisTest,
+      List<String> emailRecipients,
+      List<StringBuilder> emailContents,
+      List<String> subscribers,
+      Set<String> notifiedReThisTest,
       String result) {
 
     for (int i = 0; i < subscribers.size(); i++) {

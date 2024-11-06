@@ -7,8 +7,8 @@ package com.cohort.util;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -135,7 +135,7 @@ public class MustBe {
     for (i = 0; i < n; i++) if (ba[i] == '\t') ba[i] = (byte) 32;
 
     // convert to ArrayList of Strings
-    ArrayList<String> arrayList = String2.multiLineStringToArrayList(new String(ba));
+    List<String> arrayList = String2.multiLineStringToArrayList(new String(ba));
 
     // remove the first nRemoveLines lines; trim strings; store results in ca
     if (nRemoveLines < 0) nRemoveLines = 0;

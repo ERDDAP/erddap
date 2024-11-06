@@ -1,7 +1,7 @@
 package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.util.String2;
-import java.util.ArrayList;
+import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -9,10 +9,10 @@ public class DataVariableHandler extends StateWithParent {
   StringBuilder content = new StringBuilder();
   String tSourceName = null, tDestinationName = null, tDataType = null;
   com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
-  ArrayList<Object[]> tDataVariables;
+  List<Object[]> tDataVariables;
 
   public DataVariableHandler(
-      SaxHandler saxHandler, ArrayList<Object[]> tDataVariables, State completeState) {
+      SaxHandler saxHandler, List<Object[]> tDataVariables, State completeState) {
     super(saxHandler, completeState);
     this.tDataVariables = tDataVariables;
   }

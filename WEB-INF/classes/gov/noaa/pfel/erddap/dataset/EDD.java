@@ -63,15 +63,16 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -4371,7 +4372,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static void addAllAndParts(String phrase, HashSet<String> hashSet) {
+  public static void addAllAndParts(String phrase, Set<String> hashSet) {
     if (phrase == null || phrase.length() == 0) return;
     phrase = phrase.toLowerCase().trim();
     while (phrase.endsWith("*") || phrase.endsWith("_"))
@@ -4387,7 +4388,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpCsvAddAllAndParts(String csv, HashSet<String> hashSet) {
+  public static Set<String> chopUpCsvAddAllAndParts(String csv, Set<String> hashSet) {
     // String2.log("chopUpAndAdd " + phrase);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
@@ -4403,7 +4404,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpCsvAndAdd(String csv, HashSet<String> hashSet) {
+  public static Set<String> chopUpCsvAndAdd(String csv, Set<String> hashSet) {
     // String2.log(">> chopUpAndAdd " + csv);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
@@ -4424,7 +4425,7 @@ public abstract class EDD {
    * @param hashset
    * @return the same hashSet for convenience
    */
-  public static HashSet<String> chopUpAndAdd(String phrase, HashSet<String> hashSet) {
+  public static Set<String> chopUpAndAdd(String phrase, Set<String> hashSet) {
     // String2.log("chopUpAndAdd " + phrase);
     // remove . at end of sentence or abbreviation, but not within number or word.word
     if (phrase == null || phrase.length() == 0) return hashSet;
@@ -4504,9 +4505,9 @@ public abstract class EDD {
    * @param dataAddTable
    * @return a HashSet of suggested keywords (may be String[0])
    */
-  public static HashSet<String> suggestKeywords(Table dataSourceTable, Table dataAddTable) {
+  public static Set<String> suggestKeywords(Table dataSourceTable, Table dataAddTable) {
 
-    HashSet<String> keywordHashSet = new HashSet(128);
+    Set<String> keywordHashSet = new HashSet<>(128);
 
     // from the global metadata
     Attributes sourceGAtt = dataSourceTable.globalAttributes();
@@ -4605,12 +4606,12 @@ public abstract class EDD {
    * @param suggestedKeywords
    * @throws Exception if touble
    */
-  public static void cleanSuggestedKeywords(HashSet<String> keywords) throws Exception {
+  public static void cleanSuggestedKeywords(Set<String> keywords) throws Exception {
 
     // look in keywords for acronyms -- expand them
     String keys[] = keywords.toArray(new String[0]);
     int n = keys.length;
-    HashMap<String, String> achm = EDStatic.gdxAcronymsHashMap();
+    Map<String, String> achm = EDStatic.gdxAcronymsHashMap();
     for (int i = 0; i < n; i++) {
       // String2.log(">> 1keyword#" + i + "=" + keys[i]);
       chopUpAndAdd(achm.get(keys[i].toUpperCase()), keywords);
@@ -5235,7 +5236,7 @@ public abstract class EDD {
    * @return the new tSummary (or the same one if unchanged)
    */
   static String expandInSummary(
-      String tSummary, HashSet<String> suggestedKeywords, String acronym, String expanded) {
+      String tSummary, Set<String> suggestedKeywords, String acronym, String expanded) {
 
     String full = expanded + " (" + acronym + ")";
     if (String2.looselyContains(tSummary, expanded)) {
@@ -5284,7 +5285,7 @@ public abstract class EDD {
       String tCdmDataType,
       String tLocalSourceUrl,
       Attributes externalAtts,
-      HashSet<String> suggestedKeywords)
+      Set<String> suggestedKeywords)
       throws Exception {
 
     // TO DO: look at other metadata standards (e.g., FGDC) to find similar attributes to look for
@@ -12156,9 +12157,9 @@ public abstract class EDD {
    *     If a part doesn't have '=', then it doesn't generate an entry in hashmap.
    * @throws Throwable if trouble (e.g., invalid percentEncoding)
    */
-  public static HashMap<String, String> userQueryHashMap(String userQuery, boolean namesLC)
+  public static Map<String, String> userQueryHashMap(String userQuery, boolean namesLC)
       throws Throwable {
-    HashMap<String, String> queryHash = new HashMap<String, String>();
+    Map<String, String> queryHash = new HashMap<String, String>();
     if (userQuery != null) {
       String tParts[] =
           Table.getDapQueryParts(userQuery); // decoded.  userQuery="" returns String[1]  with #0=""
@@ -12225,7 +12226,7 @@ public abstract class EDD {
    * @param yMax the double-value range of the graph
    */
   public void writePngInfo(
-      String loggedInAs, String userDapQuery, String fileTypeName, ArrayList mmal) {
+      String loggedInAs, String userDapQuery, String fileTypeName, List<PrimitiveArray> mmal) {
     String infoFileName =
         String2.canonical(getPngInfoFileName(loggedInAs, userDapQuery, fileTypeName));
     try {
@@ -12476,7 +12477,7 @@ public abstract class EDD {
       fileTable.addColumn(0, "ext", exts);
 
       // get the most common file extension
-      ArrayList tallyArrayList = tally.getSortedNamesAndCounts("ext");
+      List<PrimitiveArray> tallyArrayList = tally.getSortedNamesAndCounts("ext");
       if (tallyArrayList == null) return "";
       StringArray tallyExts = (StringArray) tallyArrayList.get(0);
       IntArray tallyCounts = (IntArray) tallyArrayList.get(1);
@@ -13703,7 +13704,7 @@ public abstract class EDD {
     long eTime = System.currentTimeMillis();
 
     // get a list of datasets from addDatasets on coastwatch Erddap
-    ArrayList<String> lines =
+    List<String> lines =
         SSR.getUrlResponseArrayList(
             "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/allDatasets.csv0?datasetID,dataStructure");
     int nLines = lines.size();
@@ -14145,7 +14146,7 @@ public abstract class EDD {
     }
     String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";
     try {
-      ArrayList<String> response =
+      List<String> response =
           SSR.getUrlResponseArrayList(vUrl); // has timeout and descriptive error
       double v = Double.NaN;
       String response0 = response.get(0);

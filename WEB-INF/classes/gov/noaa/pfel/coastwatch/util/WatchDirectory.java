@@ -16,7 +16,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -135,7 +135,7 @@ public class WatchDirectory implements AutoCloseable {
    *     WatchDirectory.
    * @return the size of eventKinds and contexts
    */
-  public int getEvents(ArrayList<WatchEvent.Kind<?>> eventKinds, StringArray contexts) {
+  public int getEvents(List<WatchEvent.Kind<?>> eventKinds, StringArray contexts) {
     eventKinds.clear();
     contexts.clear();
     if (watchService == null) // perhaps close() was called

@@ -505,7 +505,9 @@ public class OpendapHelper {
   public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
     // String2.log(">>    baseType=" + baseType.getTypeName());
     if (baseType instanceof DGrid dgrid) {
-      ArrayList al = String2.toArrayList(dgrid.getVariables());
+      ArrayList<DArray> al = new ArrayList<>();
+      Enumeration<DArray> e = dgrid.getVariables();
+      while (e.hasMoreElements()) al.add(e.nextElement());
       PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
       for (int i = 0; i < al.size(); i++)
         paAr[i] = getPrimitiveArray(((DArray) al.get(i)).getPrimitiveVector());

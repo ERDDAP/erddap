@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * This class aggregates data from a group of stations, all served by one SOS server. The stations
@@ -1717,8 +1718,8 @@ public class EDDTableFromSOS extends EDDTable {
    * @param table the table to which rows will be added
    * @param llatHash lon+lat+alt+time+stationID goes to row#
    */
-  protected void readFromIoosNdbcNos(int language, String kvp, Table table, HashMap llatHash)
-      throws Throwable {
+  protected void readFromIoosNdbcNos(
+      int language, String kvp, Table table, Map<String, String> llatHash) throws Throwable {
 
     // downloading data may take time
     // so write to file, then quickly read and process
@@ -1950,7 +1951,7 @@ public class EDDTableFromSOS extends EDDTable {
                 + sosTable.getStringData(sosTableStationIdCol, sosRow);
 
         // does a row with identical LonLatAltTimeID exist in table?
-        int tRow = String2.parseInt((String) llatHash.get(tHash));
+        int tRow = String2.parseInt(llatHash.get(tHash));
         if (tRow < Integer.MAX_VALUE) {
           // merge this data into that row
           for (int col = 0; col < nTableColumns; col++) {
@@ -2027,7 +2028,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2291,7 +2292,7 @@ public class EDDTableFromSOS extends EDDTable {
                   throw new SimpleException(tError1 + stationIdSourceName + tError2);
 
                 // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
+                int tRow = String2.parseInt(llatHash.get(tHash));
                 if (tRow < Integer.MAX_VALUE) {
                   // merge this data into that row
                   for (int col = 0; col < nCols; col++) {
@@ -2364,7 +2365,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2646,7 +2647,7 @@ public class EDDTableFromSOS extends EDDTable {
                   throw new SimpleException(tError1 + stationIdSourceName + tError2);
 
                 // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
+                int tRow = String2.parseInt(llatHash.get(tHash));
                 if (tRow < Integer.MAX_VALUE) {
                   // merge this data into that row
                   for (int col = 0; col < nCols; col++) {
@@ -4053,7 +4054,7 @@ public class EDDTableFromSOS extends EDDTable {
    * @param hashMap the hashMap to which with phenomena will be added
    * @throws Throwable if trouble
    */
-  public static void getPhenomena(String url, HashMap hashMap) throws Throwable {
+  public static void getPhenomena(String url, Map<String, StringArray> hashMap) throws Throwable {
 
     String2.log("EDDTableFromSOS.getPhenomena" + "\nurl=" + url);
 
@@ -4136,7 +4137,7 @@ public class EDDTableFromSOS extends EDDTable {
           else {
             // get referenced item's components
             href = (href.startsWith("#") ? codeSpace : "") + href;
-            StringArray tsa = (StringArray) hashMap.get(href);
+            StringArray tsa = hashMap.get(href);
             if (tsa == null)
               xmlReader.throwException(
                   href

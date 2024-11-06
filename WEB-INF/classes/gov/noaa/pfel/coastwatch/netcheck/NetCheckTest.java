@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.netcheck;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * NetCheckTest describes the methods which NetCheck XxxTest classes must have.
@@ -26,10 +27,10 @@ public abstract class NetCheckTest {
 
   protected String title;
   protected double mustRespondWithinSeconds = Double.NaN;
-  protected ArrayList emailStatusTo = new ArrayList();
-  protected ArrayList emailStatusHeadlinesTo = new ArrayList();
-  protected ArrayList emailChangesTo = new ArrayList();
-  protected ArrayList emailChangeHeadlinesTo = new ArrayList();
+  protected ArrayList<String> emailStatusTo = new ArrayList<>();
+  protected ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
+  protected ArrayList<String> emailChangesTo = new ArrayList<>();
+  protected ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
 
   /**
    * The gets the title of this test (usually <40 characters).
@@ -63,7 +64,7 @@ public abstract class NetCheckTest {
    *
    * @return emailStatusTo
    */
-  public ArrayList getEmailStatusTo() {
+  public List<String> getEmailStatusTo() {
     return emailStatusTo;
   }
 
@@ -84,7 +85,7 @@ public abstract class NetCheckTest {
    *
    * @return emailStatusHeadlinesTo
    */
-  public ArrayList getEmailStatusHeadlinesTo() {
+  public List<String> getEmailStatusHeadlinesTo() {
     return emailStatusHeadlinesTo;
   }
 
@@ -105,7 +106,7 @@ public abstract class NetCheckTest {
    *
    * @return emailChangesTo
    */
-  public ArrayList getEmailChangesTo() {
+  public List<String> getEmailChangesTo() {
     return emailChangesTo;
   }
 
@@ -126,7 +127,7 @@ public abstract class NetCheckTest {
    *
    * @return emailChangeHeadlinesTo
    */
-  public ArrayList getEmailChangeHeadlinesTo() {
+  public List<String> getEmailChangeHeadlinesTo() {
     return emailChangeHeadlinesTo;
   }
 

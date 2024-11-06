@@ -7,8 +7,8 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 class PrimitiveArrayTests {
   /**
@@ -544,7 +544,8 @@ class PrimitiveArrayTests {
     FloatArray arFloat = new FloatArray(new float[] {1, 3, 3, -5});
     DoubleArray arDouble = new DoubleArray(new double[] {17, 1e300, 3, 0});
     StringArray arString = new StringArray(new String[] {"a", "abe", "A", "ABE"});
-    ArrayList table = String2.toArrayList(new Object[] {arByte, arFloat, arDouble, arString});
+    List<PrimitiveArray> table =
+        String2.toArrayList(new PrimitiveArray[] {arByte, arFloat, arDouble, arString});
     Test.ensureEqual(
         PrimitiveArray.rank(table, new int[] {0}, new boolean[] {true}), // ascending
         new int[] {0, 2, 1, 3},
@@ -631,7 +632,7 @@ class PrimitiveArrayTests {
     // test removeDuplicates
     IntArray arInt3a = new IntArray(new int[] {1, 5, 5, 7, 7, 7});
     IntArray arInt3b = new IntArray(new int[] {2, 6, 6, 8, 8, 8});
-    ArrayList table3 = String2.toArrayList(new Object[] {arInt3a, arInt3b});
+    List<PrimitiveArray> table3 = String2.toArrayList(new PrimitiveArray[] {arInt3a, arInt3b});
     PrimitiveArray.removeDuplicates(table3);
     Test.ensureEqual(arInt3a.toString(), "1, 5, 7", "");
     Test.ensureEqual(arInt3b.toString(), "2, 6, 8", "");
@@ -641,7 +642,7 @@ class PrimitiveArrayTests {
     FloatArray arFloat2 = new FloatArray(new float[] {4, 14, 3, 24});
     IntArray arInt2 = new IntArray(new int[] {3, 13, 3, 1}); // test: narrower than arDouble
     StringArray arString2 = new StringArray(new String[] {"b", "aa", "A", "c"});
-    ArrayList table2 = String2.toArrayList(new Object[] {arByte2, arFloat2, arInt2, arString2});
+    List<Object> table2 = String2.toArrayList(new Object[] {arByte2, arFloat2, arInt2, arString2});
     PrimitiveArray.merge(table2, table, new int[] {1, 0}, new boolean[] {true, true}, false);
     Test.ensureEqual(
         ((PrimitiveArray) table2.get(0)).toDoubleArray(),

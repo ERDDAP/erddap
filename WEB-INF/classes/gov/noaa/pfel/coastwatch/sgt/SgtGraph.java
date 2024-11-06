@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
@@ -133,7 +134,7 @@ public class SgtGraph {
    *     originX,endX,originY,endY. (The returnAL isn't extensively tested yet.)
    * @throws Exception
    */
-  public ArrayList<PrimitiveArray> makeGraph(
+  public List<PrimitiveArray> makeGraph(
       boolean transparent,
       String xAxisTitle,
       String yAxisTitle,
@@ -152,7 +153,7 @@ public class SgtGraph {
       boolean yAscending,
       boolean yIsTimeAxis,
       boolean yIsLogAxis,
-      ArrayList<GraphDataLayer> graphDataLayers,
+      List<GraphDataLayer> graphDataLayers,
       Graphics2D g2,
       int baseULXPixel,
       int baseULYPixel,

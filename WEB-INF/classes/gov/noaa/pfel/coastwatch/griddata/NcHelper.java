@@ -709,7 +709,8 @@ public class NcHelper {
    * @param arrayList
    * @return the desired string representation
    */
-  public static String alternateToString(String prefix, ArrayList arrayList, String suffix) {
+  public static String alternateToString(
+      String prefix, List<PrimitiveArray> arrayList, String suffix) {
     if (arrayList == null) return prefix + "[null]\n";
     StringBuilder sb = new StringBuilder();
     for (int index = 0; index < arrayList.size(); index += 2) {

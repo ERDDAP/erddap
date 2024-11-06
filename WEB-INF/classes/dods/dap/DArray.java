@@ -76,9 +76,9 @@ public class DArray extends DVector implements Cloneable {
    * @return a clone of this <code>DArray</code>.
    */
   @Override
-  public Object clone() {
+  public DArray clone() {
     DArray a = (DArray) super.clone();
-    a.dimVector = new Vector();
+    a.dimVector = new Vector<>();
     for (int i = 0; i < dimVector.size(); i++) {
       DArrayDimension d = (DArrayDimension) dimVector.elementAt(i);
       a.dimVector.addElement(d.clone());

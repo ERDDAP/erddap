@@ -3,7 +3,7 @@ package com.cohort.array;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.util.BitSet;
-import java.util.HashSet;
+import java.util.Set;
 
 class StringArrayTests {
 
@@ -718,7 +718,7 @@ class StringArrayTests {
 
     // toHashSet addHashSet
     anArray = StringArray.fromCSV("a, e, i, o, uu");
-    HashSet<String> hs = anArray.toHashSet();
+    Set<String> hs = anArray.toHashSet();
     anArray2 = new StringArray().addSet(hs);
     anArray2.sort();
     Test.ensureEqual(anArray.toArray(), anArray2.toArray(), "");

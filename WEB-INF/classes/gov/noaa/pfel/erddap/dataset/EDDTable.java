@@ -60,8 +60,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -4440,7 +4442,7 @@ public abstract class EDDTable extends EDD {
       Table table,
       StringArray scriptNames,
       StringArray scriptTypes,
-      HashMap<String, HashSet<String>> scriptNeedsColumns) {
+      Map<String, Set<String>> scriptNeedsColumns) {
 
     if (scriptNames != null) {
       // if (debugMode) String2.log(">> raw table:\n" + table.dataToString(5));
@@ -5749,7 +5751,7 @@ public abstract class EDDTable extends EDD {
                 ? SgtMap.topographyCptFullName
                 : SgtMap.bathymetryCptFullName; // "over": deals better with elevation ~= 0
         String bathymetryCptFullPath = File2.accessResourceFile(bathyResourceFile.toString());
-        ArrayList<PrimitiveArray> mmal =
+        List<PrimitiveArray> mmal =
             SgtMap.makeMap(
                 transparentPng,
                 SgtUtil.LEGEND_BELOW,
@@ -5810,7 +5812,7 @@ public abstract class EDDTable extends EDD {
           g2.fillRect(0, 0, imageWidth, imageHeight);
         }
 
-        ArrayList mmal =
+        List<PrimitiveArray> mmal =
             EDStatic.sgtGraph.makeGraph(
                 transparentPng,
                 xVar.longName() + xUnits, // x,yAxisTitle  for now, always std units
@@ -16503,7 +16505,7 @@ public abstract class EDDTable extends EDD {
    * @param loggedInAs the name of the logged in user (or null if not logged in).
    */
   public void sosGetCapabilities(
-      int language, HashMap<String, String> queryMap, Writer writer, String loggedInAs)
+      int language, Map<String, String> queryMap, Writer writer, String loggedInAs)
       throws Throwable {
 
     if (accessibleViaSOS().length() > 0)
@@ -17855,7 +17857,7 @@ public abstract class EDDTable extends EDD {
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    HashMap<String, String> sosQueryMap = userQueryHashMap(sosQuery, true);
+    Map<String, String> sosQueryMap = userQueryHashMap(sosQuery, true);
 
     // parse the query and build the dapQuery
     // https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0

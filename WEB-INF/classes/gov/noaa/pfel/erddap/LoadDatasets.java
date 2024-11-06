@@ -30,6 +30,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -157,21 +159,21 @@ public class LoadDatasets extends Thread {
       int oldNTable = erddap.tableDatasetHashMap.size();
       HashSet<String> orphanIDSet = null;
       if (majorLoad) {
-        orphanIDSet = new HashSet(erddap.gridDatasetHashMap.keySet());
+        orphanIDSet = new HashSet<String>(erddap.gridDatasetHashMap.keySet());
         orphanIDSet.addAll(erddap.tableDatasetHashMap.keySet());
         orphanIDSet.remove(EDDTableFromAllDatasets.DATASET_ID);
       }
       EDStatic.cldMajor = majorLoad;
       EDStatic.cldNTry = 0; // that alone says none is currently active
-      HashMap<String, Object[]> tUserHashMap =
+      Map<String, Object[]> tUserHashMap =
           new HashMap<
               String,
               Object[]>(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
       StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();
-      HashSet<String> datasetIDSet =
-          new HashSet(); // to detect duplicates, just local use, no need for thread-safe
+      Set<String> datasetIDSet =
+          new HashSet<>(); // to detect duplicates, just local use, no need for thread-safe
       StringArray duplicateDatasetIDs = new StringArray(); // list of duplicates
       EDStatic.suggestAddFillValueCSV.setLength(0);
 
@@ -446,12 +448,12 @@ public class LoadDatasets extends Thread {
   private void parseUsingSimpleXmlReader(
       int[] nTryAndDatasets,
       StringArray changedDatasetIDs,
-      HashSet<String> orphanIDSet,
-      HashSet<String> datasetIDSet,
+      Set<String> orphanIDSet,
+      Set<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
       StringBuilder failedDatasetsWithErrorsSB,
-      HashMap tUserHashMap) {
+      Map<String, Object[]> tUserHashMap) {
     SimpleXMLReader xmlReader = null;
     int nTry = 0, nDatasets = 0;
     try {
@@ -917,7 +919,7 @@ public class LoadDatasets extends Thread {
                   ? String2.split(tContent, ',')
                   : EDStatic.DEFAULT_palettes;
           // ensure that all of the original palettes are present
-          HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
+          Set<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
           // String2.log(">>> newPaletteSet=" + String2.toCSSVString(newPaletteSet));
           // String2.log(">>> defPaletteSet=" +
           // String2.toCSSVString(EDStatic.DEFAULT_palettes_set));
@@ -1194,10 +1196,10 @@ public class LoadDatasets extends Thread {
   }
 
   private void emailOrphanDatasetsRemoved(
-      HashSet<String> orphanIDSet, StringArray changedDatasetIDs, String errorsDuringMajorReload) {
-    Iterator it = orphanIDSet.iterator();
+      Set<String> orphanIDSet, StringArray changedDatasetIDs, String errorsDuringMajorReload) {
+    Iterator<String> it = orphanIDSet.iterator();
     while (it.hasNext())
-      tryToUnload(erddap, (String) it.next(), changedDatasetIDs, false); // needToUpdateLucene
+      tryToUnload(erddap, it.next(), changedDatasetIDs, false); // needToUpdateLucene
     erddap.updateLucene(changedDatasetIDs);
 
     String msg =

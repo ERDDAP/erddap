@@ -33,7 +33,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,8 +51,8 @@ public class EDDTableFromFileNames extends EDDTable {
   protected boolean recursive;
   protected String extractRegex[];
   protected byte extractGroup[];
-  protected HashMap<String, HashSet<String>> scriptNeedsColumns =
-      new HashMap(); // <sourceName, otherSourceColumnNames>
+  protected Map<String, Set<String>> scriptNeedsColumns =
+      new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   /**
    * from==fromLocalFiles if files are on a local hard drive. 1) A failure when reading a local
@@ -1514,7 +1515,7 @@ public class EDDTableFromFileNames extends EDDTable {
       addTable.addColumn(
           col, sourceName, (PrimitiveArray) sourceTable.getColumn(col).clone(), addAtts);
     }
-    HashSet<String> keywords = suggestKeywords(sourceTable, addTable);
+    Set<String> keywords = suggestKeywords(sourceTable, addTable);
     cleanSuggestedKeywords(keywords);
     String keywordSar[] = (String[]) keywords.toArray(new String[0]);
     Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE);

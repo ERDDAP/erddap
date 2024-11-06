@@ -33,6 +33,7 @@ import java.io.File;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -304,7 +305,7 @@ public class SgtMap {
    * This is an alternative version of makeMap which just plots grid data. The parameters match the
    * same-named parameters for the main makeMap.
    */
-  public static ArrayList<PrimitiveArray> makeMap(
+  public static List<PrimitiveArray> makeMap(
       int legendPosition,
       String legendTitle1,
       String legendTitle2,
@@ -371,7 +372,7 @@ public class SgtMap {
         "Contour Title2 and more text",
         "2004-01-05 to 2004-01-0C", // contourDateTime,
         "Data courtesy of blah blah blah", // Contour data
-        new ArrayList(), // graphDataLayers
+        new ArrayList<>(), // graphDataLayers
         g2,
         baseULXPixel,
         baseULYPixel,
@@ -450,7 +451,7 @@ public class SgtMap {
    * @throws Exception
    */
   @SuppressWarnings("ReferenceEquality") // below gridGrid == contourGrid
-  public static ArrayList<PrimitiveArray> makeMap(
+  public static List<PrimitiveArray> makeMap(
       boolean transparent,
       int legendPosition,
       String legendTitle1,
@@ -485,7 +486,7 @@ public class SgtMap {
       String contourTitle2,
       String contourDate,
       String contourCourtesy,
-      ArrayList<GraphDataLayer> graphDataLayers,
+      List<GraphDataLayer> graphDataLayers,
       Graphics2D g2,
       int baseULXPixel,
       int baseULYPixel,

@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * TableWriterAllReduceDnlsTableNLevels is a subclass of TableWriterAll that just keeps the files
@@ -113,7 +114,7 @@ public class TableWriterAllReduceDnlsTableNLevels extends TableWriterAll {
    *
    * @return the subdirHashmap of immediate subdirectory short names.
    */
-  public HashSet<String> subdirHash() {
+  public Set<String> subdirHash() {
     return subdirHash;
   }
 }

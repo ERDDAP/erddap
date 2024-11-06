@@ -62,8 +62,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -7352,7 +7352,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse SOS service queryString
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // if service= is present, it must be service=SOS     //technically, it is required
@@ -7874,7 +7874,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse queryString
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // if service= is present, it must be service=WCS     //technically, it is required
@@ -8371,7 +8371,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse queryString  e.g., ?service=WMS&request=GetCapabilities
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // must be service=WMS     but I don't require it
@@ -9127,7 +9127,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletRequest request,
       HttpServletResponse response,
       String loggedInAs,
-      HashMap<String, String> queryMap)
+      Map<String, String> queryMap)
       throws Throwable {
 
     if (!EDStatic.wmsActive) {
@@ -9864,7 +9864,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletResponse response,
       String loggedInAs,
       String tDatasetID,
-      HashMap<String, String> queryMap)
+      Map<String, String> queryMap)
       throws Throwable {
 
     if (!EDStatic.wmsActive) {
@@ -11538,7 +11538,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String urlParts[] = String2.split(teor, '/');
     int nUrlParts = urlParts.length;
 
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String fParam = queryMap.get("f"); // e.g., json or JSON
     fParam = fParam == null ? "" : fParam.toLowerCase();
@@ -13139,7 +13139,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     Writer writer = File2.getBufferedWriterUtf8(out);
     try {
       // look at the request
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // false so names are case insensitive
       String datasetID = queryMap.get("datasetid"); // lowercase name
       String flagKey = queryMap.get("flagkey"); // lowercase name
@@ -17911,8 +17911,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, true); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, true); // true=lowercase keys
     String tDatasetID = queryMap.get("datasetid");
     String tEmail = queryMap.get("email");
     String tAction = queryMap.get("action");
@@ -18234,7 +18233,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -18422,7 +18421,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -18625,7 +18624,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -19176,8 +19175,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCode = "06053";
     String defaultCounty = "CA, Monterey";
     String queryCode = queryMap.get("code");
@@ -19460,8 +19458,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultAcronym = "NOAA";
     String defaultFullName = "National Oceanic and Atmospheric Administration";
     String queryAcronym = queryMap.get("acronym");
@@ -19754,8 +19751,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultVariableName = "sst";
     String defaultFullName = "Sea Surface Temperature";
     String queryVariableName = queryMap.get("variableName");
@@ -20060,8 +20056,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCF = "";
     String defaultGCMD = "";
     String queryCF = queryMap.get("cf");
@@ -20362,8 +20357,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tTLLTable = queryMap.get("TimeLatLonTable");
     String tRequestCSV = queryMap.get("requestCSV");
     String tFileType = pft >= 0 ? plainFileTypes[pft] : ""; // default pft
@@ -21439,8 +21433,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     // defaultIsoTime, defaultN and defaultUnits are also used in messages.xml convertTimeService
     String defaultIsoTime = "1985-01-02T00:00:00Z";
     String defaultOtherTime = "1/2/1985 00:00:00";
@@ -21893,8 +21886,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tStandardizeUdunits = queryMap.get("STANDARDIZE_UDUNITS");
     String tUdunits = queryMap.get("UDUNITS");
     String tUcum = queryMap.get("UCUM");
@@ -22169,8 +22161,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tText = queryMap.get("text");
     if (tText == null) tText = "";
     String rText = tText.length() == 0 ? "" : EDStatic.updateUrls(tText);

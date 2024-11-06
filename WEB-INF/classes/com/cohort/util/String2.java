@@ -4,6 +4,7 @@
  */
 package com.cohort.util;
 
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.google.common.collect.ImmutableList;
 import java.awt.Toolkit;
@@ -527,8 +528,8 @@ public class String2 {
    * @param text
    * @return hashset of the unique acronyms in text.
    */
-  public static HashSet<String> findAcronyms(final String text) {
-    final HashSet<String> hs = new HashSet();
+  public static Set<String> findAcronyms(final String text) {
+    final HashSet<String> hs = new HashSet<>();
     if (text == null || text.length() < 2) return hs;
     final Pattern pattern = Pattern.compile("[^a-zA-Z0-9]([A-Z]{2,})[^a-zA-Z0-9]");
     final Matcher matcher = pattern.matcher(text);
@@ -597,14 +598,14 @@ public class String2 {
    *     the "greedy" qualifiers which match as many chars as possible (e.g., ?, *, +).
    * @return a HashSet with the found strings.
    */
-  public static HashSet<String> extractAllCaptureGroupsAsHashSet(
+  public static Set<String> extractAllCaptureGroupsAsHashSet(
       final String s, final String regex, final int captureGroupNumber) {
     return extractAllCaptureGroupsAsHashSet(s, Pattern.compile(regex), captureGroupNumber);
   }
 
-  public static HashSet<String> extractAllCaptureGroupsAsHashSet(
+  public static Set<String> extractAllCaptureGroupsAsHashSet(
       final String s, final Pattern pattern, final int captureGroupNumber) {
-    final HashSet<String> hs = new HashSet();
+    final HashSet<String> hs = new HashSet<>();
     final Matcher m = pattern.matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
@@ -675,8 +676,8 @@ public class String2 {
   }
 
   /** This converts a String[] to a HashSet&lt;String&gt;. */
-  public static HashSet<String> stringArrayToSet(final String sar[]) {
-    final HashSet<String> hs = new HashSet();
+  public static Set<String> stringArrayToSet(final String sar[]) {
+    final HashSet<String> hs = new HashSet<>();
     final int n = sar.length;
     for (int i = 0; i < n; i++) hs.add(sar[i]);
     return hs;
@@ -1444,7 +1445,7 @@ public class String2 {
     // last (or only) character can't be .
     if (s.charAt(n - 1) == '.') return false;
 
-    final ArrayList<String> al = splitToArrayList(s, '.', false); // trim=false
+    final List<String> al = splitToArrayList(s, '.', false); // trim=false
     final int nal = al.size();
 
     // test each word
@@ -2354,10 +2355,11 @@ public class String2 {
    * @param s the string with internal line separators
    * @return an arrayList&lt;Strings&gt; (separate lines of text)
    */
-  public static ArrayList<String> multiLineStringToArrayList(final String s) {
+  public static List<String> multiLineStringToArrayList(final String s) {
     final char endOfLineChar = s.indexOf('\n') >= 0 ? '\n' : '\r';
     final int sLength = s.length();
-    final ArrayList<String> arrayList = new ArrayList(); // this is local, so okay if not threadsafe
+    final ArrayList<String> arrayList =
+        new ArrayList<>(); // this is local, so okay if not threadsafe
     final StringBuilder oneLine = new StringBuilder(512);
     char ch;
     int start = 0;
@@ -2388,8 +2390,8 @@ public class String2 {
    * @param e an enumeration
    * @return arrayList with the objects from the enumeration
    */
-  public static ArrayList toArrayList(final Enumeration e) {
-    final ArrayList al = new ArrayList();
+  public static List<String> toArrayList(final Enumeration<String> e) {
+    final ArrayList<String> al = new ArrayList<>();
     while (e.hasMoreElements()) al.add(e.nextElement());
     return al;
   }
@@ -2400,9 +2402,35 @@ public class String2 {
    * @param objectArray an Object[]
    * @return arrayList with the objects
    */
-  public static ArrayList toArrayList(final Object objectArray[]) {
+  public static List<String> toArrayList(final String objectArray[]) {
     final int n = objectArray.length;
-    final ArrayList al = new ArrayList(n);
+    final ArrayList<String> al = new ArrayList<>(n);
+    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    return al;
+  }
+
+  /**
+   * This creates an ArrayList from an Object[].
+   *
+   * @param objectArray an Object[]
+   * @return arrayList with the objects
+   */
+  public static List<Object> toArrayList(final Object objectArray[]) {
+    final int n = objectArray.length;
+    final ArrayList<Object> al = new ArrayList<>(n);
+    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    return al;
+  }
+
+  /**
+   * This creates an ArrayList from an Object[].
+   *
+   * @param objectArray an PrimitiveArray[]
+   * @return arrayList with the objects
+   */
+  public static List<PrimitiveArray> toArrayList(final PrimitiveArray objectArray[]) {
+    final int n = objectArray.length;
+    final ArrayList<PrimitiveArray> al = new ArrayList<>(n);
     for (int i = 0; i < n; i++) al.add(objectArray[i]);
     return al;
   }
@@ -2442,15 +2470,15 @@ public class String2 {
   }
 
   /** This returns a CSV (not CSSV) String. */
-  public static String toCSVString(final Enumeration en) {
+  public static String toCSVString(final Enumeration<String> en) {
     return toSVString(toArrayList(en).toArray(), ",", false);
   }
 
-  public static String toCSVString(final ArrayList al) {
+  public static String toCSVString(final List<Object> al) {
     return toSVString(al.toArray(), ",", false);
   }
 
-  public static String toCSVString(final Vector v) {
+  public static String toCSVString(final Vector<Object> v) {
     return toSVString(v.toArray(), ",", false);
   }
 
@@ -2458,14 +2486,10 @@ public class String2 {
     return toSVString(ar, ",", false);
   }
 
-  public static String toCSVString(final Set set) {
+  public static String toCSVString(final Set<?> set) {
     final Object ar[] = set.toArray();
     Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
     return toCSVString(ar);
-  }
-
-  public static String toCSSVString(final List<?> list) {
-    return toSVString(list.toArray(), ", ", false);
   }
 
   /**
@@ -2483,8 +2507,24 @@ public class String2 {
    * @return a CSSV String with the values with ", " after all but the last value. Returns null if
    *     ar is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final Enumeration en) {
+  public static String toCSSVString(final Enumeration<String> en) {
     return toSVString(toArrayList(en).toArray(), ", ", false);
+  }
+
+  /**
+   * Generates a Comma-Space-Separated-Value (CSSV) string.
+   *
+   * <p>CHANGED: before 2011-03-06, this didn't do anything special for strings with internal commas
+   * or quotes. Now it uses toJson for that string.
+   *
+   * <p>CHANGED: before 2011-09-04, this was called toCSVString.
+   *
+   * @param al an immutable list of objects
+   * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
+   *     is null. null elements are represented as "[null]".
+   */
+  public static String toCSSVString(final ImmutableList<String> al) {
+    return toSVString(al.toArray(), ", ", false);
   }
 
   /**
@@ -2499,7 +2539,7 @@ public class String2 {
    * @return a CSV String with the values with ", " after all but the last value. Returns null if ar
    *     is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final ArrayList al) {
+  public static String toCSSVString(final List<Object> al) {
     return toSVString(al.toArray(), ", ", false);
   }
 
@@ -2513,7 +2553,7 @@ public class String2 {
    * @return a CSSV String with the values with ", " after all but the last value. Returns null if
    *     ar is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final Vector v) {
+  public static String toCSSVString(final Vector<Object> v) {
     return toSVString(v.toArray(), ", ", false);
   }
 
@@ -2542,7 +2582,7 @@ public class String2 {
    * @return a CSSV String with the values with ", " after all but the last value. Returns null if
    *     ar is null. null elements are represented as "[null]".
    */
-  public static String toCSSVString(final Set set) {
+  public static String toCSSVString(final Set<String> set) {
     final Object ar[] = set.toArray();
     Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
     return toCSSVString(ar);
@@ -2912,7 +2952,7 @@ public class String2 {
    * @param arrayList
    * @param ar the items to be added
    */
-  public static void add(final ArrayList arrayList, final Object ar[]) {
+  public static void add(final List<Object> arrayList, final Object ar[]) {
     if (arrayList == null || ar == null) return;
     final int n = ar.length;
     for (int i = 0; i < n; i++) arrayList.add(ar[i]);
@@ -2966,7 +3006,7 @@ public class String2 {
    * @param arrayList
    * @return the desired string representation
    */
-  public static String alternateToString(final ArrayList arrayList) {
+  public static String alternateToString(final List<Object> arrayList) {
     if (arrayList == null) return "    [null]\n";
     final int n = arrayList.size();
     // estimate 32 bytes/element
@@ -2988,7 +3028,7 @@ public class String2 {
    * @param arrayList
    * @return the attributeNames in the arrayList
    */
-  public static String[] alternateGetNames(final ArrayList arrayList) {
+  public static String[] alternateGetNames(final List<Object> arrayList) {
     if (arrayList == null) return null;
     final int n = arrayList.size();
     final String[] sar = new String[n / 2];
@@ -3009,7 +3049,7 @@ public class String2 {
    * @param attributeName
    * @return the associated value
    */
-  public static Object alternateGetValue(final ArrayList arrayList, final String attributeName) {
+  public static Object alternateGetValue(final List<Object> arrayList, final String attributeName) {
     if (arrayList == null) return null;
     final int n = arrayList.size();
     for (int i = 0; i < n; i += 2) {
@@ -3030,7 +3070,7 @@ public class String2 {
    * @throws RuntimeException of trouble (e.g., if arrayList is null)
    */
   public static Object alternateSetValue(
-      final ArrayList arrayList, final String attributeName, final Object value) {
+      final List<Object> arrayList, final String attributeName, final Object value) {
     if (arrayList == null)
       throw new SimpleException(ERROR + " in String2.alternateSetValue: arrayList is null.");
     final int n = arrayList.size();
@@ -3658,7 +3698,7 @@ public class String2 {
    * @return an ArrayList of strings. s=null returns null. s="" returns ArrayList with one value:
    *     "".
    */
-  public static ArrayList<String> splitToArrayList(String s, char separator) {
+  public static List<String> splitToArrayList(String s, char separator) {
     return splitToArrayList(s, separator, true);
   }
 
@@ -3672,9 +3712,9 @@ public class String2 {
    * @return an ArrayList of strings (not canonical). s=null returns null. s="" returns ArrayList
    *     with one value: "".
    */
-  public static ArrayList<String> splitToArrayList(String s, char separator, boolean trim) {
+  public static List<String> splitToArrayList(String s, char separator, boolean trim) {
     if (s == null) return null;
-    ArrayList<String> al = new ArrayList(16);
+    ArrayList<String> al = new ArrayList<>(16);
     return splitToArrayList(s, separator, trim, al);
   }
 
@@ -3689,8 +3729,8 @@ public class String2 {
    * @return al for convenience. The strings are not canonical. s=null returns al with 0 values.
    *     s="" returns ArrayList with one value: "".
    */
-  public static ArrayList<String> splitToArrayList(
-      String s, char separator, boolean trim, ArrayList<String> al) {
+  public static List<String> splitToArrayList(
+      String s, char separator, boolean trim, List<String> al) {
 
     // go through the string looking for separators
     al.clear();
@@ -3725,7 +3765,7 @@ public class String2 {
    *     String[1]{""}.
    */
   public static String[] split(String s, char separator) {
-    ArrayList<String> al = splitToArrayList(s, separator, true);
+    List<String> al = splitToArrayList(s, separator, true);
     if (al == null) return null;
     return al.toArray(new String[0]);
   }
@@ -3740,7 +3780,7 @@ public class String2 {
    *     String[1]{""}.
    */
   public static String[] splitNoTrim(String s, char separator) {
-    ArrayList<String> al = splitToArrayList(s, separator, false);
+    List<String> al = splitToArrayList(s, separator, false);
     if (al == null) return null;
     return al.toArray(new String[0]);
   }
@@ -3800,12 +3840,12 @@ public class String2 {
    * @return the corresponding int[] (invalid values are converted to Integer.MAX_VALUE). al=null
    *     returns null.
    */
-  public static int[] toIntArray(ArrayList al) {
+  public static int[] toIntArray(List<Integer> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toIntArray");
     int ia[] = new int[n];
-    for (int i = 0; i < n; i++) ia[i] = ((Integer) al.get(i)).intValue();
+    for (int i = 0; i < n; i++) ia[i] = al.get(i).intValue();
     return ia;
   }
 
@@ -3816,12 +3856,12 @@ public class String2 {
    * @return the corresponding float[] (invalid values are converted to Float.NaN). al=null returns
    *     null.
    */
-  public static float[] toFloatArray(ArrayList al) {
+  public static float[] toFloatArray(List<Float> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toFloatArray");
     float fa[] = new float[n];
-    for (int i = 0; i < n; i++) fa[i] = ((Float) al.get(i)).floatValue();
+    for (int i = 0; i < n; i++) fa[i] = al.get(i).floatValue();
     return fa;
   }
 
@@ -3832,12 +3872,12 @@ public class String2 {
    * @return the corresponding double[] (invalid values are converted to Double.NaN). al=null
    *     returns null.
    */
-  public static double[] toDoubleArray(ArrayList al) {
+  public static double[] toDoubleArray(List<Double> al) {
     if (al == null) return null;
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toDoubleArray");
     double da[] = new double[n];
-    for (int i = 0; i < n; i++) da[i] = ((Double) al.get(i)).doubleValue();
+    for (int i = 0; i < n; i++) da[i] = al.get(i).doubleValue();
     return da;
   }
 
