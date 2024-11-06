@@ -16188,6 +16188,7 @@ public class Table {
   public void writeParquet(String fullFileName, boolean fullMetadata) throws Exception {
     String msg = "  Table.writeParquet " + fullFileName;
     long time = System.currentTimeMillis();
+    convertToStandardMissingValues();
 
     int randomInt = Math2.random(Integer.MAX_VALUE);
     MessageType schema = getParquetSchemaForTable();
