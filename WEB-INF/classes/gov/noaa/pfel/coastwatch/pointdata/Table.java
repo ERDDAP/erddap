@@ -10313,11 +10313,7 @@ public class Table {
     if (paType == PAType.STRING || paType == PAType.CHAR) return;
     // boolean removeMVF = false;  //commented out 2010-10-26 so NDBC files have consistent
     // _FillValue
-    if (paType == PAType.CHAR) {
-      columnAttributes(column).set("missing_value", Character.MAX_VALUE);
-      columnAttributes(column).set("_FillValue", Character.MAX_VALUE);
-      // removeMVF = ((CharArray)pa).indexOf(Character.MAX_VALUE, 0) < 0;
-    } else if (paType == PAType.BYTE) {
+    if (paType == PAType.BYTE) {
       columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
       columnAttributes(column).set("_FillValue", Byte.MAX_VALUE);
       // removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;

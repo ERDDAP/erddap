@@ -1475,21 +1475,17 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (tags.equals("<child-items><child-item>")) {
           // a new child-item
           nChildItems++;
-          if (reallyVerbose)
+          if (reallyVerbose) {
             String2.log(
                 "Since whichChild="
                     + whichChild
                     + ", I'm "
-                    + (whichChild == 0 || nChildItems == whichChild ? "processing" : "skipping")
+                    + "processing"
                     + " <child-item> for entity #"
                     + nChildItems);
-          if (whichChild == 0 || nChildItems == whichChild) {
-            if (whichChild > 0) whichChildFound = true;
-            childItemsPre = "InPort_child_item_" + (whichChild > 0 ? "" : nChildItems + "_");
-          } else {
-            // skip this child
-            xmlReader.skipToStackSize(xmlReader.stackSize());
           }
+          if (whichChild > 0) whichChildFound = true;
+          childItemsPre = "InPort_child_item_" + (whichChild > 0 ? "" : nChildItems + "_");
 
         } else if (tags.equals("<child-items><child-item></catalog-item-id>")) {
           childItems.append(
@@ -1859,8 +1855,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     // *** end stuff
     boolean dateTimeAlreadyFound = false;
     String tSortedColumnSourceName = "";
-    String tSortFilesBySourceNames = "";
-    String tColumnNameForExtract = "";
 
     // clean up sourceTable
     sourceTable.convertIsSomething2(); // convert e.g., "N/A" to ""
@@ -2362,7 +2356,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             if (subObject.has("units")) {
               // will be cleaned up by makeReadyToUseAddVariableAttributes
               String s = subObject.getString("units");
-              if (s != null || s.length() > 0) colAtts.add("units", s);
+              if (s != null && s.length() > 0) colAtts.add("units", s);
             }
 
             // "data_type":"",  //always "". Adam says this is just a placeholder for now

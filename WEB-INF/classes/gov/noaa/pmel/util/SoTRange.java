@@ -174,17 +174,12 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       long rdelta = ((SoTRange.Time) r).delta;
 
       if (!(start == java.lang.Long.MAX_VALUE) && !(rstart == java.lang.Long.MAX_VALUE)) {
-        if ((start == java.lang.Long.MAX_VALUE) || (rstart == java.lang.Long.MAX_VALUE))
-          return false;
         if (start != rstart) return false;
       }
       if (!(end == java.lang.Long.MAX_VALUE) && !(rend == java.lang.Long.MAX_VALUE)) {
-        if ((end == java.lang.Long.MAX_VALUE) || (rend == java.lang.Long.MAX_VALUE)) return false;
         if (end != rend) return false;
       }
       if (!(delta == java.lang.Long.MAX_VALUE) && !(rdelta == java.lang.Long.MAX_VALUE)) {
-        if ((delta == java.lang.Long.MAX_VALUE) || (rdelta == java.lang.Long.MAX_VALUE))
-          return false;
         if (delta != rdelta) return false;
       }
       return true;

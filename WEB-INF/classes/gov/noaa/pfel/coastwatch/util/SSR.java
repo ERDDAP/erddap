@@ -843,8 +843,9 @@ public class SSR {
 
     // if Linux, it is faster to use the zip utility
     long tTime = System.currentTimeMillis();
-    if (!ignoreGzDirectories)
+    if (!ignoreGzDirectories) {
       throw new RuntimeException("Currently, SSR.unGzip only supports ignoreGzDirectories=true!");
+    }
     /*Do this in the future?
      if (String2.OSIsLinux) {
         //-d: the directory to put the files in
@@ -882,7 +883,8 @@ public class SSR {
         } else */ {
           // open an output file
           // ???do I need to make the directory???
-          if (ignoreGzDirectories) name = File2.getNameAndExtension(name); // remove dir info
+          /* if (ignoreGzDirectories) */
+          name = File2.getNameAndExtension(name); // remove dir info
           OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
           try {
             // transfer bytes from the .zip file to the output file

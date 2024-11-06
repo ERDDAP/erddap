@@ -564,7 +564,7 @@ public class File2 {
                     + fullName
                     + "\n"
                     + MustBe.getStackTrace());
-            return result;
+            return false;
           }
           String2.log(
               "WARNING #"
@@ -1197,7 +1197,6 @@ public class File2 {
    */
   public static BufferedInputStream getBufferedInputStream(
       String fullFileName, long firstByte, long lastByte) throws Exception {
-    String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
 
     // is it an AWS S3 object?
     String bro[] = String2.parseAwsS3Url(fullFileName); // [bucket, region, objectKey]
@@ -1264,8 +1263,8 @@ public class File2 {
       try {
         gzipIn = new GzipCompressorInputStream(is);
         tarIn = new TarArchiveInputStream(gzipIn);
-        TarArchiveEntry entry = tarIn.getNextTarEntry();
-        while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
+        TarArchiveEntry entry = tarIn.getNextEntry();
+        while (entry != null && entry.isDirectory()) entry = tarIn.getNextEntry();
         if (entry == null)
           throw new IOException(
               String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
@@ -1603,7 +1602,6 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
     BufferedReader br = getDecompressedBufferedFileReader(fileName, charset);
     StringBuilder sb = new StringBuilder(8192);
     try {
@@ -1672,7 +1670,6 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
     BufferedReader br = null;
     String results[] = {"", ""};
     int errorIndex = 0;
