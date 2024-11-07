@@ -2352,7 +2352,9 @@ class JettyTests {
             + //
             "      <gmd:maintenanceNote>\n"
             + //
-            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version 2.25</gco:CharacterString>\n"
+            "        <gco:CharacterString>This record was created from dataset metadata by ERDDAP Version "
+            + EDStatic.erddapVersion
+            + "</gco:CharacterString>\n"
             + //
             "      </gmd:maintenanceNote>\n"
             + //
@@ -2514,7 +2516,9 @@ class JettyTests {
             + //
             "          <pubplace>Nowhere, AK, USA</pubplace>\n"
             + //
-            "          <publish>ERDDAP, version 2.25, at ERDDAP Jetty Install</publish>\n"
+            "          <publish>ERDDAP, version "
+            + EDStatic.erddapVersion
+            + ", at ERDDAP Jetty Install</publish>\n"
             + //
             "          <publish_cntinfo>\n"
             + //

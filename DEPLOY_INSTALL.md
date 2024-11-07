@@ -211,8 +211,8 @@ ERDDAP™ can run on any server that supports Java and Tomcat (and other applica
     ERDDAP™ will not work correctly if the setup.xml or datasets.xml file isn't a well-formed XML file. So, after you edit these files, it is a good idea to verify that the result is well-formed XML by pasting the XML text into an XML checker like [xmlvalidation(https://www.xmlvalidation.com/).  
      
 4.  [Install the erddap.war file.](#erddap.war)  
-    On Linux, Mac, and Windows, download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.25/erddap.war) into _tomcat_/webapps .  
-    (version 2.25, 592,291,920 bytes, MD5=BEEBE386A3514C0FB8898C6EA597F40D, dated 2024-10-31)
+    On Linux, Mac, and Windows, download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.25.1/erddap.war) into _tomcat_/webapps .  
+    (version 2.25_1, 592,292,039 bytes, MD5=0F0C14FD22DF80D0E867A4B96ED7F3FF, dated 2024-11-07)
     
     The .war file is big because it contains high resolution coastline, boundary, and elevation data needed to create maps.
     
