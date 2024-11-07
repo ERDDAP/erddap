@@ -16167,14 +16167,11 @@ public class Table {
         continue;
       }
       PrimitiveArray tValue = attributes.get(tName);
-      if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
-        continue; // do nothing
-      }
       if ("time_".equalsIgnoreCase(prefix)
           && Calendar2.SECONDS_SINCE_1970.equals(attributes.getString(tName))) {
         metadata.put(prefix + tName, Calendar2.MILLISECONDS_SINCE_1970);
       } else {
-        metadata.put(prefix + tName, tValue.toCSVString());
+        metadata.put(prefix + tName, tValue == null ? null : tValue.toString());
       }
     }
   }
