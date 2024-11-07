@@ -31,7 +31,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * PaneProxy implements the functionality common to <code>JPane</code> and <code>Pane</code>.
@@ -412,18 +412,17 @@ public class PaneProxy { // Bob Simons made public
    * @since 3.0
    */
   Object[] getObjectsAt(int x, int y) {
-    Vector obList = new Vector();
+    ArrayList<Object> obList = new ArrayList<>();
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) obList.addElement(obj);
+          if (obj != null) obList.add(obj);
         } else if (comps[i] instanceof Panel) {
           obj = ((Panel) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) obList.addElement(obj);
+          if (obj != null) obList.add(obj);
         }
       }
     }

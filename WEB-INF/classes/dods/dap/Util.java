@@ -32,7 +32,8 @@ class Util {
    * @exception IndexOutOfBoundsException if size doesn't match the number of elements in the <code>
    *     Enumeration</code>
    */
-  static void uniqueNames(Vector v, String varName, String typeName) throws BadSemanticsException {
+  static void uniqueNames(Vector<BaseType> v, String varName, String typeName)
+      throws BadSemanticsException {
     String[] names = sortedNames(v);
     // DEBUG: print out names
     // for(int i=0; i<names.length; i++) {
@@ -61,10 +62,10 @@ class Util {
    * @return a sorted array of <code>String</code>
    * @exception BadSemanticsException if there is an element with no name
    */
-  static String[] sortedNames(Vector v) throws BadSemanticsException {
+  static String[] sortedNames(Vector<BaseType> v) throws BadSemanticsException {
     String[] names = new String[v.size()];
     int count = 0;
-    for (Enumeration e = v.elements(); e.hasMoreElements(); ) {
+    for (Enumeration<BaseType> e = v.elements(); e.hasMoreElements(); ) {
       BaseType bt = (BaseType) e.nextElement();
       String tempName = bt.getName();
       if (tempName == null)
@@ -149,7 +150,7 @@ class Util {
    * @return the escaped <code>String</code>.
    */
   static String escattr(String s) {
-    StringBuffer buf = new StringBuffer(s.length());
+    StringBuilder buf = new StringBuilder(s.length());
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
       if (c == ' ' || (c >= '!' && c <= '~')) {

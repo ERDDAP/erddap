@@ -17,9 +17,9 @@
 
 package com.cohort.util;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,8 +36,8 @@ import org.apache.commons.logging.LogFactory;
 public final class String2LogFactory extends LogFactory {
 
   /** The configuration attributes for this LogFactory. */
-  private final Hashtable attributes =
-      new Hashtable(); // don't change to ConcurrentHashMap since not heavily used.
+  private final Hashtable<String, Object> attributes =
+      new Hashtable<>(); // don't change to ConcurrentHashMap since not heavily used.
 
   private String2Log string2Log;
 
@@ -66,14 +66,14 @@ public final class String2LogFactory extends LogFactory {
   @Override
   public String[] getAttributeNames() {
     synchronized (attributes) {
-      Vector names = new Vector();
-      Enumeration keys = attributes.keys();
+      ArrayList<String> names = new ArrayList<>();
+      Enumeration<String> keys = attributes.keys();
       while (keys.hasMoreElements()) {
-        names.addElement((String) keys.nextElement());
+        names.add(keys.nextElement());
       }
       String results[] = new String[names.size()];
       for (int i = 0; i < results.length; i++) {
-        results[i] = (String) names.elementAt(i);
+        results[i] = names.get(i);
       }
       return results;
     }

@@ -19,8 +19,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * This class contains constants related to reading and writing Matlab files.
@@ -631,7 +632,7 @@ public class Matlab {
    *     name (a String) and an array with the matrix's data.
    * @throws Exception if trouble
    */
-  public static Vector readMatlabFile(String fullFileName) throws Exception {
+  public static List<Object> readMatlabFile(String fullFileName) throws Exception {
 
     String methodName = "Matlab.readMatlabFile:\n";
 
@@ -662,7 +663,7 @@ public class Matlab {
       if (verbose) String2.log("littleEndian=" + littleEndian);
 
       // read the data
-      Vector vector = new Vector();
+      List<Object> vector = new ArrayList<>();
       while (stream.available() > 0) {
         // read data type (4 bytes)
         int miDataType = DataStream.readInt(littleEndian, stream, buffer);

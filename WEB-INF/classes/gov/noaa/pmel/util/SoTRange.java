@@ -210,7 +210,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
 
     @Override
     public String toString() {
-      StringBuffer buf = new StringBuffer(50);
+      StringBuilder buf = new StringBuilder(50);
       buf.append("[").append(start).append(";").append(end);
       if (delta == java.lang.Long.MAX_VALUE) {
         buf.append("]");
@@ -402,7 +402,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
 
     @Override
     public String toString() {
-      StringBuffer buf = new StringBuffer(50);
+      StringBuilder buf = new StringBuilder(50);
       buf.append("[").append(start).append(";").append(end);
       if (java.lang.Double.isNaN(delta)) {
         buf.append("]");

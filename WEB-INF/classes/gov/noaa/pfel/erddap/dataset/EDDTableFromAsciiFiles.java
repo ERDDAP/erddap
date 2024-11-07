@@ -2112,7 +2112,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             + baseDir);
     long time = System.currentTimeMillis();
     File2.makeDirectory(baseDir);
-    StringBuffer results = new StringBuffer();
+    StringBuilder results = new StringBuilder();
     StringArray noTime = new StringArray();
     tStandardizeWhat =
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE

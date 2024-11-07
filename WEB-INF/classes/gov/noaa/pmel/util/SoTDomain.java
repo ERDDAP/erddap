@@ -160,7 +160,7 @@ public class SoTDomain implements java.io.Serializable {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer(100);
+    StringBuilder buf = new StringBuilder(100);
     buf.append("x=");
     buf.append(xRange_).append(",y=");
     buf.append(yRange_);
