@@ -2443,7 +2443,7 @@ class JettyTests {
     expected =
         "<tr><td><img class=\"B\" src=\"http://localhost:"
             + PORT
-            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;iso19115&#x2e;xml\">erdMH1chlamday&#x5f;iso19115&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">53721</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>";
+            + "/erddap/images/fileIcons/xml.gif\" alt=\"[XML]\"></td><td><a rel=\"bookmark\" href=\"erdMH1chlamday&#x5f;iso19115&#x2e;xml\">erdMH1chlamday&#x5f;iso19115&#x2e;xml</a></td><td class=\"R\">DD-MMM-YYYY HH:mm</td><td class=\"R\">53723</td><td>Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)</td></tr>";
     results = results.replaceAll("..-...-.... ..:..", "DD-MMM-YYYY HH:mm");
     Test.ensureTrue(results.indexOf(expected) > 0, "No erdMH1chlamday found, results=" + results);
   }
