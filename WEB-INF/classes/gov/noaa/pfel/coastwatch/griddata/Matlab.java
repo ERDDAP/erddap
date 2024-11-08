@@ -18,9 +18,10 @@ import gov.noaa.pfel.coastwatch.util.DataStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -179,12 +180,12 @@ public class Matlab {
     // write the header text field (116 bytes, padded with spaces)  (see pg 1-6)
     // e.g., MATLAB 5.0 MAT-file, Platform: GLNX86, Created on: Tue Feb 15 01:19:17 2005
     if (verbose) String2.log("writeMatlabHeader");
-    Date date = new Date();
-    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+    LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy");
     StringBuilder sb =
         new StringBuilder(
             "MATLAB 5.0 MAT-file, Created by: gov.noaa.pfel.coastwatch.Matlab, Created on: "
-                + sdf.format(date));
+                + date.format(dtf));
     if (verbose) String2.log("header=" + sb);
     while (sb.length() < 116) // pad with spaces
     sb.append(' ');

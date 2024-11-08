@@ -1290,6 +1290,7 @@ public class SSR {
    *
    * @throws Exception if trouble
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for MimeMessage
   public static void lowSendEmail(
       Session session,
       SMTPTransport smtpTransport,

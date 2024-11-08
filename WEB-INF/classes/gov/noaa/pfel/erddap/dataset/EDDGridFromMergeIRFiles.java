@@ -21,9 +21,9 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.InputStream;
 import java.nio.file.FileSystemException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * This class represents gridded data aggregated from a collection of NCEP/CPC 4km Global (60N -
@@ -297,13 +297,13 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
               String day = sdate.substring(6, 8);
               String hour = sdate.substring(8, 10);
 
-              java.text.SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-              sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+              DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
               String fileTime = month + "/" + day + "/" + year + " " + hour + ":00:00";
-              Date date = sdf.parse(fileTime);
+              dtf = dtf.withZone(ZoneId.of("UTC"));
+              ZonedDateTime zdt = ZonedDateTime.parse(fileTime, dtf);
 
               // calculate bounds
-              long d0 = date.getTime() / 1000;
+              long d0 = zdt.toEpochSecond();
               long d1 = d0 + 1800;
 
               // log
@@ -311,7 +311,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
                   "fileTime = "
                       + fileTime
                       + " --> date = \""
-                      + date.toString()
+                      + zdt.toString()
                       + "\" (d0="
                       + d0
                       + ", d1="

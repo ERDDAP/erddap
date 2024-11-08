@@ -1162,6 +1162,7 @@ public class EDDTableFromCassandra extends EDDTable {
    * @throws Throwable if trouble (notably, WaitThenTryAgainException)
    */
   @Override
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public void getDataForDapQuery(
       int language,
       String loggedInAs,
@@ -1557,6 +1558,7 @@ public class EDDTableFromCassandra extends EDDTable {
    *     stats[3]+=nRowsAfterStandardize
    * @return the same or a different table (usually with some results rows)
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public Table getDataForCassandraQuery(
       int language,
       String loggedInAs,
