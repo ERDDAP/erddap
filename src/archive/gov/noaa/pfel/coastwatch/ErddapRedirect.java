@@ -7,7 +7,6 @@ package gov.noaa.pfel.coastwatch;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.*;
-import java.util.*;
 
 public class ErddapRedirect extends HttpServlet {
 

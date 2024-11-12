@@ -1040,7 +1040,6 @@ public class TestAll {
     EDVTimeStampGridAxis edvtsga;
     EmailThread et;
     Erddap erddap;
-    ErddapRedirect erddapRedirect;
     FindDuplicateTime findDuplicateTime;
     GenerateDatasetsXml gdx;
     GridDataAccessor gda;
