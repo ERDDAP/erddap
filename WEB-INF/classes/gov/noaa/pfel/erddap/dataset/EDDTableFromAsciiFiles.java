@@ -886,10 +886,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     while (true) {
       xmlReader.nextTag();
       tags = xmlReader.allTags();
-      int nTags = xmlReader.stackSize();
       String content = xmlReader.content();
       if (xmlReader.stackSize() == 1) break; // the startTag
-      String topTag = xmlReader.tag(nTags - 1);
       boolean hasContent = String2.isSomething2(content);
       tags = tags.substring(startTagLength);
       if (debugMode) String2.log(">>  tags=" + tags + content);

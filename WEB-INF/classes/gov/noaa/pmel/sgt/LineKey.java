@@ -479,23 +479,11 @@ public class LineKey implements Cloneable, DataKey, Moveable, PropertyChangeList
     }
   }
 
-  /**
-   * Return rowheight of key in pixels.
-   *
-   * @since 2.0
-   */
-  public int getRowHeight() {
-    Rectangle bounds;
-    bounds = getBounds();
-    return ROW_SPACE_ + maxLabelHeight_;
-  }
-
   /** Draw the Key. */
   @Override
   public void draw(Graphics g) {
-    double maxLabelLength, maxLabelHeight;
     int numLines, numRows, i, lineLength;
-    int col, row, ytemp;
+    int col, row;
     double xloc, labelSpace;
     double[] xp, yp;
     int[] xd, yd;
@@ -713,7 +701,6 @@ public class LineKey implements Cloneable, DataKey, Moveable, PropertyChangeList
     int[] xd, yd;
     int numLines, numRows;
     int lineLength;
-    double labelSpace;
     int i;
 
     numLines = line_.size();
@@ -731,7 +718,6 @@ public class LineKey implements Cloneable, DataKey, Moveable, PropertyChangeList
     // compute location of rows and columns in device and physical coordinates
     //
     lineLength = layer_.getXPtoD(lineLengthP_) - layer_.getXPtoD(0.0);
-    labelSpace = layer_.getXDtoP(LABEL_SPACE_) - layer_.getXDtoP(0);
     //
     yd[0] = bounds.y + VERTICAL_BORDER_ + maxLabelHeight_;
     for (i = 1; i < numRows; i++) {

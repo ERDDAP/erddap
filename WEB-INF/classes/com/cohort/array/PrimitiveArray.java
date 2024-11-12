@@ -1303,8 +1303,6 @@ public abstract class PrimitiveArray {
    *     e.g., Long.MAX_VALUE), and sum will be 0.
    */
   public PAOne[] calculatePAOneStats(Attributes atts) {
-    long time = System.currentTimeMillis();
-
     int n = 0;
 
     // strings?
@@ -1379,14 +1377,12 @@ public abstract class PrimitiveArray {
 
     // ULONGs? calculate as BigIntegers
     if (elementType() == PAType.ULONG) {
-      BigInteger mv = ULongArray.MAX_VALUE;
       BigInteger fv = ULongArray.MAX_VALUE;
       BigInteger tMin = ULongArray.MAX_VALUE;
       BigInteger tMax = ULongArray.MIN_VALUE;
       BigInteger tSum = BigInteger.ZERO;
       if (atts != null) {
         fv = atts.getULong("_FillValue");
-        mv = atts.getULong("missing_value");
       }
 
       for (int i = 0; i < size; i++) {
@@ -1537,8 +1533,6 @@ public abstract class PrimitiveArray {
    *     Long.MAX_VALUE), and sum will be 0.
    */
   public double[] calculateStats2(Attributes atts) {
-    long time = System.currentTimeMillis();
-
     // for long and ulong, this could claculate as BigDecimal
     // then convert to double results.
 
@@ -1608,8 +1602,6 @@ public abstract class PrimitiveArray {
    * @return the median.
    */
   public double calculateMedian(Attributes atts) {
-    long time = System.currentTimeMillis();
-
     // for long and ulong, this could claculate as BigDecimal
     // then convert to double results.
 
@@ -3951,21 +3943,17 @@ public abstract class PrimitiveArray {
 
     // are first and lastChar all the same? e.g., 7b, -12b
     int saSize = sa.size();
-    boolean firstCharSame = sa.get(0).length() >= 1; // initially just first value
     boolean lastCharSame = sa.get(0).length() >= 1; // initially just first value
     boolean last2CharSame = sa.get(0).length() >= 2; // initially just first value
-    char firstChar = ' '; // junk for now
     char lastChar = ' '; // junk for now
     String last2Char = "";
     if (lastCharSame) {
       String s = sa.get(0); // it will be length() >= 1 (tested above)
-      firstChar = s.charAt(0);
       lastChar = s.charAt(s.length() - 1);
       if (last2CharSame) // it will be length() >= 2 (tested above)
       last2Char = s.substring(s.length() - 2);
       for (int i = 1; i < saSize; i++) {
         s = sa.get(i);
-        if (s.length() == 0 || s.charAt(0) != firstChar) firstCharSame = false;
         if (last2CharSame && !s.endsWith(last2Char)) last2CharSame = false;
         if (s.length() == 0 || s.charAt(s.length() - 1) != lastChar) {
           lastCharSame = false;

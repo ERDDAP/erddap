@@ -241,7 +241,6 @@ public class Opendap {
   public void getGridInfo(DAS das, DDS dds, String gridName, String defaultMissingValue)
       throws Exception {
     long time = System.currentTimeMillis();
-    String errorInMethod = String2.ERROR + " in Opendap.getGridInfo(" + gridName + "):\n  ";
 
     if (verbose) String2.log("Opendap.getGridInfo for " + gridName);
 
@@ -599,7 +598,6 @@ public class Opendap {
     double getMinY = minY;
     double getMaxY = maxY;
     int getNLon = desiredNLon;
-    int getNLat = desiredNLat;
     double originalDesiredLonIncrement =
         Math.max(gridLonIncrement, (maxX - minX) / (desiredNLon - 1));
     boolean getAllX = false;
@@ -797,7 +795,7 @@ public class Opendap {
     // getNLat changes because file range may be less than desired range
     //  and this is important optimization because it reduces the number of rows of data read
     // getNLon was modified above
-    getNLat = DataHelper.adjustNPointsNeeded(desiredNLat, maxY - minY, getMaxY - getMinY);
+    int getNLat = DataHelper.adjustNPointsNeeded(desiredNLat, maxY - minY, getMaxY - getMinY);
     if (verbose && getNLat != desiredNLat)
       String2.log(
           "  getMinY="
@@ -839,8 +837,6 @@ public class Opendap {
       // offset is usually e.g., 0, but perhaps e.g., .25
       double offset = lonDim[centerIndex] - centerAt;
       // makeLonPM180 will match up lowIndex and highIndex
-      double lowAt = (lonIsPM180 ? -180 : 0) + offset;
-      double highAt = lowAt + 360;
       int lowIndex = centerIndex - Math2.roundToInt(180 / gridLonIncrement); // may be theoretical
       int highIndex = lowIndex + Math2.roundToInt(360 / gridLonIncrement);
       // find first real index above lowIndex

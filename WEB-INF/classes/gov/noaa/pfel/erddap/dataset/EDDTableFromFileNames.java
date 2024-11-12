@@ -1222,7 +1222,6 @@ public class EDDTableFromFileNames extends EDDTable {
       fromFileColTypes = new String[] {"String", "String", "double", "double"};
     }
 
-    boolean done = false;
     for (int sti = 0; sti < nSubTables; sti++) {
 
       // get a chunk of low level data: ERDDAP URL, NAME, LASTMODIFIED (as double epoch seconds),
@@ -1305,7 +1304,6 @@ public class EDDTableFromFileNames extends EDDTable {
       // create other results variables as needed
       int namei = table.findColumnNumber(NAME);
       StringArray namePA = (StringArray) table.getColumn(namei);
-      Attributes atts = table.columnAttributes(namei);
       for (int rvi = 0; rvi < nResultsVariables; rvi++) {
 
         String sourceName = resultsVariables.get(rvi);
@@ -1415,7 +1413,6 @@ public class EDDTableFromFileNames extends EDDTable {
     // deal with ***fromOnTheFly and ***fromFiles
     boolean tFromOnTheFly = tFileDir.startsWith("***fromOnTheFly,");
     boolean tFromFiles = tFileDir.startsWith("***fromFiles,");
-    EDDTable tFromFilesEDDTable = null;
     String tFromFilesActualSource = null;
     if (tFromOnTheFly) {
       String parts[] = parseFromOnTheFly(tFileDir);
@@ -1510,7 +1507,6 @@ public class EDDTableFromFileNames extends EDDTable {
     int nCols = sourceTable.nColumns();
     for (int col = 0; col < nCols; col++) {
       String sourceName = sourceTable.getColumnName(col);
-      Attributes sourceAtts = sourceTable.columnAttributes(col);
       Attributes addAtts = new Attributes();
       addTable.addColumn(
           col, sourceName, (PrimitiveArray) sourceTable.getColumn(col).clone(), addAtts);

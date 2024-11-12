@@ -535,7 +535,6 @@ public class Units2 {
     // repeatedly pull off start of udunits and build ucum, till done
     String oldUdunits = udunits;
     StringBuilder ucum = new StringBuilder();
-    boolean hasPrefix = false;
     if (debugMode) String2.log(ucum.length() == 0 ? "" : "  ucum=" + ucum + " udunits=" + udunits);
 
     // try to find udunits in hashMap
@@ -793,11 +792,9 @@ public class Units2 {
         while (po2 < ucLength && String2.isDigit(ucum.charAt(po2))) po2++;
 
         // ^-  or ^{digit}
-        boolean hasE = false;
         if (po2 < ucLength - 1
             && ucum.charAt(po2) == '^'
             && (ucum.charAt(po2 + 1) == '-' || String2.isDigit(ucum.charAt(po2 + 1)))) {
-          hasE = true;
           po2 += 2;
           while (po2 < ucLength && String2.isDigit(ucum.charAt(po2))) po2++;
         }

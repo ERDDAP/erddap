@@ -231,7 +231,7 @@ public class TestSSR {
       // make the gzip file
       File2.delete(gzipDir + gzipName);
       time1 = System.currentTimeMillis();
-      SSR.gzip(gzipDir + gzipName, new String[] {gzipDir + fileName}, 10); // don't include dir info
+      SSR.gzip(gzipDir + gzipName, new String[] {gzipDir + fileName}); // don't include dir info
       time1 = System.currentTimeMillis() - time1;
       File2.delete(gzipDir + fileName);
       // unzip the gzip file

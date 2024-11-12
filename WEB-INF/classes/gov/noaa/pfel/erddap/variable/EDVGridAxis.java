@@ -346,7 +346,6 @@ public class EDVGridAxis extends EDV {
 
     // one time: generate the sliderCsvValues
     try {
-      long eTime = System.currentTimeMillis();
       PrimitiveArray tSourceValues = sourceValues(); // work with stable local reference
       int nSourceValues = tSourceValues.size();
       boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;

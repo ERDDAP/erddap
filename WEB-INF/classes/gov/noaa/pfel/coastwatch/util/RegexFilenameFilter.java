@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public class RegexFilenameFilter implements FilenameFilter {
-  private String regex;
   private Pattern pattern;
 
   // ideally, not static, but used for informational purposes only
@@ -38,7 +37,6 @@ public class RegexFilenameFilter implements FilenameFilter {
    *     java.util.regex.Pattern.
    */
   public RegexFilenameFilter(String regex) {
-    this.regex = regex;
     pattern = Pattern.compile(regex);
   }
 

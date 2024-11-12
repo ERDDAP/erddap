@@ -242,7 +242,6 @@ public class Touch {
     // for each of those
     StringArray sa = new StringArray();
     for (int i = 0; i < second.length; i++) {
-      String s = second[i];
       // String2.log("s=" + s);
 
       // print all ...urls

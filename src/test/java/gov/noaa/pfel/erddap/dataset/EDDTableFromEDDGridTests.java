@@ -663,11 +663,9 @@ class EDDTableFromEDDGridTests {
     // testVerboseOn();
     // boolean oDebugMode = debugMode;
     // debugMode = false; //normally false. Set it to true if need help.
-    String results, query, expected, expected2;
-    String id = "erdMBsstdmday_AsATable";
+    String results, expected, expected2;
     // this needs to test the dataset in ERDDAP, so child is local
     String baseQuery = "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable";
-    String dir = EDStatic.fullTestCacheDirectory;
 
     // das
     results = SSR.getUrlResponseStringNewline(baseQuery + ".das");
@@ -1441,11 +1439,7 @@ class EDDTableFromEDDGridTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    // String2.log("\n*** EDDTableFromEDDGrid.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv

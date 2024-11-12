@@ -53,12 +53,11 @@ public class DDSParserTokenManager implements DDSParserConstants {
   static final long[] jjbitVec0 = {0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL};
 
   private final int jjMoveNfa_0(int startState, int curPos) {
-    int[] nextStates;
     int startsAt = 0;
     jjnewStateCnt = 205;
     int i = 1;
     jjstateSet[0] = startState;
-    int j, kind = 0x7fffffff;
+    int kind = 0x7fffffff;
     for (; ; ) {
       if (++jjround == 0x7fffffff) ReInitRounds();
       if (curChar < 64) {
@@ -823,8 +822,6 @@ public class DDSParserTokenManager implements DDSParserConstants {
   int jjmatchedKind;
 
   public final Token getNextToken() {
-    int kind;
-    Token specialToken = null;
     Token matchedToken;
     int curPos = 0;
 

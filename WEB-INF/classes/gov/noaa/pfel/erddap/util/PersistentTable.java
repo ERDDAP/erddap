@@ -70,7 +70,6 @@ public class PersistentTable implements AutoCloseable {
   public static int BINARY_DOUBLE_LENGTH = 8;
 
   // set once
-  private String fullFileName;
   private RandomAccessFile raf;
   private int columnWidths[];
   private int columnStartAt[];
@@ -112,7 +111,6 @@ public class PersistentTable implements AutoCloseable {
    *     stored, so reserve extra space if chars above #128 expected.
    */
   public PersistentTable(String fullFileName, String mode, int columnWidths[]) throws IOException {
-    this.fullFileName = fullFileName;
     this.columnWidths = columnWidths;
     columnStartAt = new int[columnWidths.length];
     nBytesPerRow = 0;

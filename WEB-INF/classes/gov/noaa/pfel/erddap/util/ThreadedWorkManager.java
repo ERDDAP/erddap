@@ -29,6 +29,7 @@ public class ThreadedWorkManager<T> {
       FutureTask<T> task = new FutureTask<T>(callable);
       taskList.add(task);
       if (executorService != null) {
+        @SuppressWarnings("unused")
         Future<?> unused = executorService.submit(task);
       }
     } else {

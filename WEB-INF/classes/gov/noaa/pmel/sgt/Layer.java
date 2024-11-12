@@ -17,7 +17,6 @@ import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.dm.Collection;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.swing.Draggable;
-import gov.noaa.pmel.util.Debug;
 import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Rectangle2D;
 import java.awt.*;
@@ -158,8 +157,6 @@ public class Layer extends Component implements Cloneable, LayerControl {
   }
 
   private void computeScale() {
-    Dimension d;
-    boolean hasG2 = getGraphics() instanceof Graphics2D;
     // compute xoff and yoff as double then truncate to int
     Rectangle pbnds = pane_.getBounds();
     Rectangle bnds = pbnds; // getBounds();
@@ -187,13 +184,13 @@ public class Layer extends Component implements Cloneable, LayerControl {
 
     xoff_ = (int) xoff2_;
     yoff_ = (int) yoff2_;
-    if (Debug.DEBUG && pane_.isPrinter()) {
-      System.out.println("Layer.computeScale[" + getId() + "] printer = " + pane_.isPrinter());
-      System.out.println("                  xd(min) = " + getXPtoD(0.0));
-      System.out.println("                  xd(max) = " + getXPtoD(pWidth_));
-      System.out.println("                  yd(min) = " + getYPtoD(0.0));
-      System.out.println("                  yd(max) = " + getYPtoD(pHeight_));
-    }
+    // if (Debug.DEBUG && pane_.isPrinter()) {
+    //   System.out.println("Layer.computeScale[" + getId() + "] printer = " + pane_.isPrinter());
+    //   System.out.println("                  xd(min) = " + getXPtoD(0.0));
+    //   System.out.println("                  xd(max) = " + getXPtoD(pWidth_));
+    //   System.out.println("                  yd(min) = " + getYPtoD(0.0));
+    //   System.out.println("                  yd(max) = " + getYPtoD(pHeight_));
+    // }
   }
 
   /**

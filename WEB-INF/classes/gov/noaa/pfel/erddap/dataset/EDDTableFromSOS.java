@@ -472,7 +472,6 @@ public class EDDTableFromSOS extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromSOS(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDTableFromSOS";
@@ -1258,7 +1257,6 @@ public class EDDTableFromSOS extends EDDTable {
     for (int c = constraintVariables.size() - 1; c >= 0; c--) {
       String constraintVariable = constraintVariables.get(c);
       String constraintOp = constraintOps.get(c);
-      double dConstraintValue = String2.parseDouble(constraintValues.get(c));
       int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
       conDVI[c] = dv;
       EDV edv = dataVariables[dv];
@@ -1293,7 +1291,6 @@ public class EDDTableFromSOS extends EDDTable {
     // Always include lon,lat,alt,time,id to facilitate merging observedProperties correctly.
     IntArray tableDVI = new IntArray(); // .get(tableColumnIndex) -> dataVariableIndex
     // add the nFixedVariables
-    int tableLonCol = 0, tableLatCol = 1, tableAltCol = 2, tableTimeCol = 3, tableStationIdCol = 4;
     tableDVI.add(lonIndex);
     tableDVI.add(latIndex);
     tableDVI.add(altIndex);
@@ -1766,9 +1763,6 @@ public class EDDTableFromSOS extends EDDTable {
         try {
           xmlReader.nextTag();
           String tags = xmlReader.allTags();
-          String ofInterest1 = null;
-          String ofInterest2 = null;
-          String ofInterest3 = null;
 
           // response is error message
           if (tags.equals("<ServiceExceptionReport>")
@@ -2221,7 +2215,6 @@ public class EDDTableFromSOS extends EDDTable {
               while (po < contentLength) {
 
                 // process a row of data
-                int nRows1 = table.nRows() + 1;
                 String rowValues[] = new String[nCols];
                 for (int field = 0; field < nFields; field++) {
                   String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
@@ -2576,7 +2569,6 @@ public class EDDTableFromSOS extends EDDTable {
               while (po < contentLength) {
 
                 // process a row of data
-                int nRows1 = table.nRows() + 1;
                 String rowValues[] = new String[nCols];
                 for (int field = 0; field < nFields; field++) {
                   String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
@@ -2975,10 +2967,7 @@ public class EDDTableFromSOS extends EDDTable {
     String sstlc = sosServerType.toLowerCase();
     boolean ioos52NServer = sstlc.equals(SosServerTypeIoos52N.toLowerCase());
     boolean ioosNdbcServer = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
-    boolean ioosNcSOSServer = sstlc.equals(SosServerTypeIoosNcSOS.toLowerCase());
     boolean ioosNosServer = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
-    boolean oostethysServer = sstlc.equals(SosServerTypeOostethys.toLowerCase());
-    boolean whoiServer = sstlc.equals(SosServerTypeWhoi.toLowerCase());
 
     String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
     if (sosVersion != null && sosVersion.length() > 0) {
@@ -3024,11 +3013,8 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      boolean ioosServer = false;
       if (xmlReader.tag(0).equals("Capabilities")) {
         sosPrefix = ""; // ioosServer
-        if (sosServerType.length() == 0) // not explicitly declared
-        ioosServer = true;
       } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
         sosPrefix = "sos:"; // oostethys, ioos52N
       } else {
@@ -3247,7 +3233,6 @@ public class EDDTableFromSOS extends EDDTable {
     sb.append(
         "<!-- You have to choose which observedProperties will be used for this dataset.\n\n");
     int longestStationID = Math.max(19, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         "\n"
             + String2.left("   n  Station (shortened)", 6 + longestStationID)
@@ -3400,7 +3385,6 @@ public class EDDTableFromSOS extends EDDTable {
 
     String2.log(
         "EDDTableFromSos.generateDatasetsXmlFromIOOS" + "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-    String tPbublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
     boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
 
@@ -3434,12 +3418,10 @@ public class EDDTableFromSOS extends EDDTable {
     String tInfoUrl = null;
     String tInstitution = null;
     String tLicense = "[standard]";
-    String tSummary = null;
     String tTitle = null;
     String tOfferingAll = null;
     String tStationID = "";
     StringBuilder tStationObsPropList = new StringBuilder();
-    int offeringTagCount = 0;
     String tSosVersion = null; // e.g., "1.0.0"
     String offeringTag;
     String offeringEndTag;
@@ -3502,7 +3484,6 @@ public class EDDTableFromSOS extends EDDTable {
           if (verbose) String2.log("  title(from Title)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
-          tSummary = xmlReader.content();
           if (verbose) String2.log("  summary(from Abstract)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
@@ -3526,7 +3507,6 @@ public class EDDTableFromSOS extends EDDTable {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
           String error = null;
-          if (tags.equals(offeringTag)) offeringTagCount++;
           // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
           /* separate phenomena
@@ -3671,7 +3651,6 @@ public class EDDTableFromSOS extends EDDTable {
             + "   Change it to short/int/float/double as needed.\n"
             + "\n");
     int longestStationID = Math.max(7, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         String2.left("  n  Station", 5 + longestStationID)
             + "  Has observed_property\n"
@@ -4062,10 +4041,7 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      String sosPrefix = "";
-      boolean ioosServer = false;
       String startTag = "<gml:Dictionary>";
-      String endTag = "</gml:Dictionary>";
 
       if (!tags.equals(startTag))
         throw new RuntimeException(
@@ -4080,8 +4056,6 @@ public class EDDTableFromSOS extends EDDTable {
         // String2.log("tags=" + tags + xmlReader.content());
 
         String endOfTag = tags.substring(startTag.length());
-        String content = xmlReader.content();
-        String error = null;
         // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
         /* separate phenomena

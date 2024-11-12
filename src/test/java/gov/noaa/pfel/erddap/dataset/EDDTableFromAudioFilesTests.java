@@ -7,7 +7,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -201,9 +200,7 @@ class EDDTableFromAudioFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String dir = EDStatic.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12); // 12 is enough to check date

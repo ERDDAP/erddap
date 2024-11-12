@@ -106,10 +106,11 @@ public class PaneProxy { // Bob Simons made public
   }
 
   private void testJava2D() {
-    Class cl;
+    @SuppressWarnings("unused")
+    Class unusedCl;
     boolean java2d = true;
     try {
-      cl = Class.forName("java.awt.Graphics2D");
+      unusedCl = Class.forName("java.awt.Graphics2D");
     } catch (ClassNotFoundException e) {
       java2d = false;
     }
@@ -394,7 +395,6 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
@@ -455,7 +455,6 @@ public class PaneProxy { // Bob Simons made public
 
   private boolean Pane_MouseClicked(MouseEvent event) {
     Object obj;
-    Rectangle rect;
     Selectable savedobj = null;
     int mod = event.getModifiers();
     //
@@ -498,7 +497,6 @@ public class PaneProxy { // Bob Simons made public
     selectedobject_ = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
@@ -573,7 +571,6 @@ public class PaneProxy { // Bob Simons made public
 
   private boolean Pane_MouseDown(MouseEvent event) {
     Object obj;
-    Selectable savedobj = null;
     //
     // continue only if button1 is pressed
     //
@@ -630,12 +627,9 @@ public class PaneProxy { // Bob Simons made public
       //
       // object not selected begin move operation
       //
-      if (selectedobject_ instanceof Selectable) savedobj = (Selectable) selectedobject_;
-      else savedobj = null;
       selectedobject_ = null;
       Component[] comps = pane_.getComponents();
       if (comps.length != 0) {
-        Layer ly;
         for (int i = 0; i < comps.length; i++) {
           if (comps[i] instanceof Layer) {
             obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());

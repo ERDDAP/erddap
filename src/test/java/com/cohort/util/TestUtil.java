@@ -8,7 +8,6 @@ import com.cohort.array.StringArray;
 import java.io.File;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -3259,7 +3258,6 @@ class TestUtil {
     double d;
     GregorianCalendar gc;
     DateTimeFormatter dtfr;
-    Instant instant;
 
     /*
      * String tests[] = new String[]{"2020-05-21T00:00:00Z",

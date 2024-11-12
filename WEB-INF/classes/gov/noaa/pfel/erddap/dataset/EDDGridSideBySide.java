@@ -239,7 +239,6 @@ public class EDDGridSideBySide extends EDDGrid {
 
     if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDGridGridSideBySide(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDGridSideBySide";
@@ -539,7 +538,6 @@ public class EDDGridSideBySide extends EDDGrid {
     //  get results for each tDataVariable, one-by-one
     // FUTURE: more efficient to gang together all dataVariables from a given child
     int nAv = axisVariables.length;
-    int nDv = dataVariables.length;
     int tnDv = tDataVariables.length;
     PrimitiveArray[] cumResults = new PrimitiveArray[nAv + tnDv];
 

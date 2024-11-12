@@ -1,7 +1,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.StringArray;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -30,11 +29,7 @@ class EDDGridAggregateExistingDimensionTests {
   @org.junit.jupiter.api.Test
   @TagThredds
   void testBasic() throws Throwable {
-
-    String2.log(
-        "\n****************** EDDGridAggregateExistingDimension.testBasic() *****************\n");
-    // testVerboseOn();
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int language = 0;
 
     // *** NDBC is also IMPORTANT UNIQUE TEST of >1 variable in a file
@@ -79,7 +74,6 @@ class EDDGridAggregateExistingDimensionTests {
             ".nc");
     results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
     int dataPo = results.indexOf("data:");
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     expected =
         "netcdf EDDGridAggregateExistingDimension.nc {\n"
             + "  dimensions:\n"
@@ -445,11 +439,7 @@ class EDDGridAggregateExistingDimensionTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridSideBySide.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv

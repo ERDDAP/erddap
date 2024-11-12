@@ -17,6 +17,7 @@
 
 package com.cohort.util;
 
+import com.google.errorprone.annotations.Keep;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Costin Manolache [Modified by Bob Simons (was bob.simons@noaa.gov, now
  *     BobSimons2.00@gmail.com) to work with String2.log]
  */
+@Keep
 public final class String2LogFactory extends LogFactory {
 
   /** The configuration attributes for this LogFactory. */

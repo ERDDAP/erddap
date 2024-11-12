@@ -727,10 +727,8 @@ class EDDGridTests {
   void testWcsBAssta() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testWcsBAssta()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdBAssta5day();
-    String wcsQuery, fileName, results, expected;
+    String fileName, results;
     java.io.StringWriter writer;
-    ByteArrayOutputStream baos;
-    OutputStreamSourceSimple osss;
     String loggedInAs = null;
 
     // 1.0.0 capabilities

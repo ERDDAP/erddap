@@ -231,9 +231,6 @@ public class TableTests {
 
   @org.junit.jupiter.api.Test
   void testLastRowWithData() throws Exception {
-    // String2.log("\n*** Table.testLastRowWithData");
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
     Table table = new Table();
     String results, expected;
     Attributes iAtts = new Attributes();
@@ -347,12 +344,8 @@ public class TableTests {
   @ValueSource(booleans = {true, false})
   @TagSlowTests
   void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
-    // String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" +
-    // readAsNcCF);
     // time is days since 2006-01-01 00:00:00. file has 2007-10-01T04 through
     // 2013-11-14T17:06
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
     Table table = new Table();
     String results, expected;
     long time;
@@ -3066,11 +3059,6 @@ public class TableTests {
   /** This tests readMultidimNc by reading an Argo Profile file. */
   @org.junit.jupiter.api.Test
   void testReadMultidimNc() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebugMode = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadMultidimNc");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
     String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
@@ -5083,11 +5071,6 @@ public class TableTests {
   /** This tests unpack by reading an Argo Profile file. */
   @org.junit.jupiter.api.Test
   void testUnpack() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebugMode = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testUnpack");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
     String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
@@ -5483,7 +5466,7 @@ public class TableTests {
     String fiName =
         TableTests.class.getResource("/largeFiles/nccf/vlen/rr2_vlen_test.nc").getPath();
     // String2.log(NcHelper.ncdump(fiName, "-h"));
-    String results, expectedStart, expectedEnd;
+    String results, expectedStart;
     /* */
 
     // ** don't specify varNames or dimNames -- it find vars with most dims
@@ -5738,10 +5721,8 @@ public class TableTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testReadInvalidCRA() throws Exception {
-    // String2.log("\n*** Table.testReadInvalidCRA()");
-    StringArray colNames, conNames, conOps, conVals;
     Table table = new Table();
-    table.debugMode = true;
+    Table.debugMode = true;
     String dir = TableTests.class.getResource("/veryLarge/nccf/wod/").getPath();
     String drbDir = TableTests.class.getResource("/largeFiles/nccf/wod/").getPath();
     String fullName, results, expected;
@@ -8377,23 +8358,17 @@ public class TableTests {
 
     /* */
 
-    table.debugMode = false;
+    Table.debugMode = false;
   }
 
   /** This tests reading an ncCF Contiguous Ragged Array file with 7(!) sample_dimension's. */
   @org.junit.jupiter.api.Test
   void testReadNcCF7SampleDims() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF7SampleDims");
     Table table = new Table();
     String results, expected;
     // From Ajay Krishnan, NCEI/NODC, from
     // https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
     String fileName = TableTests.class.getResource("/data/nccf/ncei/ind199105_ctd.nc").getPath();
-    Attributes gatts;
     String scalarVars = ",crs,WODf,WODfd";
 
     // String2.log("\n\n** Testing " + fileName);
@@ -8656,18 +8631,12 @@ public class TableTests {
   /** This tests readNcCF reading point files. */
   @org.junit.jupiter.api.Test
   void testReadNcCFPoint() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFPoint");
     Table table = new Table();
     String results, expected;
     String fileName =
         TableTests.class
             .getResource("/data/CFPointConventions/point/point-H.1/point-H.1.nc")
             .getPath();
-    Attributes gatts;
 
     /* */
     // *************** point
@@ -8827,11 +8796,6 @@ public class TableTests {
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
   void testReadNcCF1() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF1");
     Table table = new Table();
     String results, expected;
     String profileFileName = TableTests.class.getResource("/data/nccf/Profile.nc").getPath();
@@ -9179,7 +9143,6 @@ public class TableTests {
     // *************** nLevels=1 TimeSeries
     for (int type = 0; type < 2; type++) {
       // ncCF1b and ncCFMA1b have same data, so tests are the same!
-      String fileType = type == 0 ? "contiguous" : "multidimensional";
       // from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
       String fileName =
           TableTests.class
@@ -9501,12 +9464,10 @@ public class TableTests {
     // Table.debugMode = true;
     // String2.log("\n*** Table.testReadNcCF1Kevin");
     Table table = new Table();
-    String results, expected;
     String fileName =
         TableTests.class
             .getResource("/largeFiles/kevin/interpolated_gld.20120620_045152_meta_2.nc")
             .getPath(); // from Kevin O'Brien
-    Attributes gatts;
 
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(
@@ -9519,11 +9480,6 @@ public class TableTests {
   /** This tests reading the gocd nccf files. */
   @org.junit.jupiter.api.Test
   void testReadGocdNcCF() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadGocdNcCF");
     Table table = new Table();
     String results, expected;
     String fileName;
@@ -10092,11 +10048,6 @@ public class TableTests {
   /** This tests readNcCF nLevels=2. */
   @org.junit.jupiter.api.Test
   void testReadNcCF2() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCF2");
     Table table = new Table();
     String results, expected;
     Attributes gatts;
@@ -10751,11 +10702,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASAProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASAProfile");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -11890,11 +11836,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATimeSeries() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATimeseries");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -12835,11 +12776,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATrajectory() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATrajectory");
     Table table = new Table();
     String results, expected, fileName;
 
@@ -13627,11 +13563,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATimeSeriesProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATimeSeriesProfile");
     Table table = new Table();
     String results, expected, fileName;
     String orthoMultiDimH51FileName =
@@ -15748,11 +15679,6 @@ public class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testReadNcCFASATrajectoryProfile() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
-    // Table.debugMode = true;
-    // String2.log("\n*** Table.testReadNcCFASATrajectoryProfile");
     Table table = new Table();
     String results, expected, fileName;
     String orthoMultiDimH61FileName =
@@ -17607,7 +17533,6 @@ public class TableTests {
       String2.log("No password, so skipping the test.");
       return;
     }
-    long tTime = System.currentTimeMillis();
     Connection con = DriverManager.getConnection(url, user, password);
     // String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) +
     // "ms"); // often 9s !

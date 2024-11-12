@@ -41,6 +41,7 @@ public class TestAll {
    * @param args is ignored
    * @throws Throwable if trouble
    */
+  @SuppressWarnings("unused")
   public static void main(String args[]) throws Throwable {
 
     String s;

@@ -8,7 +8,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
@@ -1166,9 +1165,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     // String2.log("\n*** EDDTableFromColumnarAsciiFiles.testBasic()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard
@@ -1396,14 +1393,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     // String2.log("\n*** EDDTableFromColumnarAsciiFiles.testGlerl()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard
-    // to
-    // check min:sec.
+    String tName, results, expected, userDapQuery;
     String testDir = EDStatic.fullTestCacheDirectory;
 
     String dataDir =
@@ -1558,14 +1548,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     // String2.log("\n*** EDDTableFromColumnarAsciiFiles.testGlerl2()\n");
     int language = 0;
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard
-    // to
-    // check min:sec.
+    String tName, results, expected, userDapQuery;
     String testDir = EDStatic.fullTestCacheDirectory;
 
     // one time

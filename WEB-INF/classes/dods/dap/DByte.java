@@ -113,6 +113,7 @@ public class DByte extends BaseType implements ClientIO {
   public synchronized void deserialize(DataInputStream source, ServerVersion sv, StatusUI statusUI)
       throws IOException, EOFException {
     // throw away first three bytes (padding)
+    @SuppressWarnings("unused")
     byte unused;
     for (int i = 0; i < 3; i++) {
       unused = source.readByte();

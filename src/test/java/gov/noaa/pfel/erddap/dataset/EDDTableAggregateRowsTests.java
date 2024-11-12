@@ -26,7 +26,6 @@ class EDDTableAggregateRowsTests {
     // debugMode = false; //normally false. Set it to true if need help.
     String results, query, tName, expected;
     // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
-    String id = "miniNdbc410";
     EDDTable tedd = (EDDTable) EDDTestDataset.getminiNdbc410();
     String dir = EDStatic.fullTestCacheDirectory;
     int tPo;

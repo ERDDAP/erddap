@@ -31,7 +31,7 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -396,7 +396,7 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -446,7 +446,7 @@ class EDDGridLon0360Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -695,7 +695,7 @@ class EDDGridLon0360Tests {
     int language = 0;
     // boolean oDebugMode = debugMode;
     // debugMode = true;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
     EDDGrid eddGrid;

@@ -64,7 +64,6 @@ public class PlainAxis2 extends PlainAxis {
     double xt, yt, dir, x, y, xp, yp;
     double xtitle, ytitle;
     double delta = uRange_.delta;
-    Format format;
     String labelText;
     SGLabel title = getTitle();
     if (!visible_) return;

@@ -343,9 +343,7 @@ public class Panel extends JComponent implements LayerControl {
    * @return object at location
    */
   public Object getObjectAt(int x, int y, boolean check) {
-    Object obj = null;
-
-    obj = labelLayer_.getObjectAt(x, y, check);
+    Object obj = labelLayer_.getObjectAt(x, y, check);
     if (obj != null) return obj;
     obj = legendLayer_.getObjectAt(x, y, check);
     if (obj != null) return obj;
@@ -482,10 +480,9 @@ public class Panel extends JComponent implements LayerControl {
    * @return object array
    */
   public Object[] getObjectsAt(int x, int y, boolean check) {
-    Object[] obj = null;
-    Vector obList = new Vector();
+    Vector<Object> obList = new Vector<>();
 
-    obj = labelLayer_.getObjectsAt(x, y, check);
+    Object[] obj = labelLayer_.getObjectsAt(x, y, check);
     if (obj != null) {
       for (int i = 0; i < obj.length; i++) {
         obList.addElement(obj[i]);

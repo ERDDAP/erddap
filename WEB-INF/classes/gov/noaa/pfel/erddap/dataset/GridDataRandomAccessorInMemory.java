@@ -48,7 +48,6 @@ public class GridDataRandomAccessorInMemory {
       dataPAType = new PAType[nDv];
       dataPA = new PrimitiveArray[nDv];
       PAOne tPAOne[] = new PAOne[nDv];
-      String tQuery = gridDataAccessor.userDapQuery();
       long longCapacity = gridDataAccessor.totalIndex().size();
       if (longCapacity >= Integer.MAX_VALUE)
         throw new RuntimeException(

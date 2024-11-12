@@ -362,14 +362,12 @@ public class Boundaries {
 
         // read the points
         double oLon = 0; // irrelevant
-        double oLat = 0;
         double tLon = 0;
         double tLat = 0;
         double polyMinLon = 1e10,
             polyMaxLon = -1e10; // see if actualy poly lon range is as promised
         for (int point = 0; point < nPoints; point++) {
           oLon = tLon;
-          oLat = tLat;
           tLon = dis.readDouble();
           tLat = dis.readDouble();
           if (debug) {
@@ -603,8 +601,6 @@ public class Boundaries {
     int format = GMT_FORMAT;
 
     String2.log("convertSgtLine\n in:" + sourceName + "\nout:" + destName);
-    DoubleArray lat = new DoubleArray();
-    DoubleArray lon = new DoubleArray();
     DoubleArray tempLat = new DoubleArray();
     DoubleArray tempLon = new DoubleArray();
     String startGapLine1 = format == MATLAB_FORMAT ? "nan nan" : ">";

@@ -209,11 +209,10 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableFromFiles(xmlReader)...");
-    boolean tIsLocal = false; // not actually used
     String tDatasetID = xmlReader.attributeValue("datasetID");
     String tType = xmlReader.attributeValue("type");
     Attributes tGlobalAttributes = null;
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<Object[]> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     int tUpdateEveryNMillis = 0;
     String tAccessibleTo = null;
@@ -341,8 +340,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       else if (localTags.equals("<addVariablesWhere>")) {
       } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
       else if (localTags.equals("<isLocal>")) {
-      } else if (localTags.equals("</isLocal>")) tIsLocal = String2.parseBoolean(content);
-      else if (localTags.equals("<removeMVRows>")) {
+      } else if (localTags.equals("</isLocal>")) {
+      } else if (localTags.equals("<removeMVRows>")) {
       } else if (localTags.equals("</removeMVRows>")) tRemoveMVRows = String2.parseBoolean(content);
       else if (localTags.equals("<standardizeWhat>")) {
       } else if (localTags.equals("</standardizeWhat>"))
@@ -359,8 +358,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
+    for (int i = 0; i < tDataVariables.size(); i++) ttDataVariables[i] = tDataVariables.get(i);
 
     if (tType == null) tType = "";
     if (tType.equals("EDDTableFromAsciiFiles")) {
@@ -1700,7 +1698,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     StringArray ftFileList = (StringArray) fileTable.getColumn(FT_FILE_LIST_COL); // 1
     LongArray ftLastMod = (LongArray) fileTable.getColumn(FT_LAST_MOD_COL); // 2
     LongArray ftSize = (LongArray) fileTable.getColumn(FT_SIZE_COL); // 3
-    DoubleArray ftSortedSpacing = (DoubleArray) fileTable.getColumn(FT_SORTED_SPACING_COL); // 4
     String msg = "";
 
     // set up WatchDirectory
@@ -2444,21 +2441,18 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       PrimitiveArray fLonMax =
           lonVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + lonIndex * 3 + 1).clone());
-      PrimitiveArray fLonNan = fileTable.getColumn(dv0 + lonIndex * 3 + 2);
       PrimitiveArray fLatMin =
           latVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + latIndex * 3 + 0).clone());
       PrimitiveArray fLatMax =
           latVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + latIndex * 3 + 1).clone());
-      PrimitiveArray fLatNan = fileTable.getColumn(dv0 + latIndex * 3 + 2);
       PrimitiveArray fTimeMin =
           timeVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + timeIndex * 3 + 0).clone());
       PrimitiveArray fTimeMax =
           timeVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + timeIndex * 3 + 1).clone());
-      PrimitiveArray fTimeNan = fileTable.getColumn(dv0 + timeIndex * 3 + 2);
       PrimitiveArray fOfferingMin =
           offeringVar.toDestination(
               (PrimitiveArray) fileTable.getColumn(dv0 + sosOfferingIndex * 3 + 0).clone());
@@ -2481,7 +2475,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       // Do all files contain just one value of sosOfferingIndex (e.g., 1 station)?
       // If so, easy to find min/max lon/lat/time for each station.
       int tnFiles = fLonMin.size();
-      HashMap offeringIndexHM = new HashMap(); // key=offering value=Integer.valueOf(SosXxx index)
+      HashMap<String, Integer> offeringIndexHM =
+          new HashMap<>(); // key=offering value=Integer.valueOf(SosXxx index)
       for (int f = 0; f < tnFiles; f++) {
         String offMin = fOfferingMin.getString(f);
         String offMax = fOfferingMax.getString(f);
@@ -2495,7 +2490,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           // if just one offering in file (no mv), add data to sos arrays
         } else if (!offNaN && offMin.equals(offMax)) {
           // find sos PA index
-          Integer soI = (Integer) offeringIndexHM.get(offMin);
+          Integer soI = offeringIndexHM.get(offMin);
           if (soI == null) {
             // it's a new offering. add it.
             soI = Integer.valueOf(sosOfferings.size());
@@ -3006,7 +3001,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     ftSortedSpacing.set(fileListPo, -1); // default, usually set below
 
     // get min,max for dataVariables
-    int tTableNCols = tTable.nColumns();
     int ndv = sourceDataTypes.length;
     for (int dv = 0; dv < ndv; dv++) {
       fileTable.setStringData(dv0 + dv * 3 + 0, fileListPo, ""); // numeric will be NaN
@@ -3241,9 +3235,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     StringArray dirList = (StringArray) tDirTable.getColumn(0);
     ShortArray ftDirIndex = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL); // 0
     StringArray ftFileList = (StringArray) tFileTable.getColumn(FT_FILE_LIST_COL); // 1
-    LongArray ftLastMod = (LongArray) tFileTable.getColumn(FT_LAST_MOD_COL); // 2
-    LongArray ftSize = (LongArray) tFileTable.getColumn(FT_SIZE_COL); // 3
-    DoubleArray ftSortedSpacing = (DoubleArray) tFileTable.getColumn(FT_SORTED_SPACING_COL); // 4
 
     // for each changed file
     int nChanges = 0; // BadFiles or FileTable
@@ -4353,7 +4344,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
                   conVars.toArray(),
                   conOps.toArray(),
                   conValues.toArray()));
-    boolean isFromHttpGet = "EDDTableFromHttpGet".equals(className);
 
     // get a local reference to dirTable and fileTable
     Table tDirTable = getDirTable();
@@ -4362,7 +4352,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     ShortArray ftDirIndex = (ShortArray) tFileTable.getColumn(0);
     StringArray ftFileList = (StringArray) tFileTable.getColumn(1);
     LongArray ftLastMod = (LongArray) tFileTable.getColumn(2);
-    LongArray ftSize = (LongArray) tFileTable.getColumn(3);
     DoubleArray ftSortedSpacing = (DoubleArray) tFileTable.getColumn(4);
 
     // no need to further prune constraints.
@@ -4911,14 +4900,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
         // Read all data from file within minSorted to maxSorted.
         // This throws Throwable if trouble. I think that's appropriate.
-        Table table;
         int tDirIndex = ftDirIndex.get(f);
         String tDir = dirList.get(tDirIndex);
         String tName = ftFileList.get(f);
-        String tExtractValue =
-            extractedColNameIndex >= 0
-                ? tFileTable.getStringData(dv0 + extractedColNameIndex * 3 + 0, f)
-                : null;
 
         if (reallyVerbose) String2.log("#" + f + " get data from " + tDir + tName);
 

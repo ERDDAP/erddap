@@ -99,14 +99,12 @@ class EDDTableFromErddapTests {
     // String2.log("\n****************** EDDTableFromErddap.testBasic(" +
     // tRedirect + ")\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, tResults, expected;
     int tPo;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 10); // just 10 till 1.40 released, then 14
     String mapDapQuery = "status,testLong,sst&.draw=markers";
-    String dir = EDStatic.fullTestCacheDirectory;
     String tID = tRedirect ? "rTestNccsvScalar11" : "rTestNccsvScalarNoRedirect11";
     String url = "http://localhost:8080/cwexperimental/tabledap/" + tID;
     String2.log("* This test requires datasetID=" + tID + " in the localhost ERDDAP.");
@@ -230,7 +228,6 @@ class EDDTableFromErddapTests {
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // .nccsv all
-    userDapQuery = "";
     results = SSR.getUrlResponseStringUnchanged(url + ".nccsv");
     // String2.log(results);
     expected =
@@ -479,11 +476,7 @@ class EDDTableFromErddapTests {
   void testChukchiSea() throws Throwable {
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected;
     EDDTable eddTable = (EDDTableFromErddap) EDDTestDataset.getChukchiSea_454a_037a_fcf4();
 
     // *** test getting das for entire dataset
@@ -629,11 +622,7 @@ class EDDTableFromErddapTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableFromErddap.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv

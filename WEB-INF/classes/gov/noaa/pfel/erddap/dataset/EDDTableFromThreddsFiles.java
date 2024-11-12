@@ -556,7 +556,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       String threddsBase = catalogUrl.substring(0, sPo);
       if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
 
-      String serviceBase = "/" + threddsName + "/dodsC/"; // default
       if (reallyVerbose)
         String2.log(
             "threddsName="
@@ -836,10 +835,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                       tLocalDirUrl, tFileNameRegex, true, ".*"))); // recursive, pathRegex
 
     String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
-    String tPublicDirUrlHtml = tPublicDirUrl;
     String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
     String dir = EDStatic.fullTestCacheDirectory;
-    int po1, po2;
 
     // download the 1 file
     // URL may not have .nc at end.  I think that's okay.  Keep exact file name from URL.

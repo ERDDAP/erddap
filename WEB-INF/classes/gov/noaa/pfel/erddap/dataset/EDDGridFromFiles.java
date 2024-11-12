@@ -2750,11 +2750,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     ShortArray ftDirIndex = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);
     StringArray ftFileList = (StringArray) tFileTable.getColumn(FT_FILE_LIST_COL);
     LongArray ftLastMod = (LongArray) tFileTable.getColumn(FT_LAST_MOD_COL);
-    LongArray ftSize = (LongArray) tFileTable.getColumn(FT_SIZE_COL);
     IntArray ftNValues = (IntArray) tFileTable.getColumn(FT_N_VALUES_COL);
-    DoubleArray ftMin = (DoubleArray) tFileTable.getColumn(FT_MIN_COL);
-    DoubleArray ftMax = (DoubleArray) tFileTable.getColumn(FT_MAX_COL);
-    StringArray ftCsvValues = (StringArray) tFileTable.getColumn(FT_CSV_VALUES_COL);
     IntArray ftStartIndex = (IntArray) tFileTable.getColumn(FT_START_INDEX_COL);
 
     // make results[]
@@ -2908,7 +2904,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         // sleep and give it one more try
         try {
           Thread.sleep(1000); // not Math2.sleep(1000);
-          if (Thread.currentThread().interrupted()) // consume the interrupted status
+          if (Thread.interrupted()) // consume the interrupted status
           throw new InterruptedException();
           return caller.getSourceDataFromFile(tFileDir, tFileName, tDataVariables, tConstraints);
         } catch (Throwable t2) {

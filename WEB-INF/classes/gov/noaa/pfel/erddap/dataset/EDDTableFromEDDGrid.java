@@ -73,7 +73,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
     String tIso19115File = null;
     String tSosOfferingPrefix = null;
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
-    int tUpdateEveryNMillis = 0;
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     String tAddVariablesWhere = null;
@@ -466,9 +465,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     // find (non-regex) min and max of constraints on axis variables
     // work backwards since deleting some
     EDVGridAxis childDatasetAV[] = tChildDataset.axisVariables();
-    EDV childDatasetDV[] = tChildDataset.dataVariables();
     int childDatasetNAV = childDatasetAV.length;
-    int childDatasetNDV = childDatasetDV.length;
     // min and max desired axis destination values
     double avMin[] = new double[childDatasetNAV];
     double avMax[] = new double[childDatasetNAV];
@@ -476,7 +473,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
       avMin[av] = childDatasetAV[av].destinationMinDouble(); // time is epochSeconds
       avMax[av] = childDatasetAV[av].destinationMaxDouble();
     }
-    boolean hasAvConstraints = false; // only true if constraints are more than av min max
     StringArray constraintsDvNames = new StringArray(); // unique
     for (int c = 0; c < constraintVariables.size(); c++) {
       String conVar = constraintVariables.get(c);
@@ -493,8 +489,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
         // FUTURE: this could be improved to find the range of matching axis values
       } else {
         boolean avIsTimeStamp = edvga instanceof EDVTimeStampGridAxis;
-        double oldAvMin = avMin[av];
-        double oldAvMax = avMax[av];
         double conValD = String2.parseDouble(conVal);
         boolean passed = true; // look for some aspect that doesn't pass
         if (!conOp.equals("!=") && Double.isNaN(conValD)) {
@@ -532,8 +526,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
                       + MessageFormat.format(
                           EDStatic.queryErrorNeverTrueAr[language], conVar + conOp + conValD)
                       + ")"));
-
-        if (oldAvMin != avMin[av] || oldAvMax != avMax[av]) hasAvConstraints = true;
       }
     }
 

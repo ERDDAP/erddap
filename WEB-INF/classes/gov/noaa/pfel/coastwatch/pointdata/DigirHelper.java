@@ -696,8 +696,7 @@ public class DigirHelper {
   public static String getObisInventoryString(String url, String code, String field)
       throws Exception {
     // one time things
-    Table table = new Table();
-    table =
+    Table table =
         getInventoryTable(
             OBIS_VERSION,
             OBIS_PREFIXES,
@@ -734,8 +733,7 @@ public class DigirHelper {
   public static String getBmdeInventoryString(String url, String code, String field)
       throws Exception {
     // one time things
-    Table table = new Table();
-    table =
+    Table table =
         getInventoryTable(
             BMDE_VERSION,
             BMDE_PREFIXES,

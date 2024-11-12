@@ -644,13 +644,11 @@ class EDDGridFromDapTests {
     String2.log("\n*** EDDGridFromDap.testBasic2\n");
     // testVerboseOn();
     EDDGridFromDap gridDataset;
-    String name, tName, axisDapQuery, results, expected, error;
+    String tName, results, expected;
     int tPo;
-    String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
-    String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
-    String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
+    // String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
+    // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
     gridDataset = (EDDGridFromDap) EDDTestDataset.geterdMHchla8day();
@@ -1576,13 +1574,11 @@ class EDDGridFromDapTests {
     String2.log("\n*** EDDGridFromDap.testBasic3\n");
     // testVerboseOn();
     EDDGridFromDap gridDataset;
-    String name, tName, axisDapQuery, results, expected, error;
+    String tName, results, expected;
     int tPo;
     String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
-    String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
-    String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
+    // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
     gridDataset = (EDDGridFromDap) EDDTestDataset.geterdMHchla8day();
@@ -2786,8 +2782,6 @@ class EDDGridFromDapTests {
     // don't test local dataset because of dns/numericIP problems
     // this dataset is good test because it has 2 dimension combos
     String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
-    // String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
-    int language = 0;
     String suggDatasetID = EDDGridFromDap.suggestDatasetID(url + "?[time][lev][lat][lon]");
     String suggDatasetID2 = EDDGridFromDap.suggestDatasetID(url + "?[time][lat][lon]");
     String expected1 =
@@ -3305,7 +3299,6 @@ class EDDGridFromDapTests {
     // testVerboseOn();
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday";
     String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml2");
-    int language = 0;
 
     String expected1 =
         "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_cada_f1d6_7111\" active=\"true\">\n"
@@ -3532,7 +3525,6 @@ class EDDGridFromDapTests {
     // from uaf. Not sorted and never will be.
     String url =
         "http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/ncom/global/NCOM_Global_Ocean_Model_fmrc.ncd";
-    int language = 0;
 
     try {
       String results =
@@ -5373,10 +5365,8 @@ class EDDGridFromDapTests {
   @org.junit.jupiter.api.Test
   @TagThredds
   void testSliderCsv() throws Throwable {
-    // testVerboseOn();
-    String name, tName, results, expected;
+    String results, expected;
     EDDGridFromDap gridDataset;
-    int language = 0;
 
     // test erdBAssta5day
     gridDataset = (EDDGridFromDap) EDDTestDataset.geterdBAssta5day();
@@ -5897,8 +5887,7 @@ class EDDGridFromDapTests {
   void testNoAxisVariable() throws Throwable {
 
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+    String tName, results, tResults, expected, userDapQuery;
     int language = 0;
 
     try {
@@ -6118,8 +6107,6 @@ class EDDGridFromDapTests {
     String roleNone[] = new String[0];
     String roleBob[] = new String[] {"bob"};
     String roleBMT[] = new String[] {"bob", "mike", "tom"};
-    int language = 0;
-
     // test accessible = null
     eddGrid.setAccessibleTo(null);
     Test.ensureTrue(eddGrid.isAccessibleTo(roleNull), "");
@@ -6333,7 +6320,6 @@ class EDDGridFromDapTests {
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.geterdMHchla8day();
     String dir = EDStatic.fullTestCacheDirectory;
     String baseFileName = "gridTestSpeedMAG";
-    int language = 0;
 
     // time it
     String2.log("start timing");
@@ -6364,7 +6350,6 @@ class EDDGridFromDapTests {
   void testQuickRestart() throws Throwable {
     // String2.log("\nEDDGridFromDap.testQuickRestart");
     String tDatasetID = "erdBAssta5day";
-    int language = 0;
 
     // regular load dataset
     File2.delete(EDDGridFromDap.quickRestartFullFileName(tDatasetID)); // force regular load
@@ -6691,7 +6676,6 @@ class EDDGridFromDapTests {
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
     // String url = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests,
     // always non-https url
-    int language = 0;
 
     NetcdfDataset nc = NetcdfDatasets.openDataset(url); // 2021: 's' is the new API
     String results, expected;
@@ -8222,7 +8206,6 @@ class EDDGridFromDapTests {
   @TagThredds
   void testGenerateDatasetsXml5() throws Throwable {
     String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
-    int language = 0;
     String results =
         EDDGridFromDap.generateDatasetsXml(
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day",
@@ -9996,9 +9979,6 @@ class EDDGridFromDapTests {
   @org.junit.jupiter.api.Test
   @TagExternalOther
   void testFromNccsv() throws Throwable {
-
-    // testVerboseOn();
-    int language = 0;
     // don't test local dataset because of dns/numericIP problems
     // this dataset is good test because it has several dimension combos
     String url =
@@ -10142,7 +10122,6 @@ class EDDGridFromDapTests {
   @TagThredds
   void testCrawlThreddsCatalog() throws Throwable {
     String2.log("\n*** testCrawlThreddsCatalog()");
-    int language = 0;
     StringWriter writer;
     String results, expected;
 
@@ -10827,8 +10806,7 @@ class EDDGridFromDapTests {
     int language = 0;
     // testVerboseOn();
     String tDir = EDStatic.fullTestCacheDirectory;
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+    String tName, results, expected;
 
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestActualRange();
 
@@ -11160,8 +11138,7 @@ class EDDGridFromDapTests {
     int language = 0;
     // testVerboseOn();
     String tDir = EDStatic.fullTestCacheDirectory;
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+    String tName, results, expected;
 
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestActualRange2();
 

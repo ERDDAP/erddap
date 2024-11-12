@@ -73,11 +73,11 @@ public class EDDGridFromEDDTable extends EDDGrid {
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
-    ArrayList tAxisVariables = new ArrayList();
-    ArrayList tDataVariables = new ArrayList();
+    ArrayList<Object[]> tAxisVariables = new ArrayList<>();
+    ArrayList<Object[]> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     int tUpdateEveryNMillis = 0;
-    String tLocalSourceUrl = null;
+    ;
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
@@ -175,13 +175,11 @@ public class EDDGridFromEDDTable extends EDDGrid {
     }
     int nav = tAxisVariables.size();
     Object ttAxisVariables[][] = nav == 0 ? null : new Object[nav][];
-    for (int i = 0; i < tAxisVariables.size(); i++)
-      ttAxisVariables[i] = (Object[]) tAxisVariables.get(i);
+    for (int i = 0; i < tAxisVariables.size(); i++) ttAxisVariables[i] = tAxisVariables.get(i);
 
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
-    for (int i = 0; i < tDataVariables.size(); i++)
-      ttDataVariables[i] = (Object[]) tDataVariables.get(i);
+    for (int i = 0; i < tDataVariables.size(); i++) ttDataVariables[i] = tDataVariables.get(i);
 
     return new EDDGridFromEDDTable(
         tDatasetID,

@@ -298,8 +298,6 @@ public class EDStatic {
   public static int nTableDatasets = 0; // as of end of last major loadDatasets
   public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
   public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
-  private static ConcurrentHashMap<String, String> sessionNonce =
-      new ConcurrentHashMap(16, 0.75f, 4); // for a session: loggedInAs -> nonce
   // Currently Loading Dataset
   public static volatile boolean cldMajor = false;
   public static volatile int cldNTry = 0; //   0=none actively loading
@@ -307,14 +305,14 @@ public class EDStatic {
   public static volatile long cldStartMillis = 0; //   0=none actively loading
 
   public static final ConcurrentHashMap<String, String> activeRequests =
-      new ConcurrentHashMap(); // request# -> 1 line info about request
+      new ConcurrentHashMap<>(); // request# -> 1 line info about request
   public static volatile long lastActiveRequestReportTime =
       0; // 0 means not currently in dangerousMemory inUse event
 
   public static final String ipAddressNotSetYet = "NotSetYet";
   public static final String ipAddressUnknown = "(unknownIPAddress)";
   public static final ConcurrentHashMap<String, IntArray> ipAddressQueue =
-      new ConcurrentHashMap(); // ipAddress -> list of request#
+      new ConcurrentHashMap<>(); // ipAddress -> list of request#
   public static final int DEFAULT_ipAddressMaxRequestsActive = 2; // in datasets.xml
   public static final int DEFAULT_ipAddressMaxRequests =
       15; // in datasets.xml //more requests will see Too Many Requests error. This must be at least
@@ -2157,7 +2155,6 @@ public class EDStatic {
 
         awsS3OutputBucket = bro[0];
         String region = bro[1];
-        String prefix = bro[2];
 
         // build the awsS3OutputTransferManager
         awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
@@ -5991,7 +5988,6 @@ public class EDStatic {
    * tomcat is stopped.
    */
   public static void destroy() {
-    long time = System.currentTimeMillis();
     try {
       if (subscriptions != null) {
         subscriptions.close();
@@ -6445,7 +6441,6 @@ public class EDStatic {
     if (gdxAcronymsTable == null) {
       Table table = oceanicAtmosphericAcronymsTable();
       StringArray acronymSA = (StringArray) table.getColumn(0);
-      StringArray fullNameSA = (StringArray) table.getColumn(1);
 
       // remove some really common acronyms I don't want to expand
       BitSet keep = new BitSet();
@@ -7143,8 +7138,6 @@ public class EDStatic {
       LongArray localSize = (LongArray) localFiles.getColumn(FileVisitorDNLS.SIZE);
 
       // make tasks to download files
-      boolean remoteErrorLogged = false; // just display 1st offender
-      boolean fileErrorLogged = false; // just display 1st offender
       int nRemote = remoteNames.size();
       int nLocal = localNames.size();
       int localI = 0; // next to look at
@@ -7464,7 +7457,6 @@ public class EDStatic {
       // String2.log("Bob: sendErrorCode t.toString=" + t.toString());
       tError = MustBe.getShortErrorMessage(t);
       String tRequestURI = request == null ? "[unknown requestURI]" : request.getRequestURI();
-      String tExt = File2.getExtension(tRequestURI);
       String tRequest =
           tRequestURI + (request == null ? "" : questionQuery(request.getQueryString()));
       // String2.log(">> tError=" + tError);

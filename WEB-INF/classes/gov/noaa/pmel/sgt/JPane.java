@@ -758,8 +758,7 @@ public class JPane extends javax.swing.JLayeredPane
   /** Used by internally by sgt. */
   protected void drawPage(Graphics g, PageFormat pf) {
     Dimension d = getSize();
-    Point pageOrigin = null;
-    pageOrigin = proxy_.getPageOrigin();
+    Point pageOrigin = proxy_.getPageOrigin();
     if (pageOrigin == null) pageOrigin = new Point(0, 0);
     Graphics2D g2 = (Graphics2D) g;
 

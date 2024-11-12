@@ -20,7 +20,6 @@ import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 
@@ -40,7 +39,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
   // things set by constructor
   private CartesianGraph graph;
   private boolean xIsLogAxis, yIsLogAxis;
-  private PrimitiveArray xPA, yPA, dataPA, idPA;
+  private PrimitiveArray xPA, yPA, dataPA;
   private int markerType;
   private ColorMap colorMap;
   private Color lineColor;
@@ -60,7 +59,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
       xPA = null;
       yPA = null;
       dataPA = null;
-      idPA = null;
       colorMap = null;
       resultMinX = null;
       resultMaxX = null;
@@ -82,7 +80,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
    * @param xPA the longitude values
    * @param yPA the latitude values
    * @param dataPA the data values
-   * @param idPA the id's used for making user maps on the .gif (usually Strings)
    * @param colorMap used to translate the data values into the fill colors. If null, the line color
    *     is used.
    * @param lineColor The line color for the edge of the marker
@@ -96,7 +93,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
       PrimitiveArray xPA,
       PrimitiveArray yPA,
       PrimitiveArray dataPA,
-      PrimitiveArray idPA,
       ColorMap colorMap,
       Color lineColor,
       int markerType,
@@ -110,7 +106,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
     this.xPA = xPA;
     this.yPA = yPA;
     this.dataPA = dataPA;
-    this.idPA = idPA;
     this.colorMap = colorMap;
     this.lineColor = lineColor;
     this.markerType = markerType;
@@ -134,7 +129,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
     resultRowNumber = new IntArray();
 
     // store a copy of the transform
-    AffineTransform originalTransform = g2.getTransform();
     Shape originalClip = g2.getClip();
 
     // modify the transform  so degrees is converted to device coordinates
@@ -146,8 +140,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
     int rightX = graph.getXUtoD(xUserRange.end);
     int lowerY = graph.getYUtoD(yUserRange.start);
     int upperY = graph.getYUtoD(yUserRange.end);
-    double xDegPerPixel = (xUserRange.end - xUserRange.start) / (rightX - leftX);
-    double yDegPerPixel = (yUserRange.end - yUserRange.start) / (upperY - lowerY);
     // String2.log("xDegPerPixel=" + xDegPerPixel + " yDegPerPixel=" + yDegPerPixel +
     //    " xUserRange.start=" + xUserRange.start + " xUserRange.end=" + xUserRange.end);
 
@@ -182,7 +174,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
     DoubleObject doy = new DoubleObject(0);
     IntArray markerXs = new IntArray();
     IntArray markerYs = new IntArray();
-    ArrayList<Color> markerInteriorColors = new ArrayList();
+    ArrayList<Color> markerInteriorColors = new ArrayList<>();
     g2.setColor(lineColor); // important in case never needs to be set below
     for (int row = 0; row < nRows; row++) {
       double x = xPA.getDouble(row);

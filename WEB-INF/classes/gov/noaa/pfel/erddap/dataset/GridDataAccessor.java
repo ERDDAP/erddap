@@ -556,8 +556,12 @@ public class GridDataAccessor implements AutoCloseable {
     if (totalIndex.getIndex() == -1) {
       // first time
       boolean tb = rowMajor ? totalIndex.increment() : totalIndex.incrementCM();
-      if (!tb) return false;
-      tb = rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
+      if (!tb) {
+        return false;
+      }
+      @SuppressWarnings("unused")
+      boolean unused =
+          rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
     } else {
       // subsequent times
       // increment totalIndex by partialIndex.size, for row major or column major
@@ -663,8 +667,7 @@ public class GridDataAccessor implements AutoCloseable {
       }
 
       // get the data
-      PrimitiveArray[] partialResults = null;
-      partialResults =
+      PrimitiveArray[] partialResults =
           gda.eddGrid.getSourceData(
               language, gda.tDirTable, gda.tFileTable, gda.dataVariables, partialConstraints);
 

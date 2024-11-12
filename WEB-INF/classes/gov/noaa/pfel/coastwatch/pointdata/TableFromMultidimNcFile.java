@@ -314,17 +314,7 @@ public class TableFromMultidimNcFile {
         break;
       }
       if (firstVar != null) {
-        loadDimMatchedVars(
-            loadVarNames,
-            standardizeWhat,
-            nd0,
-            loadVars,
-            loadDims,
-            nLoadVars,
-            loaded,
-            this.table,
-            firstVar,
-            getMetadata);
+        loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, this.table, firstVar, getMetadata);
       }
       // if (debugMode) String2.log(Math2.memoryString() + "\n" +
       // ">> this table after load varsWithAllDims:\n" +
@@ -562,17 +552,7 @@ public class TableFromMultidimNcFile {
           VarData data = VarData.fromVariable(this, tVar);
           addVarAndIndicies(
               nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, data, v, tVar);
-          loadDimMatchedVars(
-              loadVarNames,
-              standardizeWhat,
-              nd0,
-              loadVars,
-              loadDims,
-              nLoadVars,
-              loaded,
-              lut,
-              data,
-              getMetadata);
+          loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, lut, data, getMetadata);
 
           // If we ran constraints on this var earlier, load it.
           BitSet lutkeep = getKeepForVar(data, nd0, varToKeep);
@@ -600,28 +580,9 @@ public class TableFromMultidimNcFile {
         Table lut = new Table(); // look up table which will be JOINed into main table
         VarData varData =
             findVarToLoad(
-                loadVarNames,
-                standardizeWhat,
-                nd0,
-                loadVars,
-                loadDims,
-                nLoadVars,
-                loaded,
-                allIndicesTable,
-                lut,
-                getMetadata);
+                nd0, loadVars, loadDims, nLoadVars, loaded, allIndicesTable, lut, getMetadata);
 
-        loadDimMatchedVars(
-            loadVarNames,
-            standardizeWhat,
-            nd0,
-            loadVars,
-            loadDims,
-            nLoadVars,
-            loaded,
-            lut,
-            varData,
-            getMetadata);
+        loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, lut, varData, getMetadata);
 
         // all constraints checked above so we just need to join this data in.
         joinLutToTable(lut, varData, allIndicesTable);
@@ -707,8 +668,6 @@ public class TableFromMultidimNcFile {
   }
 
   private VarData findVarToLoad(
-      StringArray loadVarNames,
-      int standardizeWhat,
       int nd0,
       List<Variable> loadVars,
       List<Dimension> loadDims,
@@ -783,11 +742,8 @@ public class TableFromMultidimNcFile {
   }
 
   private void loadDimMatchedVars(
-      StringArray loadVarNames,
-      int standardizeWhat,
       int nd0,
       List<Variable> loadVars,
-      List<Dimension> loadDims,
       int nLoadVars,
       BitSet loaded,
       Table table,

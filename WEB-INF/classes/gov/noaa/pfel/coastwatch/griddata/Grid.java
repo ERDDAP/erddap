@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import ucar.ma2.*;
 import ucar.nc2.*;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
@@ -1434,9 +1435,6 @@ public class Grid {
       maxData = da.get(1);
       if (verbose) String2.log("  minData=" + minData + " maxData=" + maxData);
 
-      double fileLon[] = DataHelper.getRegularArray(fileNLon, fileMinLon, fileLonSpacing);
-      double fileLat[] = DataHelper.getRegularArray(fileNLat, fileMinLat, fileLatSpacing);
-
       if (verbose)
         String2.log(
             "  "
@@ -1865,8 +1863,6 @@ public class Grid {
       // then create final lat
       lat = DataHelper.copy(lat, latStart, latEnd, 1);
       nLat = lat.length;
-      minLat = lat[0];
-      maxLat = lat[nLat - 1];
 
       // convert array into data
       // (column by column, left to right, bottom to top within the column)
@@ -2391,7 +2387,6 @@ public class Grid {
    * nValidPoints is 0, minData and maxData are set to Double.NaN.
    */
   public void calculateStats() {
-    long time = System.currentTimeMillis();
     int n = data.length;
     minData = Double.MAX_VALUE; // any valid value will be smaller
     maxData = -Double.MAX_VALUE; // not Double.MIN_VALUE which ~= 0
@@ -2772,7 +2767,7 @@ public class Grid {
     try {
       // 2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
       GridDataset gridDataset = GridDataset.open(directory + name + ".nc");
-      java.util.List grids = gridDataset.getGrids();
+      java.util.List<GridDatatype> grids = gridDataset.getGrids();
       // if (grids.size() == 0) ...
       GeoGrid geoGrid = (GeoGrid) grids.get(0);
       Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); // get all
@@ -2878,8 +2873,6 @@ public class Grid {
     // write the data
     // items determined by looking at a .grd file; items written in that order
     NetcdfFormatWriter ncWriter = null;
-    boolean nc3Mode = true;
-    boolean success = false;
     try {
       NetcdfFormatWriter.Builder grd = NetcdfFormatWriter.createNewNetcdf3(directory + randomInt);
       Group.Builder rootGroup = grd.getRootGroup();
@@ -3022,8 +3015,6 @@ public class Grid {
     ensureThereIsData();
 
     try {
-      String errorIn = String2.ERROR + " in Grid.saveAsHDF: ";
-
       // gather the data
       // A new array is needed because of different order and different type.
       int nLon = lon.length;
@@ -3042,8 +3033,6 @@ public class Grid {
 
       // set the attributes
       setStatsAttributes(true); // save as double
-
-      String name = File2.getNameAndExtension(hdfFileName);
 
       // create the file
       SdsWriter.create(
@@ -3598,9 +3587,9 @@ public class Grid {
     globalAttributes.set("composite", FileNameUtility.getComposite(name)); // string (not required)
 
     globalAttributes.set(
-        "pass_date", new IntArray(fileNameUtility.getPassDate(name))); // int32[nDays]
+        "pass_date", new IntArray(FileNameUtility.getPassDate(name))); // int32[nDays]
     globalAttributes.set(
-        "start_time", new DoubleArray(fileNameUtility.getStartTime(name))); // float64[nDays]
+        "start_time", new DoubleArray(FileNameUtility.getStartTime(name))); // float64[nDays]
     globalAttributes.set("origin", fileNameUtility.getCourtesy(name)); // string
     globalAttributes.set("history", fileNameUtility.getHistory(name)); // string
 
@@ -4128,7 +4117,6 @@ public class Grid {
     }
 
     // save as ...
-    long time = System.currentTimeMillis();
     if (saveAsType == SAVE_AS_ASCII) saveAsASCII(directory, fileName);
     else if (saveAsType == SAVE_AS_ESRI_ASCII) saveAsEsriASCII(directory, fileName);
     else if (saveAsType == SAVE_AS_GEOTIFF) saveAsGeotiff(directory, fileName, variableName);
@@ -4372,10 +4360,7 @@ public class Grid {
           // String2.log("GridSaveAs deleted: " + outDir + tDaveName + outExt);
         }
         if (outGz) {
-          SSR.gzip(
-              outDir + tDaveName + outExt + ".gz",
-              new String[] {outDir + tDaveName + outExt},
-              10); // 10 = seconds time out
+          SSR.gzip(outDir + tDaveName + outExt + ".gz", new String[] {outDir + tDaveName + outExt});
           File2.delete(outDir + tDaveName + outExt);
         }
 

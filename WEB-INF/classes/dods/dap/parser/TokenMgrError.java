@@ -78,12 +78,7 @@ public class TokenMgrError extends Error {
    * message by modifying this method.
    */
   private static final String LexicalError(
-      boolean EOFSeen,
-      int lexState,
-      int errorLine,
-      int errorColumn,
-      String errorAfter,
-      char curChar) {
+      boolean EOFSeen, int errorLine, int errorColumn, String errorAfter, char curChar) {
     return ("Lexical error at line "
         + errorLine
         + ", column "
@@ -130,6 +125,6 @@ public class TokenMgrError extends Error {
       String errorAfter,
       char curChar,
       int reason) {
-    this(LexicalError(EOFSeen, lexState, errorLine, errorColumn, errorAfter, curChar), reason);
+    this(LexicalError(EOFSeen, errorLine, errorColumn, errorAfter, curChar), reason);
   }
 }

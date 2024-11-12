@@ -2737,11 +2737,11 @@ public class Calendar2 {
     else throw new SimpleException(tError);
 
     // find the end of the number
-    int n = 1;
     int end = 4;
     while (nowString.length() > end && String2.isDigit(nowString.charAt(end))) end++;
     // parse the number
-    n = String2.parseInt(nowString.substring(start, end) + (end == 4 ? "1" : "")); // if no digits
+    int n =
+        String2.parseInt(nowString.substring(start, end) + (end == 4 ? "1" : "")); // if no digits
     if (n == Integer.MAX_VALUE) throw new SimpleException(tError);
     start = end;
 
@@ -5525,7 +5525,6 @@ public class Calendar2 {
             ? allDigitsRegexTimeFormat
             : startWithDigit != null ? digitRegexTimeFormat : letterRegexTimeFormat;
     for (int i = 0; i < regexTimeFormat.size(); i += 2) {
-      String regex = regexTimeFormat.get(i); // regex
       String format = regexTimeFormat.get(i + 1);
       Pattern regexPattern = dateTimeFormatPatternHM.get(format);
       int sai = first;
@@ -5630,7 +5629,6 @@ public class Calendar2 {
     char ch = someDateTimeString.charAt(0);
     if (ch == '0' || ch == '1') { // starts with 0 or 1
       String ts = someDateTimeString;
-      String append = "";
       if (ts.endsWith("UTC")) ts = ts.substring(0, ts.length() - 3).trim();
       if (ts.endsWith("Z")) ts = ts.substring(0, ts.length() - 1).trim();
       int zeroTimePo = ts.indexOf(" 00");
@@ -5639,7 +5637,6 @@ public class Calendar2 {
         String remains = ts.substring(zeroTimePo + 3);
         if (remains.matches("[:.0]*")) { // ends with e.g., 00:00:0.0
           ts = ts.substring(0, zeroTimePo);
-          append = remains.indexOf('.') >= 0 ? "T00:00:00.000Z" : "T00:00:00Z";
         }
       }
 
@@ -6105,8 +6102,6 @@ public class Calendar2 {
    *     original s if it was already valid or wasn't a String date time format.
    */
   public static String convertToJavaDateTimeFormat(String s) {
-    String os = s;
-
     if (s == null) return s;
     s = s.trim();
     if (s.length() == 0) return s;

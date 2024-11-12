@@ -4161,7 +4161,6 @@ public abstract class EDDGrid extends EDD {
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
         String tFirst = edvga.destinationToString(edvga.firstDestinationValue());
-        String tLast = edvga.destinationToString(edvga.lastDestinationValue());
         String edvgaTooltip = edvga.htmlRangeTooltip(language);
 
         String tUnits = edvga instanceof EDVTimeStampGridAxis ? "UTC" : edvga.units();
@@ -4451,14 +4450,6 @@ public abstract class EDDGrid extends EDD {
                 ? new String[0]
                 : String2.split(partValue.substring(partName.length()), '|');
         if (reallyVerbose) String2.log(".colorBar=" + String2.toCSSVString(pParts));
-
-        // find dataVariable relevant to colorBar
-        // (force change in values if this var changes?  but how know, since no state?)
-        int tDataVariablePo =
-            String2.indexOf(
-                dataVariableDestinationNames(),
-                varName[2]); // currently, bothrelevant representation uses varName[2] for "Color"
-        EDV tDataVariable = tDataVariablePo >= 0 ? dataVariables[tDataVariablePo] : null;
 
         paramName = "p";
         String defaultPalette = "";
@@ -6842,8 +6833,6 @@ public abstract class EDDGrid extends EDD {
                     + MessageFormat.format(EDStatic.queryError1VarAr[0], ".geotif"),
                 EDStatic.queryErrorAr[language]
                     + MessageFormat.format(EDStatic.queryError1VarAr[language], ".geotif")));
-      EDV edv = gridDataAccessor.dataVariables()[0];
-      String dataName = edv.destinationName();
 
       PrimitiveArray lonPa = null, latPa = null;
       double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
@@ -8391,26 +8380,21 @@ public abstract class EDDGrid extends EDD {
         // section adjusts the map output to match the requested
         // inputs.
 
-        if (transparentPng && isMap) { // Chris didn't have &&isMap
-          // Chris had this section much higher in method and without &&isMap
-          double inputMinX = Double.MIN_VALUE;
-          double inputMaxX = Double.MAX_VALUE;
-          double inputMinY = Double.MIN_NORMAL;
-          double inputMaxY = Double.MAX_VALUE;
+        if (transparentPng && isMap) {
           // transparentPng supports returning requests outside of data range
           // to enable tiles that partially contain data. This section
           // validates there is data to return before continuing.
           // Get the X input values.
-          inputMinX = inputValues.get(lonIndex * 2);
-          inputMaxX = inputValues.get(lonIndex * 2 + 1);
+          double inputMinX = inputValues.get(lonIndex * 2);
+          double inputMaxX = inputValues.get(lonIndex * 2 + 1);
           if (inputMinX > inputMaxX) {
             double d = inputMinX;
             inputMinX = inputMaxX;
             inputMaxX = d;
           }
           // Get the Y input values.
-          inputMinY = inputValues.get(latIndex * 2);
-          inputMaxY = inputValues.get(latIndex * 2 + 1);
+          double inputMinY = inputValues.get(latIndex * 2);
+          double inputMaxY = inputValues.get(latIndex * 2 + 1);
           if (inputMinY > inputMaxY) {
             double d = inputMinY;
             inputMinY = inputMaxY;
@@ -9491,7 +9475,6 @@ public abstract class EDDGrid extends EDD {
     }
     int lonMidi = (lonStarti + lonStopi) / 2;
     double lonMidd = lonEdv.destinationValue(lonMidi).getNiceDouble(0);
-    double lonAverageSpacing = Math.abs(lonEdv.averageSpacing());
 
     int totalNLat = latEdv.sourceValues().size();
     int latStarti = tConstraints.get(latIndex * 3 + 0);
@@ -9504,7 +9487,6 @@ public abstract class EDDGrid extends EDD {
               + "For .kml requests, the latitude values must be between -90 and 90.");
     int latMidi = (latStarti + latStopi) / 2;
     double latMidd = latEdv.destinationValue(latMidi).getNiceDouble(0);
-    double latAverageSpacing = Math.abs(latEdv.averageSpacing());
 
     if (lonStarti == lonStopi || latStarti == latStopi)
       throw new SimpleException(
@@ -9687,10 +9669,8 @@ public abstract class EDDGrid extends EDD {
           for (int nl = 0; nl < 4; nl++) {
             double tLonStartd = nl < 2 ? lonStartd : lonMidd;
             double tLonStopd = nl < 2 ? lonMidd : lonStopd;
-            int ttxPo = txPo * 2 + (nl < 2 ? 0 : 1);
             double tLatStartd = Math2.odd(nl) ? latMidd : latStartd;
             double tLatStopd = Math2.odd(nl) ? latStopd : latMidd;
-            int ttyPo = tyPo * 2 + (Math2.odd(nl) ? 1 : 0);
             double tLonAdjust =
                 Math.min(tLonStartd, tLonStopd) >= 180
                     ? -360
@@ -10713,7 +10693,6 @@ public abstract class EDDGrid extends EDD {
 
         // write the axis variables
         for (int a = 0; a < nActiveAxes; a++) {
-          int av = activeAxes.get(a);
           ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
         }
 
@@ -10721,7 +10700,6 @@ public abstract class EDDGrid extends EDD {
         for (int dv = 0; dv < tDataVariables.length; dv++) {
 
           EDV edv = tDataVariables[dv];
-          String destName = edv.destinationName();
           PAType edvPAType = edv.destinationDataPAType();
           PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
           if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
@@ -10785,7 +10763,6 @@ public abstract class EDDGrid extends EDD {
       int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
       throws Throwable {
     if (reallyVerbose) String2.log("  EDDGrid.saveAsNc");
-    long time = System.currentTimeMillis();
 
     // for now, write strings as if in nc3 file: char arrays with extra dimension for strlen
     boolean writeStringsAsStrings = false; // if false, they are written as chars
@@ -10931,7 +10908,6 @@ public abstract class EDDGrid extends EDD {
                 + gda.axisValues(avi).size());
       }
       // need to create dimensions for string lengths
-      int dvStringMaxLength[] = new int[nRDV];
       if (!writeStringsAsStrings) {
         for (int dvi = 0; dvi < nRDV; dvi++) {
           EDV dv = gda.dataVariables[dvi];
@@ -10998,7 +10974,6 @@ public abstract class EDDGrid extends EDD {
       String tdvShape = new StringArray(axisVariableDestinationNames).toJsonCsvString();
       NDimensionalIndex tIndex =
           (NDimensionalIndex) gda.totalIndex().clone(); // incremented before get data
-      int tnDim = tIndex.nDimensions();
       long nRows = tIndex.size();
       for (int dvi = 0; dvi < nRDV; dvi++) {
         //    "att_var": {
@@ -11505,12 +11480,7 @@ public abstract class EDDGrid extends EDD {
     EDV queryDataVariables[] = gridDataAccessor.dataVariables();
     int nDv = queryDataVariables.length;
     PrimitiveArray avPa[] = new PrimitiveArray[nAv];
-    boolean isDoubleAv[] = new boolean[nAv];
-    boolean isFloatAv[] = new boolean[nAv];
     PrimitiveArray dvPa[] = new PrimitiveArray[nDv];
-    boolean isStringDv[] = new boolean[nDv];
-    boolean isDoubleDv[] = new boolean[nDv];
-    boolean isFloatDv[] = new boolean[nDv];
     int nBufferRows = tableWriterNBufferRows;
     PAOne avPAOne[] = new PAOne[nAv];
     for (int av = 0; av < nAv; av++) {
@@ -11606,8 +11576,6 @@ public abstract class EDDGrid extends EDD {
     writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
     HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
     String formName = "form1";
-    String liClickSubmit =
-        "\n" + "  <li> " + EDStatic.EDDClickOnSubmitHtmlAr[language] + "\n" + "  </ol>\n";
     writer.write("&nbsp;\n"); // necessary for the blank line before the form (not <p>)
     writer.write(widgets.beginForm(formName, "GET", "", ""));
 
@@ -12052,9 +12020,6 @@ public abstract class EDDGrid extends EDD {
     String fullIndexExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExampleHA;
     String fullValueExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExampleHA;
     String fullTimeExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeCsvExampleHA = datasetBase + ".csv?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeNcExampleHA = datasetBase + ".nc?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullMatExampleHA = datasetBase + ".mat?" + EDStatic.EDDGridDataTimeExampleHA;
     String fullGraphExampleHA = datasetBase + ".png?" + EDStatic.EDDGridGraphExampleHA;
     String fullGraphMAGExampleHA = datasetBase + ".graph?" + EDStatic.EDDGridGraphExampleHA;
     String fullGraphDataExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExampleHA;
@@ -13785,8 +13750,6 @@ public abstract class EDDGrid extends EDD {
     String keywordsSA[] = keywords();
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
@@ -14175,14 +14138,8 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaWCS());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
-    String titleXml = XML.encodeAsXML(title());
-    String keywordsSA[] = keywords();
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
@@ -14403,7 +14360,6 @@ public abstract class EDDGrid extends EDD {
       throws Throwable {
 
     if (reallyVerbose) String2.log("\nrespondToWcsQuery q=" + wcsQuery);
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = "/wcs/" + datasetID + "/" + wcsServer;
 
     if (accessibleViaWCS().length() > 0)
@@ -14754,7 +14710,6 @@ public abstract class EDDGrid extends EDD {
       } else if (av == timeIndex) {
         String paramName = version100 ? "time" : "timesequence";
         String time = wcsQueryMap.get(paramName); // test name.toLowerCase()
-        String minTime = null, maxTime = null;
         if (time == null) {
           dapQuery.append("[(last)]"); // default
         } else {
@@ -14948,30 +14903,12 @@ public abstract class EDDGrid extends EDD {
             language, loggedInAs, "wcs", datasetID)); // wcs must be lowercase for link to work
     writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, true, "", "");
 
-    String makeAGraphRef =
-        "<a href=\""
-            + tErddapUrl
-            + "/griddap/"
-            + datasetID
-            + ".graph\">"
-            + EDStatic.magAr[language]
-            + "</a>";
     String datasetListRef =
         "<br>See the\n"
             + "  <a rel=\"bookmark\" href=\""
             + tErddapUrl
             + "/wcs/index.html\">list \n"
             + "    of datasets available via WCS</a> at this ERDDAP installation.\n";
-    String makeAGraphListRef =
-        "  <br>See the\n"
-            + "    <a rel=\"bookmark\" href=\""
-            + XML.encodeAsHTMLAttribute(
-                tErddapUrl
-                    + "/info/index.html"
-                    + "?page=1&itemsPerPage="
-                    + EDStatic.defaultItemsPerPage)
-            + "\">list \n"
-            + "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
     // What is WCS?   (for tDatasetID)
     // !!!see the almost identical documentation above
@@ -16543,16 +16480,13 @@ public abstract class EDDGrid extends EDD {
     String infoUrl = combinedGlobalAttributes.getString("infoUrl");
     String institution = combinedGlobalAttributes.getString("institution");
     String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywordsVocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.keywords;
-      keywordsVocabulary = null;
     }
     String license = combinedGlobalAttributes.getString("license");
     String project = combinedGlobalAttributes.getString("project");
     if (project == null) project = institution;
     String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
-    String sourceUrl = publicSourceUrl();
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -16570,7 +16504,6 @@ public abstract class EDDGrid extends EDD {
       // infoUrl         = null;  //ensureValid ensure that some things exist
       // institution     = null;
       keywords = null;
-      keywordsVocabulary = null;
       license = null;
       project = null;
       standardNameVocabulary = null;

@@ -514,7 +514,7 @@ public class OpendapHelper {
       return paAr;
     } else if (baseType instanceof DArray da) {
       return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
-    } else if (baseType instanceof DVector dvector) {
+    } else if (baseType instanceof DVector) {
       return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
     } else if (baseType instanceof DFloat64 dfloat64) {
       return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
@@ -1167,7 +1167,6 @@ public class OpendapHelper {
   public static String[] findAllScalarOrMultiDimVars(DDS dds) throws Exception {
 
     Enumeration en = dds.getVariables();
-    StringArray dimNames = new StringArray();
     StringArray varNames = new StringArray(); // vars with same dimNames
     while (en.hasMoreElements()) {
       BaseType baseType = (BaseType) en.nextElement();
@@ -1233,7 +1232,7 @@ public class OpendapHelper {
       // define the data variables in ncOut
       StringArray dimNames = new StringArray();
       IntArray dimSizes = new IntArray();
-      ArrayList<Dimension> dims = new ArrayList(); // ucar.nc2.Dimension
+      ArrayList<Dimension> dims = new ArrayList<>(); // ucar.nc2.Dimension
       int varShape[][] = new int[nVars][];
       boolean isString[] = new boolean[nVars]; // all false
       Variable.Builder newVars[] = new Variable.Builder[nVars];
@@ -1249,7 +1248,7 @@ public class OpendapHelper {
         PAType tPAType = null;
         if (baseType instanceof DGrid dGrid) {
           int nDims = dGrid.elementCount(true) - 1;
-          ArrayList<Dimension> tDims = new ArrayList();
+          ArrayList<Dimension> tDims = new ArrayList<>();
           varShape[v] = new int[nDims];
           for (int d = 0; d < nDims; d++) {
             BaseType dimBaseType = dGrid.getVar(d + 1);
@@ -1295,7 +1294,7 @@ public class OpendapHelper {
           // I think there is no need to add extra dim here since NcHelper.addNc3StringVariable
           // handles that.
           int nDims = dArray.numDimensions();
-          ArrayList<Dimension> tDims = new ArrayList();
+          ArrayList<Dimension> tDims = new ArrayList<>();
           varShape[v] = new int[nDims];
           for (int d = 0; d < nDims; d++) { // 0..
             DArrayDimension dim = dArray.getDimension(d);
@@ -1354,7 +1353,7 @@ public class OpendapHelper {
               Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
               dims.add(tDim);
             }
-            ArrayList<Dimension> tDims = new ArrayList();
+            ArrayList<Dimension> tDims = new ArrayList<>();
             tDims.add(dims.get(which));
             varShape[v] = new int[1];
             varShape[v][0] = dimSize;
@@ -1365,7 +1364,7 @@ public class OpendapHelper {
             varShape[v] = new int[0];
             newVars[v] =
                 NcHelper.addVariable(
-                    rootGroup, varNames[v], NcHelper.getNc3DataType(tPAType), new ArrayList());
+                    rootGroup, varNames[v], NcHelper.getNc3DataType(tPAType), new ArrayList<>());
           }
         }
 
@@ -1480,7 +1479,6 @@ public class OpendapHelper {
     int jplLatSize = 16000;
     int jplLatChunk = 2000;
     int jplNChunks = jplLatSize / jplLatChunk;
-    int jplLatDim = 1; // [time][lat][lon]
     FloatArray jplLatPa = null;
     if (jplMode) {
       jplLatPa = new FloatArray(jplLatSize, true);
@@ -1622,7 +1620,6 @@ public class OpendapHelper {
       int nDims = sss.length / 3;
       ArrayList<Dimension> dims = new ArrayList();
       int shape[] = new int[nDims];
-      PAType dimPAType[] = new PAType[nDims];
       boolean isDGrid = true; // change if false
 
       PAType dataPAType[] = new PAType[nVars];
@@ -1817,7 +1814,6 @@ public class OpendapHelper {
       }
 
       // read and write the data variables
-      firstValidVar = true;
       for (int v = 0; v < nVars; v++) {
         if (varNames[v] == null) continue;
         long vTime = System.currentTimeMillis();
@@ -1870,7 +1866,6 @@ public class OpendapHelper {
           }
         }
 
-        firstValidVar = false;
         if (verbose)
           String2.log(
               "  v#"

@@ -285,8 +285,6 @@ class FileVisitorDNLSTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *** huge dir
-    String unexpected =
-        "\nUnexpected FileVisitorDNLS error (but /data/gtspp/temp dir has variable nFiles):\n";
 
     if (doBigTest) {
       for (int attempt = 0; attempt < 2; attempt++) {

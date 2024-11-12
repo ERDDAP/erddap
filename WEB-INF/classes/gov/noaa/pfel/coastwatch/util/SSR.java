@@ -36,7 +36,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -442,7 +441,6 @@ public class SSR {
    */
   public static void zipADirectory(String dir, int timeOutSeconds) throws Exception {
     // remove trailing slash
-    char slash = dir.indexOf('/') >= 0 ? '/' : '\\';
     if (dir.endsWith("/") || dir.endsWith("\\")) dir = dir.substring(0, dir.length() - 1);
 
     SSR.zip(dir + ".zip", new String[] {dir}, timeOutSeconds, true, File2.getDirectory(dir));
@@ -608,29 +606,9 @@ public class SSR {
    * @param timeOutSeconds (use -1 for no time out)
    * @throws Exception if trouble
    */
-  public static void gzip(String gzipDirName, String dirNames[], int timeOutSeconds)
-      throws Exception {
+  public static void gzip(String gzipDirName, String dirNames[]) throws Exception {
 
-    gzip(gzipDirName, dirNames, timeOutSeconds, false, "");
-  }
-
-  /**
-   * Put the specified files in a gzip file (with some directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
-   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @param removeDirPrefix the prefix to be removed from the start of each dir name (ending with a
-   *     slash)
-   * @throws Exception if trouble
-   */
-  public static void gzip(
-      String gzipDirName, String dirNames[], int timeOutSeconds, String removeDirPrefix)
-      throws Exception {
-
-    gzip(gzipDirName, dirNames, timeOutSeconds, true, removeDirPrefix);
+    gzip(gzipDirName, dirNames, false, "");
   }
 
   /**
@@ -640,7 +618,6 @@ public class SSR {
    * @param gzipDirName the full name for the .zip file (path + name + ".gz")
    * @param dirNames the full names of the files to be put in the gzip file. These can use forward
    *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
    * @param includeDirectoryInfo set this to false if you don't want any dir invo stored with the
    *     files
    * @param removeDirPrefix if includeDirectoryInfo is true, this is the prefix to be removed from
@@ -649,11 +626,7 @@ public class SSR {
    * @throws Exception if trouble
    */
   private static void gzip(
-      String gzipDirName,
-      String dirNames[],
-      int timeOutSeconds,
-      boolean includeDirectoryInfo,
-      String removeDirPrefix)
+      String gzipDirName, String dirNames[], boolean includeDirectoryInfo, String removeDirPrefix)
       throws Exception {
 
     // validate
@@ -703,11 +676,11 @@ public class SSR {
                 dirNames[i]); // not File2.getDecompressedBufferedInputStream() Read files as is.
         try {
           // add ZIP entry to output stream
-          String tName =
-              includeDirectoryInfo
-                  ? dirNames[i].substring(removeDirPrefix.length())
-                  : // already validated above
-                  File2.getNameAndExtension(dirNames[i]);
+          // String tName =
+          //     includeDirectoryInfo
+          //         ? dirNames[i].substring(removeDirPrefix.length())
+          //         : // already validated above
+          //         File2.getNameAndExtension(dirNames[i]);
           // out.putNextEntry(new ZipEntry(tName));
 
           // transfer bytes from the file to the ZIP file
@@ -2123,7 +2096,6 @@ public class SSR {
         } else {
           // is cType supported by Java?
           try {
-            Charset cset = Charset.forName(cType);
             charset = cType; // no exception means it's valid
           } catch (Exception e) {
             // charset remains default
@@ -2439,7 +2411,8 @@ public class SSR {
       int tIndex = random.nextInt(nTimePoints);
       int xIndex = random.nextInt(52);
       int yIndex = random.nextInt(52);
-      String ts =
+      @SuppressWarnings("unused")
+      String unusedTs =
           getUrlResponseStringUnchanged(
               baseUrl + "?" + varName + "[" + tIndex + ":1:" + tIndex + "]" + "[0:1:0]" + "["
                   + yIndex + ":1:" + yIndex + "]" + "[" + xIndex + ":1:" + xIndex + "]");

@@ -201,13 +201,13 @@ class NDimensionalIndexTests {
 
     // test some invalid requests
     try {
-      NDimensionalIndex b = new NDimensionalIndex(new int[0]);
+      new NDimensionalIndex(new int[0]);
       throw new Exception("");
     } catch (Exception e) {
       if (e.toString().indexOf("nDimensions=0") < 0) throw e;
     }
     try {
-      NDimensionalIndex b = new NDimensionalIndex(new int[] {2, 0});
+      new NDimensionalIndex(new int[] {2, 0});
       throw new Exception("");
     } catch (Exception e) {
       if (e.toString().indexOf("value less than 1") < 0) throw e;

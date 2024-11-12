@@ -410,22 +410,19 @@ public class NetCheck {
 
         // generate the headline
         String headline = pass ? CurrentStatusPASS : CurrentStatusFAIL;
-        boolean changed = false;
         if (doStatusReport && firstStatusReport) {
           // don't say CHANGED on first round of tests
         } else if ((shortResult.length() == 0) && (shortLastResult.length() == 0)) {
           // no errors
         } else if ((result[i].length() == 0) ^ (lastResult[i].length() == 0)) {
           headline += "(status " + CHANGED;
-          changed = true;
         } else if (!shortResult.equals(shortLastResult)) {
           headline += "(message" + CHANGED;
-          changed = true;
         }
         if (doStatusReport && !firstStatusReport)
           headline += passPercent + String2.right((nPass[i] * 100 / nTry[i]) + "%", 4) + ") ";
         headline += netCheckTest.getTitle() + "\n";
-        HashSet<String> notifiedReThisTest = new HashSet();
+        HashSet<String> notifiedReThisTest = new HashSet<>();
 
         // addResults to emails to subscribers
         if (testMode) {
@@ -668,7 +665,7 @@ public class NetCheck {
       String2.log("The name of the setup file must end in \".xml\".");
       System.exit(0);
     }
-
-    NetCheck netCheck = new NetCheck(xmlName, testMode);
+    @SuppressWarnings("unused")
+    NetCheck unusedNetCheck = new NetCheck(xmlName, testMode);
   }
 }

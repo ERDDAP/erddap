@@ -1,7 +1,6 @@
 package com.cohort.util;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
@@ -68,7 +67,7 @@ public class Image2Tests {
 
     // test ImageIO
     BufferedImage bi = ImageIO.read(new File(testDir + "testmap.gif"));
-    Graphics g = bi.getGraphics();
+    bi.getGraphics();
     ImageIO.write(bi, "png", new File(testDir + "temp.png"));
     Image2.saveAsGif(bi, testDir + "temp.gif");
 

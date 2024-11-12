@@ -808,10 +808,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     // reload the Capabilities document
     if (reloadStationsFile) reloadStationsFile();
     String dir = "c:/programs/_tomcat/content/erddap/subset/";
-    Table table;
-    int c;
-
-    table = lookForStations("Air Temp");
+    Table table = lookForStations("Air Temp");
     int nMAT = table.nRows();
     table.saveAsJson(
         dir + "nosCoopsMAT.json", -1, false); // timeColumn=-1 since already ISO String, writeUnits

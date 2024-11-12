@@ -191,10 +191,8 @@ public class String2 {
    */
   private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
 
-  private static DecimalFormat genEngFormat6 = new DecimalFormat("##0.#####E0");
   private static DecimalFormat genExpFormat6 = new DecimalFormat("0.######E0");
   private static DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
-  private static DecimalFormat genEngFormat10 = new DecimalFormat("##0.#########E0");
   private static DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
   // splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each
@@ -212,7 +210,7 @@ public class String2 {
     }
   }
 
-  private static Map canonicalLockMap = new WeakHashMap();
+  private static Map<Object, WeakReference<ReentrantLock>> canonicalLockMap = new WeakHashMap<>();
   public static int longTimeoutSeconds =
       300; // 5 minutes. This is >= other timeouts in the system. This is used in places that
 
@@ -1590,7 +1588,6 @@ public class String2 {
     final int sbL = sb.length();
     final int oldSL = oldS.length();
     if (oldSL == 0) return 0;
-    final int newSL = newS.length();
     StringBuilder testSB = sb;
     String testOldS = oldS;
     if (ignoreCase) {
@@ -2643,7 +2640,6 @@ public class String2 {
         sb.append("[null]");
       } else {
         String s = o.toString();
-        int slen = s.length();
         if (csv)
           s = s.indexOf(',') >= 0 ? toJson(s) : toJsonIfNeeded(s, 128); // 2023-02-14 128 was 65536
         else if (tsv && s.indexOf('\t') >= 0) s = toJson(s);
@@ -3466,9 +3462,6 @@ public class String2 {
       if (System.getProperty("com.cohort.util.String2Log.level") == null)
         System.setProperty("com.cohort.util.String2Log.level", "" + String2Log.WARN_LEVEL);
     }
-
-    // this dummy variable ensures String2LogFactory gets compiled
-    String2LogFactory string2LogFactory;
   }
 
   /**
@@ -3619,7 +3612,6 @@ public class String2 {
       }
 
       if (logFile != null) {
-        long ctm = System.currentTimeMillis();
         // always synchronize on logFileLock
         synchronized (logFileLock) {
           // write the message to the logFile (common, fast)
@@ -5142,7 +5134,6 @@ public class String2 {
 
     char[] lineBuffer;
     char[] buf;
-    int i;
 
     buf = lineBuffer = new char[128];
 
@@ -6113,12 +6104,12 @@ public class String2 {
     //  (and use a few times in consistent state)
     // than to synchronize canonicalMap and lock/unlock twice
     synchronized (canonicalLockMap) {
-      WeakReference wr = (WeakReference) canonicalLockMap.get(o);
+      WeakReference<ReentrantLock> wr = canonicalLockMap.get(o);
       // wr won't be garbage collected, but reference might (making wr.get() return null)
       ReentrantLock canonical = wr == null ? null : (ReentrantLock) wr.get();
       if (canonical == null) {
         canonical = new ReentrantLock();
-        canonicalLockMap.put(o, new WeakReference(canonical));
+        canonicalLockMap.put(o, new WeakReference<ReentrantLock>(canonical));
       }
       return canonical;
     }
@@ -6543,7 +6534,6 @@ public class String2 {
     Iterator<Map.Entry> it = map.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry entry = it.next();
-      Object key = entry.getKey();
       Object val = entry.getValue();
       if (set.contains(val)) {
         it.remove(); // remove entry through iterator, or exception

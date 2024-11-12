@@ -9,7 +9,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import dods.dap.*;
-import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Opendap;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -143,8 +142,6 @@ public class OpendapTest extends NetCheckTest {
       int gridNLatValues)
       throws Exception {
 
-    String errorIn = String2.ERROR + " in OpendapTest constructor: ";
-
     // required
     this.title = title;
     this.url = url;
@@ -218,9 +215,8 @@ public class OpendapTest extends NetCheckTest {
           0); // 0 not accurate here, but doesn't matter for opendapTest
 
       // makeGrid throws exception if trouble
-      Grid grid =
-          opendap.makeGrid(
-              opendap.timeOptions[0], minMaxXY[0], minMaxXY[1], minMaxXY[2], minMaxXY[3], 200, 200);
+      opendap.makeGrid(
+          opendap.timeOptions[0], minMaxXY[0], minMaxXY[1], minMaxXY[2], minMaxXY[3], 200, 200);
       time = System.currentTimeMillis() - time;
 
       // check mustRespondWithinSeconds

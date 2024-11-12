@@ -319,6 +319,13 @@ public class TableWriterAll extends TableWriter {
     return totalNRows;
   }
 
+  public void ensureMemoryForCumulativeTable() {
+    Table table = makeEmptyTable();
+    Math2.ensureMemoryAvailable(
+        nColumns() * nRows() * table.estimatedBytesPerRow(), // nRows() is a long
+        "TableWriterAll.cumulativeTable");
+  }
+
   /**
    * Call this after finish() to assemble the cumulative table. SINCE ENTIRE TABLE IS IN MEMORY,
    * THIS MAY TAKE TONS OF MEMORY. This checks ensureMemoryAvailable. THE CUMULATIVETABLE IS HELD IN
@@ -335,9 +342,7 @@ public class TableWriterAll extends TableWriter {
 
     // ensure memory available    too bad this is after all data is gathered
     int nColumns = nColumns();
-    Math2.ensureMemoryAvailable(
-        nColumns * nRows() * table.estimatedBytesPerRow(), // nRows() is a long
-        "TableWriterAll.cumulativeTable");
+    ensureMemoryForCumulativeTable();
 
     // actually get the data
     for (int col = 0; col < nColumns; col++) table.setColumn(col, column(col));

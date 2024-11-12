@@ -379,8 +379,6 @@ public abstract class BaseType implements Cloneable {
 
   public String getLongName() {
 
-    boolean done = false;
-
     BaseType parent = _myParent;
 
     String longName = _name;

@@ -117,9 +117,6 @@ public class FindDuplicateTime {
     if (args == null || args.length < 3)
       throw new RuntimeException(
           "Missing command line parameters: directory fileNameRegex timeVarName");
-    String directory = args[0];
-    String fileNameRegex = args[1];
-    String timeVarName = args[2];
     String2.log(findDuplicateTime(args[0], args[1], args[2]));
 
     System.exit(0);

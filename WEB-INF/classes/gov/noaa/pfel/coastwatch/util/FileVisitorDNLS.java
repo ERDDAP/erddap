@@ -1205,7 +1205,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static Table oneStepDoubleWithUrlsNotDirs(Table tTable, String tDir, String startOfUrl)
       throws IOException {
 
-    int nCols = tTable.nColumns();
     int nRows = tTable.nRows();
 
     // replace directory with virtual url
@@ -2433,9 +2432,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static void makeTgz(
       String tDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, String tResultName)
       throws Exception {
-    TarArchiveOutputStream tar = null;
     String outerDir = File2.getDirectory(tDir.substring(0, tDir.length() - 1));
-    tar =
+    TarArchiveOutputStream tar =
         new TarArchiveOutputStream(
             new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tResultName))));
     try {
@@ -2590,7 +2588,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             dir, fileNameRegex, recursive, ".*", false); // tRecursive, tPathRegex, tDirectoriesToo
     StringArray dirs = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
     StringArray names = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
-    Tally tally = new Tally();
     int nErrors = 0;
     for (int i = 0; i < names.size(); i++) {
 

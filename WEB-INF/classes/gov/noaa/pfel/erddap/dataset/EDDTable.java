@@ -928,7 +928,6 @@ public abstract class EDDTable extends EDD {
 
     // add standard metadata to combinedGlobalAttributes
     // (This should always be done, so shouldn't be in an optional method...)
-    String destNames[] = dataVariableDestinationNames();
     // lon
     // String2.log(">> lonIndex=" + lonIndex);
     if (lonIndex >= 0) {
@@ -1668,7 +1667,6 @@ public abstract class EDDTable extends EDD {
     // (e.g., for derived vars, e.g., "=0").
     // But all table columnNames are unique because they are direct from source.
     // And cleaner and safer to do all at once.
-    int nRows = table.nRows();
     for (int col = table.nColumns() - 1;
         col >= 0;
         col--) { // work backward since may remove some cols
@@ -1823,7 +1821,6 @@ public abstract class EDDTable extends EDD {
       int dv = String2.indexOf(dataVariableDestinationNames(), constraintVariable);
       EDV edv = dataVariables[dv];
       PAType sourcePAType = edv.sourceDataPAType();
-      PAType destPAType = edv.destinationDataPAType();
 
       if (applyAllConstraints) {
         // applyAllConstraints
@@ -2358,8 +2355,6 @@ public abstract class EDDTable extends EDD {
     for (int p = 1; p < parts.length; p++) {
       // deal with one constraint at a time
       String constraint = parts[p];
-      int constraintLength = constraint.length();
-      // String2.log("constraint=" + constraint);
       int quotePo = constraint.indexOf('"');
       String constraintBeforeQuotes = quotePo >= 0 ? constraint.substring(0, quotePo) : constraint;
 
@@ -3825,7 +3820,6 @@ public abstract class EDDTable extends EDD {
             NetcdfFileFormat.NETCDF3,
             cacheFullName,
             twawm); // internally, it writes to temp file, then renames to cacheFullName
-        boolean nc3Mode = true;
 
         File2.isFile(
             cacheFullName,
@@ -6555,7 +6549,6 @@ public abstract class EDDTable extends EDD {
   public void saveAsNcCF0(int language, String ncCFName, TableWriterAllWithMetadata twawm)
       throws Throwable {
     if (reallyVerbose) String2.log("EDDTable.convertFlatNcToNcCF0 " + ncCFName);
-    long time = System.currentTimeMillis();
 
     // delete any existing file
     File2.delete(ncCFName);
@@ -6673,8 +6666,6 @@ public abstract class EDDTable extends EDD {
 
     NetcdfFormatWriter ncWriter = null;
     try {
-      NetcdfFormatWriter.Builder ncCF = null;
-
       // get info from twawm
       // Note: this uses "feature" as stand-in for profile|timeseries|trajectory
       String ncColNames[] = twawm.columnNames();
@@ -6704,7 +6695,7 @@ public abstract class EDDTable extends EDD {
       // rank id rows
       // !!! this assumes already sorted by time/depth/... and will stay sorted when rearranged.
       //  PrimitiveArray.rank promises stable sort.
-      ArrayList tTable = new ArrayList();
+      ArrayList<PrimitiveArray> tTable = new ArrayList<>();
       tTable.add(idPA);
       int rank[] = PrimitiveArray.rank(tTable, new int[] {0}, new boolean[] {true});
       tTable = null;
@@ -6749,7 +6740,7 @@ public abstract class EDDTable extends EDD {
       // do a fileSize check here.  <2GB?
 
       // ** Create the .ncCF file
-      ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
+      NetcdfFormatWriter.Builder ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
       Group.Builder rootGroup = ncCF.getRootGroup();
       ncCF.setFill(false);
       // define the dimensions
@@ -6779,7 +6770,7 @@ public abstract class EDDTable extends EDD {
             type = PAType.DOUBLE;
             // maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;  //was Strings
           }
-          ArrayList<Dimension> tDimsList = new ArrayList();
+          ArrayList<Dimension> tDimsList = new ArrayList<>();
           if (nodcMode) {
             if (isFeatureVar[col]) {
               tDimsList.add(featureDimension);
@@ -7017,7 +7008,6 @@ public abstract class EDDTable extends EDD {
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaNcCF);
     String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-    String lcCdmType = cdmType == null ? null : cdmType.toLowerCase();
 
     // ensure profile_id and timeseries_id|trajectory_id variable is defined
     // and that cdmType is valid
@@ -7058,8 +7048,6 @@ public abstract class EDDTable extends EDD {
 
     NetcdfFormatWriter ncWriter = null;
     try {
-      NetcdfFormatWriter.Builder ncCF = null;
-
       // get info from twawm
       // Note: this uses 'feature' as stand-in for timeseries|trajectory
       String ncColNames[] = twawm.columnNames();
@@ -7103,7 +7091,7 @@ public abstract class EDDTable extends EDD {
       // rank oid+pid rows
       // !!! this assumes already sorted by time/depth/... and will stay sorted when re-sorted.
       //  PrimitiveArray.rank promises stable sort.
-      ArrayList tTable = new ArrayList();
+      ArrayList<PrimitiveArray> tTable = new ArrayList<>();
       tTable.add(oidPA);
       tTable.add(pidPA);
       int rank[] = PrimitiveArray.rank(tTable, new int[] {0, 1}, new boolean[] {true, true});
@@ -7182,7 +7170,7 @@ public abstract class EDDTable extends EDD {
       pidPA = null;
 
       // ** Create the .ncCF file
-      ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
+      NetcdfFormatWriter.Builder ncCF = NetcdfFormatWriter.createNewNetcdf3(ncCFName + randomInt);
       Group.Builder rootGroup = ncCF.getRootGroup();
       ncCF.setFill(false);
       // define the dimensions
@@ -7651,7 +7639,6 @@ public abstract class EDDTable extends EDD {
     // move the "primary variable" (the first DATAVAR) into place
     // 2010-07-07 email from Stephan Heckendorff says altitude (or similar) if present MUST be
     // primaryVar
-    String primaryVar = null;
     int tCol = table.findColumnNumber(EDV.ALT_NAME);
     if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("depth");
     if (tCol < 0) tCol = table.findColumnNumberIgnoreCase("pressure");
@@ -7664,13 +7651,13 @@ public abstract class EDDTable extends EDD {
       table.moveColumn(tCol, 0); // move it to col#0
       table.setColumnName(0, "time_ISO8601");
     }
-    primaryVar = table.getColumnName(0);
+    String primaryVar = table.getColumnName(0);
 
     // move METAVAR columns into preferred order (backwards)
     // Remember all these metavariables
     //  The set will have a few old names, e.g., latitude, time.
     //  That's okay. Move them again and change names later.
-    HashSet<String> metavariables = new HashSet();
+    HashSet<String> metavariables = new HashSet<>();
     // start with outer table colums
     for (int i = 2; i >= 0; i--) { // work backwards
       String att =
@@ -8000,8 +7987,6 @@ public abstract class EDDTable extends EDD {
     if (maxTime != null && maxTime.length() > 0) query.append("&time<=" + maxTime);
 
     // query
-    String dir = EDStatic.fullTestCacheDirectory;
-    String fileName = datasetID + Math2.random(Integer.MAX_VALUE);
     TableWriterAllWithMetadata twawm =
         getTwawmForDapQuery(language, loggedInAs, "", query.toString());
     Table table = twawm.cumulativeTable();
@@ -8162,8 +8147,6 @@ public abstract class EDDTable extends EDD {
       distinctOptions = distinctOptionsTable(language, loggedInAs);
 
     // beginning of form
-    String liClickSubmit =
-        "\n" + "  <li> " + EDStatic.EDDClickOnSubmitHtmlAr[language] + "\n" + "  </ol>\n";
     writer.write("&nbsp;\n"); // necessary for the blank line before the form (not <p>)
     String formName = "form1";
     String docFormName = "document.form1";
@@ -8272,7 +8255,6 @@ public abstract class EDDTable extends EDD {
     Table tMinMaxTable = minMaxTable;
     for (int dv = 0; dv < nDv; dv++) {
       EDV edv = dataVariables[dv];
-      double tMin = edv.destinationMinDouble();
       double tMax = edv.destinationMaxDouble();
       boolean isTime = dv == timeIndex;
       boolean isTimeStamp = edv instanceof EDVTimeStamp;
@@ -8313,7 +8295,7 @@ public abstract class EDDTable extends EDD {
       String[] tValS = {null, null};
       if (userDapQuery.length() > 0) {
         // get constraints from userDapQuery?
-        boolean done0 = false, done1 = false;
+        boolean done0 = false;
         // find first 2 constraints on this var
         for (int con = 0; con < 2; con++) {
           int tConi = constraintVariables.indexOf(edv.destinationName());
@@ -8321,7 +8303,6 @@ public abstract class EDDTable extends EDD {
             String cOp = constraintOps.get(tConi);
             int putIn = cOp.startsWith("<") || done0 ? 1 : 0; // prefer 0 first
             if (putIn == 0) done0 = true;
-            else done1 = true;
             tOp[putIn] = cOp;
             tValS[putIn] = constraintValues.get(tConi);
             tValD[putIn] = String2.parseDouble(tValS[putIn]);
@@ -8997,8 +8978,6 @@ public abstract class EDDTable extends EDD {
     // variants encoded to be Html Attributes
     String fullValueExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDTableDataValueExampleHA;
     String fullTimeExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDTableDataTimeExampleHA;
-    String fullTimeCsvExampleHA = datasetBase + ".csv?" + EDStatic.EDDTableDataTimeExampleHA;
-    String fullTimeMatExampleHA = datasetBase + ".mat?" + EDStatic.EDDTableGraphExampleHA;
     String fullGraphExampleHA = datasetBase + ".png?" + EDStatic.EDDTableGraphExampleHA;
     String fullGraphMAGExampleHA = datasetBase + ".graph?" + EDStatic.EDDTableGraphExampleHA;
     String fullGraphDataExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDTableGraphExampleHA;
@@ -10983,8 +10962,6 @@ public abstract class EDDTable extends EDD {
     StringArray nonLLSA = new StringArray();
     StringArray axisSA = new StringArray();
     StringArray nonAxisSA = new StringArray();
-    EDVTime timeVar = null;
-    int dvTime = -1;
     String time_precision[] = new String[dataVariables.length];
     for (int dv = 0; dv < dataVariables.length; dv++) {
       EDV edv = dataVariables[dv];
@@ -11000,8 +10977,6 @@ public abstract class EDDTable extends EDD {
           axisSA.add(dn);
         } else if (dv == timeIndex) {
           axisSA.add(dn);
-          dvTime = sa.size();
-          timeVar = (EDVTime) edv;
         } else {
           nonAxisSA.add(dn);
         }
@@ -11018,7 +10993,6 @@ public abstract class EDDTable extends EDD {
     nonAxisSA = null;
     String[] axis = axisSA.toArray();
     axisSA = null;
-    String[] nonLL = nonLLSA.toArray();
     nonLLSA = null;
     String[] numDvNames = sa.toArray();
     sa.atInsert(0, "");
@@ -11149,7 +11123,7 @@ public abstract class EDDTable extends EDD {
       }
 
       // parse the query so &-separated parts are handy
-      String paramName, paramValue, partName, partValue, pParts[];
+      String paramName, partName, partValue, pParts[];
       String queryParts[] =
           Table.getDapQueryParts(userDapQuery); // always at least 1 part (may be "")
       // String2.log(">>queryParts=" + String2.toCSSVString(queryParts));
@@ -11597,7 +11571,7 @@ public abstract class EDDTable extends EDD {
       if (useDefaultVars) resultsVariables.clear(); // parse() set resultsVariables to all variables
 
       // set draw-related things
-      int nVars = -1, nonAxisPo = 0, variablesShowPM = 0;
+      int nVars = -1, variablesShowPM = 0;
       String varLabel[], varHelp[], varOptions[][];
       if (reallyVerbose)
         String2.log("pre  set draw-related; resultsVariables=" + resultsVariables.toString());
@@ -12324,16 +12298,6 @@ public abstract class EDDTable extends EDD {
                 : String2.split(partValue.substring(partName.length()), '|');
         if (reallyVerbose) String2.log("  .colorBar=" + String2.toCSSVString(pParts));
 
-        // find dataVariable relevant to colorBar
-        // (force change in values if this var changes?  but how know, since no state?)
-        int tDataVariablePo =
-            String2.indexOf(
-                dataVariableDestinationNames(),
-                resultsVariables.size() > 2
-                    ? resultsVariables.get(2)
-                    : ""); // currently, only relevant representation uses #2 for "Color"
-        EDV tDataVariable = tDataVariablePo >= 0 ? dataVariables[tDataVariablePo] : null;
-
         paramName = "p";
         String defaultPalette = "";
         palette =
@@ -13007,7 +12971,6 @@ public abstract class EDDTable extends EDD {
         // does var have known min and max?
         double zoomXEdvMin = zoomXEdv.destinationMinDouble(); // may be NaN
         double zoomXEdvMax = zoomXEdv.destinationMaxDouble();
-        double zoomXEdvCenter = (zoomXEdvMin + zoomXEdvMax) / 2; // may be NaN
         double zoomXEdvRange = zoomXEdvMax - zoomXEdvMin; // may be NaN
         double zoomXCenter = (zoomXMin + zoomXMax) / 2;
         double zoomXRange = zoomXMax - zoomXMin;
@@ -13672,20 +13635,19 @@ public abstract class EDDTable extends EDD {
     boolean relatedMapIsPossible = !distinctMapIsPossible && lonIndex >= 0 && latIndex >= 0;
     String lonLatConstraints = ""; // (specifies map extent)
     if (distinctMapIsPossible && fixedLLRange) {
-      double minLon = Double.NaN, maxLon = Double.NaN, minLat = Double.NaN, maxLat = Double.NaN;
       // Don't get raw lon lat from variable's destinationMin/Max.
       // It isn't very reliable.
 
       // get min/max lon lat from subsetTable
       PrimitiveArray pa = subsetTable.findColumn("longitude");
       double stats[] = pa.calculateStats();
-      minLon = stats[PrimitiveArray.STATS_MIN];
-      maxLon = stats[PrimitiveArray.STATS_MAX];
+      double minLon = stats[PrimitiveArray.STATS_MIN];
+      double maxLon = stats[PrimitiveArray.STATS_MAX];
 
       pa = subsetTable.findColumn("latitude");
       stats = pa.calculateStats();
-      minLat = stats[PrimitiveArray.STATS_MIN];
-      maxLat = stats[PrimitiveArray.STATS_MAX];
+      double minLat = stats[PrimitiveArray.STATS_MIN];
+      double maxLat = stats[PrimitiveArray.STATS_MAX];
       if (reallyVerbose)
         String2.log(
             "  minMaxLonLat from bigTable: minLon="
@@ -13789,7 +13751,6 @@ public abstract class EDDTable extends EDD {
 
     String clickPart =
         String2.stringStartsWith(queryParts, ".click=?"); // browser added '?' when user clicked
-    String clickLon = null, clickLat = null;
     boolean userClicked = clickPart != null;
     boolean lonAndLatSpecified =
         String2.stringStartsWith(queryParts, "longitude=") != null
@@ -15547,7 +15508,6 @@ public abstract class EDDTable extends EDD {
    */
   public Table makeEmptySourceTable(EDV resultsEDVs[], int capacityNRows) {
     int nRv = resultsEDVs.length;
-    PrimitiveArray paArray[] = new PrimitiveArray[nRv];
     Table table = new Table();
     for (int rv = 0; rv < nRv; rv++) {
       EDV edv = resultsEDVs[rv];
@@ -16166,7 +16126,6 @@ public abstract class EDDTable extends EDD {
       // !!! For thread safety, don't use temporary value of accessibleViaNcCF.
       // Just set it with the final value; don't change it.
       String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-      String lcCdmType = cdmType == null ? null : cdmType.toLowerCase();
       if (cdmType == null || cdmType.length() == 0)
         throw new SimpleException("cdm_data_type must be specified in globalAttributes.");
       // if (!cdmType.equals(CDM_POINT) &&
@@ -16548,12 +16507,8 @@ public abstract class EDDTable extends EDD {
 
     // gather other information
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
-    String networkGmlNameStart = getSosGmlNameStart(sosNetworkOfferingType);
     String sensorGmlNameStart = getSosGmlNameStart("sensor");
     String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
-    String fullPhenomenaDictionaryUrl =
-        tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl;
     String datasetObservedProperty = datasetID;
     String minAllTimeString = " indeterminatePosition=\"unknown\">";
     String maxAllTimeString = minAllTimeString;
@@ -17098,8 +17053,6 @@ public abstract class EDDTable extends EDD {
     codeSpace = codeSpace.substring(0, codeSpace.length() - 2); // remove ::
     String destNames[] = dataVariableDestinationNames();
     int ndv = destNames.length;
-    String vocab = combinedGlobalAttributes().getString("standard_name_vocabulary");
-    boolean usesCfNames = vocab != null && vocab.startsWith("CF-");
 
     writer.write( // sosPhenomenaDictionary
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -17208,7 +17161,6 @@ public abstract class EDDTable extends EDD {
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
 
     // get sensor info
     boolean isNetwork = shortName.equals(datasetID);
@@ -17743,7 +17695,6 @@ public abstract class EDDTable extends EDD {
       throws Throwable {
 
     if (reallyVerbose) String2.log("\nrespondToSosQuery q=" + sosQuery);
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = "/sos/" + datasetID + "/" + sosServer;
 
     if (accessibleViaSOS().length() > 0)
@@ -17757,7 +17708,6 @@ public abstract class EDDTable extends EDD {
     String offeringName = dapQueryAr[2]; // datasetID (all) or 41004
     String responseFormat = dapQueryAr[3];
     // String responseMode   = dapQueryAr[4];
-    String requestedVars = dapQueryAr[5];
     if (reallyVerbose) String2.log("dapQueryAr=" + String2.toCSSVString(dapQueryAr));
 
     // find the fileTypeName (e.g., .tsvp) (sosQueryToDapQuery ensured responseFormat was valid)
@@ -17791,7 +17741,7 @@ public abstract class EDDTable extends EDD {
           // It will be reused in sosObservationsXml.
           // Do this now, so if not enough memory,
           //    error will be thrown before get outputStream.
-          Table table = twawm.cumulativeTable();
+          twawm.ensureMemoryForCumulativeTable();
 
           // write the results
           // all likely errors are above, so it is now ~safe to get outputstream
@@ -18257,7 +18207,6 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
     String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
     String sensorGmlNameStart = getSosGmlNameStart("sensor");
     String requestedVarAr[] =
@@ -18490,8 +18439,6 @@ public abstract class EDDTable extends EDD {
                 + "                    </gml:Box>\n"
                 + "                  </gml:boundedBy>\n");
 
-      int nSosVars = dataVariables.length - 4; // Lon, Lat, Time, ID
-      if (altIndex >= 0 || depthIndex >= 0) nSosVars--;
       writer.write(
           // vertical crs: http://www.oostethys.org/best-practices/verticalcrs [GONE]
           // ???Eeek. I don't keep this info     allow it to be specified in
@@ -18634,7 +18581,6 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
     String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
     String sensorGmlNameStart = getSosGmlNameStart("sensor");
     String datasetObservedProperty = datasetID;
@@ -18691,8 +18637,6 @@ public abstract class EDDTable extends EDD {
     PAOne maxLon = tw.columnMaxValue(tLonIndex);
     PAOne minLat = tw.columnMinValue(tLatIndex);
     PAOne maxLat = tw.columnMaxValue(tLatIndex);
-    PAOne minTime = tw.columnMinValue(tTimeIndex);
-    PAOne maxTime = tw.columnMaxValue(tTimeIndex);
     int nRows = tIdPA.size();
     int nCols = table.nColumns();
 
@@ -19320,8 +19264,6 @@ public abstract class EDDTable extends EDD {
     //        accessibleViaSOS());
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String sosUrl = tErddapUrl + "/sos/" + datasetID + "/" + sosServer;
-    String stationGmlNameStart = getSosGmlNameStart(sosOfferingType);
     String sensorGmlNameStart = getSosGmlNameStart("sensor");
     String fullPhenomenaDictionaryUrl =
         tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl;
@@ -19373,7 +19315,6 @@ public abstract class EDDTable extends EDD {
     PrimitiveArray tIdPA = table.getColumn(tIdIndex);
     PrimitiveArray tTimePA = table.getColumn(tTimeIndex);
     PrimitiveArray tAltPA = tAltIndex >= 0 ? table.getColumn(tAltIndex) : null;
-    PrimitiveArray tDepthPA = tDepthIndex >= 0 ? table.getColumn(tDepthIndex) : null;
     PrimitiveArray tLatPA = table.getColumn(tLatIndex);
     PrimitiveArray tLonPA = table.getColumn(tLonIndex);
     int nRows = tIdPA.size();
@@ -19403,7 +19344,6 @@ public abstract class EDDTable extends EDD {
       xmlColUcumUnits[col] = u == null || u.length() == 0 ? "" : XML.encodeAsXML(u);
       isStringCol[col] = table.getColumn(col) instanceof StringArray;
     }
-    int nSensors = nCols - 4 - (tAltIndex >= 0 || tDepthIndex >= 0 ? 1 : 0); // 4=LLTI
     boolean compositeSensor = nCols == dataVariables.length;
     PAOne minLon = tw.columnMinValue(tLonIndex);
     PAOne maxLon = tw.columnMaxValue(tLonIndex);
@@ -19696,7 +19636,6 @@ public abstract class EDDTable extends EDD {
     String networkOffering = getSosGmlNameStart(sosNetworkOfferingType) + datasetID;
     EDV lonEdv = dataVariables[lonIndex];
     EDV latEdv = dataVariables[latIndex];
-    EDV timeEdv = dataVariables[timeIndex];
 
     // suggest time range for offeringi
     double maxTime = sosMaxTime.getDouble(whichOffering);
@@ -20005,29 +19944,12 @@ public abstract class EDDTable extends EDD {
             language, loggedInAs, "sos", datasetID)); // sos must be lowercase for link to work
     writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, true, "", "");
 
-    String makeAGraphRef =
-        "<a href=\""
-            + tErddapUrl
-            + "/tabledap/"
-            + datasetID
-            + ".graph\">"
-            + EDStatic.magAr[language]
-            + "</a>";
     String datasetListRef =
         "<p>See the\n"
             + "  <a href=\""
             + tErddapUrl
             + "/sos/index.html\">list \n"
             + "    of datasets available via SOS</a> at this ERDDAP installation.\n";
-    String makeAGraphListRef =
-        "  <br>See the\n"
-            + "    <a href=\""
-            + tErddapUrl
-            + "/info/index.html"
-            + "?page=1&itemsPerPage="
-            + EDStatic.defaultItemsPerPage
-            + "\">list \n"
-            + "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
     // *** What is SOS?   (for tDatasetID)
     // !!!see the almost identical documentation above
@@ -20864,9 +20786,6 @@ public abstract class EDDTable extends EDD {
     // notAvailable and ...Edv
     EDVLat latEdv = (EDVLat) dataVariables[latIndex];
     EDVLon lonEdv = (EDVLon) dataVariables[lonIndex];
-    EDVAlt altEdv = (altIndex < 0 || testMinimalMetadata) ? null : (EDVAlt) dataVariables[altIndex];
-    EDVDepth depthEdv =
-        (depthIndex < 0 || testMinimalMetadata) ? null : (EDVDepth) dataVariables[depthIndex];
     EDVTime timeEdv =
         (timeIndex < 0 || testMinimalMetadata) ? null : (EDVTime) dataVariables[timeIndex];
     String minTime = ""; // compact ISO date (not time), may be ""
@@ -21754,16 +21673,13 @@ public abstract class EDDTable extends EDD {
     String infoUrl = combinedGlobalAttributes.getString("infoUrl");
     String institution = combinedGlobalAttributes.getString("institution");
     String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywordsVocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.keywords;
-      keywordsVocabulary = null;
     }
     String license = combinedGlobalAttributes.getString("license");
     String project = combinedGlobalAttributes.getString("project");
     if (project == null) project = institution;
     String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
-    String sourceUrl = publicSourceUrl();
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -21781,7 +21697,6 @@ public abstract class EDDTable extends EDD {
       // infoUrl         = null;  //ensureValid ensure that some things exist
       // institution     = null;
       keywords = null;
-      keywordsVocabulary = null;
       license = null;
       project = null;
       standardNameVocabulary = null;
@@ -23225,8 +23140,6 @@ public abstract class EDDTable extends EDD {
     StringArray suggest = new StringArray();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = (PrimitiveArray) sourceTable.getColumn(col).clone();
-      boolean isTimeStamp =
-          Calendar2.isTimeUnits(sourceTable.columnAttributes(col).getString("units"));
       pa.sort();
       if (pa.elementType() != PAType.STRING) {
         // find missing value

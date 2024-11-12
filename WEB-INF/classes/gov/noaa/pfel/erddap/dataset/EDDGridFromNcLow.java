@@ -30,8 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import ucar.ma2.*;
 import ucar.nc2.*;
-// import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
 
 /**
  * This class represents gridded data aggregated from a collection of NetCDF .nc
@@ -674,12 +672,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       }
 
       // add all the data (non-axis) variables which use those dimensions
-      List allVariables = ncFile.getVariables();
+      List<Variable> allVariables = ncFile.getVariables();
       int nGridsAtSource = 0;
       for (int v = 0; v < allVariables.size(); v++) {
-        Variable var = (Variable) allVariables.get(v);
+        Variable var = allVariables.get(v);
         String varName = var.getFullName();
-        String groupName = File2.removeSlash(File2.getDirectory(varName));
 
         // does it use the same dimensions?
         List<Dimension> dimensions = var.getDimensions();

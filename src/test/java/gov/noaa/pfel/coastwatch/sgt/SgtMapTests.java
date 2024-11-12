@@ -110,13 +110,13 @@ class SgtMapTests {
             String2.ERROR + " in SgtMap.makePlainRegionsMap, region=" + region);
       }
       baseName = "SgtMapBasicTestRegionsMap";
-      int regionsResult[] =
-          SgtMap.makeRegionsMap(
-              classRB2.getInt("regionMapMaxWidth", 228),
-              classRB2.getInt("regionMapMaxHeight", 200),
-              regionInfo,
-              Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
-              baseName + testImageExtension);
+
+      SgtMap.makeRegionsMap(
+          classRB2.getInt("regionMapMaxWidth", 228),
+          classRB2.getInt("regionMapMaxHeight", 200),
+          regionInfo,
+          Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
+          baseName + testImageExtension);
       // Test.displayInBrowser("file://" + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
       // "tempRegionsMap" + testImageExtension);
       Image2Tests.testImagesIdentical(

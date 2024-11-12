@@ -20,7 +20,6 @@ class PrimitiveArrayTests {
   void testNccsv() throws Throwable {
     String2.log("*** PrimitiveArray.testNccsv");
     String s;
-    StringArray sa;
     PrimitiveArray pa;
     String msg;
 
@@ -868,7 +867,6 @@ class PrimitiveArrayTests {
     long sarStart = larStart + 6L * lar.writeDos(dos);
     long SarStart = sarStart + 6L * sar.writeDos(dos);
     Test.ensureEqual(Sar.writeDos(dos), 10, "");
-    int nBytesPerS = 9;
     // String2.log(File2.hexDump(dosName, 500));
 
     dos.close();

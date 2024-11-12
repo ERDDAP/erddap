@@ -265,7 +265,6 @@ public class EDDTableCopy extends EDDTable {
       String2.log(
           "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableCopy(" + tDatasetID + ") constructor:\n";
 
     // save the parameters
     int language = 0;

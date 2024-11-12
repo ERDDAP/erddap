@@ -1804,9 +1804,7 @@ public abstract class EDD {
 
     // process the tags
     if (debugMode) String2.log("  getSDAVVariableFromXml...");
-    String startOfTags = xmlReader.allTags();
     int startOfTagsN = xmlReader.stackSize();
-    int startOfTagsLength = startOfTags.length();
     String tSourceName = null, tDestinationName = null;
     Attributes tAttributes = null;
     PrimitiveArray tValuesPA = null;
@@ -1887,9 +1885,7 @@ public abstract class EDD {
 
     // process the tags
     if (debugMode) String2.log("  getSDADVVariableFromXml...");
-    String startOfTags = xmlReader.allTags();
     int startOfTagsN = xmlReader.stackSize();
-    int startOfTagsLength = startOfTags.length();
     String tSourceName = null, tDestinationName = null, tDataType = null;
     Attributes tAttributes = null;
     while (true) {
@@ -3605,7 +3601,6 @@ public abstract class EDD {
     // String type = this instanceof EDDGrid? "Gridded" :
     //   this instanceof EDDTable? "Tabular" : "(type???)";
 
-    boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
     boolean isAccessible = isAccessibleTo(EDStatic.getRoles(loggedInAs));
     boolean graphsAccessible = isAccessible || graphsAccessibleToPublic();
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
@@ -4244,7 +4239,6 @@ public abstract class EDD {
       Attributes sourceAtts = sourceTable == null ? null : sourceTable.columnAttributes(col);
       Attributes addAtts = addTable.columnAttributes(col);
       String units = getAddOrSourceAtt(addAtts, sourceAtts, "units", null);
-      String positive = getAddOrSourceAtt(addAtts, sourceAtts, "positive", null);
       String stdName = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
       if (!hasLon
           && isNumeric
@@ -5898,7 +5892,6 @@ public abstract class EDD {
     // do early   so available for tEmailSource
     name = "summary";
     value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);
-    String oSummary = value;
     // best ones first
     value = getAddOrSourceAtt(addAtts, sourceAtts, "abstract", value);
     value = getAddOrSourceAtt(addAtts, sourceAtts, "Abstract", value);
@@ -6870,7 +6863,6 @@ public abstract class EDD {
       Table tTable = EDStatic.gdxAcronymsTable();
       StringArray acronymSA = (StringArray) tTable.getColumn(0);
       StringArray fullNameSA = (StringArray) tTable.getColumn(1);
-      int n = acronymSA.size();
       for (int i = 0; i < acronymSA.size(); i++)
         tSummary =
             expandInSummary(tSummary, suggestedKeywords, acronymSA.get(i), fullNameSA.get(i));
@@ -10529,8 +10521,6 @@ public abstract class EDD {
         tLongName = EDV.suggestLongName(oLongName, tSourceName, tStandardName);
     }
 
-    tUnitsLC = tUnits.toLowerCase();
-
     // deal with scale_factor (e.g., 0.1) and in tUnits  (e.g., "* 10")
     if (String2.isSomething2(tUnits) && tScaleFactor != 0) {
       int inverse = Math2.roundToInt(1 / tScaleFactor);
@@ -11412,12 +11402,7 @@ public abstract class EDD {
     String indent = "    ";
     StringBuilder sb = new StringBuilder();
 
-    // e.g., don't change "lon" to "longitude" if there is already a "longitude" variable
-    int sLongitude = addTable.findColumnNumber("longitude"),
-        sLatitude = addTable.findColumnNumber("latitude"),
-        sAltitude = addTable.findColumnNumber("altitude"), // but just one of altitude or depth
-        sDepth = addTable.findColumnNumber("depth"), // but just one of altitude or depth
-        sTime = addTable.findColumnNumber("time");
+    int sTime = addTable.findColumnNumber("time");
 
     // ensure time has proper units
     if (sTime >= 0) {
@@ -11455,7 +11440,6 @@ public abstract class EDD {
       if (tUnits == null) tUnits = sourceAtts.getString("units");
       String tPositive = addAtts.getString("positive");
       if (tPositive == null) tPositive = sourceAtts.getString("positive");
-      float tScaleFactor = sourceAtts.getFloat("scale_factor");
       String tDestName = addTable.getColumnName(col);
       if (!String2.isSomething2(tDestName)) tDestName = tSourceName;
 
@@ -11514,8 +11498,6 @@ public abstract class EDD {
       String tPositive,
       float tScaleFactor,
       boolean tryToFindLLAT) {
-
-    String oSourceName = tSourceName;
 
     // remove (units) from SOS sourceNames, e.g., "name (units)"
     int po = tSourceName.indexOf(" (");
@@ -13233,10 +13215,6 @@ public abstract class EDD {
               : eddTable.dataVariables()[eddTable.latIndex()];
       double south = edv.destinationMinDouble();
       double north = edv.destinationMaxDouble();
-      boolean global =
-          (west <= -179 && east >= 179)
-              || // test before modifying west and east
-              (west <= 0 && east >= 359);
       if (Double.isFinite(west) && Double.isFinite(east)) {
         if (west >= 180) {
           west -= 360;

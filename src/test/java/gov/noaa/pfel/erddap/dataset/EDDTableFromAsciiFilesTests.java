@@ -11,9 +11,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
-import java.time.ZoneId;
 import java.util.TimeZone;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagAWS;
@@ -44,9 +42,7 @@ class EDDTableFromAsciiFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -365,10 +361,7 @@ class EDDTableFromAsciiFilesTests {
     // EDDTableFromAsciiFiles.testFixedValueAndScripts() *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, dapQuery, tQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, dapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -647,9 +640,7 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() \n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -1063,11 +1054,7 @@ class EDDTableFromAsciiFilesTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableFromAsciiFiles.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     try {
       // get /files/datasetID/.csv
@@ -1224,10 +1211,8 @@ class EDDTableFromAsciiFilesTests {
     // EDD.reallyVerbose = false;
     // EDD.debugMode = false;
     // EDDTableFromFilesCallable.debugMode = true;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int po;
 
     // one time: make csv version of ndbc2/nrt directory in ndbcMet2Csv
     /*
@@ -1245,7 +1230,6 @@ class EDDTableFromAsciiFilesTests {
 
     // this dataset and this request are a good test that the results are always in
     // the same order
-    String id = "ndbcMet2Csv";
     userDapQuery = "&time=2020-05-22T20:40:00Z";
 
     // warmup
@@ -1428,11 +1412,6 @@ class EDDTableFromAsciiFilesTests {
   /** This tests GenerateDatasetsXml with EDDTableFromInPort when there are data variables. */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlFromBCODMO() throws Throwable {
-    // String2.log("\n***
-    // EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromBCODMO()\n");
-    // testVerboseOn();
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
     boolean useLocal = true;
     String catalogUrl = "https://www.bco-dmo.org/erddap/datasets";
     String dataDir =
@@ -3024,10 +3003,8 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
 
-    String id = "knb_lter_sbc_14_t1"; // has MM/dd/yyyy time strings
     EDDTable eddTable = (EDDTable) EDDTestDataset.getknb_lter_sbc_14_t1();
 
     // test getting das for entire dataset
@@ -3084,10 +3061,8 @@ class EDDTableFromAsciiFilesTests {
     // String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange2()\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
 
-    String id = "knb_lter_sbc_15_t1"; // has yyyy-MM-dd time strings
     EDDTable eddTable = (EDDTable) EDDTestDataset.getknb_lter_sbc_15_t1();
 
     // test getting das for entire dataset
@@ -3154,12 +3129,11 @@ class EDDTableFromAsciiFilesTests {
     // testVerboseOn();
     int language = 0;
     int po;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String testDir = EDStatic.fullTestCacheDirectory;
 
     // test Calendar2.unitsSinceToEpochSeconds() with timeZone
     TimeZone timeZone = TimeZone.getTimeZone("US/Pacific");
-    ZoneId zoneId = ZoneId.of("US/Pacific");
     double epSec;
 
     // test winter/standard time: 2005-04-03T00:00 Pacific
@@ -3309,20 +3283,9 @@ class EDDTableFromAsciiFilesTests {
   /** This does more tests of string time. */
   @org.junit.jupiter.api.Test
   void testTimeZone2() throws Throwable {
-
-    // String2.log("\n****************** EDDTableFromAsciiFiles.testTimeZone2()
-    // *****************\n");
-    // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard to check
-    // min:sec.
+    String tName, results, expected, userDapQuery;
 
-    String id = "testTimeZone2";
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTimeZone2();
 
     // .csv
@@ -3357,13 +3320,7 @@ class EDDTableFromAsciiFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard to check
-    // min:sec.
+    String tName, results, expected, userDapQuery;
 
     // the source file
     results =
@@ -3385,7 +3342,6 @@ class EDDTableFromAsciiFilesTests {
             + "k,2010-12-07T12:00:00,11\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    String id = "testTimeMV";
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTimeMV();
 
     // .das

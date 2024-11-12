@@ -1589,7 +1589,6 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     }
 
     Table dataAddTable = new Table();
-    double maxTimeES = Double.NaN;
     for (int c = 0; c < tnCol; c++) {
       String colName = dataSourceTable.getColumnName(c);
       PrimitiveArray sourcePA = dataSourceTable.getColumn(c);

@@ -537,7 +537,6 @@ public class SgtMap {
           Math.max(1, fontScale) * defaultLabelHeight; // never smaller than default
 
       // figure out the params needed to make the map
-      String error = "";
       if (minX > maxX) {
         double d = minX;
         minX = maxX;
@@ -584,11 +583,6 @@ public class SgtMap {
 
       // set colorBarBox location and size (in pixels)
       int colorBarBoxWidth = (int) (fontScale * 1.0 * dpi); // size based on longest title|units
-      int colorBarBoxLeftX =
-          baseULXPixel
-              + imageWidthPixels
-              - legendBoxWidth
-              - (plotGridData ? (int) (betweenColorBarAndLegend * dpi) + colorBarBoxWidth : 0);
       int legendBoxULY = baseULYPixel;
       int maxCharsPerLine =
           SgtUtil.maxCharsPerLine(
@@ -917,7 +911,6 @@ public class SgtMap {
       // colorMap outside loop since timing info is gathered below
       CompoundColorMap colorMap = null;
       Exception thrownException = null;
-      boolean noData = true;
       try {
 
         if ("under".equals(drawLandMask) && !transparent) {
@@ -976,7 +969,6 @@ public class SgtMap {
 
         // *** create a layer with the GRID DATA graph
         if (plotGridData) {
-          noData = false;
           // String2.log("NO DATA=false; griddata.");
           colorMap = new CompoundColorMap(gridPaletteFileName);
           CartesianGraph graph = new CartesianGraph("", xt, yt);
@@ -1085,7 +1077,6 @@ public class SgtMap {
         // *** create a layer with the CONTOUR graph
         // String2.log("  before contour: " + Math2.memoryString());
         if (plotContourData) {
-          noData = false;
           // String2.log("NO DATA=false; contourdata.");
           CartesianGraph graph = new CartesianGraph("", xt, yt);
           Layer layer = new Layer("contour", layerDimension2D);
@@ -1372,7 +1363,6 @@ public class SgtMap {
             }
             Table averagedTable = gdl.table;
             if (averagedTable.nRows() > 0) {
-              noData = false;
               // String2.log("NO DATA=false; markers hava data.");
               filledMarkerRenderers[i] =
                   new FilledMarkerRenderer(
@@ -1382,7 +1372,6 @@ public class SgtMap {
                       averagedTable.getColumn(gdl.v2),
                       averagedTable.getColumn(
                           gdl.v3 >= 0 ? gdl.v3 : gdl.v1), // e.g., if no gdl.colorMap
-                      averagedTable.getColumn(gdl.v4 >= 0 ? gdl.v4 : gdl.v1),
                       gdl.colorMap,
                       gdl.lineColor,
                       gdl.markerType,
@@ -1449,7 +1438,6 @@ public class SgtMap {
             }
 
             if (xColumn != null && xColumn.size() > 0) {
-              noData = false;
               // String2.log("NO DATA=false; vectors hava data.");
 
               // vectorSize scales values relative to standard length vector,
@@ -2061,7 +2049,6 @@ public class SgtMap {
       long time = System.currentTimeMillis();
 
       // figure out the params needed to make the map
-      String error = "";
       double xRange = maxX - minX;
       double yRange = maxY - minY;
       double maxRange = Math.max(xRange, yRange);
@@ -2084,7 +2071,6 @@ public class SgtMap {
           new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
       gov.noaa.pmel.sgt.LinearTransform yt =
           new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
-      Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
       Dimension2D layerDimension2D = new Dimension2D(imageWidth, imageHeight);
       StringArray layerNames = new StringArray();
       if (drawLakesAndRivers < NO_LAKES_AND_RIVERS) drawLakesAndRivers = SgtMap.NO_LAKES_AND_RIVERS;
@@ -2714,15 +2700,11 @@ public class SgtMap {
       imageWidth = graphULX + graphWidth + graphRightBorder;
     }
 
-    // define sizes
-    double dpi = 100; // dots per inch
-
     // make the image
     BufferedImage bi =
         new BufferedImage(
             imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB); // I need opacity "A"
     Graphics g = bi.getGraphics();
-    Graphics2D g2 = (Graphics2D) g;
     g.setColor(Color.white); // I'm not sure why necessary, but it is
     g.fillRect(0, 0, imageWidth, imageHeight); // I'm not sure why necessary, but it is
 
@@ -3188,7 +3170,7 @@ public class SgtMap {
       if (gridExt.equals(".nc") || gridExt.equals(".grd"))
         sb.append("<p><pre>\n" + NcHelper.readCDL(gridDir + gridName) + "\n</pre>\n");
       sb.append("</body>\n</html>\n");
-      String error = File2.writeToFileUtf8(gridDir + gridName + ".html", sb.toString());
+      File2.writeToFileUtf8(gridDir + gridName + ".html", sb.toString());
 
       // view it
       // ImageViewer.display("SgtMap", image);

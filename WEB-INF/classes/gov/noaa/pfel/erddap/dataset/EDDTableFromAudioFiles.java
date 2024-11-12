@@ -284,7 +284,6 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
           tCacheFromUrl, tFileDir, tFileNameRegex, true, ".*", false); // not fullSync
     tColumnNameForExtract =
         String2.isSomething(tColumnNameForExtract) ? tColumnNameForExtract.trim() : "";
-    String tSortedColumnSourceName = Table.ELAPSED_TIME;
     if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
       tReloadEveryNMinutes = 1440;
     if (!String2.isSomething(sampleFileName))

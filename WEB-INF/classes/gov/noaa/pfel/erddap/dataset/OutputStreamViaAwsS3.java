@@ -9,7 +9,6 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 
 /**
  * OutputStreamViaAwsS3 writes to a file in an S3 bucket, then redirects user to download that file.
@@ -25,7 +24,6 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
   public static boolean verbose = false;
 
   private OutputStreamFromHttpResponseViaAwsS3 parent;
-  private String characterEncoding;
   private String fullLocalFileName;
 
   /**
@@ -39,7 +37,6 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
     // make the superclass's BufferedOutputStream from an OutputStream
     super(new FileOutputStream(tParent.localDir + tParent.fileName + tParent.extension));
     parent = tParent;
-    characterEncoding = tCharacterEncoding;
     fullLocalFileName = tParent.localDir + tParent.fileName + tParent.extension;
   }
 
@@ -67,13 +64,6 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
         OutputStreamFromHttpResponse.getFileTypeInfo(
             parent.request, parent.fileType, parent.extension);
     String contentType = (String) fileTypeInfo[0];
-    HashMap headerMap = (HashMap) fileTypeInfo[1];
-    boolean genericCompressed =
-        ((Boolean) fileTypeInfo[2]).booleanValue(); // true for generic compressed files, e.g., .zip
-    boolean otherCompressed =
-        ((Boolean) fileTypeInfo[3])
-            .booleanValue(); // true for app specific compressed (but not audio/ image/ video)
-
     // copy to AWS bucket
     // tell Aws about other file attributes when file accessed as from web site
     String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + parent.fileName + parent.extension;

@@ -490,7 +490,6 @@ public class SgtUtil {
     image = null; // encourage garbage collection
 
     // save as png
-    int random = Math2.random(Integer.MAX_VALUE);
     ImageIO.write(bi, "png", new File(fullGifName + randomInt + ".png"));
 
     // "convert" to .gif
@@ -951,7 +950,6 @@ public class SgtUtil {
     try {
 
       int width = bufferedImage.getWidth();
-      int height = bufferedImage.getHeight();
       int centerX = width / 2;
 
       // starting at top center, go down to first back pixel

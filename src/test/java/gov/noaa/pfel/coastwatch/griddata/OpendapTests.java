@@ -73,7 +73,6 @@ class OpendapTests {
 
     // ensure not oddly spaced after makeLonPM180
     // data is 0..360, so ask for ~-180 to ~180
-    String dir = SSR.getTempDirectory();
     Grid grid = opendap.makeGrid(opendap.timeOptions[0], -170, 170, 22, 50, 53, 37);
     String2.log("lon values: " + String2.toCSSVString(grid.lon));
     DataHelper.ensureEvenlySpaced(grid.lon, "The lon values aren't evenly spaced:\n");

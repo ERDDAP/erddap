@@ -248,13 +248,14 @@ public class LoadDatasets extends Thread {
               + ndf
               + "\n"
               + (datasetsThatFailedToLoadSB.isEmpty() ? "" : "    " + dtftl + "(end)\n");
-      String errorsDuringMajorReload =
+      StringBuilder errorsDuringMajorReload =
           majorLoad && duplicateDatasetIDs.size() > 0
-              ? String2.ERROR
-                  + ": Duplicate datasetIDs in datasets.xml:\n    "
-                  + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
-                  + "\n"
-              : "";
+              ? new StringBuilder(
+                  String2.ERROR
+                      + ": Duplicate datasetIDs in datasets.xml:\n    "
+                      + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
+                      + "\n")
+              : new StringBuilder();
       String failedDatasetsWithErrors =
           "Reasons for failing to load datasets: \n" + failedDatasetsWithErrorsSB;
       if (majorLoad && orphanIDSet.size() > 0) {
@@ -366,7 +367,7 @@ public class LoadDatasets extends Thread {
 
         EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; // swap into place
         EDStatic.failedDatasetsWithErrors = failedDatasetsWithErrors;
-        EDStatic.errorsDuringMajorReload = errorsDuringMajorReload; // swap into place
+        EDStatic.errorsDuringMajorReload = errorsDuringMajorReload.toString(); // swap into place
         EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
             0, // header in EDStatic
             // "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests
@@ -1196,7 +1197,9 @@ public class LoadDatasets extends Thread {
   }
 
   private void emailOrphanDatasetsRemoved(
-      Set<String> orphanIDSet, StringArray changedDatasetIDs, String errorsDuringMajorReload) {
+      Set<String> orphanIDSet,
+      StringArray changedDatasetIDs,
+      StringBuilder errorsDuringMajorReload) {
     Iterator<String> it = orphanIDSet.iterator();
     while (it.hasNext())
       tryToUnload(erddap, it.next(), changedDatasetIDs, false); // needToUpdateLucene
@@ -1210,7 +1213,7 @@ public class LoadDatasets extends Thread {
             + "    "
             + String2.noLongLinesAtSpace(String2.toCSSVString(orphanIDSet), 100, "    ")
             + "(end)\n";
-    errorsDuringMajorReload += msg;
+    errorsDuringMajorReload.append(msg);
     String2.log(msg);
     EDStatic.email(EDStatic.emailEverythingToCsv, "Orphan Datasets Removed", msg);
   }

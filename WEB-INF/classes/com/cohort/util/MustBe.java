@@ -148,7 +148,6 @@ public class MustBe {
     for (i = 0; i < arrayList.size(); i++) {
       String s = arrayList.get(i);
       if (i == 0 && s.startsWith(seBase + seName)) s = s.substring(seBase.length());
-      String trims = s.trim();
       // if (removeAtJava && trims.startsWith("at java")) {}       //with Java 17, there is no "at
       // "!!! Comment out because I like seeing the java, sun, apache lines.
       // else if (removeAtSun && trims.startsWith("at sun")) {}
@@ -383,8 +382,7 @@ public class MustBe {
     try {
       // gather info for each thread
       // long tTime = System.currentTimeMillis();
-      Thread thread = Thread.currentThread();
-      Object oar[] = thread.getAllStackTraces().entrySet().toArray();
+      Object oar[] = Thread.getAllStackTraces().entrySet().toArray();
       int count = 0;
       int tomcatWaiting = 0;
       int inotify = 0;

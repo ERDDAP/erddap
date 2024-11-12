@@ -121,8 +121,11 @@ public class DString extends BaseType implements ClientIO {
     source.readFully(byteArray, 0, len);
 
     // pad out to a multiple of four bytes
+    @SuppressWarnings("unused")
     byte unused;
-    for (int i = 0; i < pad; i++) unused = source.readByte();
+    for (int i = 0; i < pad; i++) {
+      unused = source.readByte();
+    }
 
     if (statusUI != null) statusUI.incrementByteCount(4 + len + pad);
 

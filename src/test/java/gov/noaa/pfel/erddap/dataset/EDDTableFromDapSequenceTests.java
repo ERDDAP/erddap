@@ -668,7 +668,7 @@ class EDDTableFromDapSequenceTests {
   void testPsdac() throws Throwable {
     // testVerboseOn();
     int language = 0;
-    String results, query, tName;
+    String results, tName;
     String baseQuery =
         "time,longitude,latitude,depth,station,waterTemperature,salinity" + "&latitude=36.692";
     EDDTable tedd = (EDDTable) EDDTestDataset.getcimtPsdac();
@@ -842,9 +842,6 @@ class EDDTableFromDapSequenceTests {
   @org.junit.jupiter.api.Test
   @TagMissingDataset // Connection can't be opened
   void testDapErdlasNewportCtd() throws Throwable {
-    // testVerboseOn();
-    int language = 0;
-
     // the basicQuery
     for (int test = 1; test < 2; test++) {
       String url =
@@ -890,7 +887,7 @@ class EDDTableFromDapSequenceTests {
   void testErdlasCalCatch() throws Throwable {
     // testVerboseOn();
     int language = 0;
-    String results, query, tName, expected;
+    String results, tName, expected;
     String baseQuery = "&time>=2006-01-01";
     EDDTable tedd = (EDDTable) EDDTableFromDapSequence.oneFromDatasetsXml(null, "erdlasCalCatch");
 
@@ -1050,7 +1047,6 @@ class EDDTableFromDapSequenceTests {
   void testReadDas() throws Exception {
     String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
-    int language = 0;
     DConnect dConnect = new DConnect(url, true, 1, 1);
     DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
     DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);

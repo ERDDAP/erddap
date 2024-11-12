@@ -703,7 +703,8 @@ public class Matlab {
           subNBytes = DataStream.readInt(littleEndian, stream, buffer);
           Test.ensureEqual(subNBytes, 8, methodName + "miMATRIX arrayFlags subNBytes != 8.");
           int arrayFlags0 = DataStream.readInt(littleEndian, stream, buffer);
-          int arrayFlags1 =
+          @SuppressWarnings("unused")
+          int unusedArrayFlags1 =
               DataStream.readInt(
                   littleEndian, stream, buffer); // undefined; this fills to 8 byte boundary
           int mxClass = arrayFlags0 & 255;

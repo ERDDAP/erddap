@@ -484,7 +484,6 @@ public class EDDTableFromCassandra extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromCassandra " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromCassandra(" + tDatasetID + ") constructor:\n";
     int language = 0; // for constructor
 
     // save some of the parameters
@@ -1622,6 +1621,7 @@ public class EDDTableFromCassandra extends EDDTable {
     Iterator<Row> iter = rs.iterator();
     while (iter.hasNext()) {
       if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) {
+        @SuppressWarnings("unused")
         ListenableFuture<ResultSet> unused = rs.fetchMoreResults();
       }
       Row row = iter.next();
@@ -1944,7 +1944,6 @@ public class EDDTableFromCassandra extends EDDTable {
 
       Attributes sourceAtts = new Attributes();
       Attributes addAtts = new Attributes();
-      boolean isTimestamp = false;
       if (cassType == DataType.cboolean()) sourcePA = new ByteArray();
       else if (cassType == DataType.cint()) sourcePA = new IntArray();
       else if (cassType == DataType.bigint()
@@ -1955,7 +1954,6 @@ public class EDDTableFromCassandra extends EDDTable {
         sourcePA = new DoubleArray();
       else if (cassType == DataType.timestamp()) {
         sourcePA = new DoubleArray();
-        isTimestamp = true;
         addAtts.add("ioos_category", "Time");
         addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");
       } else sourcePA = new StringArray(); // everything else

@@ -19,7 +19,6 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
-import java.io.FileOutputStream;
 import java.io.Writer;
 import java.util.GregorianCalendar;
 import ucar.nc2.write.NetcdfFileFormat;
@@ -100,8 +99,6 @@ public class ArchiveADataset {
             + "\n"
             + String2.standardHelpAboutMessage());
     String resultName;
-    FileOutputStream fos;
-    Writer writer;
     String tgzName = null;
     int nErrors = 0;
     int nDataFilesCreated = 0;
@@ -222,12 +219,11 @@ public class ArchiveADataset {
       // get the datasetID
       // FUTURE? allow datasetID to be a URL of a remote dataset?
       String datasetID =
-          datasetID =
-              get(
-                  args,
-                  whichArg++,
-                  "", // default
-                  "What is the datasetID of the dataset to be archived");
+          get(
+              args,
+              whichArg++,
+              "", // default
+              "What is the datasetID of the dataset to be archived");
       if (datasetID.length() == 0)
         throw new RuntimeException("You must specify a valid datasetID.");
       String2.log("Creating the dataset...");
@@ -505,8 +501,6 @@ public class ArchiveADataset {
 
         // *** EDDTable datasets
         EDDTable eddTable = (EDDTable) edd;
-        String baseRequestUrl = EDStatic.erddapUrl + "/tabledap/" + datasetID;
-        StringBuilder sb;
 
         // which data variables?
         String dataVarsCSV =
@@ -521,7 +515,6 @@ public class ArchiveADataset {
                     + "Which data variables do you want to archive\n"
                     + "(enter a comma-separated list, or press Enter to archive all)");
         dataVarsCSV = String2.replaceAll(dataVarsCSV, " ", ""); // remove any spaces
-        StringArray dataVarsSA = StringArray.fromCSV(dataVarsCSV);
         StringArray resultVars = new StringArray();
         StringArray conVars = new StringArray();
         StringArray conOps = new StringArray();

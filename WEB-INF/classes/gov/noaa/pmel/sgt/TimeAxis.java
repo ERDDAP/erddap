@@ -705,19 +705,15 @@ public class TimeAxis extends Axis implements Cloneable {
   @Override
   public void draw(Graphics g) {
     int xloc, yloc, xend, yend;
-    int vertalign;
-    int minor_val, minor_val_old;
+    int minor_val;
     int major_val, major_val_old;
     double xp, yp;
-    double xp_minor_old, yp_minor_old;
     double x, y;
     double xp_major_old, yp_major_old;
     boolean draw_minor, draw_major;
     boolean time_increasing;
-    GeoDate time = new GeoDate();
     GeoDate major_time_old;
-    GeoDate time_end = new GeoDate();
-    SGLabel label;
+    GeoDate time_end;
     if (!visible_) return;
     //
     if (lineColor_ == null) {
@@ -731,7 +727,7 @@ public class TimeAxis extends Axis implements Cloneable {
     //
     time_increasing = tRange_.end.after(tRange_.start);
     //
-    time = txt_.getStartTime(tRange_);
+    GeoDate time = txt_.getStartTime(tRange_);
     if (time_increasing) {
       time_end = new GeoDate(tRange_.end);
     } else {
@@ -751,9 +747,7 @@ public class TimeAxis extends Axis implements Cloneable {
       setupDraw(yp);
       major_val = txt_.getMajorValue(time);
       major_val_old = major_val;
-      minor_val_old = txt_.getMinorValue(time);
       xp_major_old = xp;
-      xp_minor_old = xp;
       major_time_old = new GeoDate(time);
       //
       // System.out.println("  minor draw=" + draw_minor + " interval=" + minorLabelInterval_ +
@@ -783,8 +777,6 @@ public class TimeAxis extends Axis implements Cloneable {
           major_val_old = major_val;
           major_time_old = new GeoDate(time);
         }
-        xp_minor_old = xp;
-        minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
       if (draw_major && (!aMajorDrawn || major_val_old % majorLabelInterval_ == 0)) {
@@ -808,9 +800,7 @@ public class TimeAxis extends Axis implements Cloneable {
 
       major_val = txt_.getMajorValue(time);
       major_val_old = major_val;
-      minor_val_old = txt_.getMinorValue(time);
       yp_major_old = yp;
-      yp_minor_old = yp;
       major_time_old = new GeoDate(time);
       //
       while (time.before(time_end)) {
@@ -837,8 +827,6 @@ public class TimeAxis extends Axis implements Cloneable {
           major_val_old = major_val;
           major_time_old = new GeoDate(time);
         }
-        yp_minor_old = yp;
-        minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
       if (draw_major && (!aMajorDrawn || major_val_old % majorLabelInterval_ == 0)) {

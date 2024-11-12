@@ -60,9 +60,6 @@ public class DConnect {
   /** The selection portion of the current DODS CE (including leading "&"). */
   private String selString;
 
-  /** Whether to accept compressed documents. */
-  private boolean acceptDeflate;
-
   /** The DODS server version. */
   private ServerVersion ver;
 
@@ -105,11 +102,11 @@ public class DConnect {
       this.urlString = urlString;
       this.projString = this.selString = "";
     }
-    this.acceptDeflate = acceptDeflate;
 
     // Test if the URL is really a filename, and if so, open the file
     try {
-      URL testURL = new URL(urlString);
+      @SuppressWarnings("unused")
+      URL unusedTestURL = new URL(urlString);
     } catch (MalformedURLException e) {
       try {
         fileStream = File2.getDecompressedBufferedInputStream(urlString);

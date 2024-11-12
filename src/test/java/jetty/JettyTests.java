@@ -3,7 +3,6 @@ package jetty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -53,7 +52,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -3415,7 +3413,6 @@ class JettyTests {
     Table table = new Table();
     int nRows;
     String url;
-    float lon, lat;
     String results, expected;
 
     // 2016-07-25 test for Kevin's dataset: from remote erddap
@@ -7844,7 +7841,6 @@ class JettyTests {
     String2.log(
         "\n*** Erddap.testAdvancedSearch\n"
             + "This assumes localhost ERDDAP is running with at least glerAvgTemp.");
-    int po;
 
     // test valid search string, values are case-insensitive
     query = "";
@@ -7942,11 +7938,11 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
     String2.log("\n*** EDDTableFromNcFiles.testGlobec");
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, tResults, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String error = "";
     EDV edv;
-    int po, epo;
+    int po;
     // 12 is enough to check day. Hard to check min:sec and hour is more likely to
     // be different
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12);
@@ -10130,7 +10126,6 @@ class JettyTests {
   void testNetcdf() throws Throwable {
 
     // use testGlobecBottle which has fixed altitude=0, not erdGlobecBottle
-    int language = 0;
     EDDTable globecBottle =
         (EDDTableFromNcFiles) EDDTestDataset.gettestGlobecBottle(); // should work
     String tUrl =
@@ -10276,13 +10271,6 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testMakeCopyFileTasks() throws Exception {
-
-    // String2.log("\n*** testMakeCopyFileTasks\n" +
-    // "This requires fedCalLandings in localhost ERDDAP.");
-
-    int language = 0;
-
-    boolean testMode = false;
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
     String tDatasetID = "myDatasetID";
@@ -10411,9 +10399,6 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testCopyFilesGenerateDatasetsXml() throws Throwable {
-
-    // String2.log("\n*** EDDTableFromNcFiles.testCopyFilesGenerateDatasetsXml");
-    int language = 0;
     String dataDir =
         File2.addSlash(
             Path.of(JettyTests.class.getResource("/data/points/testEDDTableCopyFiles3/").toURI())
@@ -10939,13 +10924,7 @@ class JettyTests {
     // FileVisitorDNLS.reallyVerbose = true;
     // FileVisitorDNLS.debugMode = true;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
-
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
+    String tName, results, tResults, expected, userDapQuery;
     // hour. Hard
     // to check min:sec.
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -11315,10 +11294,8 @@ class JettyTests {
     // "!!!This test requires pmelTaoDySst and rlPmelTaoDySst in localhost
     // ERDDAP.\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String results, expected, expected2, tQuery;
+    int tPo;
     String baseUrl = "http://localhost:" + PORT + "/erddap/tabledap/pmelTaoDySst";
     String rbaseUrl = "http://localhost:" + PORT + "/erddap/tabledap/rlPmelTaoDySst";
 
@@ -12080,7 +12057,7 @@ class JettyTests {
     int language = 0;
 
     EDDGridFromDap gridDataset = (EDDGridFromDap) EDDTestDataset.gettestActualRange();
-    String name, tName, results, expected;
+    String tName, results, expected;
     String dir = EDStatic.fullTestCacheDirectory;
 
     // overall kml
@@ -12294,12 +12271,9 @@ class JettyTests {
             + "!!!"); // in tests, always non-https url
     // testVerboseOn();
     String results, expected, tName;
-    int tPo;
-    String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
-    String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
-    String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String userDapQuery = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
+    // String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]";
+    // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
     // get das and dds
@@ -12309,7 +12283,6 @@ class JettyTests {
     DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
     DConnect erddapConnect = new DConnect(erddapUrl, true, 1, 1); // in tests, always non-https url
     DAS das = erddapConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    DDS dds = erddapConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
     PrimitiveArray tpas[], epas[];
 
     // get global attributes
@@ -12404,9 +12377,6 @@ class JettyTests {
     Test.ensureEqual(epas[3], tpas[3], ""); // lat
     Test.ensureEqual(epas[4], tpas[4], ""); // lon
     Test.ensureEqual(epas[0], tpas[0], ""); // data
-    String tTime = Calendar2.epochSecondsToIsoStringTZ(tpas[1].getDouble(0));
-    float tData1 = tpas[0].getFloat(0);
-    float tData2 = tpas[0].getFloat(1);
 
     // *** test that EDDGridFromDAP works via netcdf-java library
     String2.log("\n****************** EDDGridFromDap test netcdf-java\n");
@@ -12419,7 +12389,6 @@ class JettyTests {
     try {
       results = nc.toString();
       results = NcHelper.decodeNcDump(results); // added with switch to netcdf-java 4.0
-      String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); // in tests, always
       // non-https url
       expected = // these are regex lines
           "netcdf hawaii_d90f_20ee_c4cb {\n"
@@ -13046,17 +13015,13 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
     EDDGridFromErddap gridDataset;
-    String name, tName, axisDapQuery, query, results, expected, expected2, error;
+    String tName, query, results, expected, expected2;
     int tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String userDapQuery =
         SSR.minimalPercentEncode("chlorophyll[(2003-01-17)][(29.020832)][(-147.97917):1:(-147.8)]");
-    String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
-    String mapDapQuery =
-        SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride
-    // irrelevant
-    StringArray destinationNames = new StringArray();
-    IntArray constraints = new IntArray();
+    // String graphDapQuery = SSR.minimalPercentEncode("chlorophyll[0:10:200][][(29)][(225)]");
+    // String mapDapQuery =
+    //     SSR.minimalPercentEncode("chlorophyll[200][][(29):(50)][(225):(247)]"); // stride
     String localUrl =
         EDStatic.erddapUrl + "/griddap/rMH1chla8day"; // in tests, always non-https url
 
@@ -14115,11 +14080,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFromErddapFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridFromErddap.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/.csv
     results =
@@ -14379,9 +14340,7 @@ class JettyTests {
   void testEtopoGridFiles(String tDatasetID) throws Throwable {
 
     String2.log("\n*** EDDGridFromEtopo.testFiles(" + tDatasetID + ")\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     String etopoFilePath = File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
     long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
@@ -14499,10 +14458,6 @@ class JettyTests {
     String expected = "pmelTaoDySst";
     String expected2, query, results;
     int count;
-    String2.log(
-        "\n*** Erddap.testSearch\n"
-            + "This assumes localhost ERDDAP is running with erdMHchla8day and rMHchla8day (among others which will be not matched).");
-    int po;
 
     // test valid search string, values are case-insensitive
     query = "";
@@ -14552,10 +14507,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFiles() throws Throwable {
-    // String2.log("\n*** EDDGridCopy.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -14662,11 +14614,6 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGenerateDatasetsXmlFromErddapCatalog0360() throws Throwable {
-
-    // String2.log("\n*** EDDGridLon0360.testGenerateDatasetsXmlFromErddapCatalog()
-    // ***\n");
-    // testVerboseOn();
-    int language = 0;
     String url =
         "http://localhost:" + PORT + "/erddap/"; // purposefully http:// to test if ERDDAP will
     // promote
@@ -14723,7 +14670,7 @@ class JettyTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -14884,12 +14831,9 @@ class JettyTests {
     // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
+    String tName, results, expected, expected2, expected3, userDapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
+    int tPo;
     userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
 
     EDDTable edd = (EDDTableCopy) EDDTestDataset.gettestTableCopy();
@@ -15437,11 +15381,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testTableCopyFiles() throws Throwable {
-
-    String2.log("\n*** EDDTableCopy.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -15675,7 +15615,7 @@ class JettyTests {
     int language = 0;
     // boolean oDebugMode = debugMode;
     // debugMode = true;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
     EDDGrid eddGrid = null;
@@ -16099,11 +16039,6 @@ class JettyTests {
   void testSpeed() throws Throwable {
     int firstTest = 0;
     int lastTest = 1000;
-    // String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
-    // "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n"
-    // +
-    // SgtUtil.isBufferedImageAccelerated() + "\n");
-    int language = 0;
     // gc and sleep to give computer time to catch up from previous tests
     for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
     // boolean oReallyVerbose = reallyVerbose;
@@ -16124,8 +16059,6 @@ class JettyTests {
             "&.vec="; // avoid get cached response
     String baseName = "EDDGridFromNcFilesTestSpeed";
     String baseOut = EDStatic.fullTestCacheDirectory + baseName;
-    ArrayList al;
-    int timeOutSeconds = 120;
     String extensions[] =
         new String[] {
           ".asc",
@@ -16340,12 +16273,7 @@ class JettyTests {
   @org.junit.jupiter.api.Test
   @TagJetty
   void testGridFromNcFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int language = 0;
-    int po;
+    String results, expected;
 
     // get /files/.csv
     results =
@@ -16954,7 +16882,6 @@ class JettyTests {
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     // There was a bug where loading the wms page for this dataset would cause the altitude value to
     // increase by 10 every time. To verify that isn't happening, load the wms page.

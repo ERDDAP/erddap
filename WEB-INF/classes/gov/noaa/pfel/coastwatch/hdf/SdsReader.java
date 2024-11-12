@@ -215,6 +215,7 @@ public class SdsReader {
     String2.setupLog(
         true, false, dir + "mini.hdf.dump", false, String2.logFileDefaultMaxSize); // append
     SdsReader.verbose = true;
-    SdsReader sdsReader = new SdsReader(dir + "mini.hdf");
+    @SuppressWarnings("unused")
+    SdsReader unusedSdsReader = new SdsReader(dir + "mini.hdf");
   }
 }

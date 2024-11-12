@@ -20,7 +20,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
-import java.beans.*;
 import java.text.AttributedString;
 
 /**
@@ -52,8 +51,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
 
   private int xoff_ = 0;
   private int yoff_ = 0;
-
-  private boolean alwaysAntiAlias_ = true;
 
   private Rectangle savedBounds_ = null;
   private Point savedLoc_ = null;
@@ -249,8 +246,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     }
     java.awt.geom.Rectangle2D tbounds = tlayout.getBounds();
     int theight = (int) tbounds.getHeight();
-    int twidth = (int) tbounds.getWidth();
-    int tx = (int) tbounds.getX();
     int ty = (int) tbounds.getY();
     if (fixMetrics_)
       ty -=
@@ -486,7 +481,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     int pt_0, pt_1, hgt;
     int count = 1;
     double hgt_0, hgt_1, del_0, del_1;
-    double a, b;
     FontRenderContext frc = getFontRenderContext((Graphics2D) g);
     TextLayout tlayout;
     //

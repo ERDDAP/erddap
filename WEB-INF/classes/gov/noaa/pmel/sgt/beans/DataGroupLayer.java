@@ -232,7 +232,6 @@ public class DataGroupLayer extends Layer {
       if (cmap instanceof TransformAccess) {
         ((TransformAccess) cmap).setRange(zRange);
       } else if (cmap instanceof ContourLevelsAccess) {
-        ContourLevels cl = ((ContourLevelsAccess) cmap).getContourLevels();
         int levels = dg_.getNumberAutoContourLevels();
         Range2D newRange = Graph.computeRange(zRange, levels);
         ((ContourLevelsAccess) cmap).setContourLevels(ContourLevels.getDefault(newRange));
@@ -411,7 +410,6 @@ public class DataGroupLayer extends Layer {
     Axis ax = null;
     AxisTransform at;
     AxisHolder ah;
-    boolean newAxis = true;
     CartesianGraph gr = (CartesianGraph) getGraph();
 
     if (dir == DataGroup.X_DIR) {
@@ -429,7 +427,7 @@ public class DataGroupLayer extends Layer {
     } catch (AxisNotFoundException anfe) {
       ax = null;
     }
-    newAxis = false;
+    boolean newAxis = false;
     switch (ah.getAxisType()) {
       case DataGroup.PLAIN:
         PlainAxis pax = null;
@@ -728,8 +726,8 @@ public class DataGroupLayer extends Layer {
    * @param domain domain
    */
   public void setDomain(SoTDomain domain) {
-    setXRange(domain.getXRange(), domain.isXReversed());
-    setYRange(domain.getYRange(), domain.isYReversed());
+    setXRange(domain.getXRange());
+    setYRange(domain.getYRange());
     if (clipping_) {
       clipDomain_ = domain;
       setAllClip(domain);
@@ -746,11 +744,11 @@ public class DataGroupLayer extends Layer {
     }
   }
 
-  private void setXRange(SoTRange range, boolean reversed) {
+  private void setXRange(SoTRange range) {
     xZoomRange_ = range.copy();
   }
 
-  private void setYRange(SoTRange range, boolean reversed) {
+  private void setYRange(SoTRange range) {
     yZoomRange_ = range.copy();
   }
 

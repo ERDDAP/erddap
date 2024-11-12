@@ -251,7 +251,6 @@ public class EDDGridCopy extends EDDGrid {
 
     if (verbose) String2.log("\n*** constructing EDDGridCopy " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDGridCopy(" + tDatasetID + ") constructor:\n";
 
     // save the parameters
     className = "EDDGridCopy";
