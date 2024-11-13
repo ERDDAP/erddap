@@ -20838,9 +20838,9 @@ public class TableTests {
         "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
             + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0.0,-3.4028235E38,-1.7976931348623157E308\n"
             + "ab,\\u0000,0,127,0,32767,0,7,0,1.0,2.2,3.3\n"
-            + ",A,99,99,9999,9999,999999999,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
+            + ",A,,,,,,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
             + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,1.8446744073709552E19,3.4028235E38,1.7976931348623157E308\n"
-            + ",\\u20ac,,,,,,4294967295,,,,\n";
+            + ",\\u20ac,,,,,,,,,,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
     PAType tTypes[] = {
       PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT,
@@ -20879,9 +20879,9 @@ public class TableTests {
         "aString,aChar,aByte,aUByte,aShort,aUShort,anInt,aUInt,aLong,aULong,aFloat,aDouble\n"
             + "a\\u00fcb\\nc\\td\\u20ace,\\u00fc,-128,0,-32768,0,-2147483648,0,-9223372036854775808,0.0,-3.4028235E38,-1.7976931348623157E308\n"
             + "ab,\\u0000,0,127,0,32767,0,7,0,1.0,2.2,3.3\n"
-            + ",A,99,99,9999,9999,999999999,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
+            + ",A,,,,,,2147483647,8,9.223372036854776E18,1.4E-45,4.9E-324\n"
             + "cd,\\t,126,254,32766,65534,2147483646,4294967294,9223372036854775806,1.8446744073709552E19,3.4028235E38,1.7976931348623157E308\n"
-            + ",\\u20ac,,,,,,4294967295,,,,\n";
+            + ",\\u20ac,,,,,,,,,,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
     PAType tTypes[] = {
       PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT,
