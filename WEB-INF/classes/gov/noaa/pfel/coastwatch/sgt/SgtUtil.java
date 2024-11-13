@@ -18,7 +18,6 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -438,14 +437,15 @@ public class SgtUtil {
     // save as .bmp     (note: doesn't support transparent pixels)
     long time = System.currentTimeMillis();
     if (verbose) String2.log("SgtUtil.saveAsGif");
-    ImageIO.write(bi, "bmp", new File(fullGifName + randomInt + ".bmp"));
-    if (verbose)
-      String2.log("  make .bmp done. time=" + (System.currentTimeMillis() - time) + "ms");
+    ImageIO.write(bi, "gif", new File(fullGifName + randomInt + ".gif"));
+    // if (verbose)
+    //   String2.log("  make .bmp done. time=" + (System.currentTimeMillis() - time) + "ms");
 
-    // "convert" to .gif
-    SSR.dosOrCShell(
-        "convert " + fullGifName + randomInt + ".bmp" + " " + fullGifName + randomInt + ".gif", 30);
-    File2.delete(fullGifName + randomInt + ".bmp");
+    // // "convert" to .gif
+    // SSR.dosOrCShell(
+    //     "convert " + fullGifName + randomInt + ".bmp" + " " + fullGifName + randomInt + ".gif",
+    // 30);
+    // File2.delete(fullGifName + randomInt + ".bmp");
 
     // try fancy color reduction algorithms
     // Image2.saveAsGif(Image2.reduceTo216Colors(bi), fullGifName + randomInt + ".gif");
@@ -490,12 +490,13 @@ public class SgtUtil {
     image = null; // encourage garbage collection
 
     // save as png
-    ImageIO.write(bi, "png", new File(fullGifName + randomInt + ".png"));
+    ImageIO.write(bi, "gif", new File(fullGifName + randomInt + ".gif"));
 
     // "convert" to .gif
-    SSR.dosOrCShell(
-        "convert " + fullGifName + randomInt + ".png" + " " + fullGifName + randomInt + ".gif", 30);
-    File2.delete(fullGifName + randomInt + ".png");
+    // SSR.dosOrCShell(
+    //     "convert " + fullGifName + randomInt + ".png" + " " + fullGifName + randomInt + ".gif",
+    // 30);
+    // File2.delete(fullGifName + randomInt + ".png");
 
     // try fancy color reduction algorithms
     // Image2.saveAsGif(Image2.reduceTo216Colors(bi), fullGifName + randomInt + ".gif");
