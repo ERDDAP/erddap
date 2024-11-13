@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.TimePeriods;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 
 /** This class holds information about an OPeNDAP grid data set for one time period. */
 public class Opendap {
@@ -138,9 +139,9 @@ public class Opendap {
 
     // find the GLOBAL attributes
     // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
-    Enumeration names = das.getNames();
-    while (names.hasMoreElements()) {
-      String s = (String) names.nextElement();
+    Iterator<String> names = das.getNames();
+    while (names.hasNext()) {
+      String s = names.next();
       if (s.indexOf("GLOBAL") >= 0) {
         return das.getAttributeTable(s);
       }

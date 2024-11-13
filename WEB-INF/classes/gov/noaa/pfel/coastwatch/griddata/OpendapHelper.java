@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Iterator;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayObject;
 import ucar.ma2.DataType;
@@ -99,9 +100,9 @@ public class OpendapHelper {
     if (variableName.equals("GLOBAL")) {
       // find the GLOBAL attributes
       // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
-      Enumeration names = das.getNames();
-      while (names.hasMoreElements()) {
-        String s = (String) names.nextElement();
+      Iterator<String> names = das.getNames();
+      while (names.hasNext()) {
+        String s = (String) names.next();
         if (s.indexOf("GLOBAL") >= 0) {
           return das.getAttributeTable(s);
         }
@@ -176,9 +177,9 @@ public class OpendapHelper {
     if (attributeTable == null) return;
 
     // get the attributes
-    Enumeration names = attributeTable.getNames();
-    while (names.hasMoreElements()) {
-      String name = (String) names.nextElement();
+    Iterator<String> names = attributeTable.getNames();
+    while (names.hasNext()) {
+      String name = (String) names.next();
       Attribute attribute = attributeTable.getAttribute(name);
       if (attribute.isContainer()) {
         // process an attribute that isContainer by flattening it (name_subname=...)

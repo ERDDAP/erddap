@@ -20,6 +20,7 @@ import gov.noaa.pmel.sgt.swing.Draggable;
 import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Rectangle2D;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
@@ -852,7 +853,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public Object[] getObjectsAt(int x, int y, boolean check) {
     Point pt = new Point(x, y);
-    Vector<Object> obList = new Vector<>();
+    ArrayList<Object> obList = new ArrayList<>();
     Object obj = null;
     Rectangle bnds;
     if (!children_.isEmpty()) {

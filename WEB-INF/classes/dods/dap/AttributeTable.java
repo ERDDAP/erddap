@@ -11,9 +11,14 @@
 
 package dods.dap;
 
-import dods.util.SortedTable;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * An <code>AttributeTable</code> stores a set of names and, for each name, an <code>Attribute
@@ -64,20 +69,20 @@ public class AttributeTable implements Cloneable {
   private static final boolean _Debug = false;
 
   /** A table of Attributes with their names as a key */
-  private SortedTable attr;
+  private LinkedHashMap<String, Attribute> attr;
 
   /** What's the name of this table? */
   private String name;
 
   /** Create a new empty <code>AttributeTable</code>. @Deprecated */
   public AttributeTable() {
-    attr = new SortedTable();
+    attr = new LinkedHashMap<>();
   }
 
   /** Create a new empty <code>AttributeTable</code>. */
   public AttributeTable(String name) {
     this.name = name;
-    attr = new SortedTable();
+    attr = new LinkedHashMap<>();
   }
 
   /**
@@ -88,16 +93,14 @@ public class AttributeTable implements Cloneable {
    * @return a clone of this <code>AttributeTable</code>.
    */
   @Override
-  public Object clone() {
+  public AttributeTable clone() {
     try {
       AttributeTable at = (AttributeTable) super.clone();
       at.name = name;
-      at.attr = new SortedTable();
-      for (int i = 0; i < attr.size(); i++) {
-        String key = (String) attr.getKey(i);
-        Attribute element = (Attribute) attr.elementAt(i);
+      at.attr = new LinkedHashMap<>();
+      for (Map.Entry<String, Attribute> entry : attr.entrySet()) {
         // clone element (don't clone key because it's a read-only String)
-        at.attr.put(key, element.clone());
+        at.attr.put(entry.getKey(), entry.getValue().clone());
       }
       return at;
     } catch (CloneNotSupportedException e) {
@@ -118,8 +121,8 @@ public class AttributeTable implements Cloneable {
    * @return an <code>Enumeration</code> of <code>String</code>.
    * @see AttributeTable#getAttribute(String)
    */
-  public final Enumeration getNames() {
-    return attr.keys();
+  public final Iterator<String> getNames() {
+    return attr.sequencedKeySet().iterator();
   }
 
   /**
@@ -293,9 +296,9 @@ public class AttributeTable implements Cloneable {
 
     if (_Debug) System.out.println("Entered AttributeTable.print()");
 
-    for (Enumeration e = getNames(); e.hasMoreElements(); ) {
+    for (Iterator<String> e = getNames(); e.hasNext(); ) {
 
-      String name = (String) e.nextElement();
+      String name = e.next();
       Attribute a = getAttribute(name);
 
       if (a.isAlias()) {

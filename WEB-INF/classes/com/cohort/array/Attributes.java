@@ -30,7 +30,7 @@ public class Attributes {
   public static boolean debugMode = false;
 
   /** The backing data structure. It is thread-safe. */
-  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap(16, 0.75f, 4);
+  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public static String signedToUnsignedAttNames[] =
       new String[] {

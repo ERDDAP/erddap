@@ -13,9 +13,14 @@ package dods.dap;
 
 import dods.dap.parser.DASParser;
 import dods.dap.parser.ParseException;
-import dods.util.SortedTable;
-import java.io.*;
-import java.util.Enumeration;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The Data Attribute Structure is a set of name-value pairs used to describe the data in a
@@ -84,11 +89,11 @@ import java.util.Enumeration;
 public class DAS implements Cloneable {
 
   /** A table containing AttributeTables with their names as a key */
-  private SortedTable attr;
+  private LinkedHashMap<String, AttributeTable> attr;
 
   /** Create a new empty <code>DAS</code>. */
   public DAS() {
-    attr = new SortedTable();
+    attr = new LinkedHashMap<>();
   }
 
   /**
@@ -101,13 +106,13 @@ public class DAS implements Cloneable {
   public Object clone() {
     try {
       DAS d = (DAS) super.clone();
-      d.attr = new SortedTable();
-      for (int i = 0; i < attr.size(); i++) {
-        String key = (String) attr.getKey(i);
-        AttributeTable element = (AttributeTable) attr.elementAt(i);
+      d.attr = new LinkedHashMap<>();
+      for (Map.Entry<String, AttributeTable> entry : attr.entrySet()) {
         // clone element (don't clone key because it's a read-only String)
-        d.attr.put(key, element.clone());
+        d.attr.put(entry.getKey(), entry.getValue().clone());
       }
+      for (int i = 0; i < attr.size(); i++) {}
+
       return d;
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
@@ -116,14 +121,14 @@ public class DAS implements Cloneable {
   }
 
   /**
-   * Returns an <code>Enumeration</code> of the attribute names in this <code>DAS</code>. Use the
+   * Returns an <code>Iterator</code> of the attribute names in this <code>DAS</code>. Use the
    * <code>getAttributeTable</code> method to get the <code>AttributeTable</code> for a given name.
    *
-   * @return an <code>Enumeration</code> of <code>String</code>.
+   * @return an <code>Iterator</code> of <code>String</code>.
    * @see DAS#getAttributeTable(String)
    */
-  public final Enumeration getNames() {
-    return attr.keys();
+  public final Iterator<String> getNames() {
+    return attr.sequencedKeySet().iterator();
   }
 
   /**
@@ -135,7 +140,7 @@ public class DAS implements Cloneable {
    * @see AttributeTable
    */
   public final AttributeTable getAttributeTable(String name) {
-    return (AttributeTable) attr.get(name);
+    return attr.get(name);
   }
 
   /**
@@ -172,8 +177,8 @@ public class DAS implements Cloneable {
    */
   public void print(PrintWriter os) {
     os.println("Attributes {");
-    for (Enumeration e = getNames(); e.hasMoreElements(); ) {
-      String name = (String) e.nextElement();
+    for (Iterator<String> e = getNames(); e.hasNext(); ) {
+      String name = e.next();
       os.println("    " + name + " {");
       getAttributeTable(name).print(os, "        ");
       os.println("    }");

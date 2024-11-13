@@ -3,12 +3,15 @@ package dods.dap.parser;
 
 import com.cohort.util.MustBe; // Bob added
 import dods.dap.*;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 public class DASParser implements DASParserConstants {
   /* $Id: DASParser.java,v 1.28 2002/06/05 20:44:51 jimg Exp $ */
   private DAS das;
-  private Stack stack;
+  private Deque<AttributeTable> stack;
   private String name;
   private int type;
 
@@ -22,7 +25,7 @@ public class DASParser implements DASParserConstants {
 
   /** Return the topmost AttributeTable on the stack. */
   private final AttributeTable topOfStack() {
-    return (AttributeTable) stack.peek();
+    return stack.peek();
   }
 
   /** Is the stack empty? */
@@ -32,7 +35,7 @@ public class DASParser implements DASParserConstants {
 
   public final void Attributes(DAS das) throws ParseException, DASException {
     this.das = das;
-    this.stack = new Stack();
+    this.stack = new ArrayDeque<>();
     try {
       switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
         case ATTR:
@@ -1020,7 +1023,7 @@ public class DASParser implements DASParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
+  private List<int[]> jj_expentries = new ArrayList<>();
   private int[] jj_expentry;
   private int jj_kind = -1;
   private int[] jj_lasttokens = new int[100];
@@ -1036,8 +1039,7 @@ public class DASParser implements DASParserConstants {
         jj_expentry[i] = jj_lasttokens[i];
       }
       boolean exists = false;
-      for (java.util.Enumeration en = jj_expentries.elements(); en.hasMoreElements(); ) {
-        int[] oldentry = (int[]) en.nextElement();
+      for (int[] oldentry : jj_expentries) {
         if (oldentry.length == jj_expentry.length) {
           exists = true;
           for (int i = 0; i < jj_expentry.length; i++) {
@@ -1049,13 +1051,13 @@ public class DASParser implements DASParserConstants {
           if (exists) break;
         }
       }
-      if (!exists) jj_expentries.addElement(jj_expentry);
+      if (!exists) jj_expentries.add(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }
 
   public final ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+    jj_expentries.clear();
     boolean[] la1tokens = new boolean[23];
     for (int i = 0; i < 23; i++) {
       la1tokens[i] = false;
@@ -1077,7 +1079,7 @@ public class DASParser implements DASParserConstants {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     jj_endpos = 0;
@@ -1085,7 +1087,7 @@ public class DASParser implements DASParserConstants {
     jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[]) jj_expentries.elementAt(i);
+      exptokseq[i] = jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
