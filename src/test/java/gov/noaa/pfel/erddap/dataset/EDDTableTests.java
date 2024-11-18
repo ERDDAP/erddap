@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.ByteArrayOutputStream;
@@ -2685,5 +2686,67 @@ class EDDTableTests {
             + //
             "1,\"0x20:  , 0x21: !, 0x22: \"\", 0x23: #, 0x24: $, 0x25: %, 0x26: &, 0x27: ', 0x28: (, 0x29: ), 0x2a: *, 0x2b: +, 0x2c: ,, 0x2d: -, 0x2e: ., 0x2f: /, 0x30: 0, 0x31: 1, 0x32: 2, 0x33: 3, 0x34: 4, 0x35: 5, 0x36: 6, 0x37: 7, 0x38: 8, 0x39: 9, 0x3a: :, 0x3c: <, 0x3d: =, 0x3e: >, 0x3f: ?, 0x40: @, 0x41: A, 0x42: B, 0x43: C, 0x44: D, 0x45: E, 0x46: F, 0x47: G, 0x48: H, 0x49: I, 0x4a: J, 0x4b: K, 0x4c: L, 0x4d: M, 0x4e: N, 0x4f: O, 0x50: P, 0x51: Q, 0x52: R, 0x53: S, 0x54: T, 0x55: U, 0x56: V, 0x57: W, 0x58: X, 0x59: Y, 0x5a: Z, 0x5b: [, 0x5c: \\\\, 0x5d: ], 0x5e: ^, 0x5f: _, 0x60: `, 0x61: a, 0x62: b, 0x63: c, 0x64: d, 0x65: e, 0x66: f, 0x67: g, 0x68: h, 0x69: i, 0x6a: j, 0x6b: k, 0x6c: l, 0x6d: m, 0x6e: n, 0x6f: o, 0x70: p, 0x71: q, 0x72: r, 0x73: s, 0x74: t, 0x75: u, 0x76: v, 0x77: w, 0x78: x, 0x79: y, 0x7a: z, 0x7b: {, 0x7c: |, 0x7d: }, 0x7e: ~, 0x7f: \\u007f, 0xa0: \\u00a0, 0xa1: \\u00a1, 0xa2: \\u00a2, 0xa3: \\u00a3, 0xa4: \\u00a4, 0xa5: \\u00a5, 0xa6: \\u00a6, 0xa7: \\u00a7, 0xa8: \\u00a8, 0xa9: \\u00a9, 0xaa: \\u00aa, 0xab: \\u00ab, 0xac: \\u00ac, 0xad: \\u00ad, 0xae: \\u00ae, 0xaf: \\u00af, 0xb0: \\u00b0, 0xb1: \\u00b1, 0xb2: \\u00b2, 0xb3: \\u00b3, 0xb4: \\u00b4, 0xb5: \\u00b5, 0xb6: \\u00b6, 0xb7: \\u00b7, 0xb8: \\u00b8, 0xb9: \\u00b9, 0xba: \\u00ba, 0xbb: \\u00bb, 0xbc: \\u00bc, 0xbd: \\u00bd, 0xbe: \\u00be, 0xbf: \\u00bf, 0xc0: \\u00c0, 0xc1: \\u00c1, 0xc2: \\u00c2, 0xc3: \\u00c3, 0xc4: \\u00c4, 0xc5: \\u00c5, 0xc6: \\u00c6, 0xc7: \\u00c7, 0xc8: \\u00c8, 0xc9: \\u00c9, 0xca: \\u00ca, 0xcb: \\u00cb, 0xcc: \\u00cc, 0xcd: \\u00cd, 0xce: \\u00ce, 0xcf: \\u00cf, 0xd0: \\u00d0, 0xd1: \\u00d1, 0xd2: \\u00d2, 0xd3: \\u00d3, 0xd4: \\u00d4, 0xd5: \\u00d5, 0xd6: \\u00d6, 0xd7: \\u00d7, 0xd8: \\u00d8, 0xd9: \\u00d9, 0xda: \\u00da, 0xdb: \\u00db, 0xdc: \\u00dc, 0xdd: \\u00dd, 0xde: \\u00de, 0xdf: \\u00df, 0xe0: \\u00e0, 0xe1: \\u00e1, 0xe2: \\u00e2, 0xe3: \\u00e3, 0xe4: \\u00e4, 0xe5: \\u00e5, 0xe6: \\u00e6, 0xe7: \\u00e7, 0xe8: \\u00e8, 0xe9: \\u00e9, 0xea: \\u00ea, 0xeb: \\u00eb, 0xec: \\u00ec, 0xed: \\u00ed, 0xee: \\u00ee, 0xef: \\u00ef, 0xf0: \\u00f0, 0xf1: \\u00f1, 0xf2: \\u00f2, 0xf3: \\u00f3, 0xf4: \\u00f4, 0xf5: \\u00f5, 0xf6: \\u00f6, 0xf7: \\u00f7, 0xf8: \\u00f8, 0xf9: \\u00f9, 0xfa: \\u00fa, 0xfb: \\u00fb, 0xfc: \\u00fc, 0xfd: \\u00fd, 0xfe: \\u00fe, 0xff: \\u00ff\"\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+  }
+
+  /** */
+  @org.junit.jupiter.api.Test
+  void testLargeResults() throws Throwable {
+    int language = 0;
+    String tName, results, expected, userDapQuery;
+    String testDir = EDStatic.fullTestCacheDirectory;
+
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableColumnarAscii();
+
+    // This is to force there to be multiple passes for each column when writing the nc file.
+    EDStatic.partialRequestMaxCells = 5;
+    userDapQuery = "";
+    tName =
+        eddTable.makeNewFileForDapQuery(
+            language, null, null, userDapQuery, testDir, eddTable.className() + "_all", ".nc");
+    results = NcHelper.ncdump(testDir + tName, "");
+    expected =
+        "  :id = \"testTableColumnarAscii\";\n"
+            + "  :infoUrl = \"https://www.ndbc.noaa.gov/\";\n"
+            + "  :institution = \"NOAA NDBC\";\n"
+            + "  :keywords = \"boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title\";\n"
+            + "  :license = \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "  :sourceUrl = \"(local files)\";\n"
+            + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
+            + "  :subsetVariables = \"aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble, five, fileName\";\n"
+            + "  :summary = \"The new summary!\";\n"
+            + "  :title = \"The Newer Title!\";\n"
+            + "\n"
+            + "  data:\n"
+            + "    fileName =   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\",   \"columnarAsciiWithComments\"\n"
+            + "    five = \n"
+            + "      {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}\n"
+            + "    aString =   \"abcdef\",   \"fg\",   \"h\",   \"i\",   \"j\",   \"k\",   \"l\",   \"m\",   \"n\",   \"short:\"\n"
+            + "    aChar =   \"AFHIJKLMN?\"\n"
+            + "    aBoolean = \n"
+            + "      {1, 1, 1, 1, 0, 0, 0, 0, 1, 127}\n"
+            + "    aByte = \n"
+            + "      {24, 11, 12, 13, 14, 15, 16, 17, 18, 127}\n"
+            + "    aShort = \n"
+            + "      {24000, 12001, 12002, 12003, 12004, 12005, 12006, 12007, 12008, 32767}\n"
+            + "    anInt = \n"
+            + "      {24000000, 1200000, 120000, 12000, 1200, 120, 12, 121, 122, 2147483647}\n"
+            + "    aLong = \n"
+            + "      {2.4E11, 1.2E10, 1.2E9, 1.2E8, 1.2E7, 1200000.0, 120000.0, 12000.0, 1200.0, NaN}\n"
+            + "    aFloat = \n"
+            + "      {2.4, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, NaN}\n"
+            + "    aDouble = \n"
+            + "      {2.412345678987654, 1.0E200, 2.0E200, 3.0E200, 4.0E200, 5.0E200, 6.0E200, 7.0E200, 8.0E200, NaN}\n"
+            + "}\n";
+    int resultsStart = results.indexOf("  :id = \"testTableColumnarAscii\";");
+    results = results.substring(resultsStart);
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    EDStatic.partialRequestMaxCells = EDStatic.DEFAULT_partialRequestMaxCells;
   }
 }
