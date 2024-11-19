@@ -6406,7 +6406,7 @@ public abstract class EDDTable extends EDD {
             bufferSize = Math.min(nToGo, bufferSize); // actual number to be transferred
             // use of != below (not <) lets toObjectArray below return internal array since
             // size=capacity
-            if (pa == null) {
+            if (pa == null || pa.elementType() != twawm.columnType(col)) {
               pa = twawm.columnEmptyPA(col);
               pa.ensureCapacity(bufferSize);
             }
