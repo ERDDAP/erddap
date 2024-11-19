@@ -1,7 +1,7 @@
 package com.cohort.util;
 
+import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
@@ -24,7 +24,7 @@ public class Image2Tests {
   public static URL OBS_DIR = Image2Tests.class.getResource("/data/images/obs/");
 
   public static String urlToAbsolutePath(URL url) throws URISyntaxException {
-    return Path.of(url.toURI()).toString() + "/";
+    return Path.of(url.toURI()).toString() + File.separator;
   }
 
   /** This intentionally throws an Exception to test testImagesIdentical(). */
@@ -68,15 +68,15 @@ public class Image2Tests {
 
     // test ImageIO
     BufferedImage bi = ImageIO.read(new File(testDir + "testmap.gif"));
-    Graphics g = bi.getGraphics();
+    bi.getGraphics();
     ImageIO.write(bi, "png", new File(testDir + "temp.png"));
-    Image2.saveAsGif(bi, testDir + "temp.gif");
+    SgtUtil.saveAsGif(bi, testDir + "temp");
 
     long localTime = System.currentTimeMillis();
     String2.log("test() here 1");
     Color gray = new Color(128, 128, 128);
     String2.log("test() here 2=" + (System.currentTimeMillis() - localTime));
-    Image image = Image2.getImage(testDir + "temp.gif", 10000, false); // javaShouldCache
+    BufferedImage image = Image2.getImage(testDir + "temp.gif", 10000, false); // javaShouldCache
     String2.log("test() here 3=" + (System.currentTimeMillis() - localTime));
 
     // convert 128,128,128 to transparent
@@ -84,7 +84,7 @@ public class Image2Tests {
     String2.log("test() here 4=" + (System.currentTimeMillis() - localTime));
 
     // save as gif again
-    Image2.saveAsGif(image, testDir + "temp2.gif");
+    SgtUtil.saveAsGif(image, testDir + "temp2");
     String2.log("test() here 5=" + (System.currentTimeMillis() - localTime));
 
     File2.delete(testDir + "temp.png");

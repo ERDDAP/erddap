@@ -39,12 +39,12 @@ public class EDDTableFromAllDatasets extends EDDTable {
    * @throws Throwable if trouble
    */
   public EDDTableFromAllDatasets(
-      ConcurrentHashMap tGridDatasetHashMap, ConcurrentHashMap tTableDatasetHashMap)
+      ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap,
+      ConcurrentHashMap<String, EDDTable> tTableDatasetHashMap)
       throws Throwable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromAllDatasets");
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromAllDatasets() constructor:\n";
     int language = 0;
 
     // save some of the parameters

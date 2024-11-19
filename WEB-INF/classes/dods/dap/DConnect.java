@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import dods.dap.parser.ParseException;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.*;
 import java.net.*;
 import java.util.zip.InflaterInputStream;
@@ -59,9 +60,6 @@ public class DConnect {
   /** The selection portion of the current DODS CE (including leading "&"). */
   private String selString;
 
-  /** Whether to accept compressed documents. */
-  private boolean acceptDeflate;
-
   /** The DODS server version. */
   private ServerVersion ver;
 
@@ -104,16 +102,38 @@ public class DConnect {
       this.urlString = urlString;
       this.projString = this.selString = "";
     }
-    this.acceptDeflate = acceptDeflate;
 
     // Test if the URL is really a filename, and if so, open the file
     try {
-      URL testURL = new URL(urlString);
+      @SuppressWarnings("unused")
+      URL unusedTestURL = new URL(urlString);
     } catch (MalformedURLException e) {
       try {
         fileStream = File2.getDecompressedBufferedInputStream(urlString);
       } catch (Exception e2) {
         throw new FileNotFoundException(urlString);
+      }
+    }
+
+    EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
+  }
+
+  private static class CleanupConnect implements Runnable {
+
+    private InputStream inputStream;
+
+    private CleanupConnect(InputStream input) {
+      this.inputStream = input;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (inputStream != null) {
+          inputStream.close();
+        }
+      } catch (Throwable t1) {
+        // do nothing, so nothing can go wrong.
       }
     }
   }
@@ -147,6 +167,7 @@ public class DConnect {
    */
   public DConnect(InputStream is) {
     this.fileStream = is;
+    EDStatic.cleaner.register(this, new CleanupConnect(fileStream));
   }
 
   /**

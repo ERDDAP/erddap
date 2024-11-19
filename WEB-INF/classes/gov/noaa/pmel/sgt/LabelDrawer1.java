@@ -581,7 +581,7 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
     int pt_0, pt_1, hgt;
     int count = 1;
     double hgt_0, hgt_1, del_0, del_1;
-    double a, b;
+
     //
     // first guess
     //

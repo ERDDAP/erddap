@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -38,7 +37,7 @@ class EDDTableFromDatabaseTests {
 
     // String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
     // testVerboseOn();
-    String name, tName, gdiResults, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected;
     String password;
     // password = String2.getStringFromSystemIn("local Postgres password? ");
     password = "MyPassword";
@@ -314,10 +313,8 @@ class EDDTableFromDatabaseTests {
     // testVerboseOn();
     int language = 0;
     long eTime;
-    String tQuery;
     String dir = EDStatic.fullTestCacheDirectory;
     String results, expected;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     EDDTableFromDatabase tedd =
         (EDDTableFromDatabase) EDDTableFromDatabase.oneFromDatasetsXml(null, tDatasetID);

@@ -26,6 +26,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.BufferedReader;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -35,6 +36,9 @@ import org.json.JSONTokener;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-02-13
  */
+// This file is litered with unicode escape sequences. They should be replaced with their proper
+// characters.
+@SuppressWarnings("UnicodeEscape")
 public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
   /** Used to ensure that all non-axis variables in all files have the same leftmost dimension. */
@@ -828,7 +832,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     int nIssues = 0;
     StringBuilder issues = new StringBuilder();
     String issuesPre = "";
-    HashSet<String> keywords = new HashSet();
+    Set<String> keywords = new HashSet<>();
     StringBuilder license = new StringBuilder();
     int lineageSourceN = 0;
     String lineageStepN = "", lineageName = "", lineageEmail = "", lineageDescription = "";
@@ -882,10 +886,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     while (true) {
       xmlReader.nextTag();
       tags = xmlReader.allTags();
-      int nTags = xmlReader.stackSize();
       String content = xmlReader.content();
       if (xmlReader.stackSize() == 1) break; // the startTag
-      String topTag = xmlReader.tag(nTags - 1);
       boolean hasContent = String2.isSomething2(content);
       tags = tags.substring(startTagLength);
       if (debugMode) String2.log(">>  tags=" + tags + content);
@@ -1471,21 +1473,17 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (tags.equals("<child-items><child-item>")) {
           // a new child-item
           nChildItems++;
-          if (reallyVerbose)
+          if (reallyVerbose) {
             String2.log(
                 "Since whichChild="
                     + whichChild
                     + ", I'm "
-                    + (whichChild == 0 || nChildItems == whichChild ? "processing" : "skipping")
+                    + "processing"
                     + " <child-item> for entity #"
                     + nChildItems);
-          if (whichChild == 0 || nChildItems == whichChild) {
-            if (whichChild > 0) whichChildFound = true;
-            childItemsPre = "InPort_child_item_" + (whichChild > 0 ? "" : nChildItems + "_");
-          } else {
-            // skip this child
-            xmlReader.skipToStackSize(xmlReader.stackSize());
           }
+          if (whichChild > 0) whichChildFound = true;
+          childItemsPre = "InPort_child_item_" + (whichChild > 0 ? "" : nChildItems + "_");
 
         } else if (tags.equals("<child-items><child-item></catalog-item-id>")) {
           childItems.append(
@@ -1579,6 +1577,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         // if (hasContent)
         // String2.log(" not handled: " + tags + " = " content);
       }
+    }
+
+    if (xmlReader != null) {
+      xmlReader.close();
     }
 
     // desired whichChild not found?
@@ -1851,8 +1853,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     // *** end stuff
     boolean dateTimeAlreadyFound = false;
     String tSortedColumnSourceName = "";
-    String tSortFilesBySourceNames = "";
-    String tColumnNameForExtract = "";
 
     // clean up sourceTable
     sourceTable.convertIsSomething2(); // convert e.g., "N/A" to ""
@@ -2110,7 +2110,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             + baseDir);
     long time = System.currentTimeMillis();
     File2.makeDirectory(baseDir);
-    StringBuffer results = new StringBuffer();
+    StringBuilder results = new StringBuilder();
     StringArray noTime = new StringArray();
     tStandardizeWhat =
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
@@ -2288,6 +2288,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         sourceTable.readASCII(
             tsvName, br, "", "", 0, 1, "\t", null, null, null, null,
             false); // don't simplify until "nd" removed
+        br.close();
+        br = null;
         // custom alternative to sourceTable.convertIsSomething2(); //convert e.g., "nd" to ""
         for (int col = 0; col < sourceTable.nColumns(); col++)
           sourceTable.getColumn(col).switchFromTo("nd", ""); // the universal BCO-DMO missing value?
@@ -2352,7 +2354,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             if (subObject.has("units")) {
               // will be cleaned up by makeReadyToUseAddVariableAttributes
               String s = subObject.getString("units");
-              if (s != null || s.length() > 0) colAtts.add("units", s);
+              if (s != null && s.length() > 0) colAtts.add("units", s);
             }
 
             // "data_type":"",  //always "". Adam says this is just a placeholder for now

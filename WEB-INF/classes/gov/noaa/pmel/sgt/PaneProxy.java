@@ -31,7 +31,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * PaneProxy implements the functionality common to <code>JPane</code> and <code>Pane</code>.
@@ -106,10 +106,11 @@ public class PaneProxy { // Bob Simons made public
   }
 
   private void testJava2D() {
-    Class cl;
+    @SuppressWarnings("unused")
+    Class unusedCl;
     boolean java2d = true;
     try {
-      cl = Class.forName("java.awt.Graphics2D");
+      unusedCl = Class.forName("java.awt.Graphics2D");
     } catch (ClassNotFoundException e) {
       java2d = false;
     }
@@ -349,7 +350,7 @@ public class PaneProxy { // Bob Simons made public
     Component[] comps = pane_.getComponents();
     for (int i = 0; i < comps.length; i++) {
       if (comps[i] instanceof Layer) {
-        if (((Layer) comps[i]).getId() == id) return (Layer) comps[i];
+        if (java.util.Objects.equals(((Layer) comps[i]).getId(), id)) return (Layer) comps[i];
       } else if (comps[i] instanceof Panel) {
         if (((Panel) comps[i]).hasLayer(id)) return (Layer) ((Panel) comps[i]).getLayer(id);
       }
@@ -394,7 +395,6 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
@@ -412,18 +412,17 @@ public class PaneProxy { // Bob Simons made public
    * @since 3.0
    */
   Object[] getObjectsAt(int x, int y) {
-    Vector obList = new Vector();
+    ArrayList<Object> obList = new ArrayList<>();
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) obList.addElement(obj);
+          if (obj != null) obList.add(obj);
         } else if (comps[i] instanceof Panel) {
           obj = ((Panel) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) obList.addElement(obj);
+          if (obj != null) obList.add(obj);
         }
       }
     }
@@ -456,7 +455,6 @@ public class PaneProxy { // Bob Simons made public
 
   private boolean Pane_MouseClicked(MouseEvent event) {
     Object obj;
-    Rectangle rect;
     Selectable savedobj = null;
     int mod = event.getModifiers();
     //
@@ -499,7 +497,6 @@ public class PaneProxy { // Bob Simons made public
     selectedobject_ = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      Layer ly;
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
@@ -574,7 +571,6 @@ public class PaneProxy { // Bob Simons made public
 
   private boolean Pane_MouseDown(MouseEvent event) {
     Object obj;
-    Selectable savedobj = null;
     //
     // continue only if button1 is pressed
     //
@@ -631,12 +627,9 @@ public class PaneProxy { // Bob Simons made public
       //
       // object not selected begin move operation
       //
-      if (selectedobject_ instanceof Selectable) savedobj = (Selectable) selectedobject_;
-      else savedobj = null;
       selectedobject_ = null;
       Component[] comps = pane_.getComponents();
       if (comps.length != 0) {
-        Layer ly;
         for (int i = 0; i < comps.length; i++) {
           if (comps[i] instanceof Layer) {
             obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());

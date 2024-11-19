@@ -444,11 +444,10 @@ public class SdsWriter {
     DataOutputStream stream =
         new DataOutputStream(new BufferedOutputStream(new FileOutputStream(hdfFileName)));
     try {
-      int dataOffset = 0;
       stream.writeInt(0x0e031301); // magic number
       stream.writeShort((short) tagList.size());
       stream.writeInt(0); // offset of next Data Descriptor Block
-      dataOffset = 10;
+      int dataOffset = 10;
 
       // write Data Descriptor block
       dataOffset += tagList.size() * (2 + 2 + 4 + 4); // tagType, ref#, offset, length
@@ -842,7 +841,8 @@ public class SdsWriter {
         false,
         String2.logFileDefaultMaxSize); // capture results to file
     SdsReader.verbose = true; // so verbose results get sent to file
-    SdsReader sdsReader = new SdsReader(dir + "mini2.hdf");
+    @SuppressWarnings("unused")
+    SdsReader unusedSdsReader = new SdsReader(dir + "mini2.hdf");
 
     // look for differences
     String2.setupLog(true, false, "", false, String2.logFileDefaultMaxSize);

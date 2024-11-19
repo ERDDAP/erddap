@@ -76,7 +76,7 @@ public class DSequence extends DConstructor implements ClientIO {
    * @return a clone of this <code>DSequence</code>.
    */
   @Override
-  public Object clone() {
+  public DSequence clone() {
 
     DSequence s = (DSequence) super.clone();
 
@@ -492,6 +492,7 @@ public class DSequence extends DConstructor implements ClientIO {
   private byte readMarker(DataInputStream source) throws IOException {
     byte marker = source.readByte();
     // pad out to a multiple of four bytes
+    @SuppressWarnings("unused")
     byte unused;
     for (int i = 0; i < 3; i++) unused = source.readByte();
 

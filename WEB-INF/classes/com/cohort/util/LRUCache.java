@@ -14,7 +14,7 @@ import java.util.Map;
  * <p>This not thread-safe. To make it thread-safe, use <tt>Map cache =
  * Collections.synchronizedMap(new LRUCache(maxSize));</tt>
  */
-public class LRUCache extends LinkedHashMap {
+public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
   int maxSize;
 
@@ -34,7 +34,7 @@ public class LRUCache extends LinkedHashMap {
 
   /** RemoveEldestEntry is over-ridden to enforce maxSize rule. */
   @Override
-  protected boolean removeEldestEntry(Map.Entry eldest) {
+  protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
     return size() > maxSize;
   }
 }

@@ -15,6 +15,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -114,53 +115,55 @@ public class EDV {
    *   <li>"Time" is used for the time variable.
    * </ul>
    */
-  public static final String[] IOOS_CATEGORIES = {
-    // !!! MAKING CHANGES?  Make the changes to the list in setupDatasetsXml.html, too.
-    // ??? need categories processing paramaters,
-    "Bathymetry",
-    "Biology", // bob added
-    "Bottom Character",
-    "CO2", // bob added pCO2 2011-05-19, 2011-10-11 changed to CO2
-    "Colored Dissolved Organic Matter", // added 2011-05-19
-    "Contaminants",
-    "Currents", // was "Surface Currents"
-    "Dissolved Nutrients",
-    "Dissolved O2",
-    "Ecology", // bob added
-    "Fish Abundance",
-    "Fish Species",
-    "Heat Flux",
-    "Hydrology", // bob added 2011-02-07
-    "Ice Distribution",
-    "Identifier",
-    LOCATION_CATEGORY, // bob added
-    "Meteorology", // bob added; use if not Temperature or Wind
-    "Ocean Color",
-    "Optical Properties", // what is dividing line?  OptProp is for atmosphere, too
-    "Other", // bob added
-    "Pathogens",
-    "Physical Oceanography", // Bob added 2011-10-11
-    "Phytoplankton Species", // ??the species name? better to use Taxonomy??  Add "Phytoplankton
-    // Abundance"?
-    "Pressure", // bob added
-    "Productivity", // bob added
-    "Quality", // bob added 2010-11-10
-    "Salinity",
-    "Sea Level",
-    "Soils", // bob added 2011-10-06
-    "Statistics", // bob added 2010-12-24
-    "Stream Flow", // added 2011-05-19
-    "Surface Waves",
-    "Taxonomy", // bob added
-    "Temperature",
-    TIME_CATEGORY, // bob added
-    "Total Suspended Matter", // added 2011-05-19
-    "Unknown",
-    "Wind", // had Wind. 2011-05-19 has "Wind Speed and Direction", but that seems unnecessarily
-    // limited
-    "Zooplankton Species", // ??the species name? better to use Taxonomy??
-    "Zooplankton Abundance"
-  };
+  public static final ImmutableList<String> IOOS_CATEGORIES =
+      ImmutableList.of(
+          // !!! MAKING CHANGES?  Make the changes to the list in setupDatasetsXml.html, too.
+          // ??? need categories processing paramaters,
+          "Bathymetry",
+          "Biology", // bob added
+          "Bottom Character",
+          "CO2", // bob added pCO2 2011-05-19, 2011-10-11 changed to CO2
+          "Colored Dissolved Organic Matter", // added 2011-05-19
+          "Contaminants",
+          "Currents", // was "Surface Currents"
+          "Dissolved Nutrients",
+          "Dissolved O2",
+          "Ecology", // bob added
+          "Fish Abundance",
+          "Fish Species",
+          "Heat Flux",
+          "Hydrology", // bob added 2011-02-07
+          "Ice Distribution",
+          "Identifier",
+          LOCATION_CATEGORY, // bob added
+          "Meteorology", // bob added; use if not Temperature or Wind
+          "Ocean Color",
+          "Optical Properties", // what is dividing line?  OptProp is for atmosphere, too
+          "Other", // bob added
+          "Pathogens",
+          "Physical Oceanography", // Bob added 2011-10-11
+          "Phytoplankton Species", // ??the species name? better to use Taxonomy??  Add
+          // "Phytoplankton
+          // Abundance"?
+          "Pressure", // bob added
+          "Productivity", // bob added
+          "Quality", // bob added 2010-11-10
+          "Salinity",
+          "Sea Level",
+          "Soils", // bob added 2011-10-06
+          "Statistics", // bob added 2010-12-24
+          "Stream Flow", // added 2011-05-19
+          "Surface Waves",
+          "Taxonomy", // bob added
+          "Temperature",
+          TIME_CATEGORY, // bob added
+          "Total Suspended Matter", // added 2011-05-19
+          "Unknown",
+          "Wind", // had Wind. 2011-05-19 has "Wind Speed and Direction", but that seems
+          // unnecessarily
+          // limited
+          "Zooplankton Species", // ??the species name? better to use Taxonomy??
+          "Zooplankton Abundance");
 
   /**
    * The variable metadata attribute that indicates the name of the observedProperty that is needed
@@ -177,10 +180,10 @@ public class EDV {
    * The valid options for colorBarScale. A given scale's index may change when new scales are
    * added.
    */
-  public static final String VALID_SCALES[] = {"Linear", "Log"};
+  public static final ImmutableList<String> VALID_SCALES = ImmutableList.of("Linear", "Log");
 
   /** This is the same as VALID_SCALES, but with option0="". */
-  public static final String VALID_SCALES0[] = {"", "Linear", "Log"};
+  public static final ImmutableList<String> VALID_SCALES0 = ImmutableList.of("", "Linear", "Log");
 
   /**
    * The time variable attribute that has the precision specification for
@@ -385,7 +388,7 @@ public class EDV {
     if (longName == null) longName = destinationName;
     units = combinedAttributes().getString("units"); // may be null; already canonical
     decimal_digits = combinedAttributes().getInt(DECIMAL_DIGITS); // may be null -> MAX_VALUE
-    if (decimal_digits < 0 || decimal_digits >= Math2.Ten.length)
+    if (decimal_digits < 0 || decimal_digits >= Math2.Ten.size())
       decimal_digits = Integer.MAX_VALUE;
 
     // extractScaleAddOffset     It sets destinationDataType and destinationDataPAType
@@ -562,7 +565,7 @@ public class EDV {
     if (tContinuous != null && !tContinuous.equals("true") && !tContinuous.equals("false"))
       throw new IllegalArgumentException(
           "colorBarContinuous=" + tPalette + " must be 'true' (the default) or 'false'.");
-    if (tScale != null && String2.indexOf(VALID_SCALES, tScale) < 0)
+    if (tScale != null && VALID_SCALES.indexOf(tScale) < 0)
       throw new IllegalArgumentException(
           "colorBarScale="
               + tScale
@@ -815,7 +818,7 @@ public class EDV {
 
     if ((destinationDataPAType == PAType.FLOAT || destinationDataPAType == PAType.DOUBLE)
         && decimal_digits >= 0
-        && decimal_digits < Math2.Ten.length) {
+        && decimal_digits < Math2.Ten.size()) {
       // okay
     } else {
       decimal_digits = Integer.MAX_VALUE;
@@ -826,7 +829,7 @@ public class EDV {
       String ic = combinedAttributes().getString("ioos_category");
       Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
       Test.ensureTrue(
-          String2.indexOf(IOOS_CATEGORIES, ic) >= 0,
+          IOOS_CATEGORIES.indexOf(ic) >= 0,
           errorInMethod + "ioos_category=\"" + ic + "\" isn't a valid category.");
     }
 
@@ -1115,16 +1118,6 @@ public class EDV {
   }
 
   /**
-   * The alphabetical list of the IOOS categories options for variables.
-   *
-   * @return the alphabetical list of valid categories for variables. This is the internal String[],
-   *     so don't change it.
-   */
-  public String[] ioosCategories() {
-    return IOOS_CATEGORIES;
-  }
-
-  /**
    * This returns true if sourceDataType was originally boolean. Remember that if sourceDataType was
    * originally boolean, the sourceDataType was converted to byte.
    *
@@ -1395,7 +1388,7 @@ public class EDV {
    */
   public String drawLandMask(String eddDefaultDrawLandMask) {
     String dlm = combinedAttributes().getString("drawLandMask");
-    int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, dlm);
+    int which = SgtMap.drawLandMask_OPTIONS.indexOf(dlm);
     return which < 1 ? eddDefaultDrawLandMask : dlm;
   }
 

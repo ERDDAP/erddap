@@ -131,8 +131,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
     // Is Rutgers obis down/not responding?
@@ -573,10 +572,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     try {
       EDDTable fishbase =
           (EDDTable) EDDTableFromOBIS.oneFromDatasetsXml(null, "fishbaseObis"); // should work
@@ -661,9 +657,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String tName, results, expected, userDapQuery;
 
     /*
      * <dataset type="EDDTableFromOBIS" datasetID="dukeSeamap">
@@ -783,10 +777,7 @@ class EDDTableFromOBISTests {
     // DigirHelper.reallyVerbose = true;
     // TableXmlHandler.verbose = true;
 
-    String name, tName, results, tResults, expected, userDapQuery;
-    String error = "";
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     EDDTable argos = (EDDTable) EDDTableFromOBIS.oneFromDatasetsXml(null, "aadcArgos");
     userDapQuery =
         "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01";

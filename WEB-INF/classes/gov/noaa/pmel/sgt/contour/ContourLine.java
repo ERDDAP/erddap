@@ -66,8 +66,6 @@ public class ContourLine extends Vector {
    * @supplierCardinality *
    * @link aggregationByValue
    */
-  private ContourLabel lnkContourLabel;
-
   private CartesianGraph cg_;
 
   /** Bob Simons added this to avoid memory leak problems. */
@@ -81,7 +79,6 @@ public class ContourLine extends Vector {
         conLabels_ = null;
         o.clear();
       }
-      lnkContourLabel = null;
       cg_ = null; // not releaseResources() else infinite loop
       if (JPane.debug) String2.log("sgt.contour.ContourLine.releaseResources() finished");
     } catch (Throwable t) {
@@ -237,8 +234,6 @@ public class ContourLine extends Vector {
   /** Used internally by sgt. */
   public void draw(Graphics g) {
     int k, kk, loc, kp1;
-    double[] x = new double[kmax_ + 1];
-    double[] y = new double[kmax_ + 1];
     ContourLabel clab;
     double width, hhgt;
     double dxx, dyy, space;
@@ -246,14 +241,13 @@ public class ContourLine extends Vector {
     double xendl, yendl, angle;
     double xlab, ylab;
     SGLabel label;
-    GeoDate time;
     defaultAttr_.setContourLineAttribute(attr_);
     Color lineColor = defaultAttr_.getColor();
     //
     // convert ContourLine to physical units
     //
-    x = getXArrayP();
-    y = getYArrayP();
+    double[] x = getXArrayP();
+    double[] y = getYArrayP();
     //
     // loop through labels
     //

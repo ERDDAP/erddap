@@ -1,7 +1,6 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.Attributes;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -68,9 +67,7 @@ class OpendapHelperTests {
   //   Maybe get a new version.
   @TagIncompleteTest
   void testDapToNcDArray() throws Throwable {
-    String2.log("\n\n*** OpendapHelper.testDapToNcDArray()");
     String fileName, expected, results;
-    String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
     fileName = TEMP_DIR.toAbsolutePath() + "/testDapToNcDArray.nc";
     String dArrayUrl =

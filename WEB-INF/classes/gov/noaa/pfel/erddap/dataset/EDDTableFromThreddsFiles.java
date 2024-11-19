@@ -199,13 +199,13 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     try {
       // if previous tasks are still running, return
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-      Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(tDatasetID);
+      Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
       if (verbose)
         String2.log(
             "  lastFinishedTask="
-                + EDStatic.lastFinishedTask
+                + EDStatic.lastFinishedTask.get()
                 + " < lastAssignedTask("
                 + tDatasetID
                 + ")="
@@ -471,7 +471,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
       if (EDStatic.forceSynchronousLoading) {
         boolean interrupted = false;
-        while (!interrupted && EDStatic.lastFinishedTask < taskNumber) {
+        while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
           try {
             Thread.sleep(2000);
           } catch (InterruptedException e) {
@@ -556,7 +556,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       String threddsBase = catalogUrl.substring(0, sPo);
       if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
 
-      String serviceBase = "/" + threddsName + "/dodsC/"; // default
       if (reallyVerbose)
         String2.log(
             "threddsName="
@@ -836,10 +835,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                       tLocalDirUrl, tFileNameRegex, true, ".*"))); // recursive, pathRegex
 
     String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
-    String tPublicDirUrlHtml = tPublicDirUrl;
     String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
     String dir = EDStatic.fullTestCacheDirectory;
-    int po1, po2;
 
     // download the 1 file
     // URL may not have .nc at end.  I think that's okay.  Keep exact file name from URL.

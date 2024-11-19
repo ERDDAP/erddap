@@ -9,9 +9,7 @@ class UIntTest {
   public void sendIt(DataOutputStream fp) throws Exception {
 
     short s;
-    byte b;
     int i;
-    long l;
 
     s = ((short) 65500);
     System.out.println("\nShort assigned to 65500.    System thinks of it as: " + s);

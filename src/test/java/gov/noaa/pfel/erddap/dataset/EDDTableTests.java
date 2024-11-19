@@ -7,7 +7,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalOther;
 import testDataset.EDDTestDataset;
@@ -45,7 +45,7 @@ class EDDTableTests {
     // GetCapabilities
     String2.log("\n+++ GetCapabilities");
     writer = new java.io.StringWriter();
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase
@@ -2233,7 +2233,7 @@ class EDDTableTests {
     // GetCapabilities
     String2.log("\n+++ GetCapabilities");
     writer = new java.io.StringWriter();
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(
             "seRvIcE=SOS&ReQueSt=GetCapabilities&sEctIons=gibberish,All",
             true); // true=names toLowerCase

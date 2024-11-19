@@ -809,7 +809,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     if (verbose) String2.log("EDDGridFromErddap.sibling " + tLocalSourceUrl);
 
     int nAv = axisVariables.length;
-    int nDv = dataVariables.length;
 
     // need a unique datasetID for sibling
     //  so cached .das .dds axis values are stored separately.
@@ -848,7 +847,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     if (shareInfo) {
 
       // ensure similar
-      boolean testAV0 = false;
       String results = similar(newEDDGrid, firstAxisToMatch, matchAxisNDigits, false);
       if (results.length() > 0) throw new RuntimeException("Error in EDDGrid.sibling: " + results);
 

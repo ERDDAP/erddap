@@ -7,6 +7,7 @@ package gov.noaa.pfel.coastwatch.util;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -15,7 +16,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-12-30
  */
-public class WatchDirectory {
+public class WatchDirectory implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -32,17 +33,17 @@ public class WatchDirectory {
   public static boolean verbose = false;
 
   public static boolean reallyVerbose = false;
-  public static final WatchEvent.Kind CREATE = StandardWatchEventKinds.ENTRY_CREATE;
-  public static final WatchEvent.Kind DELETE = StandardWatchEventKinds.ENTRY_DELETE;
-  public static final WatchEvent.Kind MODIFY = StandardWatchEventKinds.ENTRY_MODIFY;
-  public static final WatchEvent.Kind OVERFLOW = StandardWatchEventKinds.OVERFLOW;
+  public static final WatchEvent.Kind<Path> CREATE = StandardWatchEventKinds.ENTRY_CREATE;
+  public static final WatchEvent.Kind<Path> DELETE = StandardWatchEventKinds.ENTRY_DELETE;
+  public static final WatchEvent.Kind<Path> MODIFY = StandardWatchEventKinds.ENTRY_MODIFY;
+  public static final WatchEvent.Kind<Object> OVERFLOW = StandardWatchEventKinds.OVERFLOW;
 
   /** things set by constructor */
   private String watchDir, pathRegex;
 
   private boolean recursive;
   private WatchService watchService;
-  private ConcurrentHashMap<WatchKey, String> keyToDirMap = new ConcurrentHashMap();
+  private ConcurrentHashMap<WatchKey, String> keyToDirMap = new ConcurrentHashMap<>();
 
   /**
    * A convenience method to construct a WatchDirectory for all events (CREATE, DELETE, and MODIFY).
@@ -67,7 +68,7 @@ public class WatchDirectory {
    * @throws various Exceptions if trouble
    */
   public WatchDirectory(
-      String tWatchDir, boolean tRecursive, String tPathRegex, WatchEvent.Kind events[])
+      String tWatchDir, boolean tRecursive, String tPathRegex, WatchEvent.Kind<?> events[])
       throws IOException {
 
     watchDir = File2.addSlash(tWatchDir);
@@ -97,6 +98,26 @@ public class WatchDirectory {
       WatchKey key = watchPath.register(watchService, events);
       keyToDirMap.put(key, String2.canonical(watchDir));
     }
+
+    EDStatic.cleaner.register(this, new CleanupWatchService(watchService));
+  }
+
+  private static class CleanupWatchService implements Runnable {
+
+    private WatchService watchService;
+
+    private CleanupWatchService(WatchService watchService) {
+      this.watchService = watchService;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (watchService != null) watchService.close();
+      } catch (Throwable t1) {
+        // do nothing, so nothing can go wrong.
+      }
+    }
   }
 
   /**
@@ -114,7 +135,7 @@ public class WatchDirectory {
    *     WatchDirectory.
    * @return the size of eventKinds and contexts
    */
-  public int getEvents(ArrayList<WatchEvent.Kind> eventKinds, StringArray contexts) {
+  public int getEvents(List<WatchEvent.Kind<?>> eventKinds, StringArray contexts) {
     eventKinds.clear();
     contexts.clear();
     if (watchService == null) // perhaps close() was called
@@ -122,7 +143,7 @@ public class WatchDirectory {
     WatchKey key = watchService.poll();
     while (key != null) {
       String tDir = keyToDirMap.get(key);
-      for (WatchEvent event : key.pollEvents()) {
+      for (WatchEvent<?> event : key.pollEvents()) {
         eventKinds.add(event.kind());
         contexts.add(tDir + (event.context() == null ? "" : event.context()));
       }
@@ -136,6 +157,7 @@ public class WatchDirectory {
    * This explicitly closes this WatchDirectory and frees resources (threads). This won't throw an
    * exception.
    */
+  @Override
   public void close() {
     try {
       if (watchService != null) watchService.close();
@@ -145,14 +167,5 @@ public class WatchDirectory {
 
     watchService = null; // safe, and encourages gc
     keyToDirMap = null; // safe, and encourages gc
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use cancel() if you need/want to explicitly shutdown
-   * this WatchDirectory. In normal use, this will be called by the Java garbage collector.
-   */
-  protected void finalize() throws Throwable {
-    close(); // apparently, Java garbage colloector doesn't do this by itself!
-    super.finalize();
   }
 }

@@ -220,7 +220,7 @@ public class Domain implements java.io.Serializable {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer(100);
+    StringBuilder buf = new StringBuilder(100);
     buf.append("x=");
     if (xTime_) {
       buf.append(tRange_).append(",y=");

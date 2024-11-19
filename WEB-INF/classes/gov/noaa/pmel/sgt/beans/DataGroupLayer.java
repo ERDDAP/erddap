@@ -63,7 +63,7 @@ import javax.swing.JOptionPane;
  * @stereotype container
  */
 public class DataGroupLayer extends Layer {
-  private List dataLayers_ = new Vector();
+  private List<Layer> dataLayers_ = new Vector<>();
 
   /**
    * @label dg
@@ -133,7 +133,7 @@ public class DataGroupLayer extends Layer {
    *
    * @return iterator of Layers
    */
-  public Iterator getLayerIterator() {
+  public Iterator<Layer> getLayerIterator() {
     return dataLayers_.iterator();
   }
 
@@ -142,7 +142,7 @@ public class DataGroupLayer extends Layer {
    *
    * @return layer list
    */
-  public List getLayerList() {
+  public List<Layer> getLayerList() {
     return dataLayers_;
   }
 
@@ -196,14 +196,14 @@ public class DataGroupLayer extends Layer {
       graph.setData(data, attr);
       dataLayers_.add(this);
 
-      StringBuffer label = new StringBuffer(data.getXMetaData().getName());
+      StringBuilder label = new StringBuilder(data.getXMetaData().getName());
       String units = data.getXMetaData().getUnits();
       if (units != null && units.length() > 0) {
         label.append(" (").append(units).append(")");
       }
       xLabel_ = new SGLabel("X Axis Label", label.toString(), new Point2D.Double(0.0, 0.0));
 
-      label = new StringBuffer(data.getYMetaData().getName());
+      label = new StringBuilder(data.getYMetaData().getName());
       units = data.getYMetaData().getUnits();
       if (units != null && units.length() > 0) {
         label.append(" (").append(units).append(")");
@@ -232,7 +232,6 @@ public class DataGroupLayer extends Layer {
       if (cmap instanceof TransformAccess) {
         ((TransformAccess) cmap).setRange(zRange);
       } else if (cmap instanceof ContourLevelsAccess) {
-        ContourLevels cl = ((ContourLevelsAccess) cmap).getContourLevels();
         int levels = dg_.getNumberAutoContourLevels();
         Range2D newRange = Graph.computeRange(zRange, levels);
         ((ContourLevelsAccess) cmap).setContourLevels(ContourLevels.getDefault(newRange));
@@ -411,7 +410,6 @@ public class DataGroupLayer extends Layer {
     Axis ax = null;
     AxisTransform at;
     AxisHolder ah;
-    boolean newAxis = true;
     CartesianGraph gr = (CartesianGraph) getGraph();
 
     if (dir == DataGroup.X_DIR) {
@@ -429,7 +427,7 @@ public class DataGroupLayer extends Layer {
     } catch (AxisNotFoundException anfe) {
       ax = null;
     }
-    newAxis = false;
+    boolean newAxis = false;
     switch (ah.getAxisType()) {
       case DataGroup.PLAIN:
         PlainAxis pax = null;
@@ -541,7 +539,7 @@ public class DataGroupLayer extends Layer {
   public void draw(Graphics g) throws PaneNotFoundException {
     super.draw(g);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).draw(g);
+      dataLayers_.get(i).draw(g);
     }
   }
 
@@ -549,7 +547,7 @@ public class DataGroupLayer extends Layer {
   public void drawDraggableItems(Graphics g) throws PaneNotFoundException {
     super.drawDraggableItems(g);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).drawDraggableItems(g);
+      dataLayers_.get(i).drawDraggableItems(g);
     }
   }
 
@@ -557,7 +555,7 @@ public class DataGroupLayer extends Layer {
   public void setBounds(int x, int y, int w, int h) {
     super.setBounds(x, y, w, h);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setBounds(x, y, w, h);
+      dataLayers_.get(i).setBounds(x, y, w, h);
     }
   }
 
@@ -565,7 +563,7 @@ public class DataGroupLayer extends Layer {
   public void setBounds(Rectangle rect) {
     super.setBounds(rect);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setBounds(rect);
+      dataLayers_.get(i).setBounds(rect);
     }
   }
 
@@ -573,7 +571,7 @@ public class DataGroupLayer extends Layer {
   public void setLocation(int x, int y) {
     super.setLocation(x, y);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setLocation(x, y);
+      dataLayers_.get(i).setLocation(x, y);
     }
   }
 
@@ -581,7 +579,7 @@ public class DataGroupLayer extends Layer {
   public void setLocation(Point pt) {
     super.setLocation(pt);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setLocation(pt);
+      dataLayers_.get(i).setLocation(pt);
     }
   }
 
@@ -589,7 +587,7 @@ public class DataGroupLayer extends Layer {
   public void setSize(Dimension size) {
     super.setSize(size);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setSize(size);
+      dataLayers_.get(i).setSize(size);
     }
   }
 
@@ -597,7 +595,7 @@ public class DataGroupLayer extends Layer {
   public void setSize(int w, int h) {
     super.setSize(w, h);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setSize(w, h);
+      dataLayers_.get(i).setSize(w, h);
     }
   }
 
@@ -605,7 +603,7 @@ public class DataGroupLayer extends Layer {
   public void setSizeP(Dimension2D size) {
     super.setSizeP(size);
     for (int i = 1; i < dataLayers_.size(); i++) {
-      ((Layer) dataLayers_.get(i)).setSizeP(size);
+      dataLayers_.get(i).setSizeP(size);
     }
   }
 
@@ -673,7 +671,6 @@ public class DataGroupLayer extends Layer {
     if (!dg_.isZoomable()) return;
     CartesianGraph graph = (CartesianGraph) getGraph();
     Rectangle gbnds = getGraphBounds();
-    Rectangle bnds = getPanelBounds();
     if (!gbnds.contains(start)) return;
     setClipping(true);
     double xStartP = getXDtoP(rect.x);
@@ -729,8 +726,8 @@ public class DataGroupLayer extends Layer {
    * @param domain domain
    */
   public void setDomain(SoTDomain domain) {
-    setXRange(domain.getXRange(), domain.isXReversed());
-    setYRange(domain.getYRange(), domain.isYReversed());
+    setXRange(domain.getXRange());
+    setYRange(domain.getYRange());
     if (clipping_) {
       clipDomain_ = domain;
       setAllClip(domain);
@@ -747,38 +744,28 @@ public class DataGroupLayer extends Layer {
     }
   }
 
-  private void setXRange(SoTRange range, boolean reversed) {
+  private void setXRange(SoTRange range) {
     xZoomRange_ = range.copy();
   }
 
-  private void setYRange(SoTRange range, boolean reversed) {
+  private void setYRange(SoTRange range) {
     yZoomRange_ = range.copy();
   }
 
   private void setAllClip(SoTDomain domain) {
-    Iterator iter = dataLayers_.iterator();
+    Iterator<Layer> iter = dataLayers_.iterator();
     while (iter.hasNext()) {
-      Object obj = iter.next();
-      if (obj instanceof Layer) {
-        Layer ly = (Layer) obj;
-        ((CartesianGraph) ly.getGraph()).setClip(domain.getXRange(), domain.getYRange());
-      }
+      Layer ly = iter.next();
+      ((CartesianGraph) ly.getGraph()).setClip(domain.getXRange(), domain.getYRange());
     }
   }
 
   private void setAllClipping(boolean clip) {
-    Iterator iter = dataLayers_.iterator();
+    Iterator<Layer> iter = dataLayers_.iterator();
     while (iter.hasNext()) {
-      Object obj = iter.next();
-      if (obj instanceof Layer) {
-        Layer ly = (Layer) obj;
-        ((CartesianGraph) ly.getGraph()).setClipping(clip);
-      }
+      Layer ly = iter.next();
+      ((CartesianGraph) ly.getGraph()).setClipping(clip);
     }
-  }
-
-  private Rectangle getPanelBounds() {
-    return pHolder_.getBounds();
   }
 
   private Rectangle getGraphBounds() {

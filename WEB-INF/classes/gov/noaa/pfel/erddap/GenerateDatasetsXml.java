@@ -1217,10 +1217,6 @@ public class GenerateDatasetsXml {
     // Don't run this in two processes at once. At best, only one's changes
     //  will be kept and there may be trouble.
     if (insert != null) {
-      BufferedReader inFile = null;
-      BufferedWriter outFile = null;
-      String tempName = null;
-
       String2.log("\nprocessing " + insert);
       String first2 = insert.substring(0, 2);
       String abandoningI = "Abandoning " + first2 + " processing: ";
@@ -1252,11 +1248,12 @@ public class GenerateDatasetsXml {
       String endTag = "</erddapDatasets>";
 
       // copy datasets.xml line-by-line to new file,
-      tempName = datasetsXmlName + localCompactTime;
-      inFile =
+      String tempName = datasetsXmlName + localCompactTime;
+      BufferedReader inFile =
           File2.getDecompressedBufferedFileReaderUtf8(
               datasetsXmlName); // charset to match datasets.xml
-      outFile = File2.getBufferedFileWriterUtf8(tempName); // charset to match datasets.xml
+      BufferedWriter outFile =
+          File2.getBufferedFileWriterUtf8(tempName); // charset to match datasets.xml
 
       // look for the beginLine
       String line = inFile.readLine();

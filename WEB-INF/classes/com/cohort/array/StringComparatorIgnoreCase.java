@@ -12,7 +12,7 @@ import java.util.Comparator;
  * String.CASE_INSENSITIVE_ORDER). 2013-12-30 Bob modified this to work with any type of object (via
  * o.toString()), not just Strings.
  */
-public class StringComparatorIgnoreCase implements Comparator {
+public class StringComparatorIgnoreCase implements Comparator<Object> {
 
   /**
    * This is required for the Comparator interface.

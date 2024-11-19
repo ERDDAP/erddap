@@ -13,13 +13,16 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.util.DataStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Vector;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class contains constants related to reading and writing Matlab files.
@@ -106,17 +109,28 @@ public class Matlab {
   public static final int miUTF16 = 17;
   public static final int miUTF32 = 18;
 
-  /** The number of bytes occupied by each of the mi types (0 if not applicable). */
-  public static final int miNBytes[] = {
-    0, 1, 1, 2, 2, 4, 4, 4, 0, 8, 0, 0, 8, 8, 0, 0, 1, 2, 4
-  }; // I am not sure if UTF8=1 is appropriate
-
   /** The name associated with the mi constants. */
-  public static final String[] miNames = {
-    "mi0", "miINT8", "miUINT8", "miINT16", "miUINT16", "miINT32", "miUINT32",
-    "miSINGLE", "mi8", "miDOUBLE", "mi10", "mi11", "miINT64", "miUINT64",
-    "miMATRIX", "miCOMPRESSED", "miUTF8", "miUTF16", "miUTF32"
-  };
+  public static final ImmutableList<String> miNames =
+      ImmutableList.of(
+          "mi0",
+          "miINT8",
+          "miUINT8",
+          "miINT16",
+          "miUINT16",
+          "miINT32",
+          "miUINT32",
+          "miSINGLE",
+          "mi8",
+          "miDOUBLE",
+          "mi10",
+          "mi11",
+          "miINT64",
+          "miUINT64",
+          "miMATRIX",
+          "miCOMPRESSED",
+          "miUTF8",
+          "miUTF16",
+          "miUTF32");
 
   /** ArrayTypes: see MAT File Format, Ver 7, Table 1-3, pg 1-17 */
   public static final int mxCELL_CLASS = 1;
@@ -137,24 +151,24 @@ public class Matlab {
   public static final int mxUINT64_CLASS = 15;
 
   /** The name associated with the mx constants. */
-  public static final String[] mxNames = {
-    "mx0",
-    "mxCELL_CLASS",
-    "mxSTRUCT_CLASS",
-    "mxOBJECT_CLASS",
-    "mxCHAR_CLASS",
-    "mxSPARSE_CLASS",
-    "mxDOUBLE_CLASS",
-    "mxSINGLE_CLASS",
-    "mxINT8_CLASS",
-    "mxUINT8_CLASS",
-    "mxINT16_CLASS",
-    "mxUINT16_CLASS",
-    "mxINT32_CLASS",
-    "mxUINT32_CLASS",
-    "mxINT64_CLASS",
-    "mxUINT64_CLASS"
-  };
+  public static final ImmutableList<String> mxNames =
+      ImmutableList.of(
+          "mx0",
+          "mxCELL_CLASS",
+          "mxSTRUCT_CLASS",
+          "mxOBJECT_CLASS",
+          "mxCHAR_CLASS",
+          "mxSPARSE_CLASS",
+          "mxDOUBLE_CLASS",
+          "mxSINGLE_CLASS",
+          "mxINT8_CLASS",
+          "mxUINT8_CLASS",
+          "mxINT16_CLASS",
+          "mxUINT16_CLASS",
+          "mxINT32_CLASS",
+          "mxUINT32_CLASS",
+          "mxINT64_CLASS",
+          "mxUINT64_CLASS");
 
   /**
    * This writes a Matlab header to the file. Page number references are for MAT File Format, Ver 7.
@@ -166,12 +180,12 @@ public class Matlab {
     // write the header text field (116 bytes, padded with spaces)  (see pg 1-6)
     // e.g., MATLAB 5.0 MAT-file, Platform: GLNX86, Created on: Tue Feb 15 01:19:17 2005
     if (verbose) String2.log("writeMatlabHeader");
-    Date date = new Date();
-    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+    LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy");
     StringBuilder sb =
         new StringBuilder(
             "MATLAB 5.0 MAT-file, Created by: gov.noaa.pfel.coastwatch.Matlab, Created on: "
-                + sdf.format(date));
+                + date.format(dtf));
     if (verbose) String2.log("header=" + sb);
     while (sb.length() < 116) // pad with spaces
     sb.append(' ');
@@ -619,15 +633,15 @@ public class Matlab {
    *     name (a String) and an array with the matrix's data.
    * @throws Exception if trouble
    */
-  public static Vector readMatlabFile(String fullFileName) throws Exception {
+  public static List<Object> readMatlabFile(String fullFileName) throws Exception {
 
     String methodName = "Matlab.readMatlabFile:\n";
 
     // open the file
     if (verbose) String2.log("readMatlabFile: " + fullFileName);
-    DataInputStream stream =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-    try {
+
+    try (DataInputStream stream =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
       if (verbose) String2.log("bytes available=" + stream.available());
 
       // read the header
@@ -650,7 +664,7 @@ public class Matlab {
       if (verbose) String2.log("littleEndian=" + littleEndian);
 
       // read the data
-      Vector vector = new Vector();
+      List<Object> vector = new ArrayList<>();
       while (stream.available() > 0) {
         // read data type (4 bytes)
         int miDataType = DataStream.readInt(littleEndian, stream, buffer);
@@ -663,7 +677,7 @@ public class Matlab {
                 "small data element(nBytes="
                     + (miDataType >> 16)
                     + "): "
-                    + miNames[miDataType & 0xFFFF]
+                    + miNames.get(miDataType & 0xFFFF)
                     + " = "
                     + smallData);
           continue;
@@ -671,7 +685,7 @@ public class Matlab {
 
         // read nBytes
         int nBytes = DataStream.readInt(littleEndian, stream, buffer);
-        if (verbose) String2.log("data element: " + miNames[miDataType] + "  nBytes=" + nBytes);
+        if (verbose) String2.log("data element: " + miNames.get(miDataType) + "  nBytes=" + nBytes);
 
         // read miMATRIX data
         int subMIDataType;
@@ -689,12 +703,13 @@ public class Matlab {
           subNBytes = DataStream.readInt(littleEndian, stream, buffer);
           Test.ensureEqual(subNBytes, 8, methodName + "miMATRIX arrayFlags subNBytes != 8.");
           int arrayFlags0 = DataStream.readInt(littleEndian, stream, buffer);
-          int arrayFlags1 =
+          @SuppressWarnings("unused")
+          int unusedArrayFlags1 =
               DataStream.readInt(
                   littleEndian, stream, buffer); // undefined; this fills to 8 byte boundary
           int mxClass = arrayFlags0 & 255;
           boolean complex = ((arrayFlags0 >> 8) & 8) == 8;
-          if (verbose) String2.log("  mxClass=" + mxNames[mxClass] + " complex=" + complex);
+          if (verbose) String2.log("  mxClass=" + mxNames.get(mxClass) + " complex=" + complex);
 
           // read dimensions array sub element  pg 1-17
           subMIDataType = DataStream.readInt(littleEndian, stream, buffer);
@@ -735,7 +750,7 @@ public class Matlab {
           else subNBytes = DataStream.readInt(littleEndian, stream, buffer);
           if (verbose)
             String2.log(
-                "  data subMIDataType=" + miNames[subMIDataType] + " subNBytes=" + subNBytes);
+                "  data subMIDataType=" + miNames.get(subMIDataType) + " subNBytes=" + subNBytes);
           if (subMIDataType == miDOUBLE) {
             if (dim.length == 2) {
               double a[][] =
@@ -836,7 +851,7 @@ public class Matlab {
                 0,
                 methodName
                     + "miMATRIX subMIDataType not supported ("
-                    + miNames[subMIDataType]
+                    + miNames.get(subMIDataType)
                     + ").");
 
           if (subSmallDataFormat)
@@ -857,8 +872,6 @@ public class Matlab {
 
       if (verbose) String2.log("end of Matlab file\n");
       return vector;
-    } finally {
-      stream.close();
     }
   }
 }

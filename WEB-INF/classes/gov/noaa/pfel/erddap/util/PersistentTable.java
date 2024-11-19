@@ -40,7 +40,7 @@ import java.util.Arrays;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-12-02
  */
-public class PersistentTable {
+public class PersistentTable implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -70,7 +70,6 @@ public class PersistentTable {
   public static int BINARY_DOUBLE_LENGTH = 8;
 
   // set once
-  private String fullFileName;
   private RandomAccessFile raf;
   private int columnWidths[];
   private int columnStartAt[];
@@ -112,7 +111,6 @@ public class PersistentTable {
    *     stored, so reserve extra space if chars above #128 expected.
    */
   public PersistentTable(String fullFileName, String mode, int columnWidths[]) throws IOException {
-    this.fullFileName = fullFileName;
     this.columnWidths = columnWidths;
     columnStartAt = new int[columnWidths.length];
     nBytesPerRow = 0;
@@ -131,12 +129,43 @@ public class PersistentTable {
     if (verbose)
       String2.log(
           "PersistentTable " + fullFileName + " is open.\n" + "mode=" + mode + " nRows=" + nRows);
+
+    EDStatic.cleaner.register(this, new CleanupPersistentTable(raf));
+  }
+
+  private static class CleanupPersistentTable implements Runnable {
+
+    private RandomAccessFile raf;
+
+    private CleanupPersistentTable(RandomAccessFile raf) {
+      this.raf = raf;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (raf != null) {
+          try {
+            raf.getChannel().force(true);
+          } catch (Exception e) {
+          }
+          try {
+            raf.close();
+          } catch (Exception e) {
+          }
+          raf = null;
+        }
+      } catch (Throwable t1) {
+        // do nothing, so nothing can go wrong.
+      }
+    }
   }
 
   /**
    * This flushes and closes the file. You don't have to do this -- it will be done automatically
    * when a program shuts down. Future attempts to read/write will throw null pointer exceptions.
    */
+  @Override
   public void close() throws IOException {
     if (raf != null) {
       try {
@@ -159,18 +188,6 @@ public class PersistentTable {
     raf.getChannel().force(true);
   }
 
-  /**
-   * Users of this class shouldn't call this -- use close() instead. Java calls this when an object
-   * is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
-    try { // extra insurance
-      close();
-    } catch (Throwable t) {
-    }
-    super.finalize();
-  }
-
   /** Returns the current number of rows. */
   public int nRows() {
     return nRows;
@@ -185,7 +202,7 @@ public class PersistentTable {
    * @return the number of rows after the rows are added
    */
   public int addRows(int n) throws IOException {
-    raf.seek(nRows * nBytesPerRow);
+    raf.seek(nRows * (long) nBytesPerRow);
     byte ar[] = new byte[nBytesPerRow];
     Arrays.fill(ar, (byte) 32);
     ar[nBytesPerRow - 1] = (byte) '\n';
@@ -205,7 +222,7 @@ public class PersistentTable {
   public void clearRow(int row) throws IOException {
     if (row < 0 || row >= nRows)
       throw new RuntimeException("row=" + row + " must be between 0 and " + (nRows - 1));
-    raf.seek(row * nBytesPerRow);
+    raf.seek(row * (long) nBytesPerRow);
     byte ar[] = new byte[nBytesPerRow - 1]; // -1 since \n won't be changed
     Arrays.fill(ar, (byte) 32);
     raf.write(ar);

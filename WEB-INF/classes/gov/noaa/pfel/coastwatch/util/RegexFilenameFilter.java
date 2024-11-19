@@ -15,6 +15,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -24,7 +25,6 @@ import java.util.regex.Pattern;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public class RegexFilenameFilter implements FilenameFilter {
-  private String regex;
   private Pattern pattern;
 
   // ideally, not static, but used for informational purposes only
@@ -37,7 +37,6 @@ public class RegexFilenameFilter implements FilenameFilter {
    *     java.util.regex.Pattern.
    */
   public RegexFilenameFilter(String regex) {
-    this.regex = regex;
     pattern = Pattern.compile(regex);
   }
 
@@ -79,7 +78,7 @@ public class RegexFilenameFilter implements FilenameFilter {
    */
   public static String[] list(String dir, String regex) {
     try {
-      ArrayList<String> list = new ArrayList();
+      ArrayList<String> list = new ArrayList<>();
       long tTime = System.currentTimeMillis();
       File dirFile = new File(dir);
       if (!dirFile.isDirectory()) return list.toArray(new String[0]);
@@ -199,7 +198,7 @@ public class RegexFilenameFilter implements FilenameFilter {
    * @throws RuntimeException if trouble
    */
   public static void recursiveFullNameList(
-      ArrayList<String> arrayList, String dir, String regex, boolean directoriesToo) {
+      List<String> arrayList, String dir, String regex, boolean directoriesToo) {
 
     // add slash to end of dir (if none)
     dir = File2.addSlash(dir);
@@ -247,7 +246,7 @@ public class RegexFilenameFilter implements FilenameFilter {
    */
   public static String[] recursiveFullNameList(String dir, String regex, boolean directoriesToo) {
 
-    ArrayList<String> arrayList = new ArrayList();
+    ArrayList<String> arrayList = new ArrayList<>();
     recursiveFullNameList(arrayList, dir, regex, directoriesToo);
     String sar[] = arrayList.toArray(new String[0]);
     Arrays.sort(sar);

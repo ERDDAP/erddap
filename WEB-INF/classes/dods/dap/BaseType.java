@@ -64,7 +64,7 @@ public abstract class BaseType implements Cloneable {
    * @return a clone of this <code>BaseType</code>.
    */
   @Override
-  public Object clone() {
+  public BaseType clone() {
     try {
       BaseType bt = (BaseType) super.clone();
       return bt;
@@ -378,8 +378,6 @@ public abstract class BaseType implements Cloneable {
   }
 
   public String getLongName() {
-
-    boolean done = false;
 
     BaseType parent = _myParent;
 

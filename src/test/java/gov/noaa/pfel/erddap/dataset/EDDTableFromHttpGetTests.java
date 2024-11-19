@@ -1064,9 +1064,7 @@ class EDDTableFromHttpGetTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String dataDir =
         Path.of(EDDTestDataset.class.getResource("/data/points/testFromHttpGet/").toURI())
             .toString();

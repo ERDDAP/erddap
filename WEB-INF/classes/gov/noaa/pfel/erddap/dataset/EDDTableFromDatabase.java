@@ -38,7 +38,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -63,8 +65,8 @@ public class EDDTableFromDatabase extends EDDTable {
   protected String tableName;
   protected String columnNameQuotes = "\""; // may also be ' or empty string
   protected String orderBy[];
-  protected HashMap<String, HashSet<String>> scriptNeedsColumns =
-      new HashMap(); // <sourceName, otherSourceColumnNames>
+  protected Map<String, Set<String>> scriptNeedsColumns =
+      new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   protected String catalogSeparator;
 
@@ -382,6 +384,9 @@ public class EDDTableFromDatabase extends EDDTable {
    * @param tSourceNeedsExpandedFP_EQ
    * @throws Throwable if trouble
    */
+  // The lookup we're performing is from data trusted by the admin (datasets.xml).
+  // So while JNDI can be dangerous, this usage is ok.
+  @SuppressWarnings("BanJNDI")
   public EDDTableFromDatabase(
       String tDatasetID,
       String tAccessibleTo,
@@ -412,7 +417,6 @@ public class EDDTableFromDatabase extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromDatabase " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromDatabase(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDTableFromDatabase";
@@ -844,7 +848,7 @@ public class EDDTableFromDatabase extends EDDTable {
                               tQueryOrderBy.get(oi))));
             String tSourceName = dataVariableSourceNames()[v];
             tQueryOrderBy.set(oi, tSourceName);
-            HashSet<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
+            Set<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
             if (tNeedsColumns != null
                 && tNeedsColumns.size() > 0) { // actually refers to another variable
               foundScript = true;
@@ -999,8 +1003,6 @@ public class EDDTableFromDatabase extends EDDTable {
         // if it's a fixedValue or script variable, don't ask database to constrain it
         if (constraintVariable.startsWith("=")) continue;
         nActiveCV++;
-        int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
-        EDV edv = dataVariables[dv];
 
         // sql uses "<>", not "!=";  other sql operators are the same as tableDap
         String tOp = constraintOps.get(cv);
@@ -1362,7 +1364,6 @@ public class EDDTableFromDatabase extends EDDTable {
                   + fkTable.getStringData(3, fkRow)
                   + "]";
         }
-        boolean isTime = sqlType == Types.DATE || sqlType == Types.TIMESTAMP;
         if (sqlType == Types.BIT || sqlType == Types.BOOLEAN) booleanList.add(sqlName);
 
         PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);

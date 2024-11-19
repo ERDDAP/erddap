@@ -24,6 +24,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
@@ -61,8 +62,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -148,16 +149,18 @@ public class Erddap extends HttpServlet {
   public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
   // version when new file types added
-  public static final String FILE_TYPES_124[] =
-  // for old remote erddaps, make .png locally so pngInfo is available
-  {".csvp", ".tsvp", "odvTxt", ".png"};
-  public static final String FILE_TYPES_148[] = {".csv0", ".tsv0"};
-  public static final String FILE_TYPES_174[] = {".itx"};
-  public static final String FILE_TYPES_176[] = {
-    ".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata"
-  };
-  public static final String FILE_TYPES_184[] = {".dataTable", ".jsonlCSV1"};
-  public static final String FILE_TYPES_225[] = {".parquet", ".parquetWMeta"};
+  public static final ImmutableList<String> FILE_TYPES_124 =
+      ImmutableList.of(
+          // for old remote erddaps, make .png locally so pngInfo is available
+          ".csvp", ".tsvp", "odvTxt", ".png");
+  public static final ImmutableList<String> FILE_TYPES_148 = ImmutableList.of(".csv0", ".tsv0");
+  public static final ImmutableList<String> FILE_TYPES_174 = ImmutableList.of(".itx");
+  public static final ImmutableList<String> FILE_TYPES_176 =
+      ImmutableList.of(".jsonlCSV", ".jsonlKVP", ".nccsv", ".nccsvMetadata");
+  public static final ImmutableList<String> FILE_TYPES_184 =
+      ImmutableList.of(".dataTable", ".jsonlCSV1");
+  public static final ImmutableList<String> FILE_TYPES_225 =
+      ImmutableList.of(".parquet", ".parquetWMeta");
   // General/relative width is determined by what looks good in Chrome.
   // But Firefox shows TextArea's as very wide, so leads to these values.
   public static final int dpfTFWidth = 56; // data provider form TextField width
@@ -177,17 +180,17 @@ public class Erddap extends HttpServlet {
    * the time penalty of Collections.synchronizedMap(new HashMap()).]
    */
   public ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap(16, 0.75f, 4);
+  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap(16, 0.75f, 4);
+  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap<>(16, 0.75f, 4);
   public ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
-      new ConcurrentHashMap(16, 0.75f, 4);
+      new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
   /**
@@ -270,7 +273,7 @@ public class Erddap extends HttpServlet {
             + BPD
             + "\n"
             + "contextDirectory="
-            + EDStatic.getWebInfParentDirectory()
+            + File2.getWebInfParentDirectory()
             + "\n"
             + "available fonts="
             + String2.toCSSVString(
@@ -327,14 +330,6 @@ public class Erddap extends HttpServlet {
     // initialize Lucene
     if (EDStatic.useLuceneSearchEngine) EDStatic.initializeLucene();
 
-    // make subscriptions
-    if (EDStatic.subscriptionSystemActive)
-      EDStatic.subscriptions =
-          new Subscriptions(
-              BPD + "subscriptionsV1.txt",
-              48, // maxHoursPending,
-              EDStatic.preferredErddapUrl); // prefer https url
-
     // make new catInfo with first level hashMaps
     int nCat = EDStatic.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++)
@@ -345,15 +340,23 @@ public class Erddap extends HttpServlet {
     EDStatic.runningThreads.put("runLoadDatasets", runLoadDatasets);
     runLoadDatasets.start();
 
-    // set some things in EDStatic
-    EDStatic.gridDatasetHashMap = gridDatasetHashMap;
-    EDStatic.tableDatasetHashMap = tableDatasetHashMap;
-
     // done
     String2.log(
         "\n\\\\\\\\**** Erddap constructor finished. TIME="
             + (System.currentTimeMillis() - constructorMillis)
             + "ms");
+
+    EDStatic.cleaner.register(this, new CleanupErddap());
+  }
+
+  private static class CleanupErddap implements Runnable {
+
+    private CleanupErddap() {}
+
+    @Override
+    public void run() {
+      EDStatic.destroy();
+    }
   }
 
   /**
@@ -540,7 +543,7 @@ public class Erddap extends HttpServlet {
             EDStatic.ipAddressQueue.putIfAbsent(
                 ipAddress, new IntArray(EDStatic.ipAddressMaxRequests, false));
         if (iaq == null) iaq = EDStatic.ipAddressQueue.get(ipAddress);
-        synchronized (iaq) {
+        synchronized (EDStatic.ipAddressQueue.get(ipAddress)) {
           // first thing
           iaq.add(requestNumber);
 
@@ -1671,7 +1674,7 @@ public class Erddap extends HttpServlet {
     // update the count of recent failed logins
     ia[0]++;
     // update the minute of the last failed login
-    ia[1] = Math2.roundToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE);
+    ia[1] = Math2.longToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE);
     if (wasNull) failedLogins.put(user, ia);
   }
 
@@ -1710,8 +1713,7 @@ public class Erddap extends HttpServlet {
     if (ia == null) return 0;
 
     // greater than 10 minutes since last attempt?
-    int minutesSince =
-        Math2.roundToInt(System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE - ia[1]);
+    int minutesSince = (int) (System.currentTimeMillis() / Calendar2.MILLIS_PER_MINUTE - ia[1]);
     int minutesToGo = Math.max(0, 10 - minutesSince);
     if (minutesToGo == 0) {
       failedLogins.remove(user); // erase any info about failed logins
@@ -2463,10 +2465,6 @@ public class Erddap extends HttpServlet {
           tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); // it's in cookies
 
           // show the login button
-          HtmlWidgets widgets =
-              new HtmlWidgets(
-                  false, // tHtmlTooltips,
-                  EDStatic.imageDir);
           writer.write(
               (isGoogle || isOauth2
                       ? "<script>\n"
@@ -3927,7 +3925,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         "(unknown)", "String", "boolean", "byte", "short", "int", "long", "float", "double"
       };
       String dataTypeHelp = EDStatic.dpf_dataTypeHelpAr[language];
-      int ioosUnknown = String2.indexOf(EDV.IOOS_CATEGORIES, "Unknown");
+      int ioosUnknown = EDV.IOOS_CATEGORIES.indexOf("Unknown");
       String ioosCategoryHelp = EDStatic.dpf_ioosCategoryHelpAr[language];
 
       String tYourName = request.getParameter("yourName"),
@@ -3965,7 +3963,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         tDataType[var] =
             Math.max(0, String2.indexOf(dataTypeOptions, request.getParameter("dataType" + var)));
         tIoosCategory[var] =
-            String2.indexOf(EDV.IOOS_CATEGORIES, request.getParameter("ioos_category" + var));
+            EDV.IOOS_CATEGORIES.indexOf(request.getParameter("ioos_category" + var));
         if (tIoosCategory[var] < 0) tIoosCategory[var] = ioosUnknown;
       }
 
@@ -4075,7 +4073,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + XML.encodeAsXML(tFillValue[var])
                   + "</att>\n"
                   + "            <att name=\"ioos_category\">"
-                  + XML.encodeAsXML(EDV.IOOS_CATEGORIES[tIoosCategory[var]])
+                  + XML.encodeAsXML(EDV.IOOS_CATEGORIES.get(tIoosCategory[var]))
                   + "</att>\n"
                   + "            <att name=\"long_name\">"
                   + XML.encodeAsXML(tLongName[var])
@@ -4745,14 +4743,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Status",
             out);
     try {
-      int nGridDatasets = gridDatasetHashMap.size();
-      int nTableDatasets = tableDatasetHashMap.size();
       writer.write(
           "<div class=\"standard_width\">\n"
               + EDStatic.youAreHere(language, loggedInAs, EDStatic.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage);
+      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage, this);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
@@ -5154,8 +5150,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", //8
               EDStatic.encodedDefaultPIppQuery)
               */ );
-      int tDasIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".das");
-      int tDdsIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".dds");
+      int tDasIndex = EDDTable.dataFileTypeNames.indexOf(".das");
+      int tDdsIndex = EDDTable.dataFileTypeNames.indexOf(".dds");
       String restfulGetAllDataset =
           EDStatic.restfulGetAllDatasetAr[language]
               .replace(
@@ -5209,13 +5205,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll("&tErddapUrl;", tErddapUrl)
               .replace(
                   "&dataFiletypeInfo1;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]))
+                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDdsIndex)))
               .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
               .replaceAll("&griddapExample;", griddapExample)
               .replaceAll("&tabledapExample;", tabledapExample)
               .replace(
                   "&dataFiletypeInfo2;",
-                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDasIndex]));
+                  XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo.get(tDasIndex)));
 
       writer.write(restfulHTMLContinued /*
                 "  <br>&nbsp;\n" +
@@ -5817,7 +5813,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String fileTypeName = "";
     boolean hasDatasetID = datasetIDStartsAt < requestUrl.length();
     String endOfRequestUrl =
         hasDatasetID
@@ -6003,7 +5998,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String id = endOfRequestUrl.substring(0, dotPo);
-    fileTypeName = endOfRequestUrl.substring(dotPo);
+    String fileTypeName = endOfRequestUrl.substring(dotPo);
     if (reallyVerbose) String2.log("  id=" + id + "\n  fileTypeName=" + fileTypeName);
 
     // respond to xxx/index request
@@ -6042,7 +6037,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDStatic.getRoles(loggedInAs))) { // listPrivateDatasets doesn't apply
       // exception is graphsAccessibleTo=public
       if (dataset.graphsAccessibleToPublic()) {
-        if (dataset.graphsAccessibleTo_fileTypeNamesContains(fileTypeName)) {
+        if (EDD.graphsAccessibleTo_fileTypeNamesContains(fileTypeName)) {
           // fall through to get graphics
         } else {
           EDStatic.sendHttpUnauthorizedError(
@@ -6144,13 +6139,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           || // pngInfo EDD.readPngInfo makes local file in all cases
           fileTypeName.endsWith("dfInfo")
           || // pdfInfo
-          (sourceVersion < 124 && String2.indexOf(FILE_TYPES_124, fileTypeName) >= 0)
-          || (sourceVersion < 148 && String2.indexOf(FILE_TYPES_148, fileTypeName) >= 0)
-          || (sourceVersion < 174 && String2.indexOf(FILE_TYPES_174, fileTypeName) >= 0)
-          || (sourceVersion < 176 && String2.indexOf(FILE_TYPES_176, fileTypeName) >= 0)
+          (sourceVersion < 124 && FILE_TYPES_124.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 148 && FILE_TYPES_148.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 174 && FILE_TYPES_174.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 176 && FILE_TYPES_176.indexOf(fileTypeName) >= 0)
           || (sourceVersion < 182 && jsonp != null)
-          || (sourceVersion < 184 && String2.indexOf(FILE_TYPES_184, fileTypeName) >= 0)
-          || (sourceVersion < 225 && String2.indexOf(FILE_TYPES_225, fileTypeName) >= 0)
+          || (sourceVersion < 184 && FILE_TYPES_184.indexOf(fileTypeName) >= 0)
+          || (sourceVersion < 225 && FILE_TYPES_225.indexOf(fileTypeName) >= 0)
           || fileTypeName.equals(".subset")) {
         // handle locally
       } else {
@@ -7352,7 +7347,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse SOS service queryString
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // if service= is present, it must be service=SOS     //technically, it is required
@@ -7498,11 +7493,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
           extension = ".xml";
         } else {
-          int po = String2.indexOf(EDDTable.dataFileTypeNames, fileTypeName);
-          if (po >= 0) extension = EDDTable.dataFileTypeExtensions[po];
+          int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
+          if (po >= 0) extension = EDDTable.dataFileTypeExtensions.get(po);
           else {
-            po = String2.indexOf(EDDTable.imageFileTypeNames, fileTypeName);
-            extension = EDDTable.imageFileTypeExtensions[po];
+            po = EDDTable.imageFileTypeNames.indexOf(fileTypeName);
+            extension = EDDTable.imageFileTypeExtensions.get(po);
           }
         }
 
@@ -7874,7 +7869,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse queryString
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // if service= is present, it must be service=WCS     //technically, it is required
@@ -7929,28 +7924,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // e.g., ?service=WCS&request=GetCoverage
         // format
         String requestFormat = queryMap.get("format"); // test name.toLowerCase()
-        String tRequestFormats[] =
-            EDDGrid
-                .wcsRequestFormats100; // version100? wcsRequestFormats100  : wcsRequestFormats112;
-        String tResponseFormats[] =
-            EDDGrid.wcsResponseFormats100; // version100? wcsResponseFormats100 :
-        // wcsResponseFormats112;
-        int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
+
+        int fi = String2.caseInsensitiveIndexOf(EDDGrid.wcsRequestFormats100, requestFormat);
         if (fi < 0)
           throw new SimpleException(
               EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                   + "format="
                   + requestFormat
                   + " isn't supported.");
-        String erddapFormat = tResponseFormats[fi];
-        int efe = String2.indexOf(EDDGrid.dataFileTypeNames, erddapFormat);
+        String erddapFormat = EDDGrid.wcsResponseFormats100.get(fi);
+        int efe = EDDGrid.dataFileTypeNames.indexOf(erddapFormat);
         String fileExtension;
         if (efe >= 0) {
-          fileExtension = EDDGrid.dataFileTypeExtensions[efe];
+          fileExtension = EDDGrid.dataFileTypeExtensions.get(efe);
         } else {
-          efe = String2.indexOf(EDDGrid.imageFileTypeNames, erddapFormat);
+          efe = EDDGrid.imageFileTypeNames.indexOf(erddapFormat);
           if (efe >= 0) {
-            fileExtension = EDDGrid.imageFileTypeExtensions[efe];
+            fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
           } else {
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
@@ -8376,11 +8366,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     try {
 
       // parse queryString  e.g., ?service=WMS&request=GetCapabilities
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
 
       // must be service=WMS     but I don't require it
-      String tService = queryMap.get("service");
+      // String tService = queryMap.get("service");
       // if (tService == null || !tService.equals("WMS"))
       //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
       //        "service='" + tService + "' must be 'WMS'.");
@@ -8494,7 +8484,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int bbox[] =
         String2.toIntArray(
             String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
-    int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
+    int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
     tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
     String e2b =
         "rs=EPSG:4326&#x26;width=360&#x26;height="
@@ -9132,7 +9122,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletRequest request,
       HttpServletResponse response,
       String loggedInAs,
-      HashMap<String, String> queryMap)
+      Map<String, String> queryMap)
       throws Throwable {
 
     if (!EDStatic.wmsActive) {
@@ -9683,27 +9673,27 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
+        Grid grid = new Grid();
         // get the data
-        GridDataAccessor gda =
+        try (GridDataAccessor gda =
             new GridDataAccessor(
                 language,
                 eddGrid,
                 "/" + EDStatic.warName + "/griddap/" + datasetID + ".dods",
                 tQuery.toString(),
                 false, // Grid needs column-major order
-                true); // convertToNaN
-        long requestNL = gda.totalIndex().size();
-        Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
-        int nBytesPerElement = 8;
-        int requestN = (int) requestNL; // safe since checked by ensureArraySizeOkay above
-        Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");
-        Grid grid = new Grid();
-        grid.data = new double[requestN];
-        int po = 0;
-        while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
-        grid.lon = gda.axisValues(eddGrid.lonIndex()).toDoubleArray();
-        grid.lat = gda.axisValues(eddGrid.latIndex()).toDoubleArray();
-        gda = null; // free up memory if possible
+                true)) { // convertToNaN
+          long requestNL = gda.totalIndex().size();
+          Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
+          int nBytesPerElement = 8;
+          int requestN = (int) requestNL; // safe since checked by ensureArraySizeOkay above
+          Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");
+          grid.data = new double[requestN];
+          int po = 0;
+          while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
+          grid.lon = gda.axisValues(eddGrid.lonIndex()).toDoubleArray();
+          grid.lat = gda.axisValues(eddGrid.latIndex()).toDoubleArray();
+        }
 
         // make the palette
         // I checked hasColorBarMinMax above.
@@ -9719,7 +9709,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             String2.parseBoolean( // defaults to true
                 tDataVariable.combinedAttributes().getString("colorBarContinuous"));
         String scale = tDataVariable.combinedAttributes().getString("colorBarScale");
-        if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
+        if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
                 EDStatic.fullPaletteDirectory,
@@ -9869,7 +9859,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletResponse response,
       String loggedInAs,
       String tDatasetID,
-      HashMap<String, String> queryMap)
+      Map<String, String> queryMap)
       throws Throwable {
 
     if (!EDStatic.wmsActive) {
@@ -10634,11 +10624,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String tWmsSampleBBox =
         tVersion.equals("1.3.0") ? EDStatic.wmsSampleBBox130 : EDStatic.wmsSampleBBox110;
     String csrs = tVersion.equals("1.1.0") || tVersion.equals("1.1.1") ? "srs" : "crs";
-    String exceptions =
-        tVersion.equals("1.1.0") || tVersion.equals("1.1.1")
-            ? ""
-            : // default is ok for 1.1.0 and 1.1.1
-            "exceptions:'INIMAGE', ";
 
     EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
     if (eddGrid == null) {
@@ -10673,7 +10658,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + eddGrid.accessibleViaWMS());
 
     EDVGridAxis gaa[] = eddGrid.axisVariables();
-    EDV dva[] = eddGrid.dataVariables();
     String options[][] = new String[gaa.length][];
     String tgaNames[] = new String[gaa.length];
     boolean hasNonLatLonAxes = false;
@@ -10728,7 +10712,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
     double centerX = (minX + maxX) / 2;
     double centerY = (minY + maxY) / 2;
-    boolean pm180 = centerX < 90;
     StringBuilder scripts = new StringBuilder();
     if (thisWmsClientActive) {
       scripts.append(
@@ -10900,7 +10883,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               continue;
             }
             int nOptions = options[gai].length;
-            int nOptionsM1 = nOptions - 1;
             writer.write(
                 "  <tr>\n"
                     + "    <td>"
@@ -10919,10 +10901,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   widgets.select(
                       tgaNames[gai],
                       "", // tooltip
-                      widgets.BUTTONS_0n
-                          + widgets.BUTTONS_1
-                          + (options[gai].length < 110 ? 0 : widgets.BUTTONS_100)
-                          + (options[gai].length < 1100 ? 0 : widgets.BUTTONS_1000),
+                      HtmlWidgets.BUTTONS_0n
+                          + HtmlWidgets.BUTTONS_1
+                          + (options[gai].length < 110 ? 0 : HtmlWidgets.BUTTONS_100)
+                          + (options[gai].length < 1100 ? 0 : HtmlWidgets.BUTTONS_1000),
                       options[gai],
                       options[gai].length - 1, // numeric or time so don't need XML.encodeAsHTML
                       "onChange='for (key in basemaps) basemaps[key].setParams({"
@@ -10979,13 +10961,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // *** What is WMS?
       String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
-      String ec = "service=WMS&#x26;request=GetCapabilities&#x26;version=";
       String e1 = "service=WMS&#x26;version=";
       // this section of code is in 2 places
       int bbox[] =
           String2.toIntArray(
               String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
-      int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
+      int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
       tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
       String e2 =
           "&#x26;request=GetMap&#x26;bbox="
@@ -11543,7 +11524,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String urlParts[] = String2.split(teor, '/');
     int nUrlParts = urlParts.length;
 
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String fParam = queryMap.get("f"); // e.g., json or JSON
     fParam = fParam == null ? "" : fParam.toLowerCase();
@@ -11551,7 +11532,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     boolean defaultFIsJson = false;
     boolean fParamIsJson = (fParam.length() == 0 && defaultFIsJson) || fParam.equals("json");
     boolean fParamIsHtml = (fParam.length() == 0 && defaultFIsHtml) || fParam.equals("html");
-    String prettyParam = queryMap.get("pretty"); // e.g., true
     String breadCrumbs =
         "<h2>"
             + // sample server has "&nbsp;<br/><strong>\n" +
@@ -12799,7 +12779,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "Some characters are never allowed in requests.");
     }
-    String dir = EDStatic.getWebInfParentDirectory() + protocol + "/";
+    String dir = File2.getWebInfParentDirectory() + protocol + "/";
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -13144,7 +13124,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     Writer writer = File2.getBufferedWriterUtf8(out);
     try {
       // look at the request
-      HashMap<String, String> queryMap =
+      Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // false so names are case insensitive
       String datasetID = queryMap.get("datasetid"); // lowercase name
       String flagKey = queryMap.get("flagkey"); // lowercase name
@@ -13176,7 +13156,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "SetDatasetFlag " + sf + ", IP Address (since last daily report)", ipAddress);
       EDStatic.tally.add("SetDatasetFlag " + sf + ", IP Address (since startup)", ipAddress);
 
-      Math2.sleep(delaySeconds * 1000);
+      Math2.sleep(delaySeconds * 1000L);
       writer.write(message);
       if (verbose) String2.log(message + " setDatasetFlag(" + ipAddress + ")");
 
@@ -13534,7 +13514,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String gapPx = gap + "px";
     int defaultContentWidth = 360;
     String bgColor = "#ffffff"; // before ERDDAP v2: was "#d7dcdd" here; ERDDAP was "#ccccff";
-    int connTimeout = 120000; // ms
     String ssBePatientAlt = "alt=\"" + EDStatic.ssBePatientAr[language] + "\" ";
 
     // DON'T use GET-style params, use POST-style (request.getParameter)
@@ -13632,7 +13611,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (qPo < 0) qPo = tUrl.length();
         String preQ = tUrl.substring(0, qPo);
         String qAndPost = tUrl.substring(qPo);
-        String lcQAndPost = qAndPost.toLowerCase();
         String ext = File2.getExtension(preQ);
         String lcExt = ext.toLowerCase();
         String preExt = preQ.substring(0, preQ.length() - ext.length());
@@ -14144,7 +14122,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       fileTypeName = endOfRequestUrl.substring(5); // after "index"  eg ".html"
-      boolean toHtml = fileTypeName.equals(".html");
 
       if (reallyVerbose)
         String2.log("  searchFor=" + searchFor + "\n  fileTypeName=" + fileTypeName);
@@ -14202,8 +14179,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (startIndex + itemsPerPage < nMatches)
         datasetIDs.removeRange(startIndex + itemsPerPage, nMatches);
       datasetIDs.removeRange(0, Math.min(startIndex, nMatches));
-
-      int datasetIDSize = datasetIDs.size(); // may be 0
 
       // error messages
       String error[] = null;
@@ -14340,9 +14315,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
 
       // deal with search error (or just need empty .html searchForm)
-      OutputStream out = null;
-      Writer writer = null;
-
       // catch errors after the response has begun
       if (response.isCommitted())
         throw t; // rethrown exception (will be handled in doGet try/catch)
@@ -14353,8 +14325,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // make html page with [error message and] search form
       String error = MustBe.getShortErrorMessage(t);
-      out = getHtmlOutputStreamUtf8(request, response);
-      writer =
+      OutputStream out = getHtmlOutputStreamUtf8(request, response);
+      Writer writer =
           getHtmlWriterUtf8(
               language,
               loggedInAs,
@@ -15029,12 +15001,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String fileTypeName = "";
     String catAtts[] = EDStatic.categoryAttributes;
     String catAttsInURLs[] = EDStatic.categoryAttributesInURLs;
     int nCatAtts = catAtts.length;
     String ANY = "(ANY)"; // don't translate so consistent on all erddaps?
-    String searchFor = "";
 
     // respond to /search/advanced.xxx request
     String endOfRequestUrl =
@@ -15057,7 +15027,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // get the parameters, e.g., the 'searchFor' value
     // parameters are "" if unused (not null)
-    searchFor = request.getParameter("searchFor");
+    String searchFor = request.getParameter("searchFor");
     searchFor = searchFor == null ? "" : searchFor.trim();
 
     // ensure query has page=
@@ -15250,7 +15220,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // get fileTypeName
-    fileTypeName = File2.getExtension(endOfRequestUrl); // eg ".html", others were validated above
+    String fileTypeName =
+        File2.getExtension(endOfRequestUrl); // eg ".html", others were validated above
     boolean toHtml = fileTypeName.equals(".html");
     if (reallyVerbose)
       String2.log(
@@ -15994,7 +15965,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // do the search; populate the results table
     String roles[] = EDStatic.getRoles(loggedInAs);
-    int nDatasetsSearched = 0;
     long tTime = System.currentTimeMillis();
     String tSearchEngine = "original";
     int ntDatasetIDs = tDatasetIDs.size();
@@ -16201,7 +16171,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           && !edd.isAccessibleTo(roles)
           && !edd.graphsAccessibleToPublic()) // search for datasets is always a metadata request
       continue;
-      nDatasetsSearched++;
       int rank = edd.searchRank(isNegative, searchWordsB, jumpB);
       if (rank < Integer.MAX_VALUE) {
         // /10 makes rank less sensitive to exact char positions
@@ -16310,9 +16279,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String fileTypeName = File2.getExtension(endOfRequestUrl);
     int whichPlainFileType = String2.indexOf(plainFileTypes, fileTypeName);
-    boolean fixErrors =
-        whichPlainFileType < 0; // if not explicitly a plainFileType, errors will be fixed
-    String gap = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
     // ensure query has simplistically valid page= itemsPerPage=
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
@@ -16799,7 +16765,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrlNoLang = getUrlWithoutLang(request);
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    String fileTypeName = File2.getExtension(endOfRequestUrl);
 
     if (requestUrlNoLang.equals("/" + EDStatic.warName + "/info")
         || requestUrlNoLang.equals("/" + EDStatic.warName + "/info/")
@@ -16818,7 +16783,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       nParts = parts.length;
       // now last part is "index...."
     }
-    fileTypeName = File2.getExtension(endOfRequestUrl);
+    String fileTypeName = File2.getExtension(endOfRequestUrl);
     boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index");
     if (!endsWithPlainFileType && !fileTypeName.equals(".html")) {
       sendResourceNotFoundError(
@@ -17529,7 +17494,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // add everything not used into valueReference
       names = atts.getNames();
-      boolean somethingWritten = false;
       for (int j = 0; j < names.length; j++) {
         String tName = names[j];
         if (tName.equals("actual_range") || tName.equals("units")) continue;
@@ -17547,7 +17511,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     : String2.toJson(pa.getNiceDouble(0)))
                 + "\n"
                 + "        }"); // \n pending
-        somethingWritten = true;
       }
       writer.write("\n" + "      ]");
 
@@ -17716,9 +17679,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String endOfRequestUrl =
-        datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
     if (endOfRequest.equals("subscriptions") || endOfRequest.equals("subscriptions/")) {
       sendRedirect(response, tErddapUrl + "/" + Subscriptions.INDEX_HTML);
@@ -17910,14 +17870,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String endOfRequestUrl =
-        datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, true); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, true); // true=lowercase keys
     String tDatasetID = queryMap.get("datasetid");
     String tEmail = queryMap.get("email");
     String tAction = queryMap.get("action");
@@ -18236,10 +18192,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String endOfRequestUrl =
-        datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -18424,10 +18377,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String endOfRequestUrl =
-        datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -18627,10 +18577,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       return;
     }
 
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String endOfRequestUrl =
-        datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
-    HashMap<String, String> queryMap =
+    Map<String, String> queryMap =
         EDD.userQueryHashMap(queryString, true); // true=names toLowerCase
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
@@ -19181,8 +19128,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCode = "06053";
     String defaultCounty = "CA, Monterey";
     String queryCode = queryMap.get("code");
@@ -19465,8 +19411,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultAcronym = "NOAA";
     String defaultFullName = "National Oceanic and Atmospheric Administration";
     String queryAcronym = queryMap.get("acronym");
@@ -19759,8 +19704,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultVariableName = "sst";
     String defaultFullName = "Sea Surface Temperature";
     String queryVariableName = queryMap.get("variableName");
@@ -20065,8 +20009,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCF = "";
     String defaultGCMD = "";
     String queryCF = queryMap.get("cf");
@@ -20367,8 +20310,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tTLLTable = queryMap.get("TimeLatLonTable");
     String tRequestCSV = queryMap.get("requestCSV");
     String tFileType = pft >= 0 ? plainFileTypes[pft] : ""; // default pft
@@ -21238,8 +21180,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
 
           // process them (algorithm, is3D, and radius)
-          double d = Double.NaN;
-
           if (whichIsDistance0 >= 0 && String2.indexOf(CATCH_DISTANCE0, algorithm[dv]) >= 0) {
             resultsPA.setPAOne(rank[po], nearbyDataPA.getPAOne(whichIsDistance0, paOne));
 
@@ -21346,7 +21286,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             boolean isID = algorithm[dv] == INVERSEDISTANCE;
             boolean isID2 = algorithm[dv] == INVERSEDISTANCE2;
             boolean isID4 = algorithm[dv] == INVERSEDISTANCE4;
-            boolean isID6 = algorithm[dv] == INVERSEDISTANCE6;
             double wt = 0;
             double sum = 0;
             double sumWt = 0;
@@ -21444,8 +21383,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     // defaultIsoTime, defaultN and defaultUnits are also used in messages.xml convertTimeService
     String defaultIsoTime = "1985-01-02T00:00:00Z";
     String defaultOtherTime = "1/2/1985 00:00:00";
@@ -21898,8 +21836,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tStandardizeUdunits = queryMap.get("STANDARDIZE_UDUNITS");
     String tUdunits = queryMap.get("UDUNITS");
     String tUcum = queryMap.get("UCUM");
@@ -22174,8 +22111,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // parse the queryString
-    HashMap<String, String> queryMap =
-        EDD.userQueryHashMap(queryString, false); // true=lowercase keys
+    Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tText = queryMap.get("text");
     if (tText == null) tText = "";
     String rText = tText.length() == 0 ? "" : EDStatic.updateUrls(tText);
@@ -22450,8 +22386,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (error == null || error.length() == 0) return;
     int colonPo = error.indexOf(": ");
     if (colonPo >= 0 && colonPo < error.length() - 5) error = error.substring(colonPo + 2);
-    String query =
-        SSR.percentDecode(request.getQueryString()); // percentDecode returns "" instead of null
     String requestUrl = request.getRequestURI();
     if (requestUrl == null) requestUrl = "";
     if (requestUrl.startsWith("/")) requestUrl = requestUrl.substring(1);
@@ -22609,7 +22543,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     StringBuilder sb =
         new StringBuilder(
             EDStatic.orCommaAr[language] + EDStatic.categoryTitleHtmlAr[language] + ":");
-    int charCount = 0;
     for (int row = 0; row < cn; row++) {
       if (row % 4 == 0) sb.append("\n<br>");
       sb.append(catTable.getStringData(0, row) + (row < cn - 1 ? ", \n" : "\n"));
@@ -23333,8 +23266,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // get outSource
-    int po = String2.indexOf(EDDTable.dataFileTypeNames, fileTypeName);
-    String fileTypeExtension = EDDTable.dataFileTypeExtensions[po];
+    int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
+    String fileTypeExtension = EDDTable.dataFileTypeExtensions.get(po);
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(
             request,
@@ -23503,14 +23436,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   }
 
   public void processDataset(EDD dataset, SaxParsingContext context) {
-    String change = "";
-    EDD oldDataset = null;
-    boolean oldCatInfoRemoved = false;
     // do several things in quick succession...
     // (??? synchronize on (?) if really need avoid inconsistency)
 
     // was there a dataset with the same datasetID?
-    oldDataset = this.gridDatasetHashMap.get(dataset.datasetID());
+    EDD oldDataset = this.gridDatasetHashMap.get(dataset.datasetID());
     if (oldDataset == null) {
       oldDataset = this.tableDatasetHashMap.get(dataset.datasetID());
     }
@@ -23519,7 +23449,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // (check now, before put dataset in place, in case EDDGrid <--> EDDTable)
     if (oldDataset != null) {
       addRemoveDatasetInfo(false, this.categoryInfo, oldDataset);
-      oldCatInfoRemoved = true;
     }
 
     // put dataset in place
@@ -23548,7 +23477,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // since axis values may have changed and "last" may have changed
     File2.deleteAllFiles(dataset.cacheDirectory());
 
-    change = dataset.changed(oldDataset);
+    String change = dataset.changed(oldDataset);
     if (change.isEmpty() && dataset instanceof EDDTable) {
       change = "The dataset was reloaded.";
     }
@@ -23798,18 +23727,5 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDStatic.luceneIndexSearcher();
     }
     datasetIDs.clear();
-  }
-
-  /**
-   * This is an attempt to assist Tomcat/Java in shutting down erddap. Tomcat/Java will call this;
-   * no one else should. Java calls this when an object is no longer used, just before garbage
-   * collection.
-   */
-  protected void finalize() throws Throwable {
-    try { // extra assistance/insurance
-      EDStatic.destroy(); // but Tomcat should call ERDDAP.destroy, which calls EDStatic.destroy().
-    } catch (Throwable t) {
-    }
-    super.finalize();
   }
 }

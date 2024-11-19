@@ -1372,7 +1372,6 @@ class EDDTableFromFileNamesTests {
   void testOnTheFly() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
     int language = 0;
-    String id = "awsS3NoaaGoes17";
     long time = System.currentTimeMillis();
     EDDTableFromFileNames edd = (EDDTableFromFileNames) EDDTestDataset.getawsS3NoaaGoes17();
     time = System.currentTimeMillis() - time;

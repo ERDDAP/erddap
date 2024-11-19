@@ -67,11 +67,13 @@ class DigirHelperTests {
 
     // test getOpendapConstraint
     filterCops.set(7, "in");
+    String[] copNames = new String[DigirHelper.COP_NAMES.size()];
+    copNames = DigirHelper.COP_NAMES.toArray(copNames);
     Test.ensureEqual(
         DigirHelper.getOpendapConstraint(
             resultsVariables.toArray(),
             filterVariables.toArray(),
-            DigirHelper.COP_NAMES,
+            copNames,
             filterValues.toArray()),
         query,
         "");
@@ -802,7 +804,7 @@ class DigirHelperTests {
         Test.ensureEqual(table.getStringData(1, 0), "INDOBIS-DATASET1", "");
         Test.ensureEqual(table.getStringData(2, 0), "101652", "");
         Test.ensureEqual(table.getStringData(3, 0), "Carcharodon carcharias", "");
-        Test.ensureEqual(table.getFloatData(4, 0), 55.666667f, "");
+        Test.ensureEqual(table.getFloatData(4, 0), 55.666668f, "");
         Test.ensureEqual(table.getFloatData(5, 0), -4.583333f, "");
         Test.ensureEqual(table.getFloatData(6, 0), Float.NaN, "");
         Test.ensureEqual(table.getStringData(0, 1), "NCL", "");

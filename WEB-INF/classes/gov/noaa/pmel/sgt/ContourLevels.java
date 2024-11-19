@@ -61,14 +61,6 @@ public class ContourLevels implements Cloneable {
 
   private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
-  /**
-   * @directed
-   * @label lineAttrMap
-   * @link aggregation
-   * @supplierCardinality 1..*
-   */
-  private ContourLineAttribute lnkLineAttribute;
-
   /** Bob Simons added this to avoid memory leak problems. */
   public void releaseResources() throws Exception {
     try {
@@ -85,7 +77,6 @@ public class ContourLevels implements Cloneable {
       heavy_ = null;
       dashed_ = null;
       changes_ = null;
-      lnkLineAttribute = null;
       if (JPane.debug) String2.log("sgt.ContourLevels.releaseResources() finished");
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
@@ -96,7 +87,6 @@ public class ContourLevels implements Cloneable {
   /** Construct a default <code>ContourLevels</code> object from a double[]. */
   public static ContourLevels getDefault(double[] array) {
     ContourLevels cl = new ContourLevels();
-    double val = 0.0;
     for (int i = 0; i < array.length; i++) {
       cl.addLevel(array[i]);
     }

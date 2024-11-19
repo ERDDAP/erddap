@@ -92,8 +92,6 @@ public class HttpTest extends NetCheckTest {
    */
   public HttpTest(String title, String url) throws Exception {
 
-    String errorIn = String2.ERROR + " in HttpTest constructor: ";
-
     // required
     this.title = title;
     this.url = url;

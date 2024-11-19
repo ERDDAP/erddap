@@ -719,7 +719,7 @@ public class EDDTableFromDapSequence extends EDDTable {
         }
 
         // remove GTLT constraints
-        if (!sourceCanConstrainStringGTLT && String2.indexOf(GTLT_OPERATORS, op) >= 0) {
+        if (!sourceCanConstrainStringGTLT && GTLT_OPERATORS.indexOf(op) >= 0) {
           constraintVariables.remove(c);
           constraintOps.remove(c);
           constraintValues.remove(c);

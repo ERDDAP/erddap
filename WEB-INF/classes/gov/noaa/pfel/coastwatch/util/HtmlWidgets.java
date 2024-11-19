@@ -9,6 +9,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.File;
 import java.text.MessageFormat;
@@ -73,10 +74,10 @@ public class HtmlWidgets {
   public static final int BUTTONS_0n = -1, BUTTONS_1 = -2, BUTTONS_100 = -8, BUTTONS_1000 = -16;
 
   /** One line: white,grays,black, then one rainbow. */
-  public static final String PALETTE17[] = {
-    "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
-    "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"
-  };
+  public static final ImmutableList<String> PALETTE17 =
+      ImmutableList.of(
+          "FFFFFF", "CCCCCC", "999999", "666666", "000000", "FF0000", "FF9900", "FFFF00", "99FF00",
+          "00FF00", "00FF99", "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF");
 
   /**
    * This will display a message to the user if JavaScript is not supported or disabled. Last
@@ -968,7 +969,8 @@ public class HtmlWidgets {
    * @return the HTML code to display 17 radio buttons with colored backgrounds.
    */
   public String color17(String htmlLabel, String name, String tooltip, int selected, String other) {
-    return color(PALETTE17, 17, htmlLabel, name, tooltip, selected, other);
+    return color(
+        String2.immutableListToArray(PALETTE17), 17, htmlLabel, name, tooltip, selected, other);
   }
 
   /**
@@ -1041,6 +1043,35 @@ public class HtmlWidgets {
    * @return the HTML code for a list in a box or a dropdown list.
    */
   public String select(
+      String name,
+      String tooltip,
+      int nRows,
+      ImmutableList<String> options,
+      int selected,
+      String other) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    return select(name, tooltip, nRows, arrOptions, null, selected, other, false, "");
+  }
+
+  /**
+   * This creates the HTML code for a list in a box or a dropdown list. If nRows &lt; 0, this uses a
+   * table to bring the elements close together, and so may need to be in an enclosing table if you
+   * want other items on same line.
+   *
+   * @param name the name of the widget (name=value is returned when the form is submitted)
+   * @param tooltip If htmlTooltips is true, this is already html. If it is false, this is plain
+   *     text. Or "" if no tooltip.
+   * @param nRows &gt; 1 (e.g. 8) to display many options, <br>
+   *     1=1 row with no buttons, <br>
+   *     nRows is negative implies some combination of BUTTONS_0n, BUTTONS_1, BUTTONS_100,
+   *     BUTTONS_1000
+   * @param options which provides the plain text to be displayed for each of the options.
+   * @param selected the index of the selected item or -1 if none
+   * @param other e.g., "onchange=\"pleaseWait();\"" For select(), use onchange, not onclick.
+   * @return the HTML code for a list in a box or a dropdown list.
+   */
+  public String select(
       String name, String tooltip, int nRows, String options[], int selected, String other) {
 
     return select(name, tooltip, nRows, options, null, selected, other, false, "");
@@ -1085,6 +1116,31 @@ public class HtmlWidgets {
       String buttonJS) {
 
     return select(name, tooltip, nRows, options, null, selected, other, encodeSpaces, buttonJS);
+  }
+
+  /**
+   * This variant of select adds a values parameter.
+   *
+   * @param values this should parallel options, or be null (usually).
+   * @param buttonJS is addtional javascript to be done when a button is pushed, most commonly "
+   *     sel.onchange();" which triggers the select widget's onchange javascript.
+   */
+  public String select(
+      String name,
+      String tooltip,
+      int nRows,
+      ImmutableList<String> options,
+      ImmutableList<String> values,
+      int selected,
+      String other,
+      boolean encodeSpaces,
+      String buttonJS) {
+    String[] arrOptions = new String[options.size()];
+    arrOptions = options.toArray(arrOptions);
+    String[] arrValues = new String[values.size()];
+    arrValues = values.toArray(arrValues);
+    return select(
+        name, tooltip, nRows, arrOptions, arrValues, selected, other, encodeSpaces, buttonJS);
   }
 
   /**

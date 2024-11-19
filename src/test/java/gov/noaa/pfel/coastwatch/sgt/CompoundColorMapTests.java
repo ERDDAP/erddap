@@ -6,7 +6,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.Color;
 import org.junit.jupiter.api.BeforeAll;
 import testDataset.Initialization;
@@ -27,7 +26,7 @@ class CompoundColorMapTests {
   void basicTest() throws Exception {
     // verbose = true;
     String basePaletteDir =
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "WEB-INF/cptfiles/";
     String tempDir = SSR.getTempDirectory();

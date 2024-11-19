@@ -2,18 +2,18 @@ package gov.noaa.pfel.erddap.handlers;
 
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.erddap.Erddap;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class SaxParsingContext {
   private int[] nTryAndDatasets;
   private StringArray changedDatasetIDs;
-  private HashSet<String> orphanIDSet;
-  private HashSet<String> datasetIDSet;
+  private Set<String> orphanIDSet;
+  private Set<String> datasetIDSet;
   private StringArray duplicateDatasetIDs;
   private StringBuilder datasetsThatFailedToLoadSB;
   private StringBuilder warningsFromLoadDatasets;
-  private HashMap<String, Object[]> tUserHashMap;
+  private Map<String, Object[]> tUserHashMap;
   private boolean majorLoad;
   private Erddap erddap;
   private long lastLuceneUpdate;
@@ -39,19 +39,19 @@ public class SaxParsingContext {
     this.changedDatasetIDs = changedDatasetIDs;
   }
 
-  public HashSet<String> getOrphanIDSet() {
+  public Set<String> getOrphanIDSet() {
     return orphanIDSet;
   }
 
-  public void setOrphanIDSet(HashSet<String> orphanIDSet) {
+  public void setOrphanIDSet(Set<String> orphanIDSet) {
     this.orphanIDSet = orphanIDSet;
   }
 
-  public HashSet<String> getDatasetIDSet() {
+  public Set<String> getDatasetIDSet() {
     return datasetIDSet;
   }
 
-  public void setDatasetIDSet(HashSet<String> datasetIDSet) {
+  public void setDatasetIDSet(Set<String> datasetIDSet) {
     this.datasetIDSet = datasetIDSet;
   }
 
@@ -71,11 +71,11 @@ public class SaxParsingContext {
     this.warningsFromLoadDatasets = warningsFromLoadDatasets;
   }
 
-  public HashMap<String, Object[]> gettUserHashMap() {
+  public Map<String, Object[]> gettUserHashMap() {
     return tUserHashMap;
   }
 
-  public void settUserHashMap(HashMap<String, Object[]> tUserHashMap) {
+  public void settUserHashMap(Map<String, Object[]> tUserHashMap) {
     this.tUserHashMap = tUserHashMap;
   }
 

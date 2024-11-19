@@ -1211,7 +1211,7 @@ public class Test {
         String WIN_FLAG = "url.dll,FileProtocolHandler";
         // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
         cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
-        Process p = Runtime.getRuntime().exec(cmd);
+        Runtime.getRuntime().exec(cmd);
       } else {
         // https://linux.die.net/man/1/xdg-open
         // cmd = 'xdg-open ' + url

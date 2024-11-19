@@ -2,13 +2,14 @@
 package dods.dap.parser;
 
 import dods.dap.*;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class DDSParser implements DDSParserConstants {
   /* $Id: DDSParser.java,v 1.27 2002/06/05 20:44:51 jimg Exp $ */
   private DDS dds;
   private BaseTypeFactory factory; // used to construct new types
-  private Stack ctor; // stack for ctor types
+  private Deque<BaseType> ctor; // stack for ctor types
   private BaseType current;
   private int part; // part is defined in each type which uses it
   private String id;
@@ -27,11 +28,11 @@ public class DDSParser implements DDSParserConstants {
    * (see `declaration' above) determines when to pop the stack.
    */
   private void addEntry() {
-    if (!ctor.empty()) { // must be parsing a ctor type
+    if (!ctor.isEmpty()) { // must be parsing a ctor type
       if (ctor.peek() instanceof DVector) {
         DVector top = (DVector) ctor.peek();
         top.addVariable(current);
-        current = (BaseType) ctor.pop();
+        current = ctor.pop();
       } else if (ctor.peek() instanceof DConstructor) {
         DConstructor top = (DConstructor) ctor.peek();
         if (top instanceof DGrid) top.addVariable(current, part);
@@ -99,7 +100,7 @@ public class DDSParser implements DDSParserConstants {
   public final void Dataset(DDS dds, BaseTypeFactory factory) throws ParseException, DDSException {
     this.dds = dds;
     this.factory = factory;
-    this.ctor = new Stack();
+    this.ctor = new ArrayDeque<>();
     switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
       case DATASET:
         jj_consume_token(DATASET);
@@ -201,7 +202,7 @@ public class DDSParser implements DDSParserConstants {
           jj_consume_token(21);
           Declarations();
           jj_consume_token(22);
-          current = (BaseType) ctor.pop();
+          current = ctor.pop();
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
@@ -214,7 +215,7 @@ public class DDSParser implements DDSParserConstants {
           jj_consume_token(21);
           Declarations();
           jj_consume_token(22);
-          current = (BaseType) ctor.pop();
+          current = ctor.pop();
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
@@ -246,7 +247,7 @@ public class DDSParser implements DDSParserConstants {
                     + " instead.");
           Declarations();
           jj_consume_token(22);
-          current = (BaseType) ctor.pop();
+          current = ctor.pop();
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
@@ -829,7 +830,6 @@ public class DDSParser implements DDSParserConstants {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   public boolean lookingAhead = false;
-  private boolean jj_semLA;
   private int jj_gen;
   private final int[] jj_la1 = new int[22];
   private final int[] jj_la1_0 = {

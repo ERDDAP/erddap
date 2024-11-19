@@ -6,7 +6,6 @@ package gov.noaa.pfel.coastwatch.sgt;
 
 import gov.noaa.pfel.coastwatch.util.AttributedString2;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -41,7 +40,6 @@ public class GraphicsTest extends JPanel {
     // g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
     //    RenderingHints.VALUE_ANTIALIAS_ON);
     String s = "Java Source and Support";
-    Dimension d = getSize();
 
     Font serifFont = new Font("Serif", Font.PLAIN, 48);
     Font sansSerifFont = new Font("Monospaced", Font.PLAIN, 48);

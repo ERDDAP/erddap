@@ -80,8 +80,7 @@ public class VectorCartesianRenderer extends CartesianRenderer {
     return attr_;
   }
 
-  private void drawVector(Graphics g, SGTVector vector, VectorAttribute attr) {
-
+  private void drawVector(Graphics g, SGTVector vector) {
     Layer ly = cg_.getLayer();
     Graphics2D g2 = (Graphics2D) g;
     // vectors look better with antialiasing, but caller will set it (or not)
@@ -114,10 +113,8 @@ public class VectorCartesianRenderer extends CartesianRenderer {
     float tScale;
     float[] xp, yp;
     int[] xtail, ytail;
-    int xdhead, ydhead;
-    int xdtemp, ydtemp;
     float xphead, yphead;
-    int count, size, nout, idx;
+    int count, size, idx;
     double[] xValues = null, yValues = null;
     GeoDate[] xTValues, yTValues;
     double[] uValues, vValues;
@@ -401,12 +398,12 @@ public class VectorCartesianRenderer extends CartesianRenderer {
     }
     g.setColor(attr.getVectorColor());
     if (collection_ == null) {
-      drawVector(g, vector_, attr);
+      drawVector(g, vector_);
     } else {
       for (Enumeration li = collection_.elements(); li.hasMoreElements(); ) {
         vector = li.nextElement();
         if (vector instanceof SGTVector) {
-          drawVector(g, (SGTVector) vector, attr);
+          drawVector(g, (SGTVector) vector);
         }
       }
     }

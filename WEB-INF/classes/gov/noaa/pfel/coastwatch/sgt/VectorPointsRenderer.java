@@ -86,7 +86,7 @@ public class VectorPointsRenderer extends CartesianRenderer {
    *
    * @param transparent if true, antialiasing is turned off; else it is turned on.
    */
-  private void drawVector(Graphics g, VectorAttribute2 attr) {
+  private void drawVector(Graphics g) {
 
     Layer ly = cg_.getLayer();
     Graphics2D g2 = (Graphics2D) g;
@@ -123,10 +123,8 @@ public class VectorPointsRenderer extends CartesianRenderer {
     int nValues = xValues.length;
     int[] xtail = new int[nValues];
     int[] ytail = new int[nValues];
-    int xdhead, ydhead;
-    int xdtemp, ydtemp;
     float xphead, yphead;
-    int count, size, nout;
+    int count;
     float vx, vy, vclen;
     double vdx, vdy;
     resultBaseX = new IntArray();
@@ -301,9 +299,6 @@ public class VectorPointsRenderer extends CartesianRenderer {
    */
   @Override
   public void draw(Graphics g) {
-    VectorAttribute2 attr;
-    Object vector;
-
     if (cg_.clipping_) {
       int xmin, xmax, ymin, ymax;
       int x, y, width, height;
@@ -337,8 +332,7 @@ public class VectorPointsRenderer extends CartesianRenderer {
       }
       g.setClip(x, y, width, height);
     }
-    attr = attr_;
-    drawVector(g, attr);
+    drawVector(g);
 
     //
     // reset clip

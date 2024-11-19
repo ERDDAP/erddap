@@ -43,7 +43,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-07-06
  */
-public class GridDataAccessor {
+public class GridDataAccessor implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -556,8 +556,12 @@ public class GridDataAccessor {
     if (totalIndex.getIndex() == -1) {
       // first time
       boolean tb = rowMajor ? totalIndex.increment() : totalIndex.incrementCM();
-      if (!tb) return false;
-      tb = rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
+      if (!tb) {
+        return false;
+      }
+      @SuppressWarnings("unused")
+      boolean unused =
+          rowMajor ? partialIndex.increment() : partialIndex.incrementCM(); // should succeed
     } else {
       // subsequent times
       // increment totalIndex by partialIndex.size, for row major or column major
@@ -663,8 +667,7 @@ public class GridDataAccessor {
       }
 
       // get the data
-      PrimitiveArray[] partialResults = null;
-      partialResults =
+      PrimitiveArray[] partialResults =
           gda.eddGrid.getSourceData(
               language, gda.tDirTable, gda.tFileTable, gda.dataVariables, partialConstraints);
 
@@ -872,22 +875,13 @@ public class GridDataAccessor {
           return partialDataValues[dv].getString((int)partialIndex.getIndex()); //safe since partialIndex size checked when constructed
       }
   */
-  /** The garbage collector calls this. Users should call releaseGetResources instead(). */
-  protected void finalize() throws Throwable {
-    releaseResources();
-    super.finalize();
-  }
-
-  /** Call this when completely done to release all resources. */
-  public void releaseResources() {
-    releaseGetResources();
-  }
 
   /**
-   * Call this when done getting data to release resources related to initially getting data (e.g.,
-   * threads).
+   * Call this when completely done to release all resources. Call this when done getting data to
+   * release resources related to initially getting data (e.g., threads).
    */
-  public void releaseGetResources() {
+  @Override
+  public void close() {
     tDirTable = null;
     tFileTable = null;
   }

@@ -201,16 +201,13 @@ public class UByteArray extends PrimitiveArray {
    */
   public static UByteArray fromFile(final String fileName) throws Exception {
     UByteArray uba = new UByteArray();
-    final InputStream stream = File2.getDecompressedBufferedInputStream(fileName);
-    try {
+    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName); ) {
       int available = stream.available();
       while (available > 0) {
         uba.ensureCapacity(uba.size + (long) available);
         uba.size += stream.read(uba.array, uba.size, available);
         available = stream.available();
       }
-    } finally {
-      stream.close();
     }
     return uba;
   }

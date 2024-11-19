@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import com.cohort.util.StringHolder;
 import com.cohort.util.StringHolderComparator;
 import com.cohort.util.StringHolderComparatorIgnoreCase;
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -30,6 +31,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import ucar.ma2.StructureData;
@@ -161,6 +163,18 @@ public class StringArray extends PrimitiveArray {
     array = new StringHolder[al];
     size = 0;
     for (int i = 0; i < al; i++) add(anArray[i]);
+  }
+
+  /**
+   * A constructor which gets values from an ImmutableList<String>.
+   *
+   * @param anArray
+   */
+  public StringArray(final ImmutableList<String> immutableList) {
+    int al = immutableList.size();
+    array = new StringHolder[al];
+    size = 0;
+    for (int i = 0; i < al; i++) add(immutableList.get(i));
   }
 
   /**
@@ -637,7 +651,7 @@ public class StringArray extends PrimitiveArray {
   public int makeUnique() {
     final int n = size();
     int nChanged = 0;
-    HashSet<String> hs = toHashSet();
+    Set<String> hs = toHashSet();
     for (int i = 0; i < n - 1; i++) {
       String si = get(i);
       int add = 2;
@@ -2012,8 +2026,7 @@ public class StringArray extends PrimitiveArray {
    *     any other whitespace). Interior double quotes in double-quoted phrases must be doubled
    *     (e.g., "a quote "" within a phrase"). The resulting parts are all trim'd.
    */
-  public static ArrayList<String> wordsAndQuotedPhrases(
-      final String searchFor, final ArrayList<String> sa) {
+  public static List<String> wordsAndQuotedPhrases(final String searchFor, final List<String> sa) {
     sa.clear();
     if (searchFor == null) return sa;
     int po = 0;
@@ -2147,7 +2160,7 @@ public class StringArray extends PrimitiveArray {
 
     if (searchFor == null || searchFor.length() == 0) return new String[0];
 
-    ArrayList<String> al = new ArrayList(16);
+    ArrayList<String> al = new ArrayList<>(16);
     arrayListFromCSV(searchFor, separatorChars, trim, keepNothing, al);
     return al.toArray(new String[0]);
   }
@@ -2165,12 +2178,12 @@ public class StringArray extends PrimitiveArray {
    * @param al the ArrayList into which the results are put. It is initially clear()'d.
    * @return al for convenience
    */
-  public static ArrayList<String> arrayListFromCSV(
+  public static List<String> arrayListFromCSV(
       final String searchFor,
       final String separatorChars,
       final boolean trim,
       final boolean keepNothing,
-      final ArrayList<String> al) {
+      final List<String> al) {
 
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
@@ -2669,8 +2682,8 @@ public class StringArray extends PrimitiveArray {
   }
 
   /** This returns the values in this StringArray in a HashSet. */
-  public HashSet<String> toHashSet() {
-    final HashSet<String> hs = new HashSet(Math.max(8, size * 4 / 3));
+  public Set<String> toHashSet() {
+    final HashSet<String> hs = new HashSet<>(Math.max(8, size * 4 / 3));
     for (int i = 0; i < size; i++) hs.add(get(i));
     return hs;
   }

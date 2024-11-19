@@ -448,7 +448,6 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 
     // gather the results
     String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
-    boolean accViaFiles = false;
     int tMatchNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
     ensureValidNames(dataSourceTable, dataAddTable);

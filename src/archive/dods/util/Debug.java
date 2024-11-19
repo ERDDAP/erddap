@@ -25,14 +25,13 @@ import java.util.TreeMap;
 /** A minimal implementation of a globally-accessible set of Debug flags. */
 public class Debug {
   private static TreeMap<String, Boolean> map = new TreeMap<>();
-  private static boolean debug = false, changed = true;
+  private static boolean debug = false;
 
   public static boolean isSet(String flagName) {
     Object val;
     if (null == (val = map.get(flagName))) {
       if (debug) System.out.println("Debug.isSet new " + flagName);
       map.put(flagName, Boolean.FALSE);
-      changed = true;
       return false;
     }
 
@@ -40,10 +39,6 @@ public class Debug {
   }
 
   public static void set(String flagName, boolean value) {
-    Object val;
-    if (null == (val = map.get(flagName))) {
-      changed = true;
-    }
     map.put(flagName, Boolean.valueOf(value));
     if (debug) System.out.println("  Debug.set " + flagName + " " + value);
   }

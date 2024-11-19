@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
@@ -58,7 +59,6 @@ public class SgtGraph {
 
   public static Color DefaultBackgroundColor = new Color(0xCCCCFF); // just the RGB part (no A)
   public int widenOnePoint = 1; // pixels
-  private static final String testImageExtension = ".png"; // was/could be ".gif"
   public static String fullTestCacheDir =
       "/erddapBPD/cache/_test/"; // EDStatic resets this if needed
 
@@ -133,7 +133,7 @@ public class SgtGraph {
    *     originX,endX,originY,endY. (The returnAL isn't extensively tested yet.)
    * @throws Exception
    */
-  public ArrayList makeGraph(
+  public List<PrimitiveArray> makeGraph(
       boolean transparent,
       String xAxisTitle,
       String yAxisTitle,
@@ -152,7 +152,7 @@ public class SgtGraph {
       boolean yAscending,
       boolean yIsTimeAxis,
       boolean yIsLogAxis,
-      ArrayList<GraphDataLayer> graphDataLayers,
+      List<GraphDataLayer> graphDataLayers,
       Graphics2D g2,
       int baseULXPixel,
       int baseULYPixel,
@@ -183,7 +183,7 @@ public class SgtGraph {
     IntArray returnPointScreen = new IntArray();
     IntArray returnIntWESN = new IntArray();
     DoubleArray returnDoubleWESN = new DoubleArray();
-    ArrayList returnAL = new ArrayList();
+    ArrayList<PrimitiveArray> returnAL = new ArrayList<>();
     returnAL.add(returnMinX);
     returnAL.add(returnMaxX);
     returnAL.add(returnMinY);
@@ -479,7 +479,6 @@ public class SgtGraph {
                 + (yIsTimeAxis ? Calendar2.epochSecondsToIsoStringTZ(maxY) : "" + maxY));
 
       // figure out the params needed to make the graph
-      String error = "";
       // make doubly sure min < max
       if (minX > maxX) {
         double d = minX;
@@ -741,7 +740,6 @@ public class SgtGraph {
 
           // draw the logo
           if (logoImageFile != null && File2.isFile(imageDir + logoImageFile)) {
-            long logoTime = System.currentTimeMillis();
             BufferedImage bi2 = ImageIO.read(new File(imageDir + logoImageFile));
 
             // g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -997,9 +995,9 @@ public class SgtGraph {
             g2.setColor(gdl.lineColor);
             IntArray markerXs = new IntArray();
             IntArray markerYs = new IntArray();
-            ArrayList markerInteriorColors = new ArrayList();
+            ArrayList<Color> markerInteriorColors = new ArrayList<>();
             if (reallyVerbose)
-              String2.log("  draw=" + GraphDataLayer.DRAW_NAMES[gdl.draw] + " n=" + n);
+              String2.log("  draw=" + GraphDataLayer.DRAW_NAMES.get(gdl.draw) + " n=" + n);
             long accumTime = System.currentTimeMillis();
             int oitx, oity;
             for (int ni = 0; ni < n; ni++) {
@@ -1085,7 +1083,7 @@ public class SgtGraph {
                       tMarkerSize,
                       xarray[i],
                       yarray[i],
-                      (Color) markerInteriorColors.get(i),
+                      markerInteriorColors.get(i),
                       gdl.lineColor);
                 }
               }
@@ -1096,7 +1094,7 @@ public class SgtGraph {
                   tMarkerSize,
                   xarray[nMarkerXs1],
                   yarray[nMarkerXs1],
-                  (Color) markerInteriorColors.get(nMarkerXs1),
+                  markerInteriorColors.get(nMarkerXs1),
                   gdl.lineColor);
               if (reallyVerbose)
                 String2.log(
@@ -1724,14 +1722,9 @@ public class SgtGraph {
     try {
       if (reallyVerbose) String2.log("\n{{ SgtGraph.makeLegend "); // + Math2.memoryString());
       long startTime = System.currentTimeMillis();
-      long setupTime = System.currentTimeMillis();
 
       double axisLabelHeight = fontScale * defaultAxisLabelHeight;
       double labelHeight = fontScale * defaultLabelHeight;
-
-      boolean sticksGraph = gdl.draw == GraphDataLayer.DRAW_STICKS;
-
-      String error = "";
 
       // define sizes
       double dpi = 100; // dots per inch
@@ -1751,11 +1744,6 @@ public class SgtGraph {
               imageWidthPixels - (legendSampleSize + 3 * legendInsideBorder), fontScale);
       int maxBoldCharsPerLine = SgtUtil.maxBoldCharsPerLine(maxCharsPerLine);
 
-      double legendLineCount =
-          String2.isSomething(legendTitle1 + legendTitle2)
-              ? 1
-              : -1; // for legend title   //???needs adjustment for larger font size
-      legendLineCount += gdl.legendLineCount(maxCharsPerLine);
       // String2.log("legendLineCount=" + legendLineCount);
       int legendBoxULX = 0;
       int legendBoxULY = 0;
@@ -1831,7 +1819,6 @@ public class SgtGraph {
 
           // draw the logo
           if (logoImageFile != null && File2.isFile(imageDir + logoImageFile)) {
-            long logoTime = System.currentTimeMillis();
             BufferedImage bi2 = ImageIO.read(new File(imageDir + logoImageFile));
 
             // g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -1865,9 +1852,6 @@ public class SgtGraph {
       boolean drawSticks = gdl.draw == GraphDataLayer.DRAW_STICKS;
       boolean drawColoredSurface =
           gdl.draw == GraphDataLayer.DRAW_COLORED_SURFACE
-              || gdl.draw == GraphDataLayer.DRAW_COLORED_SURFACE_AND_CONTOUR_LINES;
-      boolean drawContourLines =
-          gdl.draw == GraphDataLayer.DRAW_CONTOUR_LINES
               || gdl.draw == GraphDataLayer.DRAW_COLORED_SURFACE_AND_CONTOUR_LINES;
 
       // useGridData
@@ -1953,15 +1937,14 @@ public class SgtGraph {
 
       // draw legend text
       g2.setColor(gdl.lineColor);
-      legendTextY =
-          SgtUtil.belowLegendText(
-              g2,
-              legendTextX,
-              legendTextY,
-              fontFamily,
-              labelHeightPixels,
-              SgtUtil.makeShortLines(maxBoldCharsPerLine, gdl.boldTitle, null, null),
-              SgtUtil.makeShortLines(maxCharsPerLine, gdl.title2, gdl.title3, gdl.title4));
+      SgtUtil.belowLegendText(
+          g2,
+          legendTextX,
+          legendTextY,
+          fontFamily,
+          labelHeightPixels,
+          SgtUtil.makeShortLines(maxBoldCharsPerLine, gdl.boldTitle, null, null),
+          SgtUtil.makeShortLines(maxCharsPerLine, gdl.title2, gdl.title3, gdl.title4));
 
       // actually draw the graph
       jPane.draw(g2); // comment out for memory leak tests

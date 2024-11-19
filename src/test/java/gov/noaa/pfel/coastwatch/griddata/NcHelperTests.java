@@ -479,7 +479,6 @@ class NcHelperTests {
         // boolean buildStringsFromChars = false;
         // boolean isUnsigned = false;
         StructureDataIterator it = s.getStructureIterator();
-        int recNo = 0;
         try {
           while (it.hasNext()) {
             StructureData sd = it.next();
@@ -491,7 +490,6 @@ class NcHelperTests {
             // " a_name=" + sd.getScalarInt(smma) +
             // " b_name=" + sd.getScalarFloat(smmb) +
             // " c_name=" + sd.getScalarDouble(smmc));
-            recNo++;
           }
         } finally {
           it.close();
@@ -604,7 +602,6 @@ class NcHelperTests {
         Array array;
         ArrayChar.D2 ac = new ArrayChar.D2(1, strlen);
 
-        double cTime = System.currentTimeMillis() / 1000.0;
         array = NcHelper.get1DArray(new double[] {row}, false);
         ncWriter.write(ncWriter.findVariable("time"), origin1, array);
         // String2.log(">> array=" + array.toString());

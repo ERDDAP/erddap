@@ -125,4 +125,12 @@ public class TableWriterOrderByMin extends TableWriterAll {
     otherTableWriter.writeAllAndFinish(tCumulativeTable);
     otherTableWriter = null;
   }
+
+  @Override
+  public void close() throws Exception {
+    super.close();
+    if (otherTableWriter != null) {
+      otherTableWriter.close();
+    }
+  }
 }

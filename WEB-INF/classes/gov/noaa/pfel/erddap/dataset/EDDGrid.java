@@ -23,6 +23,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
@@ -55,8 +56,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -65,6 +67,7 @@ import ucar.ma2.Array;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.Variable;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
@@ -101,160 +104,162 @@ public abstract class EDDGrid extends EDD {
   public static final int DEFAULT_MATCH_AXIS_N_DIGITS = 20;
 
   /** These are needed for EDD-required methods of the same name. */
-  public static final String[] dataFileTypeNames = {
-    // If add new type and not actual-data type (e.g., .das),
-    //  add to graphsAccessibleToFileTypeNames below
-    ".asc",
-    ".csv",
-    ".csvp",
-    ".csv0",
-    ".das",
-    ".dds",
-    ".dods",
-    ".esriAscii", // ".grd", ".hdf",
-    ".fgdc",
-    ".graph",
-    ".help",
-    ".html",
-    ".htmlTable",
-    ".iso19115",
-    ".itx",
-    ".json",
-    ".jsonlCSV1",
-    ".jsonlCSV",
-    ".jsonlKVP",
-    ".mat",
-    ".nc",
-    ".ncHeader",
-    ".ncml",
-    //        ".nc4", ".nc4Header",
-    ".nccsv",
-    ".nccsvMetadata",
-    ".ncoJson",
-    ".odvTxt",
-    ".parquet",
-    ".parquetWMeta",
-    ".timeGaps",
-    ".tsv",
-    ".tsvp",
-    ".tsv0",
-    ".wav",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> dataFileTypeNames =
+      ImmutableList.of(
+          // If add new type and not actual-data type (e.g., .das),
+          //  add to graphsAccessibleToFileTypeNames below
+          ".asc",
+          ".csv",
+          ".csvp",
+          ".csv0",
+          ".das",
+          ".dds",
+          ".dods",
+          ".esriAscii", // ".grd", ".hdf",
+          ".fgdc",
+          ".graph",
+          ".help",
+          ".html",
+          ".htmlTable",
+          ".iso19115",
+          ".itx",
+          ".json",
+          ".jsonlCSV1",
+          ".jsonlCSV",
+          ".jsonlKVP",
+          ".mat",
+          ".nc",
+          ".ncHeader",
+          ".ncml",
+          //        ".nc4", ".nc4Header",
+          ".nccsv",
+          ".nccsvMetadata",
+          ".ncoJson",
+          ".odvTxt",
+          ".parquet",
+          ".parquetWMeta",
+          ".timeGaps",
+          ".tsv",
+          ".tsvp",
+          ".tsv0",
+          ".wav",
+          ".xhtml");
 
-  public static final String[] dataFileTypeExtensions = {
-    ".asc",
-    ".csv",
-    ".csv",
-    ".csv",
-    ".das",
-    ".dds",
-    ".dods",
-    ".asc", // ".grd", ".hdf",
-    ".xml",
-    ".html",
-    ".html",
-    ".html",
-    ".html",
-    ".xml",
-    ".itx",
-    ".json",
-    ".jsonl",
-    ".jsonl",
-    ".jsonl",
-    ".mat",
-    ".nc",
-    ".txt",
-    ".xml",
-    //        ".nc", ".txt",
-    ".csv",
-    ".csv",
-    ".json",
-    // .subset currently isn't included
-    ".txt",
-    ".parquet",
-    ".parquet",
-    ".asc",
-    ".tsv",
-    ".tsv",
-    ".tsv",
-    ".wav",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> dataFileTypeExtensions =
+      ImmutableList.of(
+          ".asc",
+          ".csv",
+          ".csv",
+          ".csv",
+          ".das",
+          ".dds",
+          ".dods",
+          ".asc", // ".grd", ".hdf",
+          ".xml",
+          ".html",
+          ".html",
+          ".html",
+          ".html",
+          ".xml",
+          ".itx",
+          ".json",
+          ".jsonl",
+          ".jsonl",
+          ".jsonl",
+          ".mat",
+          ".nc",
+          ".txt",
+          ".xml",
+          //        ".nc", ".txt",
+          ".csv",
+          ".csv",
+          ".json",
+          // .subset currently isn't included
+          ".txt",
+          ".parquet",
+          ".parquet",
+          ".asc",
+          ".tsv",
+          ".tsv",
+          ".tsv",
+          ".wav",
+          ".xhtml");
   public static String[][] dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
   // These are encoded for use as HTML attributes (href)
-  public static String[] dataFileTypeInfo = { // "" if not available
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP ascii
-    // csv: also see https://www.ietf.org/rfc/rfc4180.txt
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
-    // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
-    "https://en.wikipedia.org/wiki/Esri_grid", // esriAscii
-    // was "https://www.soest.hawaii.edu/gmt/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
-    // "https://www.hdfgroup.org/products/hdf4/", //hdf
-    "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
-    "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", // GraphicsCommands
-    "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
-    "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
-    "https://www.w3schools.com/html/html_tables.asp", // htmlTable
-    "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
-    "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
-    "https://www.json.org/", // json
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlCSV
-    "https://jsonlines.org/", // jsonlKVP
-    "https://www.mathworks.com/", // mat
-    "https://www.unidata.ucar.edu/software/netcdf/", // nc3
-    "https://linux.die.net/man/1/ncdump", // nc4Header
-    "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html", // ncml
-    //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
-    //        "https://linux.die.net/man/1/ncdump", //nc4Header
-    "https://erddap.github.io/NCCSV.html",
-    "https://erddap.github.io/NCCSV.html",
-    "https://nco.sourceforge.net/nco.html#json",
-    "https://odv.awi.de/en/documentation/", // odv
-    "https://parquet.apache.org/",
-    "https://parquet.apache.org/",
-    "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps", // .timeGaps
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://jkorpela.fi/TSV.html", // tsv
-    "https://en.wikipedia.org/wiki/WAV", // wav
-    "https://www.w3schools.com/html/html_tables.asp" // xhtml
-  };
+  public static ImmutableList<String> dataFileTypeInfo =
+      ImmutableList.of( // "" if not available
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
+          // ascii
+          // csv: also see https://www.ietf.org/rfc/rfc4180.txt
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://en.wikipedia.org/wiki/Comma-separated_values", // csv was
+          // "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm",
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", // das
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", // dds
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", // dods
+          "https://en.wikipedia.org/wiki/Esri_grid", // esriAscii
+          // was "https://www.soest.hawaii.edu/gmt/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
+          // "https://www.hdfgroup.org/products/hdf4/", //hdf
+          "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", // fgdc
+          "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", // GraphicsCommands
+          "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", // help
+          "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", // html
+          "https://www.w3schools.com/html/html_tables.asp", // htmlTable
+          "https://en.wikipedia.org/wiki/Geospatial_metadata", // iso19115
+          "https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", // igor
+          "https://www.json.org/", // json
+          "https://jsonlines.org/", // jsonlCSV
+          "https://jsonlines.org/", // jsonlCSV
+          "https://jsonlines.org/", // jsonlKVP
+          "https://www.mathworks.com/", // mat
+          "https://www.unidata.ucar.edu/software/netcdf/", // nc3
+          "https://linux.die.net/man/1/ncdump", // nc4Header
+          "https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html", // ncml
+          //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
+          //        "https://linux.die.net/man/1/ncdump", //nc4Header
+          "https://erddap.github.io/NCCSV.html",
+          "https://erddap.github.io/NCCSV.html",
+          "https://nco.sourceforge.net/nco.html#json",
+          "https://odv.awi.de/en/documentation/", // odv
+          "https://parquet.apache.org/",
+          "https://parquet.apache.org/",
+          "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps", // .timeGaps
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://jkorpela.fi/TSV.html", // tsv
+          "https://en.wikipedia.org/wiki/WAV", // wav
+          "https://www.w3schools.com/html/html_tables.asp" // xhtml
+          );
 
-  public static final String[] imageFileTypeNames = {
-    ".geotif",
-    ".kml",
-    ".smallPdf",
-    ".pdf",
-    ".largePdf",
-    ".smallPng",
-    ".png",
-    ".largePng",
-    ".transparentPng"
-  };
-  public static final String[] imageFileTypeExtensions = {
-    ".tif", ".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png"
-  };
+  public static final ImmutableList<String> imageFileTypeNames =
+      ImmutableList.of(
+          ".geotif",
+          ".kml",
+          ".smallPdf",
+          ".pdf",
+          ".largePdf",
+          ".smallPng",
+          ".png",
+          ".largePng",
+          ".transparentPng");
+  public static final ImmutableList<String> imageFileTypeExtensions =
+      ImmutableList.of(".tif", ".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
   public static String[][] imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static String[] imageFileTypeInfo = {
-    "https://trac.osgeo.org/geotiff/", // geotiff
-    "https://developers.google.com/kml/", // kml
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/", // png
-    "http://www.libpng.org/pub/png/" // png
-  };
+  public static ImmutableList<String> imageFileTypeInfo =
+      ImmutableList.of(
+          "https://trac.osgeo.org/geotiff/", // geotiff
+          "https://developers.google.com/kml/", // kml
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/", // png
+          "http://www.libpng.org/pub/png/" // png
+          );
 
   private static String[][] allFileTypeOptionsAr;
   private static String[] allFileTypeNames;
@@ -265,8 +270,10 @@ public abstract class EDDGrid extends EDD {
   public static final String wcsServer = "server";
   public static final String wcsVersion = "1.0.0"; // , "1.1.0", "1.1.1", "1.1.2"};
   // wcsResponseFormats parallels wcsRequestFormats
-  public static final String wcsRequestFormats100[] = {"GeoTIFF", "NetCDF3", "PNG"};
-  public static final String wcsResponseFormats100[] = {".geotif", ".nc", ".transparentPng"};
+  public static final ImmutableList<String> wcsRequestFormats100 =
+      ImmutableList.of("GeoTIFF", "NetCDF3", "PNG");
+  public static final ImmutableList<String> wcsResponseFormats100 =
+      ImmutableList.of(".geotif", ".nc", ".transparentPng");
   // public final static String wcsRequestFormats112[]  = {"image/tiff", "application/x-netcdf",
   // "image/png"};
   // public final static String wcsResponseFormats112[] = {".geotif",    ".nc",
@@ -275,8 +282,8 @@ public abstract class EDDGrid extends EDD {
 
   // static constructor
   static {
-    int nDFTN = dataFileTypeNames.length;
-    int nIFTN = imageFileTypeNames.length;
+    int nDFTN = dataFileTypeNames.size();
+    int nIFTN = imageFileTypeNames.size();
 
     dataFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nDFTN];
     imageFileTypeDescriptionsAr = new String[EDStatic.nLanguages][nIFTN];
@@ -346,11 +353,11 @@ public abstract class EDDGrid extends EDD {
         "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptionsAr[0].length'.");
     Test.ensureEqual(
         nDFTN,
-        dataFileTypeExtensions.length,
+        dataFileTypeExtensions.size(),
         "'dataFileTypeNames.length' not equal to 'dataFileTypeExtensions.length'.");
     Test.ensureEqual(
         nDFTN,
-        dataFileTypeInfo.length,
+        dataFileTypeInfo.size(),
         "'dataFileTypeNames.length' not equal to 'dataFileTypeInfo.length'.");
     Test.ensureEqual(
         nIFTN,
@@ -358,13 +365,13 @@ public abstract class EDDGrid extends EDD {
         "'imageFileTypeNames.length' not equal to 'imageFileTypeDescriptionsAr[0].length'.");
     Test.ensureEqual(
         nIFTN,
-        imageFileTypeExtensions.length,
+        imageFileTypeExtensions.size(),
         "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");
     Test.ensureEqual(
         nIFTN,
-        imageFileTypeInfo.length,
+        imageFileTypeInfo.size(),
         "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");
-    defaultFileTypeOption = String2.indexOf(dataFileTypeNames, ".htmlTable");
+    defaultFileTypeOption = dataFileTypeNames.indexOf(".htmlTable");
 
     int tExtra = 6;
     publicGraphFileTypeNames = new String[tExtra + nIFTN];
@@ -381,18 +388,18 @@ public abstract class EDDGrid extends EDD {
     for (int i = 0; i < nDFTN; i++) {
       for (int tl = 0; tl < EDStatic.nLanguages; tl++)
         allFileTypeOptionsAr[tl][i] =
-            dataFileTypeNames[i] + " - " + dataFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[i] = dataFileTypeNames[i];
+            dataFileTypeNames.get(i) + " - " + dataFileTypeDescriptionsAr[tl][i];
+      allFileTypeNames[i] = dataFileTypeNames.get(i);
     }
     for (int i = 0; i < nIFTN; i++) {
       for (int tl = 0; tl < EDStatic.nLanguages; tl++)
         allFileTypeOptionsAr[tl][nDFTN + i] =
-            imageFileTypeNames[i] + " - " + imageFileTypeDescriptionsAr[tl][i];
-      allFileTypeNames[nDFTN + i] = imageFileTypeNames[i];
-      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames[i];
+            imageFileTypeNames.get(i) + " - " + imageFileTypeDescriptionsAr[tl][i];
+      allFileTypeNames[nDFTN + i] = imageFileTypeNames.get(i);
+      publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames.get(i);
     }
 
-    graphsAccessibleTo_fileTypeNames = new HashSet(); // read only, so needn't be thread-safe
+    graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
     for (int i = 0; i < publicGraphFileTypeNames.length; i++)
       graphsAccessibleTo_fileTypeNames.add(publicGraphFileTypeNames[i]);
     defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
@@ -566,7 +573,7 @@ public abstract class EDDGrid extends EDD {
    * @return the types of data files that this dataset can be returned as.
    */
   @Override
-  public String[] dataFileTypeNames() {
+  public ImmutableList<String> dataFileTypeNames() {
     return dataFileTypeNames;
   }
 
@@ -577,7 +584,7 @@ public abstract class EDDGrid extends EDD {
    * @return the file extensions corresponding to the dataFileTypes.
    */
   @Override
-  public String[] dataFileTypeExtensions() {
+  public ImmutableList<String> dataFileTypeExtensions() {
     return dataFileTypeExtensions;
   }
 
@@ -599,7 +606,7 @@ public abstract class EDDGrid extends EDD {
    * @return an info URL corresponding to the dataFileTypes (an element is "" if not available).
    */
   @Override
-  public String[] dataFileTypeInfo() {
+  public ImmutableList<String> dataFileTypeInfo() {
     return dataFileTypeInfo;
   }
 
@@ -611,7 +618,7 @@ public abstract class EDDGrid extends EDD {
    * @return the types of image files that this dataset can be returned as.
    */
   @Override
-  public String[] imageFileTypeNames() {
+  public ImmutableList<String> imageFileTypeNames() {
     return imageFileTypeNames;
   }
 
@@ -622,7 +629,7 @@ public abstract class EDDGrid extends EDD {
    * @return the file extensions corresponding to the imageFileTypes.
    */
   @Override
-  public String[] imageFileTypeExtensions() {
+  public ImmutableList<String> imageFileTypeExtensions() {
     return imageFileTypeExtensions;
   }
 
@@ -643,7 +650,7 @@ public abstract class EDDGrid extends EDD {
    * @return an info URL corresponding to the imageFileTypes.
    */
   @Override
-  public String[] imageFileTypeInfo() {
+  public ImmutableList<String> imageFileTypeInfo() {
     return imageFileTypeInfo;
   }
 
@@ -664,7 +671,6 @@ public abstract class EDDGrid extends EDD {
     if (accessibleViaMAG == null) {
       // find the axisVariables (all are always numeric) with >1 value
       boolean hasAG1V = false;
-      StringArray sa = new StringArray();
       for (int av = 0; av < axisVariables.length; av++) {
         if (axisVariables[av].sourceValues().size() > 1) {
           hasAG1V = true;
@@ -987,8 +993,9 @@ public abstract class EDDGrid extends EDD {
     new StringArray(axisVariableDestinationNames())
         .ensureNoDuplicates("Duplicate axisVariableDestinationNames: ");
 
-    HashSet<String> sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
-    HashSet<String> destNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
+    HashSet<String> sourceNamesHS =
+        new HashSet<>(2 * (axisVariables.length + dataVariables.length));
+    HashSet<String> destNamesHS = new HashSet<>(2 * (axisVariables.length + dataVariables.length));
     for (int v = 0; v < axisVariables.length; v++) {
       Test.ensureTrue(axisVariables[v] != null, errorInMethod + "axisVariable[" + v + "] is null.");
       String tErrorInMethod =
@@ -2124,8 +2131,6 @@ public abstract class EDDGrid extends EDD {
       stopS = stopS.trim();
       // String2.log("      startS=" + startS + " strideI=" + strideI + " stopS=" + stopS);
 
-      double sourceMin = av.sourceValues().getDouble(0);
-      double sourceMax = av.sourceValues().getDouble(nAvSourceValues - 1);
       // if (startS.equals("last") || startS.equals("(last)")) {
       //    startI = av.sourceValues().size() - 1;
       // } else
@@ -3275,7 +3280,7 @@ public abstract class EDDGrid extends EDD {
             } else if (fileTypeName.equals(".kml")) {
               ok = saveAsKml(language, loggedInAs, requestUrl, userDapQuery, osss);
 
-            } else if (String2.indexOf(imageFileTypeNames, fileTypeName) >= 0) {
+            } else if (imageFileTypeNames.indexOf(fileTypeName) >= 0) {
               // do pdf and png LAST, so kml caught above
               ok =
                   saveAsImage(
@@ -3482,7 +3487,7 @@ public abstract class EDDGrid extends EDD {
       writer.write(widgets.beginForm(formName, "GET", "", ""));
 
       // parse the query so &-separated parts are handy
-      String paramName, paramValue, partName, partValue, pParts[];
+      String paramName, partName, partValue, pParts[];
       String queryParts[] =
           Table.getDapQueryParts(userDapQuery); // decoded.  always at least 1 part (may be "")
 
@@ -3579,7 +3584,7 @@ public abstract class EDDGrid extends EDD {
       }
 
       // set draw-related things
-      int nVars = -1, dvPo = 0;
+      int nVars = -1;
       String varLabel[], varHelp[], varOptions[][];
       String varName[] = {"", "", "", ""}; // fill from .vars, else with defaults
       String varsPartName = ".vars=";
@@ -4156,7 +4161,6 @@ public abstract class EDDGrid extends EDD {
       for (int av = 0; av < nAv; av++) {
         EDVGridAxis edvga = axisVariables[av];
         String tFirst = edvga.destinationToString(edvga.firstDestinationValue());
-        String tLast = edvga.destinationToString(edvga.lastDestinationValue());
         String edvgaTooltip = edvga.htmlRangeTooltip(language);
 
         String tUnits = edvga instanceof EDVTimeStampGridAxis ? "UTC" : edvga.units();
@@ -4385,7 +4389,7 @@ public abstract class EDDGrid extends EDD {
 
         // markerType
         paramName = "mType";
-        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.length)
+        if (mType < 0 || mType >= GraphDataLayer.MARKER_TYPES.size())
           mType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
         // if (!yIsAxisVar && varName[2].length() > 0 &&
         //    GraphDataLayer.MARKER_TYPES[mType].toLowerCase().indexOf("filled") < 0)
@@ -4416,16 +4420,15 @@ public abstract class EDDGrid extends EDD {
         graphQuery.append("&.marker=" + SSR.minimalPercentEncode(mType + "|" + mSizes[mSize]));
       }
 
-      String colors[] = HtmlWidgets.PALETTE17;
       if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors) {
 
         // color
         paramName = "colr"; // not color, to avoid possible conflict
         partValue = String2.stringStartsWith(queryParts, partName = ".color=0x");
         int colori =
-            String2.indexOf(
-                colors, partValue == null ? "" : partValue.substring(partName.length()));
-        if (colori < 0) colori = String2.indexOf(colors, "000000");
+            HtmlWidgets.PALETTE17.indexOf(
+                partValue == null ? "" : partValue.substring(partName.length()));
+        if (colori < 0) colori = HtmlWidgets.PALETTE17.indexOf("000000");
         writer.write(
             "  <tr>\n"
                 + "    <td>"
@@ -4436,7 +4439,7 @@ public abstract class EDDGrid extends EDD {
         writer.write("</td>\n" + "  </tr>\n");
 
         // add to graphQuery
-        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17[colori]);
+        graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
       }
 
       if (drawLinesAndMarkers || drawMarkers || drawSurface) {
@@ -4447,14 +4450,6 @@ public abstract class EDDGrid extends EDD {
                 ? new String[0]
                 : String2.split(partValue.substring(partName.length()), '|');
         if (reallyVerbose) String2.log(".colorBar=" + String2.toCSSVString(pParts));
-
-        // find dataVariable relevant to colorBar
-        // (force change in values if this var changes?  but how know, since no state?)
-        int tDataVariablePo =
-            String2.indexOf(
-                dataVariableDestinationNames(),
-                varName[2]); // currently, bothrelevant representation uses varName[2] for "Color"
-        EDV tDataVariable = tDataVariablePo >= 0 ? dataVariables[tDataVariablePo] : null;
 
         paramName = "p";
         String defaultPalette = "";
@@ -4497,9 +4492,7 @@ public abstract class EDDGrid extends EDD {
         paramName = "ps";
         String defaultScale = "";
         int scale =
-            Math.max(
-                0,
-                String2.indexOf(EDV.VALID_SCALES0, pParts.length > 2 ? pParts[2] : defaultScale));
+            Math.max(0, EDV.VALID_SCALES0.indexOf(pParts.length > 2 ? pParts[2] : defaultScale));
         writer.write(
             "    <td>&nbsp;" + EDStatic.magGSScaleAr[language] + ":&nbsp;</td>\n" + "    <td>");
         writer.write(
@@ -4560,7 +4553,7 @@ public abstract class EDDGrid extends EDD {
                         + "|"
                         + (conDis[continuous].length() == 0 ? "" : conDis[continuous].charAt(0))
                         + "|"
-                        + EDV.VALID_SCALES0[scale]
+                        + EDV.VALID_SCALES0.get(scale)
                         + "|"
                         + palMin
                         + "|"
@@ -4602,7 +4595,7 @@ public abstract class EDDGrid extends EDD {
         partValue = String2.stringStartsWith(queryParts, partName = ".land=");
         if (partValue != null) {
           partValue = partValue.substring(6);
-          tLand = Math.max(0, String2.indexOf(SgtMap.drawLandMask_OPTIONS, partValue));
+          tLand = Math.max(0, SgtMap.drawLandMask_OPTIONS.indexOf(partValue));
         }
         writer.write(
             "  <tr>\n"
@@ -4615,7 +4608,7 @@ public abstract class EDDGrid extends EDD {
                 "land",
                 EDStatic.magGSLandMaskTooltipGridAr[language],
                 1,
-                SgtMap.drawLandMask_OPTIONS,
+                String2.immutableListToArray(SgtMap.drawLandMask_OPTIONS),
                 tLand,
                 ""));
         writer.write(
@@ -4627,7 +4620,7 @@ public abstract class EDDGrid extends EDD {
                 + "</tr>\n");
 
         // add to graphQuery
-        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS[tLand]);
+        if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS.get(tLand));
       }
 
       // bgColor
@@ -4809,7 +4802,7 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "    q += \"&.color=0x\"; \n"
                 + "    for (var rb = 0; rb < "
-                + colors.length
+                + HtmlWidgets.PALETTE17.size()
                 + "; rb++) \n"
                 + "      if (d.f1.colr[rb].checked) q += d.f1.colr[rb].value; \n"); // always: one
       // will be
@@ -5289,7 +5282,8 @@ public abstract class EDDGrid extends EDD {
         GregorianCalendar idMinGc =
             Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
         // if it rounded to later time period, shift to earlier time period
-        if (idMinGc.getTimeInMillis() / 1000 > timeCenter)
+        long roundedTime = idMinGc.getTimeInMillis() / 1000;
+        if (roundedTime > timeCenter)
           idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
         GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
         idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
@@ -5300,13 +5294,16 @@ public abstract class EDDGrid extends EDD {
           GregorianCalendar tidMinGc =
               Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
-          if (tidMinGc.getTimeInMillis() / 1000 > timeFirst)
+          long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
+          if (roundedTimeTid > timeFirst)
             tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
           tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
 
           // always show LL button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStart > timeFirst || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -5406,14 +5403,16 @@ public abstract class EDDGrid extends EDD {
           GregorianCalendar tidMaxGc =
               Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
-          if (tidMaxGc.getTimeInMillis() / 1000 < timeLast)
+          if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < timeLast)
             tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
           GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
           tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
 
           // end time
           // always show RR button if idealTime is different from current selection
-          double idRange = (tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis()) / 1000;
+          double idRange =
+              Math2.divideNoRemainder(
+                  tidMaxGc.getTimeInMillis() - tidMinGc.getTimeInMillis(), 1000);
           double ratio = (timeStop - timeStart) / idRange;
           if (timeStop < timeLast || ratio < 0.99 || ratio > 1.01) {
             writer.write(
@@ -5785,33 +5784,33 @@ public abstract class EDDGrid extends EDD {
       return;
     }
 
+    Writer writer = null;
     // get full gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
-    EDV tDataVariables[] = gridDataAccessor.dataVariables();
-    boolean entireDataset = userDapQuery.trim().length() == 0;
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+      EDV tDataVariables[] = gridDataAccessor.dataVariables();
+      String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
+      // get partial gridDataAccessor, to test for size error
+      try (GridDataAccessor partialGda =
+          new GridDataAccessor(
+              language,
+              this,
+              requestUrl,
+              tDataVariables[0].destinationName() + arrayQuery,
+              true,
+              false)) { // rowMajor, convertToNaN
 
-    // get partial gridDataAccessor, to test for size error
-    GridDataAccessor partialGda =
-        new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            tDataVariables[0].destinationName() + arrayQuery,
-            true,
-            false); // rowMajor, convertToNaN
-    long tSize = partialGda.totalIndex().size();
-    Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
-
-    // write the dds    //OPeNDAP 2.0, 7.2.3
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStreamSource.outputStream(
-                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
-    // well go for compatible common 8bit
-    try {
+        long tSize = partialGda.totalIndex().size();
+        Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
+      }
+      boolean entireDataset = userDapQuery.trim().length() == 0;
+      // write the dds    //OPeNDAP 2.0, 7.2.3
+      writer =
+          File2.getBufferedWriter88591(
+              outputStreamSource.outputStream(
+                  File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+      // well go for compatible common 8bit
       writeDDS(language, requestUrl, userDapQuery, writer);
 
       // write the connector  //OPeNDAP 2.0, 7.2.3
@@ -5842,54 +5841,55 @@ public abstract class EDDGrid extends EDD {
       int nDataVariables = tDataVariables.length;
       for (int dv = 0; dv < nDataVariables; dv++) {
         String dvDestName = tDataVariables[dv].destinationName();
-        partialGda =
+        try (GridDataAccessor partialGda =
             new GridDataAccessor(
                 language,
                 this,
                 requestUrl,
                 dvDestName + arrayQuery,
                 true,
-                false); // rowMajor, convertToNaN
-        int shape[] = partialGda.totalIndex().shape();
-        int current[] = partialGda.totalIndex().getCurrent();
+                false)) { // rowMajor, convertToNaN
+          int shape[] = partialGda.totalIndex().shape();
+          int current[] = partialGda.totalIndex().getCurrent();
 
-        // identify the array
-        writer.write(dvDestName + "." + dvDestName);
-        int nAv = axisVariables.length;
-        for (int av = 0; av < nAv; av++) writer.write("[" + shape[av] + "]");
+          // identify the array
+          writer.write(dvDestName + "." + dvDestName);
+          int nAv = axisVariables.length;
+          for (int av = 0; av < nAv; av++) writer.write("[" + shape[av] + "]");
 
-        // send the array data
-        while (partialGda.increment()) {
-          // if last dimension's value is 0, start a new row
-          if (current[nAv - 1] == 0) {
-            writer.write(OpendapHelper.EOL); // see EOL definition for comments
-            for (int av = 0; av < nAv - 1; av++) writer.write("[" + current[av] + "]");
+          // send the array data
+          while (partialGda.increment()) {
+            // if last dimension's value is 0, start a new row
+            if (current[nAv - 1] == 0) {
+              writer.write(OpendapHelper.EOL); // see EOL definition for comments
+              for (int av = 0; av < nAv - 1; av++) writer.write("[" + current[av] + "]");
+            }
+            writer.write(", " + partialGda.getDataValueAsString(0));
           }
-          writer.write(", " + partialGda.getDataValueAsString(0));
-        }
 
-        // send the axis data
-        for (int av = 0; av < nAxisVariables; av++) {
-          writer.write(
-              OpendapHelper.EOL
-                  + OpendapHelper.EOL
-                  + dvDestName
-                  + "."
-                  + axisVariables[av].destinationName()
-                  + "["
-                  + shape[av]
-                  + "]"
-                  + OpendapHelper.EOL); // see EOL definition for comments
-          writer.write(partialGda.axisValues[av].toString());
+          // send the axis data
+          for (int av = 0; av < nAxisVariables; av++) {
+            writer.write(
+                OpendapHelper.EOL
+                    + OpendapHelper.EOL
+                    + dvDestName
+                    + "."
+                    + axisVariables[av].destinationName()
+                    + "["
+                    + shape[av]
+                    + "]"
+                    + OpendapHelper.EOL); // see EOL definition for comments
+            writer.write(partialGda.axisValues[av].toString());
+          }
+          writer.write(OpendapHelper.EOL); // see EOL definition for comments
         }
-        writer.write(OpendapHelper.EOL); // see EOL definition for comments
       }
 
       writer.flush(); // essential
     } finally {
-      gridDataAccessor.releaseResources();
-      partialGda.releaseResources();
-      writer.close();
+      if (writer != null) {
+        writer.close();
+      }
     }
 
     // diagnostic
@@ -6076,54 +6076,54 @@ public abstract class EDDGrid extends EDD {
     }
 
     // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    boolean entireDataset =
-        userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+      boolean entireDataset =
+          userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
 
-    int nAxisVariables = axisVariables.length;
-    int nDataVariables = gridDataAccessor.dataVariables().length;
-    writer.write("Dataset {" + OpendapHelper.EOL); // see EOL definition for comments
-    String arrayDims[] = new String[nAxisVariables]; // each e.g., [time = 404]
-    String dims[] = new String[nAxisVariables]; // each e.g., Float64 time[time = 404];
-    StringBuilder allArrayDims = new StringBuilder();
-    for (int av = 0; av < nAxisVariables; av++) {
-      PrimitiveArray apa = gridDataAccessor.axisValues(av);
-      arrayDims[av] = "[" + axisVariables[av].destinationName() + " = " + apa.size() + "]";
-      dims[av] =
-          OpendapHelper.getAtomicType(apa.elementType())
-              + " "
-              + axisVariables[av].destinationName()
-              + arrayDims[av]
-              + ";"
-              + OpendapHelper.EOL;
-      allArrayDims.append(arrayDims[av]);
-      if (entireDataset) writer.write("  " + dims[av]);
-    }
-    for (int dv = 0; dv < nDataVariables; dv++) {
-      String dvName = gridDataAccessor.dataVariables()[dv].destinationName();
-      writer.write("  GRID {" + OpendapHelper.EOL);
-      writer.write("    ARRAY:" + OpendapHelper.EOL);
-      writer.write(
-          "      "
-              + OpendapHelper.getAtomicType(
-                  gridDataAccessor.dataVariables()[dv].destinationDataPAType())
-              + " "
-              + dvName
-              + allArrayDims
-              + ";"
-              + OpendapHelper.EOL);
-      writer.write("    MAPS:" + OpendapHelper.EOL);
-      for (int av = 0; av < nAxisVariables; av++) writer.write("      " + dims[av]);
-      writer.write("  } " + dvName + ";" + OpendapHelper.EOL);
-    }
+      int nAxisVariables = axisVariables.length;
+      int nDataVariables = gridDataAccessor.dataVariables().length;
+      writer.write("Dataset {" + OpendapHelper.EOL); // see EOL definition for comments
+      String arrayDims[] = new String[nAxisVariables]; // each e.g., [time = 404]
+      String dims[] = new String[nAxisVariables]; // each e.g., Float64 time[time = 404];
+      StringBuilder allArrayDims = new StringBuilder();
+      for (int av = 0; av < nAxisVariables; av++) {
+        PrimitiveArray apa = gridDataAccessor.axisValues(av);
+        arrayDims[av] = "[" + axisVariables[av].destinationName() + " = " + apa.size() + "]";
+        dims[av] =
+            OpendapHelper.getAtomicType(apa.elementType())
+                + " "
+                + axisVariables[av].destinationName()
+                + arrayDims[av]
+                + ";"
+                + OpendapHelper.EOL;
+        allArrayDims.append(arrayDims[av]);
+        if (entireDataset) writer.write("  " + dims[av]);
+      }
+      for (int dv = 0; dv < nDataVariables; dv++) {
+        String dvName = gridDataAccessor.dataVariables()[dv].destinationName();
+        writer.write("  GRID {" + OpendapHelper.EOL);
+        writer.write("    ARRAY:" + OpendapHelper.EOL);
+        writer.write(
+            "      "
+                + OpendapHelper.getAtomicType(
+                    gridDataAccessor.dataVariables()[dv].destinationDataPAType())
+                + " "
+                + dvName
+                + allArrayDims
+                + ";"
+                + OpendapHelper.EOL);
+        writer.write("    MAPS:" + OpendapHelper.EOL);
+        for (int av = 0; av < nAxisVariables; av++) writer.write("      " + dims[av]);
+        writer.write("  } " + dvName + ";" + OpendapHelper.EOL);
+      }
 
-    // Thredds recently started using urlEncoding the final name (and other names?).
-    // I don't (yet).
-    writer.write("} " + datasetID + ";" + OpendapHelper.EOL);
-    writer.flush(); // essential
-    gridDataAccessor.releaseResources();
+      // Thredds recently started using urlEncoding the final name (and other names?).
+      // I don't (yet).
+      writer.write("} " + datasetID + ";" + OpendapHelper.EOL);
+      writer.flush(); // essential
+    }
 
     // diagnostic
     if (reallyVerbose)
@@ -6351,34 +6351,35 @@ public abstract class EDDGrid extends EDD {
       return;
     }
 
+    Writer writer = null;
     // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor gridDataAccessor =
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
-    EDV tDataVariables[] = gridDataAccessor.dataVariables();
-    boolean entireDataset =
-        userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+      String arrayQuery = buildDapArrayQuery(gridDataAccessor.constraints());
+      EDV tDataVariables[] = gridDataAccessor.dataVariables();
+      boolean entireDataset =
+          userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
 
-    // get partial gridDataAccessor, in case of size error
-    GridDataAccessor partialGda =
-        new GridDataAccessor(
-            language,
-            this,
-            requestUrl,
-            tDataVariables[0].destinationName() + arrayQuery,
-            true,
-            false);
-    long tSize = partialGda.totalIndex().size();
-    Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
+      // get partial gridDataAccessor, in case of size error
+      try (GridDataAccessor partialGda =
+          new GridDataAccessor(
+              language,
+              this,
+              requestUrl,
+              tDataVariables[0].destinationName() + arrayQuery,
+              true,
+              false)) {
+        long tSize = partialGda.totalIndex().size();
+        Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
+      }
 
-    // write the dds    //OPeNDAP 2.0, 7.2.3
-    OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
-    // for compatible common 8bit
-    try {
+      // write the dds    //OPeNDAP 2.0, 7.2.3
+      OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
+      writer =
+          File2.getBufferedWriter88591(
+              outputStream); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go
+      // for compatible common 8bit
       writeDDS(language, requestUrl, userDapQuery, writer);
 
       // write the connector  //OPeNDAP 2.0, 7.2.3
@@ -6401,66 +6402,68 @@ public abstract class EDDGrid extends EDD {
         // write elements of the array, in dds order
         int nDataVariables = tDataVariables.length;
         for (int dv = 0; dv < nDataVariables; dv++) {
-          partialGda =
+          try (GridDataAccessor partialGda =
               new GridDataAccessor(
                   language,
                   this,
                   requestUrl,
                   tDataVariables[dv].destinationName() + arrayQuery,
                   true,
-                  false); // rowMajor, convertToNaN
+                  false)) { // rowMajor, convertToNaN
 
-          tSize = partialGda.totalIndex().size();
+            long tSize = partialGda.totalIndex().size();
 
-          // send the array size (twice)  //OPeNDAP 2.0, 7.3.2.1
-          dos.writeInt((int) tSize); // safe since checked above
-          dos.writeInt((int) tSize); // safe since checked above
+            // send the array size (twice)  //OPeNDAP 2.0, 7.3.2.1
+            dos.writeInt((int) tSize); // safe since checked above
+            dos.writeInt((int) tSize); // safe since checked above
 
-          // send the array data   (Note that DAP doesn't have exact match for some Java data
-          // types.)
-          PAType type = tDataVariables[dv].destinationDataPAType();
+            // send the array data   (Note that DAP doesn't have exact match for some Java data
+            // types.)
+            PAType type = tDataVariables[dv].destinationDataPAType();
 
-          PrimitiveArray[] pas = partialGda.getPartialDataValues();
-          if (type == PAType.BYTE) {
-            while (partialGda.incrementChunk()) pas[0].writeDos(dos);
-            // pad byte array to 4 byte boundary
-            long tn = partialGda.totalIndex().size();
-            while (tn++ % 4 != 0) dos.writeByte(0);
-          } else if (type == PAType.SHORT
-              || // no exact DAP equivalent
-              type == PAType.CHAR
-              || // no exact DAP equivalent
-              type == PAType.INT) {
-            while (partialGda.incrementChunk())
-              (type == PAType.INT ? pas[0] : new IntArray(pas[0])).writeDos(dos);
-          } else if (type == PAType.FLOAT) {
-            while (partialGda.incrementChunk()) pas[0].writeDos(dos);
-          } else if (type == PAType.LONG
-              || // no exact DAP equivalent
-              type == PAType.DOUBLE) {
-            while (partialGda.incrementChunk())
-              (type == PAType.DOUBLE ? pas[0] : new DoubleArray(pas[0])).writeDos(dos);
-          } else if (type == PAType.STRING) {
-            while (partialGda.incrementChunk()) pas[0].externalizeForDODS(dos);
-          } else {
-            throw new RuntimeException(
-                EDStatic.errorInternalAr[0] + "unsupported source data type=" + type);
-          } /* */
+            PrimitiveArray[] pas = partialGda.getPartialDataValues();
+            if (type == PAType.BYTE) {
+              while (partialGda.incrementChunk()) pas[0].writeDos(dos);
+              // pad byte array to 4 byte boundary
+              long tn = partialGda.totalIndex().size();
+              while (tn++ % 4 != 0) dos.writeByte(0);
+            } else if (type == PAType.SHORT
+                || // no exact DAP equivalent
+                type == PAType.CHAR
+                || // no exact DAP equivalent
+                type == PAType.INT) {
+              while (partialGda.incrementChunk())
+                (type == PAType.INT ? pas[0] : new IntArray(pas[0])).writeDos(dos);
+            } else if (type == PAType.FLOAT) {
+              while (partialGda.incrementChunk()) pas[0].writeDos(dos);
+            } else if (type == PAType.LONG
+                || // no exact DAP equivalent
+                type == PAType.DOUBLE) {
+              while (partialGda.incrementChunk())
+                (type == PAType.DOUBLE ? pas[0] : new DoubleArray(pas[0])).writeDos(dos);
+            } else if (type == PAType.STRING) {
+              while (partialGda.incrementChunk()) pas[0].externalizeForDODS(dos);
+            } else {
+              throw new RuntimeException(
+                  EDStatic.errorInternalAr[0] + "unsupported source data type=" + type);
+            } /* */
 
-          for (int av = 0; av < nAxisVariables; av++)
-            gridDataAccessor.axisValues[av].externalizeForDODS(dos);
+            for (int av = 0; av < nAxisVariables; av++)
+              gridDataAccessor.axisValues[av].externalizeForDODS(dos);
 
-          dos.flush();
+            dos.flush();
+          }
         }
 
         dos.flush(); // essential
       } finally {
         dos.close();
-        writer = null;
+        if (writer != null) {
+          writer.close();
+          writer = null;
+        }
       }
     } finally {
-      gridDataAccessor.releaseResources();
-      partialGda.releaseResources();
       if (writer != null)
         try {
           writer.close();
@@ -6537,181 +6540,183 @@ public abstract class EDDGrid extends EDD {
 
     // parse the userDapQuery and get the GridDataAccessor
     // this also tests for error when parsing query
-    GridDataAccessor gridDataAccessor =
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    if (gridDataAccessor.dataVariables().length > 1)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[language], ".esriAscii")));
-    EDV edv = gridDataAccessor.dataVariables()[0];
-    PAType edvPAType = edv.destinationDataPAType();
-    PAOne edvPAOne = new PAOne(edvPAType);
+            language, this, requestUrl, userDapQuery, true, true)) { // rowMajor, convertToNaN
+      if (gridDataAccessor.dataVariables().length > 1)
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(EDStatic.queryError1VarAr[0], ".esriAscii"),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(EDStatic.queryError1VarAr[language], ".esriAscii")));
+      EDV edv = gridDataAccessor.dataVariables()[0];
+      PAType edvPAType = edv.destinationDataPAType();
+      PAOne edvPAOne = new PAOne(edvPAType);
 
-    // check that request meets ESRI restrictions
-    PrimitiveArray lonPa = null, latPa = null;
-    for (int av = 0; av < axisVariables.length; av++) {
-      PrimitiveArray avpa = gridDataAccessor.axisValues(av);
-      if (av == lonIndex) {
-        lonPa = avpa;
-      } else if (av == latIndex) {
-        latPa = avpa;
-      } else {
-        if (avpa.size() > 1)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[0],
-                          ".esriAscii",
-                          axisVariables[av].destinationName()),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[language],
-                          ".esriAscii",
-                          axisVariables[av].destinationName())));
-      }
-    }
-
-    int nLon = lonPa.size();
-    int nLat = latPa.size();
-    double minX = lonPa.getDouble(0);
-    double minY = latPa.getDouble(0);
-    double maxX = lonPa.getDouble(nLon - 1);
-    double maxY = latPa.getDouble(nLat - 1);
-    boolean flipX = false;
-    boolean flipY = false;
-    if (minX > maxX) {
-      flipX = true;
-      double d = minX;
-      minX = maxX;
-      maxX = d;
-    }
-    if (minY > maxY) {
-      flipY = true;
-      double d = minY;
-      minY = maxY;
-      maxY = d;
-    }
-    double lonSpacing = lonPa.size() <= 1 ? Double.NaN : (maxX - minX) / (nLon - 1);
-    double latSpacing = latPa.size() <= 1 ? Double.NaN : (maxY - minY) / (nLat - 1);
-    if (Double.isNaN(lonSpacing) && !Double.isNaN(latSpacing)) lonSpacing = latSpacing;
-    if (!Double.isNaN(lonSpacing) && Double.isNaN(latSpacing)) latSpacing = lonSpacing;
-    if (Double.isNaN(lonSpacing) && Double.isNaN(latSpacing))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[language], ".esriAscii")));
-
-    // for almostEqual(3, lonSpacing, latSpacing) DON'T GO BELOW 3!!!
-    // For example: PHssta has 4096 lon points so spacing is ~.0878
-    // But .0878 * 4096 = 359.6
-    // and .0879 * 4096 = 360.0    (just beyond extreme test of 3 digit match)
-    // That is unacceptable. So 2 would be abominable.  Even 3 is stretching the limits.
-    if (!Math2.almostEqual(3, lonSpacing, latSpacing))
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorEqualSpacingAr[0],
-                      ".esriAscii",
-                      "" + lonSpacing,
-                      "" + latSpacing),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorEqualSpacingAr[language],
-                      ".esriAscii",
-                      "" + lonSpacing,
-                      "" + latSpacing)));
-    if (minX < 180 && maxX > 180)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError180Ar[0], ".esriAscii"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError180Ar[language], ".esriAscii")));
-    double lonAdjust = lonPa.getDouble(0) >= 180 ? -360 : 0;
-    if (minX + lonAdjust < -180 || maxX + lonAdjust > 180)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorAdjustedAr[0],
-                      ".esriAscii",
-                      "" + (minX + lonAdjust),
-                      "" + (maxX + lonAdjust)),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(
-                      EDStatic.queryErrorAdjustedAr[language],
-                      ".esriAscii",
-                      "" + (minX + lonAdjust),
-                      "" + (maxX + lonAdjust))));
-
-    // request is ok and compatible with ESRI .asc!
-
-    // complications:
-    // * lonIndex and latIndex can be in any position in axisVariables.
-    // * ESRI .asc wants latMajor (that might be rowMajor or columnMajor),
-    //   and TOP row first!
-    // The simplest solution is to save all data to temp file,
-    // then read values as needed from file and write to writer.
-
-    // make the GridDataRandomAccessor
-    GridDataRandomAccessor gdra = new GridDataRandomAccessor(gridDataAccessor);
-    int current[] = gridDataAccessor.totalIndex().getCurrent(); // the internal object that changes
-
-    // then get the writer
-    // ???!!! ISO-8859-1 is a guess. I found no specification.
-    Writer writer = File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
-    try {
-      // ESRI .asc doesn't like NaN
-      double dmv = edv.safeDestinationMissingValue();
-      String NaNString =
-          Double.isNaN(dmv)
-              ? "-9999999"
-              : // good for int and floating data types
-              dmv == Math2.roundToLong(dmv) ? "" + Math2.roundToLong(dmv) : "" + dmv;
-
-      // write the data
-      writer.write("ncols " + nLon + "\n");
-      writer.write("nrows " + nLat + "\n");
-      // ???!!! ERD always uses centered, but others might need was xllcorner yllcorner
-      writer.write("xllcenter " + (minX + lonAdjust) + "\n");
-      writer.write("yllcenter " + minY + "\n");
-      // ArcGIS forces cellsize to be square; see test above
-      writer.write("cellsize " + latSpacing + "\n");
-      writer.write("nodata_value " + NaNString + "\n");
-
-      // write values from row to row, top to bottom
-      Arrays.fill(current, 0); // manipulate indices in current[]
-
-      for (int tLat = 0; tLat < nLat; tLat++) {
-        current[latIndex] = flipY ? tLat : nLat - tLat - 1;
-        for (int tLon = 0; tLon < nLon; tLon++) {
-          current[lonIndex] = flipX ? nLon - tLon - 1 : tLon;
-          gdra.getDataValueAsPAOne(current, 0, edvPAOne);
-          String s = edvPAOne.toString();
-          writer.write(s.equals("") || s.equals("NaN") ? NaNString : s);
-          writer.write(tLon == nLon - 1 ? '\n' : ' ');
+      // check that request meets ESRI restrictions
+      PrimitiveArray lonPa = null, latPa = null;
+      for (int av = 0; av < axisVariables.length; av++) {
+        PrimitiveArray avpa = gridDataAccessor.axisValues(av);
+        if (av == lonIndex) {
+          lonPa = avpa;
+        } else if (av == latIndex) {
+          latPa = avpa;
+        } else {
+          if (avpa.size() > 1)
+            throw new SimpleException(
+                EDStatic.bilingual(
+                    language,
+                    EDStatic.queryErrorAr[0]
+                        + MessageFormat.format(
+                            EDStatic.queryError1ValueAr[0],
+                            ".esriAscii",
+                            axisVariables[av].destinationName()),
+                    EDStatic.queryErrorAr[language]
+                        + MessageFormat.format(
+                            EDStatic.queryError1ValueAr[language],
+                            ".esriAscii",
+                            axisVariables[av].destinationName())));
         }
       }
-      gdra.releaseResources();
 
-      writer.flush(); // essential
-    } finally {
-      gdra.releaseResources();
-      writer.close();
+      int nLon = lonPa.size();
+      int nLat = latPa.size();
+      double minX = lonPa.getDouble(0);
+      double minY = latPa.getDouble(0);
+      double maxX = lonPa.getDouble(nLon - 1);
+      double maxY = latPa.getDouble(nLat - 1);
+      boolean flipX = false;
+      boolean flipY = false;
+      if (minX > maxX) {
+        flipX = true;
+        double d = minX;
+        minX = maxX;
+        maxX = d;
+      }
+      if (minY > maxY) {
+        flipY = true;
+        double d = minY;
+        minY = maxY;
+        maxY = d;
+      }
+      double lonSpacing = lonPa.size() <= 1 ? Double.NaN : (maxX - minX) / (nLon - 1);
+      double latSpacing = latPa.size() <= 1 ? Double.NaN : (maxY - minY) / (nLat - 1);
+      if (Double.isNaN(lonSpacing) && !Double.isNaN(latSpacing)) lonSpacing = latSpacing;
+      if (!Double.isNaN(lonSpacing) && Double.isNaN(latSpacing)) latSpacing = lonSpacing;
+      if (Double.isNaN(lonSpacing) && Double.isNaN(latSpacing))
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[0], ".esriAscii"),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(EDStatic.queryErrorLLGt1Ar[language], ".esriAscii")));
+
+      // for almostEqual(3, lonSpacing, latSpacing) DON'T GO BELOW 3!!!
+      // For example: PHssta has 4096 lon points so spacing is ~.0878
+      // But .0878 * 4096 = 359.6
+      // and .0879 * 4096 = 360.0    (just beyond extreme test of 3 digit match)
+      // That is unacceptable. So 2 would be abominable.  Even 3 is stretching the limits.
+      if (!Math2.almostEqual(3, lonSpacing, latSpacing))
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(
+                        EDStatic.queryErrorEqualSpacingAr[0],
+                        ".esriAscii",
+                        "" + lonSpacing,
+                        "" + latSpacing),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(
+                        EDStatic.queryErrorEqualSpacingAr[language],
+                        ".esriAscii",
+                        "" + lonSpacing,
+                        "" + latSpacing)));
+      if (minX < 180 && maxX > 180)
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(EDStatic.queryError180Ar[0], ".esriAscii"),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(EDStatic.queryError180Ar[language], ".esriAscii")));
+      double lonAdjust = lonPa.getDouble(0) >= 180 ? -360 : 0;
+      if (minX + lonAdjust < -180 || maxX + lonAdjust > 180)
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(
+                        EDStatic.queryErrorAdjustedAr[0],
+                        ".esriAscii",
+                        "" + (minX + lonAdjust),
+                        "" + (maxX + lonAdjust)),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(
+                        EDStatic.queryErrorAdjustedAr[language],
+                        ".esriAscii",
+                        "" + (minX + lonAdjust),
+                        "" + (maxX + lonAdjust))));
+
+      // request is ok and compatible with ESRI .asc!
+
+      // complications:
+      // * lonIndex and latIndex can be in any position in axisVariables.
+      // * ESRI .asc wants latMajor (that might be rowMajor or columnMajor),
+      //   and TOP row first!
+      // The simplest solution is to save all data to temp file,
+      // then read values as needed from file and write to writer.
+
+      // make the GridDataRandomAccessor
+      try (GridDataRandomAccessor gdra = new GridDataRandomAccessor(gridDataAccessor)) {
+        int current[] =
+            gridDataAccessor.totalIndex().getCurrent(); // the internal object that changes
+
+        // then get the writer
+        // ???!!! ISO-8859-1 is a guess. I found no specification.
+        Writer writer =
+            File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
+        try {
+          // ESRI .asc doesn't like NaN
+          double dmv = edv.safeDestinationMissingValue();
+          String NaNString =
+              Double.isNaN(dmv)
+                  ? "-9999999"
+                  : // good for int and floating data types
+                  dmv == Math2.roundToLong(dmv) ? "" + Math2.roundToLong(dmv) : "" + dmv;
+
+          // write the data
+          writer.write("ncols " + nLon + "\n");
+          writer.write("nrows " + nLat + "\n");
+          // ???!!! ERD always uses centered, but others might need was xllcorner yllcorner
+          writer.write("xllcenter " + (minX + lonAdjust) + "\n");
+          writer.write("yllcenter " + minY + "\n");
+          // ArcGIS forces cellsize to be square; see test above
+          writer.write("cellsize " + latSpacing + "\n");
+          writer.write("nodata_value " + NaNString + "\n");
+
+          // write values from row to row, top to bottom
+          Arrays.fill(current, 0); // manipulate indices in current[]
+
+          for (int tLat = 0; tLat < nLat; tLat++) {
+            current[latIndex] = flipY ? tLat : nLat - tLat - 1;
+            for (int tLon = 0; tLon < nLon; tLon++) {
+              current[lonIndex] = flipX ? nLon - tLon - 1 : tLon;
+              gdra.getDataValueAsPAOne(current, 0, edvPAOne);
+              String s = edvPAOne.toString();
+              writer.write(s.equals("") || s.equals("NaN") ? NaNString : s);
+              writer.write(tLon == nLon - 1 ? '\n' : ' ');
+            }
+          }
+
+          writer.flush(); // essential
+        } finally {
+          writer.close();
+        }
+      }
     }
 
     // diagnostic
@@ -6816,85 +6821,81 @@ public abstract class EDDGrid extends EDD {
 
     // parse the userDapQuery and get the GridDataAccessor
     // this also tests for error when parsing query
-    GridDataAccessor gridDataAccessor =
+    double lonAdjust = 0;
+    try (GridDataAccessor gridDataAccessor =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    if (gridDataAccessor.dataVariables().length > 1)
-      throw new SimpleException(
-          EDStatic.bilingual(
-              language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[0], ".geotif"),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.queryError1VarAr[language], ".geotif")));
-    EDV edv = gridDataAccessor.dataVariables()[0];
-    String dataName = edv.destinationName();
+            language, this, requestUrl, userDapQuery, true, true)) { // rowMajor, convertToNaN
+      if (gridDataAccessor.dataVariables().length > 1)
+        throw new SimpleException(
+            EDStatic.bilingual(
+                language,
+                EDStatic.queryErrorAr[0]
+                    + MessageFormat.format(EDStatic.queryError1VarAr[0], ".geotif"),
+                EDStatic.queryErrorAr[language]
+                    + MessageFormat.format(EDStatic.queryError1VarAr[language], ".geotif")));
 
-    PrimitiveArray lonPa = null, latPa = null;
-    double minX = Double.NaN,
-        maxX = Double.NaN,
-        minY = Double.NaN,
-        maxY = Double.NaN,
-        lonAdjust = 0;
-    for (int av = 0; av < axisVariables.length; av++) {
-      PrimitiveArray avpa = gridDataAccessor.axisValues(av);
-      if (av == lonIndex) {
-        lonPa = avpa;
-        minX = lonPa.getNiceDouble(0);
-        maxX = lonPa.getNiceDouble(lonPa.size() - 1);
-        if (minX > maxX) { // then deal with descending axis values
-          double d = minX;
-          minX = maxX;
-          maxX = d;
+      PrimitiveArray lonPa = null, latPa = null;
+      double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
+      for (int av = 0; av < axisVariables.length; av++) {
+        PrimitiveArray avpa = gridDataAccessor.axisValues(av);
+        if (av == lonIndex) {
+          lonPa = avpa;
+          minX = lonPa.getNiceDouble(0);
+          maxX = lonPa.getNiceDouble(lonPa.size() - 1);
+          if (minX > maxX) { // then deal with descending axis values
+            double d = minX;
+            minX = maxX;
+            maxX = d;
+          }
+          if (minX < 180 && maxX > 180)
+            throw new SimpleException(
+                EDStatic.bilingual(
+                    language,
+                    EDStatic.queryErrorAr[0]
+                        + MessageFormat.format(EDStatic.queryError180Ar[0], ".geotif"),
+                    EDStatic.queryErrorAr[language]
+                        + MessageFormat.format(EDStatic.queryError180Ar[language], ".geotif")));
+          if (minX >= 180) lonAdjust = -360;
+          minX += lonAdjust;
+          maxX += lonAdjust;
+          if (minX < -180 || maxX > 180)
+            throw new SimpleException(
+                EDStatic.bilingual(
+                    language,
+                    EDStatic.queryErrorAr[0]
+                        + MessageFormat.format(
+                            EDStatic.queryErrorAdjustedAr[0], ".geotif", "" + minX, "" + maxX),
+                    EDStatic.queryErrorAr[language]
+                        + MessageFormat.format(
+                            EDStatic.queryErrorAdjustedAr[language],
+                            ".geotif",
+                            "" + minX,
+                            "" + maxX)));
+        } else if (av == latIndex) {
+          latPa = avpa;
+          minY = latPa.getNiceDouble(0);
+          maxY = latPa.getNiceDouble(latPa.size() - 1);
+          if (minY > maxY) { // then deal with descending axis values
+            double d = minY;
+            minY = maxY;
+            maxY = d;
+          }
+        } else {
+          if (avpa.size() > 1)
+            throw new SimpleException(
+                EDStatic.bilingual(
+                    language,
+                    EDStatic.queryErrorAr[0]
+                        + MessageFormat.format(
+                            EDStatic.queryError1ValueAr[0],
+                            ".geotif",
+                            axisVariables[av].destinationName()),
+                    EDStatic.queryErrorAr[language]
+                        + MessageFormat.format(
+                            EDStatic.queryError1ValueAr[language],
+                            ".geotif",
+                            axisVariables[av].destinationName())));
         }
-        if (minX < 180 && maxX > 180)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(EDStatic.queryError180Ar[0], ".geotif"),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(EDStatic.queryError180Ar[language], ".geotif")));
-        if (minX >= 180) lonAdjust = -360;
-        minX += lonAdjust;
-        maxX += lonAdjust;
-        if (minX < -180 || maxX > 180)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryErrorAdjustedAr[0], ".geotif", "" + minX, "" + maxX),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryErrorAdjustedAr[language],
-                          ".geotif",
-                          "" + minX,
-                          "" + maxX)));
-      } else if (av == latIndex) {
-        latPa = avpa;
-        minY = latPa.getNiceDouble(0);
-        maxY = latPa.getNiceDouble(latPa.size() - 1);
-        if (minY > maxY) { // then deal with descending axis values
-          double d = minY;
-          minY = maxY;
-          maxY = d;
-        }
-      } else {
-        if (avpa.size() > 1)
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[0],
-                          ".geotif",
-                          axisVariables[av].destinationName()),
-                  EDStatic.queryErrorAr[language]
-                      + MessageFormat.format(
-                          EDStatic.queryError1ValueAr[language],
-                          ".geotif",
-                          axisVariables[av].destinationName())));
       }
     }
 
@@ -6988,7 +6989,7 @@ public abstract class EDDGrid extends EDD {
 
       // 2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
       GridDataset gridDataset = GridDataset.open(ncFullName);
-      java.util.List grids = gridDataset.getGrids();
+      java.util.List<GridDatatype> grids = gridDataset.getGrids();
       // if (grids.size() == 0) ...
       GeoGrid geoGrid = (GeoGrid) grids.get(0);
       Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); // get all
@@ -7245,7 +7246,7 @@ public abstract class EDDGrid extends EDD {
           // .land
         } else if (ampPart.startsWith(".land=")) {
           String gt = ampPart.substring(6);
-          int which = String2.indexOf(SgtMap.drawLandMask_OPTIONS, gt);
+          int which = SgtMap.drawLandMask_OPTIONS.indexOf(gt);
           if (which >= 1) currentDrawLandMask = gt;
           if (reallyVerbose) String2.log(".land= currentDrawLandMask=" + currentDrawLandMask);
 
@@ -7266,7 +7267,7 @@ public abstract class EDDGrid extends EDD {
           if (pParts == null) pParts = new String[0];
           if (pParts.length > 0) markerType = String2.parseInt(pParts[0]);
           if (pParts.length > 1) markerSize = String2.parseInt(pParts[1]);
-          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.length)
+          if (markerType < 0 || markerType >= GraphDataLayer.MARKER_TYPES.size())
             markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
           if (markerSize < 1 || markerSize > 50) markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
           if (reallyVerbose) String2.log(".marker= type=" + markerType + " size=" + markerSize);
@@ -7845,7 +7846,13 @@ public abstract class EDDGrid extends EDD {
       }
       String newQuery = buildDapQuery(newReqDataNames, constraints);
       if (reallyVerbose) String2.log("  newQuery=" + newQuery);
-      GridDataAccessor gda =
+
+      Grid grid = null;
+      Table table = null;
+      GraphDataLayer graphDataLayer = null;
+      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList<>();
+      String cptFullName = null;
+      try (GridDataAccessor gda =
           new GridDataAccessor(
               language,
               this,
@@ -7857,497 +7864,497 @@ public abstract class EDDGrid extends EDD {
                   yAxisIndex
                       > xAxisIndex, // Grid needs column-major order (so depends on axis order)
               // //??? what if xAxisIndex < 0???
-              true); // convertToNaN
-      long requestNL = gda.totalIndex().size();
-      Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage");
-      Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage");
-      int requestN = (int) requestNL; // safe since checked above
-      Grid grid = null;
-      Table table = null;
-      GraphDataLayer graphDataLayer = null;
-      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList();
-      String cptFullName = null;
+              true)) { // convertToNaN
+        long requestNL = gda.totalIndex().size();
+        Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage");
+        Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage");
+        int requestN = (int) requestNL; // safe since checked above
 
-      if (drawVectors) {
-        // put the data in a Table   0=xAxisVar 1=yAxisVar 2=dataVar1 3=dataVar2
-        if (yAxisVar == null) // because yAxisIndex < 0      //redundant, since tested above
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "The variable assigned to the y axis ("
-                  + vars[0].destinationName()
-                  + ") must be an axis variable.");
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        PrimitiveArray tpa =
-            PrimitiveArray.factory(vars[3].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-        table.addColumn(vars[2].destinationName(), zpa);
-        table.addColumn(vars[3].destinationName(), tpa);
-        PAOne xPAOne = new PAOne(xpa);
-        PAOne yPAOne = new PAOne(ypa);
-        PAOne zPAOne = new PAOne(zpa);
-        PAOne tPAOne = new PAOne(tpa);
-        while (gda.increment()) {
-          gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
-          gda.getAxisValueAsPAOne(yAxisIndex, yPAOne).addTo(ypa);
-          gda.getDataValueAsPAOne(0, zPAOne).addTo(zpa);
-          gda.getDataValueAsPAOne(1, tPAOne).addTo(tpa);
-        }
-        if (Double.isNaN(vectorStandard)) {
-          double stats1[] = zpa.calculateStats();
-          double stats2[] = tpa.calculateStats();
-          double lh[] =
-              Math2.suggestLowHigh(
-                  0,
-                  Math.max( // suggestLowHigh handles NaNs
-                      Math.abs(stats1[PrimitiveArray.STATS_MAX]),
-                      Math.abs(stats2[PrimitiveArray.STATS_MAX])));
-          vectorStandard = lh[1];
-        }
-
-        String varInfo =
-            vars[2].longName()
-                + (zUnits.equals(tUnits) ? "" : zUnits)
-                + ", "
-                + vars[3].longName()
-                + " ("
-                + (float) vectorStandard
-                + (tUnits.length() == 0 ? "" : " " + vars[3].units())
-                + ")";
-
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                2,
-                3,
-                1, // x,y,z1,z2,z3 column numbers
-                GraphDataLayer.DRAW_POINT_VECTORS,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                vars[0].longName() + xUnits,
-                vars[1].longName() + yUnits,
-                varInfo,
-                title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                null,
-                color,
-                GraphDataLayer.MARKER_TYPE_NONE,
-                0,
-                vectorStandard,
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else if (drawSticks) {
-        // put the data in a Table   0=xAxisVar 1=uDataVar 2=vDataVar
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-        table.addColumn(vars[2].destinationName(), zpa);
-        PAOne xPAOne = new PAOne(xpa);
-        PAOne yPAOne = new PAOne(ypa);
-        PAOne zPAOne = new PAOne(zpa);
-        while (gda.increment()) {
-          gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
-          gda.getDataValueAsPAOne(0, yPAOne).addTo(ypa);
-          gda.getDataValueAsPAOne(1, zPAOne).addTo(zpa);
-        }
-
-        String varInfo =
-            vars[1].longName()
-                + (yUnits.equals(zUnits) ? "" : yUnits)
-                + ", "
-                + vars[2].longName()
-                + (zUnits.length() == 0 ? "" : zUnits);
-
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                2,
-                1,
-                1, // x,y,z1,z2,z3 column numbers
-                GraphDataLayer.DRAW_STICKS,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                vars[0].longName() + xUnits,
-                varInfo,
-                title(),
-                otherInfo.toString(),
-                "",
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                null,
-                color,
-                GraphDataLayer.MARKER_TYPE_NONE,
-                0,
-                1,
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else if (isMap || drawSurface) {
-        // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
-        // attributes
-        if (yAxisVar == null) // because yAxisIndex < 0
-        throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "The variable assigned to the y axis ("
-                  + vars[0].destinationName()
-                  + ") must be an axis variable.");
-        if (vars[2] != null) { // it shouldn't be
-          Attributes colorVarAtts = vars[2].combinedAttributes();
-          if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-          if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
-          if (nSections == Integer.MAX_VALUE) nSections = colorVarAtts.getInt("colorBarNSections");
-          if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-          if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-          String ts = colorVarAtts.getString("colorBarContinuous");
-          if (continuousS.length() == 0 && ts != null)
-            continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
-        }
-
-        if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
-        if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
-        if (nSections < 0 || nSections >= 100) nSections = -1;
-        boolean continuous = continuousS.startsWith("d") ? false : true;
-
-        // put the data in a Grid, data in column-major order
-        grid = new Grid();
-        grid.data = new double[requestN];
-        if (png
-            && drawLegend.equals(LEGEND_ONLY)
-            && palette.length() > 0
-            && !Double.isNaN(paletteMin)
-            && !Double.isNaN(paletteMax)) {
-
-          // legend=Only and palette range is known, so don't need to get the data
-          if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
-          Arrays.fill(grid.data, Double.NaN); // safe for all situations
-
-        } else {
-
-          // get the data
-          int po = 0;
-          while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
-        }
-
-        if (false) { // reallyVerbose) {
-          DoubleArray da = new DoubleArray(grid.data);
-          double stats[] = da.calculateStats();
-          String2.log(
-              "dataNTotal="
-                  + da.size()
-                  + " dataN="
-                  + stats[PrimitiveArray.STATS_N]
-                  + " dataMin="
-                  + stats[PrimitiveArray.STATS_MIN]
-                  + " dataMax="
-                  + stats[PrimitiveArray.STATS_MAX]);
-        }
-
-        // get the x axis "lon" values
-        PrimitiveArray tpa = gda.axisValues(xAxisIndex);
-        int tn = tpa.size();
-        grid.lon = new double[tn];
-        for (int i = 0; i < tn; i++) grid.lon[i] = tpa.getDouble(i);
-        grid.lonSpacing = (grid.lon[tn - 1] - grid.lon[0]) / Math.max(1, tn - 1);
-
-        // get the y axis "lat" values
-        tpa = gda.axisValues(yAxisIndex);
-        tn = tpa.size();
-        // String2.log(">>gdaYsize=" + tn);
-        grid.lat = new double[tn];
-        for (int i = 0; i < tn; i++) grid.lat[i] = tpa.getDouble(i);
-        grid.latSpacing = (grid.lat[tn - 1] - grid.lat[0]) / Math.max(1, tn - 1);
-
-        // cptFullName
-        if (Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-          // if not specified, I have the right to change
-          DoubleArray da = new DoubleArray(grid.data);
-          double stats[] = da.calculateStats();
-          minData = stats[PrimitiveArray.STATS_MIN];
-          maxData = stats[PrimitiveArray.STATS_MAX];
-          if (maxData >= minData / -2 && maxData <= minData * -2) {
-            double td = Math.max(maxData, -minData);
-            minData = -td;
-            maxData = td;
-          }
-          double tRange[] = Math2.suggestLowHigh(minData, maxData);
-          minData = tRange[0];
-          maxData = tRange[1];
-          if (maxData >= minData / -2 && maxData <= minData * -2) {
-            double td = Math.max(maxData, -minData);
-            minData = -td;
-            maxData = td;
-          }
-          if (Double.isNaN(paletteMin)) paletteMin = minData;
-          if (Double.isNaN(paletteMax)) paletteMax = maxData;
-        }
-        if (paletteMin > paletteMax) {
-          double d = paletteMin;
-          paletteMin = paletteMax;
-          paletteMax = d;
-        }
-        if (paletteMin == paletteMax) {
-          double tRange[] = Math2.suggestLowHigh(paletteMin, paletteMax);
-          paletteMin = tRange[0];
-          paletteMax = tRange[1];
-        }
-        if (palette.length() == 0)
-          palette = Math2.almostEqual(3, -paletteMin, paletteMax) ? "BlueWhiteRed" : "Rainbow";
-        if (scale.length() == 0) scale = "Linear";
-        cptFullName =
-            CompoundColorMap.makeCPT(
-                EDStatic.fullPaletteDirectory,
-                palette,
-                scale,
-                paletteMin,
-                paletteMax,
-                nSections,
-                continuous,
-                EDStatic.fullCptCacheDirectory);
-
-        // make a graphDataLayer with coloredSurface setup
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                1,
-                1,
-                1, // x,y,z1,z2,z3 column numbers    irrelevant
-                GraphDataLayer.DRAW_COLORED_SURFACE, // AND_CONTOUR_LINE?
-                xIsTimeAxis,
-                yIsTimeAxis,
-                (reallySmall ? vars[0].destinationName() : vars[0].longName())
-                    + xUnits, // x,yAxisTitle  for now, always std units
-                (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
-                (reallySmall ? vars[2].destinationName() : vars[2].longName())
-                    + zUnits, // boldTitle
-                title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                null,
-                grid,
-                null,
-                new CompoundColorMap(cptFullName),
-                color, // color is irrelevant
-                -1,
-                -1, // marker type, size
-                0, // vectorStandard
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
-
-      } else { // make graph with lines, linesAndMarkers, or markers
-        // put the data in a Table   x,y,(z)
-        table = new Table();
-        PrimitiveArray xpa =
-            PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
-        PrimitiveArray ypa =
-            PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
-        PrimitiveArray zpa =
-            vars[2] == null
-                ? null
-                : PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
-        table.addColumn(vars[0].destinationName(), xpa);
-        table.addColumn(vars[1].destinationName(), ypa);
-
-        if (vars[2] != null) {
+        if (drawVectors) {
+          // put the data in a Table   0=xAxisVar 1=yAxisVar 2=dataVar1 3=dataVar2
+          if (yAxisVar == null) // because yAxisIndex < 0      //redundant, since tested above
+          throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "The variable assigned to the y axis ("
+                    + vars[0].destinationName()
+                    + ") must be an axis variable.");
+          table = new Table();
+          PrimitiveArray xpa =
+              PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+          PrimitiveArray ypa =
+              PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
+          PrimitiveArray zpa =
+              PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
+          PrimitiveArray tpa =
+              PrimitiveArray.factory(vars[3].destinationDataPAType(), requestN, false);
+          table.addColumn(vars[0].destinationName(), xpa);
+          table.addColumn(vars[1].destinationName(), ypa);
           table.addColumn(vars[2].destinationName(), zpa);
+          table.addColumn(vars[3].destinationName(), tpa);
+          PAOne xPAOne = new PAOne(xpa);
+          PAOne yPAOne = new PAOne(ypa);
+          PAOne zPAOne = new PAOne(zpa);
+          PAOne tPAOne = new PAOne(tpa);
+          while (gda.increment()) {
+            gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
+            gda.getAxisValueAsPAOne(yAxisIndex, yPAOne).addTo(ypa);
+            gda.getDataValueAsPAOne(0, zPAOne).addTo(zpa);
+            gda.getDataValueAsPAOne(1, tPAOne).addTo(tpa);
+          }
+          if (Double.isNaN(vectorStandard)) {
+            double stats1[] = zpa.calculateStats();
+            double stats2[] = tpa.calculateStats();
+            double lh[] =
+                Math2.suggestLowHigh(
+                    0,
+                    Math.max( // suggestLowHigh handles NaNs
+                        Math.abs(stats1[PrimitiveArray.STATS_MAX]),
+                        Math.abs(stats2[PrimitiveArray.STATS_MAX])));
+            vectorStandard = lh[1];
+          }
 
+          String varInfo =
+              vars[2].longName()
+                  + (zUnits.equals(tUnits) ? "" : zUnits)
+                  + ", "
+                  + vars[3].longName()
+                  + " ("
+                  + (float) vectorStandard
+                  + (tUnits.length() == 0 ? "" : " " + vars[3].units())
+                  + ")";
+
+          // make a graphDataLayer with data  time series line
+          graphDataLayer =
+              new GraphDataLayer(
+                  -1, // which pointScreen
+                  0,
+                  1,
+                  2,
+                  3,
+                  1, // x,y,z1,z2,z3 column numbers
+                  GraphDataLayer.DRAW_POINT_VECTORS,
+                  xIsTimeAxis,
+                  yIsTimeAxis,
+                  vars[0].longName() + xUnits,
+                  vars[1].longName() + yUnits,
+                  varInfo,
+                  title(),
+                  otherInfo.toString(),
+                  MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
+                  table,
+                  null,
+                  null,
+                  null,
+                  color,
+                  GraphDataLayer.MARKER_TYPE_NONE,
+                  0,
+                  vectorStandard,
+                  GraphDataLayer.REGRESS_NONE);
+          graphDataLayers.add(graphDataLayer);
+
+        } else if (drawSticks) {
+          // put the data in a Table   0=xAxisVar 1=uDataVar 2=vDataVar
+          table = new Table();
+          PrimitiveArray xpa =
+              PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+          PrimitiveArray ypa =
+              PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
+          PrimitiveArray zpa =
+              PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
+          table.addColumn(vars[0].destinationName(), xpa);
+          table.addColumn(vars[1].destinationName(), ypa);
+          table.addColumn(vars[2].destinationName(), zpa);
+          PAOne xPAOne = new PAOne(xpa);
+          PAOne yPAOne = new PAOne(ypa);
+          PAOne zPAOne = new PAOne(zpa);
+          while (gda.increment()) {
+            gda.getAxisValueAsPAOne(xAxisIndex, xPAOne).addTo(xpa);
+            gda.getDataValueAsPAOne(0, yPAOne).addTo(ypa);
+            gda.getDataValueAsPAOne(1, zPAOne).addTo(zpa);
+          }
+
+          String varInfo =
+              vars[1].longName()
+                  + (yUnits.equals(zUnits) ? "" : yUnits)
+                  + ", "
+                  + vars[2].longName()
+                  + (zUnits.length() == 0 ? "" : zUnits);
+
+          // make a graphDataLayer with data  time series line
+          graphDataLayer =
+              new GraphDataLayer(
+                  -1, // which pointScreen
+                  0,
+                  1,
+                  2,
+                  1,
+                  1, // x,y,z1,z2,z3 column numbers
+                  GraphDataLayer.DRAW_STICKS,
+                  xIsTimeAxis,
+                  yIsTimeAxis,
+                  vars[0].longName() + xUnits,
+                  varInfo,
+                  title(),
+                  otherInfo.toString(),
+                  "",
+                  MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
+                  table,
+                  null,
+                  null,
+                  null,
+                  color,
+                  GraphDataLayer.MARKER_TYPE_NONE,
+                  0,
+                  1,
+                  GraphDataLayer.REGRESS_NONE);
+          graphDataLayers.add(graphDataLayer);
+
+        } else if (isMap || drawSurface) {
           // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
           // attributes
-          Attributes colorVarAtts = vars[2].combinedAttributes();
-          if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
-          if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
-          if (nSections == Integer.MAX_VALUE) nSections = colorVarAtts.getInt("colorBarNSections");
-          if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
-          if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
-          String ts = colorVarAtts.getString("colorBarContinuous");
-          if (continuousS.length() == 0 && ts != null)
-            continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
+          if (yAxisVar == null) // because yAxisIndex < 0
+          throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "The variable assigned to the y axis ("
+                    + vars[0].destinationName()
+                    + ") must be an axis variable.");
+          if (vars[2] != null) { // it shouldn't be
+            Attributes colorVarAtts = vars[2].combinedAttributes();
+            if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
+            if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
+            if (nSections == Integer.MAX_VALUE)
+              nSections = colorVarAtts.getInt("colorBarNSections");
+            if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
+            if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
+            String ts = colorVarAtts.getString("colorBarContinuous");
+            if (continuousS.length() == 0 && ts != null)
+              continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
+          }
 
           if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
-          if (String2.indexOf(EDV.VALID_SCALES, scale) < 0) scale = "Linear";
+          if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
           if (nSections < 0 || nSections >= 100) nSections = -1;
-        }
-
-        PAOne xpaPAOne = new PAOne(xpa);
-        PAOne ypaPAOne = new PAOne(ypa);
-        PAOne zpaPAOne = zpa == null ? null : new PAOne(zpa);
-        if (png
-            && drawLegend.equals(LEGEND_ONLY)
-            && (vars[2] == null
-                || (palette.length() > 0
-                    && !Double.isNaN(paletteMin)
-                    && !Double.isNaN(paletteMax)))) {
-
-          // legend=Only and (no color var or palette range is known), so don't need to get the data
-          if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
-          xpaPAOne.setDouble(Double.NaN).addTo(xpa);
-          ypaPAOne.setDouble(Double.NaN).addTo(ypa);
-          if (vars[2] != null) zpaPAOne.setDouble(Double.NaN).addTo(zpa);
-
-        } else {
-          // need to get the data
-          while (gda.increment()) {
-            gda.getAxisValueAsPAOne(xAxisIndex, xpaPAOne).addTo(xpa);
-            if (yAxisIndex >= 0) gda.getAxisValueAsPAOne(yAxisIndex, ypaPAOne).addTo(ypa);
-            else gda.getDataValueAsPAOne(0, ypaPAOne).addTo(ypa);
-            if (vars[2] != null)
-              gda.getDataValueAsPAOne(yAxisIndex >= 0 ? 0 : 1, zpaPAOne)
-                  .addTo(zpa); // yAxisIndex>=0 is true if y is axisVariable
-          }
-        }
-
-        // make the colorbar
-        CompoundColorMap colorMap = null;
-        if (vars[2] != null) {
           boolean continuous = continuousS.startsWith("d") ? false : true;
 
-          if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-            // set missing items based on z data
-            double zStats[] = table.getColumn(2).calculateStats();
-            if (zStats[PrimitiveArray.STATS_N] > 0) {
-              double minMax[];
-              if (vars[2] instanceof EDVTimeStamp) {
-                // ???I think this is too crude. Smarter code elsewhere? Or handled by
-                // compoundColorMap?
-                double r20 =
-                    (zStats[PrimitiveArray.STATS_MAX] - zStats[PrimitiveArray.STATS_MIN]) / 20;
-                minMax =
-                    new double[] {
-                      zStats[PrimitiveArray.STATS_MIN] - r20, zStats[PrimitiveArray.STATS_MAX] + r20
-                    };
-              } else {
-                minMax =
-                    Math2.suggestLowHigh(
-                        zStats[PrimitiveArray.STATS_MIN], zStats[PrimitiveArray.STATS_MAX]);
-              }
+          // put the data in a Grid, data in column-major order
+          grid = new Grid();
+          grid.data = new double[requestN];
+          if (png
+              && drawLegend.equals(LEGEND_ONLY)
+              && palette.length() > 0
+              && !Double.isNaN(paletteMin)
+              && !Double.isNaN(paletteMax)) {
 
-              if (palette.length() == 0) {
-                if (minMax[1] >= minMax[0] / -2 && minMax[1] <= minMax[0] * -2) {
-                  double td = Math.max(minMax[1], -minMax[0]);
-                  minMax[0] = -td;
-                  minMax[1] = td;
-                  palette = "BlueWhiteRed";
-                  // } else if (minMax[0] >= 0 && minMax[0] < minMax[1] / 5) {
-                  //    palette = "WhiteRedBlack";
-                } else {
-                  palette = "Rainbow";
-                }
-              }
-              if (Double.isNaN(paletteMin)) paletteMin = minMax[0];
-              if (Double.isNaN(paletteMax)) paletteMax = minMax[1];
+            // legend=Only and palette range is known, so don't need to get the data
+            if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
+            Arrays.fill(grid.data, Double.NaN); // safe for all situations
+
+          } else {
+
+            // get the data
+            int po = 0;
+            while (gda.increment()) grid.data[po++] = gda.getDataValueAsDouble(0);
+          }
+
+          if (false) { // reallyVerbose) {
+            DoubleArray da = new DoubleArray(grid.data);
+            double stats[] = da.calculateStats();
+            String2.log(
+                "dataNTotal="
+                    + da.size()
+                    + " dataN="
+                    + stats[PrimitiveArray.STATS_N]
+                    + " dataMin="
+                    + stats[PrimitiveArray.STATS_MIN]
+                    + " dataMax="
+                    + stats[PrimitiveArray.STATS_MAX]);
+          }
+
+          // get the x axis "lon" values
+          PrimitiveArray tpa = gda.axisValues(xAxisIndex);
+          int tn = tpa.size();
+          grid.lon = new double[tn];
+          for (int i = 0; i < tn; i++) grid.lon[i] = tpa.getDouble(i);
+          grid.lonSpacing = (grid.lon[tn - 1] - grid.lon[0]) / Math.max(1, tn - 1);
+
+          // get the y axis "lat" values
+          tpa = gda.axisValues(yAxisIndex);
+          tn = tpa.size();
+          // String2.log(">>gdaYsize=" + tn);
+          grid.lat = new double[tn];
+          for (int i = 0; i < tn; i++) grid.lat[i] = tpa.getDouble(i);
+          grid.latSpacing = (grid.lat[tn - 1] - grid.lat[0]) / Math.max(1, tn - 1);
+
+          // cptFullName
+          if (Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
+            // if not specified, I have the right to change
+            DoubleArray da = new DoubleArray(grid.data);
+            double stats[] = da.calculateStats();
+            minData = stats[PrimitiveArray.STATS_MIN];
+            maxData = stats[PrimitiveArray.STATS_MAX];
+            if (maxData >= minData / -2 && maxData <= minData * -2) {
+              double td = Math.max(maxData, -minData);
+              minData = -td;
+              maxData = td;
+            }
+            double tRange[] = Math2.suggestLowHigh(minData, maxData);
+            minData = tRange[0];
+            maxData = tRange[1];
+            if (maxData >= minData / -2 && maxData <= minData * -2) {
+              double td = Math.max(maxData, -minData);
+              minData = -td;
+              maxData = td;
+            }
+            if (Double.isNaN(paletteMin)) paletteMin = minData;
+            if (Double.isNaN(paletteMax)) paletteMax = maxData;
+          }
+          if (paletteMin > paletteMax) {
+            double d = paletteMin;
+            paletteMin = paletteMax;
+            paletteMax = d;
+          }
+          if (paletteMin == paletteMax) {
+            double tRange[] = Math2.suggestLowHigh(paletteMin, paletteMax);
+            paletteMin = tRange[0];
+            paletteMax = tRange[1];
+          }
+          if (palette.length() == 0)
+            palette = Math2.almostEqual(3, -paletteMin, paletteMax) ? "BlueWhiteRed" : "Rainbow";
+          if (scale.length() == 0) scale = "Linear";
+          cptFullName =
+              CompoundColorMap.makeCPT(
+                  EDStatic.fullPaletteDirectory,
+                  palette,
+                  scale,
+                  paletteMin,
+                  paletteMax,
+                  nSections,
+                  continuous,
+                  EDStatic.fullCptCacheDirectory);
+
+          // make a graphDataLayer with coloredSurface setup
+          graphDataLayer =
+              new GraphDataLayer(
+                  -1, // which pointScreen
+                  0,
+                  1,
+                  1,
+                  1,
+                  1, // x,y,z1,z2,z3 column numbers    irrelevant
+                  GraphDataLayer.DRAW_COLORED_SURFACE, // AND_CONTOUR_LINE?
+                  xIsTimeAxis,
+                  yIsTimeAxis,
+                  (reallySmall ? vars[0].destinationName() : vars[0].longName())
+                      + xUnits, // x,yAxisTitle  for now, always std units
+                  (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
+                  (reallySmall ? vars[2].destinationName() : vars[2].longName())
+                      + zUnits, // boldTitle
+                  title(),
+                  otherInfo.toString(),
+                  MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
+                  null,
+                  grid,
+                  null,
+                  new CompoundColorMap(cptFullName),
+                  color, // color is irrelevant
+                  -1,
+                  -1, // marker type, size
+                  0, // vectorStandard
+                  GraphDataLayer.REGRESS_NONE);
+          graphDataLayers.add(graphDataLayer);
+
+        } else { // make graph with lines, linesAndMarkers, or markers
+          // put the data in a Table   x,y,(z)
+          table = new Table();
+          PrimitiveArray xpa =
+              PrimitiveArray.factory(vars[0].destinationDataPAType(), requestN, false);
+          PrimitiveArray ypa =
+              PrimitiveArray.factory(vars[1].destinationDataPAType(), requestN, false);
+          PrimitiveArray zpa =
+              vars[2] == null
+                  ? null
+                  : PrimitiveArray.factory(vars[2].destinationDataPAType(), requestN, false);
+          table.addColumn(vars[0].destinationName(), xpa);
+          table.addColumn(vars[1].destinationName(), ypa);
+
+          if (vars[2] != null) {
+            table.addColumn(vars[2].destinationName(), zpa);
+
+            // if .colorBar info didn't provide info, try to get defaults from vars[2] colorBarXxx
+            // attributes
+            Attributes colorVarAtts = vars[2].combinedAttributes();
+            if (palette.length() == 0) palette = colorVarAtts.getString("colorBarPalette");
+            if (scale.length() == 0) scale = colorVarAtts.getString("colorBarScale");
+            if (nSections == Integer.MAX_VALUE)
+              nSections = colorVarAtts.getInt("colorBarNSections");
+            if (Double.isNaN(paletteMin)) paletteMin = colorVarAtts.getDouble("colorBarMinimum");
+            if (Double.isNaN(paletteMax)) paletteMax = colorVarAtts.getDouble("colorBarMaximum");
+            String ts = colorVarAtts.getString("colorBarContinuous");
+            if (continuousS.length() == 0 && ts != null)
+              continuousS = String2.parseBoolean(ts) ? "c" : "d"; // defaults to true
+
+            if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
+            if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
+            if (nSections < 0 || nSections >= 100) nSections = -1;
+          }
+
+          PAOne xpaPAOne = new PAOne(xpa);
+          PAOne ypaPAOne = new PAOne(ypa);
+          PAOne zpaPAOne = zpa == null ? null : new PAOne(zpa);
+          if (png
+              && drawLegend.equals(LEGEND_ONLY)
+              && (vars[2] == null
+                  || (palette.length() > 0
+                      && !Double.isNaN(paletteMin)
+                      && !Double.isNaN(paletteMax)))) {
+
+            // legend=Only and (no color var or palette range is known), so don't need to get the
+            // data
+            if (reallyVerbose) String2.log("***LEGEND ONLY: SO NOT GETTING THE DATA");
+            xpaPAOne.setDouble(Double.NaN).addTo(xpa);
+            ypaPAOne.setDouble(Double.NaN).addTo(ypa);
+            if (vars[2] != null) zpaPAOne.setDouble(Double.NaN).addTo(zpa);
+
+          } else {
+            // need to get the data
+            while (gda.increment()) {
+              gda.getAxisValueAsPAOne(xAxisIndex, xpaPAOne).addTo(xpa);
+              if (yAxisIndex >= 0) gda.getAxisValueAsPAOne(yAxisIndex, ypaPAOne).addTo(ypa);
+              else gda.getDataValueAsPAOne(0, ypaPAOne).addTo(ypa);
+              if (vars[2] != null)
+                gda.getDataValueAsPAOne(yAxisIndex >= 0 ? 0 : 1, zpaPAOne)
+                    .addTo(zpa); // yAxisIndex>=0 is true if y is axisVariable
             }
           }
-          if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
-            // don't create a colorMap
-            String2.log(
-                "Warning in EDDTable.saveAsImage: NaNs not allowed (zVar has no numeric data):"
-                    + " palette="
-                    + palette
-                    + " paletteMin="
-                    + paletteMin
-                    + " paletteMax="
-                    + paletteMax);
-          } else {
-            if (reallyVerbose)
-              String2.log(
-                  "create colorBar palette="
-                      + palette
-                      + " continuous="
-                      + continuous
-                      + " scale="
-                      + scale
-                      + " min="
-                      + paletteMin
-                      + " max="
-                      + paletteMax
-                      + " nSections="
-                      + nSections);
-            if (vars[2] instanceof EDVTimeStamp)
-              colorMap =
-                  new CompoundColorMap(
-                      EDStatic.fullPaletteDirectory,
-                      palette,
-                      false, // false= data is seconds
-                      paletteMin,
-                      paletteMax,
-                      nSections,
-                      continuous,
-                      EDStatic.fullCptCacheDirectory);
-            else
-              colorMap =
-                  new CompoundColorMap(
-                      EDStatic.fullPaletteDirectory,
-                      palette,
-                      scale,
-                      paletteMin,
-                      paletteMax,
-                      nSections,
-                      continuous,
-                      EDStatic.fullCptCacheDirectory);
-          }
-        }
 
-        // make a graphDataLayer with data  time series line
-        graphDataLayer =
-            new GraphDataLayer(
-                -1, // which pointScreen
-                0,
-                1,
-                vars[2] == null ? 1 : 2,
-                1,
-                1, // x,y,z1,z2,z3 column numbers
-                drawLines
-                    ? GraphDataLayer.DRAW_LINES
-                    : drawMarkers
-                        ? GraphDataLayer.DRAW_MARKERS
-                        : GraphDataLayer.DRAW_MARKERS_AND_LINES,
-                xIsTimeAxis,
-                yIsTimeAxis,
-                (reallySmall ? vars[0].destinationName() : vars[0].longName())
-                    + xUnits, // x,yAxisTitle  for now, always std units
-                (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
-                vars[2] == null
-                    ? title()
-                    : (reallySmall ? vars[2].destinationName() : vars[2].longName()) + zUnits,
-                vars[2] == null ? "" : title(),
-                otherInfo.toString(),
-                MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
-                table,
-                null,
-                null,
-                colorMap,
-                color,
-                markerType,
-                markerSize,
-                0, // vectorStandard
-                GraphDataLayer.REGRESS_NONE);
-        graphDataLayers.add(graphDataLayer);
+          // make the colorbar
+          CompoundColorMap colorMap = null;
+          if (vars[2] != null) {
+            boolean continuous = continuousS.startsWith("d") ? false : true;
+
+            if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
+              // set missing items based on z data
+              double zStats[] = table.getColumn(2).calculateStats();
+              if (zStats[PrimitiveArray.STATS_N] > 0) {
+                double minMax[];
+                if (vars[2] instanceof EDVTimeStamp) {
+                  // ???I think this is too crude. Smarter code elsewhere? Or handled by
+                  // compoundColorMap?
+                  double r20 =
+                      (zStats[PrimitiveArray.STATS_MAX] - zStats[PrimitiveArray.STATS_MIN]) / 20;
+                  minMax =
+                      new double[] {
+                        zStats[PrimitiveArray.STATS_MIN] - r20,
+                        zStats[PrimitiveArray.STATS_MAX] + r20
+                      };
+                } else {
+                  minMax =
+                      Math2.suggestLowHigh(
+                          zStats[PrimitiveArray.STATS_MIN], zStats[PrimitiveArray.STATS_MAX]);
+                }
+
+                if (palette.length() == 0) {
+                  if (minMax[1] >= minMax[0] / -2 && minMax[1] <= minMax[0] * -2) {
+                    double td = Math.max(minMax[1], -minMax[0]);
+                    minMax[0] = -td;
+                    minMax[1] = td;
+                    palette = "BlueWhiteRed";
+                    // } else if (minMax[0] >= 0 && minMax[0] < minMax[1] / 5) {
+                    //    palette = "WhiteRedBlack";
+                  } else {
+                    palette = "Rainbow";
+                  }
+                }
+                if (Double.isNaN(paletteMin)) paletteMin = minMax[0];
+                if (Double.isNaN(paletteMax)) paletteMax = minMax[1];
+              }
+            }
+            if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
+              // don't create a colorMap
+              String2.log(
+                  "Warning in EDDTable.saveAsImage: NaNs not allowed (zVar has no numeric data):"
+                      + " palette="
+                      + palette
+                      + " paletteMin="
+                      + paletteMin
+                      + " paletteMax="
+                      + paletteMax);
+            } else {
+              if (reallyVerbose)
+                String2.log(
+                    "create colorBar palette="
+                        + palette
+                        + " continuous="
+                        + continuous
+                        + " scale="
+                        + scale
+                        + " min="
+                        + paletteMin
+                        + " max="
+                        + paletteMax
+                        + " nSections="
+                        + nSections);
+              if (vars[2] instanceof EDVTimeStamp)
+                colorMap =
+                    new CompoundColorMap(
+                        EDStatic.fullPaletteDirectory,
+                        palette,
+                        false, // false= data is seconds
+                        paletteMin,
+                        paletteMax,
+                        nSections,
+                        continuous,
+                        EDStatic.fullCptCacheDirectory);
+              else
+                colorMap =
+                    new CompoundColorMap(
+                        EDStatic.fullPaletteDirectory,
+                        palette,
+                        scale,
+                        paletteMin,
+                        paletteMax,
+                        nSections,
+                        continuous,
+                        EDStatic.fullCptCacheDirectory);
+            }
+          }
+
+          // make a graphDataLayer with data  time series line
+          graphDataLayer =
+              new GraphDataLayer(
+                  -1, // which pointScreen
+                  0,
+                  1,
+                  vars[2] == null ? 1 : 2,
+                  1,
+                  1, // x,y,z1,z2,z3 column numbers
+                  drawLines
+                      ? GraphDataLayer.DRAW_LINES
+                      : drawMarkers
+                          ? GraphDataLayer.DRAW_MARKERS
+                          : GraphDataLayer.DRAW_MARKERS_AND_LINES,
+                  xIsTimeAxis,
+                  yIsTimeAxis,
+                  (reallySmall ? vars[0].destinationName() : vars[0].longName())
+                      + xUnits, // x,yAxisTitle  for now, always std units
+                  (reallySmall ? vars[1].destinationName() : vars[1].longName()) + yUnits,
+                  vars[2] == null
+                      ? title()
+                      : (reallySmall ? vars[2].destinationName() : vars[2].longName()) + zUnits,
+                  vars[2] == null ? "" : title(),
+                  otherInfo.toString(),
+                  MessageFormat.format(EDStatic.imageDataCourtesyOfAr[language], institution()),
+                  table,
+                  null,
+                  null,
+                  colorMap,
+                  color,
+                  markerType,
+                  markerSize,
+                  0, // vectorStandard
+                  GraphDataLayer.REGRESS_NONE);
+          graphDataLayers.add(graphDataLayer);
+        }
       }
 
       // setup graphics2D
@@ -8373,26 +8380,21 @@ public abstract class EDDGrid extends EDD {
         // section adjusts the map output to match the requested
         // inputs.
 
-        if (transparentPng && isMap) { // Chris didn't have &&isMap
-          // Chris had this section much higher in method and without &&isMap
-          double inputMinX = Double.MIN_VALUE;
-          double inputMaxX = Double.MAX_VALUE;
-          double inputMinY = Double.MIN_NORMAL;
-          double inputMaxY = Double.MAX_VALUE;
+        if (transparentPng && isMap) {
           // transparentPng supports returning requests outside of data range
           // to enable tiles that partially contain data. This section
           // validates there is data to return before continuing.
           // Get the X input values.
-          inputMinX = inputValues.get(lonIndex * 2);
-          inputMaxX = inputValues.get(lonIndex * 2 + 1);
+          double inputMinX = inputValues.get(lonIndex * 2);
+          double inputMaxX = inputValues.get(lonIndex * 2 + 1);
           if (inputMinX > inputMaxX) {
             double d = inputMinX;
             inputMinX = inputMaxX;
             inputMaxX = d;
           }
           // Get the Y input values.
-          inputMinY = inputValues.get(latIndex * 2);
-          inputMaxY = inputValues.get(latIndex * 2 + 1);
+          double inputMinY = inputValues.get(latIndex * 2);
+          double inputMaxY = inputValues.get(latIndex * 2 + 1);
           if (inputMinY > inputMaxY) {
             double d = inputMinY;
             inputMinY = inputMaxY;
@@ -8487,7 +8489,7 @@ public abstract class EDDGrid extends EDD {
           if (currentDrawLandMask == null)
             currentDrawLandMask = vars[2].drawLandMask(defaultDrawLandMask());
 
-          ArrayList mmal =
+          List<PrimitiveArray> mmal =
               SgtMap.makeMap(
                   false,
                   SgtUtil.LEGEND_BELOW,
@@ -8527,7 +8529,7 @@ public abstract class EDDGrid extends EDD {
                   "",
                   "",
                   "", // plot contour
-                  new ArrayList(),
+                  new ArrayList<>(),
                   g2,
                   0,
                   0,
@@ -8550,7 +8552,7 @@ public abstract class EDDGrid extends EDD {
           currentDrawLandMask = edv.drawLandMask(defaultDrawLandMask());
         }
 
-        ArrayList mmal =
+        List<PrimitiveArray> mmal =
             isMap
                 ? SgtMap.makeMap(
                     transparentPng,
@@ -9145,7 +9147,7 @@ public abstract class EDDGrid extends EDD {
       saveAsTableWriter(ada, tw);
     } else {
       saveAsTableWriter(gda, tw);
-      gda.releaseResources();
+      gda.close();
     }
 
     // diagnostic
@@ -9253,7 +9255,7 @@ public abstract class EDDGrid extends EDD {
       saveAsTableWriter(ada, tw);
     } else {
       saveAsTableWriter(gda, tw);
-      gda.releaseResources();
+      gda.close();
     }
 
     // diagnostic
@@ -9331,7 +9333,7 @@ public abstract class EDDGrid extends EDD {
       saveAsTableWriter(ada, tw);
     } else {
       saveAsTableWriter(gda, tw);
-      gda.releaseResources();
+      gda.close();
     }
 
     // diagnostic
@@ -9473,7 +9475,6 @@ public abstract class EDDGrid extends EDD {
     }
     int lonMidi = (lonStarti + lonStopi) / 2;
     double lonMidd = lonEdv.destinationValue(lonMidi).getNiceDouble(0);
-    double lonAverageSpacing = Math.abs(lonEdv.averageSpacing());
 
     int totalNLat = latEdv.sourceValues().size();
     int latStarti = tConstraints.get(latIndex * 3 + 0);
@@ -9486,7 +9487,6 @@ public abstract class EDDGrid extends EDD {
               + "For .kml requests, the latitude values must be between -90 and 90.");
     int latMidi = (latStarti + latStopi) / 2;
     double latMidd = latEdv.destinationValue(latMidi).getNiceDouble(0);
-    double latAverageSpacing = Math.abs(latEdv.averageSpacing());
 
     if (lonStarti == lonStopi || latStarti == latStopi)
       throw new SimpleException(
@@ -9669,10 +9669,8 @@ public abstract class EDDGrid extends EDD {
           for (int nl = 0; nl < 4; nl++) {
             double tLonStartd = nl < 2 ? lonStartd : lonMidd;
             double tLonStopd = nl < 2 ? lonMidd : lonStopd;
-            int ttxPo = txPo * 2 + (nl < 2 ? 0 : 1);
             double tLatStartd = Math2.odd(nl) ? latMidd : latStartd;
             double tLatStopd = Math2.odd(nl) ? latStopd : latMidd;
-            int ttyPo = tyPo * 2 + (Math2.odd(nl) ? 1 : 0);
             double tLonAdjust =
                 Math.min(tLonStartd, tLonStopd) >= 180
                     ? -360
@@ -9870,34 +9868,33 @@ public abstract class EDDGrid extends EDD {
     if (isAxisDapQuery(userDapQuery))
       throw new SimpleException(errorWhile + "The .wav format is for data requests only.");
 
+    DataOutputStream dos = null;
     // ** create gridDataAccessor first,
     // to check for error when parsing query or getting data
-    GridDataAccessor gda =
+    try (GridDataAccessor gda =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-    EDV tDataVariables[] = gda.dataVariables();
-    int nDV = tDataVariables.length;
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+      EDV tDataVariables[] = gda.dataVariables();
+      int nDV = tDataVariables.length;
 
-    // ensure all same type of data (and not char or string)
-    String tPATypeString = tDataVariables[0].destinationDataType();
-    Test.ensureTrue(
-        !tPATypeString.equals("String") && !tPATypeString.equals("char"),
-        errorWhile + "All data columns must be numeric.");
-    boolean java8 = System.getProperty("java.version").startsWith("1.8.");
-    if (java8 && (tPATypeString.equals("float") || tPATypeString.equals("double")))
-      throw new SimpleException(
-          errorWhile + "Until Java 9, float and double values can't be written to .wav files.");
-    for (int dvi = 1; dvi < nDV; dvi++) {
-      Test.ensureEqual(
-          tPATypeString,
-          tDataVariables[dvi].destinationDataType(),
-          errorWhile + "All data columns must be of the same data type.");
-    }
+      // ensure all same type of data (and not char or string)
+      String tPATypeString = tDataVariables[0].destinationDataType();
+      Test.ensureTrue(
+          !tPATypeString.equals("String") && !tPATypeString.equals("char"),
+          errorWhile + "All data columns must be numeric.");
+      boolean java8 = System.getProperty("java.version").startsWith("1.8.");
+      if (java8 && (tPATypeString.equals("float") || tPATypeString.equals("double")))
+        throw new SimpleException(
+            errorWhile + "Until Java 9, float and double values can't be written to .wav files.");
+      for (int dvi = 1; dvi < nDV; dvi++) {
+        Test.ensureEqual(
+            tPATypeString,
+            tDataVariables[dvi].destinationDataType(),
+            errorWhile + "All data columns must be of the same data type.");
+      }
 
-    // write data to dos
-    DataOutputStream dos =
-        new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullDosName)));
-    try {
+      // write data to dos
+      dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullDosName)));
 
       // send the data to dos
       PrimitiveArray[] pdv = gda.getPartialDataValues();
@@ -9919,21 +9916,21 @@ public abstract class EDDGrid extends EDD {
           for (int dvi = 0; dvi < nDV; dvi++) pdv[dvi].writeDos(dos, i);
         }
       }
+      dos.close();
+
+      // create the wav file
+      Table.writeWaveFile(
+          fullDosName,
+          nDV,
+          gda.totalIndex().size(),
+          tPATypeString.equals("long") ? "int" : tPATypeString,
+          gda.globalAttributes,
+          randomInt,
+          fullOutName,
+          time);
     } finally {
-      gda.releaseResources();
       dos.close();
     }
-
-    // create the wav file
-    Table.writeWaveFile(
-        fullDosName,
-        nDV,
-        gda.totalIndex().size(),
-        tPATypeString.equals("long") ? "int" : tPATypeString,
-        gda.globalAttributes,
-        randomInt,
-        fullOutName,
-        time);
     File2.delete(fullDosName);
 
     // diagnostic
@@ -9991,150 +9988,152 @@ public abstract class EDDGrid extends EDD {
     // ** create gridDataAccessor first,
     // to check for error when parsing query or getting data,
     // and to check n values
-    GridDataAccessor gda =
+    try (GridDataAccessor gda =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, true); // rowMajor, convertToNaN
-    EDV tDataVariables[] = gda.dataVariables();
-    int nDV = tDataVariables.length;
+            language, this, requestUrl, userDapQuery, true, true)) { // rowMajor, convertToNaN
+      EDV tDataVariables[] = gda.dataVariables();
+      int nDV = tDataVariables.length;
 
-    // ensure < Integer.MAX_VALUE items
-    // No specific limit in Igor. But this is suggested as very large.
-    // And this is limit for PrimitiveArray size.
-    NDimensionalIndex totalIndex = gda.totalIndex();
-    if (nDV * totalIndex.size() >= Integer.MAX_VALUE)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + " ("
-              + (nDV * totalIndex.size())
-              + " values is more than "
-              + (Integer.MAX_VALUE - 1)
-              + ")");
-    int nAV = axisVariables.length;
-    if (nAV > 4)
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + "Igor Text Files can handle 4 dimensions, not "
-              + nAV);
+      // ensure < Integer.MAX_VALUE items
+      // No specific limit in Igor. But this is suggested as very large.
+      // And this is limit for PrimitiveArray size.
+      NDimensionalIndex totalIndex = gda.totalIndex();
+      if (nDV * totalIndex.size() >= Integer.MAX_VALUE)
+        throw new SimpleException(
+            Math2.memoryTooMuchData
+                + " ("
+                + (nDV * totalIndex.size())
+                + " values is more than "
+                + (Integer.MAX_VALUE - 1)
+                + ")");
+      int nAV = axisVariables.length;
+      if (nAV > 4)
+        throw new SimpleException(
+            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                + "Igor Text Files can handle 4 dimensions, not "
+                + nAV);
 
-    // ** Then get gridDataAllAccessor
-    // AllAccessor so I can just request PA with a var's values.
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
+      BufferedWriter writer = null;
+      // ** Then get gridDataAllAccessor
+      // AllAccessor so I can just request PA with a var's values.
+      try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda)) {
+        // write the data
+        writer = File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset);
+        writer.write("IGOR" + Table.IgorEndOfLine);
 
-    // write the data
-    BufferedWriter writer =
-        File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset);
-    try {
-      writer.write("IGOR" + Table.IgorEndOfLine);
+        HashSet<String> colNamesHashset = new HashSet<>();
+        StringBuilder setScaleForDims = new StringBuilder();
+        StringArray avUNames = new StringArray();
+        for (int av = 0; av < nAV; av++) {
+          Attributes atts = gda.axisAttributes(av);
+          String units = atts.getString("units");
+          boolean isTimeStamp =
+              units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
 
-      HashSet<String> colNamesHashset = new HashSet();
-      StringBuilder setScaleForDims = new StringBuilder();
-      StringArray avUNames = new StringArray();
-      for (int av = 0; av < nAV; av++) {
-        Attributes atts = gda.axisAttributes(av);
-        String units = atts.getString("units");
-        boolean isTimeStamp =
-            units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
+          PrimitiveArray pa = gda.axisValues(av);
+          // pa.convertToStandardMissingValues( //no need, since no missing values
+          //    atts.getDouble("_FillValue"),
+          //    atts.getDouble("missing_value"));
 
-        PrimitiveArray pa = gda.axisValues(av);
-        // pa.convertToStandardMissingValues( //no need, since no missing values
-        //    atts.getDouble("_FillValue"),
-        //    atts.getDouble("missing_value"));
+          String uName =
+              Table.makeUniqueIgorColumnName(axisVariables[av].destinationName(), colNamesHashset);
+          Table.writeIgorWave(writer, uName, "", pa, units, isTimeStamp, "");
+          avUNames.add(uName);
 
-        String uName =
-            Table.makeUniqueIgorColumnName(axisVariables[av].destinationName(), colNamesHashset);
-        Table.writeIgorWave(writer, uName, "", pa, units, isTimeStamp, "");
-        avUNames.add(uName);
+          // setScaleForDims
+          setScaleForDims.append("X SetScale ");
+          if (pa.size() == 1 || pa.isEvenlySpaced().length() > 0) {
+            // just 1 value or isn't evenlySpaced
+            setScaleForDims.append(
+                "/I "
+                    + "xyzt".charAt(nAV - av - 1)
+                    + ", "
+                    + pa.getString(0)
+                    + ","
+                    + pa.getString(pa.size() - 1));
 
-        // setScaleForDims
-        setScaleForDims.append("X SetScale ");
-        if (pa.size() == 1 || pa.isEvenlySpaced().length() > 0) {
-          // just 1 value or isn't evenlySpaced
+          } else {
+            // isEvenlySpaced, num2 is average spacing
+            setScaleForDims.append(
+                "/P "
+                    + "xyzt".charAt(nAV - av - 1)
+                    + ", "
+                    + pa.getString(0)
+                    + ","
+                    + ((pa.getDouble(pa.size() - 1) - pa.getDouble(0)) / (pa.size() - 1)));
+          }
+          String tUnits = isTimeStamp ? "dat" : String2.isSomething(units) ? units : ""; // space?
           setScaleForDims.append(
-              "/I "
-                  + "xyzt".charAt(nAV - av - 1)
-                  + ", "
-                  + pa.getString(0)
-                  + ","
-                  + pa.getString(pa.size() - 1));
-
-        } else {
-          // isEvenlySpaced, num2 is average spacing
-          setScaleForDims.append(
-              "/P "
-                  + "xyzt".charAt(nAV - av - 1)
-                  + ", "
-                  + pa.getString(0)
-                  + ","
-                  + ((pa.getDouble(pa.size() - 1) - pa.getDouble(0)) / (pa.size() - 1)));
+              ", " + String2.toJson(tUnits) + ", $WAVE_NAME$" + Table.IgorEndOfLine);
         }
-        String tUnits = isTimeStamp ? "dat" : String2.isSomething(units) ? units : ""; // space?
-        setScaleForDims.append(
-            ", " + String2.toJson(tUnits) + ", $WAVE_NAME$" + Table.IgorEndOfLine);
+
+        StringBuilder dimInfo = new StringBuilder();
+        StringBuilder notes = new StringBuilder(); // the in-common quoted part
+        for (int av = nAV - 1; av >= 0; av--) {
+          // write each axisVar as a wave separately, so data type is preserved
+          // Igor wants the dimension definition to be nRow, nColumn, nLayer, nChunk !
+          int n = gda.axisValues(av).size();
+          if (av == nAV - 1) dimInfo.append(n);
+          else if (av == nAV - 2) dimInfo.insert(0, n + ",");
+          else dimInfo.append("," + n);
+
+          // e.g., X Note analysed_sst_mod, "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
+          if (notes.length() > 0) notes.append(';');
+          notes.append(
+              (av == nAV - 1
+                      ? "RowsDim"
+                      : av == nAV - 2
+                          ? "ColumnsDim"
+                          : av == nAV - 3
+                              ? "LayersDim"
+                              : av == nAV - 4 ? "ChunkDim" : "Dim" + (nAV - av - 1))
+                  + // shouldn't happen since limited to 4 dims above
+                  ":"
+                  + avUNames.get(av));
+        }
+
+        // write each dataVar as a wave separately, so data type is preserved
+        // Igor wants same row-major order as ERDDAP:
+        //  "Igor expects the data to be in column/row/layer/chunk order." [t,z,y,x]
+        for (int dv = 0; dv < nDV; dv++) {
+          Attributes atts = gda.dataAttributes(dv);
+          String units = atts.getString("units");
+          boolean isTimeStamp =
+              units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
+
+          PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
+          // converted to NaN by "convertToNaN" above
+
+          String uName =
+              Table.makeUniqueIgorColumnName(tDataVariables[dv].destinationName(), colNamesHashset);
+          Table.writeIgorWave(
+              writer,
+              uName,
+              "/N=(" + dimInfo + ")",
+              pa,
+              units,
+              isTimeStamp,
+              String2.replaceAll(setScaleForDims.toString(), "$WAVE_NAME$", uName)
+                  +
+                  // e.g., X Note analysed_sst_mod,
+                  // "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
+                  "X Note "
+                  + uName
+                  + ", \""
+                  + notes
+                  + "\""
+                  + Table.IgorEndOfLine);
+        }
+
+        // done!
+        if (writer != null) {
+          writer.flush(); // essential
+        }
+      } finally {
+        if (writer != null) {
+          writer.close();
+        }
       }
-
-      StringBuilder dimInfo = new StringBuilder();
-      StringBuilder notes = new StringBuilder(); // the in-common quoted part
-      for (int av = nAV - 1; av >= 0; av--) {
-        // write each axisVar as a wave separately, so data type is preserved
-        // Igor wants the dimension definition to be nRow, nColumn, nLayer, nChunk !
-        int n = gda.axisValues(av).size();
-        if (av == nAV - 1) dimInfo.append(n);
-        else if (av == nAV - 2) dimInfo.insert(0, n + ",");
-        else dimInfo.append("," + n);
-
-        // e.g., X Note analysed_sst_mod, "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
-        if (notes.length() > 0) notes.append(';');
-        notes.append(
-            (av == nAV - 1
-                    ? "RowsDim"
-                    : av == nAV - 2
-                        ? "ColumnsDim"
-                        : av == nAV - 3
-                            ? "LayersDim"
-                            : av == nAV - 4 ? "ChunkDim" : "Dim" + (nAV - av - 1))
-                + // shouldn't happen since limited to 4 dims above
-                ":"
-                + avUNames.get(av));
-      }
-
-      // write each dataVar as a wave separately, so data type is preserved
-      // Igor wants same row-major order as ERDDAP:
-      //  "Igor expects the data to be in column/row/layer/chunk order." [t,z,y,x]
-      for (int dv = 0; dv < nDV; dv++) {
-        Attributes atts = gda.dataAttributes(dv);
-        String units = atts.getString("units");
-        boolean isTimeStamp =
-            units != null && (units.equals(EDV.TIME_UNITS) || units.equals(EDV.TIME_UCUM_UNITS));
-
-        PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
-        // converted to NaN by "convertToNaN" above
-
-        String uName =
-            Table.makeUniqueIgorColumnName(tDataVariables[dv].destinationName(), colNamesHashset);
-        Table.writeIgorWave(
-            writer,
-            uName,
-            "/N=(" + dimInfo + ")",
-            pa,
-            units,
-            isTimeStamp,
-            String2.replaceAll(setScaleForDims.toString(), "$WAVE_NAME$", uName)
-                +
-                // e.g., X Note analysed_sst_mod,
-                // "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
-                "X Note "
-                + uName
-                + ", \""
-                + notes
-                + "\""
-                + Table.IgorEndOfLine);
-      }
-
-      // done!
-      writer.flush(); // essential
-    } finally {
-      gda.releaseResources();
-      writer.close();
     }
 
     // diagnostic
@@ -10188,172 +10187,172 @@ public abstract class EDDGrid extends EDD {
     }
 
     // get gridDataAccessor first, in case of error when parsing query
-    GridDataAccessor mainGda =
+    try (GridDataAccessor mainGda =
         new GridDataAccessor(
             language,
             this,
             requestUrl,
             userDapQuery,
             false, // Matlab is one of the few drivers that needs column-major order
-            true); // convertToNaN
-    String structureName = String2.encodeMatlabNameSafe(datasetID);
+            true)) { // convertToNaN
+      String structureName = String2.encodeMatlabNameSafe(datasetID);
 
-    // Make sure no String data and that gridsize isn't > Integer.MAX_VALUE bytes (Matlab's limit)
-    EDV tDataVariables[] = mainGda.dataVariables();
-    int nAv = axisVariables.length;
-    int ntDv = tDataVariables.length;
-    byte structureNameInfo[] = Matlab.nameInfo(structureName);
-    // int largest = 1; //find the largest data item nBytesPerElement
-    long cumSize = // see 1-32
-        16
-            + // for array flags
-            16
-            + // my structure is always 2 dimensions
-            structureNameInfo.length
-            + 8
-            + // field name length (for all fields)
+      // Make sure no String data and that gridsize isn't > Integer.MAX_VALUE bytes (Matlab's limit)
+      EDV tDataVariables[] = mainGda.dataVariables();
+      int nAv = axisVariables.length;
+      int ntDv = tDataVariables.length;
+      byte structureNameInfo[] = Matlab.nameInfo(structureName);
+      // int largest = 1; //find the largest data item nBytesPerElement
+      long cumSize = // see 1-32
+          16
+              + // for array flags
+              16
+              + // my structure is always 2 dimensions
+              structureNameInfo.length
+              + 8
+              + // field name length (for all fields)
+              8
+              + (nAv + ntDv) * 32L; // field names
+
+      PrimitiveArray avPa[] = new PrimitiveArray[nAv];
+      NDimensionalIndex avNDIndex[] = new NDimensionalIndex[nAv];
+      for (int av = 0; av < nAv; av++) {
+        avPa[av] = mainGda.axisValues[av];
+        avNDIndex[av] = Matlab.make2DNDIndex(avPa[av].size());
+        cumSize +=
             8
-            + (nAv + ntDv) * 32L; // field names
+                + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
+                    "", // names are done separately
+                    avPa[av].elementType(),
+                    avNDIndex[av]);
+      }
 
-    PrimitiveArray avPa[] = new PrimitiveArray[nAv];
-    NDimensionalIndex avNDIndex[] = new NDimensionalIndex[nAv];
-    for (int av = 0; av < nAv; av++) {
-      avPa[av] = mainGda.axisValues[av];
-      avNDIndex[av] = Matlab.make2DNDIndex(avPa[av].size());
-      cumSize +=
-          8
-              + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
-                  "", // names are done separately
-                  avPa[av].elementType(),
-                  avNDIndex[av]);
-    }
+      GridDataAccessor tGda[] = new GridDataAccessor[ntDv];
+      NDimensionalIndex dvNDIndex[] = new NDimensionalIndex[ntDv];
+      String arrayQuery = buildDapArrayQuery(mainGda.constraints());
+      for (int dv = 0; dv < ntDv; dv++) {
+        if (tDataVariables[dv].destinationDataPAType() == PAType.STRING)
+          // can't do String data because you need random access to all values
+          // that could be a memory nightmare
+          // so just don't allow it
+          throw new SimpleException(
+              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                  + "ERDDAP doesn't support String data in Matlab grid data files.");
+        // largest = Math.max(largest,
+        //    tDataVariables[dv].destinationBytesPerElement());
 
-    GridDataAccessor tGda[] = new GridDataAccessor[ntDv];
-    NDimensionalIndex dvNDIndex[] = new NDimensionalIndex[ntDv];
-    String arrayQuery = buildDapArrayQuery(mainGda.constraints());
-    for (int dv = 0; dv < ntDv; dv++) {
-      if (tDataVariables[dv].destinationDataPAType() == PAType.STRING)
-        // can't do String data because you need random access to all values
-        // that could be a memory nightmare
-        // so just don't allow it
+        // make a GridDataAccessor for this dataVariable
+        String tUserDapQuery = tDataVariables[dv].destinationName() + arrayQuery;
+        tGda[dv] =
+            new GridDataAccessor(
+                language,
+                this,
+                requestUrl,
+                tUserDapQuery,
+                false, // Matlab is one of the few drivers that needs column-major order
+                true); // convertToNaN
+        dvNDIndex[dv] = tGda[dv].totalIndex();
+        if (dvNDIndex[dv].nDimensions() == 1)
+          dvNDIndex[dv] = Matlab.make2DNDIndex(dvNDIndex[dv].shape()[0]);
+
+        cumSize +=
+            8
+                + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
+                    "", // names are done separately
+                    tDataVariables[dv].destinationDataPAType(),
+                    dvNDIndex[dv]);
+      }
+      if (cumSize >= Integer.MAX_VALUE - 1000)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "ERDDAP doesn't support String data in Matlab grid data files.");
-      // largest = Math.max(largest,
-      //    tDataVariables[dv].destinationBytesPerElement());
+            Math2.memoryTooMuchData
+                + "  "
+                + MessageFormat.format(
+                    EDStatic.errorMoreThan2GBAr[0], ".mat", (cumSize / Math2.BytesPerMB) + " MB"));
+      // "Error: " +
+      // "The requested data (" +
+      // (cumSize / Math2.BytesPerMB) +
+      // " MB) is greater than Matlab's limit (" +
+      // (Integer.MAX_VALUE / Math2.BytesPerMB) + " MB)."); //safe
 
-      // make a GridDataAccessor for this dataVariable
-      String tUserDapQuery = tDataVariables[dv].destinationName() + arrayQuery;
-      tGda[dv] =
-          new GridDataAccessor(
-              language,
-              this,
-              requestUrl,
-              tUserDapQuery,
-              false, // Matlab is one of the few drivers that needs column-major order
-              true); // convertToNaN
-      dvNDIndex[dv] = tGda[dv].totalIndex();
-      if (dvNDIndex[dv].nDimensions() == 1)
-        dvNDIndex[dv] = Matlab.make2DNDIndex(dvNDIndex[dv].shape()[0]);
+      // then get the modified outputStream
+      DataOutputStream stream = new DataOutputStream(outputStreamSource.outputStream(""));
 
-      cumSize +=
-          8
-              + Matlab.sizeOfNDimensionalArray( // throws exception if too big for Matlab
-                  "", // names are done separately
-                  tDataVariables[dv].destinationDataPAType(),
-                  dvNDIndex[dv]);
+      // write the header
+      Matlab.writeMatlabHeader(stream);
+
+      // write the miMatrix dataType and nBytes
+      stream.writeInt(Matlab.miMATRIX); // dataType
+      stream.writeInt((int) cumSize); // safe since checked above
+
+      // write array flags
+      stream.writeInt(Matlab.miUINT32); // dataType
+      stream.writeInt(8); // fixed nBytes of data
+      stream.writeInt(Matlab.mxSTRUCT_CLASS); // array flags
+      stream.writeInt(0); // reserved; ends on 8 byte boundary
+
+      // write structure's dimension array
+      stream.writeInt(Matlab.miINT32); // dataType
+      stream.writeInt(2 * 4); // nBytes
+      // matlab docs have 2,1, octave has 1,1.
+      // Think of structure as one row of a table, where elements are entire arrays:  e.g., sst.lon
+      // sst.lat sst.sst.
+      // Having multidimensions (e.g., 2 here) lets you have additional rows, e.g., sst(2).lon
+      // sst(2).lat sst(2).sst.
+      // So 1,1 makes sense.
+      stream.writeInt(1);
+      stream.writeInt(1);
+
+      // write structure name
+      stream.write(structureNameInfo, 0, structureNameInfo.length);
+
+      // write length for all field names (always 32)  (short form)
+      stream.writeShort(4); // nBytes
+      stream.writeShort(Matlab.miINT32); // dataType
+      stream.writeInt(32); // 32 bytes per field name
+
+      // write the structure's field names (each 32 bytes)
+      stream.writeInt(Matlab.miINT8); // dataType
+      stream.writeInt((nAv + ntDv) * 32); // 32 bytes per field name
+      String nulls = String2.makeString('\u0000', 32);
+      for (int av = 0; av < nAv; av++)
+        stream.write(
+            String2.toByteArray(
+                String2.noLongerThan(
+                        String2.encodeMatlabNameSafe(axisVariables[av].destinationName()), 31)
+                    + nulls),
+            0,
+            32); // EEEK! Better not be longer.
+      for (int dv = 0; dv < ntDv; dv++)
+        stream.write(
+            String2.toByteArray(
+                String2.noLongerThan(
+                        String2.encodeMatlabNameSafe(tDataVariables[dv].destinationName()), 31)
+                    + nulls),
+            0,
+            32); // EEEK! Better not be longer.
+
+      // write the axis miMatrix
+      for (int av = 0; av < nAv; av++)
+        Matlab.writeNDimensionalArray(
+            stream,
+            "", // name is written above
+            avPa[av],
+            avNDIndex[av]);
+
+      // make the data miMatrix
+      for (int dv = 0; dv < ntDv; dv++) {
+        writeNDimensionalMatlabArray(
+            language,
+            stream,
+            "", // name is written above
+            tGda[dv],
+            dvNDIndex[dv]);
+        tGda[dv].close();
+      }
+
+      // this doesn't write attributes because .mat files don't store attributes
+      stream.flush(); // essential
     }
-    if (cumSize >= Integer.MAX_VALUE - 1000)
-      throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.errorMoreThan2GBAr[0], ".mat", (cumSize / Math2.BytesPerMB) + " MB"));
-    // "Error: " +
-    // "The requested data (" +
-    // (cumSize / Math2.BytesPerMB) +
-    // " MB) is greater than Matlab's limit (" +
-    // (Integer.MAX_VALUE / Math2.BytesPerMB) + " MB)."); //safe
-
-    // then get the modified outputStream
-    DataOutputStream stream = new DataOutputStream(outputStreamSource.outputStream(""));
-
-    // write the header
-    Matlab.writeMatlabHeader(stream);
-
-    // write the miMatrix dataType and nBytes
-    stream.writeInt(Matlab.miMATRIX); // dataType
-    stream.writeInt((int) cumSize); // safe since checked above
-
-    // write array flags
-    stream.writeInt(Matlab.miUINT32); // dataType
-    stream.writeInt(8); // fixed nBytes of data
-    stream.writeInt(Matlab.mxSTRUCT_CLASS); // array flags
-    stream.writeInt(0); // reserved; ends on 8 byte boundary
-
-    // write structure's dimension array
-    stream.writeInt(Matlab.miINT32); // dataType
-    stream.writeInt(2 * 4); // nBytes
-    // matlab docs have 2,1, octave has 1,1.
-    // Think of structure as one row of a table, where elements are entire arrays:  e.g., sst.lon
-    // sst.lat sst.sst.
-    // Having multidimensions (e.g., 2 here) lets you have additional rows, e.g., sst(2).lon
-    // sst(2).lat sst(2).sst.
-    // So 1,1 makes sense.
-    stream.writeInt(1);
-    stream.writeInt(1);
-
-    // write structure name
-    stream.write(structureNameInfo, 0, structureNameInfo.length);
-
-    // write length for all field names (always 32)  (short form)
-    stream.writeShort(4); // nBytes
-    stream.writeShort(Matlab.miINT32); // dataType
-    stream.writeInt(32); // 32 bytes per field name
-
-    // write the structure's field names (each 32 bytes)
-    stream.writeInt(Matlab.miINT8); // dataType
-    stream.writeInt((nAv + ntDv) * 32); // 32 bytes per field name
-    String nulls = String2.makeString('\u0000', 32);
-    for (int av = 0; av < nAv; av++)
-      stream.write(
-          String2.toByteArray(
-              String2.noLongerThan(
-                      String2.encodeMatlabNameSafe(axisVariables[av].destinationName()), 31)
-                  + nulls),
-          0,
-          32); // EEEK! Better not be longer.
-    for (int dv = 0; dv < ntDv; dv++)
-      stream.write(
-          String2.toByteArray(
-              String2.noLongerThan(
-                      String2.encodeMatlabNameSafe(tDataVariables[dv].destinationName()), 31)
-                  + nulls),
-          0,
-          32); // EEEK! Better not be longer.
-
-    // write the axis miMatrix
-    for (int av = 0; av < nAv; av++)
-      Matlab.writeNDimensionalArray(
-          stream,
-          "", // name is written above
-          avPa[av],
-          avNDIndex[av]);
-
-    // make the data miMatrix
-    for (int dv = 0; dv < ntDv; dv++) {
-      writeNDimensionalMatlabArray(
-          language,
-          stream,
-          "", // name is written above
-          tGda[dv],
-          dvNDIndex[dv]);
-      tGda[dv].releaseResources();
-    }
-
-    // this doesn't write attributes because .mat files don't store attributes
-    stream.flush(); // essential
-
     if (reallyVerbose)
       String2.log(
           "  EDDGrid.saveAsMatlab done. TIME=" + (System.currentTimeMillis() - time) + "ms\n");
@@ -10558,194 +10557,191 @@ public abstract class EDDGrid extends EDD {
     // to check for error when parsing query or getting data,
     // and to check that file size < 2GB
     // This throws exception if invalid query.
-    GridDataAccessor gda =
+    try (GridDataAccessor gda =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
 
-    // ensure file size < 2GB
-    // ???is there a way to allow >2GB netcdf 3 files?
-    // Yes: the 64-bit extension!  But this code doesn't yet use that.
-    //   And even if so, what about OS limit ERDDAP is running on? and client OS?
-    // Or, view this as protection against accidental requests for too much data (e.g., whole
-    // dataset).
-    if (gda.totalNBytes() > 2100000000) // leave some space for axis vars, etc.
-    throw new SimpleException(
-          Math2.memoryTooMuchData
-              + "  "
-              + MessageFormat.format(
-                  EDStatic.errorMoreThan2GBAr[0],
-                  ".nc",
-                  ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
+      // ensure file size < 2GB
+      // ???is there a way to allow >2GB netcdf 3 files?
+      // Yes: the 64-bit extension!  But this code doesn't yet use that.
+      //   And even if so, what about OS limit ERDDAP is running on? and client OS?
+      // Or, view this as protection against accidental requests for too much data (e.g., whole
+      // dataset).
+      if (gda.totalNBytes() > 2100000000) // leave some space for axis vars, etc.
+      throw new SimpleException(
+            Math2.memoryTooMuchData
+                + "  "
+                + MessageFormat.format(
+                    EDStatic.errorMoreThan2GBAr[0],
+                    ".nc",
+                    ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
 
-    if (gda.totalNBytes() > 1000000000) { // 1GB
-      EDStatic.tally.add("Large Request, IP address (since last Major LoadDatasets)", ipAddress);
-      EDStatic.tally.add("Large Request, IP address (since last daily report)", ipAddress);
-      EDStatic.tally.add("Large Request, IP address (since startup)", ipAddress);
-    }
-
-    // ** Then get gridDataAllAccessor
-    // AllAccessor so max length of String variables will be known.
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
-    EDV tDataVariables[] = gda.dataVariables();
-
-    // write the data
-    // items determined by looking at a .nc file; items written in that order
-    NetcdfFormatWriter ncWriter = null;
-    try {
-      NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(fullFileName + randomInt);
-      Group.Builder rootGroup = nc.getRootGroup();
-      nc.setFill(false);
-
-      // find active axes
-      IntArray activeAxes = new IntArray();
-      for (int av = 0; av < axisVariables.length; av++) {
-        if (keepUnusedAxes || gda.axisValues(av).size() > 1) activeAxes.add(av);
+      if (gda.totalNBytes() > 1000000000) { // 1GB
+        EDStatic.tally.add("Large Request, IP address (since last Major LoadDatasets)", ipAddress);
+        EDStatic.tally.add("Large Request, IP address (since last daily report)", ipAddress);
+        EDStatic.tally.add("Large Request, IP address (since startup)", ipAddress);
       }
 
-      // define the dimensions
-      int nActiveAxes = activeAxes.size();
-      ArrayList<Dimension> axisDimensionList = new ArrayList();
-      Array axisArrays[] = new Array[nActiveAxes];
-      Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
-      int stdShape[] = new int[nActiveAxes];
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        String avName = axisVariables[av].destinationName();
-        PrimitiveArray pa = gda.axisValues(av);
-        // if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
-        if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
-          pa = new DoubleArray(pa);
-        stdShape[a] = pa.size();
-        Dimension tDim = NcHelper.addDimension(rootGroup, avName, pa.size());
-        axisDimensionList.add(tDim);
-        if (av == lonIndex) pa.scaleAddOffset(1, lonAdjust);
-        axisArrays[a] =
-            Array.factory(
-                NcHelper.getNc3DataType(gda.axisValues(av).elementType()),
-                new int[] {pa.size()},
-                pa.toObjectArray());
-        // if (reallyVerbose) String2.log(" create var=" + avName);
-        newAxisVars[a] =
-            NcHelper.addVariable(
-                rootGroup,
-                avName,
-                NcHelper.getNc3DataType(
-                    pa.elementType()), // nc3Mode long->double done above. No Strings as axes.
-                Arrays.asList(axisDimensionList.get(a)));
-      }
+      NetcdfFormatWriter ncWriter = null;
+      // ** Then get gridDataAllAccessor
+      // AllAccessor so max length of String variables will be known.
+      try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda)) {
+        EDV tDataVariables[] = gda.dataVariables();
 
-      // define the data variables
-      Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-        String destName = tDataVariables[dv].destinationName();
-        PAType destPAType = tDataVariables[dv].destinationDataPAType();
-        // if (reallyVerbose) String2.log(" create var=" + destName);
+        // write the data
+        // items determined by looking at a .nc file; items written in that order
+        NetcdfFormatWriter.Builder nc =
+            NetcdfFormatWriter.createNewNetcdf3(fullFileName + randomInt);
+        Group.Builder rootGroup = nc.getRootGroup();
+        nc.setFill(false);
 
-        // nc3 String data? need to create specially (so there's a strlen dimension for this
-        // variable)
-        if (nc3Mode && destPAType == PAType.STRING) {
-          StringArray tsa = (StringArray) gdaa.getPrimitiveArray(dv);
-          newVars[dv] =
-              NcHelper.addNc3StringVariable(
-                  rootGroup, destName, axisDimensionList, tsa.maxStringLength());
+        // find active axes
+        IntArray activeAxes = new IntArray();
+        for (int av = 0; av < axisVariables.length; av++) {
+          if (keepUnusedAxes || gda.axisValues(av).size() > 1) activeAxes.add(av);
+        }
 
-        } else {
-          newVars[dv] =
+        // define the dimensions
+        int nActiveAxes = activeAxes.size();
+        ArrayList<Dimension> axisDimensionList = new ArrayList<>();
+        Array axisArrays[] = new Array[nActiveAxes];
+        Variable.Builder newAxisVars[] = new Variable.Builder[nActiveAxes];
+        int stdShape[] = new int[nActiveAxes];
+        for (int a = 0; a < nActiveAxes; a++) {
+          int av = activeAxes.get(a);
+          String avName = axisVariables[av].destinationName();
+          PrimitiveArray pa = gda.axisValues(av);
+          // if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
+          if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
+            pa = new DoubleArray(pa);
+          stdShape[a] = pa.size();
+          Dimension tDim = NcHelper.addDimension(rootGroup, avName, pa.size());
+          axisDimensionList.add(tDim);
+          if (av == lonIndex) pa.scaleAddOffset(1, lonAdjust);
+          axisArrays[a] =
+              Array.factory(
+                  NcHelper.getNc3DataType(gda.axisValues(av).elementType()),
+                  new int[] {pa.size()},
+                  pa.toObjectArray());
+          // if (reallyVerbose) String2.log(" create var=" + avName);
+          newAxisVars[a] =
               NcHelper.addVariable(
                   rootGroup,
-                  destName,
-                  NcHelper.getDataType(nc3Mode, destPAType),
-                  axisDimensionList);
+                  avName,
+                  NcHelper.getNc3DataType(
+                      pa.elementType()), // nc3Mode long->double done above. No Strings as axes.
+                  Arrays.asList(axisDimensionList.get(a)));
         }
-      }
 
-      // write global attributes
-      NcHelper.setAttributes(nc3Mode, rootGroup, gda.globalAttributes);
+        // define the data variables
+        Variable.Builder newVars[] = new Variable.Builder[tDataVariables.length];
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+          String destName = tDataVariables[dv].destinationName();
+          PAType destPAType = tDataVariables[dv].destinationDataPAType();
+          // if (reallyVerbose) String2.log(" create var=" + destName);
 
-      // write axis attributes
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        Attributes atts = new Attributes(gda.axisAttributes[av]); // use a copy
-        PAType paType = gda.axisValues[av].elementType();
-        if (paType == PAType.STRING) // never
-        atts.add(File2.ENCODING, File2.ISO_8859_1);
-        // disabled until there is a standard
-        //                else if (paType == PAType.CHAR)  //never
-        //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
+          // nc3 String data? need to create specially (so there's a strlen dimension for this
+          // variable)
+          if (nc3Mode && destPAType == PAType.STRING) {
+            StringArray tsa = (StringArray) gdaa.getPrimitiveArray(dv);
+            newVars[dv] =
+                NcHelper.addNc3StringVariable(
+                    rootGroup, destName, axisDimensionList, tsa.maxStringLength());
 
-        NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
-      }
-
-      // write data attributes
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-        Attributes atts = new Attributes(gda.dataAttributes[dv]); // use a copy
-        PAType paType = gda.dataVariables[dv].destinationDataPAType();
-        if (paType == PAType.STRING) // never
-        atts.add(File2.ENCODING, File2.ISO_8859_1);
-        // disabled until there is a standard
-        //                else if (paType == PAType.CHAR)  //never
-        //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
-
-        NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
-      }
-
-      // leave "define" mode
-      ncWriter = nc.build();
-
-      // write the axis variables
-      for (int a = 0; a < nActiveAxes; a++) {
-        int av = activeAxes.get(a);
-        ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
-      }
-
-      // write the data variables
-      for (int dv = 0; dv < tDataVariables.length; dv++) {
-
-        EDV edv = tDataVariables[dv];
-        String destName = edv.destinationName();
-        PAType edvPAType = edv.destinationDataPAType();
-        PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
-        if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
-          pa = new DoubleArray(pa);
-        Array array =
-            Array.factory(NcHelper.getNc3DataType(edvPAType), stdShape, pa.toObjectArray());
-        Variable newVar =
-            ncWriter.findVariable(
-                newVars[dv].getFullName()); // because newVars are Variable.Builder's
-        if (nc3Mode && edvPAType == PAType.STRING) {
-          ncWriter.writeStringDataToChar(newVar, array);
-        } else {
-          ncWriter.write(newVar, array);
+          } else {
+            newVars[dv] =
+                NcHelper.addVariable(
+                    rootGroup,
+                    destName,
+                    NcHelper.getDataType(nc3Mode, destPAType),
+                    axisDimensionList);
+          }
         }
-      }
 
-      // if close throws Throwable, it is trouble
-      ncWriter.close(); // it calls flush() and doesn't like flush called separately
-      ncWriter = null;
+        // write global attributes
+        NcHelper.setAttributes(nc3Mode, rootGroup, gda.globalAttributes);
 
-      // rename the file to the specified name
-      File2.rename(fullFileName + randomInt, fullFileName);
+        // write axis attributes
+        for (int a = 0; a < nActiveAxes; a++) {
+          int av = activeAxes.get(a);
+          Attributes atts = new Attributes(gda.axisAttributes[av]); // use a copy
+          PAType paType = gda.axisValues[av].elementType();
+          if (paType == PAType.STRING) // never
+          atts.add(File2.ENCODING, File2.ISO_8859_1);
+          // disabled until there is a standard
+          //                else if (paType == PAType.CHAR)  //never
+          //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
 
-      // diagnostic
-      if (reallyVerbose)
-        String2.log(
-            "  EDDGrid.saveAsNc done.  TIME=" + (System.currentTimeMillis() - time) + "ms\n");
-      // String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
-      gdaa.releaseResources();
-
-    } catch (Throwable t) {
-      String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
-      gdaa.releaseResources();
-      if (ncWriter != null) {
-        try {
-          ncWriter.abort();
-        } catch (Exception e9) {
+          NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
         }
-        File2.delete(fullFileName + randomInt);
+
+        // write data attributes
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+          Attributes atts = new Attributes(gda.dataAttributes[dv]); // use a copy
+          PAType paType = gda.dataVariables[dv].destinationDataPAType();
+          if (paType == PAType.STRING) // never
+          atts.add(File2.ENCODING, File2.ISO_8859_1);
+          // disabled until there is a standard
+          //                else if (paType == PAType.CHAR)  //never
+          //                    atts.add(String2.CHARSET, File2.ISO_8859_1);
+
+          NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
+        }
+
+        // leave "define" mode
+        ncWriter = nc.build();
+
+        // write the axis variables
+        for (int a = 0; a < nActiveAxes; a++) {
+          ncWriter.write(newAxisVars[a].getFullName(), axisArrays[a]);
+        }
+
+        // write the data variables
+        for (int dv = 0; dv < tDataVariables.length; dv++) {
+
+          EDV edv = tDataVariables[dv];
+          PAType edvPAType = edv.destinationDataPAType();
+          PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
+          if (nc3Mode && (pa instanceof LongArray || pa instanceof ULongArray))
+            pa = new DoubleArray(pa);
+          Array array =
+              Array.factory(NcHelper.getNc3DataType(edvPAType), stdShape, pa.toObjectArray());
+          Variable newVar =
+              ncWriter.findVariable(
+                  newVars[dv].getFullName()); // because newVars are Variable.Builder's
+          if (nc3Mode && edvPAType == PAType.STRING) {
+            ncWriter.writeStringDataToChar(newVar, array);
+          } else {
+            ncWriter.write(newVar, array);
+          }
+        }
+
+        // if close throws Throwable, it is trouble
+        ncWriter.close(); // it calls flush() and doesn't like flush called separately
         ncWriter = null;
-      }
 
-      throw t;
+        // rename the file to the specified name
+        File2.rename(fullFileName + randomInt, fullFileName);
+
+        // diagnostic
+        if (reallyVerbose)
+          String2.log(
+              "  EDDGrid.saveAsNc done.  TIME=" + (System.currentTimeMillis() - time) + "ms\n");
+        // String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
+
+      } catch (Throwable t) {
+        String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+        if (ncWriter != null) {
+          try {
+            ncWriter.abort();
+          } catch (Exception e9) {
+          }
+          File2.delete(fullFileName + randomInt);
+          ncWriter = null;
+        }
+
+        throw t;
+      }
     }
   }
 
@@ -10767,7 +10763,6 @@ public abstract class EDDGrid extends EDD {
       int language, String requestUrl, String userDapQuery, OutputStreamSource outputStreamSource)
       throws Throwable {
     if (reallyVerbose) String2.log("  EDDGrid.saveAsNc");
-    long time = System.currentTimeMillis();
 
     // for now, write strings as if in nc3 file: char arrays with extra dimension for strlen
     boolean writeStringsAsStrings = false; // if false, they are written as chars
@@ -10875,19 +10870,19 @@ public abstract class EDDGrid extends EDD {
       return;
     }
 
+    BufferedWriter writer = null;
     // Need to use GridDataAllAccessor because need to know max String lengths.
     // Get this early so error thrown before writer created.
-    GridDataAccessor gda =
-        new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // tRowMajor, tConvertToNaN
-    GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
-    int nAV = axisVariables.length;
-    int nRDV = gda.dataVariables().length;
+    try (GridDataAccessor gda =
+            new GridDataAccessor(
+                language, this, requestUrl, userDapQuery, true, false); // tRowMajor, tConvertToNaN
+        GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); ) {
 
-    // create a writer
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
+      int nAV = axisVariables.length;
+      int nRDV = gda.dataVariables().length;
+
+      // create a writer
+      writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
       if (jsonp != null) writer.write(jsonp + "(");
 
       // write start
@@ -10913,18 +10908,14 @@ public abstract class EDDGrid extends EDD {
                 + gda.axisValues(avi).size());
       }
       // need to create dimensions for string lengths
-      int dvStringMaxLength[] = new int[nRDV];
       if (!writeStringsAsStrings) {
         for (int dvi = 0; dvi < nRDV; dvi++) {
           EDV dv = gda.dataVariables[dvi];
           if (dv.destinationDataPAType() == PAType.STRING) {
             int max = 1;
             long n = gda.totalIndex().size();
-            DataInputStream dis = gdaa.getDataInputStream(dvi);
-            try {
+            try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
               for (int i = 0; i < n; i++) max = Math.max(max, dis.readUTF().length());
-            } finally {
-              dis.close();
             }
             writer.write(
                 ",\n"
@@ -10983,7 +10974,6 @@ public abstract class EDDGrid extends EDD {
       String tdvShape = new StringArray(axisVariableDestinationNames).toJsonCsvString();
       NDimensionalIndex tIndex =
           (NDimensionalIndex) gda.totalIndex().clone(); // incremented before get data
-      int tnDim = tIndex.nDimensions();
       long nRows = tIndex.size();
       for (int dvi = 0; dvi < nRDV; dvi++) {
         //    "att_var": {
@@ -11026,8 +11016,7 @@ public abstract class EDDGrid extends EDD {
 
         writer.write("      \"data\":\n");
         for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
-        DataInputStream dis = gdaa.getDataInputStream(dvi);
-        try {
+        try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
 
           // create the bufferPA
           PrimitiveArray pa =
@@ -11089,8 +11078,6 @@ public abstract class EDDGrid extends EDD {
               }
             } // else it is the end of the data. Handle brackets specially below...
           } // end of data
-        } finally {
-          dis.close();
         }
         if (isChar) writer.write("\""); // start the string
         for (int avi = 0; avi < nAV; avi++) writer.write(" ]");
@@ -11102,8 +11089,9 @@ public abstract class EDDGrid extends EDD {
       if (jsonp != null) writer.write(")");
       writer.flush(); // essential
     } finally {
-      gdaa.releaseResources();
-      writer.close();
+      if (writer != null) {
+        writer.close();
+      }
     }
   }
 
@@ -11238,7 +11226,7 @@ public abstract class EDDGrid extends EDD {
       saveAsTableWriter(ada, tw);
     } else {
       saveAsTableWriter(gda, tw);
-      gda.releaseResources();
+      gda.close();
     }
 
     // diagnostic
@@ -11285,24 +11273,24 @@ public abstract class EDDGrid extends EDD {
     // lon can be +-180 or 0-360. See EDDTable.saveAsODV
 
     // get dataAccessor first, in case of error when parsing query
-    GridDataAccessor gda =
+    try (GridDataAccessor gda =
         new GridDataAccessor(
-            language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
+            language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
 
-    // write the data to the tableWriterAllWithMetadata
-    TableWriterAllWithMetadata twawm =
-        new TableWriterAllWithMetadata(
-            language,
-            this,
-            getNewHistory(requestUrl, userDapQuery),
-            cacheDirectory(),
-            "ODV"); // A random number will be added to it for safety.
-    saveAsTableWriter(gda, twawm);
-    gda.releaseResources();
+      // write the data to the tableWriterAllWithMetadata
+      TableWriterAllWithMetadata twawm =
+          new TableWriterAllWithMetadata(
+              language,
+              this,
+              getNewHistory(requestUrl, userDapQuery),
+              cacheDirectory(),
+              "ODV"); // A random number will be added to it for safety.
+      saveAsTableWriter(gda, twawm);
 
-    // write the ODV .txt file
-    EDDTable.saveAsODV(
-        language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
+      // write the ODV .txt file
+      EDDTable.saveAsODV(
+          language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
+    }
 
     // diagnostic
     if (reallyVerbose)
@@ -11345,11 +11333,11 @@ public abstract class EDDGrid extends EDD {
       AxisDataAccessor ada = new AxisDataAccessor(language, this, requestUrl, userDapQuery);
       saveAsTableWriter(ada, twawm);
     } else {
-      GridDataAccessor gda =
+      try (GridDataAccessor gda =
           new GridDataAccessor(
-              language, this, requestUrl, userDapQuery, true, false); // rowMajor, convertToNaN
-      saveAsTableWriter(gda, twawm);
-      gda.releaseResources();
+              language, this, requestUrl, userDapQuery, true, false)) { // rowMajor, convertToNaN
+        saveAsTableWriter(gda, twawm);
+      }
     }
 
     // write the .parquet file
@@ -11435,7 +11423,7 @@ public abstract class EDDGrid extends EDD {
       saveAsTableWriter(ada, tw);
     } else {
       saveAsTableWriter(gda, tw);
-      gda.releaseResources();
+      gda.close();
     }
 
     // diagnostic
@@ -11492,12 +11480,7 @@ public abstract class EDDGrid extends EDD {
     EDV queryDataVariables[] = gridDataAccessor.dataVariables();
     int nDv = queryDataVariables.length;
     PrimitiveArray avPa[] = new PrimitiveArray[nAv];
-    boolean isDoubleAv[] = new boolean[nAv];
-    boolean isFloatAv[] = new boolean[nAv];
     PrimitiveArray dvPa[] = new PrimitiveArray[nDv];
-    boolean isStringDv[] = new boolean[nDv];
-    boolean isDoubleDv[] = new boolean[nDv];
-    boolean isFloatDv[] = new boolean[nDv];
     int nBufferRows = tableWriterNBufferRows;
     PAOne avPAOne[] = new PAOne[nAv];
     for (int av = 0; av < nAv; av++) {
@@ -11593,8 +11576,6 @@ public abstract class EDDGrid extends EDD {
     writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
     HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
     String formName = "form1";
-    String liClickSubmit =
-        "\n" + "  <li> " + EDStatic.EDDClickOnSubmitHtmlAr[language] + "\n" + "  </ol>\n";
     writer.write("&nbsp;\n"); // necessary for the blank line before the form (not <p>)
     writer.write(widgets.beginForm(formName, "GET", "", ""));
 
@@ -12039,9 +12020,6 @@ public abstract class EDDGrid extends EDD {
     String fullIndexExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExampleHA;
     String fullValueExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExampleHA;
     String fullTimeExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeCsvExampleHA = datasetBase + ".csv?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullTimeNcExampleHA = datasetBase + ".nc?" + EDStatic.EDDGridDataTimeExampleHA;
-    String fullMatExampleHA = datasetBase + ".mat?" + EDStatic.EDDGridDataTimeExampleHA;
     String fullGraphExampleHA = datasetBase + ".png?" + EDStatic.EDDGridGraphExampleHA;
     String fullGraphMAGExampleHA = datasetBase + ".graph?" + EDStatic.EDDGridGraphExampleHA;
     String fullGraphDataExampleHA = datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExampleHA;
@@ -12136,8 +12114,8 @@ public abstract class EDDGrid extends EDD {
             + "  <br>&nbsp;\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Data<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < dataFileTypeNames.length; i++) {
-      String ft = dataFileTypeNames[i];
+    for (int i = 0; i < dataFileTypeNames.size(); i++) {
+      String ft = dataFileTypeNames.get(i);
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -12152,17 +12130,17 @@ public abstract class EDDGrid extends EDD {
               + dataFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo[i].equals("")
+              + (dataFileTypeInfo.get(i).equals("")
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo[i])
+                      + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
                       + "\">info"
                       + EDStatic.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
               + "</td>\n"
               + "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + dataFileTypeNames[i]
+              + dataFileTypeNames.get(i)
               + "?"
               + EDStatic.EDDGridDataTimeExampleHA
               + "\">example</a></td>\n"
@@ -12737,8 +12715,8 @@ public abstract class EDDGrid extends EDD {
             + "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n"
             + "  <table class=\"erd\" style=\"width:100%; \">\n"
             + "    <tr><th>Image<br>fileTypes</th><th>Description</th><th>Info</th><th>Example</th></tr>\n");
-    for (int i = 0; i < imageFileTypeNames.length; i++) {
-      String ft = imageFileTypeNames[i];
+    for (int i = 0; i < imageFileTypeNames.size(); i++) {
+      String ft = imageFileTypeNames.get(i);
       String ft1 = ft.substring(1);
       writer.write(
           "    <tr>\n"
@@ -12753,10 +12731,10 @@ public abstract class EDDGrid extends EDD {
               + imageFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")
+              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).equals("")
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
-                      + XML.encodeAsHTMLAttribute(imageFileTypeInfo[i])
+                      + XML.encodeAsHTMLAttribute(imageFileTypeInfo.get(i))
                       + "\">info"
                       + EDStatic.externalLinkHtml(language, tErddapUrl)
                       + "</a>")
@@ -12764,7 +12742,7 @@ public abstract class EDDGrid extends EDD {
               + // must be mapExample below because kml doesn't work with graphExample
               "      <td class=\"N\"><a rel=\"bookmark\" href=\""
               + datasetBase
-              + imageFileTypeNames[i]
+              + imageFileTypeNames.get(i)
               + "?"
               + EDStatic.EDDGridMapExampleHA
               + "\">example</a></td>\n"
@@ -13772,8 +13750,6 @@ public abstract class EDDGrid extends EDD {
     String keywordsSA[] = keywords();
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
@@ -14162,14 +14138,8 @@ public abstract class EDDGrid extends EDD {
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaWCS());
 
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String wcsUrl = tErddapUrl + "/wcs/" + datasetID + "/" + wcsServer;
-    String titleXml = XML.encodeAsXML(title());
-    String keywordsSA[] = keywords();
     EDVGridAxis lonEdv = axisVariables[lonIndex];
     EDVGridAxis latEdv = axisVariables[latIndex];
-    EDVGridAxis altEdv = altIndex < 0 ? null : axisVariables[altIndex];
-    EDVGridAxis depthEdv = depthIndex < 0 ? null : axisVariables[depthIndex];
     EDVGridAxis timeEdv = timeIndex < 0 ? null : axisVariables[timeIndex];
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
@@ -14341,8 +14311,8 @@ public abstract class EDDGrid extends EDD {
                 + "      <nativeCRSs>urn:ogc:def:crs:EPSG:4326</nativeCRSs>\n"
                 + "    </supportedCRSs>\n"
                 + "    <supportedFormats>\n");
-        for (int f = 0; f < wcsRequestFormats100.length; f++)
-          writer.write("      <formats>" + wcsRequestFormats100[f] + "</formats>\n");
+        for (int f = 0; f < wcsRequestFormats100.size(); f++)
+          writer.write("      <formats>" + wcsRequestFormats100.get(f) + "</formats>\n");
         writer.write(
             "    </supportedFormats>\n"
                 + "    <supportedInterpolations>\n"
@@ -14390,7 +14360,6 @@ public abstract class EDDGrid extends EDD {
       throws Throwable {
 
     if (reallyVerbose) String2.log("\nrespondToWcsQuery q=" + wcsQuery);
-    String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = "/wcs/" + datasetID + "/" + wcsServer;
 
     if (accessibleViaWCS().length() > 0)
@@ -14434,7 +14403,7 @@ public abstract class EDDGrid extends EDD {
    * @return [0]=dapQuery, [1]=format (e.g., .nc)
    * @throws Exception if trouble (e.g., invalid query parameter)
    */
-  public String[] wcsQueryToDapQuery(int language, HashMap<String, String> wcsQueryMap)
+  public String[] wcsQueryToDapQuery(int language, Map<String, String> wcsQueryMap)
       throws Throwable {
 
     // parse the query and build the dapQuery
@@ -14478,18 +14447,14 @@ public abstract class EDDGrid extends EDD {
 
     // format
     String requestFormat = wcsQueryMap.get("format"); // test name.toLowerCase()
-    String tRequestFormats[] =
-        wcsRequestFormats100; // version100? wcsRequestFormats100  : wcsRequestFormats112;
-    String tResponseFormats[] =
-        wcsResponseFormats100; // version100? wcsResponseFormats100 : wcsResponseFormats112;
-    int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
+    int fi = String2.caseInsensitiveIndexOf(wcsRequestFormats100, requestFormat);
     if (fi < 0)
       throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "format="
               + requestFormat
               + " isn't supported.");
-    String responseFormat = tResponseFormats[fi];
+    String responseFormat = wcsResponseFormats100.get(fi);
 
     // interpolation (1.0.0)
     if (wcsQueryMap.get("interpolation") != null) // test name.toLowerCase()
@@ -14745,7 +14710,6 @@ public abstract class EDDGrid extends EDD {
       } else if (av == timeIndex) {
         String paramName = version100 ? "time" : "timesequence";
         String time = wcsQueryMap.get(paramName); // test name.toLowerCase()
-        String minTime = null, maxTime = null;
         if (time == null) {
           dapQuery.append("[(last)]"); // default
         } else {
@@ -14939,30 +14903,12 @@ public abstract class EDDGrid extends EDD {
             language, loggedInAs, "wcs", datasetID)); // wcs must be lowercase for link to work
     writeHtmlDatasetInfo(language, loggedInAs, writer, true, true, true, true, "", "");
 
-    String makeAGraphRef =
-        "<a href=\""
-            + tErddapUrl
-            + "/griddap/"
-            + datasetID
-            + ".graph\">"
-            + EDStatic.magAr[language]
-            + "</a>";
     String datasetListRef =
         "<br>See the\n"
             + "  <a rel=\"bookmark\" href=\""
             + tErddapUrl
             + "/wcs/index.html\">list \n"
             + "    of datasets available via WCS</a> at this ERDDAP installation.\n";
-    String makeAGraphListRef =
-        "  <br>See the\n"
-            + "    <a rel=\"bookmark\" href=\""
-            + XML.encodeAsHTMLAttribute(
-                tErddapUrl
-                    + "/info/index.html"
-                    + "?page=1&itemsPerPage="
-                    + EDStatic.defaultItemsPerPage)
-            + "\">list \n"
-            + "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
     // What is WCS?   (for tDatasetID)
     // !!!see the almost identical documentation above
@@ -15341,9 +15287,9 @@ public abstract class EDDGrid extends EDD {
             + "    <td>format=<i>format</i></td>\n"
             + "    <td>In ERDDAP, this can be any one of several response formats:\n"
             + "      <br>");
-    for (int f = 0; f < wcsRequestFormats100.length; f++) {
+    for (int f = 0; f < wcsRequestFormats100.size(); f++) {
       if (f > 0) writer.write(", ");
-      writer.write("\"" + SSR.minimalPercentEncode(wcsRequestFormats100[f]) + "\"");
+      writer.write("\"" + SSR.minimalPercentEncode(wcsRequestFormats100.get(f)) + "\"");
     }
     writer.write(
         ".\n"
@@ -15618,15 +15564,15 @@ public abstract class EDDGrid extends EDD {
             // origin: from project, creator_email, creator_name, infoUrl, institution
             "        <origin>\n"
             + XML.encodeAsXML(
-                (project == unknown ? "" : "Project: " + project + "\n")
-                    + (creatorName == unknown ? "" : "Name: " + creatorName + "\n")
-                    + (creatorEmail == unknown ? "" : "Email: " + creatorEmail + "\n")
+                (unknown.equals(project) ? "" : "Project: " + project + "\n")
+                    + (unknown.equals(creatorName) ? "" : "Name: " + creatorName + "\n")
+                    + (unknown.equals(creatorEmail) ? "" : "Email: " + creatorEmail + "\n")
                     + "Institution: "
                     + institution
                     + "\n"
                     + // always known
-                    (infoUrl == unknown ? "" : "InfoURL: " + infoUrl + "\n")
-                    + (sourceUrl == unknown ? "" : "Source URL: " + sourceUrl + "\n"))
+                    (unknown.equals(infoUrl) ? "" : "InfoURL: " + infoUrl + "\n")
+                    + (unknown.equals(sourceUrl) ? "" : "Source URL: " + sourceUrl + "\n"))
             + "        </origin>\n"
             + "        <origin_cntinfo>\n"
             + // ngdc added?
@@ -15658,7 +15604,7 @@ public abstract class EDDGrid extends EDD {
             "          </cntinfo>\n"
             + "        </origin_cntinfo>\n"
             + "        <pubdate>"
-            + XML.encodeAsXML(dateIssued == unknown ? eddCreationDate : dateIssued)
+            + XML.encodeAsXML(unknown.equals(dateIssued) ? eddCreationDate : dateIssued)
             + "</pubdate>\n"
             + "        <title>"
             + XML.encodeAsXML(title)
@@ -15743,7 +15689,7 @@ public abstract class EDDGrid extends EDD {
             + "Add .dods to download data via the OPeNDAP protocol.</description>\n"
             + "          <function>OPeNDAP</function>\n"
             + "        </CI_OnlineResource>\n"
-            + (infoUrl == unknown
+            + (unknown.equals(infoUrl)
                 ? ""
                 : "        <CI_OnlineResource>\n"
                     + "          <linkage>"
@@ -15769,7 +15715,7 @@ public abstract class EDDGrid extends EDD {
                     + "        </CI_OnlineResource>\n"));
 
     // larger work citation: project
-    if (project != unknown)
+    if (!unknown.equals(project))
       writer.write(
           "        <lworkcit>\n"
               + "          <citeinfo>\n"
@@ -15974,7 +15920,9 @@ public abstract class EDDGrid extends EDD {
         "    <keywords>\n"
             + "      <theme>\n"
             + "        <themekt>"
-            + (keywordsVocabulary == unknown ? "Uncontrolled" : XML.encodeAsXML(keywordsVocabulary))
+            + (unknown.equals(keywordsVocabulary)
+                ? "Uncontrolled"
+                : XML.encodeAsXML(keywordsVocabulary))
             + "</themekt>\n");
     for (int i = 0; i < kar.size(); i++)
       writer.write("        <themekey>" + XML.encodeAsXML(kar.get(i)) + "</themekey>\n");
@@ -15986,7 +15934,7 @@ public abstract class EDDGrid extends EDD {
           "      <theme>\n"
               + "        <themekt>"
               + XML.encodeAsXML(
-                  standardNameVocabulary == unknown ? "Uncontrolled" : standardNameVocabulary)
+                  unknown.equals(standardNameVocabulary) ? "Uncontrolled" : standardNameVocabulary)
               + "</themekt>\n");
       for (int i = 0; i < standardNames.size(); i++)
         writer.write(
@@ -15997,7 +15945,7 @@ public abstract class EDDGrid extends EDD {
     writer.write("    </keywords>\n");
 
     // Platform and Instrument Indentification: satellite, sensor
-    if (satellite != unknown || sensor != unknown)
+    if (!unknown.equals(satellite) || !unknown.equals(sensor))
       writer.write(
           "    <plainsid>\n"
               + // long and short names the same since that's all I have
@@ -16033,7 +15981,7 @@ public abstract class EDDGrid extends EDD {
     String conPhone = unknown;
     String conEmail = creatorEmail;
     String conPos = unknown;
-    if (conEmail == unknown) {
+    if (unknown.equals(conEmail)) {
       conOrg = adminInstitution;
       conName = adminIndividualName;
       conPhone = adminPhone;
@@ -16101,21 +16049,23 @@ public abstract class EDDGrid extends EDD {
             + "      <browset>HTML</browset>\n"
             + "    </browse>\n");
 
-    if (contributorName != unknown
-        || contributorEmail != unknown
-        || contributorRole != unknown
-        || acknowledgement != unknown)
+    if (!unknown.equals(contributorName)
+        || !unknown.equals(contributorEmail)
+        || !unknown.equals(contributorRole)
+        || !unknown.equals(acknowledgement))
       writer.write(
           "    <datacred>"
               + XML.encodeAsXML(
-                  (contributorName == unknown ? "" : "Contributor Name: " + contributorName + "\n")
-                      + (contributorEmail == unknown
+                  (unknown.equals(contributorName)
+                          ? ""
+                          : "Contributor Name: " + contributorName + "\n")
+                      + (unknown.equals(contributorEmail)
                           ? ""
                           : "Contributor Email: " + contributorEmail + "\n")
-                      + (contributorRole == unknown
+                      + (unknown.equals(contributorRole)
                           ? ""
                           : "Contributor Role: " + contributorRole + "\n")
-                      + (acknowledgement == unknown
+                      + (unknown.equals(acknowledgement)
                           ? ""
                           : "Acknowledgement: " + acknowledgement + "\n"))
               + "    </datacred>\n");
@@ -16340,18 +16290,18 @@ public abstract class EDDGrid extends EDD {
             + "    <stdorder>\n");
 
     // data file types
-    for (int ft = 0; ft < dataFileTypeNames.length; ft++)
+    for (int ft = 0; ft < dataFileTypeNames.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + dataFileTypeNames[ft]
+              + dataFileTypeNames.get(ft)
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo[ft])
+                  dataFileTypeDescriptionsAr[language][ft] + " " + dataFileTypeInfo.get(ft))
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -16391,18 +16341,18 @@ public abstract class EDDGrid extends EDD {
               + "      </digform>\n");
 
     // image file types
-    for (int ft = 0; ft < imageFileTypeNames.length; ft++)
+    for (int ft = 0; ft < imageFileTypeNames.size(); ft++)
       writer.write(
           "      <digform>\n"
               + "        <digtinfo>\n"
               + // digital transfer info
               "          <formname>"
-              + imageFileTypeNames[ft]
+              + imageFileTypeNames.get(ft)
               + "</formname>\n"
               + "          <formvern>1</formvern>\n"
               + "          <formspec>"
               + XML.encodeAsXML(
-                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo[ft])
+                  imageFileTypeDescriptionsAr[language][ft] + " " + imageFileTypeInfo.get(ft))
               + "</formspec>\n"
               +
               //           I think file decompression technique only used if file *always* encoded.
@@ -16530,16 +16480,13 @@ public abstract class EDDGrid extends EDD {
     String infoUrl = combinedGlobalAttributes.getString("infoUrl");
     String institution = combinedGlobalAttributes.getString("institution");
     String keywords = combinedGlobalAttributes.getString("keywords");
-    String keywordsVocabulary = combinedGlobalAttributes.getString("keywordsVocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
       keywords = EDStatic.keywords;
-      keywordsVocabulary = null;
     }
     String license = combinedGlobalAttributes.getString("license");
     String project = combinedGlobalAttributes.getString("project");
     if (project == null) project = institution;
     String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
-    String sourceUrl = publicSourceUrl();
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -16557,7 +16504,6 @@ public abstract class EDDGrid extends EDD {
       // infoUrl         = null;  //ensureValid ensure that some things exist
       // institution     = null;
       keywords = null;
-      keywordsVocabulary = null;
       license = null;
       project = null;
       standardNameVocabulary = null;
@@ -17236,8 +17182,7 @@ public abstract class EDDGrid extends EDD {
 
             } else if (kari.length() <= LONGEST_ONE_WORD_CF_STANDARD_NAMES
                 && // quick accept if short enough
-                String2.indexOf(ONE_WORD_CF_STANDARD_NAMES, kari)
-                    >= 0) { // few, so linear search is quick
+                ONE_WORD_CF_STANDARD_NAMES.indexOf(kari) >= 0) { // few, so linear search is quick
               kar.remove(i); // a one word CF Standard Name
             }
           }

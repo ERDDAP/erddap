@@ -103,14 +103,14 @@ public class CartesianGraph extends Graph {
    * @supplierCardinality 0..*
    * @clientRole xAxis_
    */
-  public Vector xAxis_;
+  public Vector<Axis> xAxis_;
 
   /**
    * @associates <strong>Axis</strong>
    * @clientRole yAxis_
    * @supplierCardinality 0..*
    */
-  public Vector yAxis_;
+  public Vector<Axis> yAxis_;
 
   /**
    * @clientRole xTransform_
@@ -145,13 +145,13 @@ public class CartesianGraph extends Graph {
   public void releaseResources() throws Exception {
     try {
       if (xAxis_ != null) {
-        Vector v = xAxis_;
+        Vector<Axis> v = xAxis_;
         xAxis_ = null;
         for (Object o : v) ((Axis) o).releaseResources();
         v.clear();
       }
       if (yAxis_ != null) {
-        Vector v = yAxis_;
+        Vector<Axis> v = yAxis_;
         yAxis_ = null;
         for (Object o : v) ((Axis) o).releaseResources();
         v.clear();
@@ -205,8 +205,8 @@ public class CartesianGraph extends Graph {
    */
   public CartesianGraph(String id, AxisTransform xt, AxisTransform yt) {
     super(id);
-    xAxis_ = new Vector(2, 2);
-    yAxis_ = new Vector(2, 2);
+    xAxis_ = new Vector<>(2, 2);
+    yAxis_ = new Vector<>(2, 2);
     xTransform_ = xt;
     if (xTransform_ != null) xTransform_.addPropertyChangeListener(this);
     yTransform_ = yt;
@@ -320,17 +320,17 @@ public class CartesianGraph extends Graph {
     // com.cohort.util.String2.log("CartesianGraph.draw renderer time=" +
     // (System.currentTimeMillis() - time) + "ms");
     if (!xAxis_.isEmpty()) {
-      for (Enumeration it = xAxis_.elements(); it.hasMoreElements(); ) {
+      for (Enumeration<Axis> it = xAxis_.elements(); it.hasMoreElements(); ) {
         // time = System.currentTimeMillis();
-        ((Axis) it.nextElement()).draw(g);
+        it.nextElement().draw(g);
         // com.cohort.util.String2.log("CartesianGraph.draw xaxis time=" +
         // (System.currentTimeMillis() - time) + "ms");
       }
     }
     if (!yAxis_.isEmpty()) {
-      for (Enumeration it = yAxis_.elements(); it.hasMoreElements(); ) {
+      for (Enumeration<Axis> it = yAxis_.elements(); it.hasMoreElements(); ) {
         // time = System.currentTimeMillis();
-        ((Axis) it.nextElement()).draw(g);
+        it.nextElement().draw(g);
         // com.cohort.util.String2.log("CartesianGraph.draw yaxis time=" +
         // (System.currentTimeMillis() - time) + "ms");
       }
@@ -485,9 +485,9 @@ public class CartesianGraph extends Graph {
   public Axis getXAxis(String id) throws AxisNotFoundException {
     if (!xAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = xAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
-        if (ax.getId() == id) return ax;
+      for (Enumeration<Axis> it = xAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
+        if (ax.getId().equals(id)) return ax;
       }
       throw new AxisNotFoundException();
     } else {
@@ -506,9 +506,9 @@ public class CartesianGraph extends Graph {
   public void removeXAxis(String id) throws AxisNotFoundException {
     if (!xAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = xAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
-        if (ax.getId() == id) xAxis_.removeElement(ax);
+      for (Enumeration<Axis> it = xAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
+        if (ax.getId().equals(id)) xAxis_.removeElement(ax);
       }
       throw new AxisNotFoundException();
     } else {
@@ -526,8 +526,8 @@ public class CartesianGraph extends Graph {
   public void removeXAxis(Axis axis) throws AxisNotFoundException {
     if (!xAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = xAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
+      for (Enumeration<Axis> it = xAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
         if (ax.equals(axis)) xAxis_.removeElement(ax);
       }
       throw new AxisNotFoundException();
@@ -557,7 +557,7 @@ public class CartesianGraph extends Graph {
    *
    * @return enumeration
    */
-  public Enumeration xAxisElements() {
+  public Enumeration<Axis> xAxisElements() {
     return xAxis_.elements();
   }
 
@@ -599,9 +599,9 @@ public class CartesianGraph extends Graph {
   public Axis getYAxis(String id) throws AxisNotFoundException {
     if (!yAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = yAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
-        if (ax.getId() == id) return ax;
+      for (Enumeration<Axis> it = yAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
+        if (ax.getId().equals(id)) return ax;
       }
       throw new AxisNotFoundException();
     } else {
@@ -620,9 +620,9 @@ public class CartesianGraph extends Graph {
   public void removeYAxis(String id) throws AxisNotFoundException {
     if (!yAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = yAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
-        if (ax.getId() == id) yAxis_.removeElement(ax);
+      for (Enumeration<Axis> it = yAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
+        if (ax.getId().equals(id)) yAxis_.removeElement(ax);
       }
       throw new AxisNotFoundException();
     } else {
@@ -640,8 +640,8 @@ public class CartesianGraph extends Graph {
   public void removeYAxis(Axis axis) throws AxisNotFoundException {
     if (!yAxis_.isEmpty()) {
       Axis ax;
-      for (Enumeration it = yAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
+      for (Enumeration<Axis> it = yAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
         if (ax.equals(axis)) yAxis_.removeElement(ax);
       }
       throw new AxisNotFoundException();
@@ -671,7 +671,7 @@ public class CartesianGraph extends Graph {
    *
    * @return enumeration
    */
-  public Enumeration yAxisElements() {
+  public Enumeration<Axis> yAxisElements() {
     return yAxis_.elements();
   }
 
@@ -732,8 +732,8 @@ public class CartesianGraph extends Graph {
     Axis ax;
     SGLabel lab;
     if (!xAxis_.isEmpty()) {
-      for (Enumeration it = xAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
+      for (Enumeration<Axis> it = xAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
         bnds = ax.getBounds();
         if (bnds.contains(pt)) {
           return ax;
@@ -748,8 +748,8 @@ public class CartesianGraph extends Graph {
       }
     }
     if (!yAxis_.isEmpty()) {
-      for (Enumeration it = yAxis_.elements(); it.hasMoreElements(); ) {
-        ax = (Axis) it.nextElement();
+      for (Enumeration<Axis> it = yAxis_.elements(); it.hasMoreElements(); ) {
+        ax = it.nextElement();
         bnds = ax.getBounds();
         if (bnds.contains(pt)) {
           return ax;

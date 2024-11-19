@@ -318,7 +318,6 @@ public class Page extends JComponent implements PropertyChangeListener, Serializ
   private void pageMouseClicked(MouseEvent event) {
     if (event.isControlDown()) return; // ignore zoom resets
     if (event.isPopupTrigger()) System.out.println("Page.pageMouseClicked(): isPopupTrigger()");
-    Object obj = pane_.getSelectedObject();
     if ((event.getModifiers() & InputEvent.BUTTON3_MASK) != 0)
       System.out.println("Page.pageMouseClicked(): Button3!");
   }
@@ -365,12 +364,11 @@ public class Page extends JComponent implements PropertyChangeListener, Serializ
 
   @Override
   public int print(Graphics g, PageFormat pf, int pageIndex) throws PrinterException {
-    int result = NO_SUCH_PAGE;
     Color saveColor = getBackground();
     if (panelModel.isPrintWhitePage()) {
       setBackground(Color.white);
     }
-    result = pane_.print(g, pf, pageIndex);
+    int result = pane_.print(g, pf, pageIndex);
     if (result == PAGE_EXISTS && panelModel.isPrintBorders()) {
       Component[] comps = pane_.getComponents();
       for (int i = 0; i < comps.length; i++) {

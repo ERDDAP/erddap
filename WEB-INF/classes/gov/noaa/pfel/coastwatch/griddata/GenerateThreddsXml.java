@@ -268,7 +268,6 @@ public class GenerateThreddsXml {
         if (verbose) {
           // it is good if maxShow=MAX_TITLE_LENGTH, but more important that info fit without
           // wrapping
-          int maxShow = Math.min(60, MAX_TITLE_LENGTH);
           String2.log(
               "    boldTitle ="
                   + boldTitle

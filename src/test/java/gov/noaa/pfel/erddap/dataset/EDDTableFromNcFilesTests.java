@@ -70,10 +70,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
   void testGenerateDatasetsXml() throws Throwable {
-    // testVerboseOn();
-    int language = 0;
-
-    String2.log("\n*** EDDTableFromNcFiles.testGenerateDatasetsXml");
     String2.pressEnterToContinue(
         "\nDownload NDBC_41004_met.nc from coastwatch\n"
             + "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/ \n"
@@ -795,9 +791,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
   void testGenerateDatasetsXml2() throws Throwable {
-    // testVerboseOn();
-    int language = 0;
-
     String results =
         EDDTableFromNcFiles.generateDatasetsXml(
             "c:/data/ngdcJasonSwath/",
@@ -856,12 +849,6 @@ class EDDTableFromNcFilesTests {
   /** testGenerateDatasetsXml ncdump option */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlNcdump() throws Throwable {
-    // String2.log("\n******************
-    // EDDTableFromNcFiles.testGenerateDatasetsXmlNcdump() *****************\n");
-    // testVerboseOn();
-
-    int language = 0;
-
     // just header
     String results =
         new GenerateDatasetsXml()
@@ -947,9 +934,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     // 11 is enough to check date. Since this takes long enough to run, checking a
     // more specific time leads to flakiness. Even date could cause flakes if run at
@@ -1314,9 +1299,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, userDapQuery;
 
     // the test files were made with makeTestFiles();
     String id = "testNc2D";
@@ -1566,10 +1549,8 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    EDV edv;
     String id = "testNc3D";
 
     if (deleteCachedDatasetInfo) EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
@@ -1812,11 +1793,8 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
-    int po;
-    EDV edv;
 
     String id = "cwwcNDBCMet";
     if (deleteCachedDatasetInfo) EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
@@ -2098,9 +2076,7 @@ class EDDTableFromNcFilesTests {
     String2.log("\n****************** EDDTableFromNcFiles.test24Hours() *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
@@ -2132,12 +2108,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to
-    // check min:sec.
+    String tName, results, tResults, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -2466,9 +2437,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -2538,9 +2507,8 @@ class EDDTableFromNcFilesTests {
 
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -2965,9 +2933,8 @@ class EDDTableFromNcFilesTests {
 
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -3398,8 +3365,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -3833,8 +3799,7 @@ class EDDTableFromNcFilesTests {
 
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getpmelTaoDySst();
 
@@ -3893,8 +3858,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -4305,8 +4269,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -4802,8 +4765,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
@@ -5164,13 +5126,8 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testOrderByMinMax() throws Throwable {
-    // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMinMax()
-    // *****************\n");
-    // testVerboseOn();
-
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -5447,8 +5404,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -5838,9 +5794,8 @@ class EDDTableFromNcFilesTests {
     // *****************\n");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     int language = 0;
-    String error = "";
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -6121,8 +6076,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
@@ -6159,11 +6113,9 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, baseName, tName, results, tResults, expected, userDapQuery, tQuery;
+    String baseName, tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
     EDV edv;
-    int epo;
 
     // variant of calcofi Subsurface (has additional ID from global:id)
     EDDTable csub = (EDDTableFromNcFiles) EDDTestDataset.gettestGlobal();
@@ -6198,7 +6150,6 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
   void testGenerateBreakUpPostDatasetsXml() throws Throwable {
-    int language = 0;
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
     // String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
@@ -6234,7 +6185,6 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
@@ -6242,7 +6192,7 @@ class EDDTableFromNcFilesTests {
     EDDTable globecBottle = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
 
     // kml
-    tName =
+    String tName =
         globecBottle.makeNewFileForDapQuery(
             language, null, null, mapDapQuery, dir, globecBottle.className() + "_MapKml", ".kml");
     // String2.log(File2.readFromFile(dir + tName)[1]);
@@ -6258,7 +6208,7 @@ class EDDTableFromNcFilesTests {
 
     // testVerboseOn();
     int language = 0;
-    String name, tName, baseName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, baseName, userDapQuery, tQuery;
     String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
     userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -6604,7 +6554,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String results, query, tName, expected;
+    String results, tName, expected;
     String baseQuery = "&time>=2000-08-07&time<2000-08-08";
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGlobecBirds();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -6747,14 +6697,15 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testTableWithAltitude() throws Throwable {
-    String2.log("\n*** EDDTableFromNcFiles.testTableWithAltitude");
+    // !!! I no longer have a test dataset with real altitude data!
+    /*
     int language = 0;
     String results, expected, tName;
     int po;
 
-    // !!! I no longer have a test dataset with real altitude data!
 
-    /*
+
+
      * String url =
      * "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
      * results = generateDatasetsXml(true, url,
@@ -7038,12 +6989,9 @@ class EDDTableFromNcFilesTests {
     // boolean oReallyVerbose = reallyVerbose;
     // reallyVerbose = false;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    long resultLength = -1, expectedLength;
+    String tName;
+    long resultLength = -1;
 
-    String id = "cwwcNDBCMet";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     String baseName = eddTable.className() + "_BigRequest_";
@@ -7173,7 +7121,7 @@ class EDDTableFromNcFilesTests {
         String2.log(msg);
 
         // if not too slow or too fast, break
-        if (time > expectedMs[test] / 2 && time < expectedMs[test] * 2) break;
+        if (time > expectedMs[test] / 2 && time < expectedMs[test] * 2L) break;
       }
 
       if (test >= kmli) {
@@ -7193,7 +7141,7 @@ class EDDTableFromNcFilesTests {
       }
       if (resultLength < 0.9 * bytes[test]
           || resultLength > 1.2 * bytes[test]
-          || time > expectedMs[test] * 2) {
+          || time > expectedMs[test] * 2L) {
         msg = "Unexpected length or time: " + msg;
         String2.log(msg);
         errors.append(msg);
@@ -7220,12 +7168,7 @@ class EDDTableFromNcFilesTests {
     EDDTable tedd =
         (EDDTable) EDDTestDataset.getpmelTaoDyAirt(); // was "pmelTaoDyAirt", but definition
     // matches
-    String tName, error, results, tResults, expected;
-    int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // *** .das
@@ -7752,12 +7695,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd;
-    String tName, error, results, tResults, expected;
-    int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // * test cdm_data_type=TimeSeries
@@ -8150,7 +8088,6 @@ class EDDTableFromNcFilesTests {
     // dataset is fromFiles (so min,max are known) and no recent data (so stable)
     EDDTable tedd = (EDDTable) EDDTestDataset.getLiquidR_HBG3_2015_weather();
 
-    String s;
     StringArray rv = new StringArray();
     StringArray cv = new StringArray();
     StringArray co = new StringArray();
@@ -10800,14 +10737,8 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n*** EDDTableFromNcFiles.testIgor()\n");
 
     int language = 0;
-    // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
-    int po;
-    EDV edv;
-
-    String id = "cwwcNDBCMet";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
 
     userDapQuery =
@@ -10914,13 +10845,8 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
-    int po;
-    EDV edv;
-
-    String id = "testTablePseudoSourceNames";
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTablePseudoSourceNames();
 
     userDapQuery = "&time=2014-01-15T00";
@@ -11082,16 +11008,12 @@ class EDDTableFromNcFilesTests {
     // EDD.reallyVerbose = false;
     // EDD.debugMode = false;
     // EDDTableFromFilesCallable.debugMode = true;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
-    int po;
-
     StringBuilder bigResults = new StringBuilder("\nbigResults:\n");
 
     // this dataset and this request are a good test that the results are always in
     // the same order
-    String id = "erdGtsppBestNc";
     userDapQuery = "&time>=2017-01-01&time<2017-07-01&depth=200&temperature=10";
 
     EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.geterdGtsppBestNc();
@@ -11231,19 +11153,12 @@ class EDDTableFromNcFilesTests {
     // EDDTableFromFilesCallable.debugMode = true;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String error = "";
-    int po;
-
     StringBuilder bigResults = new StringBuilder("\nbigResults:\n");
 
     // this dataset and this request are a good test that the results are always in
     // the same order
     // For testing by hand:
     // https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.htmlTable?station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10&station=~"4...."&time<2020-01-01
-    String id,
-        tDatasetID = "cwwcNDBCMet"; // used to also run for cwwcNDBCMetSSD, does adding that back
-    // provide any
-    // benefit?
     userDapQuery =
         "station,latitude,longitude,time,wd,wspd,wtmp&wd=15&wspd=10&station=~\"4....\"&time<2020-01-01";
 
@@ -11332,17 +11247,10 @@ class EDDTableFromNcFilesTests {
     // FileVisitorDNLS.reallyVerbose = true;
     // FileVisitorDNLS.debugMode = true;
 
-    String name, tName, results, tResults, expected = null, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, expected = null;
     long time = System.currentTimeMillis();
     StringBuilder resultsSB = new StringBuilder();
 
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String id = "testEDDTableCacheFiles";
     if (deleteCachedInfo) EDDTableFromNcFiles.deleteCachedDatasetInfo(id);
@@ -12433,7 +12341,7 @@ class EDDTableFromNcFilesTests {
     int language = 0;
     // reallyVerbose = false;
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    String name, tName, baseName, userDapQuery, results, expected, error;
+    String tName, baseName;
     String dapQuery;
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
@@ -12556,7 +12464,7 @@ class EDDTableFromNcFilesTests {
     // testVerboseOn();
     // reallyVerbose = true;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String name, tName, baseName, userDapQuery, results, expected, error;
+    String tName, baseName, results, expected;
     String dapQuery;
 
     String id = "testTimeAxis";
@@ -12656,7 +12564,7 @@ class EDDTableFromNcFilesTests {
     // boolean oDebugMode = debugMode;
     // debugMode = true;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     String dapQuery;
 
     String id = "testModTime";
@@ -13225,10 +13133,6 @@ class EDDTableFromNcFilesTests {
   /** Tests the data created by getCAMarCatLong() and served by erdCAMarCatLM and erdCAMarCatLY. */
   @org.junit.jupiter.api.Test
   void testCAMarCatL() throws Throwable {
-    int language = 0;
-    EDDTable eddTable;
-    String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String tName, results, expected;
 
     // *** test long name list
     // http://las.pfeg.noaa.gov:8082/thredds/dodsC/CA_market_catch/ca_fish_grouped.nc.ascii
@@ -13299,9 +13203,8 @@ class EDDTableFromNcFilesTests {
       int language = 0;
       // this dataset is not fromNcFiles, but test here with other testNcCF tests
       EDDTable tedd = (EDDTable) EDDTestDataset.getnwioosCoral();
-      String tName, error, results, expected;
+      String tName, results, expected;
       String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-      int po;
       String today =
           Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to
       // check hour.
@@ -13510,16 +13413,11 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.getcwwcNDBCMet(); // should work
-    String tName, error, results, expected;
-    int po;
+    String tName, results, expected;
     String query =
         "longitude,latitude,station,time,atmp,wtmp"
             + "&longitude>-123&longitude<-122&latitude>37&latitude<38"
             + "&time>=2005-05-01T00:00:00&time<=2005-05-01T02:00:00";
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // lon lat time range
@@ -13734,13 +13632,8 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.getcwwcNDBCMet(); // should work
-    String tName, error, results, expected;
-    int po;
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
 
     // lon lat time range
     tName =
@@ -13969,12 +13862,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdFedRockfishStation();
-    String tName, error, results, expected;
-    int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // lon lat time range
@@ -14151,8 +14039,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdFedRockfishStation(); // should work
-    String tName, error, results, expected;
-    int po;
+    String tName, results, expected;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -14528,8 +14415,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
-    String tName, error, results, expected;
-    int po;
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
@@ -14784,8 +14670,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
-    String tName, error, results, expected;
-    int po;
+    String tName, results, expected;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
     // hour. Hard
@@ -15097,12 +14982,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest(); // should work
-    String tName, error, results, expected;
-    int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // lon lat time range
@@ -15548,12 +15428,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest(); // should work
-    String tName, error, results, expected;
-    int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check
-    // hour. Hard
-    // to check min:sec.
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String query =
         "platform,cruise,org,type,station_id,longitude,latitude,time,depth,"
@@ -16473,7 +16348,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest();
-    String tName, error, results, expected;
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     // lon lat time range
@@ -16516,7 +16391,7 @@ class EDDTableFromNcFilesTests {
 
     // tests of REVERSED_OPERATOR
     EDDTable tedd;
-    String tName, error, results, expected;
+    String tName, results, expected;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
 
     tedd = (EDDTable) EDDTestDataset.geterdCinpKfmT();
@@ -16650,8 +16525,7 @@ class EDDTableFromNcFilesTests {
 
     int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
-    String name, tName, results, tResults, expected, dapQuery;
-    String error = "";
+    String tName, results, expected, dapQuery;
     try {
       EDDTable eddTable = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
       String baseName = eddTable.className() + "TestMV";
@@ -17932,7 +17806,7 @@ class EDDTableFromNcFilesTests {
           SSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
           // File2.deleteAllFiles(tempDir); //previous method
         }
-        Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000); // gtspp:
+        Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000L); // gtspp:
         // give OS
         // time to
         // settle

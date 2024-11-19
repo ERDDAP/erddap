@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -229,5 +230,13 @@ public class TableWriterJson extends TableWriter {
     TableWriterJson twj =
         new TableWriterJson(language, tEdd, tNewHistory, outputStreamSource, tJsonp, writeUnits);
     twj.writeAllAndFinish(table);
+    twj.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

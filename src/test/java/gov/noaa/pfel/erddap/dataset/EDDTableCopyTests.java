@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -28,12 +27,10 @@ class EDDTableCopyTests {
     // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
+    String tName, results, expected, expected2, expected3, userDapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
+    int tPo;
+    // String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
     userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
 
     EDDTable edd = (EDDTableCopy) EDDTestDataset.gettestTableCopy();
@@ -539,10 +536,7 @@ class EDDTableCopyTests {
     // testVerboseOn();
     int language = 0;
     // defaultCheckSourceData = tCheckSourceData;
-    String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
-    String error = "";
-    int epo, tPo;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    String tName, results, expected, tQuery;
     long eTime;
     EDDTable edd = null;
 

@@ -10,7 +10,7 @@ import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pmel.sgt.dm.*;
 import java.io.*;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class Boundaries {
   public static boolean debug = false;
 
   public static final String REF_DIRECTORY =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -52,7 +52,7 @@ public class Boundaries {
    * http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT landMaskDir should have slash at end.
    */
   public String directory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -66,7 +66,8 @@ public class Boundaries {
    */
   public static final int CACHE_SIZE = 100;
 
-  private Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
+  private Map<String, SGTLine> cache =
+      Collections.synchronizedMap(new LRUCache<String, SGTLine>(CACHE_SIZE));
   private int nCoarse = 0;
   private int nSuccesses = 0;
   private int nTossed = 0;
@@ -100,31 +101,30 @@ public class Boundaries {
   // !!!EEK!!! no Sacramento River! gshhs is based on 2 datasets:
   //  World Vector Shorelines (WVS) and CIA World Data Bank II (WDBII).
   //  Perhaps each thinks the other is responsible for it.
-  private String[] fileNames;
+  private ImmutableList<String> fileNames;
 
-  public static final String NATIONAL_FILE_NAMES[] = {
-    "nationalBoundariesf.double",
-    "nationalBoundariesh.double",
-    "nationalBoundariesi.double",
-    "nationalBoundariesl.double",
-    "nationalBoundariesc.double"
-  };
+  public static final ImmutableList<String> NATIONAL_FILE_NAMES =
+      ImmutableList.of(
+          "nationalBoundariesf.double",
+          "nationalBoundariesh.double",
+          "nationalBoundariesi.double",
+          "nationalBoundariesl.double",
+          "nationalBoundariesc.double");
   // ??? Why are there state boundaries for all of Americas, but not Australia? Mistake on my
   // part???
-  public static final String STATE_FILE_NAMES[] = {
-    "stateBoundariesf.double",
-    "stateBoundariesh.double",
-    "stateBoundariesi.double",
-    "stateBoundariesl.double",
-    "stateBoundariesc.double"
-  };
-  public static final String RIVER_FILE_NAMES[] = {
-    "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double"
-  };
+  public static final ImmutableList<String> STATE_FILE_NAMES =
+      ImmutableList.of(
+          "stateBoundariesf.double",
+          "stateBoundariesh.double",
+          "stateBoundariesi.double",
+          "stateBoundariesl.double",
+          "stateBoundariesc.double");
+  public static final ImmutableList<String> RIVER_FILE_NAMES =
+      ImmutableList.of(
+          "riversf.double", "riversh.double", "riversi.double", "riversl.double", "riversc.double");
 
   public static final int MATLAB_FORMAT = 0;
   public static final int GMT_FORMAT = 1;
-  private int fileFormat = GMT_FORMAT;
 
   /**
    * The constructor.
@@ -134,11 +134,10 @@ public class Boundaries {
    * @param fileNames the 5 file names
    * @param fileFormat MATLAB_FORMAT or GMT_FORMAT
    */
-  public Boundaries(String id, String directory, String fileNames[], int fileFormat) {
+  public Boundaries(String id, String directory, ImmutableList<String> fileNames) {
     this.id = id;
     this.directory = directory;
     this.fileNames = fileNames;
-    this.fileFormat = fileFormat;
   }
 
   /**
@@ -180,7 +179,7 @@ public class Boundaries {
       // And the request is usually a large part of whole world. Most paths will be used.
       nCoarse++;
       tCoarse = "*";
-      sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+      sgtLine = readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
 
     } else {
 
@@ -196,11 +195,12 @@ public class Boundaries {
       try {
 
         // *** is SGTLine in cache?
-        sgtLine = (SGTLine) cache.get(cachedName);
+        sgtLine = cache.get(cachedName);
         if (sgtLine == null) {
 
           // not in cache, make SgtLine
-          sgtLine = readSgtLineDouble(directory + fileNames[resolution], west, east, south, north);
+          sgtLine =
+              readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
 
           // cache full?
           if (cache.size() == CACHE_SIZE) {
@@ -283,9 +283,8 @@ public class Boundaries {
     }
     int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
 
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
       // double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4
       // maxMaxLon=359.99969482
       while (true) {
@@ -363,14 +362,12 @@ public class Boundaries {
 
         // read the points
         double oLon = 0; // irrelevant
-        double oLat = 0;
         double tLon = 0;
         double tLat = 0;
         double polyMinLon = 1e10,
             polyMaxLon = -1e10; // see if actualy poly lon range is as promised
         for (int point = 0; point < nPoints; point++) {
           oLon = tLon;
-          oLat = tLat;
           tLon = dis.readDouble();
           tLat = dis.readDouble();
           if (debug) {
@@ -453,8 +450,6 @@ public class Boundaries {
           }
         }
       }
-    } finally {
-      dis.close();
     }
     if (reallyVerbose)
       String2.log(
@@ -606,8 +601,6 @@ public class Boundaries {
     int format = GMT_FORMAT;
 
     String2.log("convertSgtLine\n in:" + sourceName + "\nout:" + destName);
-    DoubleArray lat = new DoubleArray();
-    DoubleArray lon = new DoubleArray();
     DoubleArray tempLat = new DoubleArray();
     DoubleArray tempLon = new DoubleArray();
     String startGapLine1 = format == MATLAB_FORMAT ? "nan nan" : ">";
@@ -703,16 +696,16 @@ public class Boundaries {
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getNationalBoundaries() {
-    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES);
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getStateBoundaries() {
-    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES);
   }
 
   /** This is a convenience method to construct a rivers object. */
   public static Boundaries getRivers() {
-    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES, GMT_FORMAT);
+    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES);
   }
 }

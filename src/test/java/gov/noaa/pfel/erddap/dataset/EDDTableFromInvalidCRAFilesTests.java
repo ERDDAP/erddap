@@ -1,13 +1,10 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagSlowTests;
@@ -29,11 +26,7 @@ class EDDTableFromInvalidCRAFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    Table table;
+    String tName, results, expected, userDapQuery;
     String testCacheDir = EDStatic.fullTestCacheDirectory;
 
     String id = "testInvalidCRAFiles";

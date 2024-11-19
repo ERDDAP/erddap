@@ -502,38 +502,13 @@ public class VectorKey implements Cloneable, DataKey, Moveable, PropertyChangeLi
     modified("VectorKey: clearAll()");
   }
 
-  /** Remove data from key by id. */
-  public void clear(String data_id) {
-    VectorCartesianRenderer vcr;
-    int indx = -1;
-    for (Enumeration it = vectors_.elements(); it.hasMoreElements(); ) {
-      indx++;
-      vcr = (VectorCartesianRenderer) it.nextElement();
-      //        if(pcr.getLine().getId().equals(data_id)) {
-      //  	pcr.getAttribute().removePropertyChangeListener(this);
-      //  	points_.removeElement(lcr);
-      //  	label_.removeElementAt(indx);
-      //  	modified("VectorKey: clear()");
-      //  	break;
-      //        }
-    }
-  }
-
-  /** Return height of key row in pixels. */
-  public int getRowHeight() {
-    Rectangle bounds;
-    bounds = getBounds();
-    return ROW_SPACE_ + maxLabelHeight_;
-  }
-
   /** Draw the Key. */
   @Override
   public void draw(Graphics g) {
-    double maxLabelLength, maxLabelHeight;
     int numLines, numRows, i;
     float vectorLength;
     float vectorLengthU;
-    int col, row, ytemp;
+    int col, row;
     double xloc, labelSpace, scaleSpace, scaleLength;
     double[] xp, yp;
     int[] xd, yd;
@@ -879,7 +854,6 @@ public class VectorKey implements Cloneable, DataKey, Moveable, PropertyChangeLi
     int[] xd, yd;
     int numLines, numRows;
     int vectorLength;
-    double labelSpace, scaleSpace;
     int i;
 
     numLines = vectors_.size();
@@ -897,9 +871,7 @@ public class VectorKey implements Cloneable, DataKey, Moveable, PropertyChangeLi
     // compute location of rows and columns in device and physical coordinates
     //
     vectorLength = layer_.getXPtoD(vectorLengthP_) - layer_.getXPtoD(0.0);
-    labelSpace = layer_.getXDtoP(LABEL_SPACE_) - layer_.getXDtoP(0);
-    scaleSpace = layer_.getXDtoP(SCALE_SPACE_) - layer_.getXDtoP(0);
-    //
+
     yd[0] = bounds.y + VERTICAL_BORDER_ + maxLabelHeight_;
     for (i = 1; i < numRows; i++) {
       yd[i] = yd[i - 1] + ROW_SPACE_ + maxLabelHeight_;

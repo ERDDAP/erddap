@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-09-03
  */
-public class GridDataAllAccessor {
+public class GridDataAllAccessor implements AutoCloseable {
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -90,7 +90,7 @@ public class GridDataAllAccessor {
           } catch (Exception e) {
           }
       }
-      gridDataAccessor.releaseGetResources();
+      gridDataAccessor.close();
     }
   }
 
@@ -134,7 +134,7 @@ public class GridDataAllAccessor {
 
   public void releaseGetResources() {
     try {
-      if (gridDataAccessor != null) gridDataAccessor.releaseGetResources();
+      if (gridDataAccessor != null) gridDataAccessor.close();
     } catch (Throwable t) {
     }
   }
@@ -144,7 +144,8 @@ public class GridDataAllAccessor {
    * that users of this class call this when they are done using this instance. This won't throw an
    * Exception.
    */
-  public void releaseResources() {
+  @Override
+  public void close() {
     releaseGetResources();
     try {
       if (dataPAType != null) {
@@ -161,14 +162,5 @@ public class GridDataAllAccessor {
       }
     } catch (Throwable t) {
     }
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use releaseResources() instead. Java calls this when
-   * an object is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
-    releaseResources();
-    super.finalize();
   }
 }

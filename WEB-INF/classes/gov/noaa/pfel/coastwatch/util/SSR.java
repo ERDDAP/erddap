@@ -14,7 +14,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.sun.mail.smtp.SMTPTransport;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
@@ -37,12 +36,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -201,7 +200,7 @@ public class SSR {
    *     error)
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    */
-  public static ArrayList dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
     if (String2.OSIsWindows) {
       // commandLine = String2.replaceAll(commandLine, "/", "\\");
       return dosShell(commandLine, timeOutSeconds);
@@ -221,7 +220,7 @@ public class SSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static ArrayList dosShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("dosShell        in: " + commandLine);
     PipeToStringArray outCatcher = new PipeToStringArray();
     PipeToStringArray errCatcher = new PipeToStringArray();
@@ -260,7 +259,7 @@ public class SSR {
    * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
    * @see #shell
    */
-  public static ArrayList cShell(String commandLine, int timeOutSeconds) throws Exception {
+  public static List<String> cShell(String commandLine, int timeOutSeconds) throws Exception {
     if (verbose) String2.log("cShell        in: " + commandLine);
     PipeToStringArray outCatcher;
     PipeToStringArray errCatcher;
@@ -442,7 +441,6 @@ public class SSR {
    */
   public static void zipADirectory(String dir, int timeOutSeconds) throws Exception {
     // remove trailing slash
-    char slash = dir.indexOf('/') >= 0 ? '/' : '\\';
     if (dir.endsWith("/") || dir.endsWith("\\")) dir = dir.substring(0, dir.length() - 1);
 
     SSR.zip(dir + ".zip", new String[] {dir}, timeOutSeconds, true, File2.getDirectory(dir));
@@ -608,29 +606,9 @@ public class SSR {
    * @param timeOutSeconds (use -1 for no time out)
    * @throws Exception if trouble
    */
-  public static void gzip(String gzipDirName, String dirNames[], int timeOutSeconds)
-      throws Exception {
+  public static void gzip(String gzipDirName, String dirNames[]) throws Exception {
 
-    gzip(gzipDirName, dirNames, timeOutSeconds, false, "");
-  }
-
-  /**
-   * Put the specified files in a gzip file (with some directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
-   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @param removeDirPrefix the prefix to be removed from the start of each dir name (ending with a
-   *     slash)
-   * @throws Exception if trouble
-   */
-  public static void gzip(
-      String gzipDirName, String dirNames[], int timeOutSeconds, String removeDirPrefix)
-      throws Exception {
-
-    gzip(gzipDirName, dirNames, timeOutSeconds, true, removeDirPrefix);
+    gzip(gzipDirName, dirNames, false, "");
   }
 
   /**
@@ -640,7 +618,6 @@ public class SSR {
    * @param gzipDirName the full name for the .zip file (path + name + ".gz")
    * @param dirNames the full names of the files to be put in the gzip file. These can use forward
    *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
    * @param includeDirectoryInfo set this to false if you don't want any dir invo stored with the
    *     files
    * @param removeDirPrefix if includeDirectoryInfo is true, this is the prefix to be removed from
@@ -649,11 +626,7 @@ public class SSR {
    * @throws Exception if trouble
    */
   private static void gzip(
-      String gzipDirName,
-      String dirNames[],
-      int timeOutSeconds,
-      boolean includeDirectoryInfo,
-      String removeDirPrefix)
+      String gzipDirName, String dirNames[], boolean includeDirectoryInfo, String removeDirPrefix)
       throws Exception {
 
     // validate
@@ -703,11 +676,11 @@ public class SSR {
                 dirNames[i]); // not File2.getDecompressedBufferedInputStream() Read files as is.
         try {
           // add ZIP entry to output stream
-          String tName =
-              includeDirectoryInfo
-                  ? dirNames[i].substring(removeDirPrefix.length())
-                  : // already validated above
-                  File2.getNameAndExtension(dirNames[i]);
+          // String tName =
+          //     includeDirectoryInfo
+          //         ? dirNames[i].substring(removeDirPrefix.length())
+          //         : // already validated above
+          //         File2.getNameAndExtension(dirNames[i]);
           // out.putNextEntry(new ZipEntry(tName));
 
           // transfer bytes from the file to the ZIP file
@@ -843,8 +816,9 @@ public class SSR {
 
     // if Linux, it is faster to use the zip utility
     long tTime = System.currentTimeMillis();
-    if (!ignoreGzDirectories)
+    if (!ignoreGzDirectories) {
       throw new RuntimeException("Currently, SSR.unGzip only supports ignoreGzDirectories=true!");
+    }
     /*Do this in the future?
      if (String2.OSIsLinux) {
         //-d: the directory to put the files in
@@ -882,7 +856,8 @@ public class SSR {
         } else */ {
           // open an output file
           // ???do I need to make the directory???
-          if (ignoreGzDirectories) name = File2.getNameAndExtension(name); // remove dir info
+          /* if (ignoreGzDirectories) */
+          name = File2.getNameAndExtension(name); // remove dir info
           OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
           try {
             // transfer bytes from the .zip file to the output file
@@ -1288,6 +1263,7 @@ public class SSR {
    *
    * @throws Exception if trouble
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for MimeMessage
   public static void lowSendEmail(
       Session session,
       SMTPTransport smtpTransport,
@@ -2120,7 +2096,6 @@ public class SSR {
         } else {
           // is cType supported by Java?
           try {
-            Charset cset = Charset.forName(cType);
             charset = cType; // no exception means it's valid
           } catch (Exception e) {
             // charset remains default
@@ -2181,14 +2156,14 @@ public class SSR {
    *     assumption that basically all the lines of the file are different).
    * @throws Exception if error occurs
    */
-  public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
+  public static List<String> getUrlResponseArrayList(String urlString) throws Exception {
     try {
       if (!String2.isUrl(urlString)) return File2.readLinesFromFile(urlString, File2.UTF_8, 1);
 
       long time = System.currentTimeMillis();
       BufferedReader in = getBufferedUrlReader(urlString);
       try {
-        ArrayList<String> sa = new ArrayList();
+        ArrayList<String> sa = new ArrayList<>();
         String s;
         while ((s = in.readLine()) != null) {
           sa.add(s);
@@ -2401,15 +2376,12 @@ public class SSR {
    * @throws Exception if error occurs
    */
   public static byte[] getFileBytes(String fileName) throws Exception {
-    InputStream is = null;
-    try {
+    try (InputStream is = File2.getDecompressedBufferedInputStream(fileName); ) {
       long time = System.currentTimeMillis();
       byte buffer[] = new byte[1024];
-      is = File2.getDecompressedBufferedInputStream(fileName);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       for (int s; (s = is.read(buffer)) != -1; ) baos.write(buffer, 0, s);
       is.close();
-      is = null;
       if (reallyVerbose)
         String2.log(
             "  SSR.getFileBytes "
@@ -2420,12 +2392,6 @@ public class SSR {
       return baos.toByteArray();
     } catch (Exception e) {
       // String2.log(e.toString());
-      if (is != null)
-        try {
-          is.close();
-        } catch (Throwable t) {
-        }
-      ;
       throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString(), e);
     }
   }
@@ -2445,7 +2411,8 @@ public class SSR {
       int tIndex = random.nextInt(nTimePoints);
       int xIndex = random.nextInt(52);
       int yIndex = random.nextInt(52);
-      String ts =
+      @SuppressWarnings("unused")
+      String unusedTs =
           getUrlResponseStringUnchanged(
               baseUrl + "?" + varName + "[" + tIndex + ":1:" + tIndex + "]" + "[0:1:0]" + "["
                   + yIndex + ":1:" + yIndex + "]" + "[" + xIndex + ":1:" + xIndex + "]");
@@ -2466,7 +2433,7 @@ public class SSR {
    */
   public static String getTempDirectory() {
     if (tempDirectory == null) {
-      String tdir = EDStatic.getWebInfParentDirectory() + "WEB-INF/temp/";
+      String tdir = File2.getWebInfParentDirectory() + "WEB-INF/temp/";
       // make it, because Git doesn't track empty dirs
       File2.makeDirectory(tdir);
       // then set it if successful

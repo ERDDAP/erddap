@@ -34,7 +34,7 @@ class EDDGridLonPM180Tests {
     // String2.log("\n****************** EDDGridLonPM180.testGT180()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
     int language = 0;
@@ -211,7 +211,7 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -414,7 +414,7 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, userDapQuery, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 
@@ -785,11 +785,7 @@ class EDDGridLonPM180Tests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridLonPM180.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =
@@ -886,7 +882,7 @@ class EDDGridLonPM180Tests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int po;
     String dir = EDStatic.fullTestCacheDirectory;
 

@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -563,7 +564,7 @@ public class File2 {
                     + fullName
                     + "\n"
                     + MustBe.getStackTrace());
-            return result;
+            return false;
           }
           String2.log(
               "WARNING #"
@@ -1196,7 +1197,6 @@ public class File2 {
    */
   public static BufferedInputStream getBufferedInputStream(
       String fullFileName, long firstByte, long lastByte) throws Exception {
-    String ext = getExtension(fullFileName); // if e.g., .tar.gz, this returns .gz
 
     // is it an AWS S3 object?
     String bro[] = String2.parseAwsS3Url(fullFileName); // [bucket, region, objectKey]
@@ -1263,8 +1263,8 @@ public class File2 {
       try {
         gzipIn = new GzipCompressorInputStream(is);
         tarIn = new TarArchiveInputStream(gzipIn);
-        TarArchiveEntry entry = tarIn.getNextTarEntry();
-        while (entry != null && entry.isDirectory()) entry = tarIn.getNextTarEntry();
+        TarArchiveEntry entry = tarIn.getNextEntry();
+        while (entry != null && entry.isDirectory()) entry = tarIn.getNextEntry();
         if (entry == null)
           throw new IOException(
               String2.ERROR + " while reading " + fullFileName + ": no file found in archive.");
@@ -1602,7 +1602,6 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
     BufferedReader br = getDecompressedBufferedFileReader(fileName, charset);
     StringBuilder sb = new StringBuilder(8192);
     try {
@@ -1671,7 +1670,6 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    long time = System.currentTimeMillis();
     BufferedReader br = null;
     String results[] = {"", ""};
     int errorIndex = 0;
@@ -1751,10 +1749,9 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
+  public static List<String> readLinesFromFile(String fileName, String charset, int maxAttempt)
       throws Exception {
 
-    long time = System.currentTimeMillis();
     BufferedReader bufferedReader = null;
     try {
       for (int i = 0; i < maxAttempt; i++) {
@@ -1766,7 +1763,7 @@ public class File2 {
           Math2.sleep(100);
         }
       }
-      ArrayList<String> al = new ArrayList();
+      ArrayList<String> al = new ArrayList<>();
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         al.add(s);
@@ -1793,32 +1790,27 @@ public class File2 {
    * @return ArrayList with the lines from the file
    * @throws Exception if trouble
    */
-  public static ArrayList<String> readLinesFromFile(
-      URL resourceFile, String charset, int maxAttempt) throws Exception {
+  public static List<String> readLinesFromFile(URL resourceFile, String charset, int maxAttempt)
+      throws Exception {
 
-    long time = System.currentTimeMillis();
-    BufferedReader bufferedReader = null;
-    try {
-      for (int i = 0; i < maxAttempt; i++) {
-        try {
-          InputStream is = getDecompressedBufferedInputStream(resourceFile);
-          bufferedReader = new BufferedReader(new InputStreamReader(is, charset));
-          break; // success
-        } catch (RuntimeException e) {
-          if (i == maxAttempt - 1) throw e;
-          Math2.sleep(100);
+    for (int i = 0; i < maxAttempt; i++) {
+      try (InputStream is = getDecompressedBufferedInputStream(resourceFile);
+          BufferedReader bufferedReader =
+              new BufferedReader(new InputStreamReader(is, charset)); ) {
+        ArrayList<String> al = new ArrayList<>();
+        String s = bufferedReader.readLine();
+        while (s != null) { // null = end-of-file
+          al.add(s);
+          s = bufferedReader.readLine();
         }
+        return al;
+      } catch (RuntimeException e) {
+        if (i == maxAttempt - 1) throw e;
+        Math2.sleep(100);
       }
-      ArrayList<String> al = new ArrayList();
-      String s = bufferedReader.readLine();
-      while (s != null) { // null = end-of-file
-        al.add(s);
-        s = bufferedReader.readLine();
-      }
-      return al;
-    } finally {
-      if (bufferedReader != null) bufferedReader.close();
     }
+
+    return null;
   }
 
   /*
@@ -2043,15 +2035,12 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String hexDump(String fullFileName, int nBytes) throws Exception {
-    InputStream fis = getDecompressedBufferedInputStream(fullFileName);
-    try {
+    try (InputStream fis = getDecompressedBufferedInputStream(fullFileName); ) {
       nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); // max 2GB
       byte ba[] = new byte[nBytes];
       int bytesRead = 0;
       while (bytesRead < nBytes) bytesRead += fis.read(ba, bytesRead, nBytes - bytesRead);
       return String2.hexDump(ba);
-    } finally {
-      fis.close();
     }
   }
 

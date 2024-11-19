@@ -1100,7 +1100,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       int tFileListPo = 0; // next one to look at
       int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
       long readFileCumTime = 0;
-      long removeCumTime = 0;
       int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
@@ -1114,7 +1113,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               tFileNameRegex.contains("zarr")
                   || (tPathRegex != null && tPathRegex.contains("zarr"));
           if (isZarr) {
-            if (!isZarr || tDirI == Integer.MAX_VALUE) {
+            if (tDirI == Integer.MAX_VALUE) {
               tFileListPo++;
               // Skipping file name that is null or empty string and not in zarr.
               continue;
@@ -1177,9 +1176,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               // remove it from cache   (Yes, a file may be marked bad (recently) and so still be in
               // cache)
               nRemoved++;
-              removeCumTime -= System.currentTimeMillis();
               fileTable.removeRow(fileListPo);
-              removeCumTime += System.currentTimeMillis();
             }
             // go on to next tFile
             continue;
@@ -1213,9 +1210,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
                     + dirList.get(dirI)
                     + fileS);
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo);
-          removeCumTime += System.currentTimeMillis();
           // tFileListPo isn't incremented, so it will be considered again in next iteration
           continue;
         }
@@ -1301,9 +1296,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               || msg.indexOf(Math2.TooManyOpenFiles) >= 0) throw t; // stop loading this dataset
           msg = "";
           nRemoved++;
-          removeCumTime -= System.currentTimeMillis();
           fileTable.removeRow(fileListPo);
-          removeCumTime += System.currentTimeMillis();
           tFileListPo++;
           if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE)
             // >30 minutes old, so not still being ftp'd, so add to badFileMap
@@ -2131,7 +2124,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     if (watchDirectory == null) return false; // no changes
 
     // get the file events
-    ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
+    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
     StringArray contexts = new StringArray();
     int nEvents = watchDirectory.getEvents(eventKinds, contexts);
     if (nEvents == 0) {
@@ -2757,11 +2750,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     ShortArray ftDirIndex = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);
     StringArray ftFileList = (StringArray) tFileTable.getColumn(FT_FILE_LIST_COL);
     LongArray ftLastMod = (LongArray) tFileTable.getColumn(FT_LAST_MOD_COL);
-    LongArray ftSize = (LongArray) tFileTable.getColumn(FT_SIZE_COL);
     IntArray ftNValues = (IntArray) tFileTable.getColumn(FT_N_VALUES_COL);
-    DoubleArray ftMin = (DoubleArray) tFileTable.getColumn(FT_MIN_COL);
-    DoubleArray ftMax = (DoubleArray) tFileTable.getColumn(FT_MAX_COL);
-    StringArray ftCsvValues = (StringArray) tFileTable.getColumn(FT_CSV_VALUES_COL);
     IntArray ftStartIndex = (IntArray) tFileTable.getColumn(FT_START_INDEX_COL);
 
     // make results[]
@@ -2915,7 +2904,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         // sleep and give it one more try
         try {
           Thread.sleep(1000); // not Math2.sleep(1000);
-          if (Thread.currentThread().interrupted()) // consume the interrupted status
+          if (Thread.interrupted()) // consume the interrupted status
           throw new InterruptedException();
           return caller.getSourceDataFromFile(tFileDir, tFileName, tDataVariables, tConstraints);
         } catch (Throwable t2) {

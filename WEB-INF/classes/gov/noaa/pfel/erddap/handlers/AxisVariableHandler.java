@@ -3,19 +3,19 @@ package gov.noaa.pfel.erddap.handlers;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.String2;
-import java.util.ArrayList;
+import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class AxisVariableHandler extends StateWithParent {
   private StringBuilder content = new StringBuilder();
-  private ArrayList<Object[]> tAxisVariables;
+  private List<Object[]> tAxisVariables;
   private String tSourceName = null, tDestinationName = null;
   private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   private PrimitiveArray tValuesPA = null;
 
   public AxisVariableHandler(
-      SaxHandler saxHandler, ArrayList<Object[]> tAxisVariables, State completeState) {
+      SaxHandler saxHandler, List<Object[]> tAxisVariables, State completeState) {
     super(saxHandler, completeState);
     this.tAxisVariables = tAxisVariables;
   }

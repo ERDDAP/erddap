@@ -96,29 +96,37 @@ public class Calendar2 {
   public static final TimeZone zuluTimeZone = TimeZone.getTimeZone(zulu);
   public static final ZoneId zuluZoneId = ZoneId.of(zulu);
 
-  private static final String[] MONTH_3 = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  };
-  private static final String[] MONTH_FULL = {
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  };
-  private static final String[] DAY_OF_WEEK_3 = { // corresponding to DAY_OF_WEEK values
-    "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-  };
-  private static final String[] DAY_OF_WEEK_FULL = {
-    "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
-  };
+  private static final ImmutableList<String> MONTH_3 =
+      ImmutableList.of(
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+  private static final ImmutableList<String> MONTH_FULL =
+      ImmutableList.of(
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December");
+  private static final ImmutableList<String> DAY_OF_WEEK_3 =
+      ImmutableList.of( // corresponding to DAY_OF_WEEK values
+          "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+  private static final ImmutableList<String> DAY_OF_WEEK_FULL =
+      ImmutableList.of(
+          "",
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday");
 
   // These are the CF "calendar" attribute values which are supported.
   // No value (default = "gregorian" = "standard") is also supported.
@@ -2729,11 +2737,11 @@ public class Calendar2 {
     else throw new SimpleException(tError);
 
     // find the end of the number
-    int n = 1;
     int end = 4;
     while (nowString.length() > end && String2.isDigit(nowString.charAt(end))) end++;
     // parse the number
-    n = String2.parseInt(nowString.substring(start, end) + (end == 4 ? "1" : "")); // if no digits
+    int n =
+        String2.parseInt(nowString.substring(start, end) + (end == 4 ? "1" : "")); // if no digits
     if (n == Integer.MAX_VALUE) throw new SimpleException(tError);
     start = end;
 
@@ -2938,6 +2946,17 @@ public class Calendar2 {
     return millisToIsoStringTZ(millis);
   }
 
+  /**
+   * This converts seconds since 1970-01-01T00:00:00Z to an ISO Zulu dateTime String with 'T'.
+   *
+   * @param seconds with optional fractional part
+   * @return isoZuluString with 'T' and with the trailing Z)
+   * @throws RuntimeException if trouble (e.g., seconds is NaN)
+   */
+  public static String epochSecondsToIsoStringTZ(long seconds) {
+    return millisToIsoStringTZ(seconds * 1000);
+  }
+
   /** Like epochSecondsToIsoStringTZ, but without the trailing Z. */
   public static String epochSecondsToIsoStringT(double seconds) {
     String s = epochSecondsToIsoStringTZ(seconds);
@@ -3062,7 +3081,7 @@ public class Calendar2 {
    * @throws RuntimeException if month is out of range
    */
   public static String getMonthName3(int month) {
-    return MONTH_3[month - 1];
+    return MONTH_3.get(month - 1);
   }
 
   /**
@@ -3072,7 +3091,7 @@ public class Calendar2 {
    * @throws RuntimeException if month is out of range
    */
   public static String getMonthName(int month) {
-    return MONTH_FULL[month - 1];
+    return MONTH_FULL.get(month - 1);
   }
 
   /**
@@ -3679,7 +3698,7 @@ public class Calendar2 {
   public static String formatAsDDMonYYYY(GregorianCalendar gc) {
     return String2.zeroPad("" + gc.get(DATE), 2)
         + "-"
-        + MONTH_3[gc.get(MONTH)]
+        + MONTH_3.get(gc.get(MONTH))
         + "-"
         + // 0 based
         formatAsISOYear(gc)
@@ -3725,11 +3744,11 @@ public class Calendar2 {
    * @throws RuntimeException if trouble (e.g., gc is null)
    */
   public static String formatAsRFC822GMT(GregorianCalendar gc) {
-    return DAY_OF_WEEK_3[gc.get(Calendar.DAY_OF_WEEK)]
+    return DAY_OF_WEEK_3.get(gc.get(Calendar.DAY_OF_WEEK))
         + ", "
         + String2.zeroPad("" + gc.get(DATE), 2)
         + " "
-        + MONTH_3[gc.get(MONTH)]
+        + MONTH_3.get(gc.get(MONTH))
         + " "
         + // 0 based
         formatAsISOYear(gc)
@@ -4188,8 +4207,8 @@ public class Calendar2 {
         } else if (ch == 'M') {
           // MMM and MMMM support 3-letter or full length
           int i =
-              String2.indexOf( // both are titleCase
-                  s2.length() == 3 ? MONTH_3 : MONTH_FULL, s2);
+              // both are titleCase
+              (s2.length() == 3 ? MONTH_3 : MONTH_FULL).indexOf(s2);
           // String2.log(">>    i=" + i);
           if (i >= 0) gc.set(MONTH, i); // month is 0..
           else throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
@@ -4197,8 +4216,8 @@ public class Calendar2 {
         } else if (ch == 'E') {
           // EEE and EEEE support 3-letter or full length
           int i =
-              String2.indexOf( // both are titleCase
-                  s2.length() == 3 ? DAY_OF_WEEK_3 : DAY_OF_WEEK_FULL, s2);
+              // both are titleCase
+              (s2.length() == 3 ? DAY_OF_WEEK_3 : DAY_OF_WEEK_FULL).indexOf(s2);
           // don't use it, just ensure it matches a valid value
           if (i < 1) // [0]=""
           throw new RuntimeException(parseErrorUnexpectedContent(s, format, ospo));
@@ -4588,7 +4607,7 @@ public class Calendar2 {
     String month = s.substring(3, 6).toLowerCase();
     int mon = 0;
     while (mon < 12) {
-      if (MONTH_3[mon].toLowerCase().equals(month)) break;
+      if (MONTH_3.get(mon).toLowerCase().equals(month)) break;
       mon++;
     }
     if (mon == 12)
@@ -5042,6 +5061,10 @@ public class Calendar2 {
     if (!Double.isFinite(millis)) return "infinity";
 
     long time = Math2.roundToLong(millis);
+    return elapsedTimeString(time);
+  }
+
+  public static String elapsedTimeString(long time) {
     if (time < Long.MIN_VALUE + 10000 || time > Long.MAX_VALUE - 10000) return "infinity";
     String negative = "";
     if (time < 0) {
@@ -5201,7 +5224,7 @@ public class Calendar2 {
       double sph = SECONDS_PER_HOUR;
       double spd = SECONDS_PER_DAY;
       double range = stop - start;
-      double mnv2 = maxNValues / 2; // double avoids int MAX_VALUE problem
+      double mnv2 = Math2.divideNoRemainder(maxNValues, 2); // double avoids int MAX_VALUE problem
       int field, biggerField, nice[];
       double divisor;
       if (range <= mnv2 * spm) {
@@ -5502,7 +5525,6 @@ public class Calendar2 {
             ? allDigitsRegexTimeFormat
             : startWithDigit != null ? digitRegexTimeFormat : letterRegexTimeFormat;
     for (int i = 0; i < regexTimeFormat.size(); i += 2) {
-      String regex = regexTimeFormat.get(i); // regex
       String format = regexTimeFormat.get(i + 1);
       Pattern regexPattern = dateTimeFormatPatternHM.get(format);
       int sai = first;
@@ -5607,7 +5629,6 @@ public class Calendar2 {
     char ch = someDateTimeString.charAt(0);
     if (ch == '0' || ch == '1') { // starts with 0 or 1
       String ts = someDateTimeString;
-      String append = "";
       if (ts.endsWith("UTC")) ts = ts.substring(0, ts.length() - 3).trim();
       if (ts.endsWith("Z")) ts = ts.substring(0, ts.length() - 1).trim();
       int zeroTimePo = ts.indexOf(" 00");
@@ -5616,7 +5637,6 @@ public class Calendar2 {
         String remains = ts.substring(zeroTimePo + 3);
         if (remains.matches("[:.0]*")) { // ends with e.g., 00:00:0.0
           ts = ts.substring(0, zeroTimePo);
-          append = remains.indexOf('.') >= 0 ? "T00:00:00.000Z" : "T00:00:00Z";
         }
       }
 
@@ -6082,8 +6102,6 @@ public class Calendar2 {
    *     original s if it was already valid or wasn't a String date time format.
    */
   public static String convertToJavaDateTimeFormat(String s) {
-    String os = s;
-
     if (s == null) return s;
     s = s.trim();
     if (s.length() == 0) return s;

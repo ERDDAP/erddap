@@ -18,7 +18,7 @@ class WatchDirectoryTests {
   void basicTest() throws Throwable {
     // String2.log("\n*** WatchDirectory.basicTest");
     // verbose = true;
-    ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
+    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
     StringArray contexts = new StringArray();
     String testDataDir =
         Path.of(WatchDirectoryTests.class.getResource("/data/").toURI())
@@ -52,7 +52,7 @@ class WatchDirectoryTests {
     Math2.sleep(sleep);
     n = wd.getEvents(eventKinds, contexts);
     for (int i = 0; i < n; i++) {
-      WatchEvent.Kind kind = eventKinds.get(i);
+      WatchEvent.Kind<?> kind = eventKinds.get(i);
       results = kind + " " + contexts.get(i);
       String2.log("results i=" + i + "=\n" + results);
       Test.ensureTrue(
@@ -189,7 +189,7 @@ class WatchDirectoryTests {
   void interactiveTest() throws Throwable {
     // String2.log("\n*** WatchDirectory.interactiveTest");
     // verbose = true;
-    ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
+    ArrayList<WatchEvent.Kind<?>> eventKinds = new ArrayList<>();
     StringArray contexts = new StringArray();
     String sourceDir = Path.of(WatchDirectoryTests.class.getResource("/data/").toURI()).toString();
     String watchDir = sourceDir + "/watchService/";

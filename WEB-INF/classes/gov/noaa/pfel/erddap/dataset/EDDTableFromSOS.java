@@ -20,6 +20,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * This class aggregates data from a group of stations, all served by one SOS server. The stations
@@ -149,10 +151,14 @@ public class EDDTableFromSOS extends EDDTable {
   public static final String SosServerTypeIoosNos = "IOOS_NOS";
   public static final String SosServerTypeOostethys = "OOSTethys";
   public static final String SosServerTypeWhoi = "WHOI";
-  public static final String[] SosServerTypes = { // order not important
-    SosServerTypeIoos52N, SosServerTypeIoosNdbc, SosServerTypeIoosNcSOS,
-    SosServerTypeIoosNos, SosServerTypeOostethys, SosServerTypeWhoi
-  };
+  public static final ImmutableList<String> SosServerTypes =
+      ImmutableList.of( // order not important
+          SosServerTypeIoos52N,
+          SosServerTypeIoosNdbc,
+          SosServerTypeIoosNcSOS,
+          SosServerTypeIoosNos,
+          SosServerTypeOostethys,
+          SosServerTypeWhoi);
   public static final String slowSummaryWarning =
       "\n\nThe source SOS server for this dataset is very slow, so requests will "
           + "take minutes to be fulfilled or will fail because of a timeout.";
@@ -466,7 +472,6 @@ public class EDDTableFromSOS extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromSOS " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromSOS(" + tDatasetID + ") constructor:\n";
 
     // save some of the parameters
     className = "EDDTableFromSOS";
@@ -1252,7 +1257,6 @@ public class EDDTableFromSOS extends EDDTable {
     for (int c = constraintVariables.size() - 1; c >= 0; c--) {
       String constraintVariable = constraintVariables.get(c);
       String constraintOp = constraintOps.get(c);
-      double dConstraintValue = String2.parseDouble(constraintValues.get(c));
       int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
       conDVI[c] = dv;
       EDV edv = dataVariables[dv];
@@ -1287,7 +1291,6 @@ public class EDDTableFromSOS extends EDDTable {
     // Always include lon,lat,alt,time,id to facilitate merging observedProperties correctly.
     IntArray tableDVI = new IntArray(); // .get(tableColumnIndex) -> dataVariableIndex
     // add the nFixedVariables
-    int tableLonCol = 0, tableLatCol = 1, tableAltCol = 2, tableTimeCol = 3, tableStationIdCol = 4;
     tableDVI.add(lonIndex);
     tableDVI.add(latIndex);
     tableDVI.add(altIndex);
@@ -1712,8 +1715,8 @@ public class EDDTableFromSOS extends EDDTable {
    * @param table the table to which rows will be added
    * @param llatHash lon+lat+alt+time+stationID goes to row#
    */
-  protected void readFromIoosNdbcNos(int language, String kvp, Table table, HashMap llatHash)
-      throws Throwable {
+  protected void readFromIoosNdbcNos(
+      int language, String kvp, Table table, Map<String, String> llatHash) throws Throwable {
 
     // downloading data may take time
     // so write to file, then quickly read and process
@@ -1760,9 +1763,6 @@ public class EDDTableFromSOS extends EDDTable {
         try {
           xmlReader.nextTag();
           String tags = xmlReader.allTags();
-          String ofInterest1 = null;
-          String ofInterest2 = null;
-          String ofInterest3 = null;
 
           // response is error message
           if (tags.equals("<ServiceExceptionReport>")
@@ -1945,7 +1945,7 @@ public class EDDTableFromSOS extends EDDTable {
                 + sosTable.getStringData(sosTableStationIdCol, sosRow);
 
         // does a row with identical LonLatAltTimeID exist in table?
-        int tRow = String2.parseInt((String) llatHash.get(tHash));
+        int tRow = String2.parseInt(llatHash.get(tHash));
         if (tRow < Integer.MAX_VALUE) {
           // merge this data into that row
           for (int col = 0; col < nTableColumns; col++) {
@@ -2022,7 +2022,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2215,7 +2215,6 @@ public class EDDTableFromSOS extends EDDTable {
               while (po < contentLength) {
 
                 // process a row of data
-                int nRows1 = table.nRows() + 1;
                 String rowValues[] = new String[nCols];
                 for (int field = 0; field < nFields; field++) {
                   String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
@@ -2286,7 +2285,7 @@ public class EDDTableFromSOS extends EDDTable {
                   throw new SimpleException(tError1 + stationIdSourceName + tError2);
 
                 // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
+                int tRow = String2.parseInt(llatHash.get(tHash));
                 if (tRow < Integer.MAX_VALUE) {
                   // merge this data into that row
                   for (int col = 0; col < nCols; col++) {
@@ -2359,7 +2358,7 @@ public class EDDTableFromSOS extends EDDTable {
       int language,
       String kvp,
       Table table,
-      HashMap llatHash,
+      Map<String, String> llatHash,
       String tStationLonString,
       String tStationLatString,
       String tStationAltString,
@@ -2570,7 +2569,6 @@ public class EDDTableFromSOS extends EDDTable {
               while (po < contentLength) {
 
                 // process a row of data
-                int nRows1 = table.nRows() + 1;
                 String rowValues[] = new String[nCols];
                 for (int field = 0; field < nFields; field++) {
                   String sep = field < nFields - 1 ? tokenSeparator : blockSeparator;
@@ -2641,7 +2639,7 @@ public class EDDTableFromSOS extends EDDTable {
                   throw new SimpleException(tError1 + stationIdSourceName + tError2);
 
                 // does a row with identical LonLatAltTimeID exist in table?
-                int tRow = String2.parseInt((String) llatHash.get(tHash));
+                int tRow = String2.parseInt(llatHash.get(tHash));
                 if (tRow < Integer.MAX_VALUE) {
                   // merge this data into that row
                   for (int col = 0; col < nCols; col++) {
@@ -2969,10 +2967,7 @@ public class EDDTableFromSOS extends EDDTable {
     String sstlc = sosServerType.toLowerCase();
     boolean ioos52NServer = sstlc.equals(SosServerTypeIoos52N.toLowerCase());
     boolean ioosNdbcServer = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
-    boolean ioosNcSOSServer = sstlc.equals(SosServerTypeIoosNcSOS.toLowerCase());
     boolean ioosNosServer = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
-    boolean oostethysServer = sstlc.equals(SosServerTypeOostethys.toLowerCase());
-    boolean whoiServer = sstlc.equals(SosServerTypeWhoi.toLowerCase());
 
     String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
     if (sosVersion != null && sosVersion.length() > 0) {
@@ -3018,11 +3013,8 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      boolean ioosServer = false;
       if (xmlReader.tag(0).equals("Capabilities")) {
         sosPrefix = ""; // ioosServer
-        if (sosServerType.length() == 0) // not explicitly declared
-        ioosServer = true;
       } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
         sosPrefix = "sos:"; // oostethys, ioos52N
       } else {
@@ -3241,7 +3233,6 @@ public class EDDTableFromSOS extends EDDTable {
     sb.append(
         "<!-- You have to choose which observedProperties will be used for this dataset.\n\n");
     int longestStationID = Math.max(19, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         "\n"
             + String2.left("   n  Station (shortened)", 6 + longestStationID)
@@ -3394,7 +3385,6 @@ public class EDDTableFromSOS extends EDDTable {
 
     String2.log(
         "EDDTableFromSos.generateDatasetsXmlFromIOOS" + "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-    String tPbublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
     boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
 
@@ -3428,12 +3418,10 @@ public class EDDTableFromSOS extends EDDTable {
     String tInfoUrl = null;
     String tInstitution = null;
     String tLicense = "[standard]";
-    String tSummary = null;
     String tTitle = null;
     String tOfferingAll = null;
     String tStationID = "";
     StringBuilder tStationObsPropList = new StringBuilder();
-    int offeringTagCount = 0;
     String tSosVersion = null; // e.g., "1.0.0"
     String offeringTag;
     String offeringEndTag;
@@ -3496,7 +3484,6 @@ public class EDDTableFromSOS extends EDDTable {
           if (verbose) String2.log("  title(from Title)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
-          tSummary = xmlReader.content();
           if (verbose) String2.log("  summary(from Abstract)=" + tTitle);
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
@@ -3520,7 +3507,6 @@ public class EDDTableFromSOS extends EDDTable {
           String endOfTag = tags.substring(offeringTag.length());
           String content = xmlReader.content();
           String error = null;
-          if (tags.equals(offeringTag)) offeringTagCount++;
           // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
           /* separate phenomena
@@ -3665,7 +3651,6 @@ public class EDDTableFromSOS extends EDDTable {
             + "   Change it to short/int/float/double as needed.\n"
             + "\n");
     int longestStationID = Math.max(7, stationIDs.maxStringLength());
-    int longestHasProp = stationHasObsProp.maxStringLength();
     sb.append(
         String2.left("  n  Station", 5 + longestStationID)
             + "  Has observed_property\n"
@@ -3822,39 +3807,40 @@ public class EDDTableFromSOS extends EDDTable {
     } else {
 
       // read the file
-      BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null);
-      /* needs fix to work with BufferedReader
-      if (reallyVerbose) {
-          String2.log("ASCII response=");
-          int stop = Math.min(100, sa.size());
-          for (int i = 0; i < stop; i++)
-              String2.log(sa.get(i));
-          String2.log("...\n");
-      }*/
+      try (BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null); ) {
+        /* needs fix to work with BufferedReader
+        if (reallyVerbose) {
+            String2.log("ASCII response=");
+            int stop = Math.min(100, sa.size());
+            for (int i = 0; i < stop; i++)
+                String2.log(sa.get(i));
+            String2.log("...\n");
+        }*/
 
-      // is it an xml file (presumably an error report)?
-      br.mark(10000); // max read-ahead bytes
-      String s = br.readLine();
-      if (s.startsWith("<?xml")) {
-        StringBuilder sb = new StringBuilder();
-        while (s != null) { // initially, s has first line
-          sb.append(s);
-          sb.append('\n');
-          s = br.readLine();
+        // is it an xml file (presumably an error report)?
+        br.mark(10000); // max read-ahead bytes
+        String s = br.readLine();
+        if (s.startsWith("<?xml")) {
+          StringBuilder sb = new StringBuilder();
+          while (s != null) { // initially, s has first line
+            sb.append(s);
+            sb.append('\n');
+            s = br.readLine();
+          }
+          throw new SimpleException(sb.toString());
         }
-        throw new SimpleException(sb.toString());
-      }
-      br.reset();
+        br.reset();
 
-      // read into sosTable
-      boolean simplify = true;
-      sosTable = new Table();
-      sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
-      timeSourceName = "date_time";
-      longitudeSourceName = "longitude (degree)";
-      latitudeSourceName = "latitude (degree)";
-      altitudeSourceName = "depth (m)";
-      altitudeMPSU = -1;
+        // read into sosTable
+        boolean simplify = true;
+        sosTable = new Table();
+        sosTable.readASCII(safeFileName, br, "", "", 0, 1, "", null, null, null, null, simplify);
+        timeSourceName = "date_time";
+        longitudeSourceName = "longitude (degree)";
+        latitudeSourceName = "latitude (degree)";
+        altitudeSourceName = "depth (m)";
+        altitudeMPSU = -1;
+      }
     }
     if (reallyVerbose) String2.log("response table=\n" + sosTable.toString(4));
 
@@ -4047,7 +4033,7 @@ public class EDDTableFromSOS extends EDDTable {
    * @param hashMap the hashMap to which with phenomena will be added
    * @throws Throwable if trouble
    */
-  public static void getPhenomena(String url, HashMap hashMap) throws Throwable {
+  public static void getPhenomena(String url, Map<String, StringArray> hashMap) throws Throwable {
 
     String2.log("EDDTableFromSOS.getPhenomena" + "\nurl=" + url);
 
@@ -4055,10 +4041,7 @@ public class EDDTableFromSOS extends EDDTable {
     try {
       xmlReader.nextTag();
       String tags = xmlReader.allTags();
-      String sosPrefix = "";
-      boolean ioosServer = false;
       String startTag = "<gml:Dictionary>";
-      String endTag = "</gml:Dictionary>";
 
       if (!tags.equals(startTag))
         throw new RuntimeException(
@@ -4073,8 +4056,6 @@ public class EDDTableFromSOS extends EDDTable {
         // String2.log("tags=" + tags + xmlReader.content());
 
         String endOfTag = tags.substring(startTag.length());
-        String content = xmlReader.content();
-        String error = null;
         // String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
         /* separate phenomena
@@ -4130,7 +4111,7 @@ public class EDDTableFromSOS extends EDDTable {
           else {
             // get referenced item's components
             href = (href.startsWith("#") ? codeSpace : "") + href;
-            StringArray tsa = (StringArray) hashMap.get(href);
+            StringArray tsa = hashMap.get(href);
             if (tsa == null)
               xmlReader.throwException(
                   href

@@ -191,7 +191,6 @@ public class HdfVDataDescription extends HdfTag {
   public HdfVDataDescription(short referenceNumber, int length, DataInputStream stream)
       throws Exception {
 
-    int len;
     tagType = 0x07aa;
     this.referenceNumber = referenceNumber;
     interlacescheme = stream.readShort();

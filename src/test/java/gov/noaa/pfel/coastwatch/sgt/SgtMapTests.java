@@ -1,19 +1,34 @@
 package gov.noaa.pfel.coastwatch.sgt;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.Math2;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
-import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pmel.sgt.Axis;
+import gov.noaa.pmel.sgt.CartesianGraph;
+import gov.noaa.pmel.sgt.GridAttribute;
+import gov.noaa.pmel.sgt.JPane;
+import gov.noaa.pmel.sgt.Layer;
+import gov.noaa.pmel.sgt.LineAttribute;
+import gov.noaa.pmel.sgt.StackedLayout;
+import gov.noaa.pmel.sgt.dm.SimpleGrid;
+import gov.noaa.pmel.util.Dimension2D;
+import gov.noaa.pmel.util.Point2D;
+import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagImageComparison;
 import testDataset.Initialization;
@@ -81,6 +96,355 @@ class SgtMapTests {
     }
   }
 
+  /**
+   * Make an image (currently a .png, usually in /images dir) with a map of the entire region and
+   * labeled boxes for each of the regions. The resulting image will be no larger than maxGifWidth,
+   * maxGifHeight.
+   *
+   * @param maxGifWidth (in pixels)
+   * @param maxGifHeight
+   * @param regionInfo info about the regions in the form String[region#][info], where info is:
+   *     RectangleColor = 0, MinX degrees = 1, MaxX degrees = 2, MinY degrees = 3, MaxY degrees = 4,
+   *     LeftLabelX degrees = 5, LowerLabelY degrees = 6, Label text = 7.
+   * @param resultDir the directory for the files (e.g., <context>/images/ with a slash at the end)
+   * @param resultFileName the output file name with the extension (e.g., "USMexicoRegion.png").
+   *     Extension can be ".gif" or ".png". If the file exists, it will be overwritten.
+   * @return int[], 0=imageWidth, 1=imageHeight, 2=graphULX, 3=graphRightX, 4=graphUpperY,
+   *     5=graphLowerY.
+   * @throws Exception if trouble
+   */
+  private static int[] makeRegionsMap(
+      int maxGifWidth,
+      int maxGifHeight,
+      String regionInfo[][],
+      String resultDir,
+      String resultFileName)
+      throws Exception {
+    if (SgtMap.verbose)
+      String2.log("\nSSR.makeRegionsMap(" + resultDir + ", " + resultFileName + ")");
+    int randomInt = Math2.random(Integer.MAX_VALUE);
+    String fullTmpPngFile = resultDir + randomInt + ".png";
+    String fullTmpGifFile = resultDir + randomInt + ".gif";
+    String fullImageFileName = resultDir + resultFileName;
+
+    File2.delete(fullImageFileName); // delete any old version of the result file
+
+    int imageWidth = maxGifWidth; // it may be revised below
+    int imageHeight = maxGifHeight;
+
+    // get region info
+    // fields in regionInfo[][x]
+    int COLOR = 0;
+    int MINX = 1;
+    int MAXX = 2;
+    int MINY = 3;
+    int MAXY = 4;
+    int LLLABELX = 5;
+    int LLLABELY = 6;
+    int LABEL = 7;
+
+    // the first region must be the biggest
+    double minX = String2.parseDouble(regionInfo[0][MINX]);
+    double maxX = String2.parseDouble(regionInfo[0][MAXX]);
+    double minY = String2.parseDouble(regionInfo[0][MINY]);
+    double maxY = String2.parseDouble(regionInfo[0][MAXY]);
+    double xRange = maxX - minX;
+    double yRange = maxY - minY;
+
+    // determine appropriate axis lengths
+    // int coordinates are in pixels (theoretically 1/100th inch)
+    // note  graphHeight/yRange = graphWidth/xRange
+    int graphULX = 20; // in pixels
+    int graphBottomY = 20;
+    int graphULY = 15;
+    int graphRightBorder = 15;
+    int graphWidth = imageWidth - graphULX - graphRightBorder;
+    int graphHeight = imageHeight - graphBottomY - graphULY + 1;
+    double tempXScale = graphWidth / xRange;
+    double tempYScale = graphHeight / yRange;
+    double graphScale = Math.min(tempXScale, tempYScale);
+    if (tempXScale < tempYScale) {
+      graphHeight = Math2.roundToInt(graphScale * yRange);
+      imageHeight = graphBottomY + graphHeight + graphULY;
+    } else {
+      graphWidth = Math2.roundToInt(graphScale * xRange);
+      imageWidth = graphULX + graphWidth + graphRightBorder;
+    }
+
+    // make the image
+    BufferedImage bi =
+        new BufferedImage(
+            imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB); // I need opacity "A"
+    Graphics g = bi.getGraphics();
+    g.setColor(Color.white); // I'm not sure why necessary, but it is
+    g.fillRect(0, 0, imageWidth, imageHeight); // I'm not sure why necessary, but it is
+
+    double maxRange = Math.max(xRange, yRange);
+    double fontScale = 1;
+    int boundaryResAdjust = 0;
+    double majorIncrement = SgtMap.suggestMajorIncrement(maxRange, imageWidth - 30, fontScale);
+    double minorIncrement = SgtMap.suggestMinorIncrement(maxRange, imageWidth - 30, fontScale);
+    int boundaryResolution =
+        SgtMap.suggestBoundaryResolution(maxRange, imageWidth - 30, boundaryResAdjust);
+    if (SgtMap.reallyVerbose) String2.log("  boundaryResolution=" + boundaryResolution);
+
+    // create the pane
+    JPane jPane = new JPane("", new java.awt.Dimension(imageWidth, imageHeight));
+    jPane.setLayout(new StackedLayout());
+    StringArray layerNames = new StringArray();
+    CartesianGraph graph;
+    Layer layer;
+
+    // create the graph parts
+    // graph's physical location (inches) (start, end, delta); delta is ignored
+    Range2D xPhysRange = new Range2D(graphULX / 100.0, (imageWidth - graphRightBorder) / 100.0, 1);
+    Range2D yPhysRange = new Range2D(graphBottomY / 100.0, (imageHeight - graphULY) / 100.0, 1);
+    // graph's axis ranges in degrees
+    Range2D xUserRange = new Range2D(minX, maxX, majorIncrement);
+    Range2D yUserRange = new Range2D(minY, maxY, majorIncrement);
+    gov.noaa.pmel.sgt.LinearTransform xt =
+        new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
+    gov.noaa.pmel.sgt.LinearTransform yt =
+        new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
+    Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
+    Dimension2D layerDimension2D = new Dimension2D(imageWidth / 100.0, imageHeight / 100.0);
+
+    // draw bathymetry colors
+    boolean plotBathymetryColors = false;
+    if (plotBathymetryColors) {
+      Grid bathymetryGrid =
+          SgtMap.createTopographyGrid(
+              SgtMap.fullPrivateDirectory, minX, maxX, minY, maxY, graphWidth, graphHeight);
+      URL resourceFile =
+          Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + SgtMap.bathymetryCpt);
+      CompoundColorMap oceanColorMap = new CompoundColorMap(resourceFile);
+      graph = new CartesianGraph("", xt, yt);
+      layer = new Layer("bathymetryColors", layerDimension2D);
+      layerNames.add(layer.getId());
+      jPane.add(layer); // calls layer.setPane(this);
+      layer.setGraph(graph); // calls graph.setLayer(this);
+      graph.setClip(
+          xUserRange.start, xUserRange.end,
+          yUserRange.start, yUserRange.end);
+      graph.setClipping(true);
+
+      // get the Grid
+      SimpleGrid simpleGrid =
+          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat, ""); // title
+
+      // assign the data
+      graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, oceanColorMap));
+    }
+
+    // draw the landMask
+    graph = new CartesianGraph("", xt, yt);
+    layer = new Layer("landmask", layerDimension2D);
+    layerNames.add(layer.getId());
+    jPane.add(layer); // calls layer.setPane(this);
+    layer.setGraph(graph); // calls graph.setLayer(this);
+    // assign the data   (PathCartesionRenderer always clips by itself)
+    graph.setRenderer(
+        new PathCartesianRenderer(
+            graph,
+            GSHHS.getGeneralPath(
+                GSHHS.RESOLUTIONS.charAt(boundaryResolution),
+                1, // just get land info
+                minX,
+                maxX,
+                minY,
+                maxY,
+                true),
+            1e-6,
+            SgtMap.landColor,
+            plotBathymetryColors
+                ? SgtMap.landMaskStrokeColor
+                : SgtMap.landColor)); // strokeColor  2009-10-29 landColor was null
+
+    // draw lakes
+    /* It works, but don't change to this unless needed.
+    if (boundaryResolution != CRUDE_RESOLUTION) {
+        graph = new CartesianGraph("", xt, yt);
+        layer = new Layer("lakes", layerDimension2D);
+        layerNames.add(layer.getId());
+        jPane.add(layer);      //calls layer.setPane(this);
+        layer.setGraph(graph); //calls graph.setLayer(this);
+        //assign the data   (PathCartesionRenderer always clips by itself)
+        graph.setRenderer(new PathCartesianRenderer(graph,
+            GSHHS.getGeneralPath(
+                GSHHS.RESOLUTIONS.charAt(boundaryResolution),
+                2, //just get lakes info
+                minX, maxX, minY, maxY, true),
+            1e-6, lakesColor,  //fillColor
+            lakesColor)); //strokeColor
+    }
+    */
+
+    // draw the state boundary
+    LineAttribute lineAttribute;
+    if (SgtMap.drawPoliticalBoundaries && boundaryResolution != SgtMap.CRUDE_RESOLUTION) {
+      graph = new CartesianGraph("", xt, yt);
+      layer = new Layer("state", layerDimension2D);
+      layerNames.add(layer.getId());
+      jPane.add(layer); // calls layer.setPane(this);
+      layer.setGraph(graph); // calls graph.setLayer(this);
+      graph.setClip(
+          xUserRange.start, xUserRange.end,
+          yUserRange.start, yUserRange.end);
+      graph.setClipping(true);
+      lineAttribute = new LineAttribute();
+      lineAttribute.setColor(SgtMap.statesColor);
+      graph.setData(
+          SgtMap.stateBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY),
+          lineAttribute);
+    }
+
+    // draw the national boundary
+    graph = new CartesianGraph("", xt, yt);
+    graph.setClip(
+        xUserRange.start, xUserRange.end,
+        yUserRange.start, yUserRange.end);
+    graph.setClipping(true);
+    if (SgtMap.drawPoliticalBoundaries) {
+      layer = new Layer("national", layerDimension2D);
+      layerNames.add(layer.getId());
+      jPane.add(layer); // calls layer.setPane(this);
+      layer.setGraph(graph); // calls graph.setLayer(this);
+      lineAttribute = new LineAttribute();
+      lineAttribute.setColor(SgtMap.nationsColor);
+      graph.setData(
+          SgtMap.nationalBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY),
+          lineAttribute);
+    }
+
+    // create the x axes
+    Font myLabelFont = new Font(SgtMap.fontFamily, Font.PLAIN, 9);
+    PlainAxis2 xAxis = new PlainAxis2(new GenEFormatter());
+    xAxis.setRangeU(xUserRange);
+    xAxis.setLocationU(origin);
+    int nSmallTics = Math2.roundToInt(majorIncrement / minorIncrement) - 1;
+    xAxis.setNumberSmallTics(nSmallTics);
+    xAxis.setLabelInterval(1);
+    xAxis.setLabelFont(myLabelFont);
+    xAxis.setLabelFormat("%g°");
+    xAxis.setLabelHeightP(.12);
+    xAxis.setSmallTicHeightP(.02);
+    xAxis.setLargeTicHeightP(.05);
+
+    PlainAxis2 topXAxis = new PlainAxis2(new GenEFormatter());
+    topXAxis.setRangeU(xUserRange);
+    topXAxis.setLocationU(new Point2D.Double(xUserRange.start, yUserRange.end));
+    topXAxis.setSmallTicHeightP(0);
+    topXAxis.setLargeTicHeightP(0);
+    topXAxis.setLabelPosition(Axis.NO_LABEL);
+
+    // create the y axes
+    PlainAxis2 yAxis = new PlainAxis2(new GenEFormatter());
+    yAxis.setRangeU(yUserRange);
+    yAxis.setLocationU(origin);
+    yAxis.setNumberSmallTics(nSmallTics);
+    yAxis.setLabelInterval(1);
+    yAxis.setLabelFont(myLabelFont);
+    yAxis.setLabelFormat("%g°");
+    yAxis.setLabelHeightP(.12);
+    yAxis.setSmallTicHeightP(.02);
+    yAxis.setLargeTicHeightP(.05);
+
+    PlainAxis2 rightYAxis = new PlainAxis2(new GenEFormatter());
+    rightYAxis.setRangeU(yUserRange);
+    rightYAxis.setLocationU(new Point2D.Double(xUserRange.end, yUserRange.start));
+    rightYAxis.setSmallTicHeightP(0);
+    rightYAxis.setLargeTicHeightP(0);
+    rightYAxis.setLabelPosition(Axis.NO_LABEL);
+
+    graph.addXAxis(xAxis);
+    graph.addXAxis(topXAxis);
+    graph.addYAxis(yAxis);
+    graph.addYAxis(rightYAxis);
+
+    // draw the graph background color right before drawing the graph
+    int x1 = graph.getXUtoD(xUserRange.start);
+    int y1 = graph.getYUtoD(yUserRange.end);
+    int x2, y2;
+    g.setColor(SgtMap.oceanColor);
+    g.fillRect(x1, y1, graphWidth, graphHeight);
+    g.setColor(Color.black);
+
+    // actually draw the graph
+    jPane.draw(g);
+
+    // draw the region rectangles
+    for (int region = 0; region < regionInfo.length; region++) {
+      g.setColor(new Color(String2.parseInt(regionInfo[region][COLOR]), true));
+      x1 = graph.getXUtoD(String2.parseDouble(regionInfo[region][MINX]));
+      x2 = graph.getXUtoD(String2.parseDouble(regionInfo[region][MAXX]));
+      y1 = graph.getYUtoD(String2.parseDouble(regionInfo[region][MINY]));
+      y2 = graph.getYUtoD(String2.parseDouble(regionInfo[region][MAXY]));
+      g.fillRect(x1, y2, x2 - x1, y1 - y2); // remember image y's are flipped
+      for (int i = 0; i < 5; i++) // draw edge a few times so highlighted
+      g.drawRect(x1, y2, x2 - x1, y1 - y2);
+    }
+
+    // draw the region text
+    g.setColor(Color.black);
+    g.setFont(myLabelFont);
+    for (int region = 0; region < regionInfo.length; region++) {
+      g.drawString(
+          regionInfo[region][LABEL],
+          graph.getXUtoD(String2.parseDouble(regionInfo[region][LLLABELX])),
+          graph.getYUtoD(String2.parseDouble(regionInfo[region][LLLABELY])));
+    }
+
+    // deconstruct jPane
+    SgtMap.deconstructJPane("SgtMap.makeRegionsMap", jPane, layerNames);
+
+    // save as .png
+    // use png (not bmp) because png supports ARGB images
+
+    // "convert" to .gif   (or save as fullImageFileName .png)
+    if (fullImageFileName.endsWith(".gif")) {
+      // SSR.dosOrCShell("convert " + fullTmpPngFile + " " + fullTmpGifFile, 20);
+      ImageIO.write(bi, "gif", new File(fullTmpGifFile));
+      /* //attempts to make work on Windows:
+      PipeToStringArray outCatcher = new PipeToStringArray();
+      PipeToStringArray errCatcher = new PipeToStringArray();
+      String2.log("SSR.shell: 1 string " + Calendar2.getCurrentISODateTimeString());
+      int exitValue = SSR.shell(new String[]{"convert " +
+                  String2.replaceAll(fullTmpPngFile, "/", "\\").substring(2) + " " +
+                  "GIF:" + String2.replaceAll(fullTmpGifFile, "/", "\\").substring(2)},
+                  outCatcher, errCatcher);
+      String2.log("out: " + outCatcher.getString());
+      String2.log("err: " + errCatcher.getString());
+      */
+      // File2.delete(fullTmpPngFile); // delete .png file
+      File2.rename(fullTmpGifFile, fullImageFileName); // final step
+    } else if (fullImageFileName.endsWith(".png")) {
+      ImageIO.write(bi, "png", new File(fullTmpPngFile));
+      File2.rename(fullTmpPngFile, fullImageFileName); // final step
+    } else
+      Test.error(
+          String2.ERROR
+              + " in SgtMap.makeRegionsMap: "
+              + "Unexpected extension: "
+              + fullImageFileName);
+
+    // generate the results array
+    // (literally the min and max of the x,y values for the bounds of the graph)
+    // remember 0,0 is upper left of image
+    // String2.log("results: 0=imageWidth, 1=imageHeight, 2=graphMinX, 3=graphMaxX, 4=graphMinY,
+    // 5=graphMaxY");
+    int results[] =
+        new int[] {
+          imageWidth,
+          imageHeight,
+          graphULX,
+          imageWidth - graphRightBorder,
+          graphULY,
+          imageHeight - graphBottomY
+        };
+    // String2.log(String2.toCSSVString(results));
+    return results;
+  }
+
   /** This tests SgtMap. */
   @org.junit.jupiter.api.Test
   @TagImageComparison
@@ -111,13 +475,13 @@ class SgtMapTests {
             String2.ERROR + " in SgtMap.makePlainRegionsMap, region=" + region);
       }
       baseName = "SgtMapBasicTestRegionsMap";
-      int regionsResult[] =
-          SgtMap.makeRegionsMap(
-              classRB2.getInt("regionMapMaxWidth", 228),
-              classRB2.getInt("regionMapMaxHeight", 200),
-              regionInfo,
-              Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
-              baseName + testImageExtension);
+
+      SgtMapTests.makeRegionsMap(
+          classRB2.getInt("regionMapMaxWidth", 228),
+          classRB2.getInt("regionMapMaxHeight", 200),
+          regionInfo,
+          Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR),
+          baseName + testImageExtension);
       // Test.displayInBrowser("file://" + Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR) +
       // "tempRegionsMap" + testImageExtension);
       Image2Tests.testImagesIdentical(
@@ -370,7 +734,7 @@ class SgtMapTests {
     String baseName = "SgtMapTestRegionsMapW" + minX + "E" + maxX + "S" + minY + "N" + maxY;
     String name = baseName + testImageExtension;
 
-    SgtMap.makeRegionsMap(
+    SgtMapTests.makeRegionsMap(
         300,
         200, // size
         regionInfo,
@@ -508,7 +872,7 @@ class SgtMapTests {
     Test.ensureEqual((float) grid.lon[1], -9.983334f, ""); // was -9.9666666666f
     Test.ensureEqual(grid.lat.length, 3, ""); // was 2
     Test.ensureEqual((float) grid.lat[0], -80f, "");
-    Test.ensureEqual((float) grid.lat[1], -79.983334f, ""); // was -79.966666666f
+    Test.ensureEqual((float) grid.lat[1], -79.98334f, ""); // was -79.966666666f
     Test.ensureEqual(grid.getData(0, 0), 1838, ""); // same as above 1932
     Test.ensureEqual(grid.getData(0, 1), 1835, ""); // was 1942
     Test.ensureEqual(grid.getData(1, 0), 1839, ""); // was 1938
@@ -648,7 +1012,7 @@ class SgtMapTests {
       throws Exception {
 
     // describe grid vectors
-    ArrayList pointDataList = new ArrayList();
+    ArrayList<GraphDataLayer> pointDataList = new ArrayList<>();
     String griddataDir = SgtMapTests.class.getResource("/data/gridTests/").getPath();
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
@@ -660,7 +1024,7 @@ class SgtMapTests {
      */
     String vectorCpt =
         CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
+            File2.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "Rainbow",
@@ -673,7 +1037,7 @@ class SgtMapTests {
 
     String gridCpt =
         CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
+            File2.getWebInfParentDirectory()
                 + // with / separator and / at the end
                 "WEB-INF/cptfiles/",
             "BlueWhiteRed", // "LightBlueWhite"
@@ -744,7 +1108,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile
@@ -833,7 +1197,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        EDStatic.getWebInfParentDirectory()
+        File2.getWebInfParentDirectory()
             + // with / separator and / at the end
             "images/", // imageDir
         "noaa20.gif", // logoImageFile

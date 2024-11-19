@@ -5,7 +5,6 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
 import java.util.List;
 
 /**

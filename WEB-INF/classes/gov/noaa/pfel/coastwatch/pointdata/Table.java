@@ -6,6 +6,7 @@ package gov.noaa.pfel.coastwatch.pointdata;
 
 import com.cohort.array.*;
 import com.cohort.util.*;
+import com.google.common.collect.ImmutableList;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
@@ -160,7 +161,8 @@ public class Table {
   public static final int SAVE_AS_4D_NC = 2;
   public static final int SAVE_AS_MATLAB = 3;
   // public static final int SAVE_AS_HDF = 4;
-  public static final String SAVE_AS_EXTENSIONS[] = {".asc", ".nc", ".nc", ".mat"};
+  public static final ImmutableList<String> SAVE_AS_EXTENSIONS =
+      ImmutableList.of(".asc", ".nc", ".nc", ".mat");
 
   public static String BGCOLOR = "#ffffcc";
 
@@ -176,9 +178,10 @@ public class Table {
    * string &lt; &lt;= &gt; &gt;= testing), ERDDAP will just get all the relevant data and do the
    * test itself.
    */
-  public static final String OPERATORS[] =
-  // EDDTableFromFiles.isOK relies on this order
-  {"!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">"};
+  public static final ImmutableList<String> OPERATORS =
+      ImmutableList.of(
+          // EDDTableFromFiles.isOK relies on this order
+          "!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">");
 
   public static final String SEQUENCE_NAME = "s";
 
@@ -208,372 +211,372 @@ public class Table {
    * Igor reserved names are selected names from "Built-In Operations by Category" from
    * https://www.wavemetrics.net/doc/igorman/IgorMan.pdf
    */
-  public static final String[] IgorReservedNamesSA = { // sorted for simplicity (not required)
-    "abs",
-    "acos",
-    "AddLitItem",
-    "airyA",
-    "airyAD",
-    "airyB",
-    "alog",
-    "AnnotationInfo",
-    "AnnotationList",
-    "area",
-    "asin",
-    "Append",
-    "areaXY",
-    "atan",
-    "AxisInfo",
-    "AxisList",
-    "BackgroundInfo",
-    "Besseli",
-    "Besselj",
-    "Besselk",
-    "Bessely",
-    "bessI",
-    "bessJ",
-    "bessK",
-    "bessY",
-    "beta",
-    "betai",
-    "binomial",
-    "BoundingBall",
-    "break",
-    "BrowseURL",
-    "cabs",
-    "CaptureHistory",
-    "catch",
-    "cd",
-    "ceil",
-    "cequal",
-    "Chart",
-    "char2num",
-    "CheckBox",
-    "CheckName",
-    "CleanupName",
-    "cmplx",
-    "cmpstr",
-    "ColorScale",
-    "Concatenate",
-    "conj",
-    "Constant",
-    "continue",
-    "ContourInfo",
-    "ContourZ",
-    "ControlBar",
-    "ConvexHull",
-    "Convolve",
-    "Correlate",
-    "CountObjects",
-    "cos",
-    "cot",
-    "coth",
-    "cpowi",
-    "CreationDate",
-    "Cross",
-    "csc",
-    "CsrInfo",
-    "CsrWave",
-    "CsrWaveRef",
-    "CTabList",
-    "Cursor",
-    "CurveFit",
-    "CWT",
-    "DataFolderDir",
-    "DataFolderExists",
-    "date",
-    "date2secs",
-    "date2Julian",
-    "DateTime",
-    "dawson",
-    "default",
-    "DefaultFont",
-    "deltax",
-    "DFREF",
-    "Differentiate",
-    "digamma",
-    "dimDelta",
-    "DimOffset",
-    "DimSize",
-    "Dir",
-    "Display",
-    "Duplicate",
-    "DWT",
-    "e",
-    "EdgeStats",
-    "Edit",
-    "ei",
-    "End",
-    "EndMacro",
-    "enoise",
-    "erf",
-    "erfc",
-    "erfcw",
-    "exists",
-    "exp",
-    "ExperimentModified",
-    "expInt",
-    "expnoise",
-    "Extract",
-    "factorial",
-    "FakeData",
-    "FastGaussTransform",
-    "faverage",
-    "FFT",
-    "FilterIIR",
-    "FindLevel",
-    "FindListItem",
-    "FindValue",
-    "FitFunc",
-    "floor",
-    "FontList",
-    "FStatus",
-    "FTPDownload",
-    "FTPUpload",
-    "FUNCREF",
-    "FuncRefInfo",
-    "Function",
-    "FunctionInfo",
-    "FunctionList",
-    "FunctionPath",
-    "gamma",
-    "gammaInc",
-    "gammaln",
-    "gammaNoise",
-    "gammp",
-    "gammq",
-    "Gauss",
-    "Gauss2D",
-    "gcd",
-    "gnoise",
-    "Graph",
-    "GraphMarquee",
-    "GraphStyle",
-    "GridStyle",
-    "GuideInfo",
-    "Hanning",
-    "Hash",
-    "hcsr",
-    "hermite",
-    "hide",
-    "HilbertTransform",
-    "Histogram",
-    "i",
-    "IFFT",
-    "ilim",
-    "imag",
-    "ImageFilter",
-    "ImageHistogram",
-    "ImageInfo",
-    "ImageNameList",
-    "ImageRotate",
-    "ImageSave",
-    "ImageStats",
-    "ImageThreshold",
-    "ImageTransform",
-    "ImageWindow",
-    "IndexedDir",
-    "IndexedFile",
-    "IndexSort",
-    "Inf",
-    "InsertPoints",
-    "Integrate",
-    "IntegrateID",
-    "interp",
-    "Interp2D",
-    "Interp3D",
-    "inverseErf",
-    "inverseErfc",
-    "ItemsInList",
-    "j",
-    "jlim",
-    "JulianToDate",
-    "Label",
-    "laguerre",
-    "Layout",
-    "LayoutInfo",
-    "Legend",
-    "limit",
-    "ListMatch",
-    "ln",
-    "LoadData",
-    "Loess",
-    "log",
-    "LowerStr",
-    "Macro",
-    "magsqr",
-    "Make",
-    "MakeIndex",
-    "MatrixDet",
-    "MatrixDot",
-    "MatrixFilter",
-    "MatrixRank",
-    "MatrixTrace",
-    "max",
-    "mean",
-    "Menu",
-    "min",
-    "mod",
-    "modDate",
-    "Modify",
-    "ModuleName",
-    "norm",
-    "note",
-    "Note",
-    "Notebook",
-    "num2char",
-    "num2str",
-    "numpnts",
-    "numtype",
-    "NVAR",
-    "Open",
-    "OperationList",
-    "Optimize",
-    "Override",
-    "p",
-    "p2rect",
-    "PadString",
-    "Panel",
-    "ParamIsDefault",
-    "PathInfo",
-    "PathList",
-    "PCA",
-    "pcsr",
-    "Pi",
-    "PICTList",
-    "Picture",
-    "PlaySound",
-    "pnt2x",
-    "Point",
-    "poly",
-    "poly2D",
-    "PolygonArea",
-    "popup",
-    "Preferences",
-    "Print",
-    "Proc",
-    "ProcGlobal",
-    "ProcedureText",
-    "Project",
-    "Prompt",
-    "PulseStats",
-    "pwd",
-    "q",
-    "qcsr",
-    "Quit",
-    "r",
-    "r2polar",
-    "real",
-    "Rect",
-    "Redimension",
-    "Remove",
-    "Rename",
-    "Resample",
-    "return",
-    "Reverse",
-    "RGBColor",
-    "rightx",
-    "root",
-    "Rotate",
-    "round",
-    "rtGlobals",
-    "s",
-    "Save",
-    "SaveData",
-    "ScreenResolution",
-    "sec",
-    "Secs2Date",
-    "Secs2Time",
-    "SelectNumber",
-    "SelectString",
-    "SetAxis",
-    "SetBackground",
-    "SetDimLabel",
-    "SetDrawLayer",
-    "SetRandomSeed",
-    "SetScale",
-    "sign",
-    "sin",
-    "sinc",
-    "sinh",
-    "Sleep",
-    "Slow",
-    "Smooth",
-    "Sort",
-    "SortList",
-    "SpecialDirPath",
-    "SplitString",
-    "sqrt",
-    "Stack",
-    "startMSTimer",
-    "Static",
-    "stopMSTimer",
-    "str2num",
-    "Strconstant",
-    "String",
-    "StringByKey",
-    "StringCRC",
-    "StringFromList",
-    "StringList",
-    "StringMatch",
-    "strlen",
-    "strsearch",
-    "STRUCT",
-    "Structure",
-    "Submenu",
-    "sum",
-    "SVAR",
-    "t",
-    "Table",
-    "TableInfo",
-    "TableStyle",
-    "Tag",
-    "TagVal",
-    "tan",
-    "tanh",
-    "TextBox",
-    "TextFile",
-    "ticks",
-    "Tile",
-    "TileWindows",
-    "time",
-    "TraceInfo",
-    "trunc",
-    "UniqueName",
-    "Unwrap",
-    "UpperStr",
-    "URLDecode",
-    "URLEncode",
-    "Variable",
-    "VariableList",
-    "Variance",
-    "vcsr",
-    "version",
-    "WAVE",
-    "WaveCRC",
-    "WaveDims",
-    "WaveExists",
-    "WaveMeanStdv",
-    "WaveMax",
-    "WaveMin",
-    "WaveName",
-    "WaveStats",
-    "WaveTransform",
-    "WaveType",
-    "WaveUnits",
-    "WhichListItem",
-    "Window",
-    "WinName",
-    "wnoise",
-    "x",
-    "x2pnt",
-    "xcsr",
-    "y",
-    "z",
-    "zcsr"
-  };
+  public static final ImmutableList<String> IgorReservedNamesSA =
+      ImmutableList.of( // sorted for simplicity (not required)
+          "abs",
+          "acos",
+          "AddLitItem",
+          "airyA",
+          "airyAD",
+          "airyB",
+          "alog",
+          "AnnotationInfo",
+          "AnnotationList",
+          "area",
+          "asin",
+          "Append",
+          "areaXY",
+          "atan",
+          "AxisInfo",
+          "AxisList",
+          "BackgroundInfo",
+          "Besseli",
+          "Besselj",
+          "Besselk",
+          "Bessely",
+          "bessI",
+          "bessJ",
+          "bessK",
+          "bessY",
+          "beta",
+          "betai",
+          "binomial",
+          "BoundingBall",
+          "break",
+          "BrowseURL",
+          "cabs",
+          "CaptureHistory",
+          "catch",
+          "cd",
+          "ceil",
+          "cequal",
+          "Chart",
+          "char2num",
+          "CheckBox",
+          "CheckName",
+          "CleanupName",
+          "cmplx",
+          "cmpstr",
+          "ColorScale",
+          "Concatenate",
+          "conj",
+          "Constant",
+          "continue",
+          "ContourInfo",
+          "ContourZ",
+          "ControlBar",
+          "ConvexHull",
+          "Convolve",
+          "Correlate",
+          "CountObjects",
+          "cos",
+          "cot",
+          "coth",
+          "cpowi",
+          "CreationDate",
+          "Cross",
+          "csc",
+          "CsrInfo",
+          "CsrWave",
+          "CsrWaveRef",
+          "CTabList",
+          "Cursor",
+          "CurveFit",
+          "CWT",
+          "DataFolderDir",
+          "DataFolderExists",
+          "date",
+          "date2secs",
+          "date2Julian",
+          "DateTime",
+          "dawson",
+          "default",
+          "DefaultFont",
+          "deltax",
+          "DFREF",
+          "Differentiate",
+          "digamma",
+          "dimDelta",
+          "DimOffset",
+          "DimSize",
+          "Dir",
+          "Display",
+          "Duplicate",
+          "DWT",
+          "e",
+          "EdgeStats",
+          "Edit",
+          "ei",
+          "End",
+          "EndMacro",
+          "enoise",
+          "erf",
+          "erfc",
+          "erfcw",
+          "exists",
+          "exp",
+          "ExperimentModified",
+          "expInt",
+          "expnoise",
+          "Extract",
+          "factorial",
+          "FakeData",
+          "FastGaussTransform",
+          "faverage",
+          "FFT",
+          "FilterIIR",
+          "FindLevel",
+          "FindListItem",
+          "FindValue",
+          "FitFunc",
+          "floor",
+          "FontList",
+          "FStatus",
+          "FTPDownload",
+          "FTPUpload",
+          "FUNCREF",
+          "FuncRefInfo",
+          "Function",
+          "FunctionInfo",
+          "FunctionList",
+          "FunctionPath",
+          "gamma",
+          "gammaInc",
+          "gammaln",
+          "gammaNoise",
+          "gammp",
+          "gammq",
+          "Gauss",
+          "Gauss2D",
+          "gcd",
+          "gnoise",
+          "Graph",
+          "GraphMarquee",
+          "GraphStyle",
+          "GridStyle",
+          "GuideInfo",
+          "Hanning",
+          "Hash",
+          "hcsr",
+          "hermite",
+          "hide",
+          "HilbertTransform",
+          "Histogram",
+          "i",
+          "IFFT",
+          "ilim",
+          "imag",
+          "ImageFilter",
+          "ImageHistogram",
+          "ImageInfo",
+          "ImageNameList",
+          "ImageRotate",
+          "ImageSave",
+          "ImageStats",
+          "ImageThreshold",
+          "ImageTransform",
+          "ImageWindow",
+          "IndexedDir",
+          "IndexedFile",
+          "IndexSort",
+          "Inf",
+          "InsertPoints",
+          "Integrate",
+          "IntegrateID",
+          "interp",
+          "Interp2D",
+          "Interp3D",
+          "inverseErf",
+          "inverseErfc",
+          "ItemsInList",
+          "j",
+          "jlim",
+          "JulianToDate",
+          "Label",
+          "laguerre",
+          "Layout",
+          "LayoutInfo",
+          "Legend",
+          "limit",
+          "ListMatch",
+          "ln",
+          "LoadData",
+          "Loess",
+          "log",
+          "LowerStr",
+          "Macro",
+          "magsqr",
+          "Make",
+          "MakeIndex",
+          "MatrixDet",
+          "MatrixDot",
+          "MatrixFilter",
+          "MatrixRank",
+          "MatrixTrace",
+          "max",
+          "mean",
+          "Menu",
+          "min",
+          "mod",
+          "modDate",
+          "Modify",
+          "ModuleName",
+          "norm",
+          "note",
+          "Note",
+          "Notebook",
+          "num2char",
+          "num2str",
+          "numpnts",
+          "numtype",
+          "NVAR",
+          "Open",
+          "OperationList",
+          "Optimize",
+          "Override",
+          "p",
+          "p2rect",
+          "PadString",
+          "Panel",
+          "ParamIsDefault",
+          "PathInfo",
+          "PathList",
+          "PCA",
+          "pcsr",
+          "Pi",
+          "PICTList",
+          "Picture",
+          "PlaySound",
+          "pnt2x",
+          "Point",
+          "poly",
+          "poly2D",
+          "PolygonArea",
+          "popup",
+          "Preferences",
+          "Print",
+          "Proc",
+          "ProcGlobal",
+          "ProcedureText",
+          "Project",
+          "Prompt",
+          "PulseStats",
+          "pwd",
+          "q",
+          "qcsr",
+          "Quit",
+          "r",
+          "r2polar",
+          "real",
+          "Rect",
+          "Redimension",
+          "Remove",
+          "Rename",
+          "Resample",
+          "return",
+          "Reverse",
+          "RGBColor",
+          "rightx",
+          "root",
+          "Rotate",
+          "round",
+          "rtGlobals",
+          "s",
+          "Save",
+          "SaveData",
+          "ScreenResolution",
+          "sec",
+          "Secs2Date",
+          "Secs2Time",
+          "SelectNumber",
+          "SelectString",
+          "SetAxis",
+          "SetBackground",
+          "SetDimLabel",
+          "SetDrawLayer",
+          "SetRandomSeed",
+          "SetScale",
+          "sign",
+          "sin",
+          "sinc",
+          "sinh",
+          "Sleep",
+          "Slow",
+          "Smooth",
+          "Sort",
+          "SortList",
+          "SpecialDirPath",
+          "SplitString",
+          "sqrt",
+          "Stack",
+          "startMSTimer",
+          "Static",
+          "stopMSTimer",
+          "str2num",
+          "Strconstant",
+          "String",
+          "StringByKey",
+          "StringCRC",
+          "StringFromList",
+          "StringList",
+          "StringMatch",
+          "strlen",
+          "strsearch",
+          "STRUCT",
+          "Structure",
+          "Submenu",
+          "sum",
+          "SVAR",
+          "t",
+          "Table",
+          "TableInfo",
+          "TableStyle",
+          "Tag",
+          "TagVal",
+          "tan",
+          "tanh",
+          "TextBox",
+          "TextFile",
+          "ticks",
+          "Tile",
+          "TileWindows",
+          "time",
+          "TraceInfo",
+          "trunc",
+          "UniqueName",
+          "Unwrap",
+          "UpperStr",
+          "URLDecode",
+          "URLEncode",
+          "Variable",
+          "VariableList",
+          "Variance",
+          "vcsr",
+          "version",
+          "WAVE",
+          "WaveCRC",
+          "WaveDims",
+          "WaveExists",
+          "WaveMeanStdv",
+          "WaveMax",
+          "WaveMin",
+          "WaveName",
+          "WaveStats",
+          "WaveTransform",
+          "WaveType",
+          "WaveUnits",
+          "WhichListItem",
+          "Window",
+          "WinName",
+          "wnoise",
+          "x",
+          "x2pnt",
+          "xcsr",
+          "y",
+          "z",
+          "zcsr");
 
-  public static final HashSet<String> IgorReservedNames = new HashSet();
+  public static final HashSet<String> IgorReservedNames = new HashSet<>();
 
   static {
     for (String s : IgorReservedNamesSA) IgorReservedNames.add(String2.canonical(s));
@@ -1068,7 +1071,6 @@ public class Table {
    */
   public int reorderColumns(StringArray desiredOrder, boolean discardOthers) {
     int nFound = 0;
-    int doSize = desiredOrder.size();
     for (int i = 0; i < desiredOrder.size(); i++) {
       int from = findColumnNumber(desiredOrder.get(i));
       if (from >= 0) moveColumn(from, nFound++);
@@ -1470,7 +1472,6 @@ public class Table {
       } else if (paType == PAType.ULONG) {
         BigInteger mv = atts.getULong("missing_value"); // may be null
         BigInteger fv = atts.getULong("_FillValue");
-        boolean paMaxIsMV = pa.getMaxIsMV();
         for (int row = tnRows - 1; row > lastRowWithData; row--) {
           BigInteger t = pa.getULong(row);
           if (t == null || t.equals(mv) || t.equals(fv)) {
@@ -1869,7 +1870,7 @@ public class Table {
     for (int col = 0; col < nColumns; col++) {
       PrimitiveArray pa = columns.get(col);
       String columnName = getColumnName(col);
-      if (pa instanceof StringArray sa) {
+      if (pa instanceof StringArray) {
         sb.append(
             "\tchar "
                 + columnName
@@ -4138,14 +4139,16 @@ public class Table {
     }
 
     // create and add x,y,z,t,id columns    (numeric cols forced to be doubles)
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[0], new DoubleArray(tTable.findColumn("Longitude")));
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[1], new DoubleArray(tTable.findColumn("Latitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES[2], new DoubleArray(tTable.findColumn("Minimumdepth")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(0), new DoubleArray(tTable.findColumn("Longitude")));
+    addColumn(
+        DataHelper.TABLE_VARIABLE_NAMES.get(1), new DoubleArray(tTable.findColumn("Latitude")));
+    addColumn(
+        DataHelper.TABLE_VARIABLE_NAMES.get(2), new DoubleArray(tTable.findColumn("Minimumdepth")));
     DoubleArray tPA = new DoubleArray(nRows, false);
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[3], tPA);
+    addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(3), tPA);
     StringArray idPA = new StringArray(nRows, false);
-    addColumn(DataHelper.TABLE_VARIABLE_NAMES[4], idPA);
+    addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(4), idPA);
     PrimitiveArray yearPA = tTable.findColumn("Yearcollected");
     PrimitiveArray monthPA = tTable.findColumn("Monthcollected");
     PrimitiveArray dayPA = tTable.findColumn("Daycollected");
@@ -4386,6 +4389,8 @@ public class Table {
               + " TIME="
               + (System.currentTimeMillis() - time)
               + "ms");
+
+    xml.close();
   }
 
   /**
@@ -4450,11 +4455,8 @@ public class Table {
         xmlReader.nextTag();
         int nTags = xmlReader.stackSize();
         String tags = xmlReader.allTags();
-        String content = xmlReader.content();
 
         if (tags.startsWith("<aws:weather><aws:ob>")) {
-          String endTags = tags.substring(21);
-
           //  nTags == 2
           if (nTags == 2) {
             // This is the start of a new row of data.
@@ -5436,7 +5438,6 @@ public class Table {
     encodeEnhancedAttributes(newTable.globalAttributes());
 
     int nCols = nColumns();
-    int nRows = nRows();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = getColumn(col);
       PAType paType = pa.elementType();
@@ -5508,7 +5509,6 @@ public class Table {
     decodeEnhancedAttributes(sourceVersion, globalAttributes);
 
     int nCols = nColumns();
-    int nRows = nRows();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = getColumn(col);
       Attributes atts = columnAttributes(col);
@@ -5692,8 +5692,6 @@ public class Table {
       throws Exception {
 
     // get information
-    String msg = "  Table.readNcMetadata " + fullName;
-    long time = System.currentTimeMillis();
     Attributes gridMappingAtts = null;
     NetcdfFile netcdfFile = NcHelper.openFile(fullName);
     try {
@@ -5734,13 +5732,6 @@ public class Table {
         convertToUnsignedPAs();
         standardize(standardizeWhat);
       }
-      if (reallyVerbose)
-        msg +=
-            " finished. nColumns="
-                + nColumns()
-                + " TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms";
     } finally {
       try {
         if (netcdfFile != null) netcdfFile.close();
@@ -5927,7 +5918,6 @@ public class Table {
       clear();
 
       // load the variables
-      Group group = ncFile.getRootGroup();
       Dimension dimensions[] = new Dimension[4]; // all the 4D arrays are 0=t,1=z,2=y,3=x
       String dimensionNames[] = new String[4];
       Variable axisVariables[] = new Variable[4];
@@ -6884,7 +6874,7 @@ public class Table {
     // if loadVariableNames was specified,
     if (loadVariableNames.size() > 0) {
       // ENSURE all conNames are in loadVariableNames
-      HashSet<String> loadVarHS = loadVariableNames.toHashSet();
+      Set<String> loadVarHS = loadVariableNames.toHashSet();
       for (int c = 0; c < conNames.size(); c++) {
         if (!loadVarHS.contains(conNames.get(c)))
           throw new RuntimeException(
@@ -7049,7 +7039,6 @@ public class Table {
       int indexVar = -1; // e.g., in level 1 indexed and most level 2 ragged files
       boolean loadVariableNamesWasEmpty = loadVariableNames.size() == 0;
       int nLoadOrConVariablesInFile = 0;
-      String firstSampleDimName = null;
       // if (debugMode) String2.log("Debug: nVars=" + nVars);
       for (int v = 0; v < nVars; v++) {
         if (ncCFcc != null) ncCFcc.set(2);
@@ -9185,7 +9174,6 @@ public class Table {
       // read the outerDim vars (including scalars and primary_investigator)
       if (debugMode) msg += "\n>> read the outerDim";
       Table outerTable = new Table();
-      StringArray cdm_profile_variables = new StringArray();
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
         Attributes vatt = vatts[v];
@@ -9379,7 +9367,6 @@ public class Table {
       // make the innerTable in this table
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
-        Attributes vatt = vatts[v];
 
         // if varName isn't in colNames, skip it
         if (colNames.size() > 0 && colNames.indexOf(vNames[v]) < 0) continue;
@@ -9518,8 +9505,6 @@ public class Table {
     // FUTURE: read audio waveform data by using Java methods to convert other formats to PCM
     // See also https://howlerjs.com/
 
-    int totalFramesRead = 0;
-
     clear();
     AudioInputStream audioInputStream = null;
     DataInputStream dis = null;
@@ -9568,10 +9553,10 @@ public class Table {
       globalAttributes.set("audioFrameSize", frameSize); // bytes
       globalAttributes.set("audioSampleRate", af.getSampleRate());
       globalAttributes.set("audioSampleSizeInBits", nBits);
-      Map props = af.properties();
-      Iterator it = props.entrySet().iterator();
+      Map<String, Object> props = af.properties();
+      Iterator<Map.Entry<String, Object>> it = props.entrySet().iterator();
       while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
+        Map.Entry<String, Object> pair = it.next();
         // use prefix=audio_ to distinguish these props from method values above
         // and to avoid clash if same name
         // but map common properties to CF terms if possible
@@ -10057,8 +10042,8 @@ public class Table {
             // littleEndian
             props);
 
-    DataInputStream dis = new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName));
-    try {
+    try (DataInputStream dis =
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName)); ) {
 
       // create the .wav
       AudioInputStream ais = new AudioInputStream(dis, af, nRow); // nFrames
@@ -10071,7 +10056,6 @@ public class Table {
       }
 
       dis.close();
-      dis = null;
       File2.rename(fullOutName + randomInt, fullOutName); // throws Exception if trouble
 
       if (reallyVerbose)
@@ -10094,12 +10078,6 @@ public class Table {
 
     } catch (Exception e) {
       String2.log(msg);
-      if (dis != null)
-        try {
-          dis.close();
-        } catch (Throwable t) {
-        }
-      ;
       File2.delete(fullOutName + randomInt);
       throw e;
     }
@@ -10164,8 +10142,6 @@ public class Table {
    */
   public void appendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
     // this is tested in PointSubset
-
-    String errorInMethod = String2.ERROR + " in appendNcRows: ";
     long time = System.currentTimeMillis();
 
     // get the desired rows   (first call adds pa's to data and adds columnNames)
@@ -10210,8 +10186,6 @@ public class Table {
    */
   public void blockAppendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
     // this is tested in PointSubset
-
-    String errorInMethod = String2.ERROR + " in blockAppendNcRows: ";
     long time = System.currentTimeMillis();
 
     // !!****THIS HASN'T BEEN MODIFIED TO DO BLOCK READ YET
@@ -10267,10 +10241,9 @@ public class Table {
     Attributes colAtt = columnAttributes(column);
     // double mv = colAtt.getDouble("missing_value");
     // String2.log(">> Table.convert " + getColumnName(column) + "\n" + colAtt.toString());
-    int nSwitched =
-        getColumn(column)
-            .convertToStandardMissingValues(
-                colAtt.getString("_FillValue"), colAtt.getString("missing_value"));
+    getColumn(column)
+        .convertToStandardMissingValues(
+            colAtt.getString("_FillValue"), colAtt.getString("missing_value"));
     // if (!Double.isNaN(mv)) String2.log("  convertToStandardMissingValues mv=" + mv + " n=" +
     // nSwitched);
 
@@ -10313,11 +10286,7 @@ public class Table {
     if (paType == PAType.STRING || paType == PAType.CHAR) return;
     // boolean removeMVF = false;  //commented out 2010-10-26 so NDBC files have consistent
     // _FillValue
-    if (paType == PAType.CHAR) {
-      columnAttributes(column).set("missing_value", Character.MAX_VALUE);
-      columnAttributes(column).set("_FillValue", Character.MAX_VALUE);
-      // removeMVF = ((CharArray)pa).indexOf(Character.MAX_VALUE, 0) < 0;
-    } else if (paType == PAType.BYTE) {
+    if (paType == PAType.BYTE) {
       columnAttributes(column).set("missing_value", Byte.MAX_VALUE);
       columnAttributes(column).set("_FillValue", Byte.MAX_VALUE);
       // removeMVF = ((ByteArray)pa).indexOf(Byte.MAX_VALUE, 0) < 0;
@@ -10483,7 +10452,7 @@ public class Table {
     // make hashtable of keys->Integer.valueOf(row#) in lookUpTable
     // so join is fast with any number of rows in lookUpTable
     int lutNRows = lutKeyPA[0].size();
-    HashMap<String, Integer> hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
+    HashMap<String, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * lutNRows));
     for (int row = 0; row < lutNRows; row++) {
       StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
       for (int key = 1; key < nKeys; key++) sb.append("\t" + lutKeyPA[key].getString(row));
@@ -11720,13 +11689,13 @@ public class Table {
                       + "If "
                       + SEQUENCE_NAME
                       + " is requested, it must be the only requested variable.");
-            for (int op = 0; op < OPERATORS.length; op++) {
-              int opPo = tVar.indexOf(OPERATORS[op]);
+            for (int op = 0; op < OPERATORS.size(); op++) {
+              int opPo = tVar.indexOf(OPERATORS.get(op));
               if (opPo >= 0)
                 throw new SimpleException(
                     QUERY_ERROR
                         + "All constraints (including \""
-                        + tVar.substring(0, opPo + OPERATORS[op].length())
+                        + tVar.substring(0, opPo + OPERATORS.get(op).length())
                         + "...\") must be preceded by '&'.");
             }
             throw new SimpleException(QUERY_ERROR + "Unrecognized variable=\"" + tVar + "\".");
@@ -11752,7 +11721,6 @@ public class Table {
     for (int p = 1; p < parts.length; p++) {
       // deal with one constraint at a time
       String constraint = parts[p];
-      int constraintLength = constraint.length();
       // String2.log("constraint=" + constraint);
       int quotePo = constraint.indexOf('"');
       String constraintBeforeQuotes = quotePo >= 0 ? constraint.substring(0, quotePo) : constraint;
@@ -11801,8 +11769,8 @@ public class Table {
       // find the valid op within constraintBeforeQuotes
       int op = 0;
       int opPo = -1;
-      while (op < OPERATORS.length && (opPo = constraintBeforeQuotes.indexOf(OPERATORS[op])) < 0)
-        op++;
+      while (op < OPERATORS.size()
+          && (opPo = constraintBeforeQuotes.indexOf(OPERATORS.get(op))) < 0) op++;
       if (opPo < 0) {
         if (repair) continue; // was IllegalArgumentException
         else
@@ -11828,12 +11796,12 @@ public class Table {
       }
 
       constraintVariables.add(tName);
-      constraintOps.add(OPERATORS[op]);
-      String tValue = constraint.substring(opPo + OPERATORS[op].length());
+      constraintOps.add(OPERATORS.get(op));
+      String tValue = constraint.substring(opPo + OPERATORS.get(op).length());
       constraintValues.add(tValue);
       double conValueD = Double.NaN;
 
-      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS[op] + tValue);
+      if (debugMode) String2.log(">> constraint: " + tName + OPERATORS.get(op) + tValue);
 
       // convert <time><op><isoString> to <time><op><epochSeconds>
       boolean constrainTimeStamp = Calendar2.isTimeUnits(columnAttributes(dvi).getString("units"));
@@ -11846,7 +11814,7 @@ public class Table {
         }
 
         // if not for regex, convert isoString to epochSeconds
-        if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
+        if (!PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if (Calendar2.isIsoDate(tValue)) {
             conValueD =
                 repair
@@ -11910,7 +11878,7 @@ public class Table {
         // numeric variables
 
         // if op=regex, value must have "'s around it
-        if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
+        if (PrimitiveArray.REGEX_OP.equals(OPERATORS.get(op))) {
           if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
             // repair if needed
             if (!tValue.startsWith("\"")) tValue = "\"" + tValue;
@@ -12899,7 +12867,7 @@ public class Table {
     final int nRows = nRows();
     final int nKeyColumnNames = keyColumnNames.length;
     for (int i = 0; i < nKeyColumnNames; i++) {
-      if (sortKeyColumnNames[i] == keyColumnNames[i].trim()) {
+      if (sortKeyColumnNames[i].equals(keyColumnNames[i].trim())) {
         continue;
       }
 
@@ -15081,7 +15049,6 @@ public class Table {
    */
   public void saveAsTabbedASCII(String fullFileName, String charset) throws Exception {
     if (reallyVerbose) String2.log("Table.saveAsTabbedASCII " + fullFileName);
-    long time = System.currentTimeMillis();
 
     // POLICY: because this procedure may be used in more than one thread,
     // do work on unique temp files names using randomInt, then rename to proper file name.
@@ -15141,7 +15108,6 @@ public class Table {
    */
   public void saveAsCsvASCII(String fullFileName) throws Exception {
     if (reallyVerbose) String2.log("Table.saveAsCsvASCII " + fullFileName);
-    long time = System.currentTimeMillis();
 
     // POLICY: because this procedure may be used in more than one thread,
     // do work on unique temp files names using randomInt, then rename to proper file name.
@@ -15684,11 +15650,9 @@ public class Table {
       String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
       throws Exception {
     clear();
-    BufferedReader reader = File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8);
-    try {
+    try (BufferedReader reader =
+        File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8); ) {
       readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
-    } finally {
-      reader.close();
     }
   }
 
@@ -16278,7 +16242,7 @@ public class Table {
    * @param colNamesHashset
    * @return the safe name.
    */
-  public static String makeUniqueIgorColumnName(String colName, HashSet<String> colNamesHashset) {
+  public static String makeUniqueIgorColumnName(String colName, Set<String> colNamesHashset) {
     colName = String2.encodeMatlabNameSafe(colName);
     for (int i = 1; i < 1000000; i++) {
       String tColName = colName + (i == 1 ? "" : "" + i);
@@ -16834,14 +16798,12 @@ public class Table {
     for (int row = 0; row < tnRows; row++) {
       try {
         String fileName = namePA.getString(row);
-        String fileNameLC = fileName.toLowerCase();
         String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
 
         // very similar code in Table.directoryListing and TableWriterHtmlTable.
         int whichIcon = File2.whichIcon(fileName);
         String iconFile = File2.ICON_FILENAME.get(whichIcon);
         String iconAlt = File2.ICON_ALT.get(whichIcon); // always 3 characters
-        String extLC = File2.getExtension(fileNameLC);
 
         // make HTML for a viewer?
         String viewer = "";
@@ -16955,8 +16917,6 @@ public class Table {
       throw new RuntimeException(
           String2.ERROR + " in Table.saveAs: invalid saveAsType=" + saveAsType);
 
-    String ext = SAVE_AS_EXTENSIONS[saveAsType];
-
     // does the file already exist?
     String finalName = fullFileName + (zipIt ? ".zip" : "");
     if (File2.touch(finalName)) {
@@ -16965,7 +16925,6 @@ public class Table {
     }
 
     // save as ...
-    long time = System.currentTimeMillis();
     if (saveAsType == SAVE_AS_TABBED_ASCII) saveAsTabbedASCII(fullFileName);
     else if (saveAsType == SAVE_AS_FLAT_NC) saveAsFlatNc(fullFileName, dimensionName);
     else if (saveAsType == SAVE_AS_4D_NC) saveAs4DNc(fullFileName, 0, 1, 2, 3);

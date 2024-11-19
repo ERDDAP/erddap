@@ -23,8 +23,6 @@
 
 package gov.noaa.pmel.sgt;
 
-import java.io.*;
-
 /**
  * A class for formatting numbers that follows printf conventions. Also implements C-like atoi and
  * atof functions
@@ -132,7 +130,7 @@ public class Format {
 
   private static String repeat(char c, int n) {
     if (n <= 0) return "";
-    StringBuffer s = new StringBuffer(n);
+    StringBuilder s = new StringBuilder(n);
     for (int i = 0; i < n; i++) s.append(c);
     return s.toString();
   }
@@ -316,7 +314,6 @@ public class Format {
     left_align = false;
     fmt = ' ';
 
-    int state = 0;
     int length = s.length();
     int parse_state = 0;
     // 0 = prefix, 1 = flags, 2 = width, 3 = precision,
@@ -452,7 +449,7 @@ public class Format {
    */
   public static String computeFormat(double min, double max, int pres) {
     double dx, xx;
-    int ip, id, ib;
+    int ip, id;
     String frmt;
 
     dx = Math.abs(max - min);
@@ -484,7 +481,6 @@ public class Format {
     int i = 0;
     int sign = 1;
     double r = 0; // integer part
-    double f = 0; // fractional part
     double p = 1; // exponent of fractional part
     int state = 0; // 0 = int part, 1 = frac part
 
@@ -508,7 +504,7 @@ public class Format {
         else return sign * r;
       } else if (ch == 'e' || ch == 'E') {
         long e = (int) parseLong(s.substring(i + 1), 10);
-        return sign * r * Math.pow(10, e);
+        return sign * r * Math.pow(10, (double) e);
       } else return sign * r;
       i++;
     }

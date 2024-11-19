@@ -195,7 +195,7 @@ public class NcHelper {
     }
 
     // byte[] from ArrayBoolean.Dn
-    if (nc2Array instanceof ArrayBoolean ab) {
+    if (nc2Array instanceof ArrayBoolean) {
       boolean boolAr[] = (boolean[]) nc2Array.copyTo1DJavaArray();
       int n = boolAr.length;
       byte byteAr[] = new byte[n];
@@ -252,7 +252,7 @@ public class NcHelper {
    * @param dim
    * @return the Variable.Builder
    */
-  public static Variable.Builder addVariable(
+  public static Variable.Builder<?> addVariable(
       Group.Builder group, String shortName, DataType dataType, Dimension dim) {
     return addVariable(group, shortName, dataType, Arrays.asList(dim));
   }
@@ -266,10 +266,10 @@ public class NcHelper {
    * @param dims the list of dimensions
    * @return the Variable.Builder
    */
-  public static Variable.Builder addVariable(
+  public static Variable.Builder<?> addVariable(
       Group.Builder group, String shortName, DataType dataType, List<Dimension> dims) {
 
-    Variable.Builder varBuilder =
+    Variable.Builder<?> varBuilder =
         Variable.builder().setName(shortName).setDataType(dataType).addDimensions(dims);
     group.addVariable(varBuilder);
     return varBuilder;
@@ -284,16 +284,16 @@ public class NcHelper {
    * @param maxStringLength
    * @return the Variable.Builder
    */
-  public static Variable.Builder addNc3StringVariable(
+  public static Variable.Builder<?> addNc3StringVariable(
       Group.Builder group, String shortName, List<Dimension> dims, int maxStringLength) {
 
     // add a dimension for stringLength
     Dimension dim = new Dimension(shortName + StringLengthSuffix, maxStringLength);
     group.addDimension(dim);
-    ArrayList<Dimension> al = new ArrayList(dims);
+    ArrayList<Dimension> al = new ArrayList<>(dims);
     al.add(dim);
 
-    Variable.Builder varBuilder =
+    Variable.Builder<?> varBuilder =
         Variable.builder().setName(shortName).setDataType(DataType.CHAR).addDimensions(al);
     group.addVariable(varBuilder);
     return varBuilder;
@@ -709,7 +709,8 @@ public class NcHelper {
    * @param arrayList
    * @return the desired string representation
    */
-  public static String alternateToString(String prefix, ArrayList arrayList, String suffix) {
+  public static String alternateToString(
+      String prefix, List<PrimitiveArray> arrayList, String suffix) {
     if (arrayList == null) return prefix + "[null]\n";
     StringBuilder sb = new StringBuilder();
     for (int index = 0; index < arrayList.size(); index += 2) {
@@ -838,7 +839,7 @@ public class NcHelper {
   public static Variable[] findVariables(NetcdfFile netcdfFile, String variableNames[]) {
     // just use the variable names
     if (variableNames != null) {
-      ArrayList<Variable> list = new ArrayList();
+      ArrayList<Variable> list = new ArrayList<>();
       for (int i = 0; i < variableNames.length; i++) {
         Variable variable = netcdfFile.findVariable(variableNames[i]);
         Test.ensureNotNull(
@@ -880,13 +881,13 @@ public class NcHelper {
 
     // look for unlimited dimension
     if (mainDimension == null) {
-      List dimensions =
+      List<Dimension> dimensions =
           rootGroup.getDimensions(); // next nc version: getRootGroup().getDimensions();  //was
       // netcdfFile.getDimensions()
       if (dimensions.size() == 0)
         Test.error(String2.ERROR + " in NcHelper.findVariables: the file has no dimensions.");
       for (int i = 0; i < dimensions.size(); i++) {
-        Dimension tDimension = (Dimension) dimensions.get(i);
+        Dimension tDimension = dimensions.get(i);
         if (tDimension.isUnlimited()) {
           mainDimension = tDimension;
           if (reallyVerbose)
@@ -902,13 +903,13 @@ public class NcHelper {
     if (mainDimension == null) {
       for (int v = 0; v < rootGroupVariables.size(); v++) {
         Variable variable = (Variable) rootGroupVariables.get(v);
-        List dimensions = variable.getDimensions();
+        List<Dimension> dimensions = variable.getDimensions();
         PrimitiveArray units = getVariableAttribute(variable, "units");
         if (units != null
             && units.size() > 0
             && Calendar2.isNumericTimeUnits(units.getString(0))
             && dimensions.size() > 0) {
-          mainDimension = (Dimension) dimensions.get(0);
+          mainDimension = dimensions.get(0);
           if (reallyVerbose)
             String2.log(
                 "    NcHelper.findVariables found a time variable with dimension: "
@@ -923,9 +924,9 @@ public class NcHelper {
     if (mainDimension == null) {
       for (int v = rootGroupVariables.size() - 1; v >= 0; v--) {
         Variable variable = (Variable) rootGroupVariables.get(v);
-        List dimensions = variable.getDimensions();
+        List<Dimension> dimensions = variable.getDimensions();
         if (dimensions.size() > 0) {
-          mainDimension = (Dimension) dimensions.get(0);
+          mainDimension = dimensions.get(0);
           if (reallyVerbose) {
             String fName = mainDimension.getName(); // the full name
             if (!"row".equals(fName)) // may be null
@@ -940,11 +941,11 @@ public class NcHelper {
     }
 
     // get a list of all variables which use just mainDimension
-    List structureVariables = new ArrayList();
+    List<Variable> structureVariables = new ArrayList<>();
     for (int i = 0; i < rootGroupVariables.size(); i++) {
       // if (reallyVerbose) String2.log("  get all variables which use mainDimension, check " + i);
-      Variable tVariable = (Variable) rootGroupVariables.get(i);
-      List tDimensions = tVariable.getDimensions();
+      Variable tVariable = rootGroupVariables.get(i);
+      List<Dimension> tDimensions = tVariable.getDimensions();
       int nDimensions = tDimensions.size();
       // if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() +
       //    " type=" + tVariable.getNc3DataType());
@@ -992,7 +993,7 @@ public class NcHelper {
       int tnDim = variable.getRank() - (isChar ? 1 : 0);
       if (tnDim > dimNames.length) {
         // a new winner
-        loadVariables = new ArrayList();
+        loadVariables = new ArrayList<>();
         loadVariables.add(variable);
         dimNames = new String[tnDim];
         for (int d = 0; d < tnDim; d++) {
@@ -1038,10 +1039,10 @@ public class NcHelper {
   public static Variable[] findAllVariablesWithDims(NetcdfFile netcdfFile) {
 
     Group rootGroup = netcdfFile.getRootGroup();
-    List rootGroupVariables = rootGroup.getVariables();
-    List loadVariables = new ArrayList();
+    List<Variable> rootGroupVariables = rootGroup.getVariables();
+    List<Variable> loadVariables = new ArrayList<>();
     for (int v = 0; v < rootGroupVariables.size(); v++) {
-      Variable variable = (Variable) rootGroupVariables.get(v);
+      Variable variable = rootGroupVariables.get(v);
       boolean isChar = variable.getDataType() == DataType.CHAR;
       int tnDim = variable.getRank() - (isChar ? 1 : 0);
       if (tnDim > 0) loadVariables.add(variable);
@@ -1061,7 +1062,7 @@ public class NcHelper {
   public static Variable[] find4DVariables(NetcdfFile netcdfFile, String variableNames[]) {
     // just use the variable names
     if (variableNames != null) {
-      ArrayList<Variable> list = new ArrayList();
+      ArrayList<Variable> list = new ArrayList<>();
       for (int i = 0; i < variableNames.length; i++) {
         Variable variable = netcdfFile.findVariable(variableNames[i]);
         Test.ensureNotNull(
@@ -1075,7 +1076,7 @@ public class NcHelper {
     // find a 4D variable among the variables in the rootGroup
     List<Variable> allVariables = netcdfFile.getVariables();
     String foundDimensionNames[] = null;
-    ArrayList<Variable> foundVariables = new ArrayList();
+    ArrayList<Variable> foundVariables = new ArrayList<>();
     for (int v = 0; v < allVariables.size(); v++) {
       Variable variable = allVariables.get(v);
       List<Dimension> dimensions = variable.getDimensions();
@@ -1152,7 +1153,7 @@ public class NcHelper {
    * @param unsigned If nc3Mode and unsigned, this method adds an _Unsigned=true attribute
    */
   public static void setAttributes(
-      boolean nc3Mode, Variable.Builder var, Attributes attributes, boolean unsigned) {
+      boolean nc3Mode, Variable.Builder<?> var, Attributes attributes, boolean unsigned) {
     String names[] = attributes.getNames();
     if (nc3Mode && unsigned)
       var.addAttribute(newAttribute(nc3Mode, "_Unsigned", new StringArray(new String[] {"true"})));
@@ -1323,7 +1324,7 @@ public class NcHelper {
     // read the sourcglobalAttributes
     if (ncAtts == null) return;
     String ncAttsName = ncAtts.getName();
-    Iterator it = ncAtts.iterator();
+    Iterator<Attribute> it = ncAtts.iterator();
     while (it.hasNext()) { // there is also a dods.dap.Attribute
       Attribute att = (Attribute) it.next();
       String name = att.getName();
@@ -1843,7 +1844,7 @@ public class NcHelper {
     PrimitiveArray pa = getPrimitiveArray(array);
     Test.ensureEqual(
         pa.size(),
-        nX * nY * nZ * ((long) nT),
+        nX * (long) nY * nZ * ((long) nT),
         "NcHelper.get4DValues nFound!=nExpected.\n"
             + " name="
             + variable.getFullName()
@@ -1941,14 +1942,12 @@ public class NcHelper {
       throws Exception {
 
     PAType paType = pa.elementType();
-    if (paType == PAType.CHAR)
+    if (paType == PAType.CHAR) {
       // netcdf-java 3 & 4 just write 1 byte chars
       // (but nc4 will writes strings as utf-8 encoded
       pa = new CharArray(pa).toIso88591();
-    else if (nc3Mode) {
+    } else if (nc3Mode) {
       if (paType == PAType.LONG || paType == PAType.ULONG) pa = new DoubleArray(pa);
-      else if (paType == PAType.CHAR)
-        pa = new CharArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
       else if (paType == PAType.STRING)
         pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
     }
@@ -1991,8 +1990,6 @@ public class NcHelper {
    */
   public static BitSet testRows(Variable testVariables[], double min[], double max[])
       throws Exception {
-
-    String errorInMethod = String2.ERROR + " in testNcRows: ";
     long time = System.currentTimeMillis();
 
     BitSet okRows = null;
@@ -2064,7 +2061,7 @@ public class NcHelper {
       nc.setFill(false);
 
       // add the variables
-      Variable.Builder newVars[] = new Variable.Builder[nVars];
+      Variable.Builder<?> newVars[] = new Variable.Builder[nVars];
       for (int var = 0; var < nVars; var++) {
         String name = varNames.get(var);
         tpas[var] = pas[var];
@@ -2174,7 +2171,7 @@ public class NcHelper {
         // + " \n  loadVarNames=" + String2.toCSSVString(loadVarNames)
         ;
     varNames.clear();
-    ArrayList<PrimitiveArray> pas = new ArrayList();
+    ArrayList<PrimitiveArray> pas = new ArrayList<>();
     long time = System.currentTimeMillis();
     NetcdfFile netcdfFile = openFile(fullName);
     try {
@@ -2367,8 +2364,6 @@ public class NcHelper {
     // boolean buildStringsFromChars = false;
     // boolean isUnsigned = false;
     StructureDataIterator it = s.getStructureIterator();
-    int recNo = 0;
-    boolean done = false;
     try {
       while (it.hasNext()) {
         StructureData sd = it.next(); // increment structure position
@@ -2392,7 +2387,6 @@ public class NcHelper {
             if (!index.incrementSubsetIndex(subsetIndex, tConstraints))
               break; // we got the entire subset
         }
-        recNo++;
       }
     } finally {
       it.close();

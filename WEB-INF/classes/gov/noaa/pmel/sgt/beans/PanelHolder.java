@@ -309,7 +309,6 @@ public class PanelHolder implements ChangeListener, Serializable {
    * @param bounds bounds
    */
   public void setBounds(Rectangle bounds) {
-    Rectangle old = this.bounds;
     this.bounds = bounds;
     fireStateChanged();
   }

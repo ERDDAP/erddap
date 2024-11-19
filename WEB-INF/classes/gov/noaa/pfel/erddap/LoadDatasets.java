@@ -30,6 +30,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -157,21 +159,21 @@ public class LoadDatasets extends Thread {
       int oldNTable = erddap.tableDatasetHashMap.size();
       HashSet<String> orphanIDSet = null;
       if (majorLoad) {
-        orphanIDSet = new HashSet(erddap.gridDatasetHashMap.keySet());
+        orphanIDSet = new HashSet<String>(erddap.gridDatasetHashMap.keySet());
         orphanIDSet.addAll(erddap.tableDatasetHashMap.keySet());
         orphanIDSet.remove(EDDTableFromAllDatasets.DATASET_ID);
       }
       EDStatic.cldMajor = majorLoad;
       EDStatic.cldNTry = 0; // that alone says none is currently active
-      HashMap<String, Object[]> tUserHashMap =
+      Map<String, Object[]> tUserHashMap =
           new HashMap<
               String,
               Object[]>(); // no need for thread-safe, all puts are here (1 thread); future gets are
       // thread safe
       StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
       StringBuilder failedDatasetsWithErrorsSB = new StringBuilder();
-      HashSet<String> datasetIDSet =
-          new HashSet(); // to detect duplicates, just local use, no need for thread-safe
+      Set<String> datasetIDSet =
+          new HashSet<>(); // to detect duplicates, just local use, no need for thread-safe
       StringArray duplicateDatasetIDs = new StringArray(); // list of duplicates
       EDStatic.suggestAddFillValueCSV.setLength(0);
 
@@ -246,13 +248,14 @@ public class LoadDatasets extends Thread {
               + ndf
               + "\n"
               + (datasetsThatFailedToLoadSB.isEmpty() ? "" : "    " + dtftl + "(end)\n");
-      String errorsDuringMajorReload =
+      StringBuilder errorsDuringMajorReload =
           majorLoad && duplicateDatasetIDs.size() > 0
-              ? String2.ERROR
-                  + ": Duplicate datasetIDs in datasets.xml:\n    "
-                  + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
-                  + "\n"
-              : "";
+              ? new StringBuilder(
+                  String2.ERROR
+                      + ": Duplicate datasetIDs in datasets.xml:\n    "
+                      + String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ")
+                      + "\n")
+              : new StringBuilder();
       String failedDatasetsWithErrors =
           "Reasons for failing to load datasets: \n" + failedDatasetsWithErrorsSB;
       if (majorLoad && orphanIDSet.size() > 0) {
@@ -364,7 +367,7 @@ public class LoadDatasets extends Thread {
 
         EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; // swap into place
         EDStatic.failedDatasetsWithErrors = failedDatasetsWithErrors;
-        EDStatic.errorsDuringMajorReload = errorsDuringMajorReload; // swap into place
+        EDStatic.errorsDuringMajorReload = errorsDuringMajorReload.toString(); // swap into place
         EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
             0, // header in EDStatic
             // "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests
@@ -446,12 +449,12 @@ public class LoadDatasets extends Thread {
   private void parseUsingSimpleXmlReader(
       int[] nTryAndDatasets,
       StringArray changedDatasetIDs,
-      HashSet<String> orphanIDSet,
-      HashSet<String> datasetIDSet,
+      Set<String> orphanIDSet,
+      Set<String> datasetIDSet,
       StringArray duplicateDatasetIDs,
       StringBuilder datasetsThatFailedToLoadSB,
       StringBuilder failedDatasetsWithErrorsSB,
-      HashMap tUserHashMap) {
+      Map<String, Object[]> tUserHashMap) {
     SimpleXMLReader xmlReader = null;
     int nTry = 0, nDatasets = 0;
     try {
@@ -819,9 +822,9 @@ public class LoadDatasets extends Thread {
         } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
         } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
           String ts = xmlReader.content();
-          int tnt = String2.indexOf(SgtMap.drawLandMask_OPTIONS, ts);
+          int tnt = SgtMap.drawLandMask_OPTIONS.indexOf(ts);
           EDStatic.drawLandMask =
-              tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS[tnt];
+              tnt < 1 ? EDStatic.DEFAULT_drawLandMask : SgtMap.drawLandMask_OPTIONS.get(tnt);
           String2.log("drawLandMask=" + EDStatic.drawLandMask);
 
         } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
@@ -917,7 +920,7 @@ public class LoadDatasets extends Thread {
                   ? String2.split(tContent, ',')
                   : EDStatic.DEFAULT_palettes;
           // ensure that all of the original palettes are present
-          HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
+          Set<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
           // String2.log(">>> newPaletteSet=" + String2.toCSSVString(newPaletteSet));
           // String2.log(">>> defPaletteSet=" +
           // String2.toCSSVString(EDStatic.DEFAULT_palettes_set));
@@ -1194,10 +1197,12 @@ public class LoadDatasets extends Thread {
   }
 
   private void emailOrphanDatasetsRemoved(
-      HashSet<String> orphanIDSet, StringArray changedDatasetIDs, String errorsDuringMajorReload) {
-    Iterator it = orphanIDSet.iterator();
+      Set<String> orphanIDSet,
+      StringArray changedDatasetIDs,
+      StringBuilder errorsDuringMajorReload) {
+    Iterator<String> it = orphanIDSet.iterator();
     while (it.hasNext())
-      tryToUnload(erddap, (String) it.next(), changedDatasetIDs, false); // needToUpdateLucene
+      tryToUnload(erddap, it.next(), changedDatasetIDs, false); // needToUpdateLucene
     erddap.updateLucene(changedDatasetIDs);
 
     String msg =
@@ -1208,14 +1213,14 @@ public class LoadDatasets extends Thread {
             + "    "
             + String2.noLongLinesAtSpace(String2.toCSSVString(orphanIDSet), 100, "    ")
             + "(end)\n";
-    errorsDuringMajorReload += msg;
+    errorsDuringMajorReload.append(msg);
     String2.log(msg);
     EDStatic.email(EDStatic.emailEverythingToCsv, "Orphan Datasets Removed", msg);
   }
 
   private void emailUnusualActivity(String threadSummary, String threadList) {
     StringBuilder sb = new StringBuilder();
-    EDStatic.addIntroStatistics(sb, true /* includeErrors */);
+    EDStatic.addIntroStatistics(sb, true /* includeErrors */, erddap);
 
     if (threadSummary != null) sb.append(threadSummary + "\n");
 
@@ -1267,7 +1272,7 @@ public class LoadDatasets extends Thread {
           EDStatic.emailEverythingToCsv, "Unusual Activity: lots of requests", sb.toString());
     } else if (nFailed > 10
         && nFailed
-            > nSucceeded * (EDStatic.unusualActivityFailPercent) / 100) { // >25% of requests fail
+            > nSucceeded * EDStatic.unusualActivityFailPercent / 100) { // >25% of requests fail
       EDStatic.email(
           EDStatic.emailEverythingToCsv,
           "Unusual Activity: >" + EDStatic.unusualActivityFailPercent + "% of requests failed",
@@ -1280,7 +1285,7 @@ public class LoadDatasets extends Thread {
     String stars = String2.makeString('*', 70);
     String subject = "Daily Report";
     StringBuilder contentSB = new StringBuilder(subject + "\n\n");
-    EDStatic.addIntroStatistics(contentSB, true /* includeErrors */);
+    EDStatic.addIntroStatistics(contentSB, true /* includeErrors */, erddap);
 
     // append number of active threads
     if (threadSummary != null) contentSB.append(threadSummary + "\n");

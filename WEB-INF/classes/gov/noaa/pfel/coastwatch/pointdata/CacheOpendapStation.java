@@ -488,11 +488,6 @@ public class CacheOpendapStation {
     int nNewRows = 0;
 
     // open the .nc file
-    // POLICY: because this procedure may be used in more than one thread,
-    // do work on unique temp files names using randomInt, then rename to proper file name.
-    // If procedure fails half way through, there won't be a half-finished file.
-    int randomInt = Math2.random(Integer.MAX_VALUE);
-
     try {
 
       // opendap get time dimension  -- is there new data?
@@ -642,7 +637,7 @@ public class CacheOpendapStation {
           dataPA[var] = pas[0];
           Test.ensureEqual(
               dataPA[var].size(),
-              (newOpendapTimeDimensionSize - opendapTimeDimensionSize) * depths.size(),
+              (newOpendapTimeDimensionSize - opendapTimeDimensionSize) * (long) depths.size(),
               errorInMethod + "Unexpected dataPA size for var=" + var);
         }
 

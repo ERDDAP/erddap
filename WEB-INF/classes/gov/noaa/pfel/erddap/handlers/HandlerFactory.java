@@ -13,7 +13,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
-import java.util.HashSet;
+import java.util.Set;
 
 public class HandlerFactory {
   private static int nTry = 0;
@@ -184,8 +184,8 @@ public class HandlerFactory {
   public static boolean skipDataset(
       String datasetID, String active, SaxParsingContext context, boolean isTopLevelDataset) {
     boolean majorLoad = context.getMajorLoad();
-    HashSet<String> orphanIDSet = context.getOrphanIDSet();
-    HashSet<String> datasetIDSet = context.getDatasetIDSet();
+    Set<String> orphanIDSet = context.getOrphanIDSet();
+    Set<String> datasetIDSet = context.getDatasetIDSet();
     boolean reallyVerbose = context.getReallyVerbose();
     StringArray duplicateDatasetIDs = context.getDuplicateDatasetIDs();
     String datasetsRegex = context.getDatasetsRegex();

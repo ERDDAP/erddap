@@ -251,7 +251,6 @@ public class EDDGridCopy extends EDDGrid {
 
     if (verbose) String2.log("\n*** constructing EDDGridCopy " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDGridCopy(" + tDatasetID + ") constructor:\n";
 
     // save the parameters
     className = "EDDGridCopy";
@@ -284,13 +283,14 @@ public class EDDGridCopy extends EDDGrid {
 
         // check if taskThread has finished previously assigned tasks for this dataset
         EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-        Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(datasetID);
+        Integer lastAssignedTask = EDStatic.lastAssignedTask.get(datasetID);
         boolean pendingTasks =
-            lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            lastAssignedTask != null
+                && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
         if (verbose)
           String2.log(
               "  lastFinishedTask="
-                  + EDStatic.lastFinishedTask
+                  + EDStatic.lastFinishedTask.get()
                   + " < lastAssignedTask("
                   + tDatasetID
                   + ")="
@@ -403,7 +403,7 @@ public class EDDGridCopy extends EDDGrid {
         // checking on it
 
         if (EDStatic.forceSynchronousLoading) {
-          while (EDStatic.lastFinishedTask < taskNumber) {
+          while (EDStatic.lastFinishedTask.get() < taskNumber) {
             Thread.sleep(2000);
           }
         }

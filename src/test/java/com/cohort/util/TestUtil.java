@@ -8,7 +8,6 @@ import com.cohort.array.StringArray;
 import java.io.File;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -152,9 +151,9 @@ class TestUtil {
         Math2.roundToLong(-9.223372036854776E18), -9223372036854775808L, "k-3"); // Long.MIN_VALUE
     Test.ensureEqual(
         Math2.longToDoubleNaN(9223372036854775806L), // Long.MAX_VALUE - 1
-        9223372036854774784.0,
+        9.223372036854775E+18,
         "k+"); // Not good, but best available
-    Test.ensureEqual(Math.rint(9223372036854774784.0), 9223372036854774784L, "k+");
+    Test.ensureEqual(Math.rint(9.223372036854775E+18), 9223372036854774784L, "k+");
 
     Test.ensureEqual(Math2.longToDoubleNaN(9223372036854775807L), Double.NaN, "kMV");
     Test.ensureEqual(Math2.longToDoubleNaN(Long.MAX_VALUE), Double.NaN, "kMV2");
@@ -376,9 +375,9 @@ class TestUtil {
         Math2.almostEqual(14, 0.00000000000000123, 0.00000000000000567), true, "b"); // almost 0
     Test.ensureEqual(
         Math2.almostEqual(14, 0.00000000000000123, 0.000000123), false, "c"); // not almost 0
-    Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234567, 0.12345678901234566), true, "d");
+    Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234568, 0.12345678901234566), true, "d");
     Test.ensureEqual(Math2.almostEqual(14, 0.12345678901234, 0.12345678901235), false, "e");
-    Test.ensureEqual(Math2.almostEqual(14, 12345678901234567.0, 12345678901234566.0), true, "f");
+    Test.ensureEqual(Math2.almostEqual(14, 12345678901234568.0, 12345678901234566.0), true, "f");
     Test.ensureEqual(Math2.almostEqual(14, 12345678901234.0, 12345678901235.0), false, "g");
     Test.ensureEqual(Math2.almostEqual(14, Double.NaN, Double.NaN), false, "h");
     Test.ensureEqual(Math2.almostEqual(14, Double.POSITIVE_INFINITY, 1e300), false, "i");
@@ -535,7 +534,7 @@ class TestUtil {
     Test.ensureEqual(Math2.roundToLong(1.49), 1, "i");
     // MIN_VALUE -9223372036854775808.0
     Test.ensureEqual(
-        Math2.roundToLong(-9223372036854777000.0), Long.MAX_VALUE, "k"); // unusual: limited double
+        Math2.roundToLong(-9.223372036854778E+18), Long.MAX_VALUE, "k"); // unusual: limited double
     // precision throws this to mv
     Test.ensureEqual(
         Math2.roundToLong(Long.MIN_VALUE),
@@ -543,7 +542,7 @@ class TestUtil {
         "k"); // unusual: limited double precision
     // throws this to mv
     Test.ensureEqual(
-        Math2.roundToLong(9.223372036854774784E18), // largest that can do round trip
+        Math2.roundToLong(9.223372036854775E+18), // largest that can do round trip
         9223372036854774784L,
         "l");
     Test.ensureEqual(Math2.roundToLong(Long.MAX_VALUE), Long.MAX_VALUE, "l");
@@ -747,7 +746,7 @@ class TestUtil {
 
     // niceDouble
     String2.log("test niceDouble");
-    Test.ensureEqual(Math2.niceDouble(8.999999999999999, 7), 9, "a");
+    Test.ensureEqual(Math2.niceDouble(8.999999999999998, 7), 9, "a");
     Test.ensureEqual(Math2.niceDouble(-4f / 3, 7), -1.333333, "b");
 
     // random
@@ -1242,6 +1241,7 @@ class TestUtil {
   /** Test the methods in String2. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
+  @SuppressWarnings("ReferenceEquality") // We want to test for == not .equals in the tests
   void testString2() throws Throwable {
     String2.log("\n*** TestUtil.testString2()");
     String sar[];
@@ -2875,21 +2875,16 @@ class TestUtil {
     Test.ensureEqual(
         String2.genEFormat10(1.444412345678), "1.4444123457", ""); // 11 -> 10 digits to right
     Test.ensureEqual(String2.genEFormat10(-1.444412345678), "-1.4444123457", "");
+    Test.ensureEqual(String2.genEFormat10(1000000.0), "1000000", "");
+    Test.ensureEqual(String2.genEFormat10(-1000000.0), "-1000000", "");
+    Test.ensureEqual(String2.genEFormat10(999999.9999999999), "999999.9999999999", "");
+    Test.ensureEqual(String2.genEFormat10(-999999.9999999999), "-999999.9999999999", "");
     Test.ensureEqual(
-        String2.genEFormat10(999999.99999999995), "1000000", ""); // UNEXPECTED! because of limited
-    // precision. 6 digits to left
-    // boundary
-    Test.ensureEqual(String2.genEFormat10(-999999.99999999995), "-1000000", "");
+        String2.genEFormat10(123456.44449876543), "123456.4444987654", ""); // 6 digits to left
+    Test.ensureEqual(String2.genEFormat10(-123456.44449876543), "-123456.4444987654", "");
     Test.ensureEqual(
-        String2.genEFormat10(999999.99999999994), "999999.9999999999", ""); // 6 digits to left
-    // boundary
-    Test.ensureEqual(String2.genEFormat10(-999999.99999999994), "-999999.9999999999", "");
-    Test.ensureEqual(
-        String2.genEFormat10(123456.444498765432), "123456.4444987654", ""); // 6 digits to left
-    Test.ensureEqual(String2.genEFormat10(-123456.444498765432), "-123456.4444987654", "");
-    Test.ensureEqual(
-        String2.genEFormat10(1234567.444498765432), "1.2345674445E6", ""); // 7 digits to left
-    Test.ensureEqual(String2.genEFormat10(-1234567.444498765432), "-1.2345674445E6", "");
+        String2.genEFormat10(1234567.4444987655), "1.2345674445E6", ""); // 7 digits to left
+    Test.ensureEqual(String2.genEFormat10(-1234567.4444987655), "-1.2345674445E6", "");
     Test.ensureEqual(String2.genEFormat10(0.094444876), "9.4444876E-2", ""); // <.1
     Test.ensureEqual(String2.genEFormat10(-0.094444876), "-9.4444876E-2", ""); //
     Test.ensureEqual(String2.genEFormat10(0.09999999996), "0.1", ""); // .1 boundary
@@ -3263,7 +3258,6 @@ class TestUtil {
     double d;
     GregorianCalendar gc;
     DateTimeFormatter dtfr;
-    Instant instant;
 
     /*
      * String tests[] = new String[]{"2020-05-21T00:00:00Z",
@@ -6573,7 +6567,7 @@ class TestUtil {
         "");
 
     gc = Calendar2.parseISODateTimeZulu("2011-12-31T23:59:59.997Z");
-    Test.ensureEqual(gc.getTimeInMillis(), 1.325376E12, "");
+    Test.ensureEqual((double) gc.getTimeInMillis(), (double) 1.325376E12, "");
     Test.ensureEqual(Calendar2.formatAsISODateTimeT3Z(gc), "2011-12-31T23:59:59.997Z", "");
 
     // 2012-12-26 support comma in SS,SSS
@@ -7219,11 +7213,13 @@ class TestUtil {
 
     // epochSecondsToIsoString
     Test.ensureEqual(Calendar2.isoStringToEpochSeconds("2005-08-31T16:01:02"), 1125504062.0, "x1");
-    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("0001-01-01"), m0001 / 1000, "x1");
+    Test.ensureEqual(Calendar2.isoStringToEpochSeconds("0001-01-01"), m0001 / 1000.0, "x1");
     Test.ensureEqual(
-        Calendar2.isoStringToEpochSeconds("0000-01-01"), m0001 / 1000 - 366 * spd, "x1");
+        Calendar2.isoStringToEpochSeconds("0000-01-01"), (double) m0001 / 1000 - 366 * spd, "x1");
     Test.ensureEqual(
-        Calendar2.isoStringToEpochSeconds("-0001-01-01"), m0001 / 1000 + (-365 - 366) * spd, "x1");
+        Calendar2.isoStringToEpochSeconds("-0001-01-01"),
+        (double) m0001 / 1000 + (-365 - 366) * spd,
+        "x1");
     try {
       Calendar2.isoStringToEpochSeconds("");
       throw new Throwable("Shouldn't get here.62");
@@ -7268,11 +7264,12 @@ class TestUtil {
     gc = Calendar2.parseISODateTimeZulu("2005-08-31T16:01:02");
     Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), 1125504062.0, "");
     gc = Calendar2.parseISODateTimeZulu("0001-01-01");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000, "");
+    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000.0, "");
     gc = Calendar2.parseISODateTimeZulu("0000-01-01");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000 + -366 * 24 * 3600, "");
+    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), (double) m0001 / 1000 + -366 * 24 * 3600, "");
     gc = Calendar2.parseISODateTimeZulu("-0001-01-01");
-    Test.ensureEqual(Calendar2.gcToEpochSeconds(gc), m0001 / 1000 + (-365 - 366) * 24 * 3600, "");
+    Test.ensureEqual(
+        Calendar2.gcToEpochSeconds(gc), (double) m0001 / 1000 + (-365 - 366) * 24 * 3600, "");
     try {
       Calendar2.gcToEpochSeconds(null);
       throw new Throwable("Shouldn't get here.69");
@@ -7282,11 +7279,11 @@ class TestUtil {
     // epochSecondsToGc(double seconds) (test with values above)
     gc = Calendar2.epochSecondsToGc(1125504062.0);
     Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "2005-08-31T16:01:02", "");
-    gc = Calendar2.epochSecondsToGc(m0001 / 1000);
+    gc = Calendar2.epochSecondsToGc(m0001 / 1000.0);
     Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0001-01-01T00:00:00", "");
-    gc = Calendar2.epochSecondsToGc(m0001 / 1000 + -366 * 24 * 3600);
+    gc = Calendar2.epochSecondsToGc((double) m0001 / 1000 + -366 * 24 * 3600);
     Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "0000-01-01T00:00:00", "");
-    gc = Calendar2.epochSecondsToGc(m0001 / 1000 + (-365 - 366) * 24 * 3600);
+    gc = Calendar2.epochSecondsToGc((double) m0001 / 1000 + (-365 - 366) * 24 * 3600);
     Test.ensureEqual(Calendar2.formatAsISODateTimeT(gc), "-0001-01-01T00:00:00", "");
     try {
       Calendar2.epochSecondsToGc(Double.NaN);
@@ -7849,7 +7846,7 @@ class TestUtil {
 
     // is System.currentTimeMillis()/1000 = current epochSeconds? (system might use
     // local time)
-    double systemSec = System.currentTimeMillis() / 1000;
+    double systemSec = System.currentTimeMillis() / 1000.0;
     double epochSec = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
     Test.ensureTrue(
         Math.abs(systemSec - epochSec) < 1, "systemSec=" + systemSec + " epochSec=" + epochSec);
@@ -8538,6 +8535,7 @@ class TestUtil {
   /** This tests String2.canonical(). */
   @org.junit.jupiter.api.Test
   @TagSlowTests
+  @SuppressWarnings("ReferenceEquality") // We want to test for == not .equals in the tests
   void testString2canonical() throws Exception {
     String2.log("\n*** TestUtil.testString2canonical()");
     // find a way to make != strings (for tests below)

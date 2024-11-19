@@ -7,7 +7,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,9 +30,7 @@ class EDDGridCopyTests {
     // ") *****************\n");
     // testVerboseOn();
     EDDGridCopy.defaultCheckSourceData = checkSourceData;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard to
@@ -358,13 +355,7 @@ class EDDGridCopyTests {
   void testOnlySince() throws Throwable {
     // String2.log("\n******* EDDGridCopy.testOnlySince *******\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
+    String tName;
     EDDGrid eddGrid = null;
     String tDatasetID = "testOnlySince";
     String copyDatasetDir = EDStatic.fullCopyDirectory + tDatasetID + "/";

@@ -187,13 +187,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     try {
       // if previous tasks are still running, return
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
-      Integer lastAssignedTask = (Integer) EDStatic.lastAssignedTask.get(tDatasetID);
+      Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
       if (verbose)
         String2.log(
             "  lastFinishedTask="
-                + EDStatic.lastFinishedTask
+                + EDStatic.lastFinishedTask.get()
                 + " < lastAssignedTask("
                 + tDatasetID
                 + ")="
@@ -399,7 +399,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
       if (EDStatic.forceSynchronousLoading) {
         boolean interrupted = false;
-        while (!interrupted && EDStatic.lastFinishedTask < taskNumber) {
+        while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
           try {
             Thread.sleep(2000);
           } catch (InterruptedException e) {

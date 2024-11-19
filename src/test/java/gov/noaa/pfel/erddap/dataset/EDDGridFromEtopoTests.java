@@ -1,6 +1,5 @@
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
@@ -32,13 +31,10 @@ class EDDGridFromEtopoTests {
     // reallyVerbose = true;
     // GridDataAccessor.verbose = true;
     // GridDataAccessor.reallyVerbose = true;
-    String name, tName, axisDapQuery, userDapQuery, results, expected, error;
+    String tName, results, expected;
     int tPo;
     EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true, true, -1, true);
     EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true, true, -1, true);
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard
     // to
     // check min:sec.
 

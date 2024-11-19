@@ -1,7 +1,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -633,7 +632,6 @@ class EDDTableFromCassandraTests {
     String dir = EDStatic.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass_bobKeyspace_bobTable";
 
     try {
@@ -1211,8 +1209,6 @@ class EDDTableFromCassandraTests {
     String query = null;
     String dir = EDStatic.fullTestCacheDirectory;
     String tName, results, expected;
-    int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cassTestFraction";
 
     try {
@@ -1317,7 +1313,6 @@ class EDDTableFromCassandraTests {
     String dir = EDStatic.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass1Device";
 
     try {
@@ -1726,7 +1721,6 @@ class EDDTableFromCassandraTests {
     String dir = EDStatic.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDatasetID = "cass_bobKeyspace_staticTest";
 
     try {

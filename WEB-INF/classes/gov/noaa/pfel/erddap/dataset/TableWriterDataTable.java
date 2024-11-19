@@ -324,6 +324,7 @@ public class TableWriterDataTable extends TableWriter {
     TableWriterDataTable tdt =
         new TableWriterDataTable(language, tEdd, tNewHistory, outputStreamSource, writeUnits);
     tdt.writeAllAndFinish(table);
+    tdt.close();
   }
 
   protected void writeNumber(String s, PAType elementPAType) throws IOException {
@@ -343,6 +344,13 @@ public class TableWriterDataTable extends TableWriter {
         int f = Integer.valueOf(s).intValue();
         writer.write("{\"v\":" + f + ",\"f\":null}");
       }
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
     }
   }
 }

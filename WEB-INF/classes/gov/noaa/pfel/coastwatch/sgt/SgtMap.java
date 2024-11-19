@@ -11,21 +11,18 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
-import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.hdf.HdfConstants;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.sgt.dm.*;
 import gov.noaa.pmel.util.*;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -33,6 +30,7 @@ import java.io.File;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -87,7 +85,8 @@ public class SgtMap {
   public static final int NO_LAKES_AND_RIVERS = 0; // used for drawLakesAndRivers
   public static final int STROKE_LAKES_AND_RIVERS = 1; // strokes lakes and rivers
   public static final int FILL_LAKES_AND_RIVERS = 2; // fills+strokes lakes, strokes rivers
-  public static final String[] drawLandMask_OPTIONS = {"", "under", "over", "outline", "off"};
+  public static final ImmutableList<String> drawLandMask_OPTIONS =
+      ImmutableList.of("", "under", "over", "outline", "off");
 
   public static final double PDF_FONTSCALE = 1.5;
   public static final int FULL_RESOLUTION = 0;
@@ -127,7 +126,7 @@ public class SgtMap {
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
   public static String fullRefDirectory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -303,7 +302,7 @@ public class SgtMap {
    * This is an alternative version of makeMap which just plots grid data. The parameters match the
    * same-named parameters for the main makeMap.
    */
-  public static ArrayList makeMap(
+  public static List<PrimitiveArray> makeMap(
       int legendPosition,
       String legendTitle1,
       String legendTitle2,
@@ -370,7 +369,7 @@ public class SgtMap {
         "Contour Title2 and more text",
         "2004-01-05 to 2004-01-0C", // contourDateTime,
         "Data courtesy of blah blah blah", // Contour data
-        new ArrayList(), // graphDataLayers
+        new ArrayList<>(), // graphDataLayers
         g2,
         baseULXPixel,
         baseULYPixel,
@@ -448,7 +447,8 @@ public class SgtMap {
    *     will exist but have size()=0.
    * @throws Exception
    */
-  public static ArrayList makeMap(
+  @SuppressWarnings("ReferenceEquality") // below gridGrid == contourGrid
+  public static List<PrimitiveArray> makeMap(
       boolean transparent,
       int legendPosition,
       String legendTitle1,
@@ -483,7 +483,7 @@ public class SgtMap {
       String contourTitle2,
       String contourDate,
       String contourCourtesy,
-      ArrayList<GraphDataLayer> graphDataLayers,
+      List<GraphDataLayer> graphDataLayers,
       Graphics2D g2,
       int baseULXPixel,
       int baseULYPixel,
@@ -515,6 +515,7 @@ public class SgtMap {
       long startTime = System.currentTimeMillis();
       long time = System.currentTimeMillis();
 
+      // We want == here not object.equals.
       if (gridGrid != null && contourGrid != null && gridGrid == contourGrid)
         Test.error(String2.ERROR + " in SgtMap.makeMap: gridGrid == contourGrid!");
       if (!Double.isFinite(minX))
@@ -533,7 +534,6 @@ public class SgtMap {
           Math.max(1, fontScale) * defaultLabelHeight; // never smaller than default
 
       // figure out the params needed to make the map
-      String error = "";
       if (minX > maxX) {
         double d = minX;
         minX = maxX;
@@ -580,11 +580,6 @@ public class SgtMap {
 
       // set colorBarBox location and size (in pixels)
       int colorBarBoxWidth = (int) (fontScale * 1.0 * dpi); // size based on longest title|units
-      int colorBarBoxLeftX =
-          baseULXPixel
-              + imageWidthPixels
-              - legendBoxWidth
-              - (plotGridData ? (int) (betweenColorBarAndLegend * dpi) + colorBarBoxWidth : 0);
       int legendBoxULY = baseULYPixel;
       int maxCharsPerLine =
           SgtUtil.maxCharsPerLine(
@@ -867,7 +862,7 @@ public class SgtMap {
       IntArray resultPointScreen = new IntArray();
       IntArray graphIntWESN = new IntArray();
       DoubleArray graphDoubleWESN = new DoubleArray();
-      ArrayList results = new ArrayList();
+      ArrayList<PrimitiveArray> results = new ArrayList<>();
       results.add(resultMinX);
       results.add(resultMaxX);
       results.add(resultMinY);
@@ -905,7 +900,7 @@ public class SgtMap {
           new Dimension2D(
               baseULXPixel / dpi + imageWidthInches, baseULYPixel / dpi + imageHeightInches);
       StringArray layerNames = new StringArray();
-      ArrayList vectorPointsRenderers = new ArrayList();
+      ArrayList<VectorPointsRenderer> vectorPointsRenderers = new ArrayList<>();
 
       if (drawLakesAndRivers < NO_LAKES_AND_RIVERS) drawLakesAndRivers = NO_LAKES_AND_RIVERS;
       if (drawLakesAndRivers > FILL_LAKES_AND_RIVERS) drawLakesAndRivers = FILL_LAKES_AND_RIVERS;
@@ -913,7 +908,6 @@ public class SgtMap {
       // colorMap outside loop since timing info is gathered below
       CompoundColorMap colorMap = null;
       Exception thrownException = null;
-      boolean noData = true;
       try {
 
         if ("under".equals(drawLandMask) && !transparent) {
@@ -972,7 +966,6 @@ public class SgtMap {
 
         // *** create a layer with the GRID DATA graph
         if (plotGridData) {
-          noData = false;
           // String2.log("NO DATA=false; griddata.");
           colorMap = new CompoundColorMap(gridPaletteFileName);
           CartesianGraph graph = new CartesianGraph("", xt, yt);
@@ -1081,7 +1074,6 @@ public class SgtMap {
         // *** create a layer with the CONTOUR graph
         // String2.log("  before contour: " + Math2.memoryString());
         if (plotContourData) {
-          noData = false;
           // String2.log("NO DATA=false; contourdata.");
           CartesianGraph graph = new CartesianGraph("", xt, yt);
           Layer layer = new Layer("contour", layerDimension2D);
@@ -1368,7 +1360,6 @@ public class SgtMap {
             }
             Table averagedTable = gdl.table;
             if (averagedTable.nRows() > 0) {
-              noData = false;
               // String2.log("NO DATA=false; markers hava data.");
               filledMarkerRenderers[i] =
                   new FilledMarkerRenderer(
@@ -1378,7 +1369,6 @@ public class SgtMap {
                       averagedTable.getColumn(gdl.v2),
                       averagedTable.getColumn(
                           gdl.v3 >= 0 ? gdl.v3 : gdl.v1), // e.g., if no gdl.colorMap
-                      averagedTable.getColumn(gdl.v4 >= 0 ? gdl.v4 : gdl.v1),
                       gdl.colorMap,
                       gdl.lineColor,
                       gdl.markerType,
@@ -1445,7 +1435,6 @@ public class SgtMap {
             }
 
             if (xColumn != null && xColumn.size() > 0) {
-              noData = false;
               // String2.log("NO DATA=false; vectors hava data.");
 
               // vectorSize scales values relative to standard length vector,
@@ -1786,8 +1775,7 @@ public class SgtMap {
 
         // gather up all of the data for the user map
         for (int i = 0; i < vectorPointsRenderers.size(); i++) {
-          VectorPointsRenderer vectorPointsRenderer =
-              (VectorPointsRenderer) vectorPointsRenderers.get(i);
+          VectorPointsRenderer vectorPointsRenderer = vectorPointsRenderers.get(i);
           int tn = vectorPointsRenderer.resultBaseX.size();
           int halfBox = 4; // half of box size, in pixels
           for (int ti = 0; ti < tn; ti++) {
@@ -2058,7 +2046,6 @@ public class SgtMap {
       long time = System.currentTimeMillis();
 
       // figure out the params needed to make the map
-      String error = "";
       double xRange = maxX - minX;
       double yRange = maxY - minY;
       double maxRange = Math.max(xRange, yRange);
@@ -2081,7 +2068,6 @@ public class SgtMap {
           new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
       gov.noaa.pmel.sgt.LinearTransform yt =
           new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
-      Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
       Dimension2D layerDimension2D = new Dimension2D(imageWidth, imageHeight);
       StringArray layerNames = new StringArray();
       if (drawLakesAndRivers < NO_LAKES_AND_RIVERS) drawLakesAndRivers = SgtMap.NO_LAKES_AND_RIVERS;
@@ -2417,900 +2403,6 @@ public class SgtMap {
   /** Returns the topography stats string. */
   public static String topographyStats() {
     return "SgtMap topography nFromCache=" + topoFromCache + " nNotFromCache=" + topoNotFromCache;
-  }
-
-  /**
-   * This sets globalAttributes, latAttributes, lonAttributes, and dataAttributes for bathymetry
-   * data so that the attributes have COARDS, CF, THREDDS ACDD, and CWHDF-compliant metadata
-   * attributes. This also calls calculateStats, so that information will be up-to-date. See
-   * MetaMetadata.txt for more information.
-   *
-   * @param grid
-   * @param saveMVAsDouble If true, _FillValue and missing_value are saved as doubles, else floats.
-   */
-  public static void setBathymetryAttributes(Grid grid, boolean saveMVAsDouble) throws Exception {
-    // should this clear existing attributes?
-
-    // aliases
-    double lat[] = grid.lat;
-    double lon[] = grid.lon;
-    Attributes globalAttributes = grid.globalAttributes();
-    Attributes lonAttributes = grid.lonAttributes();
-    Attributes latAttributes = grid.latAttributes();
-    Attributes dataAttributes = grid.dataAttributes();
-
-    // calculateStats
-    grid.calculateStats();
-
-    // assemble the global metadata attributes
-    int nLat = lat.length;
-    int nLon = lon.length;
-    globalAttributes.set("Conventions", FileNameUtility.getConventions());
-    globalAttributes.set("title", BATHYMETRY_BOLD_TITLE);
-    globalAttributes.set("summary", BATHYMETRY_SUMMARY);
-    globalAttributes.set("keywords", "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
-    globalAttributes.set("id", "ETOPO"); // 2019-05-07 was "SampledFrom" + etopoFileName);
-    globalAttributes.set("naming_authority", FileNameUtility.getNamingAuthority());
-    globalAttributes.set("keywords_vocabulary", FileNameUtility.getKeywordsVocabulary());
-    globalAttributes.set("cdm_data_type", FileNameUtility.getCDMDataType());
-    globalAttributes.set("date_created", FileNameUtility.getDateCreated());
-    globalAttributes.set("creator_name", FileNameUtility.getCreatorName());
-    globalAttributes.set("creator_url", FileNameUtility.getCreatorURL());
-    globalAttributes.set("creator_email", FileNameUtility.getCreatorEmail());
-    globalAttributes.set("institution", BATHYMETRY_COURTESY);
-    globalAttributes.set("project", FileNameUtility.getProject());
-    globalAttributes.set("processing_level", FileNameUtility.getProcessingLevel());
-    globalAttributes.set("acknowledgement", FileNameUtility.getAcknowledgement());
-    globalAttributes.set(
-        "geospatial_vertical_min", 0.0); // currently depth always 0.0 (not 0, which is int)
-    globalAttributes.set("geospatial_vertical_max", 0.0);
-    globalAttributes.set("geospatial_lat_min", Math.min(lat[0], lat[nLat - 1]));
-    globalAttributes.set("geospatial_lat_max", Math.max(lat[0], lat[nLat - 1]));
-    globalAttributes.set("geospatial_lon_min", Math.min(lon[0], lon[nLon - 1]));
-    globalAttributes.set("geospatial_lon_max", Math.max(lon[0], lon[nLon - 1]));
-    globalAttributes.set("geospatial_vertical_units", "m");
-    globalAttributes.set("geospatial_vertical_positive", "up");
-    globalAttributes.set("geospatial_lat_units", FileNameUtility.getLatUnits());
-    globalAttributes.set("geospatial_lat_resolution", Math.abs(grid.latSpacing));
-    globalAttributes.set("geospatial_lon_units", FileNameUtility.getLonUnits());
-    globalAttributes.set("geospatial_lon_resolution", Math.abs(grid.lonSpacing));
-    // globalAttributes.set("time_coverage_start",
-    // Calendar2.formatAsISODateTimeTZ(FileNameUtility.getStartCalendar(name)));
-    // globalAttributes.set("time_coverage_end",
-    // Calendar2.formatAsISODateTimeTZ(FileNameUtility.getEndCalendar(name)));
-    // globalAttributes.set("time_coverage_resolution", "P12H"));
-    globalAttributes.set("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
-    globalAttributes.set("license", FileNameUtility.getLicense());
-    globalAttributes.set("contributor_name", BATHYMETRY_COURTESY);
-    globalAttributes.set("contributor_role", "Source of level 3 data.");
-    globalAttributes.set("date_issued", FileNameUtility.getDateCreated());
-    globalAttributes.set("references", BATHYMETRY_CITE);
-    globalAttributes.set("source", BATHYMETRY_SOURCE_URL);
-    // attributes for Google Earth
-    globalAttributes.set("Southernmost_Northing", Math.min(lat[0], lat[nLat - 1]));
-    globalAttributes.set("Northernmost_Northing", Math.max(lat[0], lat[nLat - 1]));
-    globalAttributes.set("Westernmost_Easting", Math.min(lon[0], lon[nLon - 1]));
-    globalAttributes.set("Easternmost_Easting", Math.max(lon[0], lon[nLon - 1]));
-
-    // globalAttributes for HDF files using CoastWatch Metadata Specifications
-    // required unless noted otherwise
-    globalAttributes.set("cwhdf_version", "3.4"); // string
-    // String satellite = fileNameUtility.getSatellite(name);
-    // if (satellite.length() > 0) {
-    //    globalAttributes.set("satellite",      fileNameUtility.getSatellite(name)); //string
-    //    globalAttributes.set("sensor",         fileNameUtility.getSensor(name)); //string
-    // } else {
-    globalAttributes.set("data_source", BATHYMETRY_COURTESY); // string
-    // }
-    // globalAttributes.set("composite",          FileNameUtility.getComposite(name)); //string (not
-    // required)
-
-    // globalAttributes.set("pass_date",          new IntArray(fileNameUtility.getPassDate(name)));
-    // //int32[nDays]
-    // globalAttributes.set("start_time",         new
-    // DoubleArray(fileNameUtility.getStartTime(name))); //float64[nDays]
-    globalAttributes.set("origin", BATHYMETRY_COURTESY); // string
-    globalAttributes.set("history", DataHelper.addBrowserToHistory(BATHYMETRY_COURTESY)); // string
-
-    // write map projection data
-    globalAttributes.set("projection_type", "mapped"); // string
-    globalAttributes.set("projection", "geographic"); // string
-    globalAttributes.set("gctp_sys", 0); // int32
-    globalAttributes.set("gctp_zone", 0); // int32
-    globalAttributes.set("gctp_parm", new DoubleArray(new double[15])); // float64[15 0's]
-    globalAttributes.set("gctp_datum", 12); // int32 12=WGS84
-
-    // determine et_affine transformation
-    // lon = a*row + c*col + e
-    // lat = b*row + d*col + f
-    double matrix[] = {
-      0, -grid.latSpacing, grid.lonSpacing, 0, lon[0], lat[lat.length - 1]
-    }; // up side down
-    globalAttributes.set("et_affine", new DoubleArray(matrix)); // float64[] {a, b, c, d, e, f}
-
-    // write row and column attributes
-    globalAttributes.set("rows", nLat); // int32 number of rows
-    globalAttributes.set("cols", nLon); // int32 number of columns
-    globalAttributes.set(
-        "polygon_latitude",
-        new DoubleArray(
-            new double[] { // not required
-              lat[0], lat[nLat - 1], lat[nLat - 1], lat[0], lat[0]
-            }));
-    globalAttributes.set(
-        "polygon_longitude",
-        new DoubleArray(
-            new double[] { // not required
-              lon[0], lon[0], lon[nLon - 1], lon[nLon - 1], lon[0]
-            }));
-
-    // COARDS, CF, ACDD metadata attributes for latitude
-    latAttributes.set("_CoordinateAxisType", "Lat");
-    latAttributes.set("long_name", "Latitude");
-    latAttributes.set("standard_name", "latitude");
-    latAttributes.set("units", FileNameUtility.getLatUnits());
-
-    // Lynn's metadata attributes
-    latAttributes.set("point_spacing", "even");
-    latAttributes.set("actual_range", new DoubleArray(new double[] {lat[0], lat[nLat - 1]}));
-
-    // CWHDF metadata attributes for Latitude
-    // latAttributes.set("long_name",             "Latitude")); //string
-    // latAttributes.set("units",                 fileNameUtility.getLatUnits(name))); //string
-    latAttributes.set("coordsys", "geographic"); // string
-    latAttributes.set("fraction_digits", 6); // int32   because often .033333
-
-    // COARDS, CF, ACDD metadata attributes for longitude
-    lonAttributes.set("_CoordinateAxisType", "Lon");
-    lonAttributes.set("long_name", "Longitude");
-    lonAttributes.set("standard_name", "longitude");
-    lonAttributes.set("units", FileNameUtility.getLonUnits());
-
-    // Lynn's metadata attributes
-    lonAttributes.set("point_spacing", "even");
-    lonAttributes.set("actual_range", new DoubleArray(new double[] {lon[0], lon[nLon - 1]}));
-
-    // CWHDF metadata attributes for Longitude
-    // lonAttributes.set("long_name",             "Longitude"); //string
-    // lonAttributes.set("units",                 fileNameUtility.getLonUnits(name));  //string
-    lonAttributes.set("coordsys", "geographic"); // string
-    lonAttributes.set("fraction_digits", 6); // int32
-
-    // COARDS, CF, ACDD metadata attributes for data
-    dataAttributes.set("long_name", BATHYMETRY_BOLD_TITLE);
-    dataAttributes.set("standard_name", BATHYMETRY_STANDARD_NAME);
-    dataAttributes.set("units", BATHYMETRY_UNITS);
-    PrimitiveArray mvAr;
-    PrimitiveArray rangeAr;
-    if (saveMVAsDouble) {
-      mvAr = new DoubleArray(new double[] {(double) DataHelper.FAKE_MISSING_VALUE});
-      rangeAr = new DoubleArray(new double[] {grid.minData, grid.maxData});
-    } else {
-      mvAr = new FloatArray(new float[] {(float) DataHelper.FAKE_MISSING_VALUE});
-      rangeAr = new FloatArray(new float[] {(float) grid.minData, (float) grid.maxData});
-    }
-    dataAttributes.set("_FillValue", mvAr); // must be same type as data
-    dataAttributes.set("missing_value", mvAr); // must be same type as data
-    dataAttributes.set("numberOfObservations", grid.nValidPoints);
-    dataAttributes.set("actual_range", rangeAr);
-
-    // CWHDF metadata attributes for the data: varName
-    // dataAttributes.set("long_name",            fileNameUtility.getTitle(name))); //string
-    // dataAttributes.set("units",                fileNameUtility.getUDUnits(name))); //string
-    dataAttributes.set("coordsys", "geographic"); // string
-    dataAttributes.set("fraction_digits", 0); // int32    bathymetry is to nearest meter
-  }
-
-  /**
-   * Make a matlab file with the specified topography grid. This is a custom method to help Luke.
-   *
-   * @param spacing e.g., 0.25 degrees
-   */
-  public static void createTopographyMatlabFile(
-      double minX, double maxX, double minY, double maxY, double spacing, String dir)
-      throws Exception {
-    String name =
-        "Bathymetry_W"
-            + String2.genEFormat10(minX)
-            + "_E"
-            + String2.genEFormat10(maxX)
-            + "_S"
-            + String2.genEFormat10(minY)
-            + "_N"
-            + String2.genEFormat10(maxY)
-            + "_R"
-            + String2.genEFormat10(spacing);
-    if (verbose) String2.log("SgtMap.createTopographMatlabFile: " + dir + name + ".mat");
-    double graphWidth = (maxX - minX) / spacing;
-    double graphHeight = (maxY - minY) / spacing;
-    int graphWidthPixels = Math2.roundToInt(graphWidth);
-    int graphHeightPixels = Math2.roundToInt(graphHeight);
-    Test.ensureEqual(
-        graphWidth, graphWidthPixels, name + ": graphWidth=" + graphWidth + " isn't an integer.");
-    Test.ensureEqual(
-        graphHeight,
-        graphHeightPixels,
-        name + ": graphHeight=" + graphHeight + " isn't an integer.");
-    Grid grid =
-        createTopographyGrid(
-            null, minX, maxX, minY, maxY, graphWidthPixels + 1, graphHeightPixels + 1);
-    grid.saveAsMatlab(dir, name, "Elevation");
-  }
-
-  /**
-   * Make an image (currently a .png, usually in /images dir) with a map of the entire region and
-   * labeled boxes for each of the regions. The resulting image will be no larger than maxGifWidth,
-   * maxGifHeight.
-   *
-   * @param maxGifWidth (in pixels)
-   * @param maxGifHeight
-   * @param regionInfo info about the regions in the form String[region#][info], where info is:
-   *     RectangleColor = 0, MinX degrees = 1, MaxX degrees = 2, MinY degrees = 3, MaxY degrees = 4,
-   *     LeftLabelX degrees = 5, LowerLabelY degrees = 6, Label text = 7.
-   * @param resultDir the directory for the files (e.g., <context>/images/ with a slash at the end)
-   * @param resultFileName the output file name with the extension (e.g., "USMexicoRegion.png").
-   *     Extension can be ".gif" or ".png". If the file exists, it will be overwritten.
-   * @return int[], 0=imageWidth, 1=imageHeight, 2=graphULX, 3=graphRightX, 4=graphUpperY,
-   *     5=graphLowerY.
-   * @throws Exception if trouble
-   */
-  public static int[] makeRegionsMap(
-      int maxGifWidth,
-      int maxGifHeight,
-      String regionInfo[][],
-      String resultDir,
-      String resultFileName)
-      throws Exception {
-    if (verbose) String2.log("\nSSR.makeRegionsMap(" + resultDir + ", " + resultFileName + ")");
-    int randomInt = Math2.random(Integer.MAX_VALUE);
-    String fullTmpPngFile = resultDir + randomInt + ".png";
-    String fullTmpGifFile = resultDir + randomInt + ".gif";
-    String fullImageFileName = resultDir + resultFileName;
-
-    File2.delete(fullImageFileName); // delete any old version of the result file
-
-    int imageWidth = maxGifWidth; // it may be revised below
-    int imageHeight = maxGifHeight;
-
-    // get region info
-    // fields in regionInfo[][x]
-    int COLOR = 0;
-    int MINX = 1;
-    int MAXX = 2;
-    int MINY = 3;
-    int MAXY = 4;
-    int LLLABELX = 5;
-    int LLLABELY = 6;
-    int LABEL = 7;
-
-    // the first region must be the biggest
-    double minX = String2.parseDouble(regionInfo[0][MINX]);
-    double maxX = String2.parseDouble(regionInfo[0][MAXX]);
-    double minY = String2.parseDouble(regionInfo[0][MINY]);
-    double maxY = String2.parseDouble(regionInfo[0][MAXY]);
-    double xRange = maxX - minX;
-    double yRange = maxY - minY;
-
-    // determine appropriate axis lengths
-    // int coordinates are in pixels (theoretically 1/100th inch)
-    // note  graphHeight/yRange = graphWidth/xRange
-    int graphULX = 20; // in pixels
-    int graphBottomY = 20;
-    int graphULY = 15;
-    int graphRightBorder = 15;
-    int graphWidth = imageWidth - graphULX - graphRightBorder;
-    int graphHeight = imageHeight - graphBottomY - graphULY + 1;
-    double tempXScale = graphWidth / xRange;
-    double tempYScale = graphHeight / yRange;
-    double graphScale = Math.min(tempXScale, tempYScale);
-    if (tempXScale < tempYScale) {
-      graphHeight = Math2.roundToInt(graphScale * yRange);
-      imageHeight = graphBottomY + graphHeight + graphULY;
-    } else {
-      graphWidth = Math2.roundToInt(graphScale * xRange);
-      imageWidth = graphULX + graphWidth + graphRightBorder;
-    }
-
-    // define sizes
-    double dpi = 100; // dots per inch
-
-    // make the image
-    BufferedImage bi =
-        new BufferedImage(
-            imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB); // I need opacity "A"
-    Graphics g = bi.getGraphics();
-    Graphics2D g2 = (Graphics2D) g;
-    g.setColor(Color.white); // I'm not sure why necessary, but it is
-    g.fillRect(0, 0, imageWidth, imageHeight); // I'm not sure why necessary, but it is
-
-    double maxRange = Math.max(xRange, yRange);
-    double fontScale = 1;
-    int boundaryResAdjust = 0;
-    double majorIncrement = suggestMajorIncrement(maxRange, imageWidth - 30, fontScale);
-    double minorIncrement = suggestMinorIncrement(maxRange, imageWidth - 30, fontScale);
-    int boundaryResolution =
-        suggestBoundaryResolution(maxRange, imageWidth - 30, boundaryResAdjust);
-    if (reallyVerbose) String2.log("  boundaryResolution=" + boundaryResolution);
-
-    // create the pane
-    JPane jPane = new JPane("", new java.awt.Dimension(imageWidth, imageHeight));
-    jPane.setLayout(new StackedLayout());
-    StringArray layerNames = new StringArray();
-    CartesianGraph graph;
-    Layer layer;
-
-    // create the graph parts
-    // graph's physical location (inches) (start, end, delta); delta is ignored
-    Range2D xPhysRange = new Range2D(graphULX / 100.0, (imageWidth - graphRightBorder) / 100.0, 1);
-    Range2D yPhysRange = new Range2D(graphBottomY / 100.0, (imageHeight - graphULY) / 100.0, 1);
-    // graph's axis ranges in degrees
-    Range2D xUserRange = new Range2D(minX, maxX, majorIncrement);
-    Range2D yUserRange = new Range2D(minY, maxY, majorIncrement);
-    gov.noaa.pmel.sgt.LinearTransform xt =
-        new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
-    gov.noaa.pmel.sgt.LinearTransform yt =
-        new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
-    Point2D.Double origin = new Point2D.Double(xUserRange.start, yUserRange.start);
-    Dimension2D layerDimension2D = new Dimension2D(imageWidth / 100.0, imageHeight / 100.0);
-
-    // draw bathymetry colors
-    boolean plotBathymetryColors = false;
-    if (plotBathymetryColors) {
-      Grid bathymetryGrid =
-          createTopographyGrid(
-              fullPrivateDirectory, minX, maxX, minY, maxY, graphWidth, graphHeight);
-      URL resourceFile = Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
-      CompoundColorMap oceanColorMap = new CompoundColorMap(resourceFile);
-      graph = new CartesianGraph("", xt, yt);
-      layer = new Layer("bathymetryColors", layerDimension2D);
-      layerNames.add(layer.getId());
-      jPane.add(layer); // calls layer.setPane(this);
-      layer.setGraph(graph); // calls graph.setLayer(this);
-      graph.setClip(
-          xUserRange.start, xUserRange.end,
-          yUserRange.start, yUserRange.end);
-      graph.setClipping(true);
-
-      // get the Grid
-      SimpleGrid simpleGrid =
-          new SimpleGrid(bathymetryGrid.data, bathymetryGrid.lon, bathymetryGrid.lat, ""); // title
-
-      // assign the data
-      graph.setData(simpleGrid, new GridAttribute(GridAttribute.RASTER, oceanColorMap));
-    }
-
-    // draw the landMask
-    graph = new CartesianGraph("", xt, yt);
-    layer = new Layer("landmask", layerDimension2D);
-    layerNames.add(layer.getId());
-    jPane.add(layer); // calls layer.setPane(this);
-    layer.setGraph(graph); // calls graph.setLayer(this);
-    // assign the data   (PathCartesionRenderer always clips by itself)
-    graph.setRenderer(
-        new PathCartesianRenderer(
-            graph,
-            GSHHS.getGeneralPath(
-                GSHHS.RESOLUTIONS.charAt(boundaryResolution),
-                1, // just get land info
-                minX,
-                maxX,
-                minY,
-                maxY,
-                true),
-            1e-6,
-            landColor,
-            plotBathymetryColors
-                ? landMaskStrokeColor
-                : landColor)); // strokeColor  2009-10-29 landColor was null
-
-    // draw lakes
-    /* It works, but don't change to this unless needed.
-    if (boundaryResolution != CRUDE_RESOLUTION) {
-        graph = new CartesianGraph("", xt, yt);
-        layer = new Layer("lakes", layerDimension2D);
-        layerNames.add(layer.getId());
-        jPane.add(layer);      //calls layer.setPane(this);
-        layer.setGraph(graph); //calls graph.setLayer(this);
-        //assign the data   (PathCartesionRenderer always clips by itself)
-        graph.setRenderer(new PathCartesianRenderer(graph,
-            GSHHS.getGeneralPath(
-                GSHHS.RESOLUTIONS.charAt(boundaryResolution),
-                2, //just get lakes info
-                minX, maxX, minY, maxY, true),
-            1e-6, lakesColor,  //fillColor
-            lakesColor)); //strokeColor
-    }
-    */
-
-    // draw the state boundary
-    LineAttribute lineAttribute;
-    if (drawPoliticalBoundaries && boundaryResolution != CRUDE_RESOLUTION) {
-      graph = new CartesianGraph("", xt, yt);
-      layer = new Layer("state", layerDimension2D);
-      layerNames.add(layer.getId());
-      jPane.add(layer); // calls layer.setPane(this);
-      layer.setGraph(graph); // calls graph.setLayer(this);
-      graph.setClip(
-          xUserRange.start, xUserRange.end,
-          yUserRange.start, yUserRange.end);
-      graph.setClipping(true);
-      lineAttribute = new LineAttribute();
-      lineAttribute.setColor(statesColor);
-      graph.setData(
-          stateBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY), lineAttribute);
-    }
-
-    // draw the national boundary
-    graph = new CartesianGraph("", xt, yt);
-    graph.setClip(
-        xUserRange.start, xUserRange.end,
-        yUserRange.start, yUserRange.end);
-    graph.setClipping(true);
-    if (drawPoliticalBoundaries) {
-      layer = new Layer("national", layerDimension2D);
-      layerNames.add(layer.getId());
-      jPane.add(layer); // calls layer.setPane(this);
-      layer.setGraph(graph); // calls graph.setLayer(this);
-      lineAttribute = new LineAttribute();
-      lineAttribute.setColor(nationsColor);
-      graph.setData(
-          nationalBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY), lineAttribute);
-    }
-
-    // create the x axes
-    Font myLabelFont = new Font(fontFamily, Font.PLAIN, 9);
-    PlainAxis2 xAxis = new PlainAxis2(new GenEFormatter());
-    xAxis.setRangeU(xUserRange);
-    xAxis.setLocationU(origin);
-    int nSmallTics = Math2.roundToInt(majorIncrement / minorIncrement) - 1;
-    xAxis.setNumberSmallTics(nSmallTics);
-    xAxis.setLabelInterval(1);
-    xAxis.setLabelFont(myLabelFont);
-    xAxis.setLabelFormat("%g°");
-    xAxis.setLabelHeightP(.12);
-    xAxis.setSmallTicHeightP(.02);
-    xAxis.setLargeTicHeightP(.05);
-
-    PlainAxis2 topXAxis = new PlainAxis2(new GenEFormatter());
-    topXAxis.setRangeU(xUserRange);
-    topXAxis.setLocationU(new Point2D.Double(xUserRange.start, yUserRange.end));
-    topXAxis.setSmallTicHeightP(0);
-    topXAxis.setLargeTicHeightP(0);
-    topXAxis.setLabelPosition(Axis.NO_LABEL);
-
-    // create the y axes
-    PlainAxis2 yAxis = new PlainAxis2(new GenEFormatter());
-    yAxis.setRangeU(yUserRange);
-    yAxis.setLocationU(origin);
-    yAxis.setNumberSmallTics(nSmallTics);
-    yAxis.setLabelInterval(1);
-    yAxis.setLabelFont(myLabelFont);
-    yAxis.setLabelFormat("%g°");
-    yAxis.setLabelHeightP(.12);
-    yAxis.setSmallTicHeightP(.02);
-    yAxis.setLargeTicHeightP(.05);
-
-    PlainAxis2 rightYAxis = new PlainAxis2(new GenEFormatter());
-    rightYAxis.setRangeU(yUserRange);
-    rightYAxis.setLocationU(new Point2D.Double(xUserRange.end, yUserRange.start));
-    rightYAxis.setSmallTicHeightP(0);
-    rightYAxis.setLargeTicHeightP(0);
-    rightYAxis.setLabelPosition(Axis.NO_LABEL);
-
-    graph.addXAxis(xAxis);
-    graph.addXAxis(topXAxis);
-    graph.addYAxis(yAxis);
-    graph.addYAxis(rightYAxis);
-
-    // draw the graph background color right before drawing the graph
-    int x1 = graph.getXUtoD(xUserRange.start);
-    int y1 = graph.getYUtoD(yUserRange.end);
-    int x2, y2;
-    g.setColor(oceanColor);
-    g.fillRect(x1, y1, graphWidth, graphHeight);
-    g.setColor(Color.black);
-
-    // actually draw the graph
-    jPane.draw(g);
-
-    // draw the region rectangles
-    for (int region = 0; region < regionInfo.length; region++) {
-      g.setColor(new Color(String2.parseInt(regionInfo[region][COLOR]), true));
-      x1 = graph.getXUtoD(String2.parseDouble(regionInfo[region][MINX]));
-      x2 = graph.getXUtoD(String2.parseDouble(regionInfo[region][MAXX]));
-      y1 = graph.getYUtoD(String2.parseDouble(regionInfo[region][MINY]));
-      y2 = graph.getYUtoD(String2.parseDouble(regionInfo[region][MAXY]));
-      g.fillRect(x1, y2, x2 - x1, y1 - y2); // remember image y's are flipped
-      for (int i = 0; i < 5; i++) // draw edge a few times so highlighted
-      g.drawRect(x1, y2, x2 - x1, y1 - y2);
-    }
-
-    // draw the region text
-    g.setColor(Color.black);
-    g.setFont(myLabelFont);
-    for (int region = 0; region < regionInfo.length; region++) {
-      g.drawString(
-          regionInfo[region][LABEL],
-          graph.getXUtoD(String2.parseDouble(regionInfo[region][LLLABELX])),
-          graph.getYUtoD(String2.parseDouble(regionInfo[region][LLLABELY])));
-    }
-
-    // deconstruct jPane
-    deconstructJPane("SgtMap.makeRegionsMap", jPane, layerNames);
-
-    // save as .png
-    // use png (not bmp) because png supports ARGB images
-    ImageIO.write(bi, "png", new File(fullTmpPngFile));
-
-    // "convert" to .gif   (or save as fullImageFileName .png)
-    if (fullImageFileName.endsWith(".gif")) {
-      SSR.dosOrCShell("convert " + fullTmpPngFile + " " + fullTmpGifFile, 20);
-      /* //attempts to make work on Windows:
-      PipeToStringArray outCatcher = new PipeToStringArray();
-      PipeToStringArray errCatcher = new PipeToStringArray();
-      String2.log("SSR.shell: 1 string " + Calendar2.getCurrentISODateTimeString());
-      int exitValue = SSR.shell(new String[]{"convert " +
-                  String2.replaceAll(fullTmpPngFile, "/", "\\").substring(2) + " " +
-                  "GIF:" + String2.replaceAll(fullTmpGifFile, "/", "\\").substring(2)},
-                  outCatcher, errCatcher);
-      String2.log("out: " + outCatcher.getString());
-      String2.log("err: " + errCatcher.getString());
-      */
-      File2.delete(fullTmpPngFile); // delete .png file
-      File2.rename(fullTmpGifFile, fullImageFileName); // final step
-    } else if (fullImageFileName.endsWith(".png")) {
-      File2.rename(fullTmpPngFile, fullImageFileName); // final step
-    } else
-      Test.error(
-          String2.ERROR
-              + " in SgtMap.makeRegionsMap: "
-              + "Unexpected extension: "
-              + fullImageFileName);
-
-    // generate the results array
-    // (literally the min and max of the x,y values for the bounds of the graph)
-    // remember 0,0 is upper left of image
-    // String2.log("results: 0=imageWidth, 1=imageHeight, 2=graphMinX, 3=graphMaxX, 4=graphMinY,
-    // 5=graphMaxY");
-    int results[] =
-        new int[] {
-          imageWidth,
-          imageHeight,
-          graphULX,
-          imageWidth - graphRightBorder,
-          graphULY,
-          imageHeight - graphBottomY
-        };
-    // String2.log(String2.toCSSVString(results));
-    return results;
-  }
-
-  /**
-   * This makes a map of a .nc, .grd, ... gridded data file. The file can be zipped, but the name of
-   * the .zip file must be the name of the data file + ".zip".
-   *
-   * @param args args[0] must be the name of the input file.
-   * @throws Exception if trouble and does an ncdump of the file
-   */
-  public static void main(String args[]) throws Exception {
-    verbose = true;
-    reallyVerbose = true;
-    Grid.verbose = true;
-
-    try {
-      // set a bunch of "constants"
-      long time = System.currentTimeMillis();
-      // args = new String[1];
-      // args[0] = "c:/temp/AG2006001_2006001_ssta_westus.grd.zip";
-      String tempDir = SSR.getTempDirectory();
-      int imageWidth = 480;
-      int imageHeight = 640;
-      int legendPosition = SgtUtil.LEGEND_BELOW;
-
-      // get the grid file name
-      if (args == null || args.length < 1) {
-        String2.log("  args[0] must be the name of a grid data file.");
-        Math2.sleep(5000);
-        System.exit(1);
-      }
-      String args0 = args[0];
-      String gridDir = File2.getDirectory(args0);
-      String gridName = File2.getNameAndExtension(args0);
-      String gridExt = File2.getExtension(args0).toLowerCase();
-
-      // if zipped, unzip it
-      if (gridExt.equals(".zip")) {
-        SSR.unzipRename(
-            gridDir, gridName, tempDir, gridName.substring(0, gridName.length() - 4), 10);
-        gridDir = tempDir;
-        gridName = gridName.substring(0, gridName.length() - 4);
-        gridExt = File2.getExtension(gridName).toLowerCase();
-      }
-
-      // read the data
-      Grid grid = new Grid();
-      if (gridExt.equals(".hdf")) {
-        grid.readHDF(gridDir + gridName, HdfConstants.DFNT_FLOAT32); // or FLOAT64
-      } else if (gridExt.equals(".nc")) {
-        grid.readNetCDF(
-            gridDir + gridName,
-            null,
-            Double.NaN,
-            Double.NaN,
-            Double.NaN,
-            Double.NaN,
-            imageWidth,
-            imageHeight);
-      } else if (gridExt.equals(".grd")) {
-        grid.readGrd(
-            gridDir + gridName,
-            Double.NaN,
-            Double.NaN,
-            Double.NaN,
-            Double.NaN,
-            imageWidth,
-            imageHeight);
-      } else {
-        String2.log("Unrecognized grid extension: " + gridExt);
-        Math2.sleep(5000);
-        System.exit(1);
-      }
-
-      // get min/max/x/y
-      double minX = grid.lon[0];
-      double maxX = grid.lon[grid.lon.length - 1];
-      double minY = grid.lat[0];
-      double maxY = grid.lat[grid.lat.length - 1];
-      String2.log(
-          "  file lon min="
-              + minX
-              + " max="
-              + maxX
-              + "\n    spacing="
-              + grid.lonSpacing
-              + "\n  file lat min="
-              + minY
-              + " max="
-              + maxY
-              + "\n    spacing="
-              + grid.latSpacing);
-      // String2.log("  file lon=" + String2.toCSSVString(grid.lon) +
-      //    "\n  file lat=" + String2.toCSSVString(grid.lat));
-
-      // make the bufferedImage
-      BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
-
-      // make the cpt file
-      String contextDir = EDStatic.getWebInfParentDirectory(); // with / separator and / at the end
-      DoubleArray dataDA = new DoubleArray(grid.data);
-      double stats[] = dataDA.calculateStats();
-      double minData = stats[PrimitiveArray.STATS_MIN];
-      double maxData = stats[PrimitiveArray.STATS_MAX];
-      double[] lowHighData = Math2.suggestLowHigh(minData, maxData);
-      String2.log(
-          "  minData="
-              + String2.genEFormat6(minData)
-              + " maxData="
-              + String2.genEFormat6(maxData)
-              + " sugLow="
-              + String2.genEFormat10(lowHighData[0])
-              + " sugHigh="
-              + String2.genEFormat6(lowHighData[1]));
-      // String cptName = tempDir + "Rainbow_Linear_" + lowHighData[0] + "_" + lowHighData[1] +
-      // ".cpt";
-      String cptName =
-          CompoundColorMap.makeCPT(
-              contextDir + "WEB-INF/cptfiles/",
-              "Rainbow",
-              "Linear",
-              lowHighData[0],
-              lowHighData[1],
-              -1,
-              true, // continuous,
-              tempDir);
-
-      // encourage for garbage collection
-      dataDA = null;
-
-      // make a map
-      makeMap(
-          false,
-          legendPosition,
-          "NOAA",
-          "CoastWatch",
-          contextDir + "images/", // imageDir
-          "noaa_simple.gif", // logoImageFile
-          minX,
-          maxX,
-          minY,
-          maxY,
-          "over",
-          true, // plotGridData,
-          grid,
-          1,
-          1,
-          0, // double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
-          cptName,
-          gridName, // boldTitle
-          "minData=" + (float) minData + " maxData=" + (float) maxData, // title2
-          "",
-          "",
-          SgtMap.NO_LAKES_AND_RIVERS,
-          false, // plotContourData,
-          null, // contourGrid,
-          1,
-          1,
-          0, // double contourScaleFactor, contourAltScaleFactor, contourAltOffset,
-          "10, 14", // contourDrawLinesAt,
-          new Color(0x990099), // contourColor
-          "Contour Bold Title",
-          "cUnits",
-          "Contour Title2 and more text",
-          "2004-01-05 to 2004-01-07", // contourDateTime,
-          "Data courtesy of blah blah blah", // Contour data
-          new ArrayList(), // graphDataLayers
-          (Graphics2D) image.getGraphics(),
-          0,
-          0,
-          imageWidth,
-          imageHeight,
-          0, // boundaryResAdjust,
-          1 // fontScale
-          );
-
-      // save as image
-      long imageTime = System.currentTimeMillis();
-      String imageName = gridName.substring(0, gridName.length() - gridExt.length()) + "png";
-      SgtUtil.saveImage(image, gridDir + imageName);
-      // Image2.saveAsJpeg(image, gridDir + imageName, 1f);
-      // Image2.saveAsGif216(image, gridDir + imageName, false); //use dithering
-      imageTime = System.currentTimeMillis() - imageTime;
-      String2.log("  imageTime=" + imageTime + "ms\n  imageName=" + gridDir + imageName);
-
-      // make an html file with image and NcCDL info (if .nc or .grd)
-      StringBuilder sb = new StringBuilder();
-      sb.append(
-          "<html>\n"
-              + "<head>\n"
-              + "  <title>"
-              + gridDir
-              + gridName
-              + "</title>\n"
-              + "</head>\n"
-              + "<body style=\"background-color:white; color:black;\">\n"
-              + "  <img src=\"file://"
-              + gridDir
-              + imageName
-              + "\">\n");
-      if (gridExt.equals(".nc") || gridExt.equals(".grd"))
-        sb.append("<p><pre>\n" + NcHelper.readCDL(gridDir + gridName) + "\n</pre>\n");
-      sb.append("</body>\n</html>\n");
-      String error = File2.writeToFileUtf8(gridDir + gridName + ".html", sb.toString());
-
-      // view it
-      // ImageViewer.display("SgtMap", image);
-      Test.displayInBrowser("file://" + gridDir + gridName + ".html");
-
-      // delete temp files
-      File2.delete(cptName);
-      if (!(gridDir + gridName).equals(args0)) File2.delete(gridDir + gridName);
-
-      String2.log(
-          "  SgtMap.main is finished. time="
-              + (System.currentTimeMillis() - time)
-              + "ms\n"
-              + Math2.memoryString());
-    } catch (Exception e) {
-      String2.log(MustBe.throwableToString(e));
-      if (args != null && args.length > 0) String2.log(NcHelper.ncdump(args[0], ""));
-    }
-    String2.pressEnterToContinue();
-  }
-
-  public static void makeAdvSearchMapBig() throws Exception {
-    // 2019-10-17 was makeAdvSearchMap(303, 285);
-    makeAdvSearchMap(572, 350);
-  }
-
-  public static void makeAdvSearchMap() throws Exception {
-    makeAdvSearchMap(255, 190);
-  }
-
-  /**
-   * This was used one time to make a +-180 and a 0-360 map for ERDDAP's Advanced Search. To make
-   * -180 to 360, combine them in CoPlot.
-   *
-   * @param w image width in pixels (the true width)
-   * @param h image height in pixels (make it too big, so room for legend)
-   */
-  public static void makeAdvSearchMap(int w, int h) throws Exception {
-    double fontScale = 1; // was 0.9
-
-    landMaskStrokeColor = new Color(0, 0, 0, 0);
-
-    String cptName =
-        CompoundColorMap.makeCPT(
-            EDStatic.getWebInfParentDirectory()
-                + // with / separator and / at the end
-                "WEB-INF/cptfiles/",
-            "Topography",
-            "Linear",
-            -8000,
-            8000,
-            -1,
-            true, // continuous,
-            SSR.getTempDirectory());
-
-    Grid grid =
-        createTopographyGrid(SSR.getTempDirectory(), -180, 180, -90, 90, w - 15, (w - 15) / 2);
-    BufferedImage image = SgtUtil.getBufferedImage(w, h);
-    makeMap(
-        SgtUtil.LEGEND_BELOW,
-        "",
-        "",
-        "",
-        "",
-        -180,
-        180,
-        -90,
-        90,
-        "under",
-        true,
-        grid,
-        1,
-        1,
-        0,
-        cptName,
-        "",
-        "",
-        "",
-        "",
-        NO_LAKES_AND_RIVERS,
-        (Graphics2D) image.getGraphics(),
-        0,
-        0,
-        w,
-        h,
-        0,
-        fontScale);
-    String fileName = "C:/data/AdvancedSearch/tWorldPm180.png";
-    SgtUtil.saveImage(image, fileName);
-    Test.displayInBrowser("file://" + fileName);
-
-    grid = createTopographyGrid(SSR.getTempDirectory(), 0, 360, -90, 90, w - 15, (w - 15) / 2);
-    image = SgtUtil.getBufferedImage(w, h);
-    makeMap(
-        SgtUtil.LEGEND_BELOW,
-        "",
-        "",
-        "",
-        "",
-        0,
-        360,
-        -90,
-        90,
-        "under",
-        true,
-        grid,
-        1,
-        1,
-        0,
-        cptName,
-        "",
-        "",
-        "",
-        "",
-        NO_LAKES_AND_RIVERS,
-        (Graphics2D) image.getGraphics(),
-        0,
-        0,
-        w,
-        h,
-        0,
-        fontScale);
-    fileName = "C:/data/AdvancedSearch/tWorld0360.png";
-    SgtUtil.saveImage(image, fileName);
-    Test.displayInBrowser("file://" + fileName);
   }
 
   // *** Junk Yard *******

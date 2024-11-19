@@ -51,10 +51,6 @@ public class TaskThread extends Thread {
    */
   public static final Integer TASK_DOWNLOAD = Integer.valueOf(4);
 
-  /** TASK_NAMES parallels the TASK Integers. */
-  public static final String[] TASK_NAMES =
-      new String[] {"MAKE_A_DATAFILE", "SET_FLAG", "DAP_TO_NC", "ALL_DAP_TO_NC", "DOWNLOAD"};
-
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
@@ -69,7 +65,7 @@ public class TaskThread extends Thread {
   /** The constructor. TaskThread uses task variables in EDStatic. */
   public TaskThread(int tNextTask) {
     EDStatic.nextTask.set(tNextTask);
-    EDStatic.lastFinishedTask = tNextTask - 1;
+    EDStatic.lastFinishedTask.set(tNextTask - 1);
     setName("TaskThread");
   }
 
@@ -105,7 +101,7 @@ public class TaskThread extends Thread {
         EDStatic.nextTask.incrementAndGet();
 
         // get the task settings
-        Object taskOA[] = (Object[]) EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
+        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
         if (taskOA == null) {
           String2.log("task #" + (EDStatic.nextTask.get() - 1) + " was null.");
           continue;
@@ -262,7 +258,7 @@ public class TaskThread extends Thread {
 
       // whether succeeded or failed
       synchronized (EDStatic.taskList) {
-        EDStatic.lastFinishedTask = EDStatic.nextTask.get() - 1;
+        EDStatic.lastFinishedTask.set(EDStatic.nextTask.get() - 1);
         EDStatic.taskList.set(EDStatic.nextTask.get() - 1, null); // throw away the task info (gc)
       }
     }

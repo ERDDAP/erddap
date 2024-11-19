@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
@@ -29,7 +30,7 @@ public class TableFromMultidimNcFile {
   private VarData cachedVarData[];
   private boolean haveConstraints;
   private String warningInMethod;
-  private HashSet<Dimension> notStringLengthDims;
+  private Set<Dimension> notStringLengthDims;
   private Dimension tDimsAs[][];
   private NetcdfFile ncFile;
   private StringArray loadVarNames;
@@ -313,17 +314,7 @@ public class TableFromMultidimNcFile {
         break;
       }
       if (firstVar != null) {
-        loadDimMatchedVars(
-            loadVarNames,
-            standardizeWhat,
-            nd0,
-            loadVars,
-            loadDims,
-            nLoadVars,
-            loaded,
-            this.table,
-            firstVar,
-            getMetadata);
+        loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, this.table, firstVar, getMetadata);
       }
       // if (debugMode) String2.log(Math2.memoryString() + "\n" +
       // ">> this table after load varsWithAllDims:\n" +
@@ -561,17 +552,7 @@ public class TableFromMultidimNcFile {
           VarData data = VarData.fromVariable(this, tVar);
           addVarAndIndicies(
               nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, data, v, tVar);
-          loadDimMatchedVars(
-              loadVarNames,
-              standardizeWhat,
-              nd0,
-              loadVars,
-              loadDims,
-              nLoadVars,
-              loaded,
-              lut,
-              data,
-              getMetadata);
+          loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, lut, data, getMetadata);
 
           // If we ran constraints on this var earlier, load it.
           BitSet lutkeep = getKeepForVar(data, nd0, varToKeep);
@@ -599,28 +580,9 @@ public class TableFromMultidimNcFile {
         Table lut = new Table(); // look up table which will be JOINed into main table
         VarData varData =
             findVarToLoad(
-                loadVarNames,
-                standardizeWhat,
-                nd0,
-                loadVars,
-                loadDims,
-                nLoadVars,
-                loaded,
-                allIndicesTable,
-                lut,
-                getMetadata);
+                nd0, loadVars, loadDims, nLoadVars, loaded, allIndicesTable, lut, getMetadata);
 
-        loadDimMatchedVars(
-            loadVarNames,
-            standardizeWhat,
-            nd0,
-            loadVars,
-            loadDims,
-            nLoadVars,
-            loaded,
-            lut,
-            varData,
-            getMetadata);
+        loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, lut, varData, getMetadata);
 
         // all constraints checked above so we just need to join this data in.
         joinLutToTable(lut, varData, allIndicesTable);
@@ -706,11 +668,9 @@ public class TableFromMultidimNcFile {
   }
 
   private VarData findVarToLoad(
-      StringArray loadVarNames,
-      int standardizeWhat,
       int nd0,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
+      List<Dimension> loadDims,
       int nLoadVars,
       BitSet loaded,
       Table allIndicesTable,
@@ -739,7 +699,7 @@ public class TableFromMultidimNcFile {
 
   private void addVarAndIndicies(
       int nd0,
-      ArrayList<Dimension> loadDims,
+      List<Dimension> loadDims,
       BitSet loaded,
       Table allIndicesTable,
       Table lut,
@@ -782,11 +742,8 @@ public class TableFromMultidimNcFile {
   }
 
   private void loadDimMatchedVars(
-      StringArray loadVarNames,
-      int standardizeWhat,
       int nd0,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
       int nLoadVars,
       BitSet loaded,
       Table table,
@@ -829,7 +786,7 @@ public class TableFromMultidimNcFile {
     return true;
   }
 
-  private HashSet<Dimension> findNonStringLengthDims(List<Variable> allVars, int nAllVars) {
+  private Set<Dimension> findNonStringLengthDims(List<Variable> allVars, int nAllVars) {
     HashSet<Dimension> notStringLengthDims = new HashSet<>();
     for (int v = 0; v < nAllVars; v++) {
       Variable tVar = allVars.get(v);
@@ -910,8 +867,8 @@ public class TableFromMultidimNcFile {
   private void loadVars(
       StringArray loadVarNames,
       StringArray loadDimNames,
-      ArrayList<Variable> loadVars,
-      ArrayList<Dimension> loadDims,
+      List<Variable> loadVars,
+      List<Dimension> loadDims,
       int nd0,
       int nAllVars,
       List<Variable> allVars) {

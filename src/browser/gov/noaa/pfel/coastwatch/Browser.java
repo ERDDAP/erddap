@@ -2122,7 +2122,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 } else {
                                     //normal File SaveAs
                                     gridDataSet.setAttributes(grid, name);
-                                    int saveAsType = String2.indexOf(Grid.SAVE_AS_EXTENSIONS, fileExtension); 
+                                    int saveAsType = Grid.SAVE_AS_EXTENSIONS.indexOf(fileExtension); 
                                     if (extension.equals(".asc")) //catch plain .asc
                                         saveAsType = Grid.SAVE_AS_ASCII;
                                     grid.saveAs(dir, name, FileNameUtility.get6CharName(name), saveAsType, false); //false=zipIt
@@ -2524,7 +2524,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                 } else {
                                     //normal File SaveAs
-                                    int saveAsType = String2.indexOf(Grid.SAVE_AS_EXTENSIONS, fileExtension); 
+                                    int saveAsType = Grid.SAVE_AS_EXTENSIONS.indexOf(fileExtension); 
                                     if (extension.equals(".asc")) //catch plain .asc
                                         saveAsType = Grid.SAVE_AS_ASCII;
                                     grid.saveAs(dir, name, SgtMap.BATHYMETRY_7NAME.substring(1),

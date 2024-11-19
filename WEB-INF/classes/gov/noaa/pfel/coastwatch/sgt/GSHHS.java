@@ -8,7 +8,6 @@ import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.String2;
-import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.geom.GeneralPath;
 import java.io.*;
 import java.util.Collections;
@@ -51,7 +50,7 @@ public class GSHHS {
    * should have slash at end.
    */
   public static String gshhsDirectory =
-      EDStatic.getWebInfParentDirectory()
+      File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
@@ -69,7 +68,8 @@ public class GSHHS {
    */
   public static final int CACHE_SIZE = 100;
 
-  private static Map cache = Collections.synchronizedMap(new LRUCache(CACHE_SIZE));
+  private static Map<String, GeneralPath> cache =
+      Collections.synchronizedMap(new LRUCache<String, GeneralPath>(CACHE_SIZE));
   private static int nCoarse = 0;
   private static int nSuccesses = 0;
   private static int nTossed = 0;
@@ -157,7 +157,7 @@ public class GSHHS {
       try {
 
         // *** is GeneralPath in cache?
-        path = (GeneralPath) cache.get(cachedName);
+        path = cache.get(cachedName);
         if (path == null) {
 
           // not in cache, so make GeneralPath
@@ -260,12 +260,10 @@ public class GSHHS {
     int n = lon.size();
     int lonAr[] = lon.array;
     int latAr[] = lat.array;
-    int nObjects = 0;
     for (int i = 0; i < n; i++) {
       if (lonAr[i] == Integer.MAX_VALUE) {
         i++; // move to next point
         path.moveTo(lonAr[i], latAr[i]);
-        nObjects++;
       } else {
         path.lineTo(lonAr[i], latAr[i]);
       }
@@ -319,11 +317,9 @@ public class GSHHS {
     // The adjustment is crude: either keep original values
     // (generally 0..360, but not always) or subtract 360
     // (so generally -360..360).
-    boolean lonPM180 = westDeg < 0;
     int intShift = 360 * 1000000;
     int shift[] = {-2 * intShift, -intShift, 0, intShift};
     boolean doShift[] = new boolean[4];
-    byte buffer[] = new byte[4];
 
     // read the records
     // the xArrays and yArrays grow as needed
@@ -331,16 +327,12 @@ public class GSHHS {
     int yArray[] = new int[1];
     int xArray2[] = new int[1];
     int yArray2[] = new int[1];
-    boolean aMsgDisplayed = false;
-    boolean gMsgDisplayed = false;
-    int count = 0;
 
     // open the file
     // String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
-    DataInputStream dis =
+    try (DataInputStream dis =
         new DataInputStream(
-            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b"));
-    try {
+            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b")); ) {
       while (dis.available() > 0) {
         // read the header
         /* old GSHHS v 1.x
@@ -360,7 +352,8 @@ public class GSHHS {
         // GPL License http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
         // int id        = DataStream.readInt(true, dis, buffer); // Unique polygon id number,
         // starting at 0
-        int id = dis.readInt(); // Unique polygon id number, starting at 0
+        @SuppressWarnings("unused")
+        int unusedId = dis.readInt(); // Unique polygon id number, starting at 0
         int n = dis.readInt(); // Number of points in this polygon
         int flag =
             dis.readInt(); // = level + version << 8 + greenwich << 16 + source << 24 + river << 25
@@ -377,11 +370,16 @@ public class GSHHS {
         int east = dis.readInt();
         int south = dis.readInt();
         int north = dis.readInt();
-        int area = dis.readInt(); // Area of polygon in 1/10 km^2
-        int area_full = dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2
-        int container =
+        @SuppressWarnings("unused")
+        int unusedArea = dis.readInt(); // Area of polygon in 1/10 km^2
+        @SuppressWarnings("unused")
+        int unusedArea_full =
+            dis.readInt(); // Area of original full-resolution polygon in 1/10 km^2
+        @SuppressWarnings("unused")
+        int unusedContainer =
             dis.readInt(); // Id of container polygon that encloses this polygon (-1 if none)
-        int ancestor =
+        @SuppressWarnings("unused")
+        int unusedAncestor =
             dis.readInt(); // Id of ancestor polygon in the full resolution set that was the source
         // of this polygon (-1 if none)
 
@@ -524,8 +522,6 @@ public class GSHHS {
           while (remain > 0) remain -= dis.skip(remain);
         }
       }
-    } finally {
-      dis.close();
     }
     if (reallyVerbose)
       String2.log(

@@ -15,6 +15,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.HashSet;
 
 /**
@@ -219,5 +220,13 @@ public class TableWriterEsriCsv extends TableWriter {
     TableWriterEsriCsv twsv =
         new TableWriterEsriCsv(language, tEdd, tNewHistory, tOutputStreamSource);
     twsv.writeAllAndFinish(table);
+    twsv.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

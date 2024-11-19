@@ -553,8 +553,8 @@ class IntArrayTests {
     int n = 100000000;
     long time = System.currentTimeMillis();
     IntArray ia = IntArray.fromCSV("0, 11, 22, 33, 44, 55, 66, 77");
-    int count = 0;
     long tTime = 0;
+    int count = 0;
     for (int i = 0; i < n; i++) {
       tTime = System.currentTimeMillis(); // so this is in the loop too
       synchronized (ia) {

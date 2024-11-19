@@ -7,10 +7,8 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalOther;
@@ -2145,10 +2143,7 @@ class EDDTableFromSOSTests {
     // schema=%22ioos/0.6.1%22&eventtime=2008-06-01T00:00Z/2008-06-02T00:00Z
     // request from -70.14 43.53 1193961600 NaN NDBC:44007
     EDDTable eddTable = (EDDTable) EDDTestDataset.getndbcSosCurrents();
-    double tLon, tLat;
-    String name, tName, results = null, expected, userDapQuery;
-    Table table;
-    String error = "";
+    String tName, results = null, expected;
 
     String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents .das\n");
     String today =
@@ -4038,15 +4033,7 @@ class EDDTableFromSOSTests {
     int language = 0;
     boolean oSosActive = EDStatic.sosActive;
     EDStatic.sosActive = true;
-    // boolean oDebugMode = debugMode;
-    // debugMode = true;
-    double tLon, tLat;
-    String name, tName, results, expected, userDapQuery;
-    String error = "";
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
+    String tName, results, expected, userDapQuery;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getgomoosBuoy();
 
     // String2.log("\n*** EDDTableFromSOS.testOostethys");
@@ -4503,15 +4490,7 @@ class EDDTableFromSOSTests {
     int language = 0;
     boolean oSosActive = EDStatic.sosActive;
     EDStatic.sosActive = true;
-    // boolean oDebugMode = debugMode;
-    // debugMode = true;
-    double tLon, tLat;
-    String name, tName, results, expected, userDapQuery;
-    String error = "";
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
+    String tName, results, expected, userDapQuery;
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getneracoosSos();
 
@@ -4767,12 +4746,7 @@ class EDDTableFromSOSTests {
     // boolean oDebugMode = debugMode;
     // debugMode = true;
     try {
-      String name, tName, results, expected, userDapQuery;
-      String error = "";
-      String today =
-          Calendar2.getCurrentISODateTimeStringZulu()
-              .substring(0, 14); // 14 is enough to check hour. Hard
-      // to check min:sec.
+      String tName, results, expected;
 
       EDDTable eddTable = (EDDTable) EDDTestDataset.gettamuSos();
 
@@ -4860,17 +4834,6 @@ class EDDTableFromSOSTests {
   @TagExternalOther
   void testGcoos52N() throws Throwable {
     boolean useCachedInfo = true;
-
-    // boolean oDebugMode = debugMode;
-    // debugMode = false;
-    // testVerboseOn();
-    String dir = EDStatic.fullTestCacheDirectory;
-    EDDTable eddTable;
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
 
     // one time
     String tSourceUrl = "http://data.gcoos.org:8080/52nSOS/sos/kvp";
@@ -5264,11 +5227,6 @@ class EDDTableFromSOSTests {
   void testGenerateDatasetsXml() throws Throwable {
     boolean useCachedInfo = true;
 
-    // testVerboseOn();
-    int language = 0;
-    // debugMode = true;
-    // String2.log("\n*** EDDTableFromSOS.testGenerateDatasetsXml");
-
     String results =
         EDDTableFromSOS.generateDatasetsXml(
                 useCachedInfo, "https://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC")
@@ -5495,7 +5453,6 @@ class EDDTableFromSOSTests {
   void testGenerateDatasetsXmlFromOneIOOS() throws Throwable {
     boolean useCachedInfo = true;
 
-    int language = 0;
     String results =
         EDDTableFromSOS.generateDatasetsXmlFromOneIOOS(
             useCachedInfo,
@@ -5534,7 +5491,6 @@ class EDDTableFromSOSTests {
   void testGenerateDatasetsXmlFromIOOS() throws Throwable {
     boolean useCachedInfo = true;
 
-    int language = 0;
     String results =
         EDDTableFromSOS.generateDatasetsXmlFromIOOS(
             useCachedInfo, "https://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
@@ -5667,8 +5623,7 @@ class EDDTableFromSOSTests {
     // String2.log("testGetPhenomena");
 
     // testVerboseOn();
-    int language = 0;
-    HashMap hashMap = new HashMap();
+    HashMap<String, StringArray> hashMap = new HashMap<>();
     EDDTableFromSOS.getPhenomena(
         "https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml",
         hashMap);
@@ -5689,13 +5644,8 @@ class EDDTableFromSOSTests {
     // testVerboseOn();
 
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, userDapQuery;
     int po;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
     // check min:sec.
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestErddapSos();
 

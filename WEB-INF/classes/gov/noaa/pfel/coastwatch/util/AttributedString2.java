@@ -152,7 +152,6 @@ public class AttributedString2 {
 
     // apply styles to text
     AttributedString as = new AttributedString(cumulative.toString());
-    int nChar = size();
 
     // apply the base attributes
     int n = baseAttributes.size();
@@ -223,8 +222,6 @@ public class AttributedString2 {
     Color color = null; // initialColor;
     int italicStart = -1;
     int underlineStart = -1;
-    float weight = 1;
-    int weightStart = -1;
 
     // go through the htmlText
     AttributedString2 as2 = new AttributedString2(family, (float) fontSize, initialColor);

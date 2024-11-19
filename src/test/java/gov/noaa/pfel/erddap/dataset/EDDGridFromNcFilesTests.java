@@ -15,8 +15,6 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
-import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import java.nio.file.Path;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeAll;
@@ -113,9 +111,6 @@ class EDDGridFromNcFilesTests {
   @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
-    // String2.log("\n*** EDDGridFromNcFiles.testNcml");
-    int language = 0;
-
     // 2022-02-07 These were the simplest test I could create to demonstrate
     // problems reading .ncml file
     // when using individual netcdf modules, instead of netcdf-java.
@@ -206,13 +201,9 @@ class EDDGridFromNcFilesTests {
     // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
-    String id = "testGriddedNcFiles";
+    String tName, results, tResults, expected, userDapQuery;
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestGriddedNcFiles();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String tDir = EDStatic.fullTestCacheDirectory;
 
     // *** test getting .nccsvMetadata for entire dataset
     String2.log("\n*** .nccsvMetadata for entire dataset\n");
@@ -665,10 +656,8 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n****************** EDDGridFromNcFiles.testNc()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, tResults, expected, userDapQuery;
     int language = 0;
-    String error = "";
-    EDVGridAxis edvga;
     String id = "testGriddedNcFiles";
     EDDGridFromNcFiles.deleteCachedDatasetInfo(id);
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestGriddedNcFiles();
@@ -1080,8 +1069,6 @@ class EDDGridFromNcFilesTests {
     String fileName =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/nc/invalidShortened2.nc").toURI())
             .toString();
-    String id = "testBadNcFile";
-    int language = 0;
 
     // try to read it many times, reduced from 1,000,000 to 1,000
     for (int i = 0; i <= 1000; i++) {
@@ -1141,8 +1128,6 @@ class EDDGridFromNcFilesTests {
     String fileName =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/nc/invalidShortened.nc").toURI())
             .toString();
-    String id = "testBadNcFile";
-    int language = 0;
 
     NetcdfFile ncFile = null;
     try {
@@ -1194,14 +1179,9 @@ class EDDGridFromNcFilesTests {
   @TagLargeFiles
   @TagImageComparison
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
-    // String2.log("\n****************** EDDGridFromNcFiles.testAwsS3()
-    // *****************\n");
-    // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
+    String tName, results, tResults, expected, userDapQuery;
     String id = "testAwsS3";
     if (deleteCachedDatasetInfo) EDDGridFromNcFiles.deleteCachedDatasetInfo(id);
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestAwsS3();
@@ -1480,9 +1460,7 @@ class EDDGridFromNcFilesTests {
     EDStatic.reallyVerbose = true;
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
+    String tName, results, tResults, expected, userDapQuery;
     String id = "testPrivateAwsS3";
     String cacheDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largePoints/testPrivateAwsS3/").toURI())
@@ -1515,7 +1493,6 @@ class EDDGridFromNcFilesTests {
     }
 
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String tDir = EDStatic.fullTestCacheDirectory;
 
     // *** test getting das for entire dataset
     String2.log("\n*** .nc test das dds for entire dataset\n");
@@ -1741,9 +1718,7 @@ class EDDGridFromNcFilesTests {
   void testCwHdf(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testCwHdf()\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard
@@ -1955,10 +1930,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml");
-    int language = 0;
-
     String erdQSwindDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/erdQSwind1day/").toURI())
             .toString();
@@ -2258,9 +2229,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml2() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml2");
-    int language = 0;
     String geosgribDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/geosgrib/").toURI())
             .toString();
@@ -2548,10 +2516,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml3() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml3");
-    int language = 0;
-
     String sDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largeSatellite/PH2/sstd/1day/").toURI())
             .toString();
@@ -3071,11 +3035,6 @@ class EDDGridFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLargeFiles
   void testGenerateDatasetsXml4() throws Throwable {
-
-    // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml4");
-    // reallyVerbose = true;
-    int language = 0;
-
     // takes a long time and no longer useful
     // String2.pressEnterToContinue(
     // "\nCopy the latest file from coastwatch\n" +
@@ -3457,10 +3416,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml5() throws Throwable {
-
-    // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml5");
-    int language = 0;
-    // reallyVerbose = true;
     String results, gdxResults, expected;
 
     String fileDir =
@@ -3900,13 +3855,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlStructures() throws Throwable {
-
-    // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlStructures");
-    // reallyVerbose = true;
-    // boolean oDebug = debugMode;
-    // debugMode = true;
-    int language = 0;
-
     // takes a long time and no longer useful
     // String2.pressEnterToContinue(
     // "\nCopy the latest file from coastwatch\n" +
@@ -4035,13 +3983,6 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlStructuresPrivate() throws Throwable {
-
-    // String2.log("\n***
-    // EDDGridFromNcFiles.testGenerateDatasetsXmlStructuresPrivate");
-    // reallyVerbose = true;
-    // boolean oDebug = debugMode;
-    // debugMode = true;
-    int language = 0;
     String dir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/justin/").toURI())
             .toString();
@@ -4076,10 +4017,6 @@ class EDDGridFromNcFilesTests {
   @TagAWS
   @TagLargeFiles
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
-    int language = 0;
-
     String cacheFromUrl =
         "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; // intentionally
     // left
@@ -4342,10 +4279,6 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagAWS
   void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
-
-    String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlPrivateAwsS3()");
-    int language = 0;
-
     String cacheFromUrl =
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day"; // intentionally left
     // off trailing /
@@ -5672,10 +5605,9 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlGroups2");
     // reallyVerbose = true;
     String results, tResults, gdxResults, expected, tName, userDapQuery;
-    int po, tPo;
+    int tPo;
     EDDGrid eddGrid;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String tDir = EDStatic.fullTestCacheDirectory;
     int language = 0;
 
     String fileDir =
@@ -6564,14 +6496,10 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXmlLong2() throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlLong2()");
-    // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
     int po;
-    EDV edv;
 
     String dataDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/long2/").toURI()).toString() + "/";
@@ -6759,9 +6687,7 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n****************** EDDGridFromNcFiles.testGrib_42()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     int language = 0;
 
@@ -7019,17 +6945,9 @@ class EDDGridFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testGrib2_42(boolean deleteCachedDatasetInfo) throws Throwable {
-    // String2.log("\n****************** EDDGridFromNcFiles.testGrib2_42()
-    // *****************\n");
-    // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     int language = 0;
-
-    // String2.log(NcHelper.ncdump(String2.unitTestBigDataDir +
-    // "geosgrib/multi_1.glo_30m.all.grb2", "-h"));
 
     // generateDatasetsXml
     String id = "testGrib2_42";
@@ -7666,9 +7584,7 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n****************** EDDGridFromNcFiles.testGrib_43()
     // *****************\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     int language = 0;
 
@@ -7905,12 +7821,7 @@ class EDDGridFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testGrib2_43(boolean deleteCachedDatasetInfo) throws Throwable {
-    // String2.log("\n****************** EDDGridFromNcFiles.testGrib2_43(" +
-    // deleteCachedDatasetInfo + ") *****************\n");
-    // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     int language = 0;
 
@@ -9988,14 +9899,9 @@ class EDDGridFromNcFilesTests {
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles()\n");
     // testVerboseOn();
     String results, expected;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard
-    // to check min:sec.
     // 2018-08-08 used to work with /catalog/. Now needs /fileServer/
     String dir =
         "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/"; // catalog.html
-    int language = 0;
 
     if (true)
       Test.knownProblem(
@@ -10204,18 +10110,11 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagThredds
   void testRemoteThreddsFiles(boolean deleteCachedInfo) throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testRemoteThreddsFiles(" +
-    // deleteCachedInfo +
-    // ")\n");
-    // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
+    String tName, results, tResults, expected, userDapQuery;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
             .substring(0, 14); // 14 is enough to check hour. Hard
     // to check min:sec.
-    String id = "testRemoteThreddsFiles"; // from generateDatasetsXml above but different datasetID
     int language = 0;
     // try {
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestRemoteThreddsFiles();
@@ -10449,11 +10348,8 @@ class EDDGridFromNcFilesTests {
 
     // load dataset
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected;
     String cDir = EDStatic.fullTestCacheDirectory;
-    String error = "";
-    int po;
-    String id = "erdATssta3day";
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdATssta3day();
     Table table;
     PrimitiveArray pa1, pa2;
@@ -10527,8 +10423,7 @@ class EDDGridFromNcFilesTests {
   void testUInt16File() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testUInt16File");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery;
-    String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+    String tName, results, tResults, expected, userDapQuery;
     String fileDir =
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/unsigned").toURI()).toString()
             + "/";
@@ -11333,13 +11228,7 @@ class EDDGridFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagImageComparison
   void testSpecialAxis0Time() throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0Time()\n");
-    // testVerboseOn();
-
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
-    String id = "erdSW1chlamday";
+    String tName, results, tResults, expected, userDapQuery;
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdSW1chlamday();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDir = EDStatic.fullTestCacheDirectory;
@@ -11583,10 +11472,7 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0FileNameInt()\n");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
-    String id = "testSpecialAxis0FileNameInt";
+    String tName, results, tResults, expected, userDapQuery;
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestSpecialAxis0FileNameInt();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDir = EDStatic.fullTestCacheDirectory;
@@ -11812,10 +11698,7 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0PathNameInt()\n");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
-    String id = "testSpecialAxis0PathNameInt";
+    String tName, results, tResults, expected, userDapQuery;
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestSpecialAxis0PathNameInt();
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     String tDir = EDStatic.fullTestCacheDirectory;
@@ -12032,9 +11915,7 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testSpecialAxis0GlobalDouble()\n");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
+    String tName, results, tResults, expected, userDapQuery;
     int language = 0;
 
     // ncdump a source .nc file
@@ -12270,15 +12151,9 @@ class EDDGridFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testFileName(boolean deleteCachedDatasetInfo) throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testFileName(" +
-    // deleteCachedDatasetInfo + ")");
-    // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
 
     String tDir = EDStatic.fullTestCacheDirectory;
     String id = "erdMH1chlamday";
@@ -12499,15 +12374,9 @@ class EDDGridFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testReplaceFromFileName(boolean deleteCachedDatasetInfo) throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName(" +
-    // deleteCachedDatasetInfo + ")");
-    // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
 
     String tDir = EDStatic.fullTestCacheDirectory;
     String id = "nceiPH53sstd1day";
@@ -13107,10 +12976,8 @@ class EDDGridFromNcFilesTests {
     // testVerboseOn();
     int language = 0;
 
-    String name, tName, results, tResults, expected;
-    String error = "";
+    String tName, results, expected;
     int po;
-    EDV edv;
     String id = "testUnsignedGrid";
     EDD.deleteCachedDatasetInfo(id);
     EDD edd = EDDTestDataset.gettestUnsignedGrid();
@@ -13861,10 +13728,8 @@ class EDDGridFromNcFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String tName, results, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, expected;
     String tDir = EDStatic.fullTestCacheDirectory;
-    String id = "testGridNThreads";
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestGridNThreads();
     StringBuilder bigResults = new StringBuilder("\nEDDGridFromNcFiles.testNThreads finished.\n");
 
@@ -13922,11 +13787,8 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testStructure()");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected;
-    String error = "";
+    String tName, results, expected;
     int language = 0;
-    int po;
-    EDV edv;
     String id = "testStructure";
     EDD.deleteCachedDatasetInfo(id);
     EDD edd = EDDTestDataset.gettestStructure();
@@ -14074,17 +13936,8 @@ class EDDGridFromNcFilesTests {
   void testStructurePrivate() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testStructurePrivate()");
     // testVerboseOn();
-
-    String name, tName, results, tResults, expected;
-    String error = "";
     int language = 0;
-    int po;
-    EDV edv;
 
-    String dir =
-        Path.of(EDDGridFromNcFilesTests.class.getResource("/largeFiles/justin/").toURI())
-            .toString();
-    String fileName = "test.h5"; // sample_file.h5 has 128bit int so null pointer in netcdf-java
     // String2.log("contents of " + dir + fileName + "\n" +
     // NcHelper.ncdump(dir + fileName, "-h"));
 
@@ -14093,15 +13946,14 @@ class EDDGridFromNcFilesTests {
     EDD edd = EDDTestDataset.gettestStructurePrivate();
 
     // .das
-    tName =
-        edd.makeNewFileForDapQuery(
-            language,
-            null,
-            null,
-            "",
-            EDStatic.fullTestCacheDirectory,
-            edd.className() + "_testStructurePrivate",
-            ".das");
+    edd.makeNewFileForDapQuery(
+        language,
+        null,
+        null,
+        "",
+        EDStatic.fullTestCacheDirectory,
+        edd.className() + "_testStructurePrivate",
+        ".das");
     // String2.log(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
     // tName));
     // String2.pressEnterToContinue(
@@ -14109,15 +13961,14 @@ class EDDGridFromNcFilesTests {
     // "Okay?");
 
     // .dds
-    tName =
-        edd.makeNewFileForDapQuery(
-            language,
-            null,
-            null,
-            "",
-            EDStatic.fullTestCacheDirectory,
-            edd.className() + "_testStructurePrivate",
-            ".dds");
+    edd.makeNewFileForDapQuery(
+        language,
+        null,
+        null,
+        "",
+        EDStatic.fullTestCacheDirectory,
+        edd.className() + "_testStructurePrivate",
+        ".dds");
     // String2.log(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
     // tName));
     // String2.pressEnterToContinue(
@@ -14125,15 +13976,14 @@ class EDDGridFromNcFilesTests {
     // "Okay?");
 
     // .csv subset
-    tName =
-        edd.makeNewFileForDapQuery(
-            language,
-            null,
-            null,
-            "Yaw[0:500:3500],latitude[0:500:3500],longitude[0:500:3500]",
-            EDStatic.fullTestCacheDirectory,
-            edd.className() + "_testStructurePrivate",
-            ".csv");
+    edd.makeNewFileForDapQuery(
+        language,
+        null,
+        null,
+        "Yaw[0:500:3500],latitude[0:500:3500],longitude[0:500:3500]",
+        EDStatic.fullTestCacheDirectory,
+        edd.className() + "_testStructurePrivate",
+        ".csv");
     // String2.log(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
     // tName));
     // String2.pressEnterToContinue(
@@ -14156,7 +14006,6 @@ class EDDGridFromNcFilesTests {
         Path.of(EDDGridFromNcFilesTests.class.getResource("/data/rtech/").toURI()).toString() + "/";
     String regex = "MT.*\\.hdf";
     String fileName = "MT1_L2-FLUX-SCASL1A2-1.06_2015-01-01T01-42-24_V1-00.hdf";
-    int language = 0;
     String2.log(NcHelper.ncdump(dir + fileName, "-h"));
 
     String results =
@@ -14873,13 +14722,8 @@ class EDDGridFromNcFilesTests {
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles()\n");
     // testVerboseOn();
     String results, expected;
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard
-    // to check min:sec.
     String dir =
         "https://opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/";
-    int language = 0;
 
     results =
         EDDGridFromNcFiles.generateDatasetsXml( // dir is a HYRAX catalog.html URL!
@@ -14915,7 +14759,7 @@ class EDDGridFromNcFilesTests {
     // deleteCachedInfo +
     // ")\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    /*String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
     int po;
     EDV edv;
@@ -14926,7 +14770,7 @@ class EDDGridFromNcFilesTests {
     String id = "testRemoteHyraxFiles";
     int language = 0;
 
-    /*
+
      * //*** test getting das for entire dataset
      * String2.log("\n*** testCwHdf test das dds for entire dataset\n");
      * tName = eddGrid.makeNewFileForDapQuery(language, null, null, "",
@@ -15100,14 +14944,10 @@ class EDDGridFromNcFilesTests {
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testIgor()\n");
     // testVerboseOn();
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    String tName, results, expected, userDapQuery;
     String dir = EDStatic.fullTestCacheDirectory;
-    String error = "";
     int po;
     int language = 0;
-    EDV edv;
-
-    String id = "jplMURSST41";
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getjplMURSST41();
 
     // test axes-only request
@@ -15447,18 +15287,18 @@ class EDDGridFromNcFilesTests {
     // String2.log("\n*** EDDGridFromNcFiles.testGroups()\n");
     // testVerboseOn();
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDVGridAxis edvga;
-    // the test file is from
-    // ftp://podaac.jpl.nasa.gov/allData/aquarius/L2/V4/2011/237/
-    int language = 0;
+    // String name, tName, results, tResults, expected, userDapQuery, tQuery;
+    // String error = "";
+    // EDVGridAxis edvga;
+    // // the test file is from
+    // // ftp://podaac.jpl.nasa.gov/allData/aquarius/L2/V4/2011/237/
+    // int language = 0;
 
-    String id = "testGroups";
-    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestGroups();
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String testName = "EDDGridFromNcFiles_groups";
+    // String id = "testGroups";
+    // EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestGroups();
+    // String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+    // String tDir = EDStatic.fullTestCacheDirectory;
+    // String testName = "EDDGridFromNcFiles_groups";
   }
 
   /** This tests that a dataset can be quick restarted, */
@@ -15474,7 +15314,6 @@ class EDDGridFromNcFilesTests {
                     .toURI())
             .toString();
     long timestamp = File2.getLastModified(fullName); // orig 2009-01-07T11:55 local
-    int language = 0;
     try {
       // restart local erddap
       // String2.pressEnterToContinue(
@@ -15620,20 +15459,11 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagMissingDataset // source seems to not have data
   void testMakeCopyFileTasks(boolean deleteAllLocalFiles) throws Exception {
-
-    // String2.log("\n*** EDDGridFromNcFiles.testMakeCopyFileTasks");
-    // FileVisitorDNLS.verbose = true;
-    // FileVisitorDNLS.reallyVerbose = true;
-    // FileVisitorDNLS.debugMode = true;
-    int language = 0;
-
-    boolean testMode = false;
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
     String tSourceUrl =
         "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/"; // contents.html
     String tFileNameRegex = "[0-9]{14}-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02\\.0-fv04\\.1\\.nc";
-    boolean recursive = true;
     // or String tPathRegex = ".*/v4\\.1/(|2018/(|01./))"; //for test, just get 01x
     // dirs/files. Read regex: "(|2018/(|/[0-9]{3}/))";
     String tPathRegex =
@@ -15729,22 +15559,11 @@ class EDDGridFromNcFilesTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testGenerateDatasetsXmlCopy() throws Throwable {
-
-    String2.log(
-        "\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlCopy\n"
-            + "*** This needs erdMWchla1day in localhost ERDDAP.");
-
-    boolean testMode = false;
-    boolean tRecursive = true;
-    boolean tDirectoriesToo = false;
     String tSourceUrl =
         "http://localhost:8080/cwexperimental/files/erdMWchla1day/"; // contents.html
     String tFileNameRegex = "MW200219.*\\.nc(|\\.gz)"; // only 10 files match
-    boolean recursive = true;
     String tLocalDir = "/u00/data/points/testEDDGridCopyFiles/";
     String results, expected;
-    int language = 0;
-
     // delete all cached files
     File2.deleteAllFiles(tLocalDir, true, true);
 
@@ -16023,25 +15842,9 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagLocalERDDAP
   void testCopyFiles(boolean deleteDataFiles) throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testCopyFiles(" + deleteDataFiles +
-    // ")\n" +
-    // "If deleteDataFiles is true, this requires erdMWchla1day in localhost
-    // ERDDAP.");
     int language = 0;
-    // testVerboseOn();
-    // FileVisitorDNLS.verbose = true;
-    // FileVisitorDNLS.reallyVerbose = true;
-    // FileVisitorDNLS.debugMode = true;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
-
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
+    String tName, results, tResults, expected, userDapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
     String id = "testEDDGridCopyFiles";
     if (deleteDataFiles) {
@@ -16280,24 +16083,8 @@ class EDDGridFromNcFilesTests {
   @ValueSource(booleans = {true, false})
   @TagLocalERDDAP
   void testCacheFiles(boolean deleteDataFiles) throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testCacheFiles(" + deleteDataFiles +
-    // ")\n" +
-    // "This requires erdMWchla1day in localhost ERDDAP.");
     int language = 0;
-    // testVerboseOn();
-    // FileVisitorDNLS.verbose = true;
-    // FileVisitorDNLS.reallyVerbose = true;
-    // FileVisitorDNLS.debugMode = true;
-
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
-
-    String today =
-        Calendar2.getCurrentISODateTimeStringZulu()
-            .substring(0, 14); // 14 is enough to check hour. Hard to
-    // check min:sec.
+    String tName, results, tResults, expected, userDapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
     String id = "testEDDGridCacheFiles";
     EDDGridFromNcFiles.deleteCachedDatasetInfo(id); // always
@@ -16551,16 +16338,9 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testMinimalReadSource() throws Throwable {
-    // String2.log("\n*** EDDGridFromNcFiles.testMinimalReadSource");
-    // testVerboseOn();
-    // boolean oDebugMode = debugMode;
-    // debugMode = true;
     int language = 0;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
 
     String tDir = EDStatic.fullTestCacheDirectory;
     String id = "testMinimalReadSource";
@@ -17026,29 +16806,20 @@ class EDDGridFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testIslandShift() throws Throwable {
-    // String2.log("\n****************** EDDGridFromNcFiles.testIslandShift()
-    // *****************\n");
-    // testVerboseOn();
-
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
     int language = 0;
-    String error = "";
-    EDVGridAxis edvga;
-    String id = "testIslandShift";
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestIslandShift();
     String tDir = EDStatic.fullTestCacheDirectory;
 
     for (int i = 1; i <= 4; i++) {
-      String baseName = "EDDGridFromNcFiles_testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i];
-      tName =
-          eddGrid.makeNewFileForDapQuery(
-              language,
-              null,
-              null,
-              "&.land=" + SgtMap.drawLandMask_OPTIONS[i],
-              tDir,
-              baseName,
-              ".png");
+      String baseName = "EDDGridFromNcFiles_testIslandShift_" + SgtMap.drawLandMask_OPTIONS.get(i);
+      eddGrid.makeNewFileForDapQuery(
+          language,
+          null,
+          null,
+          "&.land=" + SgtMap.drawLandMask_OPTIONS.get(i),
+          tDir,
+          baseName,
+          ".png");
       // Test.displayInBrowser("file://" + tDir + tName);
       // !!! graphing system works correctly, but island location is knownProblem
       // Image2.testImagesIdentical(

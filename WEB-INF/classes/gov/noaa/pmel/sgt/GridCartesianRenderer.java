@@ -87,10 +87,8 @@ public class GridCartesianRenderer extends CartesianRenderer {
 
   //
   private void drawRaster(Graphics g) {
-    int nT, nX, nY, nZ;
     int[] xp, yp;
     int i, j;
-    Color color;
     int xSize, ySize, count;
     double[] xValues, yValues, gValues;
     double val;

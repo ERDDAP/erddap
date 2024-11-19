@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.sgt;
 
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pmel.sgt.ColorMap;
@@ -76,17 +77,17 @@ public class GraphDataLayer {
   public static final int DRAW_COLORED_SURFACE_AND_CONTOUR_LINES = 8;
 
   /** The names of the DRAW options (currently just for diagnostic purposes). */
-  public static final String DRAW_NAMES[] = {
-    "Markers",
-    "Lines",
-    "Markers and Lines",
-    "Sticks",
-    "Grid Vectors",
-    "Point Vectors",
-    "Colored Surface",
-    "Contour Lines",
-    "Colored Surface and Contour Lines"
-  };
+  public static final ImmutableList<String> DRAW_NAMES =
+      ImmutableList.of(
+          "Markers",
+          "Lines",
+          "Markers and Lines",
+          "Sticks",
+          "Grid Vectors",
+          "Point Vectors",
+          "Colored Surface",
+          "Contour Lines",
+          "Colored Surface and Contour Lines");
 
   public static final int MARKER_TYPE_NONE = 0;
   public static final int MARKER_TYPE_PLUS = 1;
@@ -106,30 +107,21 @@ public class GraphDataLayer {
    * These exactly parallel the MARKER_TYPEs. Some code elsewhere relies on filled options having
    * s.toLowerCase().indexOf("filled") >= 0.
    */
-  public static final String MARKER_TYPES[] = {
-    "None",
-    "Plus",
-    "X",
-    "Dot",
-    "Square",
-    "Filled Square",
-    "Circle",
-    "Filled Circle",
-    "Up Triangle",
-    "Filled Up Triangle",
-    "Borderless Filled Square",
-    "Borderless Filled Circle",
-    "Borderless Filled Up Triangle"
-  };
-
-  /**
-   * These don't parallel the MARKER_TYPEs, but the names are the same as in MARKER_TYPES, so you
-   * can look them up.
-   */
-  public static final String FILLED_MARKER_TYPES[] = {
-    "Filled Square", "Filled Circle", "Filled Up Triangle",
-    "Borderless Filled Square", "Borderless Filled Circle", "Borderless Filled Up Triangle"
-  };
+  public static final ImmutableList<String> MARKER_TYPES =
+      ImmutableList.of(
+          "None",
+          "Plus",
+          "X",
+          "Dot",
+          "Square",
+          "Filled Square",
+          "Circle",
+          "Filled Circle",
+          "Up Triangle",
+          "Filled Up Triangle",
+          "Borderless Filled Square",
+          "Borderless Filled Circle",
+          "Borderless Filled Up Triangle");
 
   public static final int REGRESS_NONE = -1;
   public static final int REGRESS_MEAN = 0;
@@ -314,7 +306,7 @@ public class GraphDataLayer {
         + " v4="
         + v4
         + " draw="
-        + (draw < 0 || draw >= DRAW_NAMES.length ? "" + draw : DRAW_NAMES[draw])
+        + (draw < 0 || draw >= DRAW_NAMES.size() ? "" + draw : DRAW_NAMES.get(draw))
         + " xIsTimeAxis="
         + xIsTimeAxis
         + " yIsTimeAxis="

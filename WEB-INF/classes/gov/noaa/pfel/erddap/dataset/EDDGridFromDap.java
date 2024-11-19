@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import thredds.client.catalog.Access;
 import thredds.client.catalog.Catalog;
 import thredds.client.catalog.Dataset;
@@ -1172,14 +1173,13 @@ public class EDDGridFromDap extends EDDGrid {
     OpendapHelper.getAttributes(das, "GLOBAL", axisSourceTable.globalAttributes());
 
     // read through the variables[]
-    HashSet<String> dimensionNameCsvsFound = new HashSet();
+    HashSet<String> dimensionNameCsvsFound = new HashSet<>();
     Enumeration vars = dds.getVariables();
     StringArray varNames = new StringArray();
     StringBuilder results = new StringBuilder();
     // if dimensionName!=null, this notes if a var with another dimension combo was found
     boolean otherComboFound = false;
     String sourceDimensionNamesInBrackets = null;
-    String destDimensionNamesInBrackets = null;
     Attributes gridMappingAtts = null;
     NEXT_VAR:
     while (vars.hasMoreElements()) {
@@ -1530,7 +1530,6 @@ public class EDDGridFromDap extends EDDGrid {
     }
 
     // suggestReloadEveryNMinutes and add ", startYear-EndYear" to the title
-    String timeUnits = null;
     double es5mo =
         (System.currentTimeMillis() / 1000.0)
             - 150 * Calendar2.SECONDS_PER_DAY; // approximately 150 days ago
@@ -2167,7 +2166,6 @@ public class EDDGridFromDap extends EDDGrid {
     String baseUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/";
     String mainCat = SSR.getUrlResponseStringUnchanged(baseUrl + "catalog.html");
     int mainCatPo = 0;
-    int mainCount = 0;
 
     StringBuilder sb = new StringBuilder();
 
@@ -2404,7 +2402,7 @@ public class EDDGridFromDap extends EDDGrid {
    */
   public static void processThreddsDataset(
       Dataset dataset,
-      HashSet<String> set,
+      Set<String> set,
       String datasetNameRegex,
       String pathRegex,
       String negativePathRegex,

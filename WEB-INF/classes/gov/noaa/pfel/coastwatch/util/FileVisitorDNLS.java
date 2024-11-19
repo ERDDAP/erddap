@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
+import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -31,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EnumSet;
@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -95,8 +96,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static final String NAME = "name";
   public static final String LASTMODIFIED = "lastModified";
   public static final String SIZE = "size";
-  public static final String DNLS_COLUMN_NAMES[] = {DIRECTORY, NAME, LASTMODIFIED, SIZE};
-  public static final String DNLS_COLUMN_TYPES_SSLL[] = {"String", "String", "long", "long"};
+  public static final ImmutableList<String> DNLS_COLUMN_NAMES =
+      ImmutableList.of(DIRECTORY, NAME, LASTMODIFIED, SIZE);
+  public static final ImmutableList<String> DNLS_COLUMN_TYPES_SSLL =
+      ImmutableList.of("String", "String", "long", "long");
 
   public static final String URL = "url"; // in place of directory for oneStepAccessibleViaFiles
 
@@ -1202,7 +1205,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static Table oneStepDoubleWithUrlsNotDirs(Table tTable, String tDir, String startOfUrl)
       throws IOException {
 
-    int nCols = tTable.nColumns();
     int nRows = tTable.nRows();
 
     // replace directory with virtual url
@@ -2380,7 +2382,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 + nLinesMatched);
       try {
         String fullName = dirs.get(filei) + names.get(filei);
-        ArrayList<String> lines = SSR.getUrlResponseArrayList(fullName);
+        List<String> lines = SSR.getUrlResponseArrayList(fullName);
         int nLines = lines.size();
         for (int linei = 0; linei < nLines; linei++) {
           Matcher matcher = linePattern.matcher(lines.get(linei));
@@ -2430,9 +2432,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
   public static void makeTgz(
       String tDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, String tResultName)
       throws Exception {
-    TarArchiveOutputStream tar = null;
     String outerDir = File2.getDirectory(tDir.substring(0, tDir.length() - 1));
-    tar =
+    TarArchiveOutputStream tar =
         new TarArchiveOutputStream(
             new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tResultName))));
     try {
@@ -2519,7 +2520,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         if (addLastModified) {
           sb.append(
               String2.left(
-                  cTime == Long.MAX_VALUE ? "" : Calendar2.epochSecondsToIsoStringTZ(cTime / 1000),
+                  cTime == Long.MAX_VALUE
+                      ? ""
+                      : Calendar2.epochSecondsToIsoStringTZ(Math2.divideNoRemainder(cTime, 1000)),
                   21)); // 21
           sb.append(' '); // 1
         }
@@ -2585,7 +2588,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             dir, fileNameRegex, recursive, ".*", false); // tRecursive, tPathRegex, tDirectoriesToo
     StringArray dirs = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
     StringArray names = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
-    Tally tally = new Tally();
     int nErrors = 0;
     for (int i = 0; i < names.size(); i++) {
 
@@ -2618,7 +2620,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * short names as a String[].
    */
   public static String[] reduceDnlsTableToOneDir(Table dnlsTable, String oneDir) {
-    HashSet<String> subdirHash = new HashSet();
+    HashSet<String> subdirHash = new HashSet<>();
     reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
 
     String subDirs[] = (String[]) subdirHash.toArray(new String[0]);
@@ -2639,7 +2641,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    * @param subdirHash to collect (additional) subsir (short) names.
    */
   public static void reduceDnlsTableToOneDir(
-      Table dnlsTable, String oneDir, HashSet<String> subdirHash) {
+      Table dnlsTable, String oneDir, Set<String> subdirHash) {
     int nRows = dnlsTable.nRows();
     if (nRows == 0) return;
     char separator = oneDir.indexOf('\\') >= 0 ? '\\' : '/';

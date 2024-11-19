@@ -568,8 +568,6 @@ public class Contour implements PropertyChangeListener {
     int i, j, k, kk, km1, kp1;
     int nx, ny;
     double dx, dy, dzdx, dzdy, dzdg;
-    GeoDate tref = null;
-    GeoDate time;
     double[] x, y, z, s;
     double dxx, dyy, smax;
     double space = 0.0;
@@ -577,10 +575,8 @@ public class Contour implements PropertyChangeListener {
     boolean roomFound;
     double slab1, stest;
     double width, hgt;
-    double xa, xb, ya, yb, aa, bb, cc, zxy;
-    double xendl, yendl;
     //    double xst, yst, xstp, ystp;
-    double xlab, ylab, hhgt, angle;
+    double hhgt;
     SGLabel label;
     double[] px, py;
     boolean xIncreasing, yIncreasing;
@@ -641,9 +637,6 @@ public class Contour implements PropertyChangeListener {
       x = new double[kmax + 1];
       y = new double[kmax + 1];
       s = new double[kmax + 1];
-      if (cl.isXTime() || cl.isYTime()) {
-        tref = cl.getReferenceTime();
-      }
       s[1] = 0.0;
       //
       // convert ContourLine to physical units

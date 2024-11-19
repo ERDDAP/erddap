@@ -122,6 +122,8 @@ public class ColorKey implements Cloneable, DataKey, PropertyChangeListener {
   /** Orient key vertically. */
   public static final int VERTICAL = 2;
 
+  public static boolean verbose = false;
+
   //  private boolean moveable_ = false;
   //  private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
@@ -520,8 +522,8 @@ public class ColorKey implements Cloneable, DataKey, PropertyChangeListener {
       case MIDDLE:
         y = y - height / 2;
     }
-    if (false) {
-      StringBuffer sbuf = new StringBuffer("\nColorKey.getBounds(): ");
+    if (verbose) {
+      StringBuilder sbuf = new StringBuilder("\nColorKey.getBounds(): ");
       switch (halign_) {
         case RIGHT:
           sbuf.append("RIGHT");

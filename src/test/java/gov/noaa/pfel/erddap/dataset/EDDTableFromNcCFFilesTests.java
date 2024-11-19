@@ -9,7 +9,6 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1162,11 +1161,7 @@ class EDDTableFromNcCFFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+    String tName, results, expected, userDapQuery;
     String id = "testNcCF1b";
     if (deleteCachedDatasetInfo) EDDTableFromNcCFFiles.deleteCachedDatasetInfo(id);
 
@@ -1230,12 +1225,7 @@ class EDDTableFromNcCFFilesTests {
     // boolean oDebugMode = debugMode; debugMode = true;
     // boolean oTableDebug = Table.debugMode; Table.debugMode = true;
 
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
-    String id = "testKevin20130109";
+    String tName, results, expected, userDapQuery;
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestKevin20130109();
 
     // test time < first time is 2011-02-15T00:00:00Z
@@ -1303,9 +1293,6 @@ class EDDTableFromNcCFFilesTests {
 
     String tName, results, expected, userDapQuery;
     String dir = EDStatic.fullTestCacheDirectory;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
-    String id = "pmelTaoMonPos";
     EDDTable eddTable = (EDDTable) EDDTestDataset.getpmelTaoMonPos();
     Table table;
 
@@ -1450,9 +1437,7 @@ class EDDTableFromNcCFFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
     Table table;
 
@@ -1885,16 +1870,13 @@ class EDDTableFromNcCFFilesTests {
    *
    * @throws Throwable if trouble
    */
+  @org.junit.jupiter.api.Test
   void test7SampleDimensions() throws Throwable {
     // String2.log("\n******************
     // EDDTableFromNcCFFiles.test7SampleDimensions() *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
-    String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-    Table table;
+    String tName, results, expected, userDapQuery;
     String testCacheDir = EDStatic.fullTestCacheDirectory;
     String scalarVars = ",crs,WODf,WODfd";
 

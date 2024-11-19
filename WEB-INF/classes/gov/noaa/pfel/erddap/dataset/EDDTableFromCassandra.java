@@ -225,6 +225,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
@@ -483,7 +484,6 @@ public class EDDTableFromCassandra extends EDDTable {
 
     if (verbose) String2.log("\n*** constructing EDDTableFromCassandra " + tDatasetID);
     long constructionStartMillis = System.currentTimeMillis();
-    String errorInMethod = "Error in EDDTableFromCassandra(" + tDatasetID + ") constructor:\n";
     int language = 0; // for constructor
 
     // save some of the parameters
@@ -1161,6 +1161,7 @@ public class EDDTableFromCassandra extends EDDTable {
    * @throws Throwable if trouble (notably, WaitThenTryAgainException)
    */
   @Override
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public void getDataForDapQuery(
       int language,
       String loggedInAs,
@@ -1556,6 +1557,7 @@ public class EDDTableFromCassandra extends EDDTable {
    *     stats[3]+=nRowsAfterStandardize
    * @return the same or a different table (usually with some results rows)
    */
+  @SuppressWarnings("JavaUtilDate") // Date is needed for Cassandra
   public Table getDataForCassandraQuery(
       int language,
       String loggedInAs,
@@ -1618,7 +1620,10 @@ public class EDDTableFromCassandra extends EDDTable {
     // https://docs.datastax.com/en/drivers/java/3.0/com/datastax/driver/core/ResultSet.html#one--
     Iterator<Row> iter = rs.iterator();
     while (iter.hasNext()) {
-      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) rs.fetchMoreResults();
+      if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched()) {
+        @SuppressWarnings("unused")
+        ListenableFuture<ResultSet> unused = rs.fetchMoreResults();
+      }
       Row row = iter.next();
 
       stats[1]++;
@@ -1939,7 +1944,6 @@ public class EDDTableFromCassandra extends EDDTable {
 
       Attributes sourceAtts = new Attributes();
       Attributes addAtts = new Attributes();
-      boolean isTimestamp = false;
       if (cassType == DataType.cboolean()) sourcePA = new ByteArray();
       else if (cassType == DataType.cint()) sourcePA = new IntArray();
       else if (cassType == DataType.bigint()
@@ -1950,7 +1954,6 @@ public class EDDTableFromCassandra extends EDDTable {
         sourcePA = new DoubleArray();
       else if (cassType == DataType.timestamp()) {
         sourcePA = new DoubleArray();
-        isTimestamp = true;
         addAtts.add("ioos_category", "Time");
         addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");
       } else sourcePA = new StringArray(); // everything else

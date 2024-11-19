@@ -191,7 +191,7 @@ public class Attribute implements Cloneable {
    * @return a clone of this <code>Attribute</code>.
    */
   @Override
-  public Object clone() {
+  public Attribute clone() {
     try {
       Attribute a = (Attribute) super.clone();
       // assume type, is_alias, and aliased_to have been cloned already

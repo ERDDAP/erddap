@@ -460,36 +460,11 @@ public class PointCollectionKey implements Cloneable, DataKey, Moveable, Propert
     modified("PointCollectionKey: clearAll()");
   }
 
-  /** Remove data from key by id. */
-  public void clear(String data_id) {
-    PointCartesianRenderer pcr;
-    int indx = -1;
-    for (Enumeration it = points_.elements(); it.hasMoreElements(); ) {
-      indx++;
-      pcr = (PointCartesianRenderer) it.nextElement();
-      //        if(pcr.getLine().getId().equals(data_id)) {
-      //  	pcr.getAttribute().removePropertyChangeListener(this);
-      //  	points_.removeElement(lcr);
-      //  	label_.removeElementAt(indx);
-      //  	modified("PointCollectionKey: clear()");
-      //  	break;
-      //        }
-    }
-  }
-
-  /** Return height of key row in pixels. */
-  public int getRowHeight() {
-    Rectangle bounds;
-    bounds = getBounds();
-    return ROW_SPACE_ + maxLabelHeight_;
-  }
-
   /** Draw the Key. */
   @Override
   public void draw(Graphics g) {
-    double maxLabelLength, maxLabelHeight;
     int numLines, numRows, i, lineLength;
-    int col, row, ytemp;
+    int col, row;
     double xloc, labelSpace;
     double[] xp, yp;
     int[] xd, yd;
@@ -693,7 +668,6 @@ public class PointCollectionKey implements Cloneable, DataKey, Moveable, Propert
     int[] xd, yd;
     int numLines, numRows;
     int lineLength;
-    double labelSpace;
     int i;
 
     numLines = points_.size();
@@ -711,8 +685,7 @@ public class PointCollectionKey implements Cloneable, DataKey, Moveable, Propert
     // compute location of rows and columns in device and physical coordinates
     //
     lineLength = layer_.getXPtoD(lineLengthP_) - layer_.getXPtoD(0.0);
-    labelSpace = layer_.getXDtoP(LABEL_SPACE_) - layer_.getXDtoP(0);
-    //
+
     yd[0] = bounds.y + VERTICAL_BORDER_ + maxLabelHeight_;
     for (i = 1; i < numRows; i++) {
       yd[i] = yd[i - 1] + ROW_SPACE_ + maxLabelHeight_;

@@ -43,7 +43,7 @@ public class DStructure extends DConstructor implements ClientIO {
    */
   public DStructure(String n) {
     super(n);
-    vars = new Vector();
+    vars = new Vector<>();
   }
 
   /**
@@ -53,9 +53,9 @@ public class DStructure extends DConstructor implements ClientIO {
    * @return a clone of this <code>DSequence</code>.
    */
   @Override
-  public Object clone() {
+  public DStructure clone() {
     DStructure s = (DStructure) super.clone();
-    s.vars = new Vector();
+    s.vars = new Vector<>();
     for (int i = 0; i < vars.size(); i++) {
       BaseType bt = (BaseType) vars.elementAt(i);
       s.vars.addElement(bt.clone());

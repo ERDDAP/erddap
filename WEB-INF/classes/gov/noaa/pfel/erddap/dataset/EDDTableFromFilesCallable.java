@@ -99,7 +99,7 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
   public Table call() throws Exception {
     try {
       // if (debugMode) String2.log(identifier + ": start call()");
-      if (Thread.currentThread().interrupted()) // consume the interrupted status
+      if (Thread.interrupted()) // consume the interrupted status
       throw new InterruptedException();
 
       long startTime = System.currentTimeMillis();
@@ -140,7 +140,7 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
 
         // sleep and give it one more try
         Math2.sleep(1000);
-        if (Thread.currentThread().interrupted()) // consume the interrupted status
+        if (Thread.interrupted()) // consume the interrupted status
         throw new InterruptedException();
         try {
           table =
@@ -184,7 +184,7 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
         }
       }
 
-      if (Thread.currentThread().interrupted()) // consume the interrupted status
+      if (Thread.interrupted()) // consume the interrupted status
       throw new InterruptedException();
       if (table.nRows() == 0) {
         if (debugMode)

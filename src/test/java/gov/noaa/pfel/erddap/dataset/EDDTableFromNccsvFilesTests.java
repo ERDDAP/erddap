@@ -317,9 +317,7 @@ class EDDTableFromNccsvFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
     String dir = EDStatic.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu()
@@ -1083,8 +1081,7 @@ class EDDTableFromNccsvFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
+    String tName, results, tResults, expected;
     EDV edv;
     String dir = EDStatic.fullTestCacheDirectory;
     String today =

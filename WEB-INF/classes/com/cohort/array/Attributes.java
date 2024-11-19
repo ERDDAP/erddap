@@ -30,7 +30,7 @@ public class Attributes {
   public static boolean debugMode = false;
 
   /** The backing data structure. It is thread-safe. */
-  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap(16, 0.75f, 4);
+  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public static String signedToUnsignedAttNames[] =
       new String[] {
@@ -1243,7 +1243,6 @@ public class Attributes {
     // determine what the destClass will be (for packed numeric variables)
     PAType oPAType = dataPa.elementType();
     boolean isNumeric = oPAType != PAType.CHAR && oPAType != PAType.STRING;
-    boolean isString = oPAType == PAType.STRING;
     PAType destPAType = oPAType;
 
     // determine if this is numeric dateTimes that will be converted to epochSeconds
@@ -1647,7 +1646,6 @@ public class Attributes {
       }
       if (tPAType == null) // might be
       tPAType = dataPaPAType;
-      boolean willScale = scale != 1 || add != 0;
 
       // switch data type
       if (dataPa.isIntegerType() && dMissingValue == dataPaMV) { // e.g., 127 == 127

@@ -111,7 +111,6 @@ public class PointCartesianRenderer extends CartesianRenderer {
 
   private void drawLabel(Graphics g, SGTPoint point, PointAttribute attr) {
     int valign, halign;
-    Point2D.Double loc;
     double xp, yp;
     double xl, yl, loff;
     Layer ly = cg_.getLayer();

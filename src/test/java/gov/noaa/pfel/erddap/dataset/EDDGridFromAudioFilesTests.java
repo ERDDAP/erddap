@@ -10,7 +10,6 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -579,8 +578,8 @@ class EDDGridFromAudioFilesTests {
     // testVerboseOn();
 
     String results, results2, expected;
-    ArrayList al;
-    List list;
+    List<String> al;
+    List<String> list;
     int po;
     int timeOutSeconds = 120;
     String reqBase = "curl http://localhost:8080/cwexperimental/";

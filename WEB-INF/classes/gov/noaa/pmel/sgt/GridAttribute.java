@@ -15,7 +15,6 @@ package gov.noaa.pmel.sgt;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.util.Debug;
-import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

@@ -60,7 +60,7 @@ public abstract class DVector extends BaseType implements ClientIO {
    * @return a clone of this <code>DVector</code>.
    */
   @Override
-  public Object clone() {
+  public DVector clone() {
     DVector v = (DVector) super.clone();
     v.vals = (PrimitiveVector) vals.clone();
     return v;

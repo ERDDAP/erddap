@@ -283,7 +283,7 @@ public class ResourceBundle2 {
    * @return all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.
    */
   public String[] getKeys() {
-    ArrayList cumulative = new ArrayList();
+    ArrayList<String> cumulative = new ArrayList<>();
     if (concurrentHashMap != null) cumulative.addAll(String2.toArrayList(concurrentHashMap.keys()));
     if (primaryRB != null) cumulative.addAll(String2.toArrayList(primaryRB.getKeys()));
     if (secondaryRB != null) cumulative.addAll(String2.toArrayList(secondaryRB.getKeys()));

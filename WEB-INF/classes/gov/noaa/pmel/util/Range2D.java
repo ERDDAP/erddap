@@ -100,7 +100,7 @@ public class Range2D implements java.io.Serializable, Cloneable {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer(50);
+    StringBuilder buf = new StringBuilder(50);
     buf.append("[").append(start).append(";").append(end);
     if (Double.isNaN(delta)) {
       buf.append("]");

@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,7 +24,8 @@ import java.util.Set;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-12-01
  */
-public class Subscriptions {
+public class Subscriptions implements AutoCloseable {
+
   // FUTURE: more efficient to switch this from synchronized to using
   // java.util.concurrent.locks.ReentrantReadWriteLock.
   // (I think ConcurrentHashMap not enough since often a few data structures need to be modified
@@ -70,26 +72,26 @@ public class Subscriptions {
 
   protected String preferredErddapUrl; // preferrably the https url
   protected PersistentTable persistentTable;
-  protected HashSet<String> emailBlacklist = new HashSet();
+  protected HashSet<String> emailBlacklist = new HashSet<>();
 
   /**
    * From the point of view of a dataset: which subscriptions are for a given dataset.
    * key=datasetID, value=HashSet of persistentTable row numbers
    */
-  protected HashMap<String, HashSet> datasetSubscriptions = new HashMap();
+  protected Map<String, Set<Integer>> datasetSubscriptions = new HashMap<>();
 
   /**
    * From the point of view of email addresses: which subscriptions are related to that email
    * address. key=email, value=HashSet of persistentTable row numbers for valid and pending
    * subscriptions
    */
-  protected HashMap<String, HashSet> emailSubscriptions = new HashMap();
+  protected Map<String, Set<Integer>> emailSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected HashMap<String, Integer> pendingSubscriptions = new HashMap();
+  protected Map<String, Integer> pendingSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected HashMap<String, Integer> validSubscriptions = new HashMap();
+  protected Map<String, Integer> validSubscriptions = new HashMap<>();
 
   /**
    * The constructor for Subscriptions. If fullFuleName exists, the info will be loaded. If there is
@@ -150,6 +152,7 @@ public class Subscriptions {
    * This flushes and closes the persistentTable. Future operations on this instance will fail. If
    * the program crashes, similar things are done automatically.
    */
+  @Override
   public synchronized void close() throws IOException {
     if (persistentTable != null) {
       try {
@@ -158,18 +161,6 @@ public class Subscriptions {
       }
       persistentTable = null;
     }
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use close() instead. Java calls this when an object
-   * is no longer used, just before garbage collection.
-   */
-  protected synchronized void finalize() throws Throwable {
-    try { // extra insurance
-      close();
-    } catch (Throwable t) {
-    }
-    super.finalize();
   }
 
   /**
@@ -214,7 +205,7 @@ public class Subscriptions {
           });
       // Unfortunately there are several services that obviously frequently
       // change the domain of the email addresses, so no way to block them.
-      emailBlacklist = new HashSet();
+      emailBlacklist = new HashSet<>();
       for (int i = 0; i < sa.size(); i++) {
         String email = sa.get(i).toLowerCase(); // to do case insensitive test if on blacklist
         if (String2.isSomething(email) && email.indexOf('@') >= 0) // very loose test
@@ -259,10 +250,11 @@ public class Subscriptions {
    *
    * @return true if row was already in the hashset.
    */
-  protected synchronized boolean _addSubscription(HashMap map, String key, int row) {
-    HashSet rowNumbers = (HashSet) map.get(key);
+  protected synchronized boolean _addSubscription(
+      Map<String, Set<Integer>> map, String key, int row) {
+    Set<Integer> rowNumbers = map.get(key);
     if (rowNumbers == null) {
-      rowNumbers = new HashSet();
+      rowNumbers = new HashSet<Integer>();
       map.put(key, rowNumbers);
     }
     return rowNumbers.add(Integer.valueOf(row));
@@ -284,8 +276,8 @@ public class Subscriptions {
    * @return true if the row was in the hashset.
    */
   protected synchronized boolean _removeSubscription(
-      HashMap<String, HashSet> map, String key, int row) {
-    HashSet rowNumbers = map.get(key);
+      Map<String, Set<Integer>> map, String key, int row) {
+    Set<Integer> rowNumbers = map.get(key);
     if (rowNumbers == null) return false;
     boolean result = rowNumbers.remove(Integer.valueOf(row));
     if (result && rowNumbers.size() == 0) map.remove(key);
@@ -308,8 +300,8 @@ public class Subscriptions {
    * @return a sorted IntArray with persistent table row numbers, or null (if key not found)
    */
   protected synchronized IntArray _getSortedSubscriptions(
-      HashMap<String, HashSet> map, String key) {
-    HashSet hashSet = map.get(key);
+      Map<String, Set<Integer>> map, String key) {
+    Set<Integer> hashSet = map.get(key);
     if (hashSet == null) return null;
     IntArray rows = new IntArray();
     Iterator<Integer> it = hashSet.iterator();
@@ -331,7 +323,8 @@ public class Subscriptions {
    *
    * @return true if the row was already in the hashmap.
    */
-  protected synchronized boolean addPVSubscription(HashMap map, String comboKey, int row) {
+  protected synchronized boolean addPVSubscription(
+      Map<String, Integer> map, String comboKey, int row) {
     return map.put(comboKey, Integer.valueOf(row)) != null;
   }
 
@@ -340,7 +333,7 @@ public class Subscriptions {
    *
    * @return true if the row was in the hashmap.
    */
-  protected synchronized boolean removePVSubscription(HashMap map, String comboKey) {
+  protected synchronized boolean removePVSubscription(Map<String, Integer> map, String comboKey) {
     return map.remove(comboKey) != null;
   }
 
@@ -466,7 +459,7 @@ public class Subscriptions {
         (int) (System.currentTimeMillis() / 60000) - maxMinutesPending; // safe
     int nPending = 0, nRemoved = 0;
     int nRows = persistentTable.nRows();
-    Iterator it = pendingSubscriptions.keySet().iterator();
+    Iterator<String> it = pendingSubscriptions.keySet().iterator();
     while (it.hasNext()) {
       int row = pendingSubscriptions.get(it.next()).intValue();
       int creationMinute = (row < 0 || row >= nRows) ? -1 : readCreationMinute(row);

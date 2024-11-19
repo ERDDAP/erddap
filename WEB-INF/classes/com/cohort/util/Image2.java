@@ -27,7 +27,6 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import net.jmge.gif.Gif89Encoder;
 
 // import net.sourceforge.jiu.color.dithering.ErrorDiffusionDithering;
 // import net.sourceforge.jiu.color.quantization.MedianCutQuantizer;
@@ -407,43 +406,6 @@ public class Image2 {
           ge.encode(os);
       }
   */
-  /**
-   * Save an image as a .gif file. Handles transparent colors. Throws Exception if &gt;256 colors.
-   *
-   * @param image
-   * @param fullFileName (e.g., c:\myDir\myFile.gif)
-   */
-  public static void saveAsGif(Image image, String fullFileName) throws Exception {
-    // Gif89Encoder is free from http://jmge.net/java/gifenc/
-    OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName));
-    try {
-      new Gif89Encoder(image).encode(out);
-    } finally {
-      out.close();
-    }
-  }
-
-  /**
-   * Save an image as a .gif file constrained to standard web 216 color palette.
-   *
-   * @param image
-   * @param fullFileName (e.g., c:\myDir\myFile.gif)
-   * @param useDithering if false, it forces to nearest of 216 colors
-   * @throws Exception if trouble
-   */
-  public static void saveAsGif216(Image image, String fullFileName, boolean useDithering)
-      throws Exception {
-    // Gif89Encoder is free from http://jmge.net/java/gifenc/
-    OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName));
-    try {
-      new Gif89Encoder(
-              image,
-              useDithering ? Gif89Encoder.DITHERED_WEB216_PALETTE : Gif89Encoder.WEB216_PALETTE)
-          .encode(out);
-    } finally {
-      out.close();
-    }
-  }
 
   /**
    * Save an image (with any number of colors) as a .png file.

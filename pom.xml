@@ -113,7 +113,7 @@
                     <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
-                        <arg>-Xplugin:ErrorProne -Xep:JdkObsolete:OFF -Xep:ReferenceEquality:OFF -Xep:MutablePublicArray:OFF -Xep:AlreadyChecked:OFF -Xep:NarrowCalculation:OFF -Xep:JavaUtilDate:OFF -Xep:NonApiType:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:DefaultCharset:OFF -Xep:EmptyCatch:OFF -Xep:UnusedVariable:OFF -Xep:FloatingPointLiteralPrecision:OFF -Xep:LongDoubleConversion:OFF -Xep:StaticGuardedByInstance:OFF -Xep:BanJNDI:OFF -Xep:IncrementInForLoopAndHeader:OFF -Xep:StaticAssignmentInConstructor:OFF -Xep:UnicodeEscape:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:FutureReturnValueIgnored:OFF -Xep:Finalize:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:JdkObsolete:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:DefaultCharset:OFF -Xep:EmptyCatch:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF</arg>
                     </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
@@ -360,6 +360,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
+                    <argLine>${surefire.jacoco.args}</argLine>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
@@ -377,6 +378,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <argLine>${failsafe.jacoco.args}</argLine>
                             <additionalClasspathElements>
                                 <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                             </additionalClasspathElements>
@@ -415,16 +417,76 @@
                 <version>0.8.12</version>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
+                    <id>before-unit-test-execution</id>
+                    <goals>
+                    <goal>prepare-agent</goal>
+                    </goals>
+                    <configuration>
+                    <destFile>${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</destFile>
+                    <propertyName>surefire.jacoco.args</propertyName>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>after-unit-test-execution</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                    <configuration>
+                        <dataFile>${project.build.directory}/jacoco-output/jacoco-unit-tests.exec</dataFile>
+                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                    </configuration>
                     </execution>
                     <execution>
-                        <id>generate-code-coverage-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
+                    <id>before-integration-test-execution</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                    <configuration>
+                        <destFile>${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</destFile>
+                        <propertyName>failsafe.jacoco.args</propertyName>
+                    </configuration>
+                    </execution>
+                    <execution>
+                    <id>after-integration-test-execution</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                    <configuration>
+                        <dataFile>${project.build.directory}/jacoco-output/jacoco-integration-tests.exec</dataFile>
+                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                    </configuration>
+                    </execution>
+                    <execution>
+                    <id>merge-unit-and-integration</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>merge</goal>
+                    </goals>
+                    <configuration>
+                        <fileSets>
+                        <fileSet>
+                            <directory>${project.build.directory}/jacoco-output/</directory>
+                            <includes>
+                            <include>*.exec</include>
+                            </includes>
+                        </fileSet>
+                        </fileSets>
+                        <destFile>${project.build.directory}/jacoco-output/merged.exec</destFile>
+                    </configuration>
+                    </execution>
+                    <execution>
+                    <id>create-merged-report</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                    <configuration>
+                        <dataFile>${project.build.directory}/jacoco-output/merged.exec</dataFile>
+                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                    </configuration>
                     </execution>
                 </executions>
             </plugin>

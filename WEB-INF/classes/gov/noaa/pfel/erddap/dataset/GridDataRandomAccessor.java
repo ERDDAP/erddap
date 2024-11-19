@@ -27,8 +27,7 @@ import java.io.RandomAccessFile;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-07-06
  */
-public class GridDataRandomAccessor {
-
+public class GridDataRandomAccessor implements AutoCloseable {
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
@@ -80,7 +79,7 @@ public class GridDataRandomAccessor {
       }
       gdaTotalIndex = gridDataAccessor.totalIndex();
     } finally {
-      gridDataAccessor.releaseGetResources();
+      gridDataAccessor.close();
     }
   }
 
@@ -123,6 +122,7 @@ public class GridDataRandomAccessor {
    * (or closeAndDelete) when they are done using this instance. This is also called by finalize.
    * This won't throw an Exception.
    */
+  @Override
   public void close() {
     // ??? Or don't use random number in rafName,
     // leave files for the fullCacheDirectory cleaner to catch,
@@ -143,15 +143,7 @@ public class GridDataRandomAccessor {
       }
     } catch (Throwable t) {
     }
-  }
 
-  /**
-   * This closes and deletes all resources. It is recommended, but not required, that users of this
-   * class call this (or close) when they are done using this instance. This won't throw an
-   * Exception.
-   */
-  public void releaseResources() {
-    close();
     try {
       if (dataRaf != null) {
         int nDv = dataRaf.length;
@@ -166,14 +158,5 @@ public class GridDataRandomAccessor {
       }
     } catch (Throwable t) {
     }
-  }
-
-  /**
-   * Users of this class shouldn't call this -- use releaseResources() instead. Java calls this when
-   * an object is no longer used, just before garbage collection.
-   */
-  protected void finalize() throws Throwable {
-    releaseResources();
-    super.finalize();
   }
 }

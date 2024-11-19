@@ -4,7 +4,7 @@
  */
 package com.cohort.util;
 
-import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -141,7 +141,7 @@ public class Script2 {
    * @param script The script with or without the starting '='.
    * @return a HashSet with the referenced column names (may be size=0).
    */
-  public static HashSet<String> jexlScriptNeedsColumns(String script) {
+  public static Set<String> jexlScriptNeedsColumns(String script) {
 
     return String2.extractAllCaptureGroupsAsHashSet(script, SCRIPT_COLUMN_REFERENCE_PATTERN, 2);
   }

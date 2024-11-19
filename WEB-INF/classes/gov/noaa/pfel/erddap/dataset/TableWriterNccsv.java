@@ -16,6 +16,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -212,5 +213,13 @@ public class TableWriterNccsv extends TableWriter {
 
     TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, tNewHistory, tOutputStreamSource);
     twn.writeAllAndFinish(table);
+    twn.close();
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (writer != null) {
+      writer.close();
+    }
   }
 }

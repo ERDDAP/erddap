@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is used by SSR.cShell and dosShell to create a separate thread to grab info from the
@@ -20,7 +21,7 @@ import java.util.ArrayList;
  */
 public class PipeToStringArray extends PipeTo {
   private BufferedReader bufferedReader;
-  private ArrayList<String> arrayList = new ArrayList();
+  private ArrayList<String> arrayList = new ArrayList<>();
 
   /**
    * This method grabs all the info from inputStream and stores it in an internal ArrayList. The run
@@ -57,7 +58,7 @@ public class PipeToStringArray extends PipeTo {
    *
    * @return the ArrayList with the info from the inputStream
    */
-  public ArrayList<String> getArrayList() {
+  public List<String> getArrayList() {
     return arrayList;
   }
 

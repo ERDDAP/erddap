@@ -157,6 +157,7 @@ public class BytePrimitiveVector extends PrimitiveVector implements Cloneable {
       }
     }
     // pad out to a multiple of four bytes
+    @SuppressWarnings("unused")
     byte unused;
     for (int i = 0; i < pad; i++) unused = source.readByte();
     if (statusUI != null) statusUI.incrementByteCount(pad);

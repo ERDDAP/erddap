@@ -169,4 +169,7 @@ public class TableWriterUnits extends TableWriter {
       else if (toUdunits) atts.set("units", Units2.safeUcumToUdunits(units));
     }
   }
+
+  @Override
+  public void close() {}
 }

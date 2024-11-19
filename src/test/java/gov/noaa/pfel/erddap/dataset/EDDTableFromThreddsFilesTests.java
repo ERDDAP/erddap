@@ -9,7 +9,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -38,10 +37,7 @@ class EDDTableFromThreddsFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, expected, userDapQuery;
 
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 11); // [10]='T'
 
@@ -1214,10 +1210,7 @@ class EDDTableFromThreddsFilesTests {
     // *****************\n");
     // testVerboseOn();
     int language = 0;
-    String name, tName, results, tResults, expected, userDapQuery, tQuery;
-    String error = "";
-    int po;
-    EDV edv;
+    String tName, results, tResults, expected, userDapQuery;
 
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check

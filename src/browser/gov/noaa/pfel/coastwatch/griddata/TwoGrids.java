@@ -228,7 +228,7 @@ public class TwoGrids  {
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //delete any existing file
-        String ext = Grid.SAVE_AS_EXTENSIONS[Grid.SAVE_AS_MATLAB];
+        String ext = Grid.SAVE_AS_EXTENSIONS.get(Grid.SAVE_AS_MATLAB);
         File2.delete(directory + name + ext);
 
         //make sure there is data
@@ -314,7 +314,7 @@ public class TwoGrids  {
         long time = System.currentTimeMillis();
 
         //delete any existing file
-        String ext = Grid.SAVE_AS_EXTENSIONS[Grid.SAVE_AS_NETCDF];
+        String ext = Grid.SAVE_AS_EXTENSIONS.get(Grid.SAVE_AS_NETCDF);
         File2.delete(directory + name + ext);
 
         //make sure there is data
@@ -518,7 +518,7 @@ public class TwoGrids  {
         String errorInMethod = String2.ERROR + " in TwoGrids.saveAsMatlab:\n";
 
         //delete any existing file
-        String ext = Grid.SAVE_AS_EXTENSIONS[Grid.SAVE_AS_XYZ];
+        String ext = Grid.SAVE_AS_EXTENSIONS.get(Grid.SAVE_AS_XYZ);
         File2.delete(directory + name);
 
         //make sure there is data
@@ -604,7 +604,7 @@ public class TwoGrids  {
             saveAsType != SAVE_AS_XYZ)
             throw new RuntimeException(String2.ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
        
-        String ext = SAVE_AS_EXTENSIONS[saveAsType];
+        String ext = SAVE_AS_EXTENSIONS.get(saveAsType);
 
         //does the file already exist?
         String finalName = directory + fileName + ext + (zipIt? ".zip" : "");

@@ -37,7 +37,7 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
     int language = 0;
-    String name, tName, baseName, userDapQuery, results, expected, error;
+    String tName, baseName, results, expected;
     String dapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
 
@@ -279,7 +279,7 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
     int language = 0;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     String dapQuery;
     String tDir = EDStatic.fullTestCacheDirectory;
     Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1306736E9), "2005-10-30T12:00:00Z", "");
@@ -482,8 +482,7 @@ class EDDGridSideBySideTests {
     // String2.log("\n*** EDDGridSideBySide.testDuplicateSourceNames");
     // testVerboseOn();
     int language = 0;
-    String dir = EDStatic.fullTestCacheDirectory;
-    String name, tName, userDapQuery, results, expected, error;
+    String tName, results, expected;
     String dapQuery;
 
     // if there is trouble, this will throw an exception
@@ -521,7 +520,7 @@ class EDDGridSideBySideTests {
     // testVerboseOn();
     int language = 0;
     String dir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
-    String name, tName, userDapQuery, results, expected, error;
+    String tName;
     String dapQuery, baseName;
 
     EDDGrid qsWind8 = (EDDGrid) EDDTestDataset.geterdQSwind8day();
@@ -631,11 +630,7 @@ class EDDGridSideBySideTests {
   @org.junit.jupiter.api.Test
   @TagLocalERDDAP
   void testFiles() throws Throwable {
-
-    String2.log("\n*** EDDGridSideBySide.testFiles()\n");
-    String tDir = EDStatic.fullTestCacheDirectory;
-    String dapQuery, tName, start, query, results, expected;
-    int po;
+    String results, expected;
 
     // get /files/datasetID/.csv
     results =

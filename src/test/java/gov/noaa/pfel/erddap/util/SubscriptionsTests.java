@@ -25,7 +25,6 @@ class SubscriptionsTests {
     // reallyVerbose = true;
     String results, expected;
     int key = -1;
-    boolean ok = true;
     String sampleDatasetID = "pmelTao";
     String sampleEmail = "john.smith@company.com";
 
