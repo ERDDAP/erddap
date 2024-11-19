@@ -234,7 +234,7 @@ public class Legend implements Serializable {
    * @param l change listener
    */
   public synchronized void addChangeListener(ChangeListener l) {
-    if (Page.DEBUG) System.out.println("Legend.addChangeListener(" + l + ")");
+    if (false) System.out.println("Legend.addChangeListener(" + l + ")");
     Vector v = changeListeners == null ? new Vector(2) : (Vector) changeListeners.clone();
     if (!v.contains(l)) {
       v.addElement(l);

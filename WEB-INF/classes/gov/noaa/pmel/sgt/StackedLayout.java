@@ -12,7 +12,6 @@
 
 package gov.noaa.pmel.sgt;
 
-import gov.noaa.pmel.sgt.beans.Panel;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -52,10 +51,6 @@ public class StackedLayout implements LayoutManager {
       boolean batch = false;
       if (parent instanceof JPane) {
         pane = (JPane) parent;
-        batch = pane.isBatch();
-        pane.setBatch(true, "StackedLayout");
-      } else if (parent instanceof Panel) {
-        pane = ((Panel) parent).getPane();
         batch = pane.isBatch();
         pane.setBatch(true, "StackedLayout");
       }

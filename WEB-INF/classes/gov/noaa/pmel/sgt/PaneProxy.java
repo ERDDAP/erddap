@@ -14,7 +14,6 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.beans.Panel;
 import gov.noaa.pmel.sgt.swing.Draggable;
 import gov.noaa.pmel.util.Debug;
 import java.awt.Color;
@@ -351,8 +350,6 @@ public class PaneProxy { // Bob Simons made public
     for (int i = 0; i < comps.length; i++) {
       if (comps[i] instanceof Layer) {
         if (java.util.Objects.equals(((Layer) comps[i]).getId(), id)) return (Layer) comps[i];
-      } else if (comps[i] instanceof Panel) {
-        if (((Panel) comps[i]).hasLayer(id)) return (Layer) ((Panel) comps[i]).getLayer(id);
       }
     }
     throw new LayerNotFoundException();
@@ -363,9 +360,6 @@ public class PaneProxy { // Bob Simons made public
     for (int i = 0; i < comps.length; i++) {
       if (comps[i] instanceof Layer) {
         if (((Layer) comps[i]).isDataInLayer(id)) return (Layer) comps[i];
-      } else if (comps[i] instanceof Panel) {
-        if (((Panel) comps[i]).isDataInPanel(id))
-          return (Layer) ((Panel) comps[i]).getLayerFromDataId(id);
       }
     }
     throw new LayerNotFoundException();
@@ -399,9 +393,6 @@ public class PaneProxy { // Bob Simons made public
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
           if (obj != null) return obj;
-        } else if (comps[i] instanceof Panel) {
-          obj = ((Panel) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) return obj;
         }
       }
     }
@@ -419,9 +410,6 @@ public class PaneProxy { // Bob Simons made public
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(x, y, false);
-          if (obj != null) obList.add(obj);
-        } else if (comps[i] instanceof Panel) {
-          obj = ((Panel) comps[i]).getObjectAt(x, y, false);
           if (obj != null) obList.add(obj);
         }
       }
@@ -500,12 +488,6 @@ public class PaneProxy { // Bob Simons made public
       for (int i = 0; i < comps.length; i++) {
         if (comps[i] instanceof Layer) {
           obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
-          if (obj != null) {
-            selectedobject_ = obj;
-            break;
-          }
-        } else if (comps[i] instanceof Panel) {
-          obj = ((Panel) comps[i]).getObjectAt(event.getX(), event.getY(), false);
           if (obj != null) {
             selectedobject_ = obj;
             break;
@@ -633,12 +615,6 @@ public class PaneProxy { // Bob Simons made public
         for (int i = 0; i < comps.length; i++) {
           if (comps[i] instanceof Layer) {
             obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
-            if (obj != null) {
-              selectedobject_ = obj;
-              break;
-            }
-          } else if (comps[i] instanceof Panel) {
-            obj = ((Panel) comps[i]).getObjectAt(event.getX(), event.getY(), false);
             if (obj != null) {
               selectedobject_ = obj;
               break;
