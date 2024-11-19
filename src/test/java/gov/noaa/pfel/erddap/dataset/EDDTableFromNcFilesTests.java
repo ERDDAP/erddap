@@ -21,6 +21,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -17803,7 +17804,7 @@ class EDDTableFromNcFilesTests {
       for (int attempt = 0; attempt < nAttempts; attempt++) {
         if (attempt % 8 == 0) {
           String2.log(cmd);
-          SSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
           // File2.deleteAllFiles(tempDir); //previous method
         }
         Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000L); // gtspp:
@@ -17971,7 +17972,7 @@ class EDDTableFromNcFilesTests {
              */
           }
 
-          SSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
+          TestSSR.dosShell(cmd, 30 * 60); // 10 minutes*60 seconds
           String2.log(
               "  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 

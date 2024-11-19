@@ -2102,7 +2102,7 @@ public class Table {
     trySet(globalAttributes, "title", boldTitle); // Time series from ... ?
 
     // remove some commonly set, but no longer relevant, attributes
-    globalAttributes.remove(CacheOpendapStation.OPENDAP_TIME_DIMENSION_SIZE);
+    globalAttributes.remove("CWOpendapTimeDimensionSize");
     globalAttributes.remove("Unlimited_Dimension"); // e.g., MBARI has this
 
     // setActualRangeAndBoundingBox

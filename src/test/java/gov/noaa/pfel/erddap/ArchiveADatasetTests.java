@@ -8,6 +8,7 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagMissingDataset;
@@ -113,7 +114,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(5000);
 
     // decompress and look at contents
-    SSR.windowsDecompressTargz(targzName, false, 5); // timeout minutes
+    windowsDecompressTargz(targzName, false, 5); // timeout minutes
     String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -216,7 +217,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(5000);
 
     // decompress and look at contents
-    SSR.windowsDecompressTargz(targzName, false, 5); // timeout minutes
+    windowsDecompressTargz(targzName, false, 5); // timeout minutes
     String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -388,7 +389,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(5000);
 
     // decompress and look at contents
-    SSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
+    TestSSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
     String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -555,7 +556,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(5000);
 
     // decompress and look at contents
-    SSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
+    TestSSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
     String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -715,7 +716,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(5000);
 
     // decompress and look at contents
-    SSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
+    TestSSR.unzipADirectory(targzName, 60, null); // timeoutSeconds
     String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -812,7 +813,7 @@ class ArchiveADatasetTests {
     // Math2.sleep(10000);
 
     // decompress and look at contents
-    SSR.windowsDecompressTargz(targzName, false, 20); // timeout minutes
+    windowsDecompressTargz(targzName, false, 20); // timeout minutes
     String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
     int tempDirLen = tempDir.length();
     Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", true, ".*", "");
@@ -881,5 +882,45 @@ class ArchiveADatasetTests {
     Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
     // String2.pressEnterToContinue("\n");
+  }
+
+  /**
+   * This decompresses a .tar.gz file on Bob's Windows computer, in a directory with the name from
+   * the .tar.gz file.
+   *
+   * @throws Exception if trouble
+   */
+  public static void windowsDecompressTargz(
+      String sourceFullName, boolean makeBaseDir, int timeOutMinutes) throws Exception {
+
+    String sourceDir = File2.getDirectory(sourceFullName);
+    String sourceTarName = File2.getNameNoExtension(sourceFullName);
+    String sourceJustName = File2.getNameNoExtension(sourceTarName);
+
+    // extract tar from .gzip
+    String cmd = SSR.windows7Zip + " -y e " + sourceFullName + " -o" + sourceDir + " -r";
+    long cmdTime = System.currentTimeMillis();
+    TestSSR.dosShell(cmd, timeOutMinutes * 60);
+    String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+    // extract from the .tar file   //gtspp4_at199001.tar
+    if (makeBaseDir) File2.makeDirectory(sourceDir + sourceJustName);
+    File2.makeDirectory(sourceDir + sourceJustName + "/");
+    cmd =
+        SSR.windows7Zip
+            + " -y x "
+            + sourceDir
+            + sourceTarName
+            + // xtract with full dir names
+            " -o"
+            + sourceDir
+            + (makeBaseDir ? sourceJustName + "/" : "")
+            + " -r";
+    cmdTime = System.currentTimeMillis();
+    TestSSR.dosShell(cmd, timeOutMinutes * 60);
+    String2.log("  cmd time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+    // delete the .tar file
+    File2.delete(sourceDir + sourceTarName);
   }
 }

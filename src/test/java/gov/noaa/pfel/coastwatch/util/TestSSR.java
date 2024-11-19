@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -12,9 +13,12 @@ import com.cohort.util.Test;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagPassword;
@@ -122,7 +126,7 @@ public class TestSSR {
     try {
       Test.ensureEqual(
           String2.toNewlineString(
-              SSR.dosShell(
+              dosShell(
                       "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
                           + File2.getWebInfParentDirectory()
                           + // with / separator and / at the end
@@ -236,7 +240,7 @@ public class TestSSR {
       File2.delete(gzipDir + fileName);
       // unzip the gzip file
       time2 = System.currentTimeMillis();
-      SSR.unGzip(
+      unGzip(
           gzipDir + gzipName,
           gzipDir, // note: extract to classPath, since doesn't include dir
           true,
@@ -712,5 +716,166 @@ public class TestSSR {
     SSR.verbose = true;
 
     // runUnixTests();
+  }
+
+  /**
+   * This handles the common case of unzipping a zip file (in place) that contains a directory with
+   * subdirectories and files.
+   */
+  public static void unzipADirectory(
+      String fullZipName, int timeOutSeconds, StringArray resultingFullFileNames) throws Exception {
+
+    SSR.unzip(
+        fullZipName,
+        File2.getDirectory(fullZipName),
+        false,
+        timeOutSeconds,
+        resultingFullFileNames);
+  }
+
+  /**
+   * Extract the ONE file from a .gz file to the base directory. An existing file of the same name
+   * will be overwritten.
+   *
+   * @param fullGzName (with .gz at end)
+   * @param baseDir (with slash at end)
+   * @param ignoreGzDirectories if true, the directories (if any) of the files in the .gz file are
+   *     ignored, and all files are stored in baseDir itself. If false, new directories will be
+   *     created as needed. CURRENTLY, ONLY 'TRUE' IS SUPPORTED. THE FILE IS ALWAYS GIVEN THE NAME
+   *     fullGzName.substring(0, fullGzName.length() - 3).
+   * @param timeOutSeconds (use -1 for no time out)
+   * @throws Exception
+   */
+  public static void unGzip(
+      String fullGzName, String baseDir, boolean ignoreGzDirectories, int timeOutSeconds)
+      throws Exception {
+
+    // if Linux, it is faster to use the zip utility
+    long tTime = System.currentTimeMillis();
+    if (!ignoreGzDirectories) {
+      throw new RuntimeException("Currently, SSR.unGzip only supports ignoreGzDirectories=true!");
+    }
+    /*Do this in the future?
+     if (String2.OSIsLinux) {
+        //-d: the directory to put the files in
+        if (verbose) String2.log("Using Linux's ungz");
+        cShell("ungz -o " + //-o overwrites existing files without asking
+            (ignoreGzDirectories? "-j " : "") +
+            fullGzName + " " +
+            "-d " + baseDir.substring(0, baseDir.length() - 1),  //remove trailing slash   necessary?
+            timeOutSeconds);
+    } else */ {
+      // use Java's gzip procedures for all other operating systems
+      GZIPInputStream in =
+          new GZIPInputStream(
+              File2.getBufferedInputStream(
+                  fullGzName)); // not File2.getDecompressedBufferedInputStream(). Read file as is.
+      try {
+        // create a buffer for reading the files
+        byte[] buf = new byte[4096];
+
+        //// unzip the files
+        // ZipEntry entry = in.getNextEntry();
+        // while (entry != null) {
+        String ext = File2.getExtension(fullGzName); // should be .gz
+        String name = fullGzName.substring(0, fullGzName.length() - ext.length());
+        /*
+        //isDirectory?
+        if (entry.isDirectory()) {
+            if (ignoreZipDirectories) {
+            } else {
+                File tDir = new File(baseDir + name);
+                if (!tDir.exists())
+                    tDir.mkdirs();
+            }
+        } else */ {
+          // open an output file
+          // ???do I need to make the directory???
+          /* if (ignoreGzDirectories) */
+          name = File2.getNameAndExtension(name); // remove dir info
+          OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
+          try {
+            // transfer bytes from the .zip file to the output file
+            // in.read reads from current zipEntry
+            byte[] buffer = new byte[8192]; // best if smaller than java buffered...Stream size
+            int bytesRead;
+            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+              out.write(buffer, 0, bytesRead);
+            }
+          } finally {
+            // close the output file
+            out.close();
+          }
+        }
+
+        //// close this entry
+        // in.closeEntry();
+
+        //// get the next entry
+        // entry = in.getNextEntry();
+        // }
+      } finally {
+        // close the input file
+        in.close();
+      }
+    }
+  }
+
+  /**
+   * This runs the specified command with dosShell (if String2.OSISWindows) or cShell (otherwise).
+   *
+   * @param commandLine with file names specified with forward slashes
+   * @param timeOutSeconds (use 0 for no timeout)
+   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
+   *     error)
+   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
+   */
+  public static List<String> dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
+    if (String2.OSIsWindows) {
+      // commandLine = String2.replaceAll(commandLine, "/", "\\");
+      return dosShell(commandLine, timeOutSeconds);
+    } else {
+      return SSR.cShell(commandLine, timeOutSeconds);
+    }
+  }
+
+  /**
+   * This is a variant of shell() for DOS command lines.
+   *
+   * @param commandLine the command line to be executed (for example, "myprogram <filename>") with
+   *     backslashes
+   * @param timeOutSeconds (use 0 for no timeout)
+   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
+   *     error)
+   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
+   * @see #shell
+   */
+  public static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
+    PipeToStringArray outCatcher = new PipeToStringArray();
+    PipeToStringArray errCatcher = new PipeToStringArray();
+
+    //        int exitValue = shell(String2.tokenize("cmd.exe /C " + commandLine),
+    int exitValue =
+        SSR.shell(
+            new String[] {"cmd.exe", "/C", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+
+    // collect and print results (or throw exception)
+    String err = errCatcher.getString();
+    if (err.length() > 0 || exitValue != 0) {
+      String s =
+          "dosShell       cmd: "
+              + commandLine
+              + "\n"
+              + "dosShell exitValue: "
+              + exitValue
+              + "\n"
+              + "dosShell       err: "
+              + err
+              + (err.length() > 0 ? "" : "\n");
+      // "dosShell       out: " + outCatcher.getString();
+      if (exitValue == 0) String2.log(s);
+      else throw new Exception(String2.ERROR + " in SSR.dosShell:\n" + s);
+    }
+    return outCatcher.getArrayList();
   }
 }
