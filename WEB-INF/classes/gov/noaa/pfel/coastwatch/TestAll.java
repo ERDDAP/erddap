@@ -7,7 +7,6 @@ package gov.noaa.pfel.coastwatch;
 import com.cohort.array.*;
 import com.cohort.util.*;
 import gov.noaa.pfel.coastwatch.griddata.*;
-import gov.noaa.pfel.coastwatch.hdf.*;
 import gov.noaa.pfel.coastwatch.netcheck.*;
 import gov.noaa.pfel.coastwatch.pointdata.*;
 import gov.noaa.pfel.coastwatch.sgt.*;
@@ -906,7 +905,6 @@ public class TestAll {
     RowComparator rc;
     RowComparatorIgnoreCase rcic;
     SaveOpendap so;
-    SdsReader sr;
     SgtGraph sgtGraph;
     SgtMap sgtMap;
     SgtUtil sgtUtil;
