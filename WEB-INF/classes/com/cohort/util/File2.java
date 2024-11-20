@@ -295,8 +295,7 @@ public class File2 {
 
   private static String tempDirectory; // lazy creation by getSystemTempDirectory
 
-  private static ConcurrentHashMap<String, S3Client> s3ClientMap =
-      new ConcurrentHashMap<String, S3Client>();
+  private static ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
 
   public static String getClassPath() {
     String find = "/com/cohort/util/String2.class";
@@ -663,37 +662,37 @@ public class File2 {
       // String2.log(">> File2.deleteIfOld dir=" + dir + " nFiles=" + files.length);
       int nRemain = 0;
       int nDir = 0;
-      for (int i = 0; i < files.length; i++) {
+      for (File value : files) {
         // String2.log(">> File2.deleteIfOld files[" + i + "]=" + files[i].getAbsolutePath());
         try {
-          if (files[i].isFile()) {
-            if (files[i].lastModified() < time) {
-              if (!files[i].delete()) {
+          if (value.isFile()) {
+            if (value.lastModified() < time) {
+              if (!value.delete()) {
                 // unable to delete
-                String2.log(msg + files[i].getCanonicalPath());
+                String2.log(msg + value.getCanonicalPath());
                 nRemain = -1;
               }
             } else if (nRemain != -1) { // once nRemain is -1, it isn't changed
               nRemain++;
             }
-          } else if (recursive && files[i].isDirectory()) {
+          } else if (recursive && value.isDirectory()) {
             nDir++;
             int tnRemain =
-                deleteIfOld(files[i].getAbsolutePath(), time, recursive, deleteEmptySubdirectories);
+                deleteIfOld(value.getAbsolutePath(), time, recursive, deleteEmptySubdirectories);
             // String2.log(">> File2.deleteIfOld might delete this dir. tnRemain=" + tnRemain);
             if (tnRemain == -1) nRemain = -1;
             else {
               if (nRemain != -1) // once nRemain is -1, it isn't changed
               nRemain += tnRemain;
               if (tnRemain == 0 && deleteEmptySubdirectories) {
-                files[i].delete();
+                value.delete();
               }
             }
           }
         } catch (Exception e) {
           try {
             nRemain = -1;
-            String2.log(msg + files[i].getCanonicalPath());
+            String2.log(msg + value.getCanonicalPath());
           } catch (Exception e2) {
           }
         }
@@ -929,8 +928,7 @@ public class File2 {
         // isAwsS3Url
         return getS3Client(bro[1])
             .headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
-            .contentLength()
-            .longValue();
+            .contentLength();
       }
     } catch (NoSuchKeyException nske) { // if aws key/object doesn't exist
       return -1;
@@ -1353,13 +1351,10 @@ public class File2 {
     // handle .Z (capital Z) specially first
     // This assumes Z files contain only 1 file.
     if (ext.equals(".Z")) {
-      FileOutputStream out = null;
-      ZCompressorInputStream zIn = null;
-      try {
-        out = new FileOutputStream(destDir);
-        zIn =
-            new ZCompressorInputStream(
-                new BufferedInputStream(new FileInputStream(sourceFullName)));
+      try (FileOutputStream out = new FileOutputStream(destDir);
+          ZCompressorInputStream zIn =
+              new ZCompressorInputStream(
+                  new BufferedInputStream(new FileInputStream(sourceFullName)))) {
         final byte[] buffer = new byte[1024];
         int n = 0;
         while (-1 != (n = zIn.read(buffer))) {
@@ -1367,13 +1362,6 @@ public class File2 {
         }
       } catch (Exception e) {
         throw e;
-      } finally {
-        if (out != null) {
-          out.close();
-        }
-        if (zIn != null) {
-          zIn.close();
-        }
       }
     }
 
@@ -1479,25 +1467,15 @@ public class File2 {
       }
 
     } else if (ext.equals(".bz2")) {
-      OutputStream out = null;
-      BZip2CompressorInputStream bzIn = null;
 
-      try {
-        out = Files.newOutputStream(Paths.get(destDir));
-        bzIn =
-            new BZip2CompressorInputStream(
-                new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))));
+      try (OutputStream out = Files.newOutputStream(Paths.get(destDir));
+          BZip2CompressorInputStream bzIn =
+              new BZip2CompressorInputStream(
+                  new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))))) {
         final byte[] buffer = new byte[bufferSize];
         int n = 0;
         while (-1 != (n = bzIn.read(buffer))) {
           out.write(buffer, 0, n);
-        }
-      } finally {
-        if (out != null) {
-          out.close();
-        }
-        if (bzIn != null) {
-          bzIn.close();
         }
       }
     }
@@ -1602,9 +1580,8 @@ public class File2 {
     // declare the results variable: String results[] = {"", ""};
     // BufferedReader and results are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
-    BufferedReader br = getDecompressedBufferedFileReader(fileName, charset);
-    StringBuilder sb = new StringBuilder(8192);
-    try {
+    try (BufferedReader br = getDecompressedBufferedFileReader(fileName, charset)) {
+      StringBuilder sb = new StringBuilder(8192);
 
       // get the text from the file
       char buffer[] = new char[8192];
@@ -1612,11 +1589,6 @@ public class File2 {
       while ((nRead = br.read(buffer)) >= 0) // -1 = end-of-file
       sb.append(buffer, 0, nRead);
       return sb.toString();
-    } finally {
-      try {
-        br.close();
-      } catch (Exception e) {
-      }
     }
   }
 
@@ -2205,20 +2177,12 @@ public class File2 {
    */
   public static boolean copy(String source, OutputStream out, long first, long last) {
 
-    InputStream in = null;
-    try {
-      in =
-          getBufferedInputStream(
-              source); // not getDecompressedBufferedInputStream(). Read file as is.
+    try (InputStream in = getBufferedInputStream(source)) {
+      // not getDecompressedBufferedInputStream(). Read file as is.
       return copy(in, out, first, last);
     } catch (Exception e) {
       String2.log(MustBe.throwable(String2.ERROR + " in File2.copy.", e));
       return false;
-    } finally {
-      try {
-        if (in != null) in.close();
-      } catch (Exception e2) {
-      }
     }
   }
 
@@ -2491,10 +2455,9 @@ public class File2 {
       String fullInFileName, String fullOutFileName, String charset, String search, String replace)
       throws Exception {
 
-    BufferedReader bufferedReader = getDecompressedBufferedFileReader(fullInFileName, charset);
-    try {
-      BufferedWriter bufferedWriter = getBufferedFileWriter(fullOutFileName, charset);
-      try {
+    try (BufferedReader bufferedReader =
+        getDecompressedBufferedFileReader(fullInFileName, charset)) {
+      try (BufferedWriter bufferedWriter = getBufferedFileWriter(fullOutFileName, charset)) {
         // get the text from the file
         // This uses bufferedReader.readLine() to repeatedly
         // read lines from the file and thus can handle various
@@ -2505,11 +2468,7 @@ public class File2 {
           bufferedWriter.write(String2.lineSeparator);
           s = bufferedReader.readLine();
         }
-      } finally {
-        bufferedWriter.close();
       }
-    } finally {
-      bufferedReader.close();
     }
   }
 }

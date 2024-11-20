@@ -58,7 +58,7 @@ public class Math2 {
   public static final long BytesPerTB = BytesPerGB * BytesPerKB;
   public static final long BytesPerPB = BytesPerTB * BytesPerKB;
   public static final long loAnd = ((long) Integer.MAX_VALUE * 2) + 1; // mask for low 32 bits
-  public static java.util.Random random = new java.util.Random();
+  public static final java.util.Random random = new java.util.Random();
   public static volatile long lastUsingMemory = 0; // volatile: used by all threads
   public static volatile long maxUsingMemory = 0; // volatile: used by all threads
   public static long maxMemory = Runtime.getRuntime().maxMemory();

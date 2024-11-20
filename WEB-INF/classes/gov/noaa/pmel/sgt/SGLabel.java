@@ -18,8 +18,6 @@ import gov.noaa.pmel.util.Point2D;
 import gov.noaa.pmel.util.Rectangle2D;
 import java.awt.*;
 import java.beans.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
 // jdk1.2
@@ -80,8 +78,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
     try {
       BeanInfo info = Introspector.getBeanInfo(SGLabel.class);
       PropertyDescriptor[] descriptors = info.getPropertyDescriptors();
-      for (int i = 0; i < descriptors.length; i++) {
-        PropertyDescriptor pd = descriptors[i];
+      for (PropertyDescriptor pd : descriptors) {
         if (pd.getName().equals("layer")) {
           pd.setValue("transient", Boolean.TRUE);
         }

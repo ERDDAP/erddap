@@ -154,9 +154,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setVectorStyle(int style) {
     if (vectorStyle_ != style) {
-      Integer tempOld = Integer.valueOf(vectorStyle_);
+      Integer tempOld = vectorStyle_;
       vectorStyle_ = style;
-      firePropertyChange("vectorStyle", tempOld, Integer.valueOf(vectorStyle_));
+      firePropertyChange("vectorStyle", tempOld, vectorStyle_);
     }
   }
 
@@ -208,9 +208,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setVectorScale(double scale) {
     if (vectorScale_ != scale) {
-      Double tempOld = Double.valueOf(vectorScale_);
+      Double tempOld = vectorScale_;
       vectorScale_ = scale;
-      firePropertyChange("vectorScale", tempOld, Double.valueOf(vectorScale_));
+      firePropertyChange("vectorScale", tempOld, vectorScale_);
     }
   }
 
@@ -225,9 +225,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setVectorMaxSize(double size) {
     if (vectorMaxSize_ != size) {
-      Double tempOld = Double.valueOf(vectorMaxSize_);
+      Double tempOld = vectorMaxSize_;
       vectorMaxSize_ = size;
-      firePropertyChange("vectorMaxSize", tempOld, Double.valueOf(vectorMaxSize_));
+      firePropertyChange("vectorMaxSize", tempOld, vectorMaxSize_);
     }
   }
 
@@ -244,9 +244,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setOffsetAngle(double angle) {
     if (offsetAngle_ != angle) {
-      Double tempOld = Double.valueOf(offsetAngle_);
+      Double tempOld = offsetAngle_;
       offsetAngle_ = angle;
-      firePropertyChange("offsetAngle", tempOld, Double.valueOf(offsetAngle_));
+      firePropertyChange("offsetAngle", tempOld, offsetAngle_);
     }
   }
 
@@ -266,9 +266,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setHeadScale(double scale) {
     if (headScale_ != scale) {
-      Double tempOld = Double.valueOf(headScale_);
+      Double tempOld = headScale_;
       headScale_ = scale;
-      firePropertyChange("headScale", tempOld, Double.valueOf(headScale_));
+      firePropertyChange("headScale", tempOld, headScale_);
     }
   }
 
@@ -283,9 +283,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setHeadMaxSize(double size) {
     if (headMaxSize_ != size) {
-      Double tempOld = Double.valueOf(headMaxSize_);
+      Double tempOld = headMaxSize_;
       headMaxSize_ = size;
-      firePropertyChange("headMaxSize", tempOld, Double.valueOf(headMaxSize_));
+      firePropertyChange("headMaxSize", tempOld, headMaxSize_);
     }
   }
 
@@ -300,9 +300,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setHeadMinSize(double size) {
     if (headMinSize_ != size) {
-      Double tempOld = Double.valueOf(headMinSize_);
+      Double tempOld = headMinSize_;
       headMinSize_ = size;
-      firePropertyChange("headMinSize", tempOld, Double.valueOf(headMinSize_));
+      firePropertyChange("headMinSize", tempOld, headMinSize_);
     }
   }
 
@@ -317,9 +317,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setHeadFixedSize(double size) {
     if (headFixedSize_ != size) {
-      Double tempOld = Double.valueOf(headFixedSize_);
+      Double tempOld = headFixedSize_;
       headFixedSize_ = size;
-      firePropertyChange("headFixedSize", tempOld, Double.valueOf(headFixedSize_));
+      firePropertyChange("headFixedSize", tempOld, headFixedSize_);
     }
   }
 
@@ -338,9 +338,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setOriginStyle(int style) {
     if (originStyle_ != style) {
-      Integer tempOld = Integer.valueOf(originStyle_);
+      Integer tempOld = originStyle_;
       originStyle_ = style;
-      firePropertyChange("originStyle", tempOld, Integer.valueOf(originStyle_));
+      firePropertyChange("originStyle", tempOld, originStyle_);
     }
   }
 
@@ -375,11 +375,11 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setMark(int mark) {
     if (mark_ != mark) {
-      Integer tempOld = Integer.valueOf(mark_);
+      Integer tempOld = mark_;
       if (mark <= 0) mark = 1;
       if (mark > 51) mark = 51;
       mark_ = mark;
-      firePropertyChange("mark", tempOld, Integer.valueOf(mark_));
+      firePropertyChange("mark", tempOld, mark_);
     }
   }
 
@@ -400,9 +400,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setMarkHeightP(double markh) {
     if (markHeightP_ != markh) {
-      Double tempOld = Double.valueOf(markHeightP_);
+      Double tempOld = markHeightP_;
       markHeightP_ = markh;
-      firePropertyChange("markHeightP", tempOld, Double.valueOf(markHeightP_));
+      firePropertyChange("markHeightP", tempOld, markHeightP_);
     }
   }
 
@@ -423,9 +423,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setWidth(float t) {
     if (width_ != t) {
-      Float tempOld = Float.valueOf(width_);
+      Float tempOld = width_;
       width_ = t;
-      firePropertyChange("width", tempOld, Float.valueOf(width_));
+      firePropertyChange("width", tempOld, width_);
     }
   }
 
@@ -449,9 +449,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setCapStyle(int style) {
     if (capStyle_ != style) {
-      Integer tempOld = Integer.valueOf(capStyle_);
+      Integer tempOld = capStyle_;
       capStyle_ = style;
-      firePropertyChange("capStyle", tempOld, Integer.valueOf(capStyle_));
+      firePropertyChange("capStyle", tempOld, capStyle_);
     }
   }
 
@@ -471,9 +471,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setMiterStyle(int style) {
     if (miterStyle_ != style) {
-      Integer tempOld = Integer.valueOf(miterStyle_);
+      Integer tempOld = miterStyle_;
       miterStyle_ = style;
-      firePropertyChange("miterStyle", tempOld, Integer.valueOf(miterStyle_));
+      firePropertyChange("miterStyle", tempOld, miterStyle_);
     }
   }
 
@@ -488,9 +488,9 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    */
   public void setMiterLimit(float limit) {
     if (miterLimit_ != limit) {
-      Float tempOld = Float.valueOf(miterLimit_);
+      Float tempOld = miterLimit_;
       miterLimit_ = limit;
-      firePropertyChange("miterLimit", tempOld, Float.valueOf(miterLimit_));
+      firePropertyChange("miterLimit", tempOld, miterLimit_);
     }
   }
 

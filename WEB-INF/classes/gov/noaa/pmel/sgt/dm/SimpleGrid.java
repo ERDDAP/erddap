@@ -529,10 +529,10 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
     long end = Long.MIN_VALUE;
     long[] tar = tarray.getTime();
     int count = 0;
-    for (int i = 0; i < tar.length; i++) {
-      if (!(tar[i] == Long.MAX_VALUE)) {
-        start = Math.min(start, tar[i]);
-        end = Math.max(end, tar[i]);
+    for (long l : tar) {
+      if (!(l == Long.MAX_VALUE)) {
+        start = Math.min(start, l);
+        end = Math.max(end, l);
         count++;
       }
     }
@@ -547,10 +547,10 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
     double start = Double.POSITIVE_INFINITY;
     double end = Double.NEGATIVE_INFINITY;
     int count = 0;
-    for (int i = 0; i < array.length; i++) {
-      if (!Double.isNaN(array[i])) {
-        start = Math.min(start, array[i]);
-        end = Math.max(end, array[i]);
+    for (double v : array) {
+      if (!Double.isNaN(v)) {
+        start = Math.min(start, v);
+        end = Math.max(end, v);
         count++;
       }
     }

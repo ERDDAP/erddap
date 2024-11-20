@@ -157,13 +157,14 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
       sourceGlobalAttributes.add("keywords_vocabulary", "GCMD Science Keywords");
       sourceGlobalAttributes.add(
           "summary",
-          "The Climate Prediction Center/NCEP/NWS is now making available\n"
-              + "globally-merged (60N-60S) pixel-resolution IR brightness\n"
-              + "temperature data (equivalent blackbody temps), merged from all\n"
-              + "available geostationary satellites (GOES-8/10, METEOSAT-7/5 and\n"
-              + "GMS).  The availability of data from METEOSAT-7, which is\n"
-              + "located at 57E at the present time, yields a unique opportunity\n"
-              + "for total global (60N-60S) coverage.");
+          """
+                      The Climate Prediction Center/NCEP/NWS is now making available
+                      globally-merged (60N-60S) pixel-resolution IR brightness
+                      temperature data (equivalent blackbody temps), merged from all
+                      available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
+                      GMS).  The availability of data from METEOSAT-7, which is
+                      located at 57E at the present time, yields a unique opportunity
+                      for total global (60N-60S) coverage.""");
       sourceGlobalAttributes.add("title", "NCEP/CPC 4km Global (60N - 60S) IR Dataset");
 
       // This is cognizant of special axis0
@@ -604,28 +605,30 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             + "    <fileTableInMemory>false</fileTableInMemory>\n");
 
     sb.append(
-        "    <addAttributes>\n"
-            + "        <att name=\"cdm_data_type\">Grid</att>\n"
-            + "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
-            + "        <att name=\"creator_name\">Bob Joyce</att>\n"
-            + "        <att name=\"creator_email\">robert.joyce@noaa.gov</att>\n"
-            + "        <att name=\"creator_url\">https://www.cpc.ncep.noaa.gov/</att>\n"
-            + "        <att name=\"drawLandMask\">under</att>\n"
-            + "        <att name=\"infoUrl\">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>\n"
-            + "        <att name=\"institution\">NOAA NWS NCEP CPC</att>\n"
-            + "        <att name=\"keywords\">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>\n"
-            + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
-            + "        <att name=\"license\">[standard]</att>\n"
-            + "        <att name=\"summary\">"
-            + "The Climate Prediction Center/NCEP/NWS is now making available\n"
-            + "globally-merged (60N-60S) pixel-resolution IR brightness\n"
-            + "temperature data (equivalent blackbody temps), merged from all\n"
-            + "available geostationary satellites (GOES-8/10, METEOSAT-7/5 and\n"
-            + "GMS).  The availability of data from METEOSAT-7, which is\n"
-            + "located at 57E at the present time, yields a unique opportunity\n"
-            + "for total global (60N-60S) coverage.</att>\n"
-            + "        <att name=\"title\">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>\n"
-            + "    </addAttributes>\n");
+        """
+                        <addAttributes>
+                            <att name="cdm_data_type">Grid</att>
+                            <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
+                            <att name="creator_name">Bob Joyce</att>
+                            <att name="creator_email">robert.joyce@noaa.gov</att>
+                            <att name="creator_url">https://www.cpc.ncep.noaa.gov/</att>
+                            <att name="drawLandMask">under</att>
+                            <att name="infoUrl">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>
+                            <att name="institution">NOAA NWS NCEP CPC</att>
+                            <att name="keywords">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>
+                            <att name="keywords_vocabulary">GCMD Science Keywords</att>
+                            <att name="license">[standard]</att>
+                            <att name="summary">\
+                    The Climate Prediction Center/NCEP/NWS is now making available
+                    globally-merged (60N-60S) pixel-resolution IR brightness
+                    temperature data (equivalent blackbody temps), merged from all
+                    available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
+                    GMS).  The availability of data from METEOSAT-7, which is
+                    located at 57E at the present time, yields a unique opportunity
+                    for total global (60N-60S) coverage.</att>
+                            <att name="title">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>
+                        </addAttributes>
+                    """);
 
     sb.append(
         "    <axisVariable>\n"
@@ -692,7 +695,10 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             + "        </addAttributes>\n"
             + "    </dataVariable>\n");
 
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     return sb.toString();
   }

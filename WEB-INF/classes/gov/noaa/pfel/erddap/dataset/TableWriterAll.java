@@ -106,8 +106,7 @@ public class TableWriterAll extends TableWriter {
 
         // delete the files
         if (columnNames == null) return;
-        int nColumns = columnNames.length;
-        for (int col = 0; col < nColumns; col++) {
+        for (String columnName : columnNames) {
           // deletion isn't essential or urgent.
           // We don't want to tie up the garbage collector thread.
           File2.simpleDelete(
@@ -116,7 +115,7 @@ public class TableWriterAll extends TableWriter {
                   + "."
                   + randomInt
                   + "."
-                  + String2.encodeFileNameSafe(columnNames[col])
+                  + String2.encodeFileNameSafe(columnName)
                   + ".temp");
         }
       } catch (Throwable t) {
@@ -236,11 +235,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, (int) totalNRows); // safe since checked above
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -273,11 +269,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -294,9 +287,7 @@ public class TableWriterAll extends TableWriter {
    * @throws Throwable if trouble (e.g., totalNRows > Integer.MAX_VALUE)
    */
   public DataInputStream dataInputStream(int col) throws Throwable {
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
-    return dis;
+    return new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
   }
 
   public String columnFileName(int col) {

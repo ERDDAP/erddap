@@ -303,7 +303,7 @@ public class XML {
       if (i >= 128 && i < 160) // but not the Windows-1252 characters
       continue;
       String ent = HTML_ENTITIES[i];
-      if (ent.length() > 0) ENTITY_TO_CHAR_HASHMAP.put(ent, Character.valueOf((char) i));
+      if (ent.length() > 0) ENTITY_TO_CHAR_HASHMAP.put(ent, (char) i);
     }
   }
 
@@ -515,7 +515,7 @@ public class XML {
     }
 
     // trailing spaces
-    for (int i = 0; i < nSpacesAtEnd; i++) sb.append((char) 160); // "&nbsp;"
+    sb.append(String.valueOf((char) 160).repeat(Math.max(0, nSpacesAtEnd))); // "&nbsp;"
 
     return sb.toString();
   }
@@ -983,9 +983,7 @@ public class XML {
 
         // write indent
         if (start > 0) sb.append('\n');
-        for (int i = 0; i < indent; i++) {
-          sb.append(' ');
-        }
+        sb.append(" ".repeat(Math.max(0, indent)));
         // write tag
         sb.append(xml.substring(start, end + 3));
         // write content
@@ -1024,9 +1022,7 @@ public class XML {
       if (!lastHadContent) {
         // write indent
         if (start > 0) sb.append('\n');
-        for (int i = 0; i < indent; i++) {
-          sb.append(' ');
-        }
+        sb.append(" ".repeat(Math.max(0, indent)));
       }
       sb.append(xml.substring(start, end + 1));
       sb.append(content);

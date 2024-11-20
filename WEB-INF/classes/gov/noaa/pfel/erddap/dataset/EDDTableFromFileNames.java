@@ -141,39 +141,39 @@ public class EDDTableFromFileNames extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<fileDir>")) {
-      } else if (localTags.equals("</fileDir>")) tFileDir = content;
-      else if (localTags.equals("<fileNameRegex>")) {
-      } else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content;
-      else if (localTags.equals("<recursive>")) {
-      } else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content);
-      else if (localTags.equals("<pathRegex>")) {
-      } else if (localTags.equals("</pathRegex>")) tPathRegex = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<addVariablesWhere>" -> {}
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "<fileDir>" -> {}
+        case "</fileDir>" -> tFileDir = content;
+        case "<fileNameRegex>" -> {}
+        case "</fileNameRegex>" -> tFileNameRegex = content;
+        case "<recursive>" -> {}
+        case "</recursive>" -> tRecursive = String2.parseBoolean(content);
+        case "<pathRegex>" -> {}
+        case "</pathRegex>" -> tPathRegex = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -886,10 +886,9 @@ public class EDDTableFromFileNames extends EDDTable {
       // and add subdirs
       String subdirs[] = (String[]) twardt.subdirHash().toArray(new String[0]);
       Arrays.sort(subdirs, String2.STRING_COMPARATOR_IGNORE_CASE);
-      int nSubdirs = subdirs.length;
       StringArray dirSA = (StringArray) dnlsTable.getColumn(0);
-      for (int i = 0; i < nSubdirs; i++) {
-        dirSA.add(fileDir + subdirs[i]);
+      for (String subdir : subdirs) {
+        dirSA.add(fileDir + subdir);
       }
       dnlsTable.makeColumnsSameSize();
       String2.log(
@@ -1548,46 +1547,51 @@ public class EDDTableFromFileNames extends EDDTable {
             true,
             false)); // includeDataType, questionDestinationName
     sb.append(
-        "    <dataVariable>\n"
-            + "        <sourceName>fileType</sourceName>\n"
-            + "        <destinationName>fileType</destinationName>\n"
-            + "        <dataType>String</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">.*(\\..+?)</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"ioos_category\">Identifier</att>\n"
-            + "            <att name=\"long_name\">File Type</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    <!-- You can create other variables which are derived from extracts\n"
-            + "         from the file names.  Use an extractRegex attribute to specify a\n"
-            + "         regular expression with a capturing group (in parentheses). The\n"
-            + "         part of the file name which matches the specified capturing group\n"
-            + "         (usually group #1) will be extracted to make the new data variable.\n"
-            + "         fileType above shows how to extract a String. Below are examples\n"
-            + "         showing how to extract a date, and how to extract an integer.\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>time</sourceName>\n"
-            + "        <destinationName>time</destinationName>\n"
-            + "        <dataType>String</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">jplMURSST(.*)\\.png</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"units\">yyyyMMddHHmmss</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>day</sourceName>\n"
-            + "        <destinationName>day</destinationName>\n"
-            + "        <dataType>int</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"ioos_category\">Time</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    -->\n");
-    sb.append("</dataset>\n" + "\n");
+        """
+                        <dataVariable>
+                            <sourceName>fileType</sourceName>
+                            <destinationName>fileType</destinationName>
+                            <dataType>String</dataType>
+                            <addAttributes>
+                                <att name="extractRegex">.*(\\..+?)</att>
+                                <att name="extractGroup" type="int">1</att>
+                                <att name="ioos_category">Identifier</att>
+                                <att name="long_name">File Type</att>
+                            </addAttributes>
+                        </dataVariable>
+                        <!-- You can create other variables which are derived from extracts
+                             from the file names.  Use an extractRegex attribute to specify a
+                             regular expression with a capturing group (in parentheses). The
+                             part of the file name which matches the specified capturing group
+                             (usually group #1) will be extracted to make the new data variable.
+                             fileType above shows how to extract a String. Below are examples
+                             showing how to extract a date, and how to extract an integer.
+                        <dataVariable>
+                            <sourceName>time</sourceName>
+                            <destinationName>time</destinationName>
+                            <dataType>String</dataType>
+                            <addAttributes>
+                                <att name="extractRegex">jplMURSST(.*)\\.png</att>
+                                <att name="extractGroup" type="int">1</att>
+                                <att name="units">yyyyMMddHHmmss</att>
+                            </addAttributes>
+                        </dataVariable>
+                        <dataVariable>
+                            <sourceName>day</sourceName>
+                            <destinationName>day</destinationName>
+                            <dataType>int</dataType>
+                            <addAttributes>
+                                <att name="extractRegex">jplMURSST.{6}(..).{6}\\.png</att>
+                                <att name="extractGroup" type="int">1</att>
+                                <att name="ioos_category">Time</att>
+                            </addAttributes>
+                        </dataVariable>
+                        -->
+                    """);
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

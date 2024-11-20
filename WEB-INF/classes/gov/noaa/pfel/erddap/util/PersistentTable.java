@@ -405,10 +405,9 @@ public class PersistentTable implements AutoCloseable {
     byte ar[] = new byte[columnWidths[col]];
     raf.seek(row * nBytesPerRow + columnStartAt[col]);
     raf.readFully(ar);
-    String s = new String(ar, StandardCharsets.UTF_8).trim();
     // if (reallyVerbose) String2.log("low level read col=" + col +
     //    " row=" + row + " value=" + String2.annotatedString(s));
-    return s;
+    return new String(ar, StandardCharsets.UTF_8).trim();
   }
 
   /** This reads a boolean (stored as T|F) from the file (or false if trouble). */

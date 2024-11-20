@@ -422,7 +422,10 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             "dataVariable",
             true,
             false)); // includeDataType, questionDestinationName
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

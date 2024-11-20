@@ -523,8 +523,7 @@ public abstract class EDDGrid extends EDD {
    */
   protected void setDimensionValuesToNull() {
     if (debugMode) String2.log(">> setDimensionValuesToNull for datasetID=" + datasetID);
-    int nav = axisVariables.length;
-    for (int av = 0; av < nav; av++) axisVariables[av].setSourceValuesToNull();
+    for (EDVGridAxis axisVariable : axisVariables) axisVariable.setSourceValuesToNull();
   }
 
   /**
@@ -540,14 +539,14 @@ public abstract class EDDGrid extends EDD {
 
     // add axisVariable info
     // doing all varNames, then all attributes, treats varNames as more important
-    for (int av = 0; av < axisVariables.length; av++) {
-      sb.append("variableName=" + axisVariables[av].destinationName() + "\n");
-      sb.append("sourceName=" + axisVariables[av].sourceName() + "\n");
-      sb.append("long_name=" + axisVariables[av].longName() + "\n");
-      sb.append("type=" + axisVariables[av].destinationDataType() + "\n");
+    for (EDVGridAxis variable : axisVariables) {
+      sb.append("variableName=" + variable.destinationName() + "\n");
+      sb.append("sourceName=" + variable.sourceName() + "\n");
+      sb.append("long_name=" + variable.longName() + "\n");
+      sb.append("type=" + variable.destinationDataType() + "\n");
     }
-    for (int av = 0; av < axisVariables.length; av++)
-      sb.append(axisVariables[av].combinedAttributes().toString() + "\n");
+    for (EDVGridAxis axisVariable : axisVariables)
+      sb.append(axisVariable.combinedAttributes().toString() + "\n");
 
     String2.replaceAll(sb, "\"", ""); // no double quotes (esp around attribute values)
     String2.replaceAll(sb, "\n    ", "\n"); // occurs for all attributes
@@ -558,8 +557,8 @@ public abstract class EDDGrid extends EDD {
   public String allDimString() {
     if (allDimString == null) {
       StringBuilder sb = new StringBuilder();
-      for (int av = 0; av < axisVariables.length; av++)
-        sb.append("[" + axisVariables[av].destinationName() + "]");
+      for (EDVGridAxis axisVariable : axisVariables)
+        sb.append("[" + axisVariable.destinationName() + "]");
       allDimString = sb.toString(); // last thing: atomic assignment
     }
     return allDimString;
@@ -671,8 +670,8 @@ public abstract class EDDGrid extends EDD {
     if (accessibleViaMAG == null) {
       // find the axisVariables (all are always numeric) with >1 value
       boolean hasAG1V = false;
-      for (int av = 0; av < axisVariables.length; av++) {
-        if (axisVariables[av].sourceValues().size() > 1) {
+      for (EDVGridAxis axisVariable : axisVariables) {
+        if (axisVariable.sourceValues().size() > 1) {
           hasAG1V = true;
           break;
         }
@@ -686,8 +685,8 @@ public abstract class EDDGrid extends EDD {
 
         // find the numeric dataVariables
         boolean hasNumeric = false;
-        for (int dv = 0; dv < dataVariables.length; dv++) {
-          if (dataVariables[dv].destinationDataPAType() != PAType.STRING) {
+        for (EDV dataVariable : dataVariables) {
+          if (dataVariable.destinationDataPAType() != PAType.STRING) {
             hasNumeric = true;
             break;
           }
@@ -794,8 +793,8 @@ public abstract class EDDGrid extends EDD {
       // ensure at least one var has colorBarMinimum/Maximum
       if (accessibleViaGeoServicesRest == null) {
         boolean ok = false;
-        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-          if (dataVariables[dvi].hasColorBarMinMax()) {
+        for (EDV dataVariable : dataVariables) {
+          if (dataVariable.hasColorBarMinMax()) {
             ok = true;
             break;
           }
@@ -914,8 +913,8 @@ public abstract class EDDGrid extends EDD {
           String ta =
               MessageFormat.format(
                   EDStatic.noXxxBecauseAr[0], "WMS", EDStatic.noXxxNoColorBarAr[0]);
-          for (int dv = 0; dv < dataVariables.length; dv++) {
-            if (dataVariables[dv].hasColorBarMinMax()) {
+          for (EDV dataVariable : dataVariables) {
+            if (dataVariable.hasColorBarMinMax()) {
               ta = ""; // set back to OK
               break;
             }
@@ -1032,9 +1031,9 @@ public abstract class EDDGrid extends EDD {
         tAtts.set("standard_name", tStandardName.toLowerCase());
     }
 
-    for (int v = 0; v < dataVariables.length; v++) {
+    for (EDV dataVariable : dataVariables) {
       // ensure unique sourceNames
-      String sn = dataVariables[v].sourceName();
+      String sn = dataVariable.sourceName();
       if (!sn.startsWith("=")) {
         if (!sourceNamesHS.add(sn))
           throw new RuntimeException(
@@ -1042,14 +1041,14 @@ public abstract class EDDGrid extends EDD {
       }
 
       // ensure unique destNames
-      String dn = dataVariables[v].destinationName();
+      String dn = dataVariable.destinationName();
       if (!destNamesHS.add(dn))
         throw new RuntimeException(
             errorInMethod + "Two variables have the same destinationName=" + dn + ".");
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariables[v].combinedAttributes();
+      Attributes tAtts = dataVariable.combinedAttributes();
       String tStandardName = tAtts.getString("standard_name");
       if (String2.isSomething(tStandardName))
         tAtts.set("standard_name", tStandardName.toLowerCase());
@@ -1204,7 +1203,7 @@ public abstract class EDDGrid extends EDD {
     // make this JSON format?
     StringBuilder sb = new StringBuilder();
     sb.append("//** EDDGrid " + super.toString());
-    for (int v = 0; v < axisVariables.length; v++) sb.append(axisVariables[v].toString());
+    for (EDVGridAxis axisVariable : axisVariables) sb.append(axisVariable.toString());
     sb.append("\\**\n\n");
     return sb.toString();
   }
@@ -1217,9 +1216,8 @@ public abstract class EDDGrid extends EDD {
    */
   @Override
   public EDV findVariableByDestinationName(String tDestinationName) throws Throwable {
-    for (int v = 0; v < axisVariables.length; v++)
-      if (axisVariables[v].destinationName().equals(tDestinationName))
-        return (EDV) axisVariables[v];
+    for (EDVGridAxis axisVariable : axisVariables)
+      if (axisVariable.destinationName().equals(tDestinationName)) return (EDV) axisVariable;
     return (EDV) findDataVariableByDestinationName(tDestinationName);
   }
 
@@ -1505,17 +1503,17 @@ public abstract class EDDGrid extends EDD {
 
     // process queries with no [], just csv list of desired dataVariables
     if (query.indexOf('[') < 0) {
-      for (int av = 0; av < axisVariables.length; av++) {
+      for (EDVGridAxis axisVariable : axisVariables) {
         constraints.add(0);
         constraints.add(1);
-        constraints.add(axisVariables[av].sourceValues().size() - 1);
+        constraints.add(axisVariable.sourceValues().size() - 1);
       }
       String destNames[] = String2.split(query, ',');
-      for (int dv = 0; dv < destNames.length; dv++) {
+      for (String name : destNames) {
         // if gridName.gridName notation, remove "gridName."
         // This isn't exactly correct: technically, the response shouldn't include the axis
         // variables.
-        String destName = destNames[dv];
+        String destName = name;
         int period = destName.indexOf('.');
         if (period > 0) {
           String shortName = destName.substring(0, period);
@@ -2833,264 +2831,239 @@ public abstract class EDDGrid extends EDD {
       String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
       // save data to outputStream
-      if (fileTypeName.equals(".asc")) {
-        saveAsAsc(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".csv")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
-        return;
-      }
-
-      if (fileTypeName.equals(".csvp")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
-        return;
-      }
-
-      if (fileTypeName.equals(".csv0")) {
-        saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
-        return;
-      }
-
-      if (fileTypeName.equals(".das")) {
-        saveAsDAS(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".dds")) {
-        Writer writer =
-            File2.getBufferedWriter88591(
-                outputStreamSource.outputStream(
-                    File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might
-        // as well go for compatible common 8bit
-        try {
-          writeDDS(language, requestUrl, userDapQuery, writer);
-        } finally {
-          writer.close();
+      switch (fileTypeName) {
+        case ".asc" -> {
+          saveAsAsc(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
         }
-        return;
-      }
-
-      if (fileTypeName.equals(".dods")) {
-        saveAsDODS(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".esriAscii")) {
-        saveAsEsriAscii(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".fgdc")) {
-        if (accessibleViaFGDC.length() == 0) {
-          OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-          try {
-            if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          } finally {
-            try {
-              out.close();
-            } catch (Exception e) {
-            } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        case ".csv" -> {
+          saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
+          return;
+        }
+        case ".csvp" -> {
+          saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
+          return;
+        }
+        case ".csv0" -> {
+          saveAsCsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
+          return;
+        }
+        case ".das" -> {
+          saveAsDAS(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".dds" -> {
+          // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might
+          // as well go for compatible common 8bit
+          try (Writer writer =
+              File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
+            writeDDS(language, requestUrl, userDapQuery, writer);
           }
-
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaFGDC);
+          return;
         }
-        return;
-      }
+        case ".dods" -> {
+          saveAsDODS(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".esriAscii" -> {
+          saveAsEsriAscii(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".fgdc" -> {
+          if (accessibleViaFGDC.length() == 0) {
+            try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
+              if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
+                throw new SimpleException(String2.ERROR + " while transmitting file.");
+            }
+            // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
-      if (fileTypeName.equals(".graph")) {
-        respondToGraphQuery(
-            language,
-            request,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            dir,
-            fileName,
-            fileTypeName);
-        return;
-      }
+          } else {
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaFGDC);
+          }
+          return;
+        }
+        case ".graph" -> {
+          respondToGraphQuery(
+              language,
+              request,
+              loggedInAs,
+              requestUrl,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              dir,
+              fileName,
+              fileTypeName);
+          return;
+        }
+        case ".html" -> {
+          // it is important that this use outputStreamSource so stream is compressed (if possible)
+          // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible
+          // unicode
+          // With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
+          OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+          Writer writer = File2.getBufferedWriterUtf8(out);
+          try {
+            writer.write(
+                EDStatic.startHeadHtml(
+                    language, tErddapUrl, title() + " - " + EDStatic.dafAr[language]));
+            writer.write("\n" + rssHeadLink());
+            writer.write("\n</head>\n");
+            writer.write(
+                EDStatic.startBodyHtml(
+                    language,
+                    loggedInAs,
+                    "griddap/" + datasetID + ".html", // was endOfRequest,
+                    userDapQuery));
+            writer.write("\n");
+            writer.write(
+                HtmlWidgets.htmlTooltipScript(
+                    EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+            writer.write(
+                HtmlWidgets.dragDropScript(
+                    EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
+            writer.flush(); // Steve Souder says: the sooner you can send some html to user, the
+            // better
+            writer.write("<div class=\"standard_width\">\n");
+            writer.write(
+                EDStatic.youAreHereWithHelp(
+                    language,
+                    loggedInAs,
+                    dapProtocol,
+                    EDStatic.dafAr[language],
+                    "<div class=\"standard_max_width\">"
+                        + EDStatic.dafGridTooltipAr[language]
+                        + "<p>"
+                        + EDStatic.EDDGridDownloadDataTooltipAr[language]
+                        + "</ol>\n"
+                        + EDStatic.dafGridBypassTooltipAr[language]
+                        + "</div>"));
+            writeHtmlDatasetInfo(
+                language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
+            if (userDapQuery.length() == 0)
+              userDapQuery =
+                  defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
+            writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
 
-      if (fileTypeName.equals(".html")) {
-        // it is important that this use outputStreamSource so stream is compressed (if possible)
-        // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible
-        // unicode
-        // With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          writer.write(
-              EDStatic.startHeadHtml(
-                  language, tErddapUrl, title() + " - " + EDStatic.dafAr[language]));
-          writer.write("\n" + rssHeadLink());
-          writer.write("\n</head>\n");
-          writer.write(
-              EDStatic.startBodyHtml(
-                  language,
-                  loggedInAs,
-                  "griddap/" + datasetID + ".html", // was endOfRequest,
-                  userDapQuery));
-          writer.write("\n");
-          writer.write(
-              HtmlWidgets.htmlTooltipScript(
-                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-          writer.write(
-              HtmlWidgets.dragDropScript(
-                  EDStatic.imageDirUrl(loggedInAs, language))); // this is a link to a script
-          writer
-              .flush(); // Steve Souder says: the sooner you can send some html to user, the better
-          writer.write("<div class=\"standard_width\">\n");
-          writer.write(
-              EDStatic.youAreHereWithHelp(
-                  language,
-                  loggedInAs,
-                  dapProtocol,
-                  EDStatic.dafAr[language],
-                  "<div class=\"standard_max_width\">"
-                      + EDStatic.dafGridTooltipAr[language]
-                      + "<p>"
-                      + EDStatic.EDDGridDownloadDataTooltipAr[language]
-                      + "</ol>\n"
-                      + EDStatic.dafGridBypassTooltipAr[language]
-                      + "</div>"));
-          writeHtmlDatasetInfo(
-              language, loggedInAs, writer, true, false, true, true, userDapQuery, "");
-          if (userDapQuery.length() == 0)
-            userDapQuery =
-                defaultDataQuery(); // after writeHtmlDatasetInfo and before writeDapHtmlForm
-          writeDapHtmlForm(language, loggedInAs, userDapQuery, writer);
+            // End of page / other info
 
-          // End of page / other info
+            // das (with info about this dataset)
+            writer.write(
+                "<hr>\n"
+                    + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
+                    + EDStatic.dasTitleAr[language]
+                    + "</a></h2>\n"
+                    + "<pre style=\"white-space:pre-wrap;\">\n");
+            writeDAS(
+                File2.forceExtension(requestUrl, ".das"),
+                "",
+                writer,
+                true); // useful so search engines find all relevant words
+            writer.write("</pre>\n");
 
-          // das (with info about this dataset)
-          writer.write(
-              "<hr>\n"
-                  + "<h2><a class=\"selfLink\" id=\"DAS\" href=\"#DAS\" rel=\"bookmark\">"
-                  + EDStatic.dasTitleAr[language]
-                  + "</a></h2>\n"
-                  + "<pre style=\"white-space:pre-wrap;\">\n");
-          writeDAS(
-              File2.forceExtension(requestUrl, ".das"),
+            // then dap instructions
+            writer.write(
+                """
+                            <br>&nbsp;
+                            <hr>
+                            """);
+            writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
+            writer.write("</div>\n");
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+            writer.write("</html>");
+            writer.close();
+
+          } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+            writer.write(EDStatic.htmlForException(language, e));
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
+            writer.write("</html>");
+            writer.close();
+            throw e;
+          }
+          return;
+        }
+        case ".htmlTable" -> {
+          saveAsHtmlTable(
+              language,
+              loggedInAs,
+              requestUrl,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              fileName,
+              false,
               "",
-              writer,
-              true); // useful so search engines find all relevant words
-          writer.write("</pre>\n");
-
-          // then dap instructions
-          writer.write("<br>&nbsp;\n" + "<hr>\n");
-          writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
-          writer.write("</div>\n");
-          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-          writer.write("</html>");
-          writer.close();
-
-        } catch (Exception e) {
-          EDStatic.rethrowClientAbortException(e); // first thing in catch{}
-          writer.write(EDStatic.htmlForException(language, e));
-          writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
-          writer.write("</html>");
-          writer.close();
-          throw e;
+              "");
+          return;
         }
-        return;
-      }
-
-      if (fileTypeName.equals(".htmlTable")) {
-        saveAsHtmlTable(
-            language,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            fileName,
-            false,
-            "",
-            "");
-        return;
-      }
-
-      if (fileTypeName.equals(".iso19115")) {
-        if (accessibleViaISO19115.length() == 0) {
-          OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-          try {
-            if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
-              throw new SimpleException(String2.ERROR + " while transmitting file.");
-          } finally {
-            try {
-              out.close();
-            } catch (Exception e) {
-            } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        case ".iso19115" -> {
+          if (accessibleViaISO19115.length() == 0) {
+            try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
+              if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
+                throw new SimpleException(String2.ERROR + " while transmitting file.");
+            }
+            // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+          } else {
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaISO19115);
           }
-        } else {
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaISO19115);
+          return;
         }
-        return;
-      }
+        case ".itx" -> {
+          saveAsIgor(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".json" -> {
+          saveAsJson(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".jsonlCSV1" -> {
+          saveAsJsonl(
+              language,
+              requestUrl,
+              userDapQuery,
+              outputStreamSource,
+              true,
+              false); // writeColNames, writeKVP
 
-      if (fileTypeName.equals(".itx")) {
-        saveAsIgor(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
+          return; // writeColNames, writeKVP
+        }
+        case ".jsonlCSV" -> {
+          saveAsJsonl(
+              language,
+              requestUrl,
+              userDapQuery,
+              outputStreamSource,
+              false,
+              false); // writeColNames, writeKVP
 
-      if (fileTypeName.equals(".json")) {
-        saveAsJson(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
+          return; // writeColNames, writeKVP
+        }
+        case ".jsonlKVP" -> {
+          saveAsJsonl(
+              language,
+              requestUrl,
+              userDapQuery,
+              outputStreamSource,
+              false,
+              true); // writeColNames, writeKVP
 
-      if (fileTypeName.equals(".jsonlCSV1")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            true,
-            false); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".jsonlCSV")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            false,
-            false); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".jsonlKVP")) {
-        saveAsJsonl(
-            language,
-            requestUrl,
-            userDapQuery,
-            outputStreamSource,
-            false,
-            true); // writeColNames, writeKVP
-        return;
-      }
-
-      if (fileTypeName.equals(".mat")) {
-        saveAsMatlab(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".ncml")) {
-        saveAsNCML(language, loggedInAs, requestUrl, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".nccsv") || fileTypeName.equals(".nccsvMetadata")) {
-        saveAsNccsv(language, fileTypeName, requestUrl, userDapQuery, outputStreamSource);
-        return;
+          return; // writeColNames, writeKVP
+        }
+        case ".mat" -> {
+          saveAsMatlab(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".ncml" -> {
+          saveAsNCML(language, loggedInAs, requestUrl, outputStreamSource);
+          return;
+        }
+        case ".nccsv", ".nccsvMetadata" -> {
+          saveAsNccsv(language, fileTypeName, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
       }
 
       if (fileTypeName.endsWith("Info")
@@ -3112,80 +3085,66 @@ public abstract class EDDGrid extends EDD {
                   EDStatic.queryErrorAr[language] + EDStatic.errorFileNotFoundImageAr[language]));
 
         // ok, copy it  (and don't close the outputStream)
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        try {
+        try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
           if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
             throw new SimpleException(String2.ERROR + " while transmitting file.");
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         }
+        // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         return;
       }
 
-      if (fileTypeName.equals(".ncoJson")) {
-        saveAsNcoJson(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".odvTxt")) {
-        saveAsODV(language, requestUrl, userDapQuery, outputStreamSource);
-        return;
-      }
-
-      if (fileTypeName.equals(".parquet")) {
-        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, false);
-        return;
-      }
-
-      if (fileTypeName.equals(".parquetWMeta")) {
-        saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, true);
-        return;
-      }
-
-      if (fileTypeName.equals(".timeGaps")) {
-        String ts = findTimeGaps();
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          writer.write(ts);
-          writer.flush(); // essential
-        } finally {
-          writer.close();
+      switch (fileTypeName) {
+        case ".ncoJson" -> {
+          saveAsNcoJson(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
         }
-        return;
-      }
-
-      if (fileTypeName.equals(".tsv")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
-        return;
-      }
-
-      if (fileTypeName.equals(".tsvp")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
-        return;
-      }
-
-      if (fileTypeName.equals(".tsv0")) {
-        saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
-        return;
-      }
-
-      if (fileTypeName.equals(".xhtml")) {
-        saveAsHtmlTable(
-            language,
-            loggedInAs,
-            requestUrl,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            fileName,
-            true,
-            "",
-            "");
-        return;
+        case ".odvTxt" -> {
+          saveAsODV(language, requestUrl, userDapQuery, outputStreamSource);
+          return;
+        }
+        case ".parquet" -> {
+          saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, false);
+          return;
+        }
+        case ".parquetWMeta" -> {
+          saveAsParquet(language, requestUrl, userDapQuery, outputStreamSource, true);
+          return;
+        }
+        case ".timeGaps" -> {
+          String ts = findTimeGaps();
+          OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+          try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+            writer.write(ts);
+            writer.flush(); // essential
+          }
+          return;
+        }
+        case ".tsv" -> {
+          saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '2');
+          return;
+        }
+        case ".tsvp" -> {
+          saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, true, '(');
+          return;
+        }
+        case ".tsv0" -> {
+          saveAsTsv(language, requestUrl, userDapQuery, outputStreamSource, false, '0');
+          return;
+        }
+        case ".xhtml" -> {
+          saveAsHtmlTable(
+              language,
+              loggedInAs,
+              requestUrl,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              fileName,
+              true,
+              "",
+              "");
+          return;
+        }
       }
 
       // *** make a file (then copy it to outputStream)
@@ -3356,14 +3315,13 @@ public abstract class EDDGrid extends EDD {
 
         // copy file to outputStream
         // (I delayed getting actual outputStream as long as possible.)
-        OutputStream out =
+        try (OutputStream out =
             outputStreamSource.outputStream(
                 fileTypeName.equals(".ncHeader")
                     ? File2.UTF_8
                     : fileTypeName.equals(".nc4Header")
                         ? File2.UTF_8
-                        : fileTypeName.equals(".kml") ? File2.UTF_8 : "");
-        try {
+                        : fileTypeName.equals(".kml") ? File2.UTF_8 : "")) {
           if (!File2.copy(fullName, out)) {
             // outputStream contentType already set,
             // so I can't go back to html and display error message
@@ -3371,12 +3329,8 @@ public abstract class EDDGrid extends EDD {
             // me
             throw new SimpleException(String2.ERROR + " while transmitting file.");
           }
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
         }
+        // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
       } else {
 
         // copy file to AWS and redirect user
@@ -3502,9 +3456,9 @@ public abstract class EDDGrid extends EDD {
 
       // find the numeric dataVariables
       sa = new StringArray();
-      for (int dv = 0; dv < dataVariables.length; dv++) {
-        if (dataVariables[dv].destinationDataPAType() != PAType.STRING)
-          sa.add(dataVariables[dv].destinationName());
+      for (EDV dataVariable : dataVariables) {
+        if (dataVariable.destinationDataPAType() != PAType.STRING)
+          sa.add(dataVariable.destinationName());
       }
       String[] dvNames = sa.toArray(); // list of dvNames
       sa.atInsert(0, "");
@@ -4108,7 +4062,10 @@ public abstract class EDDGrid extends EDD {
                     loggedInAs,
                     MessageFormat.format(EDStatic.magAxisVarHelpAr[language], varHelp[v])
                         + EDStatic.magAxisVarHelpGridAr[language]));
-        writer.write("  </td>\n" + "</tr>\n");
+        writer.write("""
+                  </td>
+                </tr>
+                """);
       }
 
       // end the Graph Type and vars table
@@ -4414,7 +4371,13 @@ public abstract class EDDGrid extends EDD {
         writer.write(
             "    <td>&nbsp;" + EDStatic.magGSSizeAr[language] + ":&nbsp;</td>" + "    <td>");
         writer.write(widgets.select(paramName, "", 1, mSizes, mSize, ""));
-        writer.write("</td>\n" + "    <td></td>\n" + "    <td></td>\n" + "  </tr>\n");
+        writer.write(
+            """
+                </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                """);
 
         // add to graphQuery
         graphQuery.append("&.marker=" + SSR.minimalPercentEncode(mType + "|" + mSizes[mSize]));
@@ -4436,7 +4399,10 @@ public abstract class EDDGrid extends EDD {
                 + ":&nbsp;</td>\n"
                 + "    <td colspan=\"5\">");
         writer.write(widgets.color17("", paramName, "", colori, ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // add to graphQuery
         graphQuery.append("&.color=0x" + HtmlWidgets.PALETTE17.get(colori));
@@ -4503,7 +4469,10 @@ public abstract class EDDGrid extends EDD {
                 EDV.VALID_SCALES0,
                 scale,
                 ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // new row
         paramName = "pMin";
@@ -4543,7 +4512,10 @@ public abstract class EDDGrid extends EDD {
                 EDStatic.paletteSections,
                 pSections,
                 ""));
-        writer.write("</td>\n" + "  </tr>\n");
+        writer.write("""
+                </td>
+                  </tr>
+                """);
 
         // add to graphQuery
         graphQuery.append(
@@ -4578,12 +4550,14 @@ public abstract class EDDGrid extends EDD {
             widgets.textField(
                 paramName, EDStatic.magGSVectorStandardTooltipAr[language], 10, 30, vec, ""));
         writer.write(
-            "</td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "  </tr>\n");
+            """
+                        </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                        """);
 
         // add to graphQuery
         if (vec.length() > 0) graphQuery.append("&.vec=" + SSR.minimalPercentEncode(vec));
@@ -4612,12 +4586,14 @@ public abstract class EDDGrid extends EDD {
                 tLand,
                 ""));
         writer.write(
-            "</td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "    <td></td>\n"
-                + "</tr>\n");
+            """
+                        </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        """);
 
         // add to graphQuery
         if (tLand > 0) graphQuery.append("&.land=" + SgtMap.drawLandMask_OPTIONS.get(tLand));
@@ -4731,11 +4707,13 @@ public abstract class EDDGrid extends EDD {
 
       // make javascript function to generate query    \\x26=& %5B=[ %5D=] %7C=|
       writer.write(
-          "<script> \n"
-              + "function makeQuery(varsToo) { \n"
-              + "  try { \n"
-              + "    var d = document; \n"
-              + "    var start, tv, c = \"\", q = \"\"; \n"); // c=constraint  q=query
+          """
+                      <script>\s
+                      function makeQuery(varsToo) {\s
+                        try {\s
+                          var d = document;\s
+                          var start, tv, c = "", q = "";\s
+                      """); // c=constraint  q=query
       // gather constraints
       for (int av = 0; av < nAv; av++)
         writer.write(
@@ -4786,9 +4764,11 @@ public abstract class EDDGrid extends EDD {
       // graph settings
       writer.write("    q += \"&.draw=\" + d.f1.draw.options[d.f1.draw.selectedIndex].text; \n");
       writer.write(
-          "    if (varsToo) { \n"
-              + "      q += \"&.vars=\" + d.f1.var0.options[d.f1.var0.selectedIndex].text + \n"
-              + "        \"%7C\" + d.f1.var1.options[d.f1.var1.selectedIndex].text; \n");
+          """
+                          if (varsToo) {\s
+                            q += "&.vars=" + d.f1.var0.options[d.f1.var0.selectedIndex].text +\s
+                              "%7C" + d.f1.var1.options[d.f1.var1.selectedIndex].text;\s
+                      """);
       if (nVars >= 3)
         writer.write("      q += \"%7C\" + d.f1.var2.options[d.f1.var2.selectedIndex].text; \n");
       if (nVars >= 4)
@@ -4796,8 +4776,10 @@ public abstract class EDDGrid extends EDD {
       writer.write("    } \n");
       if (drawLinesAndMarkers || drawMarkers)
         writer.write(
-            "    q += \"&.marker=\" + d.f1.mType.selectedIndex + \"%7C\" + \n"
-                + "      d.f1.mSize.options[d.f1.mSize.selectedIndex].text; \n");
+            """
+                            q += "&.marker=" + d.f1.mType.selectedIndex + "%7C" +\s
+                              d.f1.mSize.options[d.f1.mSize.selectedIndex].text;\s
+                        """);
       if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors)
         writer.write(
             "    q += \"&.color=0x\"; \n"
@@ -4809,12 +4791,14 @@ public abstract class EDDGrid extends EDD {
       // checked
       if (drawLinesAndMarkers || drawMarkers || drawSurface)
         writer.write(
-            "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n"
-                + "    q += \"&.colorBar=\" + d.f1.p.options[d.f1.p.selectedIndex].text + \"%7C\" + \n"
-                + "      (tpc.length > 0? tpc.charAt(0) : \"\") + \"%7C\" + \n"
-                + "      d.f1.ps.options[d.f1.ps.selectedIndex].text + \"%7C\" + \n"
-                + "      d.f1.pMin.value + \"%7C\" + d.f1.pMax.value + \"%7C\" + \n"
-                + "      d.f1.pSec.options[d.f1.pSec.selectedIndex].text; \n");
+            """
+                            var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;
+                            q += "&.colorBar=" + d.f1.p.options[d.f1.p.selectedIndex].text + "%7C" +\s
+                              (tpc.length > 0? tpc.charAt(0) : "") + "%7C" +\s
+                              d.f1.ps.options[d.f1.ps.selectedIndex].text + "%7C" +\s
+                              d.f1.pMin.value + "%7C" + d.f1.pMax.value + "%7C" +\s
+                              d.f1.pSec.options[d.f1.pSec.selectedIndex].text;\s
+                        """);
       if (drawVectors)
         writer.write("    if (d.f1.vec.value.length > 0) q += \"&.vec=\" + d.f1.vec.value; \n");
       if (drawSurface && isMap)
@@ -4823,12 +4807,14 @@ public abstract class EDDGrid extends EDD {
                 + "q += \"&.land=\" + d.f1.land.options[d.f1.land.selectedIndex].text; \n");
       if (true)
         writer.write(
-            "    var yRMin=d.f1.yRangeMin.value; \n"
-                + "    var yRMax=d.f1.yRangeMax.value; \n"
-                + "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n"
-                + "    var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text; \n"
-                + "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)\n"
-                + "      q += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0) + \"%7C\" + yScl; \n");
+            """
+                            var yRMin=d.f1.yRangeMin.value;\s
+                            var yRMax=d.f1.yRangeMax.value;\s
+                            var yRAsc=d.f1.yRangeAscending.selectedIndex;\s
+                            var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text;\s
+                            if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)
+                              q += "\\x26.yRange=" + yRMin + "%7C" + yRMax + "%7C" + (yRAsc==0) + "%7C" + yScl;\s
+                        """);
       if (zoomTime)
         writer.write(
             "    q += \"&.timeRange=\" + d.f1.timeN.value + \",\" + d.f1.timeUnits.value; \n");
@@ -4954,7 +4940,11 @@ public abstract class EDDGrid extends EDD {
               + "</a>\n"
               + EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml)
               + ")\n");
-      writer.write("</td></tr>\n" + "</table>\n\n");
+      writer.write("""
+              </td></tr>
+              </table>
+
+              """);
 
       // end form
       writer.write(widgets.endForm());
@@ -5682,7 +5672,10 @@ public abstract class EDDGrid extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("<br>&nbsp;\n" + "<hr>\n");
+      writer.write("""
+              <br>&nbsp;
+              <hr>
+              """);
       writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
 
       // the javascript for the sliders
@@ -5747,12 +5740,10 @@ public abstract class EDDGrid extends EDD {
       int nRAV = ada.nRequestedAxisVariables();
 
       // write the dds    //OPeNDAP 2.0, 7.2.3
-      Writer writer =
-          File2.getBufferedWriter88591(
-              outputStreamSource.outputStream(
-                  File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+      // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
       // well go for compatible common 8bit
-      try {
+      try (Writer writer =
+          File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
         writeDDS(language, requestUrl, userDapQuery, writer);
 
         // write the connector  //OPeNDAP 2.0, 7.2.3
@@ -5775,8 +5766,6 @@ public abstract class EDDGrid extends EDD {
         }
 
         writer.flush(); // essential
-      } finally {
-        writer.close();
       }
 
       // diagnostic
@@ -5838,9 +5827,8 @@ public abstract class EDDGrid extends EDD {
 
       // write the data  //OPeNDAP 2.0, 7.3.2.4
       // write elements of the array, in dds order
-      int nDataVariables = tDataVariables.length;
-      for (int dv = 0; dv < nDataVariables; dv++) {
-        String dvDestName = tDataVariables[dv].destinationName();
+      for (EDV tDataVariable : tDataVariables) {
+        String dvDestName = tDataVariable.destinationName();
         try (GridDataAccessor partialGda =
             new GridDataAccessor(
                 language,
@@ -5918,16 +5906,12 @@ public abstract class EDDGrid extends EDD {
     long time = System.currentTimeMillis();
 
     // get the modified outputStream
-    Writer writer =
-        File2.getBufferedWriter88591(
-            outputStreamSource.outputStream(
-                File2.ISO_8859_1)); // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
+    // OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as
     // well go for compatible common 8bit
-    try {
+    try (Writer writer =
+        File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
       // write the DAS
       writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
-    } finally {
-      writer.close();
     }
 
     // diagnostic
@@ -6141,10 +6125,10 @@ public abstract class EDDGrid extends EDD {
       throws IOException {
 
     String[] names = atts.getNames();
-    for (int i = 0; i < names.length; i++) {
-      writer.write(indent + "<attribute name=\"" + XML.encodeAsXML(names[i]) + "\" ");
+    for (String name : names) {
+      writer.write(indent + "<attribute name=\"" + XML.encodeAsXML(name) + "\" ");
       // title" value="Daily MUR SST, Interim near-real-time (nrt) product" />
-      PrimitiveArray pa = atts.get(names[i]);
+      PrimitiveArray pa = atts.get(name);
       if (pa.elementType() == PAType.LONG) pa = new DoubleArray(pa);
       // even nc3 files write char and String attributes as UTF-8
 
@@ -6182,8 +6166,8 @@ public abstract class EDDGrid extends EDD {
     long time = System.currentTimeMillis();
 
     // get the writer
-    Writer writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
+    try (Writer writer =
+        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
       String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
       writer.write( // NCML
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -6242,9 +6226,7 @@ public abstract class EDDGrid extends EDD {
       }
 
       // data variables
-      int nDataVariables = dataVariables.length;
-      for (int dv = 0; dv < nDataVariables; dv++) {
-        EDV edv = dataVariables[dv];
+      for (EDV edv : dataVariables) {
         writer.write(
             "  <variable name=\""
                 + XML.encodeAsXML(edv.destinationName())
@@ -6278,8 +6260,6 @@ public abstract class EDDGrid extends EDD {
 
       writer.write("</netcdf>\n");
       writer.flush(); // essential
-    } finally {
-      writer.close();
     }
 
     // diagnostic
@@ -6330,12 +6310,10 @@ public abstract class EDDGrid extends EDD {
 
         // write the data  //OPeNDAP 2.0, 7.3.2.4
         // write elements of the array, in dds order
-        DataOutputStream dos = new DataOutputStream(outputStream);
-        try {
+        try (DataOutputStream dos = new DataOutputStream(outputStream)) {
           for (int av = 0; av < nRAV; av++) ada.axisValues(av).externalizeForDODS(dos);
           dos.flush(); // essential
         } finally {
-          dos.close();
           writer = null;
         }
       } finally {
@@ -6389,8 +6367,7 @@ public abstract class EDDGrid extends EDD {
       // don't close the writer. Leave it hanging. dos.close below closes the outputStream.
 
       // make the dataOutputStream
-      DataOutputStream dos = new DataOutputStream(outputStream);
-      try {
+      try (DataOutputStream dos = new DataOutputStream(outputStream)) {
         // write the axis variables
         int nAxisVariables = axisVariables.length;
         if (entireDataset) {
@@ -6400,14 +6377,13 @@ public abstract class EDDGrid extends EDD {
 
         // write the data  //OPeNDAP 2.0, 7.3.2.4
         // write elements of the array, in dds order
-        int nDataVariables = tDataVariables.length;
-        for (int dv = 0; dv < nDataVariables; dv++) {
+        for (EDV tDataVariable : tDataVariables) {
           try (GridDataAccessor partialGda =
               new GridDataAccessor(
                   language,
                   this,
                   requestUrl,
-                  tDataVariables[dv].destinationName() + arrayQuery,
+                  tDataVariable.destinationName() + arrayQuery,
                   true,
                   false)) { // rowMajor, convertToNaN
 
@@ -6419,7 +6395,7 @@ public abstract class EDDGrid extends EDD {
 
             // send the array data   (Note that DAP doesn't have exact match for some Java data
             // types.)
-            PAType type = tDataVariables[dv].destinationDataPAType();
+            PAType type = tDataVariable.destinationDataPAType();
 
             PrimitiveArray[] pas = partialGda.getPartialDataValues();
             if (type == PAType.BYTE) {
@@ -6457,7 +6433,6 @@ public abstract class EDDGrid extends EDD {
 
         dos.flush(); // essential
       } finally {
-        dos.close();
         if (writer != null) {
           writer.close();
           writer = null;
@@ -6677,9 +6652,8 @@ public abstract class EDDGrid extends EDD {
 
         // then get the writer
         // ???!!! ISO-8859-1 is a guess. I found no specification.
-        Writer writer =
-            File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
-        try {
+        try (Writer writer =
+            File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
           // ESRI .asc doesn't like NaN
           double dmv = edv.safeDestinationMissingValue();
           String NaNString =
@@ -6707,14 +6681,12 @@ public abstract class EDDGrid extends EDD {
               current[lonIndex] = flipX ? nLon - tLon - 1 : tLon;
               gdra.getDataValueAsPAOne(current, 0, edvPAOne);
               String s = edvPAOne.toString();
-              writer.write(s.equals("") || s.equals("NaN") ? NaNString : s);
+              writer.write(s.isEmpty() || s.equals("NaN") ? NaNString : s);
               writer.write(tLon == nLon - 1 ? '\n' : ' ');
             }
           }
 
           writer.flush(); // essential
-        } finally {
-          writer.close();
         }
       }
     }
@@ -6984,14 +6956,13 @@ public abstract class EDDGrid extends EDD {
     // String2.log(NcHelper.ncdump(ncFullName, "-h"));
 
     // attempt to create geotif via java netcdf libraries
-    GeotiffWriter writer = new GeotiffWriter(directory + fileName + ".tif");
-    try {
+    try (GeotiffWriter writer = new GeotiffWriter(directory + fileName + ".tif")) {
 
       // 2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
       GridDataset gridDataset = GridDataset.open(ncFullName);
-      java.util.List<GridDatatype> grids = gridDataset.getGrids();
+      List<GridDatatype> grids = gridDataset.getGrids();
       // if (grids.size() == 0) ...
-      GeoGrid geoGrid = (GeoGrid) grids.get(0);
+      GeoGrid geoGrid = (GeoGrid) grids.getFirst();
       Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); // get all
       writer.writeGrid(gridDataset, geoGrid, dataArray, true); // true=grayscale
 
@@ -7003,28 +6974,18 @@ public abstract class EDDGrid extends EDD {
       //    true, //true=grayscale   color didn't work for me. and see javadocs above.
       //    latLonRect);
 
-    } finally {
-      try {
-        writer.close();
-      } catch (Exception e) {
-      }
     }
 
     // copy to outputStream
-    OutputStream out = outputStreamSource.outputStream("");
-    try {
+    try (OutputStream out = outputStreamSource.outputStream("")) {
       if (!File2.copy(directory + fileName + ".tif", out)) {
         // outputStream contentType already set,
         // so I can't go back to html and display error message
         // note than the message is thrown if user cancels the transmission; so don't email to me
         throw new SimpleException(String2.ERROR + " while transmitting file.");
       }
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
     if (reallyVerbose)
       String2.log(
@@ -7176,9 +7137,7 @@ public abstract class EDDGrid extends EDD {
       double fontScale = 1, vectorStandard = Double.NaN;
       String currentDrawLandMask = null; // null = not yet set
       Color bgColor = EDStatic.graphBackgroundColor;
-      for (int ap = 0; ap < ampParts.length; ap++) {
-        String ampPart = ampParts[ap];
-
+      for (String ampPart : ampParts) {
         // .bgColor
         if (ampPart.startsWith(".bgColor=")) {
           String pParts[] = String2.split(ampPart.substring(9), '|');
@@ -8699,8 +8658,8 @@ public abstract class EDDGrid extends EDD {
             g2.setColor(Color.black);
             g2.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
             int ty = tHeight * 2;
-            for (int i = 0; i < lines.length; i++) {
-              g2.drawString(lines[i], tHeight, ty);
+            for (String line : lines) {
+              g2.drawString(line, tHeight, ty);
               ty += tHeight + 2;
             }
           }
@@ -9182,9 +9141,8 @@ public abstract class EDDGrid extends EDD {
 
     // .nccsvMetadata?
     if (fileTypeName.equals(".nccsvMetadata")) {
-      Writer writer =
-          File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1));
-      try {
+      try (Writer writer =
+          File2.getBufferedWriter88591(outputStreamSource.outputStream(File2.ISO_8859_1))) {
         Table table = new Table();
         table.globalAttributes().add(combinedGlobalAttributes());
         for (int avi = 0; avi < axisVariables.length; avi++) {
@@ -9209,8 +9167,7 @@ public abstract class EDDGrid extends EDD {
           table.addColumn(
               avi, av.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
         }
-        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-          EDV dv = dataVariables[dvi];
+        for (EDV dv : dataVariables) {
           Attributes catts = dv.combinedAttributes();
           PAType tPAType = dv.destinationDataPAType();
           if (dv instanceof EDVTimeStamp) {
@@ -9228,11 +9185,6 @@ public abstract class EDDGrid extends EDD {
         table.saveAsNccsv(
             false, true, 0, 0,
             writer); // catchScalars, writeMetadata, writeDataRows; writer is flushed not closed
-      } finally {
-        try {
-          writer.close();
-        } catch (Exception e) {
-        }
       }
       return;
     }
@@ -9587,9 +9539,8 @@ public abstract class EDDGrid extends EDD {
     // http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
     // kml docs: https://developers.google.com/kml/documentation/kmlreference
     // CDATA is necessary for url's with queries
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
+    try (BufferedWriter writer =
+        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
       writer.write( // KML
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
               + "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n"
@@ -9827,10 +9778,12 @@ public abstract class EDDGrid extends EDD {
             }
         }*/
       if (drawOrder == 1) writer.write(getKmlIconScreenOverlay());
-      writer.write("</Document>\n" + "</kml>\n");
+      writer.write(
+          """
+                  </Document>
+                  </kml>
+                  """);
       writer.flush(); // essential
-    } finally {
-      writer.close();
     }
 
     // diagnostic
@@ -10013,12 +9966,12 @@ public abstract class EDDGrid extends EDD {
                 + "Igor Text Files can handle 4 dimensions, not "
                 + nAV);
 
-      BufferedWriter writer = null;
       // ** Then get gridDataAllAccessor
       // AllAccessor so I can just request PA with a var's values.
-      try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda)) {
+      try (GridDataAllAccessor gdaa = new GridDataAllAccessor(gda);
+          BufferedWriter writer =
+              File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset)) {
         // write the data
-        writer = File2.getBufferedWriter(oss.outputStream(Table.IgorCharset), Table.IgorCharset);
         writer.write("IGOR" + Table.IgorEndOfLine);
 
         HashSet<String> colNamesHashset = new HashSet<>();
@@ -10128,10 +10081,6 @@ public abstract class EDDGrid extends EDD {
         // done!
         if (writer != null) {
           writer.flush(); // essential
-        }
-      } finally {
-        if (writer != null) {
-          writer.close();
         }
       }
     }
@@ -10322,11 +10271,11 @@ public abstract class EDDGrid extends EDD {
                     + nulls),
             0,
             32); // EEEK! Better not be longer.
-      for (int dv = 0; dv < ntDv; dv++)
+      for (EDV tDataVariable : tDataVariables)
         stream.write(
             String2.toByteArray(
                 String2.noLongerThan(
-                        String2.encodeMatlabNameSafe(tDataVariables[dv].destinationName()), 31)
+                        String2.encodeMatlabNameSafe(tDataVariable.destinationName()), 31)
                     + nulls),
             0,
             32); // EEEK! Better not be longer.
@@ -10789,9 +10738,8 @@ public abstract class EDDGrid extends EDD {
       int nRAV = ada.nRequestedAxisVariables();
 
       // create a writer
-      BufferedWriter writer =
-          File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-      try {
+      try (BufferedWriter writer =
+          File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
         if (jsonp != null) writer.write(jsonp + "(");
 
         // write start
@@ -10832,14 +10780,16 @@ public abstract class EDDGrid extends EDD {
           //    }
           EDVGridAxis av = ada.axisVariables(avi);
           String tType = av.destinationDataType();
-          if (tType.equals("String")) { // shouldn't be any
-            tType = writeStringsAsStrings ? "string" : "char";
-          } else if (tType.equals("long")) {
-            tType = "int64"; // see
-            // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
-          } else if (tType.equals("ulong")) {
-            tType = "uint64";
-          }
+          tType =
+              switch (tType) {
+                case "String" -> // shouldn't be any
+                    writeStringsAsStrings ? "string" : "char";
+                case "long" -> "int64"; // see
+
+                  // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                case "ulong" -> "uint64";
+                default -> tType;
+              };
           writer.write(
               "    "
                   + String2.toJson(av.destinationName())
@@ -10864,8 +10814,6 @@ public abstract class EDDGrid extends EDD {
                 "}\n"); // end of main object
         if (jsonp != null) writer.write(")");
         writer.flush(); // essential
-      } finally {
-        writer.close();
       }
       return;
     }
@@ -12130,7 +12078,7 @@ public abstract class EDDGrid extends EDD {
               + dataFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo.get(i).equals("")
+              + (dataFileTypeInfo.get(i).isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
                       + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
@@ -12731,7 +12679,7 @@ public abstract class EDDGrid extends EDD {
               + imageFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).equals("")
+              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
                       + XML.encodeAsHTMLAttribute(imageFileTypeInfo.get(i))
@@ -13784,8 +13732,8 @@ public abstract class EDDGrid extends EDD {
               + titleXml
               + "</label>\n"
               + "    <keywords>\n");
-      for (int i = 0; i < keywordsSA.length; i++)
-        writer.write("      <keyword>" + XML.encodeAsXML(keywordsSA[i]) + "</keyword>\n");
+      for (String s : keywordsSA)
+        writer.write("      <keyword>" + XML.encodeAsXML(s) + "</keyword>\n");
       writer.write(
           "    </keywords>\n"
               + "    <responsibleParty>\n"
@@ -13900,21 +13848,25 @@ public abstract class EDDGrid extends EDD {
       String varInfoString = varInfo.toString();
 
       // write for each dataVariable...
-      for (int dv = 0; dv < dataVariables.length; dv++) {
+      for (EDV dataVariable : dataVariables) {
         writer.write(
             "    <CoverageOfferingBrief>\n"
                 + "      <name>"
-                + XML.encodeAsXML(dataVariables[dv].destinationName())
+                + XML.encodeAsXML(dataVariable.destinationName())
                 + "</name>\n"
                 + "      <label>"
-                + XML.encodeAsXML(dataVariables[dv].longName())
+                + XML.encodeAsXML(dataVariable.longName())
                 + "</label>\n"
                 + varInfoString);
 
         writer.write("    </CoverageOfferingBrief>\n");
       }
 
-      writer.write("  </ContentMetadata>\n" + "</WCS_Capabilities>\n");
+      writer.write(
+          """
+                </ContentMetadata>
+              </WCS_Capabilities>
+              """);
 
       // **** getCapabilities 1.1.2
       // based on WCS 1.1.2 spec, Annex C
@@ -14144,12 +14096,12 @@ public abstract class EDDGrid extends EDD {
     String lonLatLowerCorner = lonEdv.destinationMinString() + " " + latEdv.destinationMinString();
     String lonLatUpperCorner = lonEdv.destinationMaxString() + " " + latEdv.destinationMaxString();
     String coverages[] = String2.split(coveragesCSV, ',');
-    for (int cov = 0; cov < coverages.length; cov++) {
-      if (String2.indexOf(dataVariableDestinationNames(), coverages[cov]) < 0)
+    for (String s : coverages) {
+      if (String2.indexOf(dataVariableDestinationNames(), s) < 0)
         throw new SimpleException(
             EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                 + "coverage="
-                + coverages[cov]
+                + s
                 + " isn't a valid coverage name.");
     }
 
@@ -14160,22 +14112,25 @@ public abstract class EDDGrid extends EDD {
     if (version == null || version.equals("1.0.0")) {
       if (version == null) version = "1.0.0";
       writer.write( // WCS 1.0.0
-          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-              + "<CoverageDescription version=\"1.0.0\"\n"
-              + "  xmlns=\"http://www.opengis.net/wcs\"\n"
-              + "  xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n"
-              + "  xmlns:gml=\"http://www.opengis.net/gml\"\n"
-              + "  xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n"
-              + "  xsi:schemaLocation=\"http://www.opengis.net/wcs http://schemas.opengis.net/wcs/1.0.0/describeCoverage.xsd\"\n"
-              + "  >\n");
+          """
+                      <?xml version="1.0" encoding="UTF-8"?>
+                      <CoverageDescription version="1.0.0"
+                        xmlns="http://www.opengis.net/wcs"
+                        xmlns:xlink="https://www.w3.org/1999/xlink"
+                        xmlns:gml="http://www.opengis.net/gml"
+                        xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://www.opengis.net/wcs http://schemas.opengis.net/wcs/1.0.0/describeCoverage.xsd"
+                        >
+                      """);
 
       // for each requested
-      for (int cov = 0; cov < coverages.length; cov++) {
-        EDV edv = findDataVariableByDestinationName(coverages[cov]);
+      //// ???
+      for (String coverage : coverages) {
+        EDV edv = findDataVariableByDestinationName(coverage);
         writer.write(
             "  <CoverageOffering>\n"
                 + "    <name>"
-                + coverages[cov]
+                + coverage
                 + "</name>\n"
                 + "    <label>"
                 + XML.encodeAsXML(edv.longName())
@@ -14255,10 +14210,12 @@ public abstract class EDDGrid extends EDD {
           if (!rsPrinted) {
             rsPrinted = true;
             writer.write(
-                "    <rangeSet>\n"
-                    + "      <RangeSet>\n"
-                    + "        <name>RangeSetName</name>\n"
-                    + "        <label>RangeSetLabel</label>\n");
+                """
+                                        <rangeSet>
+                                          <RangeSet>
+                                            <name>RangeSetName</name>
+                                            <label>RangeSetLabel</label>
+                                    """);
           }
 
           EDVGridAxis edvga = axisVariables[av];
@@ -14302,23 +14259,32 @@ public abstract class EDDGrid extends EDD {
           // "        </nullValues>\n" +
         } // end of av loop
 
-        if (rsPrinted) writer.write("      </RangeSet>\n" + "    </rangeSet>\n");
+        if (rsPrinted)
+          writer.write(
+              """
+                          </RangeSet>
+                        </rangeSet>
+                    """);
 
         writer.write(
-            "    <supportedCRSs>\n"
-                + "      <requestCRSs>urn:ogc:def:crs:EPSG:4326</requestCRSs>\n"
-                + "      <responseCRSs>urn:ogc:def:crs:EPSG:4326</responseCRSs>\n"
-                + "      <nativeCRSs>urn:ogc:def:crs:EPSG:4326</nativeCRSs>\n"
-                + "    </supportedCRSs>\n"
-                + "    <supportedFormats>\n");
+            """
+                                <supportedCRSs>
+                                  <requestCRSs>urn:ogc:def:crs:EPSG:4326</requestCRSs>
+                                  <responseCRSs>urn:ogc:def:crs:EPSG:4326</responseCRSs>
+                                  <nativeCRSs>urn:ogc:def:crs:EPSG:4326</nativeCRSs>
+                                </supportedCRSs>
+                                <supportedFormats>
+                            """);
         for (int f = 0; f < wcsRequestFormats100.size(); f++)
           writer.write("      <formats>" + wcsRequestFormats100.get(f) + "</formats>\n");
         writer.write(
-            "    </supportedFormats>\n"
-                + "    <supportedInterpolations>\n"
-                + "      <interpolationMethod>none</interpolationMethod>\n"
-                + "    </supportedInterpolations>\n"
-                + "  </CoverageOffering>\n");
+            """
+                                </supportedFormats>
+                                <supportedInterpolations>
+                                  <interpolationMethod>none</interpolationMethod>
+                                </supportedInterpolations>
+                              </CoverageOffering>
+                            """);
       } // end of cov loop
 
       writer.write("</CoverageDescription>\n");
@@ -15489,12 +15455,12 @@ public abstract class EDDGrid extends EDD {
     // standardNames
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < axisVariables.length; v++) {
-        String sn = axisVariables[v].combinedAttributes().getString("standard_name");
+      for (EDVGridAxis axisVariable : axisVariables) {
+        String sn = axisVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -15763,7 +15729,10 @@ public abstract class EDDGrid extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("      </citeinfo>\n" + "    </citation>\n");
+    writer.write("""
+                  </citeinfo>
+                </citation>
+            """);
 
     // description
     writer.write(
@@ -15862,10 +15831,10 @@ public abstract class EDDGrid extends EDD {
             + "      <timeinfo>\n"
             + "        <rngdates>\n"
             + "          <begdate>"
-            + (minTime.equals("") ? unknown : minTime)
+            + (minTime.isEmpty() ? unknown : minTime)
             + "</begdate>\n"
             + "          <enddate>"
-            + (maxTime.equals("") ? unknown : maxTime)
+            + (maxTime.isEmpty() ? unknown : maxTime)
             + "</enddate>\n"
             + "        </rngdates>\n"
             + "      </timeinfo>\n"
@@ -16162,8 +16131,7 @@ public abstract class EDDGrid extends EDD {
 
     // process step:  lines from history
     String historyLines[] = String2.split(history, '\n');
-    for (int hl = 0; hl < historyLines.length; hl++) {
-      String step = historyLines[hl];
+    for (String step : historyLines) {
       String date = unknown;
       int spo = step.indexOf(' '); // date must be YYYY-MM-DD.* initially
       if (spo >= 10 && step.substring(0, 10).matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
@@ -16182,7 +16150,10 @@ public abstract class EDDGrid extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("    </lineage>\n" + "  </dataqual>\n");
+    writer.write("""
+                </lineage>
+              </dataqual>
+            """);
 
     // Spatial Data Organization information
     writer.write(
@@ -16381,7 +16352,12 @@ public abstract class EDDGrid extends EDD {
               + "        </digtopt>\n"
               + "      </digform>\n");
 
-    writer.write("      <fees>None</fees>\n" + "    </stdorder>\n" + "  </distinfo>\n");
+    writer.write(
+        """
+                  <fees>None</fees>
+                </stdorder>
+              </distinfo>
+            """);
 
     writer.write(
         "  <metainfo>\n"
@@ -16541,12 +16517,12 @@ public abstract class EDDGrid extends EDD {
 
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < axisVariables.length; v++) {
-        String sn = axisVariables[v].combinedAttributes().getString("standard_name");
+      for (EDVGridAxis axisVariable : axisVariables) {
+        String sn = axisVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -16856,14 +16832,16 @@ public abstract class EDDGrid extends EDD {
 
     // cellGeometry
     writer.write(
-        "      <gmd:cellGeometry>\n"
-            + "        <gmd:MD_CellGeometryCode "
-            + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" "
-            + "codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n"
-            + "      </gmd:cellGeometry>\n"
-            + "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n"
-            + "    </gmd:MD_GridSpatialRepresentation>\n"
-            + "  </gmd:spatialRepresentationInfo>\n");
+        """
+                          <gmd:cellGeometry>
+                            <gmd:MD_CellGeometryCode \
+                    codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode" \
+                    codeListValue="area">area</gmd:MD_CellGeometryCode>
+                          </gmd:cellGeometry>
+                          <gmd:transformationParameterAvailability gco:nilReason="unknown"/>
+                        </gmd:MD_GridSpatialRepresentation>
+                      </gmd:spatialRepresentationInfo>
+                    """);
 
     // *** IdentificationInfo loop
     int iiDataIdentification = 0;
@@ -17189,7 +17167,11 @@ public abstract class EDDGrid extends EDD {
 
           // keywords not from vocabulary
           if (kar.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < kar.size(); i++)
               writer.write(
@@ -17200,19 +17182,25 @@ public abstract class EDDGrid extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName gco:nilReason="unknown"/>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
 
           // gcmd keywords
           if (gcmdKeywords.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < gcmdKeywords.size(); i++)
               writer.write(
@@ -17223,21 +17211,23 @@ public abstract class EDDGrid extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName>\n"
-                    + "            <gmd:CI_Citation>\n"
-                    + "              <gmd:title>\n"
-                    + "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
-                    + "              </gmd:title>\n"
-                    + "              <gmd:date gco:nilReason=\"unknown\"/>\n"
-                    + "            </gmd:CI_Citation>\n"
-                    + "          </gmd:thesaurusName>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName>
+                                        <gmd:CI_Citation>
+                                          <gmd:title>
+                                            <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>
+                                          </gmd:title>
+                                          <gmd:date gco:nilReason="unknown"/>
+                                        </gmd:CI_Citation>
+                                      </gmd:thesaurusName>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
         }
 
@@ -17262,7 +17252,11 @@ public abstract class EDDGrid extends EDD {
 
         // keywords - variable (CF) standard_names
         if (standardNames.size() > 0) {
-          writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+          writer.write(
+              """
+                        <gmd:descriptiveKeywords>
+                          <gmd:MD_Keywords>
+                  """);
           for (int sn = 0; sn < standardNames.size(); sn++)
             writer.write(
                 "          <gmd:keyword>\n"
@@ -17450,7 +17444,7 @@ public abstract class EDDGrid extends EDD {
               + "              </gmd:northBoundLatitude>\n"
               + "            </gmd:EX_GeographicBoundingBox>\n"
               + "          </gmd:geographicElement>\n"
-              + (minTime.equals("") || maxTime.equals("")
+              + (minTime.isEmpty() || maxTime.isEmpty()
                   ? ""
                   : "          <gmd:temporalElement>\n"
                       + "            <gmd:EX_TemporalExtent"
@@ -17496,7 +17490,11 @@ public abstract class EDDGrid extends EDD {
               + "        </gmd:EX_Extent>\n");
 
       if (ii == iiDataIdentification) {
-        writer.write("      </gmd:extent>\n" + "    </gmd:MD_DataIdentification>\n");
+        writer.write(
+            """
+                      </gmd:extent>
+                    </gmd:MD_DataIdentification>
+                """);
       }
 
       if (ii == iiERDDAP) {
@@ -17675,8 +17673,7 @@ public abstract class EDDGrid extends EDD {
             + "      </gmd:contentType>\n");
 
     // dataVariables
-    for (int v = 0; v < dataVariables.length; v++) {
-      EDV edv = dataVariables[v];
+    for (EDV edv : dataVariables) {
       String tUnits = testMinimalMetadata ? null : edv.ucumUnits();
       writer.write(
           "      <gmd:dimension>\n"
@@ -17994,7 +17991,10 @@ public abstract class EDDGrid extends EDD {
   /** This returns time gap information. */
   public String findTimeGaps() {
     if (timeIndex < 0)
-      return "Time gaps: (none, because there is no time axis variable)\n" + "nGaps=0\n";
+      return """
+              Time gaps: (none, because there is no time axis variable)
+              nGaps=0
+              """;
 
     PrimitiveArray pa = axisVariables[timeIndex].destinationValues();
     DoubleArray times =

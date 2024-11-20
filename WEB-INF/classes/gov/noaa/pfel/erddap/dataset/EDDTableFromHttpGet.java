@@ -930,33 +930,32 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
       if (!String2.isSomething(columnUnits[col])) columnUnits[col] = "";
 
-      if (columnNames[col].equals(EDV.TIME_NAME)) {
-        timeColumn = col;
-        if (columnIsString[col]) {
-          // string times
-          if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
-            String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
-            throw new SimpleException(
-                EDStatic.bilingual(
-                    language,
-                    EDStatic.queryErrorAr[0]
-                        + "Invalid units for the string time variable. Units MUST specify the format of the time values.",
-                    EDStatic.queryErrorAr[language]
-                        + "Invalid units for the string time variable. Units MUST specify the format of the time values."));
+      switch (columnNames[col]) {
+        case EDV.TIME_NAME -> {
+          timeColumn = col;
+          if (columnIsString[col]) {
+            // string times
+            if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
+              String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
+              throw new SimpleException(
+                  EDStatic.bilingual(
+                      language,
+                      EDStatic.queryErrorAr[0]
+                          + "Invalid units for the string time variable. Units MUST specify the format of the time values.",
+                      EDStatic.queryErrorAr[language]
+                          + "Invalid units for the string time variable. Units MUST specify the format of the time values."));
+            }
+            timeFormat = columnUnits[col];
+          } else {
+            // numeric times
+            timeBaseAndFactor =
+                Calendar2.getTimeBaseAndFactor(
+                    columnUnits[col]); // throws RuntimeException if trouble
           }
-          timeFormat = columnUnits[col];
-        } else {
-          // numeric times
-          timeBaseAndFactor =
-              Calendar2.getTimeBaseAndFactor(
-                  columnUnits[col]); // throws RuntimeException if trouble
         }
-      } else if (columnNames[col].equals(TIMESTAMP)) {
-        timestampColumn = col;
-      } else if (columnNames[col].equals(AUTHOR)) {
-        authorColumn = col;
-      } else if (columnNames[col].equals(COMMAND)) {
-        commandColumn = col;
+        case TIMESTAMP -> timestampColumn = col;
+        case AUTHOR -> authorColumn = col;
+        case COMMAND -> commandColumn = col;
       }
     }
     columnValues[timestampColumn] = new DoubleArray(new double[] {timestampSeconds});
@@ -1781,7 +1780,10 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             "dataVariable",
             true,
             false)); // includeDataType, questionDestinationName
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

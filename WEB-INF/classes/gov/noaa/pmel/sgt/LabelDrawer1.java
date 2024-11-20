@@ -60,7 +60,6 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
   }
 
   public LabelDrawer copy() {
-    LabelDrawer1 newLabel = null;
     //      try {
     //        newLabel = (LabelDrawer1)clone();
     //      } catch (CloneNotSupportedException e) {
@@ -74,7 +73,7 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
     //  	newLabel.setOrientation(orient_);
     //        }
     //      }
-    return newLabel;
+    return null;
   }
 
   @Override

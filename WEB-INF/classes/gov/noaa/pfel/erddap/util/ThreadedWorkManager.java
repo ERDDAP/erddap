@@ -26,7 +26,7 @@ public class ThreadedWorkManager<T> {
   public void addTask(Callable<T> callable) throws Exception, Throwable {
     // If we're threaded add the work to the thread.
     if (executorService != null) {
-      FutureTask<T> task = new FutureTask<T>(callable);
+      FutureTask<T> task = new FutureTask<>(callable);
       taskList.add(task);
       if (executorService != null) {
         @SuppressWarnings("unused")

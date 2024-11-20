@@ -1526,17 +1526,17 @@ public class ByteArray extends PrimitiveArray {
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
     // (actually bytes could be done more efficiently with a boolean array -128 to 127... )
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     byte lastValue = array[0]; // since lastValue often equals currentValue, cache it
-    hashMap.put(Byte.valueOf(lastValue), dummy);
+    hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       final byte currentValue = array[i];
       if (currentValue != lastValue) {
         if (currentValue < lastValue) alreadySorted = false;
         lastValue = currentValue;
-        hashMap.put(Byte.valueOf(lastValue), dummy);
+        hashMap.put(lastValue, dummy);
       }
     }
 
@@ -1565,21 +1565,21 @@ public class ByteArray extends PrimitiveArray {
     // and make tUnique
     final byte tUnique[] = new byte[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
-      tUnique[i] = ((Byte) unique[i]).byteValue();
+      hashMap.put(unique[i], i);
+      tUnique[i] = (Byte) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = array[0];
-    ranks[0] = ((Integer) hashMap.get(Byte.valueOf(lastValue))).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = array[i];
-        ranks[i] = ((Integer) hashMap.get(Byte.valueOf(lastValue))).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }

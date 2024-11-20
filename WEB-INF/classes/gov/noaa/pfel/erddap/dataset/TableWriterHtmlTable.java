@@ -494,7 +494,11 @@ public class TableWriterHtmlTable extends TableWriter {
     // close the document
     writer.write(postTableHtml);
     if (writeHeadAndBodyTags)
-      if (xhtmlMode) writer.write("</body>\n" + "</html>\n");
+      if (xhtmlMode)
+        writer.write("""
+              </body>
+              </html>
+              """);
       else
         writer.write(
             EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language), loggedInAs)

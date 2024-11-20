@@ -328,7 +328,7 @@ public class EDStatic {
   public static Set<String>
       ipAddressUnlimited = // in datasets.xml  //read only. New one is swapped into place. You can
           // add and remove addresses as needed.
-          new HashSet<String>(
+          new HashSet<>(
               String2.toArrayList(
                   StringArray.fromCSVNoBlanks(DEFAULT_ipAddressUnlimited).toArray()));
   public static int tooManyRequests =
@@ -368,11 +368,11 @@ public class EDStatic {
   public static final String DEFAULT_ANGULAR_DEGREE_TRUE_UNITS =
       "degreesT,degrees_T,degrees_Tangular_degree,degrees_true," + "degreeT,degree_T,degree_true";
   public static Set<String> angularDegreeUnitsSet =
-      new HashSet<String>(
+      new HashSet<>(
           String2.toArrayList(
               StringArray.fromCSV(DEFAULT_ANGULAR_DEGREE_UNITS).toArray())); // so canonical
   public static Set<String> angularDegreeTrueUnitsSet =
-      new HashSet<String>(
+      new HashSet<>(
           String2.toArrayList(
               StringArray.fromCSV(DEFAULT_ANGULAR_DEGREE_TRUE_UNITS).toArray())); // so canonical
 
@@ -484,7 +484,7 @@ public class EDStatic {
   //  emails that timeout don't slow down other processes
   //  and allows me to email in batches so fewer email sessions (so I won't
   //  get Too Many Login Attempts and lost emails).
-  public static ArrayList<String[]> emailList =
+  public static final ArrayList<String[]> emailList =
       new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
@@ -507,7 +507,7 @@ public class EDStatic {
   //  and stress on remote servers will be minimal
   //  (although at the cost of not doing the tasks faster / in parallel).
   // In a grid of erddaps, each will have its own taskThread, which is appropriate.
-  public static ArrayList<Object[]> taskList =
+  public static final ArrayList<Object[]> taskList =
       new ArrayList<>(); // keep here in case TaskThread needs to be restarted
   private static TaskThread taskThread;
 
@@ -533,7 +533,7 @@ public class EDStatic {
   // touchThread variables
   // Funnelling all touchThread tasks through one touchThread ensures that
   //  touches that timeout don't slow down other processes.
-  public static ArrayList<String> touchList =
+  public static final ArrayList<String> touchList =
       new ArrayList<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
 
@@ -594,7 +594,7 @@ public class EDStatic {
 
   // made/returned by luceneIndexSearcher
   private static IndexReader luceneIndexReader; // is thread-safe, but only need/want one
-  private static Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+  private static final Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
   public static boolean needNewLuceneIndexReader = true;
   private static IndexSearcher luceneIndexSearcher; // is thread-safe, so can reuse
   public static ConcurrentHashMap<Integer, String> luceneDocNToDatasetID;
@@ -1927,20 +1927,20 @@ public class EDStatic {
 
       String tsar[] = String2.split(emailEverythingToCsv, ',');
       if (emailEverythingToCsv.length() > 0)
-        for (int i = 0; i < tsar.length; i++)
-          if (!String2.isEmailAddress(tsar[i])
-              || tsar[i].startsWith("your.")) // prohibit the default email addresses
+        for (String s : tsar)
+          if (!String2.isEmailAddress(s)
+              || s.startsWith("your.")) // prohibit the default email addresses
           throw new RuntimeException(
-                "setup.xml error: invalid email address=" + tsar[i] + " in <emailEverythingTo>.");
+                "setup.xml error: invalid email address=" + s + " in <emailEverythingTo>.");
       emailSubscriptionsFrom = tsar.length > 0 ? tsar[0] : ""; // won't be null
 
       tsar = String2.split(emailDailyReportToCsv, ',');
       if (emailDailyReportToCsv.length() > 0) {
-        for (int i = 0; i < tsar.length; i++)
-          if (!String2.isEmailAddress(tsar[i])
-              || tsar[i].startsWith("your.")) // prohibit the default email addresses
+        for (String s : tsar)
+          if (!String2.isEmailAddress(s)
+              || s.startsWith("your.")) // prohibit the default email addresses
           throw new RuntimeException(
-                "setup.xml error: invalid email address=" + tsar[i] + " in <emailDailyReportTo>.");
+                "setup.xml error: invalid email address=" + s + " in <emailDailyReportTo>.");
       }
 
       if (!skipEmailThread) {
@@ -2318,7 +2318,7 @@ public class EDStatic {
       errorInMethod = "ERROR while checking authentication setup: ";
       if (authentication == null) authentication = "";
       authentication = authentication.trim().toLowerCase();
-      if (!authentication.equals("")
+      if (!authentication.isEmpty()
           && !authentication.equals("custom")
           && !authentication.equals("email")
           && !authentication.equals("google")
@@ -2328,7 +2328,7 @@ public class EDStatic {
             "setup.xml error: authentication="
                 + authentication
                 + " must be (nothing)|custom|email|google|orcid|oauth2.");
-      if (!authentication.equals("") && !baseHttpsUrl.startsWith("https://"))
+      if (!authentication.isEmpty() && !baseHttpsUrl.startsWith("https://"))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": For any <authentication> other than \"\", the baseHttpsUrl="
@@ -2377,14 +2377,14 @@ public class EDStatic {
       // subdirectories)
       String tFiles[] =
           RegexFilenameFilter.recursiveFullNameList(contentDirectory + "images/", ".+", false);
-      for (int i = 0; i < tFiles.length; i++) {
-        int tpo = tFiles[i].indexOf("/images/");
-        if (tpo < 0) tpo = tFiles[i].indexOf("\\images\\");
+      for (String file : tFiles) {
+        int tpo = file.indexOf("/images/");
+        if (tpo < 0) tpo = file.indexOf("\\images\\");
         if (tpo < 0) {
-          String2.log("'/images/' not found in images/ file: " + tFiles[i]);
+          String2.log("'/images/' not found in images/ file: " + file);
           continue;
         }
-        String tName = tFiles[i].substring(tpo + 8);
+        String tName = file.substring(tpo + 8);
         if (verbose) String2.log("  copying images/ file: " + tName);
         File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
       }
@@ -2403,9 +2403,9 @@ public class EDStatic {
       // copy all <contentDirectory>cptfiles/ files to cptfiles
       tFiles =
           RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
-      for (int i = 0; i < tFiles.length; i++) {
-        if (verbose) String2.log("  copying cptfiles/ file: " + tFiles[i]);
-        File2.copy(contentDirectory + "cptfiles/" + tFiles[i], fullPaletteDirectory + tFiles[i]);
+      for (String tFile : tFiles) {
+        if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
+        File2.copy(contentDirectory + "cptfiles/" + tFile, fullPaletteDirectory + tFile);
       }
 
       // **** messages.xml *************************************************************
@@ -4194,11 +4194,11 @@ public class EDStatic {
             tUpdateUrls[i3 + 2].trim(), "", "updateUrls line #" + (i3 + 0) + " isn't empty.");
       }
 
-      for (int p = 0; p < palettes.length; p++) {
-        String tName = fullPaletteDirectory + palettes[p] + ".cpt";
+      for (String palette : palettes) {
+        String tName = fullPaletteDirectory + palette + ".cpt";
         Test.ensureTrue(
             File2.isFile(tName),
-            "\"" + palettes[p] + "\" is listed in <palettes>, but there is no file " + tName);
+            "\"" + palette + "\" is listed in <palettes>, but there is no file " + tName);
       }
 
       // try to create an nc4 file
@@ -5308,9 +5308,11 @@ public class EDStatic {
   public static void addCommonStatistics(StringBuilder sb) {
     if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
       sb.append(
-          "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open\n"
-              + "  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n"
-              + "----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----\n");
+          """
+                      Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open
+                        timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files
+                      ----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----
+                      """);
       sb.append(majorLoadDatasetsTimeSeriesSB);
       sb.append("\n\n");
     }
@@ -5590,18 +5592,18 @@ public class EDStatic {
     if (expected == null) return false;
 
     // generate observedPassword from plaintextPassword via passwordEncoding
-    String observed = plaintextPassword;
-    if (passwordEncoding.equals("MD5"))
-      observed = String2.md5Hex(plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("UEPMD5"))
-      observed = String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("SHA256"))
-      observed = String2.passwordDigest("SHA-256", plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("UEPSHA256"))
-      observed =
-          String2.passwordDigest(
-              "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-    else throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+    String observed =
+        switch (passwordEncoding) {
+          case "MD5" -> String2.md5Hex(plaintextPassword); // it will be lowercase
+          case "UEPMD5" ->
+              String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
+          case "SHA256" ->
+              String2.passwordDigest("SHA-256", plaintextPassword); // it will be lowercase
+          case "UEPSHA256" ->
+              String2.passwordDigest(
+                  "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
+          default -> throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+        };
     // only for debugging:
     // String2.log("username=" + username + " plaintextPassword=" + plaintextPassword +
     //    "\nobsPassword=" + observed + "\nexpPassword=" + expected);
@@ -5711,7 +5713,7 @@ public class EDStatic {
    *     user isn't logged in.
    */
   public static String getLoginHtml(int language, String loggedInAs) {
-    if (authentication.equals("")) {
+    if (authentication.isEmpty()) {
       // user can't log in
       return "";
     } else {
@@ -6004,11 +6006,11 @@ public class EDStatic {
       EDDTableFromCassandra.shutdown();
 
       // interrupt all of them
-      for (int i = 0; i < names.length; i++) {
+      for (String name : names) {
         try {
-          Thread thread = runningThreads.get(names[i]);
+          Thread thread = runningThreads.get(name);
           if (thread != null && thread.isAlive()) thread.interrupt();
-          else runningThreads.remove(names[i]);
+          else runningThreads.remove(name);
         } catch (Throwable t) {
           String2.log(MustBe.throwableToString(t));
         }
@@ -6449,8 +6451,8 @@ public class EDStatic {
       String common[] = { // "DOC", "DOD", "DOE", "USDOC", "USDOD", "USDOE",
         "NOAA", "NASA", "US"
       };
-      for (int c = 0; c < common.length; c++) {
-        int po = acronymSA.indexOf(common[c]);
+      for (String s : common) {
+        int po = acronymSA.indexOf(s);
         if (po >= 0) keep.clear(po);
       }
       table.justKeep(keep);
@@ -6730,10 +6732,9 @@ public class EDStatic {
     synchronized (luceneQueryParser) {
       try {
         // long qTime = System.currentTimeMillis();
-        Query q = luceneQueryParser.parse(searchString);
         // String2.log("  luceneParseQuery finished.  time=" + (System.currentTimeMillis() - qTime)
         // + "ms"); //always 0
-        return q;
+        return luceneQueryParser.parse(searchString);
       } catch (Throwable t) {
         String2.log(
             "Lucene failed to parse searchString="
@@ -7036,14 +7037,14 @@ public class EDStatic {
     names = hs.toArray(new String[] {});
 
     // updateUrls in all attributes
-    for (int i = 0; i < names.length; i++) {
-      if (String2.indexOf(updateUrlsSkipAttributes, names[i]) >= 0) continue;
-      PrimitiveArray pa = addAtts.get(names[i]);
-      if (pa == null && sourceAtts != null) pa = sourceAtts.get(names[i]);
+    for (String name : names) {
+      if (String2.indexOf(updateUrlsSkipAttributes, name) >= 0) continue;
+      PrimitiveArray pa = addAtts.get(name);
+      if (pa == null && sourceAtts != null) pa = sourceAtts.get(name);
       if (pa != null && pa.size() > 0 && pa.elementType() == PAType.STRING) {
         String oValue = pa.getString(0);
         String value = updateUrls(oValue);
-        if (!value.equals(oValue)) addAtts.set(names[i], value);
+        if (!value.equals(oValue)) addAtts.set(name, value);
       }
     }
   }
@@ -7094,8 +7095,7 @@ public class EDStatic {
       ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
       Integer datasetLastAssignedTask = lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          datasetLastAssignedTask != null
-              && lastFinishedTask.get() < datasetLastAssignedTask.intValue();
+          datasetLastAssignedTask != null && lastFinishedTask.get() < datasetLastAssignedTask;
       if (verbose)
         String2.log(
             "  "
@@ -7189,7 +7189,7 @@ public class EDStatic {
           taskOA[0] = TaskThread.TASK_DOWNLOAD;
           taskOA[1] = remoteDirs.get(remoteI) + remoteNames.get(remoteI);
           taskOA[2] = tLocalDir + remoteRelativeDir + remoteNames.get(remoteI);
-          taskOA[3] = Long.valueOf(remoteLastMod.get(remoteI)); // or if unknown?
+          taskOA[3] = remoteLastMod.get(remoteI); // or if unknown?
           nFilesToDownload++;
           int tTaskNumber =
               nFilesToDownload <= maxTasks ? (lastTask = addTask(taskOA)) : -nFilesToDownload;
@@ -7227,7 +7227,7 @@ public class EDStatic {
         lastTask = addTask(taskOA); // TASK_SET_FLAG will always be added
         if (reallyVerbose)
           String2.log("% created task#" + lastTask + " TASK_SET_FLAG " + tDatasetID);
-        lastAssignedTask.put(tDatasetID, Integer.valueOf(lastTask));
+        lastAssignedTask.put(tDatasetID, lastTask);
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
         if (EDStatic.forceSynchronousLoading) {

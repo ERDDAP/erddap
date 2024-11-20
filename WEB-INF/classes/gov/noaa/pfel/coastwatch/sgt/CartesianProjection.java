@@ -12,24 +12,18 @@ import com.cohort.util.DoubleObject;
  */
 public class CartesianProjection implements Projection {
 
-  private double graphMinX,
-      graphMaxX,
-      graphMinY,
-      graphMaxY,
-      lgraphMinX,
-      lgraphMaxX,
-      lgraphMinY,
-      lgraphMaxY, // log or linear applied
-      deviceMinX,
-      deviceMaxX,
-      deviceMinY,
-      deviceMaxY,
-      lgraphXRange,
-      lgraphYRange,
-      deviceXRange,
-      deviceYRange,
-      deviceOverLGraphXRange,
-      deviceOverLGraphYRange;
+  private double graphMinX;
+  private double graphMaxX;
+  private double graphMinY;
+  private double graphMaxY;
+  private double lgraphMinX;
+  private double lgraphMinY;
+  private double deviceMinX;
+  private double deviceMaxX;
+  private double deviceMinY;
+  private double deviceMaxY;
+  private double deviceOverLGraphXRange;
+  private double deviceOverLGraphYRange;
   private boolean xIsLogAxis, yIsLogAxis;
   public static final String cantBecauseLog =
       "CartesianProjection.graphToDeviceX/YDistance() can't be used when the x and/or y axis is a log axis.";
@@ -72,14 +66,15 @@ public class CartesianProjection implements Projection {
         xIsLogAxis && graphMinX > 0 && graphMaxX > 0; // silently turn off logAxis if not allowed
     this.yIsLogAxis = yIsLogAxis && graphMinY > 0 && graphMaxY > 0;
     lgraphMinX = xIsLogAxis ? Math.log(graphMinX) : graphMinX;
-    lgraphMaxX = xIsLogAxis ? Math.log(graphMaxX) : graphMaxX;
+    double lgraphMaxX = xIsLogAxis ? Math.log(graphMaxX) : graphMaxX;
     lgraphMinY = yIsLogAxis ? Math.log(graphMinY) : graphMinY;
-    lgraphMaxY = yIsLogAxis ? Math.log(graphMaxY) : graphMaxY;
+    // log or linear applied
+    double lgraphMaxY = yIsLogAxis ? Math.log(graphMaxY) : graphMaxY;
 
-    lgraphXRange = lgraphMaxX - lgraphMinX;
-    lgraphYRange = lgraphMaxY - lgraphMinY;
-    deviceXRange = deviceMaxX - deviceMinX;
-    deviceYRange = deviceMaxY - deviceMinY;
+    double lgraphXRange = lgraphMaxX - lgraphMinX;
+    double lgraphYRange = lgraphMaxY - lgraphMinY;
+    double deviceXRange = deviceMaxX - deviceMinX;
+    double deviceYRange = deviceMaxY - deviceMinY;
     deviceOverLGraphXRange = deviceXRange / lgraphXRange;
     deviceOverLGraphYRange = deviceYRange / lgraphYRange;
   }

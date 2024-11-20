@@ -280,8 +280,8 @@ public class Matlab {
     stream.writeInt(miDOUBLE); // dataType
     stream.writeInt(8 * nCols * nRows); // nBytes
     for (int col = 0; col < nCols; col++)
-      for (int row = 0; row < nRows; row++)
-        stream.writeDouble(da[row][col]); // always ends on 8 byte boundary
+      for (double[] doubles : da)
+        stream.writeDouble(doubles[col]); // always ends on 8 byte boundary
   }
 
   /**
@@ -329,8 +329,7 @@ public class Matlab {
     // write data sub element
     stream.writeInt(miSINGLE); // dataType
     stream.writeInt(dataSize * nRows * nCols); // nBytes
-    for (int col = 0; col < nCols; col++)
-      for (int row = 0; row < nRows; row++) stream.writeFloat(fa[row][col]);
+    for (int col = 0; col < nCols; col++) for (float[] floats : fa) stream.writeFloat(floats[col]);
     for (int i = 0; i < dataPaddingNBytes; i++) stream.write(0); // 0 padded to 8 byte boundary
   }
 
@@ -345,10 +344,8 @@ public class Matlab {
   public static byte[] nameInfo(String name) throws Exception {
     if (name.length() > 31) name = name.substring(0, 31); // Matlab's limit   pg 1-30
     int nameLength = name.length();
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try {
-      DataOutputStream dos = new DataOutputStream(baos);
-      try {
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      try (DataOutputStream dos = new DataOutputStream(baos)) {
         int n0;
         if (nameLength <= 4) { // see 1-20
           // short form
@@ -364,12 +361,8 @@ public class Matlab {
         }
         for (int i = 0; i < nameLength; i++) dos.write(name.charAt(i));
         for (int i = 0; i < n0; i++) dos.write(0);
-      } finally {
-        dos.close();
       }
       return baos.toByteArray();
-    } finally {
-      baos.close();
     }
   }
 
@@ -564,7 +557,7 @@ public class Matlab {
     // write dimensions array sub element  pg 1-17
     stream.writeInt(miINT32); // dataType=5
     stream.writeInt(nDimensions * 4); // nBytes
-    for (int i = 0; i < nDimensions; i++) stream.writeInt(shape[i]);
+    for (int j : shape) stream.writeInt(j);
     if (Math2.odd(nDimensions)) stream.writeInt(0); // end on 8 byte boundary
 
     // write array name sub element

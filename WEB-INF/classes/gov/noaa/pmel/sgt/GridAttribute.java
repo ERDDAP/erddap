@@ -170,9 +170,9 @@ public class GridAttribute implements Attribute, Cloneable, PropertyChangeListen
    */
   public void setStyle(int st) {
     if (style_ != st) {
-      Integer tempOld = Integer.valueOf(style_);
+      Integer tempOld = style_;
       style_ = st;
-      firePropertyChange("style", tempOld, Integer.valueOf(style_));
+      firePropertyChange("style", tempOld, style_);
     }
   }
 

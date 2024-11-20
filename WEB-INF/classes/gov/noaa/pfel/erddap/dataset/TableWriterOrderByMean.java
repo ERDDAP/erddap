@@ -40,12 +40,11 @@ public class TableWriterOrderByMean extends TableWriterAll {
   protected final TableWriter otherTableWriter;
   public String orderBy[];
   // maintains count of the number of values in average
-  protected final Map<String, int[]> counts = new HashMap<String, int[]>();
-  protected final Map<String, Integer> rowmap = new HashMap<String, Integer>();
+  protected final Map<String, int[]> counts = new HashMap<>();
+  protected final Map<String, Integer> rowmap = new HashMap<>();
   // used when calculating degree means at the end, one key for each row.
   protected final StringArray keymap = new StringArray();
-  protected final Map<String, DegreesAccumulator> degreesMap =
-      new HashMap<String, DegreesAccumulator>();
+  protected final Map<String, DegreesAccumulator> degreesMap = new HashMap<>();
 
   protected Attributes oColumnAtts[] = null; // from incoming table or edd
 
@@ -55,11 +54,9 @@ public class TableWriterOrderByMean extends TableWriterAll {
   private BitSet cannotMeanCol;
   private BitSet degreesCol;
   private BitSet degreesTrueCol;
-  private BitSet wasDecimalCol;
-  private int timeCol = -1;
   private boolean configured = false;
   private Table meansTable;
-  private final Map<String, Table.Rounder> rounders = new HashMap<String, Table.Rounder>();
+  private final Map<String, Table.Rounder> rounders = new HashMap<>();
 
   /**
    * The constructor.
@@ -148,8 +145,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
     ROW:
     for (int row = 0; row < nRows; row++) {
       sbKey.setLength(0);
-      for (int i = 0; i < keyCols.length; i++) {
-        int col = keyCols[i];
+      for (int col : keyCols) {
         PrimitiveArray column = table.getColumn(col);
         String columnName = table.getColumnName(col);
         if (column.isFloatingPointType() || column.isIntegerType()) {
@@ -240,12 +236,12 @@ public class TableWriterOrderByMean extends TableWriterAll {
   private boolean configure(Table table) throws SimpleException {
     int nKeyCols = orderBy.length;
     int ncols = table.nColumns();
-    ArrayList<Integer> tKeyCols = new ArrayList<Integer>();
+    ArrayList<Integer> tKeyCols = new ArrayList<>();
     isKeyCol = new BitSet(ncols);
     cannotMeanCol = new BitSet(ncols);
     degreesCol = new BitSet(ncols);
     degreesTrueCol = new BitSet(ncols);
-    wasDecimalCol = new BitSet(ncols);
+    BitSet wasDecimalCol = new BitSet(ncols);
     for (int k = 0; k < nKeyCols; k++) {
       int col = table.findColumnNumber(orderBy[k]);
       if (col < 0)
@@ -300,6 +296,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         if (column.isFloatingPointType()) {
           wasDecimalCol.set(col);
         }
+        int timeCol = -1;
         if (column.isIntegerType() || column.isFloatingPointType()) {
           dataType[col] = "double";
         } else if (col != timeCol) {
@@ -341,21 +338,15 @@ public class TableWriterOrderByMean extends TableWriterAll {
   }
 
   private void accumulateDegrees(String key, double value) {
-    DegreesAccumulator accum = degreesMap.get(key);
-    if (accum == null) {
-      accum = new DegreesAccumulator(false); // not degrees true
-      degreesMap.put(key, accum);
-    }
+    DegreesAccumulator accum = degreesMap.computeIfAbsent(key, k -> new DegreesAccumulator(false));
+    // not degrees true
     // String2.log(">> accumulateDegrees " + key + " value=" + value);
     accum.add(value);
   }
 
   private void accumulateDegreesTrue(String key, double value) {
-    DegreesAccumulator accum = degreesMap.get(key);
-    if (accum == null) {
-      accum = new DegreesAccumulator(true); // is degrees true
-      degreesMap.put(key, accum);
-    }
+    DegreesAccumulator accum = degreesMap.computeIfAbsent(key, k -> new DegreesAccumulator(true));
+    // is degrees true
     // String2.log(">> accumulateDegrees " + key + " value=" + value);
     accum.add(value);
   }

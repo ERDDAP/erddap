@@ -102,54 +102,52 @@ public class EDDTableFromDapSequence extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<outerSequenceName>")) {
-      } else if (localTags.equals("</outerSequenceName>")) tOuterSequenceName = content;
-      else if (localTags.equals("<innerSequenceName>")) {
-      } else if (localTags.equals("</innerSequenceName>")) tInnerSequenceName = content;
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringEQNE>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringEQNE>"))
-        tSourceCanConstrainStringEQNE = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringGTLT>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringGTLT>"))
-        tSourceCanConstrainStringGTLT = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringRegex>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringRegex>"))
-        tSourceCanConstrainStringRegex = content;
-      else if (localTags.equals("<skipDapperSpacerRows>")) {
-      } else if (localTags.equals("</skipDapperSpacerRows>"))
-        tSkipDapperSpacerRows = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<sourceUrl>" -> {}
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "<outerSequenceName>" -> {}
+        case "</outerSequenceName>" -> tOuterSequenceName = content;
+        case "<innerSequenceName>" -> {}
+        case "</innerSequenceName>" -> tInnerSequenceName = content;
+        case "<sourceNeedsExpandedFP_EQ>" -> {}
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "<sourceCanConstrainStringEQNE>" -> {}
+        case "</sourceCanConstrainStringEQNE>" ->
+            tSourceCanConstrainStringEQNE = String2.parseBoolean(content);
+        case "<sourceCanConstrainStringGTLT>" -> {}
+        case "</sourceCanConstrainStringGTLT>" ->
+            tSourceCanConstrainStringGTLT = String2.parseBoolean(content);
+        case "<sourceCanConstrainStringRegex>" -> {}
+        case "</sourceCanConstrainStringRegex>" -> tSourceCanConstrainStringRegex = content;
+        case "<skipDapperSpacerRows>" -> {}
+        case "</skipDapperSpacerRows>" -> tSkipDapperSpacerRows = String2.parseBoolean(content);
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<sosOfferingPrefix>" -> {}
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<addVariablesWhere>" -> {}
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -1039,7 +1037,10 @@ public class EDDTableFromDapSequence extends EDDTable {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

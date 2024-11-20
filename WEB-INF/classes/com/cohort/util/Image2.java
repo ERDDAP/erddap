@@ -254,8 +254,7 @@ public class Image2 {
   public static void saveAsJpeg(
       BufferedImage originalImage, String fullFileName, float compressionQuality) throws Exception {
 
-    OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName));
-    try {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName))) {
 
       // Retrieve jpg image to be compressed
       // BufferedImage originalImage = ImageIO.read(infile);
@@ -289,8 +288,6 @@ public class Image2 {
       } finally {
         writer.dispose();
       }
-    } finally {
-      out.close();
     }
   }
 
@@ -415,11 +412,8 @@ public class Image2 {
    * @throws Exception if trouble
    */
   public static void saveAsPng(RenderedImage image, String fullFileName) throws Exception {
-    OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName));
-    try {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(fullFileName))) {
       ImageIO.write(image, "png", out);
-    } finally {
-      out.close();
     }
   }
 

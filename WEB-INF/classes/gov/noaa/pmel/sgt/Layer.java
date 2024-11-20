@@ -158,23 +158,23 @@ public class Layer extends Component implements Cloneable, LayerControl {
   private void computeScale() {
     // compute xoff and yoff as double then truncate to int
     Rectangle pbnds = pane_.getBounds();
-    Rectangle bnds = pbnds; // getBounds();
+    // getBounds();
     if (pane_.isPrinter()) {
       ax_ = 72; // java2 is in 1/72 of an inch
       ay_ = ax_;
-      xoff2_ = (bnds.width - ax_ * pWidth_) / 2.0 + bnds.x;
-      yoff2_ = bnds.height - (bnds.height - ay_ * pHeight_) / 2.0 + bnds.y;
+      xoff2_ = (pbnds.width - ax_ * pWidth_) / 2.0 + pbnds.x;
+      yoff2_ = pbnds.height - (pbnds.height - ay_ * pHeight_) / 2.0 + pbnds.y;
     } else {
       // not printer
-      ax_ = (double) bnds.width / pWidth_;
-      ay_ = (double) bnds.height / pHeight_;
+      ax_ = (double) pbnds.width / pWidth_;
+      ay_ = (double) pbnds.height / pHeight_;
       if (ax_ > ay_) {
         ax_ = ay_;
       } else if (ay_ > ax_) {
         ay_ = ax_;
       }
-      xoff2_ = (bnds.width - ax_ * pWidth_) / 2.0 + bnds.x - pbnds.x;
-      yoff2_ = bnds.height - (bnds.height - ay_ * pHeight_) / 2.0 + bnds.y - pbnds.y;
+      xoff2_ = (pbnds.width - ax_ * pWidth_) / 2.0 + pbnds.x - pbnds.x;
+      yoff2_ = pbnds.height - (pbnds.height - ay_ * pHeight_) / 2.0 + pbnds.y - pbnds.y;
     }
 
     // bob added:

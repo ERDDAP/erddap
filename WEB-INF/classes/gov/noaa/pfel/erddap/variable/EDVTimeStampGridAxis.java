@@ -377,13 +377,12 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
    */
   public double sourceTimeToEpochSeconds(double sourceTime) {
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    double sec = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     // if (reallyVerbose)
     //    String2.log("    EDVTimeStampGridAxis stBase=" + sourceTimeBase +
     //        " scale=" + scaleFactor + " addOffset=" + addOffset +
     //        " stFactor=" + sourceTimeFactor + " sourceTime=" + sourceTime +
     //        " result=" + sec + " = " + Calendar2.epochSecondsToIsoStringTZ(sec));
-    return sec;
+    return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
   /**
@@ -406,17 +405,18 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
 
     // time is a string
     try {
-      double d =
-          parseISOWithCalendar2
-              ?
-              // parse with Calendar2.parseISODateTime
-              Calendar2.isoStringToEpochSeconds(sourceTime)
-              :
-              // parse
-              Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone); // thread safe
+      // parse with Calendar2.parseISODateTime
+      // parse
+      // thread safe
       // String2.log("  EDVTimeStampGridAxis sourceTime=" + sourceTime +
       //    " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringTZ(d));
-      return d;
+      return parseISOWithCalendar2
+          ?
+          // parse with Calendar2.parseISODateTime
+          Calendar2.isoStringToEpochSeconds(sourceTime)
+          :
+          // parse
+          Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(

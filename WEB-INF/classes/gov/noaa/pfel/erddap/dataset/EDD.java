@@ -51,6 +51,7 @@ import io.github.classgraph.AnnotationClassRef;
 import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
+import io.github.classgraph.MethodInfo;
 import io.github.classgraph.ScanResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -515,7 +516,7 @@ public abstract class EDD {
         .map(parameterValues -> parameterValues.get("value"))
         .filter(Objects::nonNull)
         .map(annotationParameterValue -> (AnnotationClassRef) annotationParameterValue.getValue())
-        .filter(annotationClassRef -> annotationClassRef != null)
+        .filter(Objects::nonNull)
         .map(annotationClassRef -> (Class<State>) annotationClassRef.loadClass())
         .filter(Objects::nonNull)
         .findFirst();
@@ -530,7 +531,7 @@ public abstract class EDD {
   private static final Optional<Method> getFromXmlMethod(ClassInfo classInfo) {
     return classInfo.getMethodInfo("fromXml").stream()
         .filter(mi -> mi.hasAnnotation(EDDFromXmlMethod.class))
-        .map(mi -> mi.loadClassAndGetMethod())
+        .map(MethodInfo::loadClassAndGetMethod)
         .findFirst();
   }
 
@@ -579,89 +580,142 @@ public abstract class EDD {
     } else {
       // legacy hardcoded approach
       try {
-        if (type.equals("EDDGridAggregateExistingDimension"))
-          return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridCopy")) return EDDGridCopy.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromAudioFiles"))
-          return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromDap")) return EDDGridFromDap.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromEDDTable"))
-          return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromErddap")) return EDDGridFromErddap.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromEtopo")) return EDDGridFromEtopo.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromMergeIRFiles"))
-          return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromNcFiles")) return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridFromNcFilesUnpacked"))
-          return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridLonPM180")) return EDDGridLonPM180.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridLon0360")) return EDDGridLon0360.fromXml(erddap, xmlReader);
-        if (type.equals("EDDGridSideBySide")) return EDDGridSideBySide.fromXml(erddap, xmlReader);
+        switch (type) {
+          case "EDDGridAggregateExistingDimension" -> {
+            return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridCopy" -> {
+            return EDDGridCopy.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromAudioFiles" -> {
+            return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromDap" -> {
+            return EDDGridFromDap.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromEDDTable" -> {
+            return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromErddap" -> {
+            return EDDGridFromErddap.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromEtopo" -> {
+            return EDDGridFromEtopo.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromMergeIRFiles" -> {
+            return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFiles" -> {
+            return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridFromNcFilesUnpacked" -> {
+            return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLonPM180" -> {
+            return EDDGridLonPM180.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridLon0360" -> {
+            return EDDGridLon0360.fromXml(erddap, xmlReader);
+          }
+          case "EDDGridSideBySide" -> {
+            return EDDGridSideBySide.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableAggregateRows" -> {
+            return EDDTableAggregateRows.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableCopy" -> {
+            return EDDTableCopy.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
+            // xmlReader); //inactive
+          case "EDDTableFromAsciiServiceNOS" -> {
+            return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
+            // xmlReader); //inactive
+          case "EDDTableFromCassandra" -> {
+            return EDDTableFromCassandra.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromDapSequence" -> {
+            return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromDatabase" -> {
+            return EDDTableFromDatabase.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromEDDGrid" -> {
+            return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromErddap" -> {
+            return EDDTableFromErddap.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromFileNames" -> {
+            return EDDTableFromFileNames.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
+            // xmlReader); //inactive as of 2009-01-14
+          case "EDDTableFromAsciiFiles" -> {
+            return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromAudioFiles" -> {
+            return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromAwsXmlFiles" -> {
+            return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromColumnarAsciiFiles" -> {
+            return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromHttpGet" -> {
+            return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromInvalidCRAFiles" -> {
+            return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromJsonlCSVFiles" -> {
+            return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromParquetFiles" -> {
+            return EDDTableFromParquetFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromHyraxFiles" -> {
+            return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromMultidimNcFiles" -> {
+            return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNcFiles" -> {
+            return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNcCFFiles" -> {
+            return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromNccsvFiles" -> {
+            return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
+            // xmlReader); //inactive 2010-09-08
+            // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
+            // xmlReader); //inactive 2011-12-16
+          case "EDDTableFromOBIS" -> {
+            return EDDTableFromOBIS.fromXml(erddap, xmlReader);
+          }
+            // if (type.equals("EDDTableFromPostDatabase"))return
+            // EDDTableFromPostDatabase.fromXml(erddap,
+            // xmlReader);
+            // if (type.equals("EDDTableFromPostNcFiles")) return
+            // EDDTableFromPostNcFiles.fromXml(erddap,
+            // xmlReader);
+          case "EDDTableFromSOS" -> {
+            return EDDTableFromSOS.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromThreddsFiles" -> {
+            return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
+          }
+          case "EDDTableFromWFSFiles" -> {
+            return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
+          }
+        }
 
-        if (type.equals("EDDTableAggregateRows"))
-          return EDDTableAggregateRows.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableCopy")) return EDDTableCopy.fromXml(erddap, xmlReader);
-        // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-        // xmlReader); //inactive
-        if (type.equals("EDDTableFromAsciiServiceNOS"))
-          return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
-        // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-        // xmlReader); //inactive
-        if (type.equals("EDDTableFromCassandra"))
-          return EDDTableFromCassandra.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromDapSequence"))
-          return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromDatabase"))
-          return EDDTableFromDatabase.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromEDDGrid"))
-          return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromErddap")) return EDDTableFromErddap.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromFileNames"))
-          return EDDTableFromFileNames.fromXml(erddap, xmlReader);
-        // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-        // xmlReader); //inactive as of 2009-01-14
-        if (type.equals("EDDTableFromAsciiFiles"))
-          return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromAudioFiles"))
-          return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromAwsXmlFiles"))
-          return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromColumnarAsciiFiles"))
-          return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromHttpGet"))
-          return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromInvalidCRAFiles"))
-          return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromJsonlCSVFiles"))
-          return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromParquetFiles"))
-          return EDDTableFromParquetFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromHyraxFiles"))
-          return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromMultidimNcFiles"))
-          return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromNcFiles"))
-          return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromNcCFFiles"))
-          return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromNccsvFiles"))
-          return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
-        // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-        // xmlReader); //inactive 2010-09-08
-        // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-        // xmlReader); //inactive 2011-12-16
-        if (type.equals("EDDTableFromOBIS")) return EDDTableFromOBIS.fromXml(erddap, xmlReader);
-        // if (type.equals("EDDTableFromPostDatabase"))return
-        // EDDTableFromPostDatabase.fromXml(erddap,
-        // xmlReader);
-        // if (type.equals("EDDTableFromPostNcFiles")) return
-        // EDDTableFromPostNcFiles.fromXml(erddap,
-        // xmlReader);
-        if (type.equals("EDDTableFromSOS")) return EDDTableFromSOS.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromThreddsFiles"))
-          return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
-        if (type.equals("EDDTableFromWFSFiles"))
-          return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
       } catch (Throwable t) {
         String msg = MustBe.getShortErrorMessage(t);
         throw new RuntimeException(
@@ -687,12 +741,11 @@ public abstract class EDD {
   public static EDD oneFromXml(Erddap erddap, String xml) throws Throwable {
     String2.log("\nEDD.oneFromXml...");
     if (EDStatic.useSaxParser) {
-      EDD edd =
-          SaxHandler.parseOneDataset(
-              new ByteArrayInputStream(String2.toByteArray(xml)),
-              ".*" /* dataset id, but this xml is supposed to have only one dataset */,
-              null);
-      return edd;
+      /* dataset id, but this xml is supposed to have only one dataset */
+      return SaxHandler.parseOneDataset(
+          new ByteArrayInputStream(String2.toByteArray(xml)),
+          ".*" /* dataset id, but this xml is supposed to have only one dataset */,
+          null);
     } else {
       SimpleXMLReader xmlReader =
           new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(xml)), "erddapDatasets");
@@ -703,8 +756,7 @@ public abstract class EDD {
           if (tags.equals("</erddapDatasets>")) {
             throw new IllegalArgumentException("No <dataset> tag in xml.");
           } else if (tags.equals("<erddapDatasets><dataset>")) {
-            EDD edd = fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            return edd;
+            return fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
           } else {
             xmlReader.unexpectedTagException();
           }
@@ -779,111 +831,112 @@ public abstract class EDD {
                         + ".xml"),
                 "erddapDatasets");
         try {
+          label:
           while (true) {
             xmlReader.nextTag();
             String tags = xmlReader.allTags();
-            if (tags.equals("</erddapDatasets>")) {
-              throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
-            } else if (tags.equals("<erddapDatasets><dataset>")) {
-              if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
-                dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                break;
-              } else {
-                // skip to </dataset> tag
-                while (!tags.equals("<erddapDatasets></dataset>")) {
-                  xmlReader.nextTag();
-                  tags = xmlReader.allTags();
+            switch (tags) {
+              case "</erddapDatasets>" ->
+                  throw new IllegalArgumentException(tDatasetID + " not found in datasets.xml.");
+              case "<erddapDatasets><dataset>" -> {
+                if (xmlReader.attributeValue("datasetID").equals(tDatasetID)) {
+                  dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                  break label;
+                } else {
+                  // skip to </dataset> tag
+                  while (!tags.equals("<erddapDatasets></dataset>")) {
+                    xmlReader.nextTag();
+                    tags = xmlReader.allTags();
+                  }
                 }
               }
-
-            } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
-              String tFrom = xmlReader.attributeValue("from");
-              String tTo = xmlReader.attributeValue("to");
-              int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
-              if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
-                EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
-            } else if (tags.equals("<erddapDatasets></convertToPublicSourceUrl>")) {
-
-            } else if (tags.equals("<erddapDatasets><angularDegreeUnits>")) {
-            } else if (tags.equals("<erddapDatasets></angularDegreeUnits>")) {
-            } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
-            } else if (tags.equals("<erddapDatasets></angularDegreeTrueUnits>")) {
-            } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
-            } else if (tags.equals("<erddapDatasets><commonStandardNames>")) {
-            } else if (tags.equals("<erddapDatasets></commonStandardNames>")) {
-            } else if (tags.equals("<erddapDatasets><decompressedCacheMaxGB>")) {
-            } else if (tags.equals("<erddapDatasets></decompressedCacheMaxGB>")) {
-            } else if (tags.equals("<erddapDatasets><decompressedCacheMaxMinutesOld>")) {
-            } else if (tags.equals("<erddapDatasets></decompressedCacheMaxMinutesOld>")) {
-            } else if (tags.equals("<erddapDatasets><drawLandMask>")) {
-            } else if (tags.equals("<erddapDatasets></drawLandMask>")) {
-            } else if (tags.equals("<erddapDatasets><emailDiagnosticsToErdData>")) {
-            } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
-            } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
-            } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
-            } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
-            } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
-            } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
-            } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
-            } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
-            } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {
-            } else if (tags.equals("<erddapDatasets></loadDatasetsMaxMinutes>")) {
-            } else if (tags.equals("<erddapDatasets><logLevel>")) {
-            } else if (tags.equals("<erddapDatasets></logLevel>")) {
-            } else if (tags.equals("<erddapDatasets><nGridThreads>")) {
-            } else if (tags.equals("<erddapDatasets></nGridThreads>")) {
-            } else if (tags.equals("<erddapDatasets><nTableThreads>")) {
-            } else if (tags.equals("<erddapDatasets></nTableThreads>")) {
-            } else if (tags.equals("<erddapDatasets><palettes>")) {
-            } else if (tags.equals("<erddapDatasets></palettes>")) {
-            } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
-            } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
-            } else if (tags.equals("<erddapDatasets><partialRequestMaxCells>")) {
-            } else if (tags.equals("<erddapDatasets></partialRequestMaxCells>")) {
-            } else if (tags.equals("<erddapDatasets><requestBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
-            } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
-            } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets></subscriptionEmailBlacklist>")) {
-            } else if (tags.equals("<erddapDatasets><standardLicense>")) {
-            } else if (tags.equals("<erddapDatasets></standardLicense>")) {
-            } else if (tags.equals("<erddapDatasets><standardContact>")) {
-            } else if (tags.equals("<erddapDatasets></standardContact>")) {
-            } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
-            } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
-            } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
-            } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
-            } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
-            } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
-            } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
-            } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
-            } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
-            } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
-            } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></startHeadHtml5>")) {
-            } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
-            } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
-            } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
-            } else if (tags.equals("<erddapDatasets><convertInterpolateRequestCSVExample>")) {
-            } else if (tags.equals("<erddapDatasets></convertInterpolateRequestCSVExample>")) {
-            } else if (tags.equals("<erddapDatasets><convertInterpolateDatasetIDVariableList>")) {
-            } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
-            } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
-            } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
-            } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
-            } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
-            } else if (tags.equals("<erddapDatasets><user>")) {
-            } else if (tags.equals("<erddapDatasets></user>")) {
-            } else {
-              xmlReader.unexpectedTagException();
+              case "<erddapDatasets><convertToPublicSourceUrl>" -> {
+                String tFrom = xmlReader.attributeValue("from");
+                String tTo = xmlReader.attributeValue("to");
+                int spo = EDStatic.convertToPublicSourceUrlFromSlashPo(tFrom);
+                if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
+                  EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
+              }
+              case "<erddapDatasets></convertToPublicSourceUrl>" -> {}
+              case "<erddapDatasets><angularDegreeUnits>" -> {}
+              case "<erddapDatasets></angularDegreeUnits>" -> {}
+              case "<erddapDatasets><angularDegreeTrueUnits>" -> {}
+              case "<erddapDatasets></angularDegreeTrueUnits>" -> {}
+              case "<erddapDatasets><cacheMinutes>" -> {}
+              case "<erddapDatasets></cacheMinutes>" -> {}
+              case "<erddapDatasets><commonStandardNames>" -> {}
+              case "<erddapDatasets></commonStandardNames>" -> {}
+              case "<erddapDatasets><decompressedCacheMaxGB>" -> {}
+              case "<erddapDatasets></decompressedCacheMaxGB>" -> {}
+              case "<erddapDatasets><decompressedCacheMaxMinutesOld>" -> {}
+              case "<erddapDatasets></decompressedCacheMaxMinutesOld>" -> {}
+              case "<erddapDatasets><drawLandMask>" -> {}
+              case "<erddapDatasets></drawLandMask>" -> {}
+              case "<erddapDatasets><emailDiagnosticsToErdData>" -> {}
+              case "<erddapDatasets></emailDiagnosticsToErdData>" -> {}
+              case "<erddapDatasets><graphBackgroundColor>" -> {}
+              case "<erddapDatasets></graphBackgroundColor>" -> {}
+              case "<erddapDatasets><ipAddressMaxRequests>" -> {}
+              case "<erddapDatasets></ipAddressMaxRequests>" -> {}
+              case "<erddapDatasets><ipAddressMaxRequestsActive>" -> {}
+              case "<erddapDatasets></ipAddressMaxRequestsActive>" -> {}
+              case "<erddapDatasets><ipAddressUnlimited>" -> {}
+              case "<erddapDatasets></ipAddressUnlimited>" -> {}
+              case "<erddapDatasets><loadDatasetsMinMinutes>" -> {}
+              case "<erddapDatasets></loadDatasetsMinMinutes>" -> {}
+              case "<erddapDatasets><loadDatasetsMaxMinutes>" -> {}
+              case "<erddapDatasets></loadDatasetsMaxMinutes>" -> {}
+              case "<erddapDatasets><logLevel>" -> {}
+              case "<erddapDatasets></logLevel>" -> {}
+              case "<erddapDatasets><nGridThreads>" -> {}
+              case "<erddapDatasets></nGridThreads>" -> {}
+              case "<erddapDatasets><nTableThreads>" -> {}
+              case "<erddapDatasets></nTableThreads>" -> {}
+              case "<erddapDatasets><palettes>" -> {}
+              case "<erddapDatasets></palettes>" -> {}
+              case "<erddapDatasets><partialRequestMaxBytes>" -> {}
+              case "<erddapDatasets></partialRequestMaxBytes>" -> {}
+              case "<erddapDatasets><partialRequestMaxCells>" -> {}
+              case "<erddapDatasets></partialRequestMaxCells>" -> {}
+              case "<erddapDatasets><requestBlacklist>" -> {}
+              case "<erddapDatasets></requestBlacklist>" -> {}
+              case "<erddapDatasets><slowDownTroubleMillis>" -> {}
+              case "<erddapDatasets></slowDownTroubleMillis>" -> {}
+              case "<erddapDatasets><subscriptionEmailBlacklist>" -> {}
+              case "<erddapDatasets></subscriptionEmailBlacklist>" -> {}
+              case "<erddapDatasets><standardLicense>" -> {}
+              case "<erddapDatasets></standardLicense>" -> {}
+              case "<erddapDatasets><standardContact>" -> {}
+              case "<erddapDatasets></standardContact>" -> {}
+              case "<erddapDatasets><standardDataLicenses>" -> {}
+              case "<erddapDatasets></standardDataLicenses>" -> {}
+              case "<erddapDatasets><standardDisclaimerOfEndorsement>" -> {}
+              case "<erddapDatasets></standardDisclaimerOfEndorsement>" -> {}
+              case "<erddapDatasets><standardDisclaimerOfExternalLinks>" -> {}
+              case "<erddapDatasets></standardDisclaimerOfExternalLinks>" -> {}
+              case "<erddapDatasets><standardGeneralDisclaimer>" -> {}
+              case "<erddapDatasets></standardGeneralDisclaimer>" -> {}
+              case "<erddapDatasets><standardPrivacyPolicy>" -> {}
+              case "<erddapDatasets></standardPrivacyPolicy>" -> {}
+              case "<erddapDatasets><startHeadHtml5>" -> {}
+              case "<erddapDatasets></startHeadHtml5>" -> {}
+              case "<erddapDatasets><startBodyHtml5>" -> {}
+              case "<erddapDatasets></startBodyHtml5>" -> {}
+              case "<erddapDatasets><theShortDescriptionHtml>" -> {}
+              case "<erddapDatasets></theShortDescriptionHtml>" -> {}
+              case "<erddapDatasets><endBodyHtml5>" -> {}
+              case "<erddapDatasets></endBodyHtml5>" -> {}
+              case "<erddapDatasets><convertInterpolateRequestCSVExample>" -> {}
+              case "<erddapDatasets></convertInterpolateRequestCSVExample>" -> {}
+              case "<erddapDatasets><convertInterpolateDatasetIDVariableList>" -> {}
+              case "<erddapDatasets></convertInterpolateDatasetIDVariableList>" -> {}
+              case "<erddapDatasets><unusualActivity>" -> {}
+              case "<erddapDatasets></unusualActivity>" -> {}
+              case "<erddapDatasets><updateMaxEvents>" -> {}
+              case "<erddapDatasets></updateMaxEvents>" -> {}
+              case "<erddapDatasets><user>" -> {}
+              case "<erddapDatasets></user>" -> {}
+              default -> xmlReader.unexpectedTagException();
             }
           }
         } finally {
@@ -1064,8 +1117,7 @@ public abstract class EDD {
       }
     }
     String dateAtts[] = {"date_created", "date_issued", "date_modified", "date_metadata_modified"};
-    for (int i = 0; i < dateAtts.length; i++) {
-      String name = dateAtts[i];
+    for (String name : dateAtts) {
       String value = combinedGlobalAttributes.getString(name);
       if (String2.isSomething(value)) {
         String tValue = Calendar2.tryToIsoString(value);
@@ -1825,47 +1877,50 @@ public abstract class EDD {
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
-      if (topTag.equals("sourceName")) {
-      } else if (topTag.equals("/sourceName")) tSourceName = content;
-      else if (topTag.equals("destinationName")) {
-      } else if (topTag.equals("/destinationName")) tDestinationName = content;
-      else if (topTag.equals("addAttributes")) tAttributes = getAttributesFromXml(xmlReader);
-      else if (topTag.equals(
-          "values")) { // 2017-04-27 what is this? An unfinished system for specifying a set of
-        // values for a GridAxisVariable?
-        // always make a PA
-        String type = xmlReader.attributeValue("type");
-        if (type == null) type = "";
-        if (type.endsWith("List")) type = type.substring(0, type.length() - 4);
-        if (type.equals("unsignedShort")) // the xml name
-        type = "char"; // the PrimitiveArray name
-        else if (type.equals("string")) // the xml name
-        type = "String"; // the PrimitiveArray name
-        PAType elementPAType = PAType.fromCohortString(type); // throws Throwable if trouble
-        double start = String2.parseDouble(xmlReader.attributeValue("start"));
-        double increment = String2.parseDouble(xmlReader.attributeValue("increment"));
-        int n = String2.parseInt(xmlReader.attributeValue("n"));
-        if (!Double.isNaN(start)
-            && increment > 0
-            && // this could change to !NaN and !0
-            n > 0
-            && n < Integer.MAX_VALUE) {
-          // make PA with 1+ evenly spaced values
-          tValuesPA = PrimitiveArray.factory(elementPAType, n, false);
-          for (int i = 0; i < n; i++) tValuesPA.addDouble(start + i * increment);
-        } else {
-          // make PA with correct type, but size=0
-          tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
-        }
-      } else if (topTag.equals("/values")) {
-        if (tValuesPA.size() == 0) {
-          // make a new PA from content values
-          tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);
-        }
-        if (reallyVerbose)
-          String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA.toString());
+      switch (topTag) {
+        case "sourceName" -> {}
+        case "/sourceName" -> tSourceName = content;
+        case "destinationName" -> {}
+        case "/destinationName" -> tDestinationName = content;
+        case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
+        case "values" -> {
+          // values for a GridAxisVariable?
+          // always make a PA
+          String type = xmlReader.attributeValue("type");
+          if (type == null) type = "";
+          if (type.endsWith("List")) type = type.substring(0, type.length() - 4);
+          if (type.equals("unsignedShort")) // the xml name
+          type = "char"; // the PrimitiveArray name
+          else if (type.equals("string")) // the xml name
+          type = "String"; // the PrimitiveArray name
+          PAType elementPAType = PAType.fromCohortString(type); // throws Throwable if trouble
 
-      } else xmlReader.unexpectedTagException();
+          double start = String2.parseDouble(xmlReader.attributeValue("start"));
+          double increment = String2.parseDouble(xmlReader.attributeValue("increment"));
+          int n = String2.parseInt(xmlReader.attributeValue("n"));
+          if (!Double.isNaN(start)
+              && increment > 0
+              && // this could change to !NaN and !0
+              n > 0
+              && n < Integer.MAX_VALUE) {
+            // make PA with 1+ evenly spaced values
+            tValuesPA = PrimitiveArray.factory(elementPAType, n, false);
+            for (int i = 0; i < n; i++) tValuesPA.addDouble(start + i * increment);
+          } else {
+            // make PA with correct type, but size=0
+            tValuesPA = PrimitiveArray.factory(elementPAType, 0, "");
+          }
+        }
+        case "/values" -> {
+          if (tValuesPA.size() == 0) {
+            // make a new PA from content values
+            tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);
+          }
+          if (reallyVerbose)
+            String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA.toString());
+        }
+        default -> xmlReader.unexpectedTagException();
+      }
     }
   }
 
@@ -1907,17 +1962,19 @@ public abstract class EDD {
       }
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
-      if (topTag.equals("sourceName")) {
-      } else if (topTag.equals("/sourceName")) tSourceName = content;
-      else if (topTag.equals("destinationName")) {
-      } else if (topTag.equals("/destinationName")) tDestinationName = content;
-      else if (topTag.equals("dataType")) {
-      } else if (topTag.equals("/dataType")) tDataType = content;
-      else if (topTag.equals("addAttributes")) {
-        tAttributes = getAttributesFromXml(xmlReader);
-        // PrimitiveArray taa= tAttributes.get("_FillValue");
-        // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
-      } else xmlReader.unexpectedTagException();
+      switch (topTag) {
+        case "sourceName" -> {}
+        case "/sourceName" -> tSourceName = content;
+        case "destinationName" -> {}
+        case "/destinationName" -> tDestinationName = content;
+        case "dataType" -> {}
+        case "/dataType" -> tDataType = content;
+        case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
+
+          // PrimitiveArray taa= tAttributes.get("_FillValue");
+          // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
   }
 
@@ -3035,15 +3092,15 @@ public abstract class EDD {
     if (accessibleViaNcCF().length() == 0) sb.append("service=NcCF\n");
     if (accessibleViaSubset().length() == 0) sb.append("service=Subset\n");
     // doing all varNames, then all attributes, treats varNames as more important
-    for (int dv = 0; dv < dataVariables.length; dv++) {
-      sb.append("variableName=" + dataVariables[dv].destinationName() + "\n");
-      sb.append("sourceName=" + dataVariables[dv].sourceName() + "\n");
-      sb.append("long_name=" + dataVariables[dv].longName() + "\n");
-      sb.append("type=" + dataVariables[dv].destinationDataType() + "\n");
+    for (EDV variable : dataVariables) {
+      sb.append("variableName=" + variable.destinationName() + "\n");
+      sb.append("sourceName=" + variable.sourceName() + "\n");
+      sb.append("long_name=" + variable.longName() + "\n");
+      sb.append("type=" + variable.destinationDataType() + "\n");
     }
     sb.append(combinedGlobalAttributes.toString() + "\n");
-    for (int dv = 0; dv < dataVariables.length; dv++)
-      sb.append(dataVariables[dv].combinedAttributes().toString() + "\n");
+    for (EDV dataVariable : dataVariables)
+      sb.append(dataVariable.combinedAttributes().toString() + "\n");
     return sb;
   }
 
@@ -3220,14 +3277,13 @@ public abstract class EDD {
 
     // include fileTypeName in hash so, e.g., different sized .png
     //  have different file names
-    String name =
-        datasetID
-            + "_"
-            + // so all files from this dataset will sort together
-            String2.md5Hex12(userDapQuery + fileTypeName);
+    // so all files from this dataset will sort together
     // String2.log("%% suggestFileName=" + name + "\n  from query=" + userDapQuery + "\n  from
     // type=" + fileTypeName);
-    return name;
+    return datasetID
+        + "_"
+        + // so all files from this dataset will sort together
+        String2.md5Hex12(userDapQuery + fileTypeName);
   }
 
   /**
@@ -4008,77 +4064,82 @@ public abstract class EDD {
       // Do LLAT already exist?
       // String2.log("\n>>colName=" + colName + " units=" + units);
       String colNameLC = colName.toLowerCase();
-      if (colNameLC.equals(EDV.LON_NAME)) {
-        if (isNumeric && EDV.couldBeLonUnits(units)) {
-          addTable.setColumnName(col, EDV.LON_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
-          if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
-          if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.LON_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+      switch (colNameLC) {
+        case EDV.LON_NAME -> {
+          if (isNumeric && EDV.couldBeLonUnits(units)) {
+            addTable.setColumnName(col, EDV.LON_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
+                && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+            if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
+            if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.LON_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
+                && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+          }
         }
-      } else if (colNameLC.equals(EDV.LAT_NAME)) {
-        if (isNumeric && EDV.couldBeLatUnits(units)) {
-          addTable.setColumnName(col, EDV.LAT_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
-          if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
-          if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.LAT_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        case EDV.LAT_NAME -> {
+          if (isNumeric && EDV.couldBeLatUnits(units)) {
+            addTable.setColumnName(col, EDV.LAT_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
+                && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+            if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
+            if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.LAT_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
+                && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+          }
         }
-      } else if ((colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
-        if (isNumeric
-            && (units == null
-                || units.length() == 0
-                || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
-          addTable.setColumnName(col, colNameLC);
-          if (!EDV.ALT_UNITS.equals(units))
-            addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
-          if (colNameLC.equals(EDV.ALT_NAME)) {
+        case EDV.ALT_NAME, EDV.DEPTH_NAME -> {
+          if (isNumeric
+              && (units == null
+                  || units.length() == 0
+                  || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
+            addTable.setColumnName(col, colNameLC);
+            if (!EDV.ALT_UNITS.equals(units))
+              addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
+            if (colNameLC.equals(EDV.ALT_NAME)) {
+              if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                addAtts.set("source_name", sourceName);
+              if (stdName == null) addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
+            } else {
+              if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                addAtts.set("source_name", sourceName);
+              if (stdName == null) addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
+            }
+          } else if (EDV.ALT_NAME.equals(colNameLC)) {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.ALT_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
               addAtts.set("source_name", sourceName);
-            if (stdName == null) addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
-          } else {
+          } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.DEPTH_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
               addAtts.set("source_name", sourceName);
-            if (stdName == null) addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
           }
-        } else if (EDV.ALT_NAME.equals(colNameLC)) {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.ALT_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
-            addAtts.set("source_name", sourceName);
-        } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.DEPTH_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
-            addAtts.set("source_name", sourceName);
         }
-      } else if (colNameLC.equals(EDV.TIME_NAME)) {
-        if (Calendar2.isTimeUnits(units)) {
-          addTable.setColumnName(col, EDV.TIME_NAME);
-          if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
-            addAtts.set("source_name", sourceName);
-          if (stdName == null) addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
-        } else {
-          int n = 2;
-          while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0) n++;
-          addTable.setColumnName(col, EDV.TIME_NAME + n);
-          if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
-            addAtts.set("source_name", sourceName);
-          // String2.log(">>Set time_");
+        case EDV.TIME_NAME -> {
+          if (Calendar2.isTimeUnits(units)) {
+            addTable.setColumnName(col, EDV.TIME_NAME);
+            if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+              addAtts.set("source_name", sourceName);
+            if (stdName == null) addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
+          } else {
+            int n = 2;
+            while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0) n++;
+            addTable.setColumnName(col, EDV.TIME_NAME + n);
+            if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+              addAtts.set("source_name", sourceName);
+            // String2.log(">>Set time_");
+          }
         }
       }
     }
@@ -4386,8 +4447,7 @@ public abstract class EDD {
     // String2.log("chopUpAndAdd " + phrase);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
-    int ntWords = tWords.length;
-    for (int tw = 0; tw < ntWords; tw++) addAllAndParts(tWords[tw], hashSet);
+    for (String tWord : tWords) addAllAndParts(tWord, hashSet);
     return hashSet;
   }
 
@@ -4402,9 +4462,8 @@ public abstract class EDD {
     // String2.log(">> chopUpAndAdd " + csv);
     if (csv == null || csv.length() == 0) return hashSet;
     String tWords[] = StringArray.arrayFromCSV(csv, ",;"); // split at , or ;
-    int ntWords = tWords.length;
-    for (int tw = 0; tw < ntWords; tw++) {
-      String w = tWords[tw];
+    for (String tWord : tWords) {
+      String w = tWord;
       while (w.endsWith("*") || w.endsWith("_")) w = w.substring(0, w.length() - 1).trim();
       hashSet.add(w);
       chopUpAndAdd(w, hashSet);
@@ -4532,9 +4591,8 @@ public abstract class EDD {
       if (stdName != null) {
         // get matching gcmd keywords
         String tKeywords[] = CfToFromGcmd.cfToGcmd(stdName);
-        for (int i = 0; i < tKeywords.length; i++) {
+        for (String tk : tKeywords) {
           // add the whole gcmd keyword phrase
-          String tk = tKeywords[i];
           keywordHashSet.add(tk);
 
           // add individual words from gcmd keywords
@@ -4895,7 +4953,7 @@ public abstract class EDD {
       "will",
       "would"
     };
-    for (int i = 0; i < toRemove.length; i++) keywords.remove(toRemove[i]);
+    for (String string : toRemove) keywords.remove(string);
 
     // always!
     keywords.add("data");
@@ -4924,8 +4982,8 @@ public abstract class EDD {
       // ; separated gcmd phrases, but now hopefully caught sooner
       if (k.indexOf(" > ") > 0 && k.indexOf('<') < 0 && k.indexOf(';') >= 0) {
         String sar[] = String2.split(k, ';');
-        for (int i2 = 0; i2 < sar.length; i2++) {
-          if (sar[i2].length() > 3) keywords.add(cleanIfGcmdKeyword(sar[i2]));
+        for (String s : sar) {
+          if (s.length() > 3) keywords.add(cleanIfGcmdKeyword(s));
         }
         keywords.remove(k);
         continue;
@@ -5101,20 +5159,20 @@ public abstract class EDD {
       // cohort mv, if present
       if (sfv == null || smv == null) { // yes, ||
         // get cohort missingValue (MAX_VALUE) as a string that looks like an integer
-        String ts = cohortMV; // e.g., "127" for ByteArray
+        // e.g., "127" for ByteArray
         if ("palette".equals(destVarName)
             || "rgb".equals(destVarName)
             || "eightbitcolor".equals(destVarName)) { // common vars which have no missing values
-        } else if (pa.getMaxIsMV() || pa.indexOf(ts) >= 0) {
-          if (sfv == null && !ts.equals(smv)) sfv = ts;
-          else if (smv == null && !ts.equals(sfv)) smv = ts;
+        } else if (pa.getMaxIsMV() || pa.indexOf(cohortMV) >= 0) {
+          if (sfv == null && !cohortMV.equals(smv)) sfv = cohortMV;
+          else if (smv == null && !cohortMV.equals(sfv)) smv = cohortMV;
         }
       }
 
       // last: cohort mv, even if not present
       if (sfv == null && smv == null) {
         // get cohort missingValue (MAX_VALUE) as a string that looks like an integer
-        String ts = cohortMV; // e.g., "127" for ByteArray
+        // e.g., "127" for ByteArray
         // String2.pressEnterToContinue(">> addMvFvAttsIfNeeded integerType max_value=" + ts + "
         // sfv=" + sfv + " smv=" + smv);
         // even if value is not observed
@@ -5122,7 +5180,7 @@ public abstract class EDD {
             || "rgb".equals(destVarName)
             || "eightbitcolor".equals(destVarName)) {
         } // common vars which have no missing values
-        else sfv = ts;
+        else sfv = cohortMV;
       }
 
     } else { // float or double
@@ -5532,8 +5590,7 @@ public abstract class EDD {
                 "wind_vector_cell_resolution",
                 "wind_vector_source",
                 "year"));
-    for (int i = 0; i < sourceNames.length; i++) {
-      String sn = sourceNames[i];
+    for (String sn : sourceNames) {
       String val = sourceAtts.getString(sn);
       String pre = String2.findPrefix(removePrefixes, sn, 0);
       if (toRemove.contains(sn.toLowerCase())) {
@@ -5874,8 +5931,8 @@ public abstract class EDD {
       "time_coverage_start",
       "time_coverage_end"
     };
-    for (int i = 0; i < dateAtts.length; i++) {
-      name = dateAtts[i];
+    for (String dateAtt : dateAtts) {
+      name = dateAtt;
       value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);
       if (String2.isSomething(value)) {
         String tValue = Calendar2.tryToIsoString(value);
@@ -6897,9 +6954,13 @@ public abstract class EDD {
     // almost last thing
     // improve creator_email, creator_name, tInstitution, creator_url
     if (String2.isSomething2(creator_name)) {
-      if (creator_name.equals("RSIGNELL")) creator_name = "Rich Signell";
-      else if (creator_name.equals("Esrl Psd Data")) creator_name = "NOAA ESRL PSD";
-      else if (creator_name.equals("PODAAC")) creator_name = "PODAAC NASA JPL";
+      creator_name =
+          switch (creator_name) {
+            case "RSIGNELL" -> "Rich Signell";
+            case "Esrl Psd Data" -> "NOAA ESRL PSD";
+            case "PODAAC" -> "PODAAC NASA JPL";
+            default -> creator_name;
+          };
       // shorten acronyms
       creator_name =
           String2.replaceAll(creator_name, "National Geophysical Data Center (NGDC)", "NGDC");
@@ -7501,8 +7562,7 @@ public abstract class EDD {
       // build hashset of current keywords
       String words[] =
           StringArray.arrayFromCSV(value == null ? "" : value, ",;"); // csv, not chop up
-      for (int w = 0; w < words.length; w++) {
-        String kw = words[w];
+      for (String kw : words) {
         if (kw.length() > 0) {
           if (kw.indexOf(" > ") >= 0) { // GCMD
             suggestedKeywords.add(cleanIfGcmdKeyword(kw));
@@ -7570,10 +7630,9 @@ public abstract class EDD {
       // they are consistently capitalized, so will sort very nicely:
       //  single words then gcmd
       Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE);
-      for (int w = 0; w < keywordSar.length; w++) {
+      for (String kw : keywordSar) {
 
         // don't save numbers
-        String kw = keywordSar[w];
         boolean aNumber = true;
         for (int kwpo = 0; kwpo < kw.length(); kwpo++) {
           char ch = kw.charAt(kwpo);
@@ -7749,16 +7808,16 @@ public abstract class EDD {
 
     // replace e.g., "none" with "null"
     String sourceNames[] = sourceAtts.getNames();
-    for (int i = 0; i < sourceNames.length; i++) {
+    for (String sourceName : sourceNames) {
       // not getAddOrSourceAtt since want pa
-      PrimitiveArray pa = addAtts.get(sourceNames[i]);
-      if (pa == null) pa = sourceAtts.get(sourceNames[i]);
+      PrimitiveArray pa = addAtts.get(sourceName);
+      if (pa == null) pa = sourceAtts.get(sourceName);
       if (pa == null || pa.elementType() != PAType.STRING) continue;
       value = pa.getString(0);
       if (!String2.isSomething2(value)) { // e.g., "none"
         // String2.pressEnterToContinue(">> set sourceName=" + tSourceName + ": " + sourceNames[i] +
         // "=" + value + " to \"null\"");
-        addAtts.add(sourceNames[i], "null");
+        addAtts.add(sourceName, "null");
       }
     }
 
@@ -8023,8 +8082,7 @@ public abstract class EDD {
       "sw_point_longitude",
       "westernmost_longitude"
     };
-    for (int i = 0; i < sourceNames.length; i++) {
-      String sn = sourceNames[i];
+    for (String sn : sourceNames) {
       String pre = String2.findPrefix(removePrefixes, sn, 0);
       if (String2.indexOf(toRemove, sn.toLowerCase()) >= 0) {
         addAtts.set(sn, "null"); // remove toRemove att name
@@ -8872,29 +8930,32 @@ public abstract class EDD {
             oPositive,
             Math2.doubleToFloatNaN(tScaleFactor),
             tryToFindLLAT);
-    if (tDestName.equals(EDV.LON_NAME)) {
-      tLongName =
-          String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LON_NAME)
-              ? tLongName
-              : "Longitude";
-      tStandardName = EDV.LON_NAME;
-      tUnits = EDV.LON_UNITS;
-    } else if (tDestName.equals(EDV.LAT_NAME)) {
-      tLongName =
-          String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LAT_NAME)
-              ? tLongName
-              : "Latitude";
-      tStandardName = EDV.LAT_NAME;
-      tUnits = EDV.LAT_UNITS;
-    } else if (tDestName.equals(EDV.ALT_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.ALT_NAME;
-    } else if (tDestName.equals(EDV.DEPTH_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.DEPTH_NAME;
-    } else if (tDestName.equals(EDV.TIME_NAME)) {
-      // let tLongName be set below
-      tStandardName = EDV.TIME_NAME;
+    switch (tDestName) {
+      case EDV.LON_NAME -> {
+        tLongName =
+            String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LON_NAME)
+                ? tLongName
+                : "Longitude";
+        tStandardName = EDV.LON_NAME;
+        tUnits = EDV.LON_UNITS;
+      }
+      case EDV.LAT_NAME -> {
+        tLongName =
+            String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LAT_NAME)
+                ? tLongName
+                : "Latitude";
+        tStandardName = EDV.LAT_NAME;
+        tUnits = EDV.LAT_UNITS;
+      }
+      case EDV.ALT_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.ALT_NAME;
+      case EDV.DEPTH_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.DEPTH_NAME;
+      case EDV.TIME_NAME ->
+          // let tLongName be set below
+          tStandardName = EDV.TIME_NAME;
     }
 
     // if Sea Data Net SeaDataNet P01 exists, generate P02 and standard_name (if none already)
@@ -8949,74 +9010,60 @@ public abstract class EDD {
     if (String2.isSomething2(tStandardName)) {
 
       // fix some common invalid standard_names in WOA 2005 and elsewhere
-      if (tStandardName.equals("chlorophyll")
-          || // avoids mol vs. g
-          tStandardName.equals("mass_concentration_chlorophyll_concentration_in_sea_water"))
-        tStandardName = "concentration_of_chlorophyll_in_sea_water";
-      else if (tStandardName.equals("nitrate")) // no g option
-      tStandardName = "mole_concentration_of_nitrate_in_sea_water";
-      else if (tStandardName.equals("nitrite")) // no g option
-      tStandardName = "mole_concentration_of_nitrite_in_sea_water";
-      else if (tStandardName.equals("dissolved_oxygen"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water"
-                : "mass_concentration_of_oxygen_in_sea_water";
-      else if (tStandardName.equals("apparent_oxygen_saturation")
-          || tStandardName.equals("percentage_oxygen_saturation"))
-        tStandardName = "fractional_saturation_of_oxygen_in_sea_water";
-      else if (tStandardName.equals("phosphate"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_phosphate_in_sea_water"
-                : "mass_concentration_of_phosphate_in_sea_water";
-      else if (tStandardName.equals("salinity"))
-        // many of these from nodc are wrong. they are statistical measures
-        tStandardName =
-            (ttLongName.indexOf("statistic") >= 0 || ttLongName.indexOf("the number of") >= 0)
-                ? ""
-                : "sea_water_salinity";
-      else if (tStandardName.equals("silicate"))
-        tStandardName =
-            moleUnits
-                ? "mole_concentration_of_silicate_in_sea_water"
-                : "mass_concentration_of_silicate_in_sea_water";
-      else if (tStandardName.equals("temperature")) // dealt with specially below
-      tStandardName = ""; // perhaps sea_water_temperature, perhaps air or land
-      else if (tStandardName.equals("mask1")
-          || tStandardName.equals("mask2")
-          || tStandardName.equals("not defined")
-          || tStandardName.equals("num")
-          || tStandardName.equals("qual")) tStandardName = "";
+      tStandardName =
+          switch (tStandardName) {
+            case "chlorophyll", "mass_concentration_chlorophyll_concentration_in_sea_water" ->
+                "concentration_of_chlorophyll_in_sea_water";
+            case "nitrate" ->
+                // no g option
+                "mole_concentration_of_nitrate_in_sea_water";
+            case "nitrite" ->
+                // no g option
+                "mole_concentration_of_nitrite_in_sea_water";
+            case "dissolved_oxygen" ->
+                moleUnits
+                    ? "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water"
+                    : "mass_concentration_of_oxygen_in_sea_water";
+            case "apparent_oxygen_saturation", "percentage_oxygen_saturation" ->
+                "fractional_saturation_of_oxygen_in_sea_water";
+            case "phosphate" ->
+                moleUnits
+                    ? "mole_concentration_of_phosphate_in_sea_water"
+                    : "mass_concentration_of_phosphate_in_sea_water";
+            case "salinity" ->
+                // many of these from nodc are wrong. they are statistical measures
+                (ttLongName.indexOf("statistic") >= 0 || ttLongName.indexOf("the number of") >= 0)
+                    ? ""
+                    : "sea_water_salinity";
+            case "silicate" ->
+                moleUnits
+                    ? "mole_concentration_of_silicate_in_sea_water"
+                    : "mass_concentration_of_silicate_in_sea_water";
+            case "temperature" ->
+                // dealt with specially below
+                ""; // perhaps sea_water_temperature, perhaps air or land
+            case "mask1", "mask2", "not defined", "num", "qual" -> "";
 
-      // and other common incorrect names
-      else if (tStandardName.equals("best_sea_surface_temperature"))
-        tStandardName = "sea_surface_temperature";
-      else if (tStandardName.equals("eastward_sea_water_velocit")) // missing y
-      tStandardName = "eastward_sea_water_velocity";
-      else if (tStandardName.equals("northward_sea_water_velocit")) // missing y
-      tStandardName = "northward_sea_water_velocity";
-      else if (tStandardName.equals("grid_eastward_sea_water_velocity"))
-        tStandardName = "eastward_sea_water_velocity";
-      else if (tStandardName.equals("grid_northward_sea_water_velocity"))
-        tStandardName = "northward_sea_water_velocity";
-      else if (tStandardName.equals("ice_thickness")) tStandardName = "sea_ice_thickness";
-      else if (tStandardName.equals("ice_u_veloctiy")
-          || // sic
-          tStandardName.equals("grid_eastward_sea_ice_velocity"))
-        tStandardName = "sea_ice_x_velocity";
-      else if (tStandardName.equals("ice_v_veloctiy")
-          || // sic
-          tStandardName.equals("grid_northward_sea_ice_velocity"))
-        tStandardName = "sea_ice_y_velocity";
-      else if (tStandardName.equals("net_surface_heat_flux")
-          || tStandardName.equals("surface_heat_flux"))
-        tStandardName = "surface_downward_heat_flux_in_air";
-      else if (tStandardName.equals("wave_direction_to"))
-        tStandardName = "sea_surface_wave_to_direction";
-      else if (tStandardName.equals("wave_height"))
-        tStandardName = "sea_surface_wave_significant_height";
-      else if (tStandardName.equals("wave_period")) tStandardName = "sea_surface_swell_wave_period";
+              // and other common incorrect names
+            case "best_sea_surface_temperature" -> "sea_surface_temperature";
+            case "eastward_sea_water_velocit" ->
+                // missing y
+                "eastward_sea_water_velocity";
+            case "northward_sea_water_velocit" ->
+                // missing y
+                "northward_sea_water_velocity";
+            case "grid_eastward_sea_water_velocity" -> "eastward_sea_water_velocity";
+            case "grid_northward_sea_water_velocity" -> "northward_sea_water_velocity";
+            case "ice_thickness" -> "sea_ice_thickness";
+            case "ice_u_veloctiy", "grid_eastward_sea_ice_velocity" -> "sea_ice_x_velocity";
+            case "ice_v_veloctiy", "grid_northward_sea_ice_velocity" -> "sea_ice_y_velocity";
+            case "net_surface_heat_flux", "surface_heat_flux" ->
+                "surface_downward_heat_flux_in_air";
+            case "wave_direction_to" -> "sea_surface_wave_to_direction";
+            case "wave_height" -> "sea_surface_wave_significant_height";
+            case "wave_period" -> "sea_surface_swell_wave_period";
+            default -> tStandardName;
+          };
     }
     // String2.log("tStandard_name=" + tStandardName);
 
@@ -9098,23 +9145,22 @@ public abstract class EDD {
       // fix problems
 
       // deal with the mess that is salinity
-      if (tStandardName.equals("sea_water_salinity")
-          || tStandardName.equals("sea_surface_salinity")) {
-        // g/g and kg/kg are very rare
-        if ("|g/g|kg/kg|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
-          tStandardName = "sea_water_absolute_salinity"; // canonical is g/kg
-        } else {
-          tStandardName = "sea_water_practical_salinity";
-          // Possibly changing units is very aggressive. I know.
-          // 1 is CF canonical, but datasets have 1e-3, 1, psu, ...
-          // It is better to be aggressive and defy CF than have misleading/
-          //  bizarre units based on previous versions of CF standard names.
-          if (tUnitsLC.indexOf("pss") < 0) tUnits = "PSU";
+      switch (tStandardName) {
+        case "sea_water_salinity", "sea_surface_salinity" -> {
+          // g/g and kg/kg are very rare
+          if ("|g/g|kg/kg|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
+            tStandardName = "sea_water_absolute_salinity"; // canonical is g/kg
+          } else {
+            tStandardName = "sea_water_practical_salinity";
+            // Possibly changing units is very aggressive. I know.
+            // 1 is CF canonical, but datasets have 1e-3, 1, psu, ...
+            // It is better to be aggressive and defy CF than have misleading/
+            //  bizarre units based on previous versions of CF standard names.
+            if (tUnitsLC.indexOf("pss") < 0) tUnits = "PSU";
+          }
         }
-      } else if (tStandardName.equals("i-directed_wind_stress")) {
-        tStandardName = "surface_downward_eastward_stress";
-      } else if (tStandardName.equals("j-directed_wind_stress")) {
-        tStandardName = "surface_downward_northward_stress";
+        case "i-directed_wind_stress" -> tStandardName = "surface_downward_eastward_stress";
+        case "j-directed_wind_stress" -> tStandardName = "surface_downward_northward_stress";
       }
 
       tStandardName =
@@ -10498,8 +10544,7 @@ public abstract class EDD {
 
       // and remove display_min, display_max, display_scale
       String rep[] = {"display_min", "display_max", "display_scale"};
-      for (int ti = 0; ti < rep.length; ti++)
-        if (String2.isSomething(sourceAtts.getString(rep[ti]))) addAtts.add(rep[ti], "null");
+      for (String s : rep) if (String2.isSomething(sourceAtts.getString(s))) addAtts.add(s, "null");
     }
 
     // and if colorBarMin <= 0, colorBarScale can't be log
@@ -11330,34 +11375,36 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public static String directionsForGenerateDatasetsXml() throws Throwable {
-    return "<!--\n"
-        + " DISCLAIMER:\n"
-        + "   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n"
-        + "   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n"
-        + "   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n"
-        + "   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n"
-        + "   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n"
-        + "\n"
-        + " DIRECTIONS:\n"
-        + " * Read about this type of dataset in\n"
-        + "   https://erddap.github.io/setupDatasetsXml.html .\n"
-        + " * Read https://erddap.github.io/setupDatasetsXml.html#addAttributes\n"
-        + "   so that you understand about sourceAttributes and addAttributes.\n"
-        + " * Note: Global sourceAttributes and variable sourceAttributes are listed\n"
-        + "   below as comments, for informational purposes only.\n"
-        + "   ERDDAP combines sourceAttributes and addAttributes (which have\n"
-        + "   precedence) to make the combinedAttributes that are shown to the user.\n"
-        + "   (And other attributes are automatically added to longitude, latitude,\n"
-        + "   altitude, depth, and time variables).\n"
-        + " * If you don't like a sourceAttribute, overwrite it by adding an\n"
-        + "   addAttribute with the same name but a different value\n"
-        + "   (or no value, if you want to remove it).\n"
-        + " * All of the addAttributes are computer-generated suggestions. Edit them!\n"
-        + "   If you don't like an addAttribute, change it.\n"
-        + " * If you want to add other addAttributes, add them.\n"
-        + " * If you want to change a destinationName, change it.\n"
-        + "   But don't change sourceNames.\n"
-        + " * You can change the order of the dataVariables or remove any of them.\n";
+    return """
+            <!--
+             DISCLAIMER:
+               The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.
+               YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.
+               GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always
+               correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML
+               THAT YOU ADD TO ERDDAP'S datasets.xml FILE.
+
+             DIRECTIONS:
+             * Read about this type of dataset in
+               https://erddap.github.io/setupDatasetsXml.html .
+             * Read https://erddap.github.io/setupDatasetsXml.html#addAttributes
+               so that you understand about sourceAttributes and addAttributes.
+             * Note: Global sourceAttributes and variable sourceAttributes are listed
+               below as comments, for informational purposes only.
+               ERDDAP combines sourceAttributes and addAttributes (which have
+               precedence) to make the combinedAttributes that are shown to the user.
+               (And other attributes are automatically added to longitude, latitude,
+               altitude, depth, and time variables).
+             * If you don't like a sourceAttribute, overwrite it by adding an
+               addAttribute with the same name but a different value
+               (or no value, if you want to remove it).
+             * All of the addAttributes are computer-generated suggestions. Edit them!
+               If you don't like an addAttribute, change it.
+             * If you want to add other addAttributes, add them.
+             * If you want to change a destinationName, change it.
+               But don't change sourceNames.
+             * You can change the order of the dataVariables or remove any of them.
+            """;
     // This doesn't have the closing "-->\n\n" so users can add other comments.
   }
 
@@ -11568,7 +11615,7 @@ public abstract class EDD {
       // see Calendar2.suggestDateTimeFormat for common java.time (was Joda) date time formats
       if (Calendar2.isStringTimeUnits(tUnitsLC) || tUnitsLC.indexOf("%y") >= 0) return "time";
 
-      if (tSourceName.equals("time") && !tUnits.equals(""))
+      if (tSourceName.equals("time") && !tUnits.isEmpty())
         // name is time but units aren't "... since ..." or "???" or ""!
         // so change name
         return "time2";
@@ -11663,10 +11710,12 @@ public abstract class EDD {
    * @throws Throwable if trouble
    */
   public static String cdmSuggestion() {
-    return "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n"
-        + "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n"
-        + "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n"
-        + "    -->\n";
+    return """
+                <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+                    <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+                    <att name="subsetVariables">station_id, longitude, latitude</att>
+                -->
+            """;
   }
 
   /**
@@ -11684,9 +11733,9 @@ public abstract class EDD {
     StringBuilder sb = new StringBuilder();
     sb.append(indent + (isAddAtts ? "<addAttributes>\n" : "<!-- sourceAttributes>\n"));
     String names[] = addAtts.getNames();
-    for (int att = 0; att < names.length; att++) {
-      PrimitiveArray attPa = addAtts.get(names[att]);
-      sb.append(indent + "    <att name=\"" + names[att] + "\"");
+    for (String name : names) {
+      PrimitiveArray attPa = addAtts.get(name);
+      sb.append(indent + "    <att name=\"" + name + "\"");
       if (attPa instanceof StringArray) {
         String val = XML.encodeAsXML(attPa.getString(0));
         if (!isAddAtts)
@@ -11834,9 +11883,7 @@ public abstract class EDD {
         for (int row = 0; row < nRows; row++)
           badFilesMap.put(
               badTable.getStringData(0, row),
-              new Object[] {
-                Long.valueOf(badTable.getLongData(1, row)), badTable.getStringData(2, row)
-              });
+              new Object[] {badTable.getLongData(1, row), badTable.getStringData(2, row)});
       }
       return badFilesMap;
     } catch (Throwable t) {
@@ -11868,12 +11915,12 @@ public abstract class EDD {
       LongArray lastMods = new LongArray();
       StringArray reasons = new StringArray();
       Object keys[] = badFilesMap.keySet().toArray();
-      for (int k = 0; k < keys.length; k++) {
-        Object o = badFilesMap.get(keys[k]);
+      for (Object key : keys) {
+        Object o = badFilesMap.get(key);
         if (o != null) {
-          fileNames.add(keys[k].toString());
+          fileNames.add(key.toString());
           Object oar[] = (Object[]) o;
-          lastMods.add(((Long) oar[0]).longValue());
+          lastMods.add((Long) oar[0]);
           reasons.add(oar[1].toString());
         }
       }
@@ -11908,7 +11955,7 @@ public abstract class EDD {
   public void addBadFile(
       ConcurrentHashMap badFileMap, int dirIndex, String fileName, long lastMod, String reason) {
     String2.log(datasetID + " addBadFile: " + fileName + "\n  reason=" + reason);
-    badFileMap.put(dirIndex + "/" + fileName, new Object[] {Long.valueOf(lastMod), reason});
+    badFileMap.put(dirIndex + "/" + fileName, new Object[] {lastMod, reason});
   }
 
   /**
@@ -11962,9 +12009,9 @@ public abstract class EDD {
                 + "\n\n");
     int nDir = dirList.size();
     Arrays.sort(keys);
-    for (int k = 0; k < keys.length; k++) {
-      Object o = badFileMap.get(keys[k]);
-      String dir = File2.getDirectory(keys[k].toString());
+    for (Object key : keys) {
+      Object o = badFileMap.get(key);
+      String dir = File2.getDirectory(key.toString());
       int dirI =
           dir.length() > 1 && dir.endsWith("/")
               ? String2.parseInt(dir.substring(0, dir.length() - 1))
@@ -11973,7 +12020,7 @@ public abstract class EDD {
         Object oar[] = (Object[]) o;
         sb.append(
             dirList.get(dirI)
-                + File2.getNameAndExtension(keys[k].toString())
+                + File2.getNameAndExtension(key.toString())
                 + "\n"
                 + oar[1].toString()
                 + "\n\n"); // reason
@@ -12135,17 +12182,17 @@ public abstract class EDD {
    */
   public static Map<String, String> userQueryHashMap(String userQuery, boolean namesLC)
       throws Throwable {
-    Map<String, String> queryHash = new HashMap<String, String>();
+    Map<String, String> queryHash = new HashMap<>();
     if (userQuery != null) {
       String tParts[] =
           Table.getDapQueryParts(userQuery); // decoded.  userQuery="" returns String[1]  with #0=""
-      for (int i = 0; i < tParts.length; i++) {
-        int po = tParts[i].indexOf('=');
+      for (String tPart : tParts) {
+        int po = tPart.indexOf('=');
         if (po > 0) {
           // if (reallyVerbose) String2.log(tParts[i]);
-          String name = tParts[i].substring(0, po);
+          String name = tPart.substring(0, po);
           if (namesLC) name = name.toLowerCase();
-          queryHash.put(name, tParts[i].substring(po + 1));
+          queryHash.put(name, tPart.substring(po + 1));
         }
       }
     }
@@ -12490,19 +12537,13 @@ public abstract class EDD {
         String featureType = null;
         try {
           // does it have featureType metadata?
-          NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
-          try {
+          try (NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName)) {
             Attributes gAtts = new Attributes();
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), gAtts);
             featureType = gAtts.getString("featureType");
             if (featureType == null) // cdm allows these aliases
             featureType = gAtts.getString("CF:featureType");
             if (featureType == null) featureType = gAtts.getString("CF:feature_type");
-          } finally {
-            try {
-              if (ncFile != null) ncFile.close();
-            } catch (Exception e9) {
-            }
           }
           if (featureType == null)
             throw new RuntimeException("No featureType, so it isn't an .ncCF file.");
@@ -12551,7 +12592,7 @@ public abstract class EDD {
           || topExt.equals(".grb")
           || topExt.equals(".grb2")
           || topExt.equals(".bufr")
-          || topExt.equals("")) { // .hdf are sometimes unidentified
+          || topExt.isEmpty()) { // .hdf are sometimes unidentified
         try {
           String xmlChunk =
               EDDGridFromNcFiles.generateDatasetsXml(
@@ -13141,10 +13182,12 @@ public abstract class EDD {
 
     // end of support roles
     sb.append(
-        "  </support-roles>\n"
-            + "  <extents mode=\"replace\">\n"
-            + "    <extent>\n"
-            + "      <description></description>\n");
+        """
+                      </support-roles>
+                      <extents mode="replace">
+                        <extent>
+                          <description></description>
+                    """);
     // Enter a general description of the extent, if any.
 
     // time-frame
@@ -13532,9 +13575,9 @@ public abstract class EDD {
       // ??? Is history 1 string, so split it at '/n'?
       String historySA[] = String2.split(gatts.getString("history"), '\n');
       int sequenceNumber = 1;
-      for (int historyi = 0; historyi < historySA.length; historyi++) {
+      for (String s : historySA) {
         // look for date at beginning
-        String th = historySA[historyi].trim();
+        String th = s.trim();
         if (th.length() == 0) continue;
         String tDate = "";
         int po = th.indexOf(' ');
@@ -13683,7 +13726,7 @@ public abstract class EDD {
 
     // make HashSet with datasetIDs
     HashSet<String> hashset = new HashSet();
-    for (int line = 0; line < nLines; line++) hashset.add(String2.split(lines.get(line), ',')[0]);
+    for (String s : lines) hashset.add(String2.split(s, ',')[0]);
 
     // consider making InPort Xml for these datasets
     for (int line = 0; line < nLines; line++) {
@@ -14121,7 +14164,7 @@ public abstract class EDD {
       List<String> response =
           SSR.getUrlResponseArrayList(vUrl); // has timeout and descriptive error
       double v = Double.NaN;
-      String response0 = response.get(0);
+      String response0 = response.getFirst();
       if (response0.startsWith("ERDDAP_version=")) v = String2.parseDouble(response0.substring(15));
       if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
       return Double.isNaN(v) ? 1.22 : v;

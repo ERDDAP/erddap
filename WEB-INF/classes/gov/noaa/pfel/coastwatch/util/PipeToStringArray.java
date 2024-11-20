@@ -21,7 +21,6 @@ import java.util.List;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-18
  */
 public class PipeToStringArray extends PipeTo {
-  private BufferedReader bufferedReader;
   private ArrayList<String> arrayList = new ArrayList<>();
 
   /**
@@ -30,7 +29,7 @@ public class PipeToStringArray extends PipeTo {
    */
   @Override
   public void run() {
-    bufferedReader =
+    BufferedReader bufferedReader =
         new BufferedReader(new InputStreamReader(inputStream)); // uses default charset for this OS
     try {
       String s;

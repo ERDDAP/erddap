@@ -87,8 +87,8 @@ public class ContourLevels implements Cloneable {
   /** Construct a default <code>ContourLevels</code> object from a double[]. */
   public static ContourLevels getDefault(double[] array) {
     ContourLevels cl = new ContourLevels();
-    for (int i = 0; i < array.length; i++) {
-      cl.addLevel(array[i]);
+    for (double v : array) {
+      cl.addLevel(v);
     }
     return cl;
   }
@@ -146,7 +146,7 @@ public class ContourLevels implements Cloneable {
   /** Get the <code>ContourLineAttribute</code> for a value. */
   public ContourLineAttribute getContourLineAttribute(double val)
       throws ContourLevelNotFoundException {
-    ContourLineAttribute attr = (ContourLineAttribute) lineAttrMap_.get(Double.valueOf(val));
+    ContourLineAttribute attr = (ContourLineAttribute) lineAttrMap_.get(val);
     // System.out.println("contourLevels.getContourLineAtt(" + val + ") label=" +
     // attr.getLabelText());
     if (attr == null) {
@@ -203,7 +203,7 @@ public class ContourLevels implements Cloneable {
 
   /** Add a contour level with a specified <code>ContourLineAttribute</code>. */
   public void addLevel(double val, ContourLineAttribute l) {
-    Double value = Double.valueOf(val);
+    Double value = val;
     levels_.addElement(value);
     // System.out.println("contourLevels.addLevel(" + val + ") label=" + l.getLabelText() + "\n" +
     //    com.cohort.util.MustBe.getStackTrace());
@@ -215,8 +215,7 @@ public class ContourLevels implements Cloneable {
   public double getLevel(int indx) throws ContourLevelNotFoundException {
     if (indx < 0 || indx >= levels_.size()) throw new ContourLevelNotFoundException();
     if (!sorted_) sort();
-    Double value = (Double) levels_.elementAt(indx);
-    return value.doubleValue();
+    return (Double) levels_.elementAt(indx);
   }
 
   /** Remove a level by value. */
@@ -251,8 +250,8 @@ public class ContourLevels implements Cloneable {
     double min = Double.MAX_VALUE;
     double max = -Double.MAX_VALUE; // bob changed this
     double value;
-    for (int i = 0; i < levels_.size(); i++) {
-      value = ((Double) levels_.get(i)).doubleValue();
+    for (Object o : levels_) {
+      value = (Double) o;
       min = Math.min(min, value);
       max = Math.max(max, value);
     }
@@ -281,7 +280,7 @@ public class ContourLevels implements Cloneable {
       for (i = 0; i < size - 1; i++) {
         a = (Double) levels_.elementAt(index[i]);
         b = (Double) levels_.elementAt(index[i + 1]);
-        if (a.doubleValue() > b.doubleValue()) {
+        if (a > b) {
           //	  if(a.compareTo(b) > 0) { // jdk1.2
           temp = index[i];
           index[i] = index[i + 1];

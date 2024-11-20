@@ -38,10 +38,6 @@ public class WatchDirectory implements AutoCloseable {
   public static final WatchEvent.Kind<Path> MODIFY = StandardWatchEventKinds.ENTRY_MODIFY;
   public static final WatchEvent.Kind<Object> OVERFLOW = StandardWatchEventKinds.OVERFLOW;
 
-  /** things set by constructor */
-  private String watchDir, pathRegex;
-
-  private boolean recursive;
   private WatchService watchService;
   private ConcurrentHashMap<WatchKey, String> keyToDirMap = new ConcurrentHashMap<>();
 
@@ -71,9 +67,8 @@ public class WatchDirectory implements AutoCloseable {
       String tWatchDir, boolean tRecursive, String tPathRegex, WatchEvent.Kind<?> events[])
       throws IOException {
 
-    watchDir = File2.addSlash(tWatchDir);
-    recursive = tRecursive;
-    pathRegex = tPathRegex;
+    /** things set by constructor */
+    String watchDir = File2.addSlash(tWatchDir);
 
     Path watchPath = Paths.get(watchDir);
     if (watchPath == null) throw new RuntimeException("Directory not found: " + watchDir);
@@ -85,10 +80,10 @@ public class WatchDirectory implements AutoCloseable {
     watchService = fs.newWatchService();
     if (watchService == null)
       throw new RuntimeException("The OS doesn't support WatchService for that file system.");
-    if (recursive) {
+    if (tRecursive) {
       StringArray alps =
           FileVisitorSubdir.oneStep( // throws IOException if "Too many open files"
-              watchDir, pathRegex); // will have matching slashes and trailing slashes
+              watchDir, tPathRegex); // will have matching slashes and trailing slashes
       int n = alps.size();
       for (int i = 0; i < n; i++) {
         WatchKey key = Paths.get(alps.get(i)).register(watchService, events);

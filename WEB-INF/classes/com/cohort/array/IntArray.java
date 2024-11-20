@@ -385,7 +385,7 @@ public class IntArray extends PrimitiveArray {
       maxIsMV = true;
       atInsert(index, Integer.MAX_VALUE);
     } else {
-      atInsert(index, io.intValue());
+      atInsert(index, io);
     }
   }
 
@@ -413,7 +413,7 @@ public class IntArray extends PrimitiveArray {
       maxIsMV = true;
       addNInts(n, Integer.MAX_VALUE);
     } else {
-      addNInts(n, io.intValue());
+      addNInts(n, io);
     }
   }
 
@@ -992,7 +992,7 @@ public class IntArray extends PrimitiveArray {
       maxIsMV = true;
       set(index, Integer.MAX_VALUE);
     } else {
-      set(index, io.intValue());
+      set(index, io);
     }
   }
 
@@ -1413,17 +1413,17 @@ public class IntArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     int lastValue = array[0]; // since lastValue often equals currentValue, cache it
-    hashMap.put(Integer.valueOf(lastValue), dummy);
+    hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       int currentValue = array[i];
       if (currentValue != lastValue) {
         if (currentValue < lastValue) alreadySorted = false;
         lastValue = currentValue;
-        hashMap.put(Integer.valueOf(lastValue), dummy);
+        hashMap.put(lastValue, dummy);
       }
     }
 
@@ -1452,21 +1452,21 @@ public class IntArray extends PrimitiveArray {
     // and make tUnique
     final int tUnique[] = new int[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
-      tUnique[i] = ((Integer) unique[i]).intValue();
+      hashMap.put(unique[i], i);
+      tUnique[i] = (Integer) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = array[0];
-    ranks[0] = ((Integer) hashMap.get(Integer.valueOf(lastValue))).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = array[i];
-        ranks[i] = ((Integer) hashMap.get(Integer.valueOf(lastValue))).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }

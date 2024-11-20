@@ -17,24 +17,16 @@ public class DDSParserTokenManager implements DDSParserConstants {
   }
 
   private final int jjMoveStringLiteralDfa0_0() {
-    switch (curChar) {
-      case 58:
-        return jjStopAtPos(0, 24);
-      case 59:
-        return jjStopAtPos(0, 23);
-      case 61:
-        return jjStopAtPos(0, 27);
-      case 91:
-        return jjStopAtPos(0, 25);
-      case 93:
-        return jjStopAtPos(0, 26);
-      case 123:
-        return jjStopAtPos(0, 21);
-      case 125:
-        return jjStopAtPos(0, 22);
-      default:
-        return jjMoveNfa_0(0, 0);
-    }
+    return switch (curChar) {
+      case 58 -> jjStopAtPos(0, 24);
+      case 59 -> jjStopAtPos(0, 23);
+      case 61 -> jjStopAtPos(0, 27);
+      case 91 -> jjStopAtPos(0, 25);
+      case 93 -> jjStopAtPos(0, 26);
+      case 123 -> jjStopAtPos(0, 21);
+      case 125 -> jjStopAtPos(0, 22);
+      default -> jjMoveNfa_0(0, 0);
+    };
   }
 
   private final void jjCheckNAdd(int state) {

@@ -30,7 +30,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -205,8 +204,8 @@ public class String2 {
 
   static {
     for (int i = 0; i < nCanonicalMaps; i++) {
-      canonicalMap[i] = new WeakHashMap<String, WeakReference<String>>();
-      canonicalStringHolderMap[i] = new WeakHashMap<StringHolder, WeakReference<StringHolder>>();
+      canonicalMap[i] = new WeakHashMap<>();
+      canonicalStringHolderMap[i] = new WeakHashMap<>();
     }
   }
 
@@ -675,9 +674,7 @@ public class String2 {
 
   /** This converts a String[] to a HashSet&lt;String&gt;. */
   public static Set<String> stringArrayToSet(final String sar[]) {
-    final HashSet<String> hs = new HashSet<>();
-    hs.addAll(Arrays.asList(sar));
-    return hs;
+    return new HashSet<>(Arrays.asList(sar));
   }
 
   /**
@@ -1443,11 +1440,9 @@ public class String2 {
     if (s.charAt(n - 1) == '.') return false;
 
     final List<String> al = splitToArrayList(s, '.', false); // trim=false
-    final int nal = al.size();
 
     // test each word
-    for (int part = 0; part < nal; part++) {
-      final String ts = al.get(part);
+    for (final String ts : al) {
       final int tn = ts.length();
       if (tn == 0) return false;
 
@@ -2896,8 +2891,8 @@ public class String2 {
     final int n = ar.length;
     // estimate 12 bytes/element
     final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE - 8192) / 12));
-    for (int i = 0; i < n; i++) {
-      sb.append(ar[i]);
+    for (int j : ar) {
+      sb.append(j);
       sb.append('\n');
     }
     return sb.toString();
@@ -2914,8 +2909,8 @@ public class String2 {
     final int n = ar.length;
     // estimate 12 bytes/element
     final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE - 8192) / 12));
-    for (int i = 0; i < n; i++) {
-      sb.append(ar[i]);
+    for (double v : ar) {
+      sb.append(v);
       sb.append('\n');
     }
     return sb.toString();
@@ -2984,9 +2979,8 @@ public class String2 {
     final StringBuilder sb = new StringBuilder(1024);
 
     final Set entrySet = map.entrySet();
-    final Iterator it = entrySet.iterator();
-    while (it.hasNext()) {
-      final Map.Entry me = (Map.Entry) it.next();
+    for (Object o : entrySet) {
+      final Map.Entry me = (Map.Entry) o;
       sb.append(me.getKey().toString() + " = " + me.getValue().toString() + "\n");
     }
     return sb.toString();
@@ -3835,7 +3829,7 @@ public class String2 {
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toIntArray");
     int ia[] = new int[n];
-    for (int i = 0; i < n; i++) ia[i] = al.get(i).intValue();
+    for (int i = 0; i < n; i++) ia[i] = al.get(i);
     return ia;
   }
 
@@ -3851,7 +3845,7 @@ public class String2 {
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toFloatArray");
     float fa[] = new float[n];
-    for (int i = 0; i < n; i++) fa[i] = al.get(i).floatValue();
+    for (int i = 0; i < n; i++) fa[i] = al.get(i);
     return fa;
   }
 
@@ -3867,7 +3861,7 @@ public class String2 {
     int n = al.size();
     Math2.ensureMemoryAvailable(4L * n, "String2.toDoubleArray");
     double da[] = new double[n];
-    for (int i = 0; i < n; i++) da[i] = al.get(i).doubleValue();
+    for (int i = 0; i < n; i++) da[i] = al.get(i);
     return da;
   }
 
@@ -3882,7 +3876,7 @@ public class String2 {
     int n = iar.length;
     int nFinite = 0;
     int ia[] = new int[n];
-    for (int i = 0; i < n; i++) if (iar[i] < Integer.MAX_VALUE) ia[nFinite++] = iar[i];
+    for (int j : iar) if (j < Integer.MAX_VALUE) ia[nFinite++] = j;
 
     // copy to a new array
     int iaf[] = new int[nFinite];
@@ -3901,7 +3895,7 @@ public class String2 {
     int n = dar.length;
     int nFinite = 0;
     double da[] = new double[n];
-    for (int i = 0; i < n; i++) if (Double.isFinite(dar[i])) da[nFinite++] = dar[i];
+    for (double v : dar) if (Double.isFinite(v)) da[nFinite++] = v;
 
     // copy to a new array
     double daf[] = new double[nFinite];
@@ -3920,7 +3914,7 @@ public class String2 {
     int n = sar.length;
     int nValid = 0;
     String sa[] = new String[n];
-    for (int i = 0; i < n; i++) if (sar[i] != null) sa[nValid++] = sar[i];
+    for (String s : sar) if (s != null) sa[nValid++] = s;
 
     // copy to a new array
     String sa2[] = new String[nValid];
@@ -3939,7 +3933,7 @@ public class String2 {
     int n = sar.length;
     int nValid = 0;
     String sa[] = new String[n];
-    for (int i = 0; i < n; i++) if (sar[i] != null && sar[i].length() > 0) sa[nValid++] = sar[i];
+    for (String s : sar) if (s != null && s.length() > 0) sa[nValid++] = s;
 
     // copy to a new array
     String sa2[] = new String[nValid];
@@ -4114,7 +4108,7 @@ public class String2 {
               || d > Integer.MAX_VALUE + 0.4999999999
               || d <= Integer.MIN_VALUE - 0.4999999999
           ? null
-          : Integer.valueOf((int) Math.round(d)); // safe since checked for larger values above
+          : (int) Math.round(d); // safe since checked for larger values above
     } catch (Exception e) {
       return null;
     }
@@ -4322,7 +4316,7 @@ public class String2 {
       BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
       return bi.compareTo(Math2.LONG_MIN_VALUE) < 0 || bi.compareTo(Math2.LONG_MAX_VALUE) >= 0
           ? null
-          : Long.valueOf(bi.longValueExact()); // should succeed, but throws exception if failure
+          : bi.longValueExact(); // should succeed, but throws exception if failure
     } catch (Exception e) {
       return null;
     }
@@ -4858,12 +4852,10 @@ public class String2 {
     ArrayList<String> al = new ArrayList();
 
     // synchronize so protected from changes in other threads
-    Iterator it = map.keySet().iterator();
-    while (it.hasNext()) {
-      Object key = it.next();
+    for (Object key : map.keySet()) {
       al.add(key.toString() + ": " + map.get(key).toString());
     }
-    Collections.sort(al, STRING_COMPARATOR_IGNORE_CASE);
+    al.sort(STRING_COMPARATOR_IGNORE_CASE);
     return toNewlineString(al.toArray(new String[0]));
   }
 
@@ -5245,9 +5237,8 @@ public class String2 {
     // do they differ at a different position?
     // make all the same length
     int preIndex = insertionPoint - 1;
-    int postIndex = insertionPoint;
     String pre = sar[preIndex];
-    String post = sar[postIndex];
+    String post = sar[insertionPoint];
     int longest = Math.max(s.length(), Math.max(pre.length(), post.length()));
     String ts = s + makeString(' ', longest - s.length());
     pre += makeString(' ', longest - pre.length());
@@ -5257,10 +5248,10 @@ public class String2 {
       char preCh = pre.charAt(i);
       char postCh = post.charAt(i);
       if (preCh == ch && postCh != ch) return preIndex;
-      if (preCh != ch && postCh == ch) return postIndex;
+      if (preCh != ch && postCh == ch) return insertionPoint;
       if (preCh != ch && postCh != ch) {
         // which one is closer
-        return Math.abs(preCh - ch) < Math.abs(postCh - ch) ? preIndex : postIndex;
+        return Math.abs(preCh - ch) < Math.abs(postCh - ch) ? preIndex : insertionPoint;
       }
     }
     // shouldn't all be equal
@@ -5567,10 +5558,10 @@ public class String2 {
       byte bytes[] = md.digest();
       int nBytes = bytes.length;
       StringBuilder sb = new StringBuilder(nBytes * 2);
-      for (int i = 0; i < nBytes; i++)
+      for (byte aByte : bytes)
         sb.append(
             zeroPad(
-                Integer.toHexString((int) bytes[i] & 0xFF),
+                Integer.toHexString((int) aByte & 0xFF),
                 2)); // safe, (int) and 0xFF make it unsigned byte
       return sb.toString();
     } catch (Throwable t) {
@@ -5602,16 +5593,12 @@ public class String2 {
   public static String fileDigest(boolean useBase64, String algorithm, String fullFileName)
       throws Exception {
     MessageDigest md = MessageDigest.getInstance(algorithm);
-    InputStream fis =
-        File2.getBufferedInputStream(
-            fullFileName); // not File2.getDecompressedBufferedInputStream() because we want file
+    // not File2.getDecompressedBufferedInputStream() because we want file
     // digest of archive
-    try {
+    try (InputStream fis = File2.getBufferedInputStream(fullFileName)) {
       byte buffer[] = new byte[8192];
       int nBytes;
       while ((nBytes = fis.read(buffer)) >= 0) md.update(buffer, 0, nBytes);
-    } finally {
-      fis.close();
     }
     byte bytes[] = md.digest();
     if (useBase64) {
@@ -5619,10 +5606,10 @@ public class String2 {
     } else {
       int nBytes = bytes.length;
       StringBuilder sb = new StringBuilder(nBytes * 2);
-      for (int i = 0; i < nBytes; i++)
+      for (byte aByte : bytes)
         sb.append(
             zeroPad(
-                Integer.toHexString((int) bytes[i] & 0xFF),
+                Integer.toHexString((int) aByte & 0xFF),
                 2)); // safe, (int) and 0xFF make it unsigned byte
       return sb.toString();
     }
@@ -6107,7 +6094,7 @@ public class String2 {
       ReentrantLock canonical = wr == null ? null : (ReentrantLock) wr.get();
       if (canonical == null) {
         canonical = new ReentrantLock();
-        canonicalLockMap.put(o, new WeakReference<ReentrantLock>(canonical));
+        canonicalLockMap.put(o, new WeakReference<>(canonical));
       }
       return canonical;
     }
@@ -6136,15 +6123,16 @@ public class String2 {
   /** This is only used to test canonical. */
   public static int canonicalSize() {
     int sum = 0;
-    for (int i = 0; i < canonicalMap.length; i++) sum += canonicalMap[i].size();
+    for (Map<String, WeakReference<String>> stringWeakReferenceMap : canonicalMap)
+      sum += stringWeakReferenceMap.size();
     return sum;
   }
 
   /** This is only used to test canonicalStringHolder. */
   public static int canonicalStringHolderSize() {
     int sum = 0;
-    for (int i = 0; i < canonicalStringHolderMap.length; i++)
-      sum += canonicalStringHolderMap[i].size();
+    for (Map<StringHolder, WeakReference<StringHolder>> stringHolderWeakReferenceMap :
+        canonicalStringHolderMap) sum += stringHolderWeakReferenceMap.size();
     return sum;
   }
 

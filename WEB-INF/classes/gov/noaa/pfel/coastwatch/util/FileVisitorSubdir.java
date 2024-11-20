@@ -127,8 +127,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
               true,
               tPathRegex,
               true); // tRecursive, tPathRegex, tDirectoriesToo
-      StringArray dirs = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
-      return dirs;
+      return (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
     }
 
     // do local file system

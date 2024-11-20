@@ -11,7 +11,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,11 +49,9 @@ public class Tally {
     if (attributeName == null) attributeName = "(null)";
 
     // get the category's hashMap
-    ConcurrentHashMap<String, IntObject> hashMap = mainHashMap.get(categoryName);
-    if (hashMap == null) {
-      hashMap = new ConcurrentHashMap<>(); // use default nConcurrent
-      mainHashMap.put(categoryName, hashMap);
-    }
+    ConcurrentHashMap<String, IntObject> hashMap =
+        mainHashMap.computeIfAbsent(categoryName, k -> new ConcurrentHashMap<>());
+    // use default nConcurrent
 
     // get the attribute's intObject
     IntObject intObject = hashMap.get(attributeName);
@@ -106,8 +103,7 @@ public class Tally {
 
     // for each category
     StringBuilder results = new StringBuilder();
-    for (int cat = 0; cat < categoryArray.length; cat++)
-      results.append(toString((String) categoryArray[cat], maxAttributeNames));
+    for (Object o : categoryArray) results.append(toString((String) o, maxAttributeNames));
 
     return results.toString();
   }
@@ -126,9 +122,7 @@ public class Tally {
     // make a StringArray of attributeNames and IntArray of counts
     StringArray attributeNames = new StringArray();
     IntArray counts = new IntArray();
-    Iterator<Map.Entry<String, IntObject>> it = hashMap.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<String, IntObject> me = it.next();
+    for (Map.Entry<String, IntObject> me : hashMap.entrySet()) {
       attributeNames.add(me.getKey());
       counts.add(me.getValue().i);
     }

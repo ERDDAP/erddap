@@ -152,8 +152,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     String getWhat = "globalAttributes";
     String group = "";
     int groupSlashCount = 0;
-    NetcdfFile ncFile = NcHelper.openFile(tFullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
 
       // This is cognizant of special axis0
       for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
@@ -232,11 +231,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
               + "\nCause: "
               + MustBe.throwableToShortString(t),
           t);
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -259,8 +253,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       String tFullName, StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
     String getWhat = "?";
-    NetcdfFile ncFile = NcHelper.openFile(tFullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
       PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
       // try to find 1 dataVariable in case needed below
@@ -310,11 +303,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
               + "\nCause: "
               + MustBe.throwableToShortString(t),
           t);
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -355,8 +343,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     int nValues = -1; // not yet calculated
     EDV edv = null;
 
-    NetcdfFile ncFile = NcHelper.openFile(tFullName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
 
       for (int dvi = 0; dvi < ndv; dvi++) {
         edv = tDataVariables[dvi];
@@ -457,11 +444,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
               + selection
               + "] (start:STOP:stride).");
       throw t;
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -564,8 +546,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
     StringBuilder sb = new StringBuilder();
     Attributes gridMappingAtts = null;
-    NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName)) {
 
       // make table to hold info
       Table axisSourceTable = new Table();
@@ -674,8 +655,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       // add all the data (non-axis) variables which use those dimensions
       List<Variable> allVariables = ncFile.getVariables();
       int nGridsAtSource = 0;
-      for (int v = 0; v < allVariables.size(); v++) {
-        Variable var = allVariables.get(v);
+      for (Variable var : allVariables) {
         String varName = var.getFullName();
 
         // does it use the same dimensions?
@@ -730,10 +710,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
           StructureMembers sm = struct.makeStructureMembers();
           // System.out.println("sm=" + sm);
           List<StructureMembers.Member> memList = sm.getMembers();
-          int nMembers = memList.size();
-          for (int m = 0; m < nMembers; m++) {
+          for (StructureMembers.Member smm : memList) {
 
-            StructureMembers.Member smm = memList.get(m);
             String smFullName = varName + STRUCTURE_MEMBER_SEPARATOR + smm.getName();
             PAType tPAType = NcHelper.getElementPAType(smm.getDataType());
 
@@ -987,14 +965,12 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
               axisSourceTable, axisAddTable, "axisVariable", false, false));
       sb.append(
           writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-      sb.append("</dataset>\n" + "\n");
+      sb.append("""
+                  </dataset>
+
+                  """);
 
       String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
     return sb.toString();
   }

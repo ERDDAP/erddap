@@ -62,12 +62,10 @@ public class MustBe {
     // this is (relatively) a very slow method: ~50ms.
     // so generating lots of stackTraces takes a lot of time!
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    try {
+    try (PrintStream ps = new PrintStream(baos)) {
       new Exception().printStackTrace(ps);
-    } finally {
-      ps.close(); // it flushes first
     }
+    // it flushes first
     return baos.toString();
   }
 
@@ -79,7 +77,7 @@ public class MustBe {
     try {
       StringBuilder sb = new StringBuilder("Stack trace for thread=" + thread.getName() + ":\n");
       StackTraceElement st[] = thread.getStackTrace();
-      for (int i = 0; i < st.length; i++) sb.append(st[i].toString() + "\n");
+      for (StackTraceElement stackTraceElement : st) sb.append(stackTraceElement.toString() + "\n");
       return sb.toString();
     } catch (Throwable t) {
       return "ERROR while trying to get stack trace:\n" + throwableToString(t);
@@ -141,7 +139,7 @@ public class MustBe {
     if (nRemoveLines < 0) nRemoveLines = 0;
     if (nRemoveLines > arrayList.size()) nRemoveLines = arrayList.size();
     for (i = 0; i < nRemoveLines; i++)
-      arrayList.remove(0); // each time #0 is removed, another becomes #0
+      arrayList.removeFirst(); // each time #0 is removed, another becomes #0
     String seBase = "com.cohort.util.";
     String seName = "SimpleException";
     StringBuilder sb = new StringBuilder();
@@ -387,9 +385,9 @@ public class MustBe {
       int tomcatWaiting = 0;
       int inotify = 0;
       String sar[] = new String[oar.length];
-      for (int i = 0; i < oar.length; i++) {
+      for (Object o : oar) {
         try {
-          Map.Entry me = (Map.Entry) oar[i];
+          Map.Entry me = (Map.Entry) o;
           Thread t = (Thread) me.getKey();
           String threadName = t.getName();
           if (threadName == null) threadName = "";

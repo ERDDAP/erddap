@@ -6,7 +6,6 @@ package com.cohort.util;
  */
 public class MaskingThread extends Thread {
   private volatile boolean keepGoing;
-  private char echochar = '*';
 
   /**
    * @param prompt The prompt displayed to the user
@@ -20,6 +19,7 @@ public class MaskingThread extends Thread {
   public void run() {
     keepGoing = true;
     while (keepGoing) {
+      char echochar = '*';
       System.out.print("\010" + echochar);
       try {
         // attempt masking at this rate

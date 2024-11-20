@@ -162,7 +162,7 @@ public class StringArray extends PrimitiveArray {
     int al = anArray.length;
     array = new StringHolder[al];
     size = 0;
-    for (int i = 0; i < al; i++) add(anArray[i]);
+    for (String s : anArray) add(s);
   }
 
   /**
@@ -186,8 +186,7 @@ public class StringArray extends PrimitiveArray {
     final int al = anArray.length;
     array = new StringHolder[al];
     size = 0;
-    for (int i = 0; i < al; i++)
-      add(anArray[i] == null ? String2.EMPTY_STRING : anArray[i].toString());
+    for (Object o : anArray) add(o == null ? String2.EMPTY_STRING : o.toString());
   }
 
   /**
@@ -678,7 +677,7 @@ public class StringArray extends PrimitiveArray {
   public void add(final String sar[]) {
     final int otherSize = sar.length;
     ensureCapacity(size + (long) otherSize);
-    for (int i = 0; i < otherSize; i++) add(sar[i]);
+    for (String s : sar) add(s);
   }
 
   /**
@@ -1906,7 +1905,7 @@ public class StringArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     String lastValue = get(0); // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy); // special for String
@@ -1952,19 +1951,19 @@ public class StringArray extends PrimitiveArray {
     }
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    for (int i = 0; i < count; i++) hashMap.put(unique[i], Integer.valueOf(i));
+    for (int i = 0; i < count; i++) hashMap.put(unique[i], i);
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = get(0);
-    ranks[0] = ((Integer) hashMap.get(lastValue)).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (get(i).equals(lastValue)) {
         ranks[i] = lastRank;
       } else {
         lastValue = get(i);
-        ranks[i] = ((Integer) hashMap.get(lastValue)).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }
@@ -2094,9 +2093,8 @@ public class StringArray extends PrimitiveArray {
    */
   public static StringArray fromCSVNoBlanks(final String searchFor) {
     final String[] sar = arrayFromCSV(searchFor);
-    final int tSize = sar.length;
     final StringArray sa = new StringArray();
-    for (int i = 0; i < tSize; i++) if (sar[i].length() > 0) sa.add(sar[i]);
+    for (String s : sar) if (s.length() > 0) sa.add(s);
     return sa;
   }
 

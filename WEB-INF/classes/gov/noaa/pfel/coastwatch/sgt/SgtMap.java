@@ -623,8 +623,8 @@ public class SgtMap {
           legendLineCount += contourShortLines.size();
         }
 
-        for (int i = 0; i < graphDataLayers.size(); i++)
-          legendLineCount += graphDataLayers.get(i).legendLineCount(maxCharsPerLine);
+        for (GraphDataLayer graphDataLayer : graphDataLayers)
+          legendLineCount += graphDataLayer.legendLineCount(maxCharsPerLine);
         legendBoxWidth = imageWidthPixels;
         legendBoxHeight = (int) (legendLineCount * labelHeightPixels) + 2 * legendInsideBorder;
         legendBoxULX = baseULXPixel;
@@ -1113,14 +1113,14 @@ public class SgtMap {
                     + String2.genEFormat10(gridMaxData));
           DecimalFormat format = new DecimalFormat("#0.######");
           ContourLevels contourLevels = new ContourLevels();
-          for (int i = 0; i < levels.length; i++) {
+          for (double level : levels) {
             ContourLineAttribute contourLineAttribute = new ContourLineAttribute();
             contourLineAttribute.setColor(contourColor);
             contourLineAttribute.setLabelColor(contourColor);
             contourLineAttribute.setLabelHeightP(fontScale * 0.15);
             contourLineAttribute.setLabelFormat("%g"); // this seems to be active
-            contourLineAttribute.setLabelText(format.format(levels[i])); // this seems to be ignored
-            contourLevels.addLevel(levels[i], contourLineAttribute);
+            contourLineAttribute.setLabelText(format.format(level)); // this seems to be ignored
+            contourLevels.addLevel(level, contourLineAttribute);
           }
           graph.setData(simpleGrid, new GridAttribute(contourLevels));
           if (reallyVerbose) String2.log("  contour levels = " + String2.toCSSVString(levels));
@@ -1774,8 +1774,7 @@ public class SgtMap {
         // }
 
         // gather up all of the data for the user map
-        for (int i = 0; i < vectorPointsRenderers.size(); i++) {
-          VectorPointsRenderer vectorPointsRenderer = vectorPointsRenderers.get(i);
+        for (VectorPointsRenderer vectorPointsRenderer : vectorPointsRenderers) {
           int tn = vectorPointsRenderer.resultBaseX.size();
           int halfBox = 4; // half of box size, in pixels
           for (int ti = 0; ti < tn; ti++) {

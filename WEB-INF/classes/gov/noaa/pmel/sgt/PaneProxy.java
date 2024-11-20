@@ -229,12 +229,12 @@ public class PaneProxy { // Bob Simons made public
     // draw Layers
     //
     Component[] comps = pane_.getComponents();
-    for (int i = 0; i < comps.length; i++) {
+    for (Component comp : comps) {
       try {
-        if (comps[i] instanceof Layer) {
-          ((Layer) comps[i]).draw(g);
-        } else if (comps[i] instanceof LayerControl) {
-          ((LayerControl) comps[i]).draw(g);
+        if (comp instanceof Layer) {
+          ((Layer) comp).draw(g);
+        } else if (comp instanceof LayerControl) {
+          ((LayerControl) comp).draw(g);
         }
         /*       if(printer_ && comps[i] instanceof Panel) {
           ((Panel)comps[i]).paintBorder(g);
@@ -251,10 +251,10 @@ public class PaneProxy { // Bob Simons made public
     // draw draggable items in each layer
     //
     Component[] comps = pane_.getComponents();
-    for (int i = 0; i < comps.length; i++) {
+    for (Component comp : comps) {
       try {
-        if (comps[i] instanceof LayerControl) {
-          ((LayerControl) comps[i]).drawDraggableItems(g);
+        if (comp instanceof LayerControl) {
+          ((LayerControl) comp).drawDraggableItems(g);
         }
       } catch (PaneNotFoundException e) {
       }
@@ -337,9 +337,9 @@ public class PaneProxy { // Bob Simons made public
 
   Layer getFirstLayer() {
     Component[] comps = pane_.getComponents();
-    for (int i = 0; i < comps.length; i++) {
-      if (comps[i] instanceof Layer) {
-        return (Layer) comps[i];
+    for (Component comp : comps) {
+      if (comp instanceof Layer) {
+        return (Layer) comp;
       }
     }
     return null;
@@ -347,9 +347,9 @@ public class PaneProxy { // Bob Simons made public
 
   Layer getLayer(String id) throws LayerNotFoundException {
     Component[] comps = pane_.getComponents();
-    for (int i = 0; i < comps.length; i++) {
-      if (comps[i] instanceof Layer) {
-        if (java.util.Objects.equals(((Layer) comps[i]).getId(), id)) return (Layer) comps[i];
+    for (Component comp : comps) {
+      if (comp instanceof Layer) {
+        if (java.util.Objects.equals(((Layer) comp).getId(), id)) return (Layer) comp;
       }
     }
     throw new LayerNotFoundException();
@@ -357,9 +357,9 @@ public class PaneProxy { // Bob Simons made public
 
   Layer getLayerFromDataId(String id) throws LayerNotFoundException {
     Component[] comps = pane_.getComponents();
-    for (int i = 0; i < comps.length; i++) {
-      if (comps[i] instanceof Layer) {
-        if (((Layer) comps[i]).isDataInLayer(id)) return (Layer) comps[i];
+    for (Component comp : comps) {
+      if (comp instanceof Layer) {
+        if (((Layer) comp).isDataInLayer(id)) return (Layer) comp;
       }
     }
     throw new LayerNotFoundException();
@@ -389,9 +389,9 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      for (int i = 0; i < comps.length; i++) {
-        if (comps[i] instanceof Layer) {
-          obj = ((Layer) comps[i]).getObjectAt(x, y, false);
+      for (Component comp : comps) {
+        if (comp instanceof Layer) {
+          obj = ((Layer) comp).getObjectAt(x, y, false);
           if (obj != null) return obj;
         }
       }
@@ -407,9 +407,9 @@ public class PaneProxy { // Bob Simons made public
     Object obj = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      for (int i = 0; i < comps.length; i++) {
-        if (comps[i] instanceof Layer) {
-          obj = ((Layer) comps[i]).getObjectAt(x, y, false);
+      for (Component comp : comps) {
+        if (comp instanceof Layer) {
+          obj = ((Layer) comp).getObjectAt(x, y, false);
           if (obj != null) obList.add(obj);
         }
       }
@@ -485,9 +485,9 @@ public class PaneProxy { // Bob Simons made public
     selectedobject_ = null;
     Component[] comps = pane_.getComponents();
     if (comps.length != 0) {
-      for (int i = 0; i < comps.length; i++) {
-        if (comps[i] instanceof Layer) {
-          obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
+      for (Component comp : comps) {
+        if (comp instanceof Layer) {
+          obj = ((Layer) comp).getObjectAt(event.getX(), event.getY());
           if (obj != null) {
             selectedobject_ = obj;
             break;
@@ -612,9 +612,9 @@ public class PaneProxy { // Bob Simons made public
       selectedobject_ = null;
       Component[] comps = pane_.getComponents();
       if (comps.length != 0) {
-        for (int i = 0; i < comps.length; i++) {
-          if (comps[i] instanceof Layer) {
-            obj = ((Layer) comps[i]).getObjectAt(event.getX(), event.getY());
+        for (Component comp : comps) {
+          if (comp instanceof Layer) {
+            obj = ((Layer) comp).getObjectAt(event.getX(), event.getY());
             if (obj != null) {
               selectedobject_ = obj;
               break;

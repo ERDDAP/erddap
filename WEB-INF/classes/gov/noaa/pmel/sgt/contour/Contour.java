@@ -108,10 +108,6 @@ public class Contour implements PropertyChangeListener {
    */
   private GridFlag gridFlag_;
 
-  //
-  private static double DSLAB = 2.0;
-  private static double SLAB1F = 0.4;
-
   /** Bob Simons added this to avoid memory leak problems. */
   public void releaseResources() throws Exception {
     try {
@@ -299,7 +295,7 @@ public class Contour implements PropertyChangeListener {
       //
       // initialize for level
       //
-      zc = ((Double) lenum.nextElement()).doubleValue();
+      zc = (Double) lenum.nextElement();
       if (Debug.CONTOUR) {
         System.out.println("zc = " + zc);
       }
@@ -652,7 +648,10 @@ public class Contour implements PropertyChangeListener {
         s[k] = s[k - 1] + Math.sqrt(dxx * dxx + dyy * dyy);
       }
       smax = s[kmax];
+      double SLAB1F = 0.4;
       slab1 = smax * SLAB1F;
+      //
+      double DSLAB = 2.0;
       stest = Math.max(0.0, DSLAB - slab1);
       k = 1;
       //

@@ -85,61 +85,57 @@ public class EDDTableAggregateRows extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
+            }
+
+          } else {
+            String tType = xmlReader.attributeValue("type");
+            if (tType == null || !tType.startsWith("EDDTable"))
+              throw new SimpleException(
+                  "type=\""
+                      + tType
+                      + "\" is not allowed for the dataset within the EDDTableAggregateRows. "
+                      + "The type MUST start with \"EDDTable\".");
+            tChildren.add((EDDTable) EDD.fromXml(tErddap, tType, xmlReader));
           }
-
-        } else {
-          String tType = xmlReader.attributeValue("type");
-          if (tType == null || !tType.startsWith("EDDTable"))
-            throw new SimpleException(
-                "type=\""
-                    + tType
-                    + "\" is not allowed for the dataset within the EDDTableAggregateRows. "
-                    + "The type MUST start with \"EDDTable\".");
-          tChildren.add((EDDTable) EDD.fromXml(tErddap, tType, xmlReader));
         }
-
-      } else if (localTags.equals("<accessibleTo>")) {
-      }
-      // accessibleTo overwrites any child accessibleTo
-      else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<updateEveryNMillis>")) {
-      } else if (localTags.equals("</updateEveryNMillis>"))
-        tUpdateEveryNMillis = String2.parseInt(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<addAttributes>")) {
-        tAddGlobalAttributes = getAttributesFromXml(xmlReader);
-      } else {
-        xmlReader.unexpectedTagException();
+        case "<accessibleTo>" -> {}
+          // accessibleTo overwrites any child accessibleTo
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<updateEveryNMillis>" -> {}
+        case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<sosOfferingPrefix>" -> {}
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<addVariablesWhere>" -> {}
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "<addAttributes>" -> tAddGlobalAttributes = getAttributesFromXml(xmlReader);
+        default -> xmlReader.unexpectedTagException();
       }
     }
 

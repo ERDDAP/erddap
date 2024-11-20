@@ -297,14 +297,16 @@ public class HashDigest {
   }
 
   public static final String usage =
-      "Usage:\n"
-          + "To print a hash digest (checksum) of a password:\n"
-          + "  HashDigest password:myPassword type:algorithm\n"
-          + "To print a hash digest of a file:\n"
-          + "  HashDigest filename:myFileName type:algorithm\n"
-          + "To make a file with a hash digest of a file:\n"
-          + "  HashDigest filename:myFileName type:algorithm -file\n"
-          + "where algorithm can be MD5, SHA-1, or SHA-256.\n";
+      """
+                  Usage:
+                  To print a hash digest (checksum) of a password:
+                    HashDigest password:myPassword type:algorithm
+                  To print a hash digest of a file:
+                    HashDigest filename:myFileName type:algorithm
+                  To make a file with a hash digest of a file:
+                    HashDigest filename:myFileName type:algorithm -file
+                  where algorithm can be MD5, SHA-1, or SHA-256.
+                  """;
 
   /** This does the work. */
   public static String doIt(String args[]) throws Throwable {

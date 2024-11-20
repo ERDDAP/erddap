@@ -100,84 +100,82 @@ public class EDDTableCopy extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<extractDestinationNames>")) {
-      } else if (localTags.equals("</extractDestinationNames>")) tExtractDestinationNames = content;
-      else if (localTags.equals("<orderExtractBy>")) {
-      } else if (localTags.equals("</orderExtractBy>")) tOrderExtractBy = content;
-      else if (localTags.equals("<checkSourceData>")) {
-      } else if (localTags.equals("</checkSourceData>"))
-        checkSourceData = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<fileTableInMemory>")) {
-      } else if (localTags.equals("</fileTableInMemory>"))
-        tFileTableInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<standardizeWhat>")) {
-      } else if (localTags.equals("</standardizeWhat>"))
-        tStandardizeWhat = String2.parseInt(content);
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
-        } else {
-          try {
-
-            if (checkSourceData) {
-              // after first time, it's ok if source dataset isn't available
-              tSourceEdd =
-                  (EDDTable) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-            } else {
+      switch (localTags) {
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<sosOfferingPrefix>" -> {}
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<extractDestinationNames>" -> {}
+        case "</extractDestinationNames>" -> tExtractDestinationNames = content;
+        case "<orderExtractBy>" -> {}
+        case "</orderExtractBy>" -> tOrderExtractBy = content;
+        case "<checkSourceData>" -> {}
+        case "</checkSourceData>" -> checkSourceData = String2.parseBoolean(content);
+        case "<sourceNeedsExpandedFP_EQ>" -> {}
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "<fileTableInMemory>" -> {}
+        case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<addVariablesWhere>" -> {}
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "<accessibleViaFiles>" -> {}
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "<standardizeWhat>" -> {}
+        case "</standardizeWhat>" -> tStandardizeWhat = String2.parseInt(content);
+        case "<nThreads>" -> {}
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
               String2.log(
-                  "WARNING!!! checkSourceData is false, so EDDTableCopy datasetID="
-                      + tDatasetID
-                      + " is not checking the source dataset!");
-              int stackSize = xmlReader.stackSize();
-              do { // will throw Exception if trouble (e.g., unexpected end-of-file
-                xmlReader.nextTag();
-              } while (xmlReader.stackSize() != stackSize);
-              tSourceEdd = null;
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
             }
-          } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+          } else {
+            try {
+
+              if (checkSourceData) {
+                // after first time, it's ok if source dataset isn't available
+                tSourceEdd =
+                    (EDDTable) EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+              } else {
+                String2.log(
+                    "WARNING!!! checkSourceData is false, so EDDTableCopy datasetID="
+                        + tDatasetID
+                        + " is not checking the source dataset!");
+                int stackSize = xmlReader.stackSize();
+                do { // will throw Exception if trouble (e.g., unexpected end-of-file
+                  xmlReader.nextTag();
+                } while (xmlReader.stackSize() != stackSize);
+                tSourceEdd = null;
+              }
+            } catch (Throwable t) {
+              String2.log(MustBe.throwableToString(t));
+            }
           }
         }
-      } else xmlReader.unexpectedTagException();
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDTableCopy(
@@ -327,8 +325,7 @@ public class EDDTableCopy extends EDDTable {
         EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
         Integer lastAssignedTask = EDStatic.lastAssignedTask.get(datasetID);
         boolean pendingTasks =
-            lastAssignedTask != null
-                && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
+            lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
         if (verbose)
           String2.log(
               "  lastFinishedTask="
@@ -464,7 +461,7 @@ public class EDDTableCopy extends EDDTable {
                 + MustBe.throwableToString(t));
       }
       if (taskNumber >= 0) {
-        EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
+        EDStatic.lastAssignedTask.put(datasetID, taskNumber);
         EDStatic
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it

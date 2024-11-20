@@ -544,7 +544,7 @@ public abstract class EDDTable extends EDD {
       publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames.get(i);
     }
 
-    graphsAccessibleTo_fileTypeNames = new HashSet(); // read only, so needn't be thread-safe
+    graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
     graphsAccessibleTo_fileTypeNames.addAll(Arrays.asList(publicGraphFileTypeNames));
     defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
 
@@ -774,29 +774,29 @@ public abstract class EDDTable extends EDD {
     if (String2.isSomething(tAddVariablesWhere)) {
       int ndv = dataVariables.length;
       String attNames[] = StringArray.arrayFromCSV(tAddVariablesWhere);
-      for (int attNamesi = 0; attNamesi < attNames.length; attNamesi++) {
-        HashSet<String> validAttValues = new HashSet();
+      for (String attName : attNames) {
+        HashSet<String> validAttValues = new HashSet<>();
         for (int dv = 0; dv < ndv; dv++) {
-          String ts = dataVariables[dv].combinedAttributes().getString(attNames[attNamesi]);
+          String ts = dataVariables[dv].combinedAttributes().getString(attName);
           if (String2.isSomething(ts)) validAttValues.add(ts);
         }
         if (!validAttValues.isEmpty()) {
           if (addVariablesWhereAttNames == null) {
             addVariablesWhereAttNames =
                 new StringArray(new String[] {""}); // with "" initial option
-            addVariablesWhereAttValues = new ArrayList();
+            addVariablesWhereAttValues = new ArrayList<>();
             addVariablesWhereAttValues.add(new StringArray(new String[] {""}));
           }
           validAttValues.add("");
           StringArray tValues = new StringArray(validAttValues.iterator());
           tValues.sortIgnoreCase();
-          addVariablesWhereAttNames.add(attNames[attNamesi]);
+          addVariablesWhereAttNames.add(attName);
           addVariablesWhereAttValues.add(tValues);
         } else {
           String2.log(
               String2.WARNING
                   + " when creating addVariablesWhere hashmap: no variables have attName="
-                  + attNames[attNamesi]);
+                  + attName);
         }
       }
     }
@@ -817,9 +817,9 @@ public abstract class EDDTable extends EDD {
 
     HashSet<String> sourceNamesHS = new HashSet(2 * dataVariables.length);
     HashSet<String> destNamesHS = new HashSet(2 * dataVariables.length);
-    for (int v = 0; v < dataVariables.length; v++) {
+    for (EDV dataVariable : dataVariables) {
       // ensure unique sourceNames
-      String sn = dataVariables[v].sourceName();
+      String sn = dataVariable.sourceName();
       if (!sn.startsWith("=")) {
         if (!sourceNamesHS.add(sn))
           throw new RuntimeException(
@@ -827,14 +827,14 @@ public abstract class EDDTable extends EDD {
       }
 
       // ensure unique destNames
-      String dn = dataVariables[v].destinationName();
+      String dn = dataVariable.destinationName();
       if (!destNamesHS.add(dn))
         throw new RuntimeException(
             errorInMethod + "Two dataVariables have the same destinationName=" + dn + ".");
 
       // standard_name is the only case-sensitive CF attribute name (see Sec 3.3)
       // All are all lower case.
-      Attributes tAtts = dataVariables[v].combinedAttributes();
+      Attributes tAtts = dataVariable.combinedAttributes();
       String tStandardName = tAtts.getString("standard_name");
       if (String2.isSomething(tStandardName))
         tAtts.set("standard_name", tStandardName.toLowerCase());
@@ -875,7 +875,7 @@ public abstract class EDDTable extends EDD {
     Test.ensureTrue(
         sourceCanConstrainStringRegex.equals("=~")
             || sourceCanConstrainStringRegex.equals("~=")
-            || sourceCanConstrainStringRegex.equals(""),
+            || sourceCanConstrainStringRegex.isEmpty(),
         errorInMethod
             + "sourceCanConstrainStringRegex=\""
             + sourceCanConstrainStringData
@@ -1277,7 +1277,7 @@ public abstract class EDDTable extends EDD {
       if ((destPAType != PAType.CHAR && destPAType != PAType.STRING)
           && !constraintOp.equals(PrimitiveArray.REGEX_OP)
           && Double.isNaN(constraintValueD)) {
-        if (constraintValue.equals("NaN") || (isTimeStamp && constraintValue.equals(""))) {
+        if (constraintValue.equals("NaN") || (isTimeStamp && constraintValue.isEmpty())) {
           // not an error
         } else {
           throw new SimpleException(
@@ -1396,16 +1396,16 @@ public abstract class EDDTable extends EDD {
             if (reallyVerbose && constraintOp.indexOf('=') >= 0)
               String2.log(
                   "    The constraint with '=' is being expanded because sourceNeedsExpandedFP_EQ=true.");
-            if (constraintOp.equals(">=")) {
-              constraintValues.set(cv, "" + (constraintValueD - fudge));
-            } else if (constraintOp.equals("<=")) {
-              constraintValues.set(cv, "" + (constraintValueD + fudge));
-            } else if (constraintOp.equals("=")) {
-              constraintVariables.atInsert(cv + 1, constraintVariable);
-              constraintOps.set(cv, ">=");
-              constraintOps.atInsert(cv + 1, "<=");
-              constraintValues.set(cv, "" + (constraintValueD - fudge));
-              constraintValues.atInsert(cv + 1, "" + (constraintValueD + fudge));
+            switch (constraintOp) {
+              case ">=" -> constraintValues.set(cv, "" + (constraintValueD - fudge));
+              case "<=" -> constraintValues.set(cv, "" + (constraintValueD + fudge));
+              case "=" -> {
+                constraintVariables.atInsert(cv + 1, constraintVariable);
+                constraintOps.set(cv, ">=");
+                constraintOps.atInsert(cv + 1, "<=");
+                constraintValues.set(cv, "" + (constraintValueD - fudge));
+                constraintValues.atInsert(cv + 1, "" + (constraintValueD + fudge));
+              }
             }
           }
         }
@@ -1638,7 +1638,9 @@ public abstract class EDDTable extends EDD {
       int language, String requestUrl, String userDapQuery, Table table) throws Throwable {
     if (table.nRows() == 0)
       throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (pre-standardize: nRows = 0)");
-    String msg = "    standardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString();
+    StringBuilder msg =
+        new StringBuilder(
+            "    standardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString());
     // String2.log(">> standardizeResultsTable incoming table=\n" + table.toString());
     // String2.log("DEBUG " + MustBe.getStackTrace());
 
@@ -1675,7 +1677,8 @@ public abstract class EDDTable extends EDD {
       int dv = String2.indexOf(dataVariableSourceNames(), columnSourceName);
       if (dv < 0) {
         // remove unexpected column
-        if (debugMode) msg += "\n      removing unexpected source column=" + columnSourceName;
+        if (debugMode)
+          msg.append("\n      removing unexpected source column=").append(columnSourceName);
         table.removeColumn(col);
         continue;
       }
@@ -1695,7 +1698,7 @@ public abstract class EDDTable extends EDD {
       // edv.destinationMaxIsMV());
     }
     // String2.log(">> standardizeResultsTable after toDestination table=\n" + table.toString());
-    if (reallyVerbose) String2.log(msg);
+    if (reallyVerbose) String2.log(msg.toString());
 
     // apply the constraints and finish up
     applyConstraints(
@@ -2295,15 +2298,15 @@ public abstract class EDDTable extends EDD {
       if (debugMode)
         String2.log(
             "  userDapQuery parts[0]=\"" + parts[0] + "\" is expanded to request all variables.");
-      for (int v = 0; v < dataVariables.length; v++) {
-        resultsVariables.add(dataVariables[v].destinationName());
+      for (EDV dataVariable : dataVariables) {
+        resultsVariables.add(dataVariable.destinationName());
       }
     } else {
       String cParts[] = String2.split(parts[0], ','); // list of results variables
-      for (int cp = 0; cp < cParts.length; cp++) {
+      for (String cPart : cParts) {
 
         // request uses sequence.dataVarName notation?
-        String tVar = cParts[cp].trim();
+        String tVar = cPart.trim();
         int period = tVar.indexOf('.');
         if (period > 0 && tVar.substring(0, period).equals(SEQUENCE_NAME))
           tVar = tVar.substring(period + 1);
@@ -2570,8 +2573,7 @@ public abstract class EDDTable extends EDD {
         String tAttValue = obv.get(1);
 
         // go through vars looking for attName=attValue
-        for (int v = 0; v < dataVariables.length; v++) {
-          EDV edv = dataVariables[v];
+        for (EDV edv : dataVariables) {
           if (tAttValue.equals(edv.combinedAttributes().getString(tAttName))) {
             // add var to resultsVariables if not already there
             if (resultsVariables.indexOf(edv.destinationName()) < 0)
@@ -2744,7 +2746,7 @@ public abstract class EDDTable extends EDD {
             // it must be a number (epochSeconds)
             // test that value=NaN must use NaN or "", not just an invalidly formatted number
             conValueD = String2.parseDouble(tValue);
-            if (!Double.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
+            if (!Double.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.isEmpty()) {
               if (repair) {
                 tValue = "NaN";
                 conValueD = Double.NaN;
@@ -3255,42 +3257,40 @@ public abstract class EDDTable extends EDD {
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
 
     // .das, .dds, and .html requests can be handled without getting data
-    if (fileTypeName.equals(".das")) {
-      // .das is always the same regardless of the userDapQuery.
-      // (That's what THREDDS does -- DAP 2.0 7.2.1 is vague.
-      // THREDDs doesn't even object if userDapQuery is invalid.)
-      Table table =
-          makeEmptyDestinationTable(
-              language, requestUrl, "", true); // as if userDapQuery was for everything
+    switch (fileTypeName) {
+      case ".das" -> {
+        // .das is always the same regardless of the userDapQuery.
+        // (That's what THREDDS does -- DAP 2.0 7.2.1 is vague.
+        // THREDDs doesn't even object if userDapQuery is invalid.)
+        Table table =
+            makeEmptyDestinationTable(
+                language, requestUrl, "", true); // as if userDapQuery was for everything
 
-      // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-      table.saveAsDAS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
-      return;
-    }
-    if (fileTypeName.equals(".dds")) {
-      Table table = makeEmptyDestinationTable(language, requestUrl, userDapQuery, false);
-      // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-      table.saveAsDDS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
-      return;
-    }
-
-    if (fileTypeName.equals(".fgdc")) {
-      if (accessibleViaFGDC.length() == 0) {
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        try {
-          if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        }
-      } else {
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaFGDC);
+        // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common
+        // 8bit
+        table.saveAsDAS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
+        return;
       }
-      return;
+      case ".dds" -> {
+        Table table = makeEmptyDestinationTable(language, requestUrl, userDapQuery, false);
+        // DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common
+        // 8bit
+        table.saveAsDDS(outputStreamSource.outputStream(File2.ISO_8859_1), SEQUENCE_NAME);
+        return;
+      }
+      case ".fgdc" -> {
+        if (accessibleViaFGDC.length() == 0) {
+          try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
+            if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
+              throw new SimpleException(String2.ERROR + " while transmitting file.");
+          }
+          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        } else {
+          throw new SimpleException(
+              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaFGDC);
+        }
+        return;
+      }
     }
 
     // special EDDTableFromHttpGet file types
@@ -3439,82 +3439,73 @@ public abstract class EDDTable extends EDD {
                 EDStatic.queryErrorAr[language] + EDStatic.errorFileNotFoundImageAr[language]));
 
       // ok, copy it  (and don't close the outputStream)
-      OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-      try {
+      try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
         if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
           throw new SimpleException(String2.ERROR + " while transmitting file.");
-      } finally {
-        try {
-          out.close();
-        } catch (Exception e) {
-        } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
       }
+      // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
       return;
     }
 
-    if (fileTypeName.equals(".iso19115")) {
-      if (accessibleViaISO19115.length() == 0) {
-        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-        try {
-          if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        }
-      } else {
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaISO19115);
-      }
-      return;
-    }
-
-    if (fileTypeName.equals(".nccsvMetadata")) {
-      Table table = new Table();
-      table.globalAttributes().add(combinedGlobalAttributes());
-      for (int dvi = 0; dvi < dataVariables.length; dvi++) {
-        EDV dv = dataVariables[dvi];
-        Attributes catts = dv.combinedAttributes();
-        PAType tPAType = dv.destinationDataPAType();
-        if (dv instanceof EDVTimeStamp) {
-          // convert to String times
-          tPAType = PAType.STRING;
-          catts = new Attributes(catts); // make changes to a copy
-          String timePre = catts.getString(EDV.TIME_PRECISION);
-          catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
-
-          PrimitiveArray pa = catts.get("actual_range");
-          if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
-            StringArray sa = new StringArray();
-            for (int i = 0; i < 2; i++)
-              sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
-            catts.set("actual_range", sa);
+    switch (fileTypeName) {
+      case ".iso19115" -> {
+        if (accessibleViaISO19115.length() == 0) {
+          try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
+            if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
+              throw new SimpleException(String2.ERROR + " while transmitting file.");
           }
+          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        } else {
+          throw new SimpleException(
+              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + accessibleViaISO19115);
         }
-        table.addColumn(
-            dvi, dv.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
+        return;
       }
-      Writer writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-      table.saveAsNccsv(false, true, 0, 0, writer); // catchScalars, writeMetadata, writeDataRows
-      return;
-    }
+      case ".nccsvMetadata" -> {
+        Table table = new Table();
+        table.globalAttributes().add(combinedGlobalAttributes());
+        for (int dvi = 0; dvi < dataVariables.length; dvi++) {
+          EDV dv = dataVariables[dvi];
+          Attributes catts = dv.combinedAttributes();
+          PAType tPAType = dv.destinationDataPAType();
+          if (dv instanceof EDVTimeStamp) {
+            // convert to String times
+            tPAType = PAType.STRING;
+            catts = new Attributes(catts); // make changes to a copy
+            String timePre = catts.getString(EDV.TIME_PRECISION);
+            catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
 
-    if (fileTypeName.equals(".subset")) {
-      respondToSubsetQuery(
-          language,
-          request,
-          response,
-          loggedInAs,
-          requestUrl,
-          endOfRequest,
-          userDapQuery,
-          outputStreamSource,
-          dir,
-          fileName,
-          fileTypeName);
-      return;
+            PrimitiveArray pa = catts.get("actual_range");
+            if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+              StringArray sa = new StringArray();
+              for (int i = 0; i < 2; i++)
+                sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
+              catts.set("actual_range", sa);
+            }
+          }
+          table.addColumn(
+              dvi, dv.destinationName(), PrimitiveArray.factory(tPAType, 1, false), catts);
+        }
+        Writer writer = File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
+        table.saveAsNccsv(false, true, 0, 0, writer); // catchScalars, writeMetadata, writeDataRows
+
+        return; // catchScalars, writeMetadata, writeDataRows
+      }
+      case ".subset" -> {
+        respondToSubsetQuery(
+            language,
+            request,
+            response,
+            loggedInAs,
+            requestUrl,
+            endOfRequest,
+            userDapQuery,
+            outputStreamSource,
+            dir,
+            fileName,
+            fileTypeName);
+        return;
+      }
     }
 
     // *** get the data and write to a tableWriter
@@ -3522,87 +3513,125 @@ public abstract class EDDTable extends EDD {
     TableWriterAllWithMetadata twawm = null;
     String tNewHistory = getNewHistory(requestUrl, userDapQuery);
     String jsonp = null;
-    if (fileTypeName.equals(".asc"))
-      tableWriter =
-          new TableWriterDodsAscii(language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
-    else if (fileTypeName.equals(".csv"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, ",", true, true, '2', "NaN");
-    else if (fileTypeName.equals(".csvp"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, ",", true, true, '(', "NaN");
-    else if (fileTypeName.equals(".csv0"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, ",", true, false, '0', "NaN");
-    else if (fileTypeName.equals(".dods"))
-      tableWriter =
-          new TableWriterDods(language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
-    else if (fileTypeName.equals(".esriCsv"))
-      tableWriter = new TableWriterEsriCsv(language, this, tNewHistory, outputStreamSource);
-    else if (fileTypeName.equals(".geoJson")
-        || fileTypeName.equals(".json")
-        || fileTypeName.equals(".dataTable")
-        || fileTypeName.equals(".jsonlCSV1")
-        || fileTypeName.equals(".jsonlCSV")
-        || fileTypeName.equals(".jsonlKVP")
-        || fileTypeName.equals(".ncoJson")) {
-      // did query include &.jsonp= ?
-      String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
-      jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
-      if (jsonp != null) {
-        jsonp = jsonp.substring(7);
-        if (!String2.isJsonpNameSafe(jsonp))
-          throw new SimpleException(
-              EDStatic.bilingual(
-                  language,
-                  EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
-                  EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
+    switch (fileTypeName) {
+      case ".asc" ->
+          tableWriter =
+              new TableWriterDodsAscii(
+                  language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
+      case ".csv" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, ",", true, true, '2', "NaN");
+      case ".csvp" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, ",", true, true, '(', "NaN");
+      case ".csv0" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, ",", true, false, '0', "NaN");
+      case ".dods" ->
+          tableWriter =
+              new TableWriterDods(language, this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
+      case ".esriCsv" ->
+          tableWriter = new TableWriterEsriCsv(language, this, tNewHistory, outputStreamSource);
+      case ".geoJson",
+          ".json",
+          ".dataTable",
+          ".jsonlCSV1",
+          ".jsonlCSV",
+          ".jsonlKVP",
+          ".ncoJson" -> {
+        // did query include &.jsonp= ?
+        String parts[] = Table.getDapQueryParts(userDapQuery); // decoded
+
+        jsonp = String2.stringStartsWith(parts, ".jsonp="); // may be null
+
+        if (jsonp != null) {
+          jsonp = jsonp.substring(7);
+          if (!String2.isJsonpNameSafe(jsonp))
+            throw new SimpleException(
+                EDStatic.bilingual(
+                    language,
+                    EDStatic.queryErrorAr[0] + EDStatic.errorJsonpFunctionNameAr[0],
+                    EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
+        }
+        switch (fileTypeName) {
+          case ".geoJson" ->
+              tableWriter =
+                  new TableWriterGeoJson(language, this, tNewHistory, outputStreamSource, jsonp);
+          case ".json" ->
+              tableWriter =
+                  new TableWriterJson(
+                      language, this, tNewHistory, outputStreamSource, jsonp, true); // writeUnits
+          case ".dataTable" ->
+              tableWriter =
+                  new TableWriterDataTable(
+                      language, this, tNewHistory, outputStreamSource, true); // writeUnits
+          case ".jsonlCSV1" ->
+              tableWriter =
+                  new TableWriterJsonl(
+                      language,
+                      this,
+                      tNewHistory,
+                      outputStreamSource,
+                      true,
+                      false,
+                      jsonp); // writeColNames, writeKVP
+          case ".jsonlCSV" ->
+              tableWriter =
+                  new TableWriterJsonl(
+                      language,
+                      this,
+                      tNewHistory,
+                      outputStreamSource,
+                      false,
+                      false,
+                      jsonp); // writeColNames, writeKVP
+          case ".jsonlKVP" ->
+              tableWriter =
+                  new TableWriterJsonl(
+                      language,
+                      this,
+                      tNewHistory,
+                      outputStreamSource,
+                      false,
+                      true,
+                      jsonp); // writeColNames, writeKVP
+          case ".ncoJson" -> {
+            twawm =
+                new TableWriterAllWithMetadata(
+                    language,
+                    this,
+                    tNewHistory,
+                    dir,
+                    fileName); // used after getDataForDapQuery below...
+
+            tableWriter = twawm;
+          }
+        }
       }
-      if (fileTypeName.equals(".geoJson"))
-        tableWriter =
-            new TableWriterGeoJson(language, this, tNewHistory, outputStreamSource, jsonp);
-      else if (fileTypeName.equals(".json"))
-        tableWriter =
-            new TableWriterJson(
-                language, this, tNewHistory, outputStreamSource, jsonp, true); // writeUnits
-      else if (fileTypeName.equals(".dataTable"))
-        tableWriter =
-            new TableWriterDataTable(
-                language, this, tNewHistory, outputStreamSource, true); // writeUnits
-      else if (fileTypeName.equals(".jsonlCSV1"))
-        tableWriter =
-            new TableWriterJsonl(
-                language,
-                this,
-                tNewHistory,
-                outputStreamSource,
-                true,
-                false,
-                jsonp); // writeColNames, writeKVP
-      else if (fileTypeName.equals(".jsonlCSV"))
-        tableWriter =
-            new TableWriterJsonl(
-                language,
-                this,
-                tNewHistory,
-                outputStreamSource,
-                false,
-                false,
-                jsonp); // writeColNames, writeKVP
-      else if (fileTypeName.equals(".jsonlKVP"))
-        tableWriter =
-            new TableWriterJsonl(
-                language,
-                this,
-                tNewHistory,
-                outputStreamSource,
-                false,
-                true,
-                jsonp); // writeColNames, writeKVP
-      else if (fileTypeName.equals(".ncoJson")) {
+      case ".htmlTable" ->
+          tableWriter =
+              new TableWriterHtmlTable(
+                  language,
+                  this,
+                  tNewHistory,
+                  loggedInAs,
+                  endOfRequest,
+                  userDapQuery,
+                  outputStreamSource,
+                  true,
+                  fileName,
+                  false,
+                  "",
+                  "",
+                  true,
+                  true,
+                  -1,
+                  EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+      case ".itx" -> {
+        // tableWriter = new TableWriterIgor(this, tNewHistory, outputStreamSource);
         twawm =
             new TableWriterAllWithMetadata(
                 language,
@@ -3610,118 +3639,108 @@ public abstract class EDDTable extends EDD {
                 tNewHistory,
                 dir,
                 fileName); // used after getDataForDapQuery below...
+
         tableWriter = twawm;
       }
-
-    } else if (fileTypeName.equals(".htmlTable")) {
-      tableWriter =
-          new TableWriterHtmlTable(
-              language,
-              this,
-              tNewHistory,
-              loggedInAs,
-              endOfRequest,
-              userDapQuery,
-              outputStreamSource,
-              true,
-              fileName,
-              false,
-              "",
-              "",
-              true,
-              true,
-              -1,
-              EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
-    } else if (fileTypeName.equals(".itx")) { // Igor Text File
-      // tableWriter = new TableWriterIgor(this, tNewHistory, outputStreamSource);
-      twawm =
-          new TableWriterAllWithMetadata(
-              language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
-      tableWriter = twawm;
-    } else if (fileTypeName.equals(".mat")) {
-      twawm =
-          new TableWriterAllWithMetadata(
-              language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
-      tableWriter = twawm;
-    } else if (fileTypeName.equals(".nccsv")) {
-      tableWriter = new TableWriterNccsv(language, this, tNewHistory, outputStreamSource);
-    } else if (fileTypeName.equals(".odvTxt")) {
-      // ensure there is longitude, latitude, time data in the request (else it is useless in ODV)
-      StringArray resultsVariables = new StringArray();
-      parseUserDapQuery(
-          language,
-          userDapQuery,
-          resultsVariables,
-          new StringArray(),
-          new StringArray(),
-          new StringArray(),
-          false);
-      if (resultsVariables.indexOf(EDV.LON_NAME) < 0
-          || resultsVariables.indexOf(EDV.LAT_NAME) < 0
-          || resultsVariables.indexOf(EDV.TIME_NAME) < 0)
-        throw new SimpleException(
-            EDStatic.bilingual(
+      case ".mat" -> {
+        twawm =
+            new TableWriterAllWithMetadata(
                 language,
-                EDStatic.queryErrorAr[0] + EDStatic.errorOdvLLTTableAr[0],
-                EDStatic.queryErrorAr[language] + EDStatic.errorOdvLLTTableAr[language]));
-      twawm =
-          new TableWriterAllWithMetadata(
-              language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
-      tableWriter = twawm;
-    } else if (fileTypeName.equals(".parquet") || fileTypeName.equals(".parquetWMeta")) {
-      twawm =
-          new TableWriterAllWithMetadata(
-              language, this, tNewHistory, dir, fileName); // used after getDataForDapQuery below...
-      tableWriter = twawm;
-    } else if (fileTypeName.equals(".tsv"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, "\t", false, true, '2', "NaN");
-    else if (fileTypeName.equals(".tsvp"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, "\t", false, true, '(', "NaN");
-    else if (fileTypeName.equals(".tsv0"))
-      tableWriter =
-          new TableWriterSeparatedValue(
-              language, this, tNewHistory, outputStreamSource, "\t", false, false, '0', "NaN");
-    else if (fileTypeName.equals(".wav")) {
-      if (File2.isFile(dir + fileName + ".wav")) {
-        OutputStream out = outputStreamSource.outputStream("");
-        try {
-          if (!File2.copy(dir + fileName + ".wav", out))
-            throw new SimpleException(String2.ERROR + " while transmitting file.");
-        } finally {
-          try {
-            out.close();
-          } catch (Exception e) {
-          } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
-        }
-        return;
-      } else {
-        tableWriter =
-            new TableWriterWav(
-                language, this, tNewHistory, outputStreamSource, dir, fileName + ".wav");
+                this,
+                tNewHistory,
+                dir,
+                fileName); // used after getDataForDapQuery below...
+
+        tableWriter = twawm;
       }
-    } else if (fileTypeName.equals(".xhtml"))
-      tableWriter =
-          new TableWriterHtmlTable(
-              language,
-              this,
-              tNewHistory,
-              loggedInAs,
-              endOfRequest,
-              userDapQuery,
-              outputStreamSource,
-              true,
-              fileName,
-              true,
-              "",
-              "",
-              true,
-              true,
-              -1,
-              EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+      case ".nccsv" ->
+          tableWriter = new TableWriterNccsv(language, this, tNewHistory, outputStreamSource);
+      case ".odvTxt" -> {
+        // ensure there is longitude, latitude, time data in the request (else it is useless in ODV)
+        StringArray resultsVariables = new StringArray();
+        parseUserDapQuery(
+            language,
+            userDapQuery,
+            resultsVariables,
+            new StringArray(),
+            new StringArray(),
+            new StringArray(),
+            false);
+        if (resultsVariables.indexOf(EDV.LON_NAME) < 0
+            || resultsVariables.indexOf(EDV.LAT_NAME) < 0
+            || resultsVariables.indexOf(EDV.TIME_NAME) < 0)
+          throw new SimpleException(
+              EDStatic.bilingual(
+                  language,
+                  EDStatic.queryErrorAr[0] + EDStatic.errorOdvLLTTableAr[0],
+                  EDStatic.queryErrorAr[language] + EDStatic.errorOdvLLTTableAr[language]));
+        twawm =
+            new TableWriterAllWithMetadata(
+                language,
+                this,
+                tNewHistory,
+                dir,
+                fileName); // used after getDataForDapQuery below...
+
+        tableWriter = twawm;
+      }
+      case ".parquet", ".parquetWMeta" -> {
+        twawm =
+            new TableWriterAllWithMetadata(
+                language,
+                this,
+                tNewHistory,
+                dir,
+                fileName); // used after getDataForDapQuery below...
+
+        tableWriter = twawm;
+      }
+      case ".tsv" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, "\t", false, true, '2', "NaN");
+      case ".tsvp" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, "\t", false, true, '(', "NaN");
+      case ".tsv0" ->
+          tableWriter =
+              new TableWriterSeparatedValue(
+                  language, this, tNewHistory, outputStreamSource, "\t", false, false, '0', "NaN");
+      case ".wav" -> {
+        if (File2.isFile(dir + fileName + ".wav")) {
+          try (OutputStream out = outputStreamSource.outputStream("")) {
+            if (!File2.copy(dir + fileName + ".wav", out))
+              throw new SimpleException(String2.ERROR + " while transmitting file.");
+          }
+          // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+          return;
+        } else {
+          tableWriter =
+              new TableWriterWav(
+                  language, this, tNewHistory, outputStreamSource, dir, fileName + ".wav");
+        }
+      }
+      case ".xhtml" ->
+          tableWriter =
+              new TableWriterHtmlTable(
+                  language,
+                  this,
+                  tNewHistory,
+                  loggedInAs,
+                  endOfRequest,
+                  userDapQuery,
+                  outputStreamSource,
+                  true,
+                  fileName,
+                  true,
+                  "",
+                  "",
+                  true,
+                  true,
+                  -1,
+                  EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+    }
 
     if (tableWriter != null) {
       TableWriter tTableWriter =
@@ -3752,18 +3771,14 @@ public abstract class EDDTable extends EDD {
       // special case: for these, tableWriter=twawm
       //  so (unlike e.g., tableWriter is a TableWriterJson), we aren't quite finished.
       //  Data is in twawm and we need to save it to file.
-      if (fileTypeName.equals(".mat")) {
-        saveAsMatlab(language, outputStreamSource, twawm, datasetID);
-      } else if (fileTypeName.equals(".itx")) {
-        saveAsIgor(language, outputStreamSource, twawm, datasetID);
-      } else if (fileTypeName.equals(".ncoJson")) {
-        saveAsNcoJson(language, outputStreamSource, twawm, jsonp);
-      } else if (fileTypeName.equals(".odvTxt")) {
-        saveAsODV(language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
-      } else if (fileTypeName.equals(".parquet")) {
-        saveAsParquet(language, outputStreamSource, twawm, datasetID, false);
-      } else if (fileTypeName.equals(".parquetWMeta")) {
-        saveAsParquet(language, outputStreamSource, twawm, datasetID, true);
+      switch (fileTypeName) {
+        case ".mat" -> saveAsMatlab(language, outputStreamSource, twawm, datasetID);
+        case ".itx" -> saveAsIgor(language, outputStreamSource, twawm, datasetID);
+        case ".ncoJson" -> saveAsNcoJson(language, outputStreamSource, twawm, jsonp);
+        case ".odvTxt" ->
+            saveAsODV(language, outputStreamSource, twawm, datasetID, publicSourceUrl(), infoUrl());
+        case ".parquet" -> saveAsParquet(language, outputStreamSource, twawm, datasetID, false);
+        case ".parquetWMeta" -> saveAsParquet(language, outputStreamSource, twawm, datasetID, true);
       }
       if (twawm != null) {
         twawm.close();
@@ -3864,9 +3879,9 @@ public abstract class EDDTable extends EDD {
           // queries must include longitude, latitude, time (and altitude or depth if in dataset)
           StringBuilder addVars = new StringBuilder();
           String varList[] = StringArray.arrayFromCSV(SSR.percentDecode(varNames));
-          for (int v = 0; v < requiredCfRequestVariables.length; v++) {
-            if (String2.indexOf(varList, requiredCfRequestVariables[v]) < 0)
-              addVars.append(requiredCfRequestVariables[v] + ",");
+          for (String requiredCfRequestVariable : requiredCfRequestVariables) {
+            if (String2.indexOf(varList, requiredCfRequestVariable) < 0)
+              addVars.append(requiredCfRequestVariable + ",");
             // throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
             //    ".ncCF queries for this dataset must include all of these variables: " +
             // String2.toCSSVString(requiredCfRequestVariables) + ".");
@@ -3877,8 +3892,8 @@ public abstract class EDDTable extends EDD {
 
           // query must include at least one non-outer variable
           boolean ok = false;
-          for (int v = 0; v < varList.length; v++) {
-            if (String2.indexOf(outerCfVariables, varList[v]) < 0) {
+          for (String s : varList) {
+            if (String2.indexOf(outerCfVariables, s) < 0) {
               ok = true;
               break;
             }
@@ -3900,15 +3915,16 @@ public abstract class EDDTable extends EDD {
         // make .ncCF or .ncCFMA file
         boolean nodcMode = fileTypeName.equals(".ncCFMA") || fileTypeName.equals(".ncCFMAHeader");
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-        if (CDM_POINT.equals(cdmType)) saveAsNcCF0(language, cacheFullName, twawm);
-        else if (CDM_TIMESERIES.equals(cdmType)
-            || CDM_PROFILE.equals(cdmType)
-            || CDM_TRAJECTORY.equals(cdmType))
-          saveAsNcCF1(language, nodcMode, cacheFullName, twawm);
-        else if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
-          saveAsNcCF2(language, nodcMode, cacheFullName, twawm);
-        else // shouldn't happen, since accessibleViaNcCF checks this
-        throw new SimpleException("unexpected cdm_data_type=" + cdmType);
+        switch (cdmType) {
+          case CDM_POINT -> saveAsNcCF0(language, cacheFullName, twawm);
+          case CDM_TIMESERIES, CDM_PROFILE, CDM_TRAJECTORY ->
+              saveAsNcCF1(language, nodcMode, cacheFullName, twawm);
+          case CDM_TIMESERIESPROFILE, CDM_TRAJECTORYPROFILE ->
+              saveAsNcCF2(language, nodcMode, cacheFullName, twawm);
+          case null, default ->
+              // shouldn't happen, since accessibleViaNcCF checks this
+              throw new SimpleException("unexpected cdm_data_type=" + cdmType);
+        }
 
         File2.isFile(
             cacheFullName,
@@ -4008,22 +4024,17 @@ public abstract class EDDTable extends EDD {
 
       // copy file to outputStream
       // (I delayed getting actual outputStream as long as possible.)
-      OutputStream out =
+      try (OutputStream out =
           outputStreamSource.outputStream(
-              ncXHeader ? File2.UTF_8 : fileTypeName.equals(".kml") ? File2.UTF_8 : "");
-      try {
+              ncXHeader ? File2.UTF_8 : fileTypeName.equals(".kml") ? File2.UTF_8 : "")) {
         if (!File2.copy(fullName, out)) {
           // outputStream contentType already set,
           // so I can't go back to html and display error message
           // note than the message is thrown if user cancels the transmission; so don't email to me
           throw new SimpleException(String2.ERROR + " while transmitting file.");
         }
-      } finally {
-        try {
-          out.close();
-        } catch (Exception e) {
-        } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
       }
+      // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     } else {
 
       // copy file to AWS and redirect user
@@ -5896,8 +5907,8 @@ public abstract class EDDTable extends EDD {
             g2.setColor(Color.black);
             g2.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
             int ty = tHeight * 2;
-            for (int i = 0; i < lines.length; i++) {
-              g2.drawString(lines[i], tHeight, ty);
+            for (String line : lines) {
+              g2.drawString(line, tHeight, ty);
               ty += tHeight + 2;
             }
           }
@@ -6150,9 +6161,8 @@ public abstract class EDDTable extends EDD {
     int nCols = twawm.nColumns();
 
     // create a writer
-    BufferedWriter writer =
-        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8));
-    try {
+    try (BufferedWriter writer =
+        File2.getBufferedWriterUtf8(outputStreamSource.outputStream(File2.UTF_8))) {
       if (jsonp != null) writer.write(jsonp + "(");
 
       // write start
@@ -6286,7 +6296,6 @@ public abstract class EDDTable extends EDD {
       if (jsonp != null) writer.write(")");
       writer.flush(); // essential
     } finally {
-      writer.close();
       twawm.releaseResources();
     }
 
@@ -6639,17 +6648,19 @@ public abstract class EDDTable extends EDD {
 
     // ensure profile_id|timeseries_id|trajectory_id variable is defined
     // and that cdmType is valid
-    int idDVI = -1;
-    if (CDM_PROFILE.equals(cdmType)) idDVI = profile_idIndex;
-    else if (CDM_TIMESERIES.equals(cdmType)) idDVI = timeseries_idIndex;
-    else if (CDM_TRAJECTORY.equals(cdmType)) idDVI = trajectory_idIndex;
-    else
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-              + // but already checked before calling this method
-              "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, not "
-              + cdmType
-              + ".");
+    int idDVI =
+        switch (cdmType) {
+          case CDM_PROFILE -> profile_idIndex;
+          case CDM_TIMESERIES -> timeseries_idIndex;
+          case CDM_TRAJECTORY -> trajectory_idIndex;
+          case null, default ->
+              throw new SimpleException(
+                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                      + // but already checked before calling this method
+                      "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, not "
+                      + cdmType
+                      + ".");
+        };
     if (idDVI < 0) // but already checked by accessibleViaNcCF
     throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
@@ -6817,9 +6828,8 @@ public abstract class EDDTable extends EDD {
       // set the global attributes
       // currently, only the .nc saveAs file types use attributes!
       Attributes cdmGlobalAttributes = twawm.globalAttributes();
-      String featureType = cdmType;
       cdmGlobalAttributes.remove("observationDimension"); // obsDim is for a flat file and OBSOLETE
-      cdmGlobalAttributes.set("featureType", featureType);
+      cdmGlobalAttributes.set("featureType", cdmType);
       if (cdmGlobalAttributes.get("id") == null)
         cdmGlobalAttributes.set(
             "id",
@@ -7275,9 +7285,8 @@ public abstract class EDDTable extends EDD {
       // set the global attributes
       // currently, only the .nc saveAs types use attributes!
       Attributes cdmGlobalAttributes = twawm.globalAttributes();
-      String featureType = cdmType;
       cdmGlobalAttributes.remove("observationDimension"); // obsDim is for a flat file and OBSOLETE
-      cdmGlobalAttributes.set("featureType", featureType);
+      cdmGlobalAttributes.set("featureType", cdmType);
       if (cdmGlobalAttributes.get("id") == null)
         cdmGlobalAttributes.set(
             "id",
@@ -7519,10 +7528,9 @@ public abstract class EDDTable extends EDD {
       //  so it's a programming error if they are missing
 
       // open an OutputStream
-      Writer writer =
+      try (Writer writer =
           File2.getBufferedWriter(
-              outputStreamSource.outputStream(Table.IgorCharset), Table.IgorCharset);
-      try {
+              outputStreamSource.outputStream(Table.IgorCharset), Table.IgorCharset)) {
         writer.write("IGOR" + Table.IgorEndOfLine);
 
         // write each col as a wave separately, so data type is preserved
@@ -7550,8 +7558,6 @@ public abstract class EDDTable extends EDD {
 
         // done!
         writer.flush(); // essential
-      } finally {
-        writer.close();
       }
     } finally {
       twawm.releaseResources();
@@ -7917,20 +7923,15 @@ public abstract class EDDTable extends EDD {
             .toString();
     table.writeParquet(parquetTempFileName, fullMetadata);
 
-    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
-    try {
+    try (OutputStream out = outputStreamSource.outputStream(File2.UTF_8)) {
       if (!File2.copy(parquetTempFileName, out)) {
         // outputStream contentType already set,
         // so I can't go back to html and display error message
         // note than the message is thrown if user cancels the transmission; so don't email to me
         throw new SimpleException(String2.ERROR + " while transmitting file.");
       }
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     File2.delete(parquetTempFileName);
   }
 
@@ -8062,9 +8063,8 @@ public abstract class EDDTable extends EDD {
     if (verbose) String2.log("\nEDDTable.getMinMaxTime for lon=" + lon + " lat=" + lat);
 
     StringBuilder query = new StringBuilder();
-    for (int dv = 0; dv < dataVariables.length; dv++)
-      // get all vars since different vars at different altitudes
-      query.append("," + dataVariables[dv].destinationName());
+    // get all vars since different vars at different altitudes
+    for (EDV dataVariable : dataVariables) query.append("," + dataVariable.destinationName());
     query.deleteCharAt(0); // first comma
     query.append("&" + EDV.LON_NAME + "=" + lon + "&" + EDV.LAT_NAME + "=" + lat);
 
@@ -8316,13 +8316,12 @@ public abstract class EDDTable extends EDD {
         }
       } else {
         if (isTime) {
-          double ttMax = tMax;
-          if (Double.isFinite(ttMax)) {
+          if (Double.isFinite(tMax)) {
             // only set max request if tMax is known
-            tValD[1] = ttMax;
-            tValS[1] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, ttMax, "");
+            tValD[1] = tMax;
+            tValS[1] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tMax, "");
           }
-          tValD[0] = Calendar2.backNDays(7, ttMax); // NaN -> now
+          tValD[0] = Calendar2.backNDays(7, tMax); // NaN -> now
           tValS[0] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tValD[0], "");
         }
       }
@@ -9086,7 +9085,7 @@ public abstract class EDDTable extends EDD {
               + dataFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (dataFileTypeInfo.get(i).equals("")
+              + (dataFileTypeInfo.get(i).isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
                       + XML.encodeAsHTMLAttribute(dataFileTypeInfo.get(i))
@@ -9719,7 +9718,7 @@ public abstract class EDDTable extends EDD {
               + imageFileTypeDescriptionsAr[language][i]
               + "</td>\n"
               + "      <td class=\"N\">"
-              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).equals("")
+              + (imageFileTypeInfo.get(i) == null || imageFileTypeInfo.get(i).isEmpty()
                   ? "&nbsp;"
                   : "<a rel=\"help\" href=\""
                       + imageFileTypeInfo.get(i)
@@ -11472,7 +11471,11 @@ public abstract class EDDTable extends EDD {
       String distinctOptions[][] = null;
       if (accessibleViaSubset().length() == 0) {
         distinctOptions = distinctOptionsTable(language, loggedInAs, 60); // maxChar=60
-        writer.write("<script>\n" + "var distinctOptions=[\n");
+        writer.write(
+            """
+                <script>
+                var distinctOptions=[
+                """);
         for (int sv = 0; sv < subsetVariables.length; sv++) {
           // encodeSpaces as nbsp solves the problem with consecutive internal spaces
           int ndo = distinctOptions[sv].length;
@@ -11483,7 +11486,10 @@ public abstract class EDDTable extends EDD {
           writer.write(new StringArray(distinctOptions[sv]).toJsonCsvString());
           writer.write("]" + (sv == subsetVariables.length - 1 ? "" : ",") + "\n");
         }
-        writer.write("];\n" + "</script>\n");
+        writer.write("""
+                ];
+                </script>
+                """);
       }
 
       // ** write the table
@@ -11714,7 +11720,10 @@ public abstract class EDDTable extends EDD {
                 "",
                 false,
                 "mySubmit(true);")); // was ""));
-        writer.write("  </td>\n" + "</tr>\n");
+        writer.write("""
+                  </td>
+                </tr>
+                """);
       }
       boolean zoomLatLon =
           resultsVariables.get(0).equals(EDV.LON_NAME)
@@ -12673,8 +12682,10 @@ public abstract class EDDTable extends EDD {
           "    q2 += \"\\x26.draw=\" + d.f1.draw.options[d.f1.draw.selectedIndex].text; \n");
       if (drawLinesAndMarkers || drawMarkers)
         writer.write(
-            "    q2 += \"\\x26.marker=\" + d.f1.mType.selectedIndex + \"%7C\" + \n"
-                + "      d.f1.mSize.options[d.f1.mSize.selectedIndex].text; \n");
+            """
+                            q2 += "\\x26.marker=" + d.f1.mType.selectedIndex + "%7C" +\s
+                              d.f1.mSize.options[d.f1.mSize.selectedIndex].text;\s
+                        """);
       writer.write(
           "    q2 += \"\\x26.color=0x\"; \n"
               + "    for (var rb = 0; rb < "
@@ -12685,27 +12696,33 @@ public abstract class EDDTable extends EDD {
       // checked
       if (drawLinesAndMarkers || drawMarkers)
         writer.write(
-            "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n"
-                + "    q2 += \"\\x26.colorBar=\" + d.f1.p.options[d.f1.p.selectedIndex].text + \"%7C\" + \n"
-                + "      (tpc.length > 0? tpc.charAt(0) : \"\") + \"%7C\" + \n"
-                + "      d.f1.ps.options[d.f1.ps.selectedIndex].text + \"%7C\" + \n"
-                + "      d.f1.pMin.value + \"%7C\" + d.f1.pMax.value + \"%7C\" + \n"
-                + "      d.f1.pSec.options[d.f1.pSec.selectedIndex].text; \n");
+            """
+                            var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;
+                            q2 += "\\x26.colorBar=" + d.f1.p.options[d.f1.p.selectedIndex].text + "%7C" +\s
+                              (tpc.length > 0? tpc.charAt(0) : "") + "%7C" +\s
+                              d.f1.ps.options[d.f1.ps.selectedIndex].text + "%7C" +\s
+                              d.f1.pMin.value + "%7C" + d.f1.pMax.value + "%7C" +\s
+                              d.f1.pSec.options[d.f1.pSec.selectedIndex].text;\s
+                        """);
       if (drawVectors)
         writer.write(
             "    if (d.f1.vec.value.length > 0) q2 += \"\\x26.vec=\" + d.f1.vec.value; \n");
       if (showLandOption)
         writer.write(
-            "    if (d.f1.land.selectedIndex > 0)\n"
-                + "      q2 += \"\\x26.land=\" + d.f1.land.options[d.f1.land.selectedIndex].text; \n");
+            """
+                            if (d.f1.land.selectedIndex > 0)
+                              q2 += "\\x26.land=" + d.f1.land.options[d.f1.land.selectedIndex].text;\s
+                        """);
       if (true)
         writer.write(
-            "    var yRMin=d.f1.yRangeMin.value; \n"
-                + "    var yRMax=d.f1.yRangeMax.value; \n"
-                + "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n"
-                + "    var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text; \n"
-                + "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)\n"
-                + "      q2 += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0) + \"%7C\" + yScl; \n");
+            """
+                            var yRMin=d.f1.yRangeMin.value;\s
+                            var yRMax=d.f1.yRangeMax.value;\s
+                            var yRAsc=d.f1.yRangeAscending.selectedIndex;\s
+                            var yScl =d.f1.yScale.options[d.f1.yScale.selectedIndex].text;\s
+                            if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1 || yScl.length > 0)
+                              q2 += "\\x26.yRange=" + yRMin + "%7C" + yRMax + "%7C" + (yRAsc==0) + "%7C" + yScl;\s
+                        """);
       // always add .bgColor to graphQuery so this ERDDAP's setting overwrites remote ERDDAP's
       writer.write(
           "    q2 += \"&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8) + "\"; \n");
@@ -12831,7 +12848,11 @@ public abstract class EDDTable extends EDD {
               + ")\n");
 
       if (debugMode) String2.log("respondToGraphQuery 8");
-      writer.write("</td></tr>\n" + "</table>\n\n");
+      writer.write("""
+              </td></tr>
+              </table>
+
+              """);
 
       // end form
       writer.write(widgets.endForm());
@@ -13458,7 +13479,10 @@ public abstract class EDDTable extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("<br>&nbsp;\n" + "<hr>\n");
+      writer.write("""
+              <br>&nbsp;
+              <hr>
+              """);
       writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false);
 
       writer.write("</div>\n");
@@ -13612,9 +13636,7 @@ public abstract class EDDTable extends EDD {
     String firstNumericVar =
         String2.indexOf(dataVariableDestinationNames(), "time") >= 0 ? "time" : null;
     if (firstNumericVar == null) {
-      int nv = dataVariables.length;
-      for (int v = 0; v < nv; v++) {
-        EDV edv = dataVariables[v];
+      for (EDV edv : dataVariables) {
         if (edv.destinationName().equals("longitude")
             || edv.destinationName().equals("latitude")
             || edv.destinationDataPAType() == PAType.STRING) continue;
@@ -14188,7 +14210,10 @@ public abstract class EDDTable extends EDD {
                 + "</tr>\n");
       }
 
-      writer.write("</table>\n" + "\n");
+      writer.write("""
+              </table>
+
+              """);
 
       // View the graph and/or data?
       writer.write(
@@ -15206,8 +15231,8 @@ public abstract class EDDTable extends EDD {
       // See if subsetVariables are all fixedValue variables
       table = new Table();
       boolean justFixed = true;
-      for (int sv = 0; sv < tSubsetVars.length; sv++) {
-        EDV edv = findDataVariableByDestinationName(tSubsetVars[sv]);
+      for (String tSubsetVar : tSubsetVars) {
+        EDV edv = findDataVariableByDestinationName(tSubsetVar);
         if (edv.isFixedValue()) {
           table.addColumn(
               table.nColumns(),
@@ -15275,10 +15300,11 @@ public abstract class EDDTable extends EDD {
             stack, "at gov.noaa.pfel.erddap.dataset.EDDTable.subsetVariablesDataTable(");
     if (count >= 2)
       throw new RuntimeException(
-          "Unable to create subsetVariablesDataTable. (in danger of stack overflow)\n"
-              + "(Perhaps the original, admin-provided subset file in "
-              + "[tomcat]/content/erddap/subset/\n"
-              + "wasn't found or couldn't be read.)");
+          """
+                      Unable to create subsetVariablesDataTable. (in danger of stack overflow)
+                      (Perhaps the original, admin-provided subset file in \
+                      [tomcat]/content/erddap/subset/
+                      wasn't found or couldn't be read.)""");
 
     // else request the data for the subsetTable from the source
     if (reallyVerbose)
@@ -15505,10 +15531,8 @@ public abstract class EDDTable extends EDD {
    *     source results.
    */
   public Table makeEmptySourceTable(EDV resultsEDVs[], int capacityNRows) {
-    int nRv = resultsEDVs.length;
     Table table = new Table();
-    for (int rv = 0; rv < nRv; rv++) {
-      EDV edv = resultsEDVs[rv];
+    for (EDV edv : resultsEDVs) {
       table.addColumn(
           edv.sourceName(), PrimitiveArray.factory(edv.sourceDataPAType(), capacityNRows, false));
     }
@@ -15881,10 +15905,10 @@ public abstract class EDDTable extends EDD {
   public String accessibleViaMAG() {
     if (accessibleViaMAG == null) {
       int nNumeric = 0;
-      for (int dv = 0; dv < dataVariables.length; dv++) {
+      for (EDV dataVariable : dataVariables) {
         // String2.log(">> accessibleViaMAG #" + dv + " " + dataVariables[dv].destinationName() + "
         // " + dataVariables[dv].destinationDataPAType());
-        if (dataVariables[dv].destinationDataPAType() != PAType.STRING) nNumeric++;
+        if (dataVariable.destinationDataPAType() != PAType.STRING) nNumeric++;
       }
       if (nNumeric == 0)
         accessibleViaMAG =
@@ -15979,7 +16003,7 @@ public abstract class EDDTable extends EDD {
 
     // check for simple reasons not accessibleViaSOS
     String prelim = preliminaryAccessibleViaSOS(); // calls setSosOfferingTypeAndIndex()
-    if (!prelim.equals("")) return prelim;
+    if (!prelim.isEmpty()) return prelim;
 
     // so far so good
     // already set up for SOS? e.g., by subsclass constructor
@@ -16568,8 +16592,8 @@ public abstract class EDDTable extends EDD {
               + "</ows:Abstract>\n"
               + "    <ows:Keywords>\n");
       String keywordsSA[] = keywords();
-      for (int i = 0; i < keywordsSA.length; i++)
-        writer.write("      <ows:Keyword>" + XML.encodeAsXML(keywordsSA[i]) + "</ows:Keyword>\n");
+      for (String s : keywordsSA)
+        writer.write("      <ows:Keyword>" + XML.encodeAsXML(s) + "</ows:Keyword>\n");
       writer.write(
           "    </ows:Keywords>\n"
               + "    <ows:ServiceType codeSpace=\"http://opengeospatial.net\">OGC:SOS</ows:ServiceType>\n"
@@ -16832,7 +16856,11 @@ public abstract class EDDTable extends EDD {
 
     // section_Contents
     if (allSections || String2.indexOf(sectionOptions, section_Contents) >= 0) {
-      writer.write("  <Contents>\n" + "    <ObservationOfferingList>\n");
+      writer.write(
+          """
+                <Contents>
+                  <ObservationOfferingList>
+              """);
 
       // IOOS Template says to offer network-all, not individual stations
       writer.write(
@@ -17015,7 +17043,11 @@ public abstract class EDDTable extends EDD {
               }
               End of old system of observationOffering each station */
 
-      writer.write("    </ObservationOfferingList>\n" + "  </Contents>\n");
+      writer.write(
+          """
+                  </ObservationOfferingList>
+                </Contents>
+              """);
     } // end of section_Contents
 
     // end of getCapabilities
@@ -17134,7 +17166,11 @@ public abstract class EDDTable extends EDD {
     }
 
     writer.write(
-        "    </swe:CompositePhenomenon>\n" + "  </gml:definitionMember>\n" + "</gml:Dictionary>\n");
+        """
+                        </swe:CompositePhenomenon>
+                      </gml:definitionMember>
+                    </gml:Dictionary>
+                    """);
 
     writer.flush();
   }
@@ -17233,8 +17269,8 @@ public abstract class EDDTable extends EDD {
             + "      <sml:keywords>\n"
             + "        <sml:KeywordList>\n"); // codeSpace=\"https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access\">\n" +
     String keywordsSA[] = keywords();
-    for (int i = 0; i < keywordsSA.length; i++)
-      writer.write("          <sml:keyword>" + XML.encodeAsXML(keywordsSA[i]) + "</sml:keyword>\n");
+    for (String s : keywordsSA)
+      writer.write("          <sml:keyword>" + XML.encodeAsXML(s) + "</sml:keyword>\n");
     writer.write(
         "        </sml:KeywordList>\n"
             + "      </sml:keywords>\n"
@@ -17434,7 +17470,11 @@ public abstract class EDDTable extends EDD {
     // "\n");
 
     // components   (an sml:component for each sensor)
-    writer.write("      <sml:components>\n" + "        <sml:ComponentList>\n");
+    writer.write(
+        """
+                  <sml:components>
+                    <sml:ComponentList>
+            """);
 
     // a component for each variable
     /*            {
@@ -17520,21 +17560,29 @@ public abstract class EDDTable extends EDD {
                 + "\">\n");
         if (edv.ucumUnits() != null && edv.ucumUnits().length() > 0)
           writer.write("                      <swe:uom code=\"" + edv.ucumUnits() + "\" />\n");
-        writer.write("                    </swe:Quantity>\n" + "                  </sml:output>\n");
+        writer.write(
+            """
+                                    </swe:Quantity>
+                                  </sml:output>
+                """);
       }
       writer.write(
-          "                </sml:OutputList>\n"
-              + "              </sml:outputs>\n"
-              + "            </sml:System>\n"
-              + "          </sml:component>\n");
+          """
+                                      </sml:OutputList>
+                                    </sml:outputs>
+                                  </sml:System>
+                                </sml:component>
+                      """);
     }
 
     writer.write(
-        "        </sml:ComponentList>\n"
-            + "      </sml:components>\n"
-            + "    </sml:System>\n"
-            + "  </sml:member>\n"
-            + "</sml:SensorML>\n");
+        """
+                            </sml:ComponentList>
+                          </sml:components>
+                        </sml:System>
+                      </sml:member>
+                    </sml:SensorML>
+                    """);
 
     /*   * <p>This seeks to mimic IOOS SOS servers like ndbcSosWind.
          * See https://sdf.ndbc.noaa.gov/sos/ .
@@ -17873,8 +17921,8 @@ public abstract class EDDTable extends EDD {
     if (obsProp == null || obsProp.length() == 0) obsProp = datasetID;
     String properties[] = String2.split(obsProp, ',');
     StringArray requestedVars = new StringArray();
-    for (int p = 0; p < properties.length; p++) {
-      String property = properties[p];
+    for (String s : properties) {
+      String property = s;
       if (property.startsWith(dictStart)) property = property.substring(dictStart.length());
       if (property.equals(datasetID)) {
         requestedVars.clear();
@@ -18219,8 +18267,7 @@ public abstract class EDDTable extends EDD {
         maxTime = null;
     String parts[] =
         Table.getDapQueryParts(dapQuery); // decoded.  always at least 1 part (may be "")
-    for (int p = 0; p < parts.length; p++) {
-      String part = parts[p];
+    for (String part : parts) {
       if (part.startsWith("longitude>=")) {
         minLon = part.substring(11);
       } else if (part.startsWith("longitude<=")) {
@@ -18505,21 +18552,25 @@ public abstract class EDDTable extends EDD {
       }
 
       writer.write(
-          "                    </gml:valueComponents>\n"
-              + "                  </ioos:ContextArray>\n"
-              + "                </gml:valueComponents>\n"
-              + "              </ioos:CompositeContext>\n");
+          """
+                                          </gml:valueComponents>
+                                        </ioos:ContextArray>
+                                      </gml:valueComponents>
+                                    </ioos:CompositeContext>
+                      """);
 
       offering = keepBitset.nextSetBit(offering + 1);
     } // end of offering loop
 
     writer.write(
-        "            </gml:valueComponents>\n"
-            + "          </ioos:ContextArray>\n"
-            + "        </gml:valueComponents>\n"
-            + "      </ioos:CompositeContext>\n"
-            + "    </om:Process>\n"
-            + "  </om:procedure>\n");
+        """
+                                </gml:valueComponents>
+                              </ioos:ContextArray>
+                            </gml:valueComponents>
+                          </ioos:CompositeContext>
+                        </om:Process>
+                      </om:procedure>
+                    """);
 
     writer.write(
         // use a local phenomenaDictionary
@@ -18869,12 +18920,17 @@ public abstract class EDDTable extends EDD {
                   + "                      </ioos:CompositeContext>\n");
         }
         writer.write(
-            "                    </gml:valueComponents>\n"
-                + "                  </ioos:ContextArray>\n");
+            """
+                                            </gml:valueComponents>
+                                          </ioos:ContextArray>
+                        """);
       }
 
       writer.write(
-          "                </gml:valueComponents>\n" + "              </ioos:CompositeContext>\n");
+          """
+                                      </gml:valueComponents>
+                                    </ioos:CompositeContext>
+                      """);
 
       firstStationRow = nextFirstStationRow;
       prevID = currID;
@@ -19196,12 +19252,16 @@ public abstract class EDDTable extends EDD {
         // end of observations for this time
         if (nTimesThisTime > 1)
           writer.write(
-              "                          </gml:valueComponents>\n"
-                  + "                        </ioos:ValueArray\">\n");
+              """
+                                                    </gml:valueComponents>
+                                                  </ioos:ValueArray">
+                          """);
 
         writer.write(
-            "                      </gml:valueComponents>\n"
-                + "                    </ioos:Composite>\n");
+            """
+                                              </gml:valueComponents>
+                                            </ioos:Composite>
+                        """);
 
         // prepare for next time value
         sTimeStartRow = sRow + 1;
@@ -19209,22 +19269,26 @@ public abstract class EDDTable extends EDD {
 
       // end of station info
       writer.write(
-          "                  </gml:valueComponents>\n"
-              + "                </ioos:Array>\n"
-              + "              </gml:valueComponents>\n"
-              + "            </ioos:Composite>\n");
+          """
+                                        </gml:valueComponents>
+                                      </ioos:Array>
+                                    </gml:valueComponents>
+                                  </ioos:Composite>
+                      """);
 
       firstStationRow = nextFirstStationRow;
       prevID = currID;
     } // end of station loop
 
     writer.write(
-        "          </gml:valueComponents>\n"
-            + "        </ioos:Array>\n"
-            + "      </gml:valueComponents>\n"
-            + "    </ioos:Composite>\n"
-            + "  </om:result>\n"
-            + "</om:CompositeObservation>\n");
+        """
+                              </gml:valueComponents>
+                            </ioos:Array>
+                          </gml:valueComponents>
+                        </ioos:Composite>
+                      </om:result>
+                    </om:CompositeObservation>
+                    """);
 
     // temporary
     // if (reallyVerbose) String2.log(table.saveAsCsvASCIIString());
@@ -19404,7 +19468,10 @@ public abstract class EDDTable extends EDD {
               + maxLon.getString()
               + "</gml:upperCorner>\n"
               + "    </gml:Envelope>\n");
-    writer.write("  </gml:location>\n" + "  <om:time>\n");
+    writer.write("""
+              </gml:location>
+              <om:time>
+            """);
     if (minTime.compareTo(maxTime) == 0)
       writer.write(
           // use TimeInstant for a single measurement
@@ -19544,17 +19611,22 @@ public abstract class EDDTable extends EDD {
                 + "\"/>\n");
       }
       writer.write(
-          "                        </swe:Quantity>\n" + "                    </swe:field>\n");
+          """
+                                              </swe:Quantity>
+                                          </swe:field>
+                      """);
     }
     writer.write(
-        "                </swe:DataRecord>\n"
-            + "            </swe:components>\n"
-            + "            <swe:encoding>\n"
-            + "                <swe:AsciiBlock tokenSeparator=\",\" blockSeparator=\" \" decimalSeparator=\".\"/>\n"
-            + "            </swe:encoding>\n"
-            + "        </swe:DataBlockDefinition>\n"
-            + "    </om:resultDefinition>\n"
-            + "    <om:result>");
+        """
+                                    </swe:DataRecord>
+                                </swe:components>
+                                <swe:encoding>
+                                    <swe:AsciiBlock tokenSeparator="," blockSeparator=" " decimalSeparator="."/>
+                                </swe:encoding>
+                            </swe:DataBlockDefinition>
+                        </om:resultDefinition>
+                        <om:result>\
+                    """);
 
     // rows of data
     String mvString = ""; // 2009-09-21 Eric Bridger says Oostethys servers use ""
@@ -19717,26 +19789,25 @@ public abstract class EDDTable extends EDD {
     int dvb = -1;
     if (fdv >= 0) {
       for (int dv2 = 0; dv2 < dataVariables.length; dv2++) {
-        int dv1 = fdv;
-        if (dv1 == dv2
-            || dv1 == lonIndex
-            || dv1 == latIndex
-            || dv1 == altIndex
-            || dv1 == depthIndex
-            || dv1 == timeIndex
+        if (fdv == dv2
+            || fdv == lonIndex
+            || fdv == latIndex
+            || fdv == altIndex
+            || fdv == depthIndex
+            || fdv == timeIndex
             || dv2 == lonIndex
             || dv2 == latIndex
             || dv2 == altIndex
             || dv2 == depthIndex
             || dv2 == timeIndex
-            || dv1 == sosOfferingIndex
-            || dataVariables[dv1].destinationDataPAType() == PAType.STRING
+            || fdv == sosOfferingIndex
+            || dataVariables[fdv].destinationDataPAType() == PAType.STRING
             || dv2 == sosOfferingIndex
             || dataVariables[dv2].destinationDataPAType() == PAType.STRING
-            || dataVariables[dv1].ucumUnits() == null
+            || dataVariables[fdv].ucumUnits() == null
             || dataVariables[dv2].ucumUnits() == null
-            || dataVariables[dv1].ucumUnits().equals(dataVariables[dv2].ucumUnits())) continue;
-        dva = dv1;
+            || dataVariables[fdv].ucumUnits().equals(dataVariables[dv2].ucumUnits())) continue;
+        dva = fdv;
         dvb = dv2;
         break;
       }
@@ -20173,13 +20244,16 @@ public abstract class EDDTable extends EDD {
               + XML.encodeAsHTML(sosDataResponseFormats.get(f))
               + "</a>");
     writer.write(".\n");
-    writer.write("<br>The image file formats are:\n" + "<ul>\n");
+    writer.write("""
+            <br>The image file formats are:
+            <ul>
+            """);
 
     // image: kml
     writer.write(
         "<li><a class=\"selfLink\" id=\"kml\" href=\"#kml\" rel=\"bookmark\"><strong>Google Earth .kml</strong></a>"
             + "  - If <kbd>responseFormat="
-            + XML.encodeAsHTML(sosImageResponseFormats.get(0))
+            + XML.encodeAsHTML(sosImageResponseFormats.getFirst())
             + "</kbd>,\n"
             + "<br>the response will be a .kml file with all of the data (regardless of <kbd>observedProperty</kbd>)\n"
             + "<br>for the latest time available (within the time range you specify).\n");
@@ -20191,14 +20265,16 @@ public abstract class EDDTable extends EDD {
               + "  <a href=\""
               + XML.encodeAsHTMLAttribute(
                   getImageObsAllStations1Var
-                      + SSR.minimalPercentEncode(sosImageResponseFormats.get(0)))
+                      + SSR.minimalPercentEncode(sosImageResponseFormats.getFirst()))
               + "\">"
-              + XML.encodeAsHTML(sosImageResponseFormats.get(0))
+              + XML.encodeAsHTML(sosImageResponseFormats.getFirst())
               + "</a>");
       writer.write(
-          ".\n"
-              + "  <br>(For many datasets, requesting data for all stations will time out,\n"
-              + "  <br>or fail for some other reason.)\n");
+          """
+                      .
+                        <br>(For many datasets, requesting data for all stations will time out,
+                        <br>or fail for some other reason.)
+                      """);
     }
 
     // image: all stations, 1 var
@@ -20224,9 +20300,11 @@ public abstract class EDDTable extends EDD {
                 + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(
-          ".\n"
-              + "  <br>(For many datasets, requesting data for all stations will time out,\n"
-              + "  <br>or fail for some other reason.)\n");
+          """
+                      .
+                        <br>(For many datasets, requesting data for all stations will time out,
+                        <br>or fail for some other reason.)
+                      """);
     }
 
     // image: all stations, 2 var: vectors
@@ -20254,17 +20332,21 @@ public abstract class EDDTable extends EDD {
                 + XML.encodeAsHTML(sosImageResponseFormats.get(f))
                 + "</a>");
       writer.write(
-          ".\n"
-              + "  <br>(For many datasets, requesting data for all stations will timeout,\n"
-              + "  <br>or fail for some other reason.)\n");
+          """
+                      .
+                        <br>(For many datasets, requesting data for all stations will timeout,
+                        <br>or fail for some other reason.)
+                      """);
     }
 
     // image: 1 station, 1 var
     writer.write(
-        "<li><a class=\"selfLink\" id=\"timeSeries\" href=\"#timeSeries\" rel=\"bookmark\"><strong>Time Series</strong></a>\n"
-            + "  - If the request's <kbd>offering</kbd> is a specific station\n"
-            + "  <br>and the <kbd>observedProperty</kbd> is one simple phenomenon,\n"
-            + "  <br>you will get a time series graph (with data from the time range you request).\n");
+        """
+                    <li><a class="selfLink" id="timeSeries" href="#timeSeries" rel="bookmark"><strong>Time Series</strong></a>
+                      - If the request's <kbd>offering</kbd> is a specific station
+                      <br>and the <kbd>observedProperty</kbd> is one simple phenomenon,
+                      <br>you will get a time series graph (with data from the time range you request).
+                    """);
     if (fdv < 0) {
       writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     } else {
@@ -20284,10 +20366,12 @@ public abstract class EDDTable extends EDD {
 
     // image: 1 station, scatterplot
     writer.write(
-        "<li><a class=\"selfLink\" id=\"scatterplot\" href=\"#scatterplot\" rel=\"bookmark\"><strong>Scatter Plot / Phase Plot</strong></a>\n"
-            + "  - If the request's <kbd>offering</kbd> is a specific station\n"
-            + "  <br>and the <kbd>observedProperty</kbd> lists two simple phenomenon with the different units,\n"
-            + "  <br>you will get a scatter plot (with data from the time range you request).\n");
+        """
+                    <li><a class="selfLink" id="scatterplot" href="#scatterplot" rel="bookmark"><strong>Scatter Plot / Phase Plot</strong></a>
+                      - If the request's <kbd>offering</kbd> is a specific station
+                      <br>and the <kbd>observedProperty</kbd> lists two simple phenomenon with the different units,
+                      <br>you will get a scatter plot (with data from the time range you request).
+                    """);
     if (dvu < 0) writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     else {
       writer.write("  <br>For example:");
@@ -20306,12 +20390,14 @@ public abstract class EDDTable extends EDD {
 
     // image: 1 station, 2 var - sticks
     writer.write(
-        "<li><a class=\"selfLink\" id=\"sticks\" href=\"#sticks\" rel=\"bookmark\"><strong>Sticks</strong></a>"
-            + "  - If the request's <kbd>offering</kbd> is a specific station\n"
-            + "  <br>and the <kbd>observedProperty</kbd> lists two simple phenomenon with the same units\n"
-            + "  <br>(representing the x and y components of a vector),\n"
-            + "  <br>you will get a sticks graph (with data from the time range you request).\n"
-            + "  <br>Each stick is a vector associated with one time point.\n");
+        """
+                    <li><a class="selfLink" id="sticks" href="#sticks" rel="bookmark"><strong>Sticks</strong></a>\
+                      - If the request's <kbd>offering</kbd> is a specific station
+                      <br>and the <kbd>observedProperty</kbd> lists two simple phenomenon with the same units
+                      <br>(representing the x and y components of a vector),
+                      <br>you will get a sticks graph (with data from the time range you request).
+                      <br>Each stick is a vector associated with one time point.
+                    """);
     if (dvu < 0) writer.write("  <br>Sorry, there are no examples for this dataset.\n");
     else {
       writer.write("  <br>For example:");
@@ -20329,9 +20415,11 @@ public abstract class EDDTable extends EDD {
     }
 
     writer.write(
-        "</ul>\n"
-            + "(These examples were computer-generated, so they may not work well.)\n"
-            + "\n");
+        """
+                    </ul>
+                    (These examples were computer-generated, so they may not work well.)
+
+                    """);
 
     /*
     //responseMode=out-of-band
@@ -20508,10 +20596,12 @@ public abstract class EDDTable extends EDD {
       charsWritten += ts.length();
     }
     writer.write(
-        "      <br>(The first two data responseFormat options are synonyms for the\n"
-            + "      <br>IOOS SOS XML format.)\n"
-            + "      <br>The image responseFormats are:\n"
-            + "      <br>");
+        """
+                          <br>(The first two data responseFormat options are synonyms for the
+                          <br>IOOS SOS XML format.)
+                          <br>The image responseFormats are:
+                          <br>\
+                    """);
     for (int f = 0; f < sosImageResponseFormats.size(); f++) {
       if (f > 0) writer.write(", ");
       writer.write("\"" + SSR.minimalPercentEncode(sosImageResponseFormats.get(f)) + "\"");
@@ -20802,8 +20892,8 @@ public abstract class EDDTable extends EDD {
     // standardNames
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -20984,7 +21074,10 @@ public abstract class EDDTable extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("      </citeinfo>\n" + "    </citation>\n");
+    writer.write("""
+                  </citeinfo>
+                </citation>
+            """);
 
     // description
     writer.write(
@@ -21083,10 +21176,10 @@ public abstract class EDDTable extends EDD {
             + "      <timeinfo>\n"
             + "        <rngdates>\n"
             + "          <begdate>"
-            + (minTime.equals("") ? unknown : minTime)
+            + (minTime.isEmpty() ? unknown : minTime)
             + "</begdate>\n"
             + "          <enddate>"
-            + (maxTime.equals("") ? unknown : maxTime)
+            + (maxTime.isEmpty() ? unknown : maxTime)
             + "</enddate>\n"
             + "        </rngdates>\n"
             + "      </timeinfo>\n"
@@ -21199,9 +21292,7 @@ public abstract class EDDTable extends EDD {
     // point of contact:   creatorName creatorEmail
     String conOrg = institution;
     String conName = creatorName;
-    String conPhone = unknown;
     String conEmail = creatorEmail;
-    String conPos = unknown;
     writer.write(
         "    <ptcontac>\n"
             + "      <cntinfo>\n"
@@ -21214,7 +21305,7 @@ public abstract class EDDTable extends EDD {
             + "</cntper>\n"
             + "        </cntorgp>\n"
             + "        <cntpos>"
-            + XML.encodeAsXML(conPos)
+            + XML.encodeAsXML(unknown)
             + "</cntpos>\n"
             + // required
             "        <cntaddr>\n"
@@ -21236,7 +21327,7 @@ public abstract class EDDTable extends EDD {
             + "</country>\n"
             + "        </cntaddr>\n"
             + "        <cntvoice>"
-            + XML.encodeAsXML(conPhone)
+            + XML.encodeAsXML(unknown)
             + "</cntvoice>\n"
             +
             // "        <cntfax>303-497-6513</cntfax>\n" +
@@ -21373,8 +21464,7 @@ public abstract class EDDTable extends EDD {
 
     // process step:  lines from history
     String historyLines[] = String2.split(history, '\n');
-    for (int hl = 0; hl < historyLines.length; hl++) {
-      String step = historyLines[hl];
+    for (String step : historyLines) {
       String date = unknown;
       int spo = step.indexOf(' '); // date must be YYYY-MM-DD.* initially
       if (spo >= 10 && step.substring(0, 10).matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
@@ -21394,7 +21484,10 @@ public abstract class EDDTable extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("    </lineage>\n" + "  </dataqual>\n");
+    writer.write("""
+                </lineage>
+              </dataqual>
+            """);
 
     // Spatial Data Organization information  (very different for EDDTable and EDDGrid)
     writer.write(
@@ -21564,7 +21657,12 @@ public abstract class EDDTable extends EDD {
               + "        </digtopt>\n"
               + "      </digform>\n");
 
-    writer.write("      <fees>None</fees>\n" + "    </stdorder>\n" + "  </distinfo>\n");
+    writer.write(
+        """
+                  <fees>None</fees>
+                </stdorder>
+              </distinfo>
+            """);
 
     writer.write(
         "  <metainfo>\n"
@@ -21733,8 +21831,8 @@ public abstract class EDDTable extends EDD {
 
     StringArray standardNames = new StringArray();
     if (!testMinimalMetadata) {
-      for (int v = 0; v < dataVariables.length; v++) {
-        String sn = dataVariables[v].combinedAttributes().getString("standard_name");
+      for (EDV dataVariable : dataVariables) {
+        String sn = dataVariable.combinedAttributes().getString("standard_name");
         if (sn != null) standardNames.add(sn);
       }
     }
@@ -21938,31 +22036,35 @@ public abstract class EDDTable extends EDD {
             // altitude or depth is "vertical" dimension
             (altEdv == null && depthEdv == null
                 ? ""
-                : "      <gmd:axisDimensionProperties>\n"
-                    + "        <gmd:MD_Dimension>\n"
-                    + "          <gmd:dimensionName>\n"
-                    + "            <gmd:MD_DimensionNameTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" "
-                    + "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n"
-                    + "          </gmd:dimensionName>\n"
-                    + "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n"
-                    + "        </gmd:MD_Dimension>\n"
-                    + "      </gmd:axisDimensionProperties>\n")
+                : """
+                          <gmd:axisDimensionProperties>
+                            <gmd:MD_Dimension>
+                              <gmd:dimensionName>
+                                <gmd:MD_DimensionNameTypeCode \
+                    codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode" \
+                    codeListValue="vertical">vertical</gmd:MD_DimensionNameTypeCode>
+                              </gmd:dimensionName>
+                              <gmd:dimensionSize gco:nilReason="unknown"/>
+                            </gmd:MD_Dimension>
+                          </gmd:axisDimensionProperties>
+                    """)
             +
 
             // time is "temporal" dimension
             (timeEdv == null
                 ? ""
-                : "      <gmd:axisDimensionProperties>\n"
-                    + "        <gmd:MD_Dimension>\n"
-                    + "          <gmd:dimensionName>\n"
-                    + "            <gmd:MD_DimensionNameTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" "
-                    + "codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n"
-                    + "          </gmd:dimensionName>\n"
-                    + "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n"
-                    + "        </gmd:MD_Dimension>\n"
-                    + "      </gmd:axisDimensionProperties>\n")
+                : """
+                          <gmd:axisDimensionProperties>
+                            <gmd:MD_Dimension>
+                              <gmd:dimensionName>
+                                <gmd:MD_DimensionNameTypeCode \
+                    codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode" \
+                    codeListValue="temporal">temporal</gmd:MD_DimensionNameTypeCode>
+                              </gmd:dimensionName>
+                              <gmd:dimensionSize gco:nilReason="unknown"/>
+                            </gmd:MD_Dimension>
+                          </gmd:axisDimensionProperties>
+                    """)
             +
 
             // cellGeometry
@@ -22307,7 +22409,11 @@ public abstract class EDDTable extends EDD {
 
           // keywords not from vocabulary
           if (kar.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < kar.size(); i++)
               writer.write(
@@ -22318,19 +22424,25 @@ public abstract class EDDTable extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName gco:nilReason="unknown"/>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
 
           // gcmd keywords
           if (gcmdKeywords.size() > 0) {
-            writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+            writer.write(
+                """
+                          <gmd:descriptiveKeywords>
+                            <gmd:MD_Keywords>
+                    """);
 
             for (int i = 0; i < gcmdKeywords.size(); i++)
               writer.write(
@@ -22341,21 +22453,23 @@ public abstract class EDDTable extends EDD {
                       + "          </gmd:keyword>\n");
 
             writer.write(
-                "          <gmd:type>\n"
-                    + "            <gmd:MD_KeywordTypeCode "
-                    + "codeList=\"https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" "
-                    + "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n"
-                    + "          </gmd:type>\n"
-                    + "          <gmd:thesaurusName>\n"
-                    + "            <gmd:CI_Citation>\n"
-                    + "              <gmd:title>\n"
-                    + "                <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>\n"
-                    + "              </gmd:title>\n"
-                    + "              <gmd:date gco:nilReason=\"unknown\"/>\n"
-                    + "            </gmd:CI_Citation>\n"
-                    + "          </gmd:thesaurusName>\n"
-                    + "        </gmd:MD_Keywords>\n"
-                    + "      </gmd:descriptiveKeywords>\n");
+                """
+                                      <gmd:type>
+                                        <gmd:MD_KeywordTypeCode \
+                            codeList="https://data.noaa.gov/resources/iso19139/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode" \
+                            codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                                      </gmd:type>
+                                      <gmd:thesaurusName>
+                                        <gmd:CI_Citation>
+                                          <gmd:title>
+                                            <gco:CharacterString>GCMD Science Keywords</gco:CharacterString>
+                                          </gmd:title>
+                                          <gmd:date gco:nilReason="unknown"/>
+                                        </gmd:CI_Citation>
+                                      </gmd:thesaurusName>
+                                    </gmd:MD_Keywords>
+                                  </gmd:descriptiveKeywords>
+                            """);
           }
         }
 
@@ -22380,7 +22494,11 @@ public abstract class EDDTable extends EDD {
 
         // keywords - variable (CF) standard_names
         if (standardNames.size() > 0) {
-          writer.write("      <gmd:descriptiveKeywords>\n" + "        <gmd:MD_Keywords>\n");
+          writer.write(
+              """
+                        <gmd:descriptiveKeywords>
+                          <gmd:MD_Keywords>
+                  """);
           for (int sn = 0; sn < standardNames.size(); sn++)
             writer.write(
                 "          <gmd:keyword>\n"
@@ -22642,7 +22760,11 @@ public abstract class EDDTable extends EDD {
               + "        </gmd:EX_Extent>\n");
 
       if (ii == iiDataIdentification) {
-        writer.write("      </gmd:extent>\n" + "    </gmd:MD_DataIdentification>\n");
+        writer.write(
+            """
+                      </gmd:extent>
+                    </gmd:MD_DataIdentification>
+                """);
       }
 
       if (ii == iiERDDAP) {
@@ -22856,8 +22978,7 @@ public abstract class EDDTable extends EDD {
             + "      </gmd:contentType>\n");
 
     // dataVariables
-    for (int v = 0; v < dataVariables.length; v++) {
-      EDV edv = dataVariables[v];
+    for (EDV edv : dataVariables) {
       if (edv == lonEdv || edv == latEdv || edv == altEdv || edv == depthEdv) continue;
       String tUnits = testMinimalMetadata ? null : edv.ucumUnits();
       writer.write(
@@ -22901,7 +23022,11 @@ public abstract class EDDTable extends EDD {
               + "        </gmd:MD_Band>\n"
               + "      </gmd:dimension>\n");
     }
-    writer.write("    </gmi:MI_CoverageDescription>\n" + "  </gmd:contentInfo>\n");
+    writer.write(
+        """
+                </gmi:MI_CoverageDescription>
+              </gmd:contentInfo>
+            """);
 
     // distibutionInfo: erddap treats distributionInfo same as serviceInfo: use EDStatic.admin...
     //   ncISO uses creator

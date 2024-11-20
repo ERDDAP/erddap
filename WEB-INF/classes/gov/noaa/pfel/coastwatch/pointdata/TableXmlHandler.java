@@ -79,8 +79,8 @@ public class TableXmlHandler extends DefaultHandler {
     this.table = table;
     if (rowElementAttributes == null) rowElementAttributes = new String[0];
     this.rowElementAttributes = rowElementAttributes;
-    for (int i = 0; i < rowElementAttributes.length; i++) {
-      table.addColumn(rowElementAttributes[i], new StringArray());
+    for (String rowElementAttribute : rowElementAttributes) {
+      table.addColumn(rowElementAttribute, new StringArray());
     }
 
     // set up the rowStack which identifies the start of a row
@@ -249,7 +249,7 @@ public class TableXmlHandler extends DefaultHandler {
     // remove items from stacks
     nameStack.remove(nameStack.size() - 1);
     uniqueNameStack.remove(uniqueNameStack.size() - 1);
-    hashsetStack.remove(hashsetStack.size() - 1);
+    hashsetStack.removeLast();
 
     // and finally, always clear 'characters', since the characters were before this tag
     characters.setLength(0);

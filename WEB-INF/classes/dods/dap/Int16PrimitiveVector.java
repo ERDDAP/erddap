@@ -178,8 +178,8 @@ public class Int16PrimitiveVector extends PrimitiveVector implements Cloneable {
    */
   @Override
   public void externalize(DataOutputStream sink) throws IOException {
-    for (int i = 0; i < vals.length; i++) {
-      sink.writeInt((int) vals[i]);
+    for (short val : vals) {
+      sink.writeInt((int) val);
     }
   }
 

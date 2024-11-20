@@ -188,7 +188,6 @@ public class ErrorParser implements ErrorParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private int[] jj_expentry;
   private int jj_kind = -1;
 
   public final ParseException generateParseException() {
@@ -212,7 +211,7 @@ public class ErrorParser implements ErrorParserConstants {
     }
     for (int i = 0; i < 20; i++) {
       if (la1tokens[i]) {
-        jj_expentry = new int[1];
+        int[] jj_expentry = new int[1];
         jj_expentry[0] = i;
         jj_expentries.add(jj_expentry);
       }

@@ -174,10 +174,8 @@ public class CompoundColorMap extends ColorMap {
     ccm.annotationFlags.setLength(0);
 
     // go through the lines of the file
-    int nLines = lines.size();
-    for (int i = 0; i < nLines; i++) {
+    for (String tLine : lines) {
       // go through the lines
-      String tLine = lines.get(i);
       if (tLine.startsWith("#")) continue; // a comment
       String[] items = String2.split(tLine, '\t');
       if (items.length >= 4) {
@@ -220,15 +218,11 @@ public class CompoundColorMap extends ColorMap {
                   + ": CompoundColorMap unexpected line in "
                   + cptFileName
                   + "\n"
-                  + lines.get(i));
+                  + tLine);
         }
       } else if (tLine.trim().length() > 0) {
         String2.log(
-            String2.ERROR
-                + ": CompoundColorMap unexpected line in "
-                + cptFileName
-                + "\n"
-                + lines.get(i));
+            String2.ERROR + ": CompoundColorMap unexpected line in " + cptFileName + "\n" + tLine);
       }
     }
 
@@ -615,17 +609,16 @@ public class CompoundColorMap extends ColorMap {
                       / range1024[foundPiece]); // safe since rangeMin/Max checked above
 
       // generate the color
-      Color tColor =
-          new Color(
-              rLow[foundPiece]
-                  + ((val1024 * rRange[foundPiece]) >> 10), // >>10 same as /1024 since 1024 is 2^10
-              gLow[foundPiece] + ((val1024 * gRange[foundPiece]) >> 10),
-              bLow[foundPiece] + ((val1024 * bRange[foundPiece]) >> 10));
+      // >>10 same as /1024 since 1024 is 2^10
       // TESTING ON/OFF: don't delete cumulative system, since I sometimes uncomment for test()
       // cumulativeTotalTime += System.currentTimeMillis() - time;
       // cumulativeCount++;
 
-      return tColor;
+      return new Color(
+          rLow[foundPiece]
+              + ((val1024 * rRange[foundPiece]) >> 10), // >>10 same as /1024 since 1024 is 2^10
+          gLow[foundPiece] + ((val1024 * gRange[foundPiece]) >> 10),
+          bLow[foundPiece] + ((val1024 * bRange[foundPiece]) >> 10));
     } else {
       // !continuous,   use pre-made colors
       return color[foundPiece];
@@ -775,12 +768,12 @@ public class CompoundColorMap extends ColorMap {
         if (nSections == -1) nSections = 8;
 
         // add toAdd*EveryDecade
-        for (int which = 0; which < toAdd.length; which++) {
+        for (double v : toAdd) {
           // String2.log("makeCPT which=" + which + " levels.size()=" + levels.size() + " " +
           // levels.toString());
           if (levels.size() < nSections) { // if fewer than 8 sections, poor sampling of colors
             for (int i = minExponent; i <= maxExponent; i++) {
-              double d = toAdd[which] * Math2.ten(i);
+              double d = v * Math2.ten(i);
               if (d > minData
                   && d < maxData
                   && !Math2.almostEqual(9, d, minData)
@@ -807,15 +800,14 @@ public class CompoundColorMap extends ColorMap {
           } else {
             nSections = 10; // default
             int sectionOptions[] = {9, 8, 7, 12, 13, 11, 10, 6};
-            for (int i = 0; i < sectionOptions.length; i++) {
+            for (int sectionOption : sectionOptions) {
               // is the interval just one digit?
               // String2.log("nSectionOptions=" + nSectionOptions + " range=" + range + " mantissa="
               // + Math2.mantissa(range / nSectionOptions));
               double interval =
-                  Math2.mantissa(
-                      Math.abs(range) / sectionOptions[i]); // e.g., 7.0000001 or 6.99999999
+                  Math2.mantissa(Math.abs(range) / sectionOption); // e.g., 7.0000001 or 6.99999999
               if (Math2.almostEqual(9, interval, (double) Math.round(interval))) {
-                nSections = sectionOptions[i];
+                nSections = sectionOption;
                 break;
               }
             }

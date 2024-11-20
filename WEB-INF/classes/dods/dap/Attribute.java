@@ -210,31 +210,20 @@ public class Attribute implements Cloneable {
    * @return the attribute type <code>String</code>.
    */
   public final String getTypeString() {
-    switch (type) {
-      case CONTAINER:
-        return "Container";
-      case BYTE:
-        return "Byte";
-      case INT16:
-        return "Int16";
-      case UINT16:
-        return "UInt16";
-      case INT32:
-        return "Int32";
-      case UINT32:
-        return "UInt32";
-      case FLOAT32:
-        return "Float32";
-      case FLOAT64:
-        return "Float64";
-      case STRING:
-        return "String";
-      case URL:
-        return "Url";
+    return switch (type) {
+      case CONTAINER -> "Container";
+      case BYTE -> "Byte";
+      case INT16 -> "Int16";
+      case UINT16 -> "UInt16";
+      case INT32 -> "Int32";
+      case UINT32 -> "UInt32";
+      case FLOAT32 -> "Float32";
+      case FLOAT64 -> "Float64";
+      case STRING -> "String";
+      case URL -> "Url";
         //    case BOOLEAN: return "Boolean";
-      default:
-        return "";
-    }
+      default -> "";
+    };
   }
 
   /**

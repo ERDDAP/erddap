@@ -17,18 +17,13 @@ public class ErrorParserTokenManager implements ErrorParserConstants {
   }
 
   private final int jjMoveStringLiteralDfa0_0() {
-    switch (curChar) {
-      case 59:
-        return jjStopAtPos(0, 18);
-      case 61:
-        return jjStopAtPos(0, 19);
-      case 123:
-        return jjStopAtPos(0, 16);
-      case 125:
-        return jjStopAtPos(0, 17);
-      default:
-        return jjMoveNfa_0(0, 0);
-    }
+    return switch (curChar) {
+      case 59 -> jjStopAtPos(0, 18);
+      case 61 -> jjStopAtPos(0, 19);
+      case 123 -> jjStopAtPos(0, 16);
+      case 125 -> jjStopAtPos(0, 17);
+      default -> jjMoveNfa_0(0, 0);
+    };
   }
 
   private final void jjCheckNAdd(int state) {

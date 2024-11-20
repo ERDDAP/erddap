@@ -16,8 +16,10 @@ public class DASParser implements DASParserConstants {
   private int type;
 
   private static final String attrTupleMsg =
-      "Error: Expected an attribute type. Such as Byte, Int32, String, etc.\n"
-          + "followed by a name and value.\n";
+      """
+                  Error: Expected an attribute type. Such as Byte, Int32, String, etc.
+                  followed by a name and value.
+                  """;
 
   private static final String noDASMsg =
       "The attribute object returned from the dataset was null\n"
@@ -557,30 +559,19 @@ public class DASParser implements DASParserConstants {
   }
 
   String getTypeName(int type) throws ParseException {
-    switch (type) {
-      case Attribute.CONTAINER:
-        return "Container";
-      case Attribute.BYTE:
-        return "Byte";
-      case Attribute.INT16:
-        return "Int16";
-      case Attribute.UINT16:
-        return "UInt16";
-      case Attribute.INT32:
-        return "Int32";
-      case Attribute.UINT32:
-        return "UInt32";
-      case Attribute.FLOAT32:
-        return "Float32";
-      case Attribute.FLOAT64:
-        return "Float64";
-      case Attribute.STRING:
-        return "String";
-      case Attribute.URL:
-        return "Url";
-      default:
-        return "";
-    }
+    return switch (type) {
+      case Attribute.CONTAINER -> "Container";
+      case Attribute.BYTE -> "Byte";
+      case Attribute.INT16 -> "Int16";
+      case Attribute.UINT16 -> "UInt16";
+      case Attribute.INT32 -> "Int32";
+      case Attribute.UINT32 -> "UInt32";
+      case Attribute.FLOAT32 -> "Float32";
+      case Attribute.FLOAT64 -> "Float64";
+      case Attribute.STRING -> "String";
+      case Attribute.URL -> "Url";
+      default -> "";
+    };
   }
 
   private final boolean jj_2_1(int xla) {
@@ -962,8 +953,8 @@ public class DASParser implements DASParserConstants {
       jj_gen++;
       if (++jj_gc > 100) {
         jj_gc = 0;
-        for (int i = 0; i < jj_2_rtns.length; i++) {
-          JJCalls c = jj_2_rtns[i];
+        for (JJCalls jj2Rtn : jj_2_rtns) {
+          JJCalls c = jj2Rtn;
           while (c != null) {
             if (c.gen < jj_gen) c.first = null;
             c = c.next;

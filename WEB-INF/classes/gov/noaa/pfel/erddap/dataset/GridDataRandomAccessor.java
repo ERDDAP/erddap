@@ -47,7 +47,7 @@ public class GridDataRandomAccessor implements AutoCloseable {
    * @throws Throwable if trouble
    */
   public GridDataRandomAccessor(GridDataAccessor gridDataAccessor) throws Throwable {
-    try {
+    try (gridDataAccessor) {
       if (!gridDataAccessor.rowMajor())
         throw new Exception(
             "GridDataRandomAccessor.constructor requires the gridDataAccessor to be rowMajor.");
@@ -78,8 +78,6 @@ public class GridDataRandomAccessor implements AutoCloseable {
         //   dataRaf[dv], dataPAType[dv], gridDataAccessor.getDataValueAsDouble(dv));
       }
       gdaTotalIndex = gridDataAccessor.totalIndex();
-    } finally {
-      gridDataAccessor.close();
     }
   }
 

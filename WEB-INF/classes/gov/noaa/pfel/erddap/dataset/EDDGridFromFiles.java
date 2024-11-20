@@ -215,71 +215,65 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<axisVariable>"))
-        tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<updateEveryNMillis>")) {
-      } else if (localTags.equals("</updateEveryNMillis>"))
-        tUpdateEveryNMillis = String2.parseInt(content);
-      else if (localTags.equals("<fileDir>")) {
-      } else if (localTags.equals("</fileDir>")) tFileDir = content;
-      else if (localTags.equals("<fileNameRegex>")) {
-      } else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content;
-      else if (localTags.equals("<recursive>")) {
-      } else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content);
-      else if (localTags.equals("<pathRegex>")) {
-      } else if (localTags.equals("</pathRegex>")) tPathRegex = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<metadataFrom>")) {
-      } else if (localTags.equals("</metadataFrom>")) tMetadataFrom = content;
-      else if (localTags.equals("<fileTableInMemory>")) {
-      } else if (localTags.equals("</fileTableInMemory>"))
-        tFileTableInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<matchAxisNDigits>")) {
-      } else if (localTags.equals("</matchAxisNDigits>"))
-        tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-      else if (localTags.equals("<ensureAxisValuesAreEqual>")) {
-      } // deprecated
-      else if (localTags.equals("</ensureAxisValuesAreEqual>"))
-        tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<cacheFromUrl>")) {
-      } else if (localTags.equals("</cacheFromUrl>")) tCacheFromUrl = content;
-      else if (localTags.equals("<cacheSizeGB>")) {
-      } else if (localTags.equals("</cacheSizeGB>")) tCacheSizeGB = String2.parseInt(content);
-      else if (localTags.equals("<cachePartialPathRegex>")) {
-      } else if (localTags.equals("</cachePartialPathRegex>")) tCachePartialPathRegex = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<axisVariable>" -> tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<accessibleViaWMS>" -> {}
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<updateEveryNMillis>" -> {}
+        case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
+        case "<fileDir>" -> {}
+        case "</fileDir>" -> tFileDir = content;
+        case "<fileNameRegex>" -> {}
+        case "</fileNameRegex>" -> tFileNameRegex = content;
+        case "<recursive>" -> {}
+        case "</recursive>" -> tRecursive = String2.parseBoolean(content);
+        case "<pathRegex>" -> {}
+        case "</pathRegex>" -> tPathRegex = content;
+        case "<accessibleViaFiles>" -> {}
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "<metadataFrom>" -> {}
+        case "</metadataFrom>" -> tMetadataFrom = content;
+        case "<fileTableInMemory>" -> {}
+        case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
+        case "<matchAxisNDigits>" -> {}
+        case "</matchAxisNDigits>" ->
+            tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
+        case "<ensureAxisValuesAreEqual>" -> {}
+        case "</ensureAxisValuesAreEqual>" ->
+            tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<nThreads>" -> {}
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "<dimensionValuesInMemory>" -> {}
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        case "<cacheFromUrl>" -> {}
+        case "</cacheFromUrl>" -> tCacheFromUrl = content;
+        case "<cacheSizeGB>" -> {}
+        case "</cacheSizeGB>" -> tCacheSizeGB = String2.parseInt(content);
+        case "<cachePartialPathRegex>" -> {}
+        case "</cachePartialPathRegex>" -> tCachePartialPathRegex = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int nav = tAxisVariables.size();
     Object ttAxisVariables[][] = new Object[nav][];
@@ -292,125 +286,127 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       ttDataVariables[i] = (Object[]) tDataVariables.get(i);
 
     if (tType == null) tType = "";
-    if (tType.equals("EDDGridFromAudioFiles"))
-      return new EDDGridFromAudioFiles(
-          tDatasetID,
-          tAccessibleTo,
-          tGraphsAccessibleTo,
-          tAccessibleViaWMS,
-          tOnChange,
-          tFgdcFile,
-          tIso19115File,
-          tDefaultDataQuery,
-          tDefaultGraphQuery,
-          tGlobalAttributes,
-          ttAxisVariables,
-          ttDataVariables,
-          tReloadEveryNMinutes,
-          tUpdateEveryNMillis,
-          tFileDir,
-          tFileNameRegex,
-          tRecursive,
-          tPathRegex,
-          tMetadataFrom,
-          tMatchAxisNDigits,
-          tFileTableInMemory,
-          tAccessibleViaFiles,
-          tnThreads,
-          tDimensionValuesInMemory,
-          tCacheFromUrl,
-          tCacheSizeGB,
-          tCachePartialPathRegex);
-    else if (tType.equals("EDDGridFromNcFiles"))
-      return new EDDGridFromNcFiles(
-          tDatasetID,
-          tAccessibleTo,
-          tGraphsAccessibleTo,
-          tAccessibleViaWMS,
-          tOnChange,
-          tFgdcFile,
-          tIso19115File,
-          tDefaultDataQuery,
-          tDefaultGraphQuery,
-          tGlobalAttributes,
-          ttAxisVariables,
-          ttDataVariables,
-          tReloadEveryNMinutes,
-          tUpdateEveryNMillis,
-          tFileDir,
-          tFileNameRegex,
-          tRecursive,
-          tPathRegex,
-          tMetadataFrom,
-          tMatchAxisNDigits,
-          tFileTableInMemory,
-          tAccessibleViaFiles,
-          tnThreads,
-          tDimensionValuesInMemory,
-          tCacheFromUrl,
-          tCacheSizeGB,
-          tCachePartialPathRegex);
-    else if (tType.equals("EDDGridFromNcFilesUnpacked"))
-      return new EDDGridFromNcFilesUnpacked(
-          tDatasetID,
-          tAccessibleTo,
-          tGraphsAccessibleTo,
-          tAccessibleViaWMS,
-          tOnChange,
-          tFgdcFile,
-          tIso19115File,
-          tDefaultDataQuery,
-          tDefaultGraphQuery,
-          tGlobalAttributes,
-          ttAxisVariables,
-          ttDataVariables,
-          tReloadEveryNMinutes,
-          tUpdateEveryNMillis,
-          tFileDir,
-          tFileNameRegex,
-          tRecursive,
-          tPathRegex,
-          tMetadataFrom,
-          tMatchAxisNDigits,
-          tFileTableInMemory,
-          tAccessibleViaFiles,
-          tnThreads,
-          tDimensionValuesInMemory,
-          tCacheFromUrl,
-          tCacheSizeGB,
-          tCachePartialPathRegex);
-    else if (tType.equals("EDDGridFromMergeIRFiles"))
-      return new EDDGridFromMergeIRFiles(
-          tDatasetID,
-          tAccessibleTo,
-          tGraphsAccessibleTo,
-          tAccessibleViaWMS,
-          tOnChange,
-          tFgdcFile,
-          tIso19115File,
-          tDefaultDataQuery,
-          tDefaultGraphQuery,
-          tGlobalAttributes,
-          ttAxisVariables,
-          ttDataVariables,
-          tReloadEveryNMinutes,
-          tUpdateEveryNMillis,
-          tFileDir,
-          tFileNameRegex,
-          tRecursive,
-          tPathRegex,
-          tMetadataFrom,
-          tMatchAxisNDigits,
-          tFileTableInMemory,
-          tAccessibleViaFiles,
-          tnThreads,
-          tDimensionValuesInMemory,
-          tCacheFromUrl,
-          tCacheSizeGB,
-          tCachePartialPathRegex);
-    else
-      throw new Exception(
-          "type=\"" + tType + "\" needs to be added to EDDGridFromFiles.fromXml at end.");
+    return switch (tType) {
+      case "EDDGridFromAudioFiles" ->
+          new EDDGridFromAudioFiles(
+              tDatasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+      case "EDDGridFromNcFiles" ->
+          new EDDGridFromNcFiles(
+              tDatasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+      case "EDDGridFromNcFilesUnpacked" ->
+          new EDDGridFromNcFilesUnpacked(
+              tDatasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+      case "EDDGridFromMergeIRFiles" ->
+          new EDDGridFromMergeIRFiles(
+              tDatasetID,
+              tAccessibleTo,
+              tGraphsAccessibleTo,
+              tAccessibleViaWMS,
+              tOnChange,
+              tFgdcFile,
+              tIso19115File,
+              tDefaultDataQuery,
+              tDefaultGraphQuery,
+              tGlobalAttributes,
+              ttAxisVariables,
+              ttDataVariables,
+              tReloadEveryNMinutes,
+              tUpdateEveryNMillis,
+              tFileDir,
+              tFileNameRegex,
+              tRecursive,
+              tPathRegex,
+              tMetadataFrom,
+              tMatchAxisNDigits,
+              tFileTableInMemory,
+              tAccessibleViaFiles,
+              tnThreads,
+              tDimensionValuesInMemory,
+              tCacheFromUrl,
+              tCacheSizeGB,
+              tCachePartialPathRegex);
+      default ->
+          throw new Exception(
+              "type=\"" + tType + "\" needs to be added to EDDGridFromFiles.fromXml at end.");
+    };
   }
 
   /**
@@ -606,21 +602,17 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
               || part0.startsWith("***global:")) {
 
             // part0
-            if (part0.equals("***replaceFromFileName")) {
-              axis0Type = AXIS0_REPLACE_FROM_FILENAME;
-
-            } else if (part0.equals("***fileName")) {
-              axis0Type = AXIS0_FILENAME;
-
-            } else if (part0.equals("***pathName")) {
-              axis0Type = AXIS0_PATHNAME;
-
-            } else {
-              axis0Type = AXIS0_GLOBAL;
-              axis0GlobalAttName = part0.substring(10);
-              if (!String2.isSomething(axis0GlobalAttName))
-                throw new RuntimeException(
-                    "Attribute name not specified for axis[0] after \"***global:\".");
+            switch (part0) {
+              case "***replaceFromFileName" -> axis0Type = AXIS0_REPLACE_FROM_FILENAME;
+              case "***fileName" -> axis0Type = AXIS0_FILENAME;
+              case "***pathName" -> axis0Type = AXIS0_PATHNAME;
+              default -> {
+                axis0Type = AXIS0_GLOBAL;
+                axis0GlobalAttName = part0.substring(10);
+                if (!String2.isSomething(axis0GlobalAttName))
+                  throw new RuntimeException(
+                      "Attribute name not specified for axis[0] after \"***global:\".");
+              }
             }
 
             // timeFormat or element class
@@ -1034,8 +1026,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         Object badFileNames[] = badFileMap.keySet().toArray();
         int nMissing = 0;
         int nbfn = badFileNames.length;
-        for (int i = 0; i < nbfn; i++) {
-          Object name = badFileNames[i];
+        for (Object name : badFileNames) {
           if (!tFileSet.contains(name)) {
             if (reallyVerbose) String2.log("previously bad file now missing: " + name);
             nMissing++;
@@ -1168,7 +1159,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         if (bfi != null) {
           // tFile is in badFileMap
           Object bfia[] = (Object[]) bfi;
-          long bfLastMod = ((Long) bfia[0]).longValue();
+          long bfLastMod = (Long) bfia[0];
           if (bfLastMod == tLastMod) {
             // file hasn't been changed; it is still bad
             tFileListPo++;
@@ -2856,31 +2847,15 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     return results;
   }
 
-  private static class GetGridFromFileCallable implements Callable<PrimitiveArray[]> {
-    private final EDDGridFromFiles caller;
-    private final String tFileDir;
-    private final String tFileName;
-    private final EDV[] tDataVariables;
-    private final IntArray tConstraints;
-    private final int dirIndex;
-    private final long modIndex;
-
-    public GetGridFromFileCallable(
-        EDDGridFromFiles caller,
-        String tFileDir,
-        String tFileName,
-        EDV[] tDataVariables,
-        IntArray tConstraints,
-        int dirIndex,
-        long modIndex) {
-      this.caller = caller;
-      this.tFileDir = tFileDir;
-      this.tFileName = tFileName;
-      this.tDataVariables = tDataVariables;
-      this.tConstraints = tConstraints;
-      this.dirIndex = dirIndex;
-      this.modIndex = modIndex;
-    }
+  private record GetGridFromFileCallable(
+      EDDGridFromFiles caller,
+      String tFileDir,
+      String tFileName,
+      EDV[] tDataVariables,
+      IntArray tConstraints,
+      int dirIndex,
+      long modIndex)
+      implements Callable<PrimitiveArray[]> {
 
     @Override
     public PrimitiveArray[] call() throws Exception {

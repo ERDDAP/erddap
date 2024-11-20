@@ -233,11 +233,8 @@ public class SSR {
       throws Exception {
 
     // if Linux, it is faster to use the zip utility
-    ZipInputStream in =
-        new ZipInputStream(
-            File2.getBufferedInputStream(
-                fullZipName)); // not File2.getDecompressedBufferedInputStream(). Read file as is.
-    try {
+    // not File2.getDecompressedBufferedInputStream(). Read file as is.
+    try (ZipInputStream in = new ZipInputStream(File2.getBufferedInputStream(fullZipName))) {
       // create a buffer for reading the files
       byte[] buf = new byte[4096];
 
@@ -257,8 +254,7 @@ public class SSR {
           // open an output file
           if (ignoreZipDirectories) name = File2.getNameAndExtension(name); // remove dir info
           File2.makeDirectory(File2.getDirectory(baseDir + name)); // name may incude subdir names
-          OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
-          try {
+          try (OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name))) {
 
             // transfer bytes from the .zip file to the output file
             // in.read reads from current zipEntry
@@ -267,10 +263,8 @@ public class SSR {
             while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
               out.write(buffer, 0, bytesRead);
             }
-          } finally {
-            // close the output file
-            out.close();
           }
+          // close the output file
           if (resultingFullFileNames != null) resultingFullFileNames.add(baseDir + name);
         }
 
@@ -280,10 +274,8 @@ public class SSR {
         // get the next entry
         entry = in.getNextEntry();
       }
-    } finally {
-      // close the input file
-      in.close();
     }
+    // close the input file
   }
 
   /**
@@ -465,35 +457,34 @@ public class SSR {
     // for all other operating systems...
     if (verbose) String2.log("Using Java's zip to make " + zipDirName);
     // create the ZIP file
-    ZipOutputStream out =
-        new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)));
-    try {
+    try (ZipOutputStream out =
+        new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)))) {
 
       // create a buffer for reading the files
       byte[] buf = new byte[4096];
 
       // compress the files
-      for (int i = 0; i < dirNames.length; i++) {
+      for (String dirName : dirNames) {
         // if directory, get all file names
         ArrayList<String> al = new ArrayList();
-        if (File2.isDirectory(dirNames[i])) {
-          RegexFilenameFilter.recursiveFullNameList(al, dirNames[i], ".*", false); // directoriesToo
+        if (File2.isDirectory(dirName)) {
+          RegexFilenameFilter.recursiveFullNameList(al, dirName, ".*", false); // directoriesToo
         } else {
-          al.add(dirNames[i]);
+          al.add(dirName);
         }
 
-        for (int i2 = 0; i2 < al.size(); i2++) {
+        for (String s : al) {
           InputStream in =
               File2.getBufferedInputStream(
-                  al.get(i2)); // not File2.getDecompressedBufferedInputStream(). Read files as is.
+                  s); // not File2.getDecompressedBufferedInputStream(). Read files as is.
           try {
 
             // add ZIP entry to output stream
             String tName =
                 includeDirectoryInfo
-                    ? al.get(i2).substring(removeDirPrefix.length())
+                    ? s.substring(removeDirPrefix.length())
                     : // already validated above
-                    File2.getNameAndExtension(al.get(i2));
+                    File2.getNameAndExtension(s);
             out.putNextEntry(new ZipEntry(tName));
 
             // transfer bytes from the file to the ZIP file
@@ -509,10 +500,8 @@ public class SSR {
           }
         }
       }
-    } finally {
-      // close the ZIP file
-      out.close();
     }
+    // close the ZIP file
     if (verbose) String2.log("  zip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
   }
 
@@ -1023,7 +1012,7 @@ public class SSR {
                 // .credentialsProvider(credentialProvider)  //handled by default credentials
                 // provider
                 .targetThroughputInGbps(20.0) // ??? make a separate setting?
-                .minimumPartSizeInBytes(Long.valueOf(8 * Math2.BytesPerMB))
+                .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB))
                 .build())
         .build();
   }
@@ -1594,8 +1583,7 @@ public class SSR {
       if (!String2.isUrl(urlString)) return File2.readLinesFromFile(urlString, File2.UTF_8, 1);
 
       long time = System.currentTimeMillis();
-      BufferedReader in = getBufferedUrlReader(urlString);
-      try {
+      try (BufferedReader in = getBufferedUrlReader(urlString)) {
         ArrayList<String> sa = new ArrayList<>();
         String s;
         while ((s = in.readLine()) != null) {
@@ -1609,8 +1597,6 @@ public class SSR {
                   + (System.currentTimeMillis() - time)
                   + "ms");
         return sa;
-      } finally {
-        in.close();
       }
     } catch (Exception e) {
       String msg = e.toString();
@@ -1651,15 +1637,12 @@ public class SSR {
       try {
         long time = System.currentTimeMillis();
         StringBuilder sb = new StringBuilder(4096);
-        BufferedReader in = getBufferedUrlReader(urlString);
-        try {
+        try (BufferedReader in = getBufferedUrlReader(urlString)) {
           String s;
           while ((s = in.readLine()) != null) {
             sb.append(s);
             sb.append('\n');
           }
-        } finally {
-          in.close();
         }
         if (reallyVerbose)
           String2.log(
@@ -1719,7 +1702,7 @@ public class SSR {
       long time = System.currentTimeMillis();
       char buffer[] = new char[8192];
       StringBuilder sb = new StringBuilder(8192);
-      try {
+      try (in) {
         int got;
         while ((got = in.read(buffer)) >= 0) { // -1 if end-of-stream
           sb.append(buffer, 0, got);
@@ -1729,8 +1712,6 @@ public class SSR {
             break;
           }
         }
-      } finally {
-        in.close();
       }
       if (reallyVerbose)
         String2.log(
@@ -1762,8 +1743,7 @@ public class SSR {
       // String2.log(">> SSR.getUrlResponseBytes(" + urlString + ")");
       long time = System.currentTimeMillis();
       byte buffer[] = new byte[8096];
-      BufferedInputStream is = getUrlBufferedInputStream(urlString);
-      try {
+      try (BufferedInputStream is = getUrlBufferedInputStream(urlString)) {
         ByteArray ba = new ByteArray();
         int gotN;
         while ((gotN = is.read(buffer)) > 0) { // -1 = end of stream, but should block so gotN > 0
@@ -1780,8 +1760,6 @@ public class SSR {
                   + (System.currentTimeMillis() - time)
                   + "ms");
         return ba.toArray();
-      } finally {
-        is.close();
       }
     } catch (Exception e) {
       String msg = e.toString();
@@ -1877,12 +1855,10 @@ public class SSR {
     con.setDoInput(true);
 
     // send the content
-    Writer writer = File2.getBufferedWriterUtf8(new BufferedOutputStream(con.getOutputStream()));
-    try {
+    try (Writer writer =
+        File2.getBufferedWriterUtf8(new BufferedOutputStream(con.getOutputStream()))) {
       writer.write(content);
       writer.flush();
-    } finally {
-      writer.close();
     }
 
     BufferedInputStream is = getBufferedInputStream(urlString, con); // this is in SSR, not File2
@@ -1925,18 +1901,18 @@ public class SSR {
         || source.startsWith("https://")
         || source.startsWith("ftp://")) { // untested. presumably anonymous
       // URL
-      BufferedInputStream in = null;
-      try {
-        in =
-            (BufferedInputStream)
-                getUrlConnBufferedInputStream(
-                    source, // throws Exception   //handles AWS S3
-                    120000,
-                    true,
-                    false,
-                    firstByte,
-                    lastByte,
-                    handleS3ViaSDK)[1]; // timeOutMillis, requestCompression, touchMode, ...
+      try (BufferedInputStream in =
+          (BufferedInputStream)
+              getUrlConnBufferedInputStream(
+                  source, // throws Exception   //handles AWS S3
+                  120000,
+                  true,
+                  false,
+                  firstByte,
+                  lastByte,
+                  handleS3ViaSDK)[1]) {
+        // throws Exception   //handles AWS S3
+        // timeOutMillis, requestCompression, touchMode, ...
 
         // adjust firstByte,lastByte
         long newLastByte = lastByte - (firstByte > 0 && lastByte >= 0 ? firstByte : 0);
@@ -1945,11 +1921,6 @@ public class SSR {
         String2.log(
             String2.ERROR + " in SSR.copy(source=" + source + ")\n" + MustBe.throwableToString(e));
         return false;
-      } finally {
-        try {
-          if (in != null) in.close();
-        } catch (Exception e2) {
-        }
       }
 
     } else {

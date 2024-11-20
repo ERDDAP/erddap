@@ -473,10 +473,9 @@ public class EDVTimeStamp extends EDV {
         || Math2.almostEqual(9, sourceTime, sourceMissingValue)
         || Math2.almostEqual(9, sourceTime, sourceFillValue)) return Double.NaN;
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     // String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
     // " = " + Calendar2.safeEpochSecondsToIsoStringTZ(d, ""));
-    return d;
+    return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
   /**
@@ -510,14 +509,13 @@ public class EDVTimeStamp extends EDV {
 
     // time is a string
     try {
-      double d = // parseISOWithCalendar2?
-          // parse with Calendar2.parseISODateTime
-          // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-          // parse sourceTime
-          Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
+      // parseISOWithCalendar2?
+      // parse with Calendar2.parseISODateTime
+      // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
+      // parse sourceTime
       // String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" +
       // Calendar2.epochSecondsToIsoStringTZ(d));
-      return d;
+      return Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(

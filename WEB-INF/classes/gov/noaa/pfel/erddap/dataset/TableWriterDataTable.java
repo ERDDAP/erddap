@@ -332,16 +332,16 @@ public class TableWriterDataTable extends TableWriter {
       writer.write("{\"v\":null,\"f\":null}");
     } else {
       if (elementPAType == PAType.DOUBLE) {
-        double dv = Double.valueOf(s).doubleValue();
+        double dv = Double.parseDouble(s);
         writer.write("{\"v\":" + dv + ",\"f\":null}");
       } else if (elementPAType == PAType.FLOAT) {
-        float f = Float.valueOf(s).floatValue();
+        float f = Float.parseFloat(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       } else if (elementPAType == PAType.LONG) {
-        long f = Long.valueOf(s).longValue();
+        long f = Long.parseLong(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       } else {
-        int f = Integer.valueOf(s).intValue();
+        int f = Integer.parseInt(s);
         writer.write("{\"v\":" + f + ",\"f\":null}");
       }
     }

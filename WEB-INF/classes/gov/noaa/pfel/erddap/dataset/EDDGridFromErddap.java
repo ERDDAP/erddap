@@ -108,51 +108,50 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<updateEveryNMillis>")) {
-      } else if (localTags.equals("</updateEveryNMillis>"))
-        tUpdateEveryNMillis = String2.parseInt(content);
+      switch (localTags) {
+        case "<reloadEveryNMinutes>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "<updateEveryNMillis>" -> {}
+        case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
 
-      // Since this erddap can never be logged in to the remote ERDDAP,
-      // it can never get dataset info from the remote erddap dataset (which should have restricted
-      // access).
-      // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
-      // So there is currently no way to make this work.
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<subscribeToRemoteErddapDataset>")) {
-      } else if (localTags.equals("</subscribeToRemoteErddapDataset>"))
-        tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else if (localTags.equals("<redirect>")) {
-      } else if (localTags.equals("</redirect>")) tRedirect = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+          // Since this erddap can never be logged in to the remote ERDDAP,
+          // it can never get dataset info from the remote erddap dataset (which should have
+          // restricted
+          // access).
+          // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
+          // So there is currently no way to make this work.
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "<graphsAccessibleTo>" -> {}
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "<accessibleViaWMS>" -> {}
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "<accessibleViaFiles>" -> {}
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "<subscribeToRemoteErddapDataset>" -> {}
+        case "</subscribeToRemoteErddapDataset>" ->
+            tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
+        case "<sourceUrl>" -> {}
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "<fgdcFile>" -> {}
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "<iso19115File>" -> {}
+        case "</iso19115File>" -> tIso19115File = content;
+        case "<defaultDataQuery>" -> {}
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "<defaultGraphQuery>" -> {}
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "<nThreads>" -> {}
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "<dimensionValuesInMemory>" -> {}
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        case "<redirect>" -> {}
+        case "</redirect>" -> tRedirect = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     return new EDDGridFromErddap(
         tDatasetID,
@@ -306,103 +305,109 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       String dataType = table.getStringData(3, row);
       String value = table.getStringData(4, row);
 
-      if (rowType.equals("attribute")) {
-        if (dataType.equals("String")) {
-          tSourceAttributes.add(attName, value);
-        } else {
-          PAType tPAType = PAType.fromCohortString(dataType);
-          PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
-          tSourceAttributes.add(attName, pa);
+      switch (rowType) {
+        case "attribute" -> {
+          if (dataType.equals("String")) {
+            tSourceAttributes.add(attName, value);
+          } else {
+            PAType tPAType = PAType.fromCohortString(dataType);
+            PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
+            tSourceAttributes.add(attName, pa);
+          }
         }
+        case "dimension" -> {
+          PrimitiveArray tSourceValues =
+              quickRestartAttributes == null
+                  ? OpendapHelper.getPrimitiveArray(dConnect, "?" + varName)
+                  : quickRestartAttributes.get(
+                      "sourceValues_" + String2.encodeVariableNameSafe(varName));
 
-      } else if (rowType.equals("dimension")) {
-        PrimitiveArray tSourceValues =
-            quickRestartAttributes == null
-                ? OpendapHelper.getPrimitiveArray(dConnect, "?" + varName)
-                : quickRestartAttributes.get(
-                    "sourceValues_" + String2.encodeVariableNameSafe(varName));
+          // deal with remote not having ioos_category, but this ERDDAP requiring it
+          Attributes tAddAttributes = new Attributes();
+          if (EDStatic.variablesMustHaveIoosCategory
+              && tSourceAttributes.getString("ioos_category") == null) {
 
-        // deal with remote not having ioos_category, but this ERDDAP requiring it
-        Attributes tAddAttributes = new Attributes();
-        if (EDStatic.variablesMustHaveIoosCategory
-            && tSourceAttributes.getString("ioos_category") == null) {
+            // guess ioos_category   (alternative is always assign "Unknown")
+            Attributes tAtts =
+                EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    null, // sourceGlobalAtts not yet known
+                    tSourceAttributes,
+                    null,
+                    varName,
+                    true, // tryToAddStandardName
+                    false,
+                    true); // tryToAddColorBarMinMax, tryToFindLLAT
+            tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
+          }
 
-          // guess ioos_category   (alternative is always assign "Unknown")
-          Attributes tAtts =
-              EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                  null, // sourceGlobalAtts not yet known
-                  tSourceAttributes,
-                  null,
-                  varName,
-                  true, // tryToAddStandardName
-                  false,
-                  true); // tryToAddColorBarMinMax, tryToFindLLAT
-          tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
-        }
-
-        // make an axisVariable
-        tAxisVariables.add(
-            makeAxisVariable(
-                tDatasetID,
-                -1,
-                varName,
-                varName,
-                tSourceAttributes,
-                tAddAttributes,
-                tSourceValues));
-
-        // make new tSourceAttributes
-        tSourceAttributes = new Attributes();
-
-        // a grid variable
-      } else if (rowType.equals("variable")) {
-
-        // deal with remote not having ioos_category, but this ERDDAP requiring it
-        Attributes tAddAttributes = new Attributes();
-        if (EDStatic.variablesMustHaveIoosCategory
-            && tSourceAttributes.getString("ioos_category") == null) {
-
-          // guess ioos_category   (alternative is always assign "Unknown")
-          Attributes tAtts =
-              EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                  null, // sourceGlobalAtts not yet known
-                  tSourceAttributes,
-                  null,
-                  varName,
-                  false, // tryToAddStandardName  since just getting ioos_category
-                  false,
-                  false); // tryToAddColorBarMinMax, tryToFindLLAT
-          tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
-        }
-
-        // make a data variable
-        EDV edv;
-        if (varName.equals(EDV.TIME_NAME))
-          throw new RuntimeException(
-              errorInMethod + "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
-        else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes))
-          edv =
-              new EDVTimeStamp(
-                  datasetID, varName, varName, tSourceAttributes, tAddAttributes, dataType);
-        else
-          edv =
-              new EDV(
-                  datasetID,
+          // make an axisVariable
+          tAxisVariables.add(
+              makeAxisVariable(
+                  tDatasetID,
+                  -1,
                   varName,
                   varName,
                   tSourceAttributes,
                   tAddAttributes,
-                  dataType,
-                  PAOne.fromDouble(Double.NaN),
-                  PAOne.fromDouble(Double.NaN)); // hard to get min and max
-        edv.extractAndSetActualRange();
-        tDataVariables.add(edv);
+                  tSourceValues));
 
-        // make new tSourceAttributes
-        tSourceAttributes = new Attributes();
+          // make new tSourceAttributes
+          tSourceAttributes = new Attributes();
 
-        // unexpected type
-      } else throw new RuntimeException("Unexpected rowType=" + rowType + ".");
+          // a grid variable
+        }
+        case "variable" -> {
+
+          // deal with remote not having ioos_category, but this ERDDAP requiring it
+          Attributes tAddAttributes = new Attributes();
+          if (EDStatic.variablesMustHaveIoosCategory
+              && tSourceAttributes.getString("ioos_category") == null) {
+
+            // guess ioos_category   (alternative is always assign "Unknown")
+            Attributes tAtts =
+                EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    null, // sourceGlobalAtts not yet known
+                    tSourceAttributes,
+                    null,
+                    varName,
+                    false, // tryToAddStandardName  since just getting ioos_category
+                    false,
+                    false); // tryToAddColorBarMinMax, tryToFindLLAT
+            tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
+          }
+
+          // make a data variable
+          EDV edv;
+          if (varName.equals(EDV.TIME_NAME))
+            throw new RuntimeException(
+                errorInMethod
+                    + "No EDDGrid dataVariable may have destinationName="
+                    + EDV.TIME_NAME);
+          else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes))
+            edv =
+                new EDVTimeStamp(
+                    datasetID, varName, varName, tSourceAttributes, tAddAttributes, dataType);
+          else
+            edv =
+                new EDV(
+                    datasetID,
+                    varName,
+                    varName,
+                    tSourceAttributes,
+                    tAddAttributes,
+                    dataType,
+                    PAOne.fromDouble(Double.NaN),
+                    PAOne.fromDouble(Double.NaN)); // hard to get min and max
+          edv.extractAndSetActualRange();
+          tDataVariables.add(edv);
+
+          // make new tSourceAttributes
+          tSourceAttributes = new Attributes();
+
+          // unexpected type
+        }
+        default -> throw new RuntimeException("Unexpected rowType=" + rowType + ".");
+      }
     }
     if (tAxisVariables.size() == 0) throw new RuntimeException("No axisVariables found!");
     sourceGlobalAttributes = tSourceAttributes; // at the top of table, so collected last
@@ -417,11 +422,13 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       // reverse the order, since read (above) from bottom to top
       axisVariables[av] = (EDVGridAxis) tAxisVariables.get(nav - av - 1);
       String tName = axisVariables[av].destinationName();
-      if (tName.equals(EDV.LON_NAME)) lonIndex = av;
-      else if (tName.equals(EDV.LAT_NAME)) latIndex = av;
-      else if (tName.equals(EDV.ALT_NAME)) altIndex = av;
-      else if (tName.equals(EDV.DEPTH_NAME)) depthIndex = av;
-      else if (tName.equals(EDV.TIME_NAME)) timeIndex = av;
+      switch (tName) {
+        case EDV.LON_NAME -> lonIndex = av;
+        case EDV.LAT_NAME -> latIndex = av;
+        case EDV.ALT_NAME -> altIndex = av;
+        case EDV.DEPTH_NAME -> depthIndex = av;
+        case EDV.TIME_NAME -> timeIndex = av;
+      }
     }
 
     int ndv = tDataVariables.size();
@@ -469,10 +476,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
         quickRestartAttributes.set(
             "sourceInfoBytes", ByteArray.fromString(sourceInfoString)); // String -> UTF-8 bytes
-        for (int av = 0; av < axisVariables.length; av++) {
+        for (EDVGridAxis axisVariable : axisVariables) {
           quickRestartAttributes.set(
-              "sourceValues_" + String2.encodeVariableNameSafe(axisVariables[av].sourceName()),
-              axisVariables[av].sourceValues());
+              "sourceValues_" + String2.encodeVariableNameSafe(axisVariable.sourceName()),
+              axisVariable.sourceValues());
         }
         File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
         NcHelper.writeAttributesToNc3(quickRestartFullFileName(), quickRestartAttributes);
@@ -1121,10 +1128,13 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       datasetIdCol = table.findColumn("Dataset ID"); // throws exception if none
 
       sb.append(
-          "\n<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n"
-              + "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n"
-              + "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n"
-              + "The remote EDDGridFromErddap datasets are:\n");
+          """
+
+                      <!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.
+                      It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML
+                      that is being using for these datasets so your ERDDAP can access the original ERDDAP source.
+                      The remote EDDGridFromErddap datasets are:
+                      """);
       if (datasetIdCol.size() == 0) sb.append("(none)");
       else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
       sb.append("\n-->\n");

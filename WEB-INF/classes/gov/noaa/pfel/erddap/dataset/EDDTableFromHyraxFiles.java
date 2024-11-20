@@ -189,7 +189,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
       Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
       if (verbose)
         String2.log(
             "  lastFinishedTask="
@@ -345,7 +345,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
         taskOA[1] = sourceName;
         taskOA[2] = localFile;
-        taskOA[3] = Long.valueOf(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
+        taskOA[3] = Math2.roundToLong(sourceFileLastMod.get(f) * 1000);
         int tTaskNumber = EDStatic.addTask(taskOA);
         if (tTaskNumber >= 0) {
           nTasksCreated++;
@@ -394,7 +394,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     }
 
     if (taskNumber > -1) {
-      EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
+      EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
       if (EDStatic.forceSynchronousLoading) {
@@ -738,7 +738,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

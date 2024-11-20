@@ -1125,11 +1125,10 @@ public class Test {
       error(
           "\n" + String2.ERROR + " in Test.ensureSomethingUnicode():\n" + message + " wasn't set.");
     String names[] = atts.getNames();
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      ensureSomethingUnicode(names[i], message + ": an attribute name");
+    for (String name : names) {
+      ensureSomethingUnicode(name, message + ": an attribute name");
       ensureSomethingUnicode(
-          atts.get(names[i]).toString(), message + ": the attribute value for name=" + names[i]);
+          atts.get(name).toString(), message + ": the attribute value for name=" + name);
     }
   }
 

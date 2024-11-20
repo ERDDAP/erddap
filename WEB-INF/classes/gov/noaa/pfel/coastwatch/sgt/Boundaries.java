@@ -66,8 +66,7 @@ public class Boundaries {
    */
   public static final int CACHE_SIZE = 100;
 
-  private Map<String, SGTLine> cache =
-      Collections.synchronizedMap(new LRUCache<String, SGTLine>(CACHE_SIZE));
+  private Map<String, SGTLine> cache = Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
   private int nCoarse = 0;
   private int nSuccesses = 0;
   private int nTossed = 0;
@@ -501,8 +500,8 @@ public class Boundaries {
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(fullFileName);
-    try {
+    try (BufferedReader bufferedReader =
+        File2.getDecompressedBufferedFileReader88591(fullFileName)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         if (s.startsWith(startGapLine1) || s.startsWith(startGapLine2)) {
@@ -570,8 +569,6 @@ public class Boundaries {
         }
         s = bufferedReader.readLine();
       }
-    } finally {
-      bufferedReader.close();
     }
     if (reallyVerbose) String2.log("    Boundaries.readSgtLine nObjects=" + nObjects);
 
@@ -607,11 +604,9 @@ public class Boundaries {
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName);
-    try {
-      DataOutputStream dos =
-          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)));
-      try {
+    try (BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName)) {
+      try (DataOutputStream dos =
+          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)))) {
         String s = bufferedReader.readLine();
         while (true) {
           if (s == null
@@ -657,11 +652,7 @@ public class Boundaries {
         // mark of file
         dos.writeDouble(Double.NaN);
         dos.writeDouble(Double.NaN);
-      } finally {
-        dos.close();
       }
-    } finally {
-      bufferedReader.close();
     }
     String2.log("    Boundaries.convertSgtLine nObjects=" + nObjects);
   }
@@ -671,10 +662,9 @@ public class Boundaries {
     String dir = "c:/programs/boundaries/";
     String types[] = {"nationalBoundaries", "stateBoundaries", "rivers"};
     String ress[] = {"c", "f", "h", "i", "l"};
-    for (int type = 0; type < types.length; type++) {
-      for (int res = 0; res < ress.length; res++) {
-        convertSgtLine(
-            dir + types[type] + ress[res] + ".asc", dir + types[type] + ress[res] + ".double");
+    for (String string : types) {
+      for (String s : ress) {
+        convertSgtLine(dir + string + s + ".asc", dir + string + s + ".double");
       }
     }
   }

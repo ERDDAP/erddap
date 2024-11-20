@@ -162,9 +162,9 @@ public class BaseTypePrimitiveVector extends PrimitiveVector implements Cloneabl
    */
   @Override
   public void externalize(DataOutputStream sink) throws IOException {
-    for (int i = 0; i < vals.length; i++) {
+    for (BaseType val : vals) {
       // System.out.println("\t\t\tI AM THE WALRUS!");
-      ((ClientIO) vals[i]).externalize(sink);
+      ((ClientIO) val).externalize(sink);
     }
   }
 

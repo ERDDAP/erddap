@@ -2560,42 +2560,39 @@ public class Calendar2 {
    */
   public static double factorToGetSeconds(String units) {
     units = units.trim().toLowerCase();
-    if (units.equals("ms")
-        || units.equals("msec")
-        || units.equals("msecs")
-        || units.equals("millis")
-        || units.equals("millisec")
-        || units.equals("millisecs")
-        || units.equals("millisecond")
-        || units.equals("milliseconds")) return 0.001;
-    if (units.equals("s")
-        || units.equals("sec")
-        || units.equals("secs")
-        || units.equals("second")
-        || units.equals("seconds")) return 1;
-    if (units.equals("m")
-        || // lenient
-        units.equals("min")
-        || units.equals("mins")
-        || units.equals("minute")
-        || units.equals("minutes")) return SECONDS_PER_MINUTE;
-    if (units.equals("h")
-        || // lenient
-        units.equals("hr")
-        || units.equals("hrs")
-        || units.equals("hour")
-        || units.equals("hours")) return SECONDS_PER_HOUR;
-    if (units.equals("d")
-        || // lenient
-        units.equals("day")
-        || units.equals("days")) return SECONDS_PER_DAY;
-    if (units.equals("week") || units.equals("weeks")) return 7 * SECONDS_PER_DAY;
-    if (units.equals("mon")
-        || units.equals("mons")
-        || units.equals("month")
-        || units.equals("months")) return 30 * SECONDS_PER_DAY;
-    if (units.equals("yr") || units.equals("yrs") || units.equals("year") || units.equals("years"))
-      return 360 * SECONDS_PER_DAY;
+    switch (units) {
+      case "ms",
+          "msec",
+          "msecs",
+          "millis",
+          "millisec",
+          "millisecs",
+          "millisecond",
+          "milliseconds" -> {
+        return 0.001;
+      }
+      case "s", "sec", "secs", "second", "seconds" -> {
+        return 1;
+      }
+      case "m", "min", "mins", "minute", "minutes" -> {
+        return SECONDS_PER_MINUTE;
+      }
+      case "h", "hr", "hrs", "hour", "hours" -> {
+        return SECONDS_PER_HOUR;
+      }
+      case "d", "day", "days" -> {
+        return SECONDS_PER_DAY;
+      }
+      case "week", "weeks" -> {
+        return 7 * SECONDS_PER_DAY;
+      }
+      case "mon", "mons", "month", "months" -> {
+        return 30 * SECONDS_PER_DAY;
+      }
+      case "yr", "yrs", "year", "years" -> {
+        return 360 * SECONDS_PER_DAY;
+      }
+    }
     Test.error(
         String2.ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
     return Double.NaN; // won't happen, but method needs return statement
@@ -3102,12 +3099,11 @@ public class Calendar2 {
    * @return a new GregorianCalendar object (local time zone)
    */
   public static GregorianCalendar newGCalendarLocal() {
-    GregorianCalendar gc = new GregorianCalendar();
     // TimeZone tz = gc.getTimeZone();
     // String2.log("getGCalendar inDaylightTime="+ tz.inDaylightTime(gc.getTime()) +
     //    " useDaylightTime=" + tz.useDaylightTime() +
     //    " timeZone=" + tz);
-    return gc;
+    return new GregorianCalendar();
   }
 
   /**
@@ -4691,9 +4687,8 @@ public class Calendar2 {
    * @return an error string
    */
   public static String getParseErrorString(String s, Exception e) {
-    String error = MustBe.throwable(String2.ERROR + " while parsing \"" + s + "\".", e);
     // String2.log(error);
-    return error;
+    return MustBe.throwable(String2.ERROR + " while parsing \"" + s + "\".", e);
   }
 
   /**
@@ -5327,8 +5322,8 @@ public class Calendar2 {
    */
   public static int nextNice(double d, int nice[]) {
     int n = nice.length;
-    for (int i = 0; i < n; i++) {
-      if (d <= nice[i]) return nice[i];
+    for (int j : nice) {
+      if (d <= j) return j;
     }
     return Math2.roundToInt(Math.ceil(d / nice[n - 1]));
   }

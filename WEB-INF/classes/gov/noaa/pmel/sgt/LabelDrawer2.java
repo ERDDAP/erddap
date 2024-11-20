@@ -41,7 +41,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   private Rectangle dbounds_;
   private Point2D.Double porigin_;
   private Rectangle2D.Double pbounds_;
-  private Polygon dpolygon_;
   private double angle_;
   private double sinthta_;
   private double costhta_;
@@ -68,7 +67,6 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   }
 
   public LabelDrawer copy() {
-    LabelDrawer1 newLabel = null;
     //      try {
     //        newLabel = (LabelDrawer1)clone();
     //      } catch (CloneNotSupportedException e) {
@@ -82,7 +80,7 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     //  	newLabel.setOrientation(orient_);
     //        }
     //      }
-    return newLabel;
+    return null;
   }
 
   @Override
@@ -462,7 +460,7 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
       yn[i] = (int) ((yt[i] - yorig) * costhta_ - (xt[i] - xorig) * sinthta_) + yorig;
     }
 
-    dpolygon_ = new Polygon(xn, yn, 4);
+    Polygon dpolygon_ = new Polygon(xn, yn, 4);
     dbounds_ = dpolygon_.getBounds();
     //
     // compute pbounds
@@ -607,10 +605,9 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
     //  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
     //                      RenderingHints.VALUE_ANTIALIAS_ON);
     // }
-    FontRenderContext frc = g2.getFontRenderContext();
     // if(originalAntiAliasingHint != null) {
     //  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, originalAntiAliasingHint);
     // }
-    return frc;
+    return g2.getFontRenderContext();
   }
 }

@@ -12,7 +12,6 @@ public class DDSParser implements DDSParserConstants {
   private Deque<BaseType> ctor; // stack for ctor types
   private BaseType current;
   private int part; // part is defined in each type which uses it
-  private String id;
 
   private static final String noDDSMsg =
       "The descriptor object returned from the dataset was null\n"
@@ -687,7 +686,7 @@ public class DDSParser implements DDSParserConstants {
           case 25:
             jj_consume_token(25);
             t = jj_consume_token(WORD);
-            id = t.image;
+            String id = t.image;
             jj_consume_token(27);
             t = jj_consume_token(WORD);
             if (current instanceof DArray) {
@@ -908,8 +907,8 @@ public class DDSParser implements DDSParserConstants {
       jj_gen++;
       if (++jj_gc > 100) {
         jj_gc = 0;
-        for (int i = 0; i < jj_2_rtns.length; i++) {
-          JJCalls c = jj_2_rtns[i];
+        for (JJCalls jj2Rtn : jj_2_rtns) {
+          JJCalls c = jj2Rtn;
           while (c != null) {
             if (c.gen < jj_gen) c.first = null;
             c = c.next;

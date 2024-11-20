@@ -620,7 +620,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();
@@ -1863,7 +1866,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     }
     if (differ.length() != 0) {
       String te = "zz";
-      while (!te.equals("") && !te.equals("y")) {
+      while (!te.isEmpty() && !te.equals("y")) {
         String msg =
             "datasetID="
                 + datasetID
@@ -2485,7 +2488,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
     // last 2 params: includeDataType, questionDestinationName
     sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

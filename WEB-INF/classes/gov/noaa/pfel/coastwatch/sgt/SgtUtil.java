@@ -77,10 +77,9 @@ public class SgtUtil {
   public static int maxCharsPerLine(int legendTextWidth, double fontScale) {
     // lessen the effect of small fonts (they stay wide to stay legible)
     if (fontScale < 1) fontScale = (1 + fontScale) / 2;
-    int m = Math2.roundToInt(legendTextWidth / (SgtUtil.AVG_CHAR_WIDTH * fontScale));
     // String2.log("\n***maxCharsPerLine=" + m + " legendWidth=" + legendTextWidth + " fontScale=" +
     // fontScale);
-    return m;
+    return Math2.roundToInt(legendTextWidth / (SgtUtil.AVG_CHAR_WIDTH * fontScale));
   }
 
   /** This returns the maxBoldCharsPerLine based on charsPerLine. */
@@ -540,13 +539,10 @@ public class SgtUtil {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // create fileOutputStream
-    BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(fullPngName + randomInt + ".png"));
-    try {
+    try (BufferedOutputStream bos =
+        new BufferedOutputStream(new FileOutputStream(fullPngName + randomInt + ".png"))) {
       // save the image
       saveAsTransparentPng(bi, transparent, bos);
-    } finally {
-      bos.close();
     }
 
     // last step: rename to final Png name
@@ -655,8 +651,7 @@ public class SgtUtil {
    */
   public static void closePdf(Object oar[]) throws Exception {
     Graphics2D g2D = (Graphics2D) oar[0];
-    Document document = (Document) oar[1];
-    try {
+    try (Document document = (Document) oar[1]) {
       PdfContentByte pdfContentByte = (PdfContentByte) oar[2];
       PdfTemplate pdfTemplate = (PdfTemplate) oar[3];
 
@@ -706,8 +701,6 @@ public class SgtUtil {
           document.left()   + (document.right() - document.left()   - xSize) / 2,
           document.bottom() + (document.top()   - document.bottom() - ySize) / 2);
       */
-    } finally {
-      document.close();
     }
   }
 

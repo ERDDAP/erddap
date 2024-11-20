@@ -97,7 +97,7 @@ public class SaxHandler extends DefaultHandler {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
-    context.settUserHashMap(new HashMap<String, Object[]>());
+    context.settUserHashMap(new HashMap<>());
     context.setMajorLoad(false);
     context.setErddap(erddap);
     context.setLastLuceneUpdate(System.currentTimeMillis());

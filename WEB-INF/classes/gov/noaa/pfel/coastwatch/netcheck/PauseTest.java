@@ -41,12 +41,13 @@ public class PauseTest extends NetCheckTest {
     while (!tags.equals("<netCheck></pauseTest>") && iteration++ < 1000000) {
       // process the tags
       if (verbose) String2.log(tags + xmlReader.content());
-      if (tags.equals("<netCheck><pauseTest><title>")) {
-      } else if (tags.equals("<netCheck><pauseTest></title>")) title = xmlReader.content();
-      else if (tags.equals("<netCheck><pauseTest><nSeconds>")) {
-      } else if (tags.equals("<netCheck><pauseTest></nSeconds>"))
-        nSeconds = String2.parseInt(xmlReader.content());
-      else throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+      switch (tags) {
+        case "<netCheck><pauseTest><title>" -> {}
+        case "<netCheck><pauseTest></title>" -> title = xmlReader.content();
+        case "<netCheck><pauseTest><nSeconds>" -> {}
+        case "<netCheck><pauseTest></nSeconds>" -> nSeconds = String2.parseInt(xmlReader.content());
+        default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+      }
 
       // get the next tags
       xmlReader.nextTag();

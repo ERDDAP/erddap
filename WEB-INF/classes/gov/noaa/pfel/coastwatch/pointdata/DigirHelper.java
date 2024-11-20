@@ -264,7 +264,7 @@ public class DigirHelper {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<request \n"
             + "  xmlns=\""
-            + xmlnsNS.get(0)
+            + xmlnsNS.getFirst()
             + "\" \n"
             + // default namespace
             "  xmlns:xsd=\"https://www.w3.org/2001/XMLSchema\" \n"
@@ -308,11 +308,13 @@ public class DigirHelper {
     String errorInMethod = String2.ERROR + " in DigirHelper.getFilterRequest: \n";
     if (filterVariables == null || filterVariables.length == 0)
       return // a simple filter that is always true
-      "    <filter>\n"
-          + "     <greaterThanOrEquals>\n"
-          + "        <darwin:Latitude>-90</darwin:Latitude>\n"
-          + "      </greaterThanOrEquals>\n"
-          + "    </filter>\n";
+      """
+                          <filter>
+                           <greaterThanOrEquals>
+                              <darwin:Latitude>-90</darwin:Latitude>
+                            </greaterThanOrEquals>
+                          </filter>
+                      """;
     Test.ensureTrue(
         filterCops != null && filterCops.length == filterVariables.length,
         errorInMethod + "filterCops.length != filterVariables.length.");
@@ -461,12 +463,11 @@ public class DigirHelper {
 
     // get the metadata xml and StringReader
     String xml = getMetadataXml(url, version);
-    BufferedReader reader = new BufferedReader(new StringReader(xml));
     // for testing:
     // Test.ensureTrue(File2.writeToFileUtf8("c:/temp/ObisMetadata.xml", xml).equals(""),
     //    "Unable to save c:/temp/Obis.Metadata.xml.");
     // Reader reader = File2.getDecompressFileReaderUtf8("c:/programs/digir/ObisMetadata.xml");
-    try {
+    try (BufferedReader reader = new BufferedReader(new StringReader(xml))) {
 
       // read the resource data
       Table table = new Table();
@@ -476,8 +477,6 @@ public class DigirHelper {
       if (reallyVerbose)
         String2.log("DigirHelper.getMetadataTable, first 3 rows:\n" + table.toString(3));
       return table;
-    } finally {
-      reader.close();
     }
   }
 
@@ -644,14 +643,14 @@ public class DigirHelper {
     // get the inventory for each resource
     XPath xPath = XML.getXPath();
     boolean validate = false; // since no .dtd specified by DOCTYPE in the file
-    for (int res = 0; res < resource.length; res++) {
+    for (String s : resource) {
       String xml =
           getInventoryXml(
               version,
               xmlnsPrefix,
               xmlnsNS,
               xmlnsXSD,
-              resource[res],
+              s,
               url,
               filterVariables,
               filterCops,
@@ -675,7 +674,7 @@ public class DigirHelper {
       if (nodeList.getLength() == 0) String2.log("xml=\n" + xml);
       for (int nodeI = 0; nodeI < nodeList.getLength(); nodeI++) {
         Element element = (Element) nodeList.item(nodeI);
-        resourceSA.add(resource[res]);
+        resourceSA.add(s);
         resultsSA.add(element.getTextContent());
         countIA.add(String2.parseInt(element.getAttribute("count")));
       }
@@ -918,13 +917,15 @@ public class DigirHelper {
             + "        <xsd:element name=\"record\">\n"
             + "          <xsd:complexType>\n"
             + "            <xsd:sequence>\n");
-    for (int i = 0; i < resultsVariables.length; i++)
-      request2sb.append("              <xsd:element ref=\"" + resultsVariables[i] + "\"/>\n");
+    for (String resultsVariable : resultsVariables)
+      request2sb.append("              <xsd:element ref=\"" + resultsVariable + "\"/>\n");
     request2sb.append(
-        "            </xsd:sequence>\n"
-            + "          </xsd:complexType>\n"
-            + "        </xsd:element>\n"
-            + "      </structure>\n");
+        """
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                          </structure>
+                    """);
 
     // NO LEADING SPACES, TO SAVE SPACE, TO AVOID HTTP REQUEST-TOO-LONG ERROR
     request2sb.append(
@@ -951,12 +952,12 @@ public class DigirHelper {
 
     // *** get data from each resource
     // apparently, there is no "all" recourse option
-    String diagnosticError = "";
-    for (int resource = 0; resource < resources.length; resource++) {
+    StringBuilder diagnosticError = new StringBuilder();
+    for (String s : resources) {
       try {
         // get the xml for 1 resource from the provider
         long readTime = System.currentTimeMillis();
-        String request = request1 + " resource=\"" + resources[resource] + "\"" + request2;
+        String request = request1 + " resource=\"" + s + "\"" + request2;
 
         // for testing: test that it is well-formed
         // can't validate, because no .dtd specified by DOCTYPE in file
@@ -976,11 +977,10 @@ public class DigirHelper {
         // String response = File2.readFromFile("c:/temp/SearchDigirResponse" + resource +
         // ".xml")[1];
 
-        if (verbose)
-          String2.log(resources[resource] + " readTime=" + (System.currentTimeMillis() - readTime));
+        if (verbose) String2.log(s + " readTime=" + (System.currentTimeMillis() - readTime));
         if (reallyVerbose)
           String2.log(
-              resources[resource]
+              s
                   + " start of response=\n"
                   + response.substring(0, Math.min(5000, response.length())));
 
@@ -995,7 +995,7 @@ public class DigirHelper {
         if (verbose)
           String2.log(
               "After "
-                  + resources[resource]
+                  + s
                   + ", nRows="
                   + tTable.nRows()
                   + " parseTime="
@@ -1011,11 +1011,11 @@ public class DigirHelper {
             String tError =
                 String2.ERROR
                     + " message from resource="
-                    + resources[resource]
+                    + s
                     + ":\n"
                     + response.substring(errorPo)
                     + "\n";
-            diagnosticError += tError + "\n";
+            diagnosticError.append(tError).append("\n");
             String2.log(tError);
           }
         }
@@ -1023,11 +1023,11 @@ public class DigirHelper {
       } catch (Exception e) {
         String tError =
             "EXCEPTION thrown by request to resource="
-                + resources[resource]
+                + s
                 + ":\n"
                 + MustBe.throwableToString(e)
                 + "\n";
-        diagnosticError += tError + "\n";
+        diagnosticError.append(tError).append("\n");
         if (verbose) String2.log(tError);
       }
 
@@ -1129,20 +1129,20 @@ public class DigirHelper {
 
     // pre check that filterVariables and resultsVariables are valid darwin or obis variables?
     String validVars[] = getDarwin2ObisVariables();
-    for (int i = 0; i < resultsVariables.length; i++)
-      if (String2.indexOf(validVars, resultsVariables[i]) < 0)
+    for (String resultsVariable : resultsVariables)
+      if (String2.indexOf(validVars, resultsVariable) < 0)
         Test.error(
             errorInMethod
                 + "Unsupported resultsVariable="
-                + resultsVariables[i]
+                + resultsVariable
                 + "\nValid="
                 + String2.toCSSVString(validVars));
-    for (int i = 0; i < filterVariables.length; i++)
-      if (String2.indexOf(validVars, filterVariables[i]) < 0)
+    for (String filterVariable : filterVariables)
+      if (String2.indexOf(validVars, filterVariable) < 0)
         Test.error(
             errorInMethod
                 + "Unsupported filterVariable="
-                + filterVariables[i]
+                + filterVariable
                 + "\nValid="
                 + String2.toCSSVString(validVars));
 
@@ -1161,8 +1161,7 @@ public class DigirHelper {
         DARWIN_PREFIX + ":CollectionCode",
         DARWIN_PREFIX + ":CatalogNumber"
       };
-      for (int i = 0; i < needed.length; i++)
-        if (getVariables.indexOf(needed[i]) < 0) getVariables.add(needed[i]);
+      for (String s : needed) if (getVariables.indexOf(s) < 0) getVariables.add(s);
     }
 
     // if table already has data, set that table aside
@@ -1279,14 +1278,13 @@ public class DigirHelper {
 
       // set column metadata
       String metadata[] = String2.split(infoArray[1], '`');
-      for (int i = 0; i < metadata.length; i++) {
-        int eqPo = metadata[i].indexOf('='); // first instance of '='
+      for (String metadatum : metadata) {
+        int eqPo = metadatum.indexOf('='); // first instance of '='
         Test.ensureTrue(
-            eqPo > 0,
-            errorInMethod + "Invalid metadata for colName=" + colName + ": " + metadata[i]);
+            eqPo > 0, errorInMethod + "Invalid metadata for colName=" + colName + ": " + metadatum);
         tTable
             .columnAttributes(col)
-            .set(metadata[i].substring(0, eqPo), metadata[i].substring(eqPo + 1));
+            .set(metadatum.substring(0, eqPo), metadatum.substring(eqPo + 1));
       }
     }
 
@@ -1351,20 +1349,20 @@ public class DigirHelper {
 
     // pre check that filterVariables and resultsVariables are valid bmde variables?
     String validVars[] = getBmdeVariables();
-    for (int i = 0; i < resultsVariables.length; i++)
-      if (String2.indexOf(validVars, resultsVariables[i]) < 0)
+    for (String resultsVariable : resultsVariables)
+      if (String2.indexOf(validVars, resultsVariable) < 0)
         Test.error(
             errorInMethod
                 + "Unsupported resultsVariable="
-                + resultsVariables[i]
+                + resultsVariable
                 + "\nValid="
                 + String2.toCSSVString(validVars));
-    for (int i = 0; i < filterVariables.length; i++)
-      if (String2.indexOf(validVars, filterVariables[i]) < 0)
+    for (String filterVariable : filterVariables)
+      if (String2.indexOf(validVars, filterVariable) < 0)
         Test.error(
             errorInMethod
                 + "Unsupported filterVariable="
-                + filterVariables[i]
+                + filterVariable
                 + "\nValid="
                 + String2.toCSSVString(validVars));
 
@@ -1408,14 +1406,13 @@ public class DigirHelper {
 
       // set column metadata
       String metadata[] = String2.split(infoArray[1], '`');
-      for (int i = 0; i < metadata.length; i++) {
-        int eqPo = metadata[i].indexOf('='); // first instance of '='
+      for (String metadatum : metadata) {
+        int eqPo = metadatum.indexOf('='); // first instance of '='
         Test.ensureTrue(
-            eqPo > 0,
-            errorInMethod + "Invalid metadata for colName=" + colName + ": " + metadata[i]);
+            eqPo > 0, errorInMethod + "Invalid metadata for colName=" + colName + ": " + metadatum);
         table
             .columnAttributes(col)
-            .set(metadata[i].substring(0, eqPo), metadata[i].substring(eqPo + 1));
+            .set(metadatum.substring(0, eqPo), metadatum.substring(eqPo + 1));
       }
     }
 

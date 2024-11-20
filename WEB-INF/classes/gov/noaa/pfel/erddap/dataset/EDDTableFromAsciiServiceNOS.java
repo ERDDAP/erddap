@@ -312,8 +312,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         double tLongitude = Double.NaN;
         double tLatitude = Double.NaN;
         // Open the file
-        BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
-        try {
+        try (BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl)) {
           String s = in.readLine();
 
           while (s != null) {
@@ -349,8 +348,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
           // read the data
           table = getTable(in, s); // table PA's have different sizes!
-        } finally {
-          in.close();
         }
 
         // table.makeColumnsSameSize();
@@ -714,8 +711,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     table.addColumn("dateEstablished", dateEstablished);
     String tStationID = null;
     String tStationName = null;
-    Double tLongitude = Double.NaN;
-    Double tLatitude = Double.NaN;
+    double tLongitude = Double.NaN;
+    double tLatitude = Double.NaN;
     String tDateEstablished = null;
 
     String fileName = "c:/programs/nos/ActiveCurrentsStations.xml";
@@ -731,54 +728,60 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     SimpleXMLReader xmlReader =
         new SimpleXMLReader(File2.getDecompressedBufferedInputStream(fileName), "soapenv:Envelope");
     try {
+      label:
       while (true) {
         xmlReader.nextTag();
         String tag = xmlReader.topTag();
         // String2.log("  tag=" + tag);
-        if (tag.equals("/soapenv:Envelope")) break;
+        switch (tag) {
+          case "/soapenv:Envelope":
+            break label;
 
-        /*
-        ...
-        <station ID="cb0102" name="Cape Henry LB 2CH">
-          <metadata><
-            project>Chesapeake Bay South PORTS</project>
-            <deploymentHistory>
-              <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
-              <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
-              <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
-              ...
-              <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
-              <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
-              <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
-            </deploymentHistory>
-          </metadata>
-        </station>
-        <station ID="cb0301" name="Thimble Shoal LB 18">
-        */
-        if (tag.equals("station")) {
-          tStationID = xmlReader.attributeValue("ID");
-          tStationName = xmlReader.attributeValue("name");
-        } else if (tag.equals("/station")) {
-          String2.log(tStationID + " " + tStationName + " " + tLongitude + " " + tLatitude);
-          if (tStationID != null
-              && tStationName != null
-              && !Double.isNaN(tLongitude)
-              && !Double.isNaN(tLatitude)) stationID.add(tStationID);
-          stationName.add(tStationName);
-          longitude.add(tLongitude);
-          latitude.add(tLatitude);
-          dateEstablished.add(tDateEstablished == null ? "" : tDateEstablished);
-          tDateEstablished = null;
-        } else if (tag.equals("deployment")) {
-          // there are usually several deployments,
-          //  so get first deployed date, but last long,lat
-          if (!String2.isSomething(tDateEstablished)) {
-            tDateEstablished = xmlReader.attributeValue("deployed");
-            if (tDateEstablished != null && tDateEstablished.length() > 10)
-              tDateEstablished = tDateEstablished.substring(0, 10);
-          }
-          tLongitude = String2.parseDouble(xmlReader.attributeValue("long"));
-          tLatitude = String2.parseDouble(xmlReader.attributeValue("lat"));
+            /*
+            ...
+            <station ID="cb0102" name="Cape Henry LB 2CH">
+              <metadata><
+                project>Chesapeake Bay South PORTS</project>
+                <deploymentHistory>
+                  <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
+                  <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
+                  <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
+                  ...
+                  <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
+                  <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
+                  <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
+                </deploymentHistory>
+              </metadata>
+            </station>
+            <station ID="cb0301" name="Thimble Shoal LB 18">
+            */
+          case "station":
+            tStationID = xmlReader.attributeValue("ID");
+            tStationName = xmlReader.attributeValue("name");
+            break;
+          case "/station":
+            String2.log(tStationID + " " + tStationName + " " + tLongitude + " " + tLatitude);
+            if (tStationID != null
+                && tStationName != null
+                && !Double.isNaN(tLongitude)
+                && !Double.isNaN(tLatitude)) stationID.add(tStationID);
+            stationName.add(tStationName);
+            longitude.add(tLongitude);
+            latitude.add(tLatitude);
+            dateEstablished.add(tDateEstablished == null ? "" : tDateEstablished);
+            tDateEstablished = null;
+            break;
+          case "deployment":
+            // there are usually several deployments,
+            //  so get first deployed date, but last long,lat
+            if (!String2.isSomething(tDateEstablished)) {
+              tDateEstablished = xmlReader.attributeValue("deployed");
+              if (tDateEstablished != null && tDateEstablished.length() > 10)
+                tDateEstablished = tDateEstablished.substring(0, 10);
+            }
+            tLongitude = String2.parseDouble(xmlReader.attributeValue("long"));
+            tLatitude = String2.parseDouble(xmlReader.attributeValue("lat"));
+            break;
         }
       }
     } finally {

@@ -56,7 +56,7 @@ public class AttributedString2 {
    */
   public AttributedString2(String family, double size, Color color) {
     addBaseAttribute(TextAttribute.FAMILY, family);
-    addBaseAttribute(TextAttribute.SIZE, Float.valueOf((float) size));
+    addBaseAttribute(TextAttribute.SIZE, (float) size);
     addBaseAttribute(TextAttribute.FOREGROUND, color);
   }
 
@@ -248,7 +248,7 @@ public class AttributedString2 {
             if (boldStart == as2.size()) {
               // do nothing
             } else if (boldStart >= 0) {
-              as2.addAttribute(TextAttribute.WEIGHT, Float.valueOf(2), boldStart, as2.size());
+              as2.addAttribute(TextAttribute.WEIGHT, 2F, boldStart, as2.size());
               boldStart = -1;
             } else String2.log(errorInMethod + "unexpected /b or /strong at position " + po);
 
@@ -274,7 +274,7 @@ public class AttributedString2 {
             if (italicStart == as2.size()) {
               // do nothing
             } else if (italicStart >= 0) {
-              as2.addAttribute(TextAttribute.POSTURE, Float.valueOf(0.2f), italicStart, as2.size());
+              as2.addAttribute(TextAttribute.POSTURE, 0.2f, italicStart, as2.size());
               italicStart = -1;
             } else String2.log(errorInMethod + "unexpected /i or /em at position " + po);
 
@@ -315,11 +315,11 @@ public class AttributedString2 {
 
     // close out unclosed attributes
     if (boldStart >= 0 && boldStart < as2.size())
-      as2.addAttribute(TextAttribute.WEIGHT, Float.valueOf(2), boldStart, as2.size());
+      as2.addAttribute(TextAttribute.WEIGHT, 2F, boldStart, as2.size());
     if (colorStart >= 0 && colorStart < as2.size())
       as2.addAttribute(TextAttribute.FOREGROUND, color, colorStart, as2.size());
     if (italicStart >= 0 && italicStart < as2.size())
-      as2.addAttribute(TextAttribute.POSTURE, Float.valueOf(0.2f), italicStart, as2.size());
+      as2.addAttribute(TextAttribute.POSTURE, 0.2f, italicStart, as2.size());
     if (underlineStart >= 0 && underlineStart < as2.size())
       as2.addAttribute(
           TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, underlineStart, as2.size());

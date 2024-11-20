@@ -45,8 +45,6 @@ public class LineAttribute implements Attribute, Cloneable {
   private int miter_style_ = JOIN_MITER;
   private float miter_limit_ = 10.0f;
 
-  private static float HEAVY_WIDTH = 2.0f;
-
   /** Solid line style. */
   public static final int SOLID = 0;
 
@@ -99,6 +97,7 @@ public class LineAttribute implements Attribute, Cloneable {
   /** Construct <code>LineAttribute</code> with <code>Color.black</code>. */
   public LineAttribute(int style) {
     style_ = style;
+    float HEAVY_WIDTH = 2.0f;
     if (style_ == HEAVY) width_ = HEAVY_WIDTH;
   }
 
@@ -188,9 +187,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setMarkHeightP(double markh) {
     if (markHeightP_ != markh) {
-      Double tempOld = Double.valueOf(markHeightP_);
+      Double tempOld = markHeightP_;
       markHeightP_ = markh;
-      firePropertyChange("markHeightP", tempOld, Double.valueOf(markHeightP_));
+      firePropertyChange("markHeightP", tempOld, markHeightP_);
     }
   }
 
@@ -211,9 +210,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setStyle(int st) {
     if (style_ != st) {
-      Integer tempOld = Integer.valueOf(style_);
+      Integer tempOld = style_;
       style_ = st;
-      firePropertyChange("style", tempOld, Integer.valueOf(style_));
+      firePropertyChange("style", tempOld, style_);
     }
   }
 
@@ -239,9 +238,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setWidth(float t) {
     if (width_ != t) {
-      Float tempOld = Float.valueOf(width_);
+      Float tempOld = width_;
       width_ = t;
-      firePropertyChange("width", tempOld, Float.valueOf(width_));
+      firePropertyChange("width", tempOld, width_);
     }
   }
 
@@ -286,9 +285,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setDashPhase(float phase) {
     if (dashPhase_ != phase) {
-      Float tempOld = Float.valueOf(dashPhase_);
+      Float tempOld = dashPhase_;
       dashPhase_ = phase;
-      firePropertyChange("dashPhase", tempOld, Float.valueOf(dashPhase_));
+      firePropertyChange("dashPhase", tempOld, dashPhase_);
     }
   }
 
@@ -336,11 +335,11 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setMark(int mark) {
     if (mark_ != mark) {
-      Integer tempOld = Integer.valueOf(mark_);
+      Integer tempOld = mark_;
       if (mark <= 0) mark = 1;
       if (mark > 51) mark = 51;
       mark_ = mark;
-      firePropertyChange("mark", tempOld, Integer.valueOf(mark_));
+      firePropertyChange("mark", tempOld, mark_);
     }
   }
 
@@ -360,9 +359,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setCapStyle(int style) {
     if (cap_style_ != style) {
-      Integer tempOld = Integer.valueOf(cap_style_);
+      Integer tempOld = cap_style_;
       cap_style_ = style;
-      firePropertyChange("capStyle", tempOld, Integer.valueOf(cap_style_));
+      firePropertyChange("capStyle", tempOld, cap_style_);
     }
   }
 
@@ -378,9 +377,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setMiterStyle(int style) {
     if (miter_style_ != style) {
-      Integer tempOld = Integer.valueOf(miter_style_);
+      Integer tempOld = miter_style_;
       miter_style_ = style;
-      firePropertyChange("miterStyle", tempOld, Integer.valueOf(miter_style_));
+      firePropertyChange("miterStyle", tempOld, miter_style_);
     }
   }
 
@@ -395,9 +394,9 @@ public class LineAttribute implements Attribute, Cloneable {
    */
   public void setMiterLimit(float limit) {
     if (miter_limit_ != limit) {
-      Float tempOld = Float.valueOf(miter_limit_);
+      Float tempOld = miter_limit_;
       miter_limit_ = limit;
-      firePropertyChange("miterLimit", tempOld, Float.valueOf(miter_limit_));
+      firePropertyChange("miterLimit", tempOld, miter_limit_);
     }
   }
 

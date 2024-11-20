@@ -93,11 +93,11 @@ public class SharedWatchService {
   }
 
   private static String systemToID(FileSystem system) {
-    String id = "";
+    StringBuilder id = new StringBuilder();
     for (FileStore store : system.getFileStores()) {
-      id += store.name() + store.type();
+      id.append(store.name()).append(store.type());
     }
-    return id;
+    return id.toString();
   }
 
   /**

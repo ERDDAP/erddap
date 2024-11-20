@@ -103,18 +103,18 @@ public class EDDGridFromEtopo extends EDDGrid {
       // no support for active, since always active
       // no support for accessibleTo, since accessible to all
       // no support for onChange since dataset never changes
-      if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<accessibleViaWMS>" -> {}
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "<accessibleViaFiles>" -> {}
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "<nThreads>" -> {}
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "<dimensionValuesInMemory>" -> {}
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDGridFromEtopo(
@@ -483,8 +483,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     }
 
     // open the file  (reading is thread safe)
-    RandomAccessFile raf = new RandomAccessFile(fileName, "r");
-    try {
+    try (RandomAccessFile raf = new RandomAccessFile(fileName, "r")) {
       // fill data array
       // lat is outer loop because file is lat major
       // and loop is backwards since stored top to bottom
@@ -497,8 +496,6 @@ public class EDDGridFromEtopo extends EDDGrid {
           data[po++] = Short.reverseBytes(raf.readShort());
         }
       }
-    } finally {
-      raf.close();
     }
   }
 

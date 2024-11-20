@@ -36,7 +36,12 @@ public class HtmlWidgets {
    * charset' tags.
    */
   public static final String DOCTYPE_HTML =
-      "<!DOCTYPE html>\n" + "<html lang=\"en-US\">\n" + "<head>\n" + "  <meta charset=\"UTF-8\">\n";
+      """
+                  <!DOCTYPE html>
+                  <html lang="en-US">
+                  <head>
+                    <meta charset="UTF-8">
+                  """;
 
   /**
    * This is the standard start of an XHTML 1.0 document up to and including the 'head' tag. This is
@@ -68,8 +73,10 @@ public class HtmlWidgets {
    * to go back to.
    */
   public static final String BACK_BUTTON =
-      "&nbsp;\n"
-          + "<br><button type=\"button\" onClick=\"history.go(-1);return true;\">Back</button>\n";
+      """
+                  &nbsp;
+                  <br><button type="button" onClick="history.go(-1);return true;">Back</button>
+                  """;
 
   public static final int BUTTONS_0n = -1, BUTTONS_1 = -2, BUTTONS_100 = -8, BUTTONS_1000 = -16;
 
@@ -994,7 +1001,10 @@ public class HtmlWidgets {
       String other) {
 
     StringBuilder sb = new StringBuilder();
-    sb.append("<table class=\"compact\">\n" + "  <tr>\n");
+    sb.append("""
+            <table class="compact">
+              <tr>
+            """);
     boolean hasLabel = htmlLabel != null && htmlLabel.length() > 0;
     if (hasLabel) sb.append("<td class=\"N\">" + htmlLabel + "</td>\n");
     int inRow = 0;
@@ -1021,7 +1031,10 @@ public class HtmlWidgets {
       if (++inRow % perRow == 0 && i != colors.length - 1)
         sb.append("  </tr>\n" + "  <tr>\n" + (hasLabel ? "    <td>&nbsp;</td>\n" : ""));
     }
-    sb.append("  </tr>\n" + "</table>\n");
+    sb.append("""
+              </tr>
+            </table>
+            """);
     return sb.toString();
   }
 
@@ -1216,7 +1229,7 @@ public class HtmlWidgets {
               //  converts internal >1 space ("ab   c") into 1 space ("ab c").
               ">"
               + opt
-              + ("".equals(opt) ? "</option>" : "")
+              + (opt.isEmpty() ? "</option>" : "")
               +
               // </option> is often not used and is not required.
               "\n");
@@ -1318,7 +1331,11 @@ public class HtmlWidgets {
               "Select the last item.",
               buttonJS));
 
-      sb.append("\n  </tr>" + "\n</table>\n");
+      sb.append("""
+
+                </tr>
+              </table>
+              """);
     }
     return sb.toString();
   }
@@ -1654,7 +1671,7 @@ public class HtmlWidgets {
                 + other
                 + " alt=\"");
     int n = Math.max(1, width / 8);
-    for (int i = 0; i < n; i++) sb.append("&nbsp;");
+    sb.append("&nbsp;".repeat(n));
     sb.append("\">\n");
     return sb.toString();
   }
@@ -1823,11 +1840,12 @@ public class HtmlWidgets {
           "nThumbs.length=" + nSliders + " != initToPositions.length=" + initToPositions.length);
     StringBuilder sb = new StringBuilder();
     sb.append(
-        "\n"
-            + "<!-- start of sliderScript -->\n"
-            + "<script> \n"
-            + "<!--\n"
-            + "var fromTextFields = [");
+        """
+
+                    <!-- start of sliderScript -->
+                    <script>\s
+                    <!--
+                    var fromTextFields = [""");
     for (int s = 0; s < nSliders; s++)
       sb.append(String2.toJson(fromTextFields[s]) + (s < nSliders - 1 ? ", " : "];\n"));
     sb.append("var toTextFields = [");
@@ -1859,14 +1877,22 @@ public class HtmlWidgets {
         sb.append("  \"sliderRight" + s + "\"+HORIZONTAL+MAXOFFRIGHT+" + bgWidth + ",\n");
     }
     sb.setLength(sb.length() - 2); // remove ,\n
-    sb.append(");\n" + "\n" + "var el = dd.elements;\n" + "\n");
+    sb.append("""
+            );
+
+            var el = dd.elements;
+
+            """);
 
     // log
     sb.append("function log(msg) {\n");
     if (debugMode)
       sb.append(
           "  if (typeof(console) != \"undefined\") console.log(msg);\n"); // for debugging only
-    sb.append("}\n" + "\n");
+    sb.append("""
+            }
+
+            """);
 
     // toUserValue
     sb.append(
@@ -1907,7 +1933,10 @@ public class HtmlWidgets {
             + "\n");
 
     // my_DragFunc
-    sb.append("function my_DragFunc() {\n" + "  try {\n");
+    sb.append("""
+            function my_DragFunc() {
+              try {
+            """);
     for (int s = 0; s < nSliders; s++) {
       if (nThumbs[s] > 0)
         sb.append("    if (dd.obj.name == 'sliderLeft" + s + "') updateUI(true, " + s + ");\n");
@@ -2225,19 +2254,21 @@ public class HtmlWidgets {
 
     StringBuilder sb2 = new StringBuilder();
     sb2.append(
-        "\n"
-            + "<!-- start of twoClickMap[2] -->\n"
-            + "<div id=\"rubberBand\" style=\"position:absolute; visibility:hidden; width:0px; height:0px; "
-            + "font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;\" \n"
-            + "      onClick=\"return rubber(true, event)\" \n"
-            + "  onMouseMove=\"return rubber(false, event)\" ></div>\n"
-            + "\n"
-            + "<script>\n"
-            + "<!--\n"
-            + "var tcNextI = 0;\n"
-            + "var tcCx = new Array(0,0);\n"
-            + "var tcCy = new Array(0,0);\n"
-            + "\n");
+        """
+
+                    <!-- start of twoClickMap[2] -->
+                    <div id="rubberBand" style="position:absolute; visibility:hidden; width:0px; height:0px; \
+                    font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;"\s
+                          onClick="return rubber(true, event)"\s
+                      onMouseMove="return rubber(false, event)" ></div>
+
+                    <script>
+                    <!--
+                    var tcNextI = 0;
+                    var tcCx = new Array(0,0);
+                    var tcCy = new Array(0,0);
+
+                    """);
 
     sb2.append(
         // basically, this finds the offsetXY of an element by adding up the offsets of all parent

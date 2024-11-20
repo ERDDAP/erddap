@@ -362,8 +362,7 @@ public class EDVGridAxis extends EDV {
         double values[] =
             Calendar2.getNEvenlySpaced(
                 destinationMinDouble(), destinationMaxDouble(), SLIDER_MAX_NVALUES);
-        for (int i = 0; i < values.length; i++)
-          sliderIndices.add(destinationToClosestIndex(values[i]));
+        for (double value : values) sliderIndices.add(destinationToClosestIndex(value));
 
         // add last index
         sliderIndices.add(nSourceValues - 1);

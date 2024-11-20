@@ -139,10 +139,19 @@ public class TableWriterGeoJson extends TableWriter {
       isString = new boolean[nColumns];
       if (nColumns == 2 || (nColumns == 3 && altColumn >= 0)) {
         // write as MultiPoint
-        writer.write("{\n" + "  \"type\": \"MultiPoint\",\n" + "  \"coordinates\": [\n");
+        writer.write(
+            """
+                {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                """);
       } else {
         // write as FeatureCollection
-        writer.write("{\n" + "  \"type\": \"FeatureCollection\",\n" + "  \"propertyNames\": [");
+        writer.write(
+            """
+                {
+                  "type": "FeatureCollection",
+                  "propertyNames": [""");
         boolean somethingWritten = false;
         for (int col = 0; col < nColumns; col++) {
           PAType cPAType = table.getColumn(col).elementType();
@@ -168,7 +177,10 @@ public class TableWriterGeoJson extends TableWriter {
             writer.write(String2.toJson(units));
           }
         }
-        writer.write("],\n" + "  \"features\": [\n");
+        writer.write("""
+                ],
+                  "features": [
+                """);
       }
     }
 

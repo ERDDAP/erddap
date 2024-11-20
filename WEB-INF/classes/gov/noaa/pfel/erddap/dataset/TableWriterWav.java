@@ -156,16 +156,12 @@ public class TableWriterWav extends TableWriter {
     File2.delete(fullDosName);
 
     // then send to outputStream
-    OutputStream out = outputStreamSource.outputStream(""); // no character_encoding
-    try {
+    // no character_encoding
+    try (OutputStream out = outputStreamSource.outputStream("")) {
       if (!File2.copy(fullOutName, out))
         throw new SimpleException(String2.ERROR + " while transmitting file.");
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
     // diagnostic
     if (verbose)

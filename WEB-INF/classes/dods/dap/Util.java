@@ -161,7 +161,7 @@ class Util {
         // padded with leading zeros
         buf.append('\\');
         String numVal = Integer.toString((int) c & 0xFF, 8);
-        for (int pad = 0; pad < (3 - numVal.length()); pad++) buf.append('0');
+        buf.append("0".repeat(Math.max(0, (3 - numVal.length()))));
         buf.append(numVal);
       }
     }

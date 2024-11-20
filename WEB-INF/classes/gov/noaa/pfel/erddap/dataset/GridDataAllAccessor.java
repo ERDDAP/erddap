@@ -123,11 +123,8 @@ public class GridDataAllAccessor implements AutoCloseable {
     long n = gridDataAccessor.totalIndex.size();
     Math2.ensureArraySizeOkay(n, "GridDataAllAccessor");
     PrimitiveArray pa = PrimitiveArray.factory(dataPAType[dv], (int) n, false);
-    DataInputStream dis = getDataInputStream(dv);
-    try {
+    try (DataInputStream dis = getDataInputStream(dv)) {
       pa.readDis(dis, (int) n);
-    } finally {
-      dis.close();
     }
     return pa;
   }

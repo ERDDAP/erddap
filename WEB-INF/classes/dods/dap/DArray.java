@@ -272,6 +272,6 @@ public class DArray extends DVector implements Cloneable {
 
   /** Returns the <code>DArrayDimension</code> object for the first dimension. */
   public DArrayDimension getFirstDimension() {
-    return ((DArrayDimension) dimVector.get(0));
+    return ((DArrayDimension) dimVector.getFirst());
   }
 }

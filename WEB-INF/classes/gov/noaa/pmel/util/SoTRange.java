@@ -133,17 +133,17 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
 
     @Override
     public Object getStartObject() {
-      return java.lang.Long.valueOf(start);
+      return start;
     }
 
     @Override
     public Object getEndObject() {
-      return java.lang.Long.valueOf(end);
+      return end;
     }
 
     @Override
     public Object getDeltaObject() {
-      return java.lang.Long.valueOf(delta);
+      return delta;
     }
 
     /**
@@ -322,17 +322,17 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
 
     @Override
     public Object getStartObject() {
-      return java.lang.Double.valueOf(start);
+      return start;
     }
 
     @Override
     public Object getEndObject() {
-      return java.lang.Double.valueOf(end);
+      return end;
     }
 
     @Override
     public Object getDeltaObject() {
-      return java.lang.Double.valueOf(delta);
+      return delta;
     }
 
     /**

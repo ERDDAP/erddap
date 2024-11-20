@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -731,9 +730,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
       // how specify file name in popup window that user is shown? see below
       // see http://forum.java.sun.com/thread.jspa?threadID=696263&messageID=4043287
     }
-    return new Object[] {
-      contentType, headerMap, Boolean.valueOf(genericCompressed), Boolean.valueOf(otherCompressed)
-    };
+    return new Object[] {contentType, headerMap, genericCompressed, otherCompressed};
   }
 
   /**
@@ -813,15 +810,13 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
     String contentType = (String) fileTypeInfo[0];
     HashMap headerMap = (HashMap) fileTypeInfo[1];
     boolean genericCompressed =
-        ((Boolean) fileTypeInfo[2]).booleanValue(); // true for generic compressed files, e.g., .zip
+        (Boolean) fileTypeInfo[2]; // true for generic compressed files, e.g., .zip
     boolean otherCompressed =
-        ((Boolean) fileTypeInfo[3])
-            .booleanValue(); // true for app specific compressed (but not audio/ image/ video)
+        (Boolean) fileTypeInfo[3]; // true for app specific compressed (but not audio/ image/ video)
 
     response.setContentType(contentType);
-    Iterator it = headerMap.keySet().iterator();
-    while (it.hasNext()) {
-      String key = (String) it.next();
+    for (Object o : headerMap.keySet()) {
+      String key = (String) o;
       response.setHeader(key, (String) headerMap.get(key));
     }
 

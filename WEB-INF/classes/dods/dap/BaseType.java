@@ -66,8 +66,7 @@ public abstract class BaseType implements Cloneable {
   @Override
   public BaseType clone() {
     try {
-      BaseType bt = (BaseType) super.clone();
-      return bt;
+      return (BaseType) super.clone();
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
       throw new InternalError();
@@ -381,12 +380,12 @@ public abstract class BaseType implements Cloneable {
 
     BaseType parent = _myParent;
 
-    String longName = _name;
+    StringBuilder longName = new StringBuilder(_name);
 
     while (parent != null) {
-      longName = parent.getName() + "." + longName;
+      longName.insert(0, parent.getName() + ".");
       parent = parent.getParent();
     }
-    return longName;
+    return longName.toString();
   }
 }
