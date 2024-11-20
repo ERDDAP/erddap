@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -108,35 +107,6 @@ public class SSR {
 
   static {
     HttpURLConnection.setFollowRedirects(true); // it's a static method!
-  }
-
-  /**
-   * Returns a String which is a substring of the current string. This checks for and deals with bad
-   * first and last values.
-   *
-   * @param s the string
-   * @param first the first character to be extracted (1..)
-   * @param last the last character to be extracted (1..)
-   * @return the extracted String (or "")
-   */
-  public static String cutChar(String s, int first, int last) {
-    int size = s.length();
-
-    if (first < 1) first = 1;
-    if (last > size) last = size;
-    return first > last ? "" : s.substring(first - 1, last); // last is exclusive
-  }
-
-  /**
-   * Returns a String which is a substring at the end of the current string, starting at
-   * <tt>first</tt>. This checks for and deals with a bad first values.
-   *
-   * @param s the string
-   * @param first the first character to be extracted (1..)
-   * @return the extracted String (or "")
-   */
-  public static String cutChar(String s, int first) {
-    return cutChar(s, first, s.length());
   }
 
   /**
@@ -544,111 +514,6 @@ public class SSR {
       out.close();
     }
     if (verbose) String2.log("  zip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
-  }
-
-  /**
-   * Put the specified files in a gz file (without directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gz file. These can use forward or
-   *     backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param timeOutSeconds (use -1 for no time out)
-   * @throws Exception if trouble
-   */
-  public static void gzip(String gzipDirName, String dirNames[]) throws Exception {
-
-    gzip(gzipDirName, dirNames, false, "");
-  }
-
-  /**
-   * Put the specified files in a gzip file (without directory info). If a file named gzipDirName
-   * already exists, it is overwritten.
-   *
-   * @param gzipDirName the full name for the .zip file (path + name + ".gz")
-   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
-   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
-   * @param includeDirectoryInfo set this to false if you don't want any dir invo stored with the
-   *     files
-   * @param removeDirPrefix if includeDirectoryInfo is true, this is the prefix to be removed from
-   *     the start of each dir name (ending with a slash). If includeDirectoryInfo is false, this is
-   *     removed.
-   * @throws Exception if trouble
-   */
-  private static void gzip(
-      String gzipDirName, String dirNames[], boolean includeDirectoryInfo, String removeDirPrefix)
-      throws Exception {
-
-    // validate
-    if (includeDirectoryInfo) {
-      // ensure slash at end of removeDirPrefix
-      if ("\\/".indexOf(removeDirPrefix.charAt(removeDirPrefix.length() - 1)) < 0)
-        throw new IllegalArgumentException(
-            String2.ERROR + " in SSR.gzip: removeDirPrefix must end with a slash.");
-
-      // ensure dirNames start with removeDirPrefix
-      for (int i = 0; i < dirNames.length; i++)
-        if (!dirNames[i].startsWith(removeDirPrefix))
-          throw new IllegalArgumentException(
-              String2.ERROR
-                  + " in SSR.zip: dirName["
-                  + i
-                  + "] doesn't start with "
-                  + removeDirPrefix
-                  + ".");
-    }
-
-    // if Linux, it is faster to use the zip utility
-    // I don't know how to include just partial dir info with Linux,
-    //  since I can't cd to that directory.
-    /*if (String2.OSIsLinux && !includeDirectoryInfo) {
-        //-j: don't include dir info
-        if (verbose) String2.log("Using Linux's zip");
-        File2.delete(zipDirName); //delete any exiting .zip file of that name
-        cShell("zip -j " + zipDirName + " " + String2.toSSVString(dirNames),
-            timeOutSeconds);
-        return;
-    }*/
-
-    // for all other operating systems...
-    // create the ZIP file
-    long tTime = System.currentTimeMillis();
-    GZIPOutputStream out =
-        new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(gzipDirName)));
-    try {
-      // create a buffer for reading the files
-      byte[] buf = new byte[4096];
-
-      // compress the files
-      for (int i = 0; i < 1; i++) { // i < dirNames.length; i++) {
-        InputStream in =
-            File2.getBufferedInputStream(
-                dirNames[i]); // not File2.getDecompressedBufferedInputStream() Read files as is.
-        try {
-          // add ZIP entry to output stream
-          // String tName =
-          //     includeDirectoryInfo
-          //         ? dirNames[i].substring(removeDirPrefix.length())
-          //         : // already validated above
-          //         File2.getNameAndExtension(dirNames[i]);
-          // out.putNextEntry(new ZipEntry(tName));
-
-          // transfer bytes from the file to the ZIP file
-          int len;
-          while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-          }
-          // complete the entry
-          // out.closeEntry();
-        } finally {
-          in.close();
-        }
-      }
-    } finally {
-      // close the GZIP file
-      out.close();
-    }
-    if (verbose) String2.log("  gzip done. TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
   }
 
   /**
