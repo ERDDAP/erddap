@@ -78,20 +78,20 @@ public class Subscriptions implements AutoCloseable {
    * From the point of view of a dataset: which subscriptions are for a given dataset.
    * key=datasetID, value=HashSet of persistentTable row numbers
    */
-  protected Map<String, Set<Integer>> datasetSubscriptions = new HashMap<>();
+  protected final Map<String, Set<Integer>> datasetSubscriptions = new HashMap<>();
 
   /**
    * From the point of view of email addresses: which subscriptions are related to that email
    * address. key=email, value=HashSet of persistentTable row numbers for valid and pending
    * subscriptions
    */
-  protected Map<String, Set<Integer>> emailSubscriptions = new HashMap<>();
+  protected final Map<String, Set<Integer>> emailSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected Map<String, Integer> pendingSubscriptions = new HashMap<>();
+  protected final Map<String, Integer> pendingSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected Map<String, Integer> validSubscriptions = new HashMap<>();
+  protected final Map<String, Integer> validSubscriptions = new HashMap<>();
 
   /**
    * The constructor for Subscriptions. If fullFuleName exists, the info will be loaded. If there is
@@ -826,8 +826,7 @@ public class Subscriptions implements AutoCloseable {
         "\n\nNote that pending subscriptions that aren't validated soon will be deleted.\n"
             + "\n\n*****\n"
             + messageToRequestList(email));
-    if (reallyVerbose)
-      String2.log("Subscriptions.listSubscriptions(" + email + ")=\n" + sb.toString());
+    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions(" + email + ")=\n" + sb);
     return sb.toString();
   }
 
@@ -882,7 +881,7 @@ public class Subscriptions implements AutoCloseable {
       }
       sb.append('\n');
     }
-    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions()=\n" + sb.toString());
+    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions()=\n" + sb);
     return sb.toString();
   }
 

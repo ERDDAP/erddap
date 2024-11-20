@@ -22,17 +22,17 @@ import gov.noaa.pmel.sgt.SGLabel;
  * @since 2.0
  */
 class ContourLabel {
-  int index;
+  final int index;
 
   /**
    * @label label
    * @link aggregationByValue
    * @supplierCardinality 1
    */
-  SGLabel label;
+  final SGLabel label;
 
-  double width;
-  double height;
+  final double width;
+  final double height;
 
   public ContourLabel(int indx, SGLabel lab, double hgt, double wid) {
     index = indx;

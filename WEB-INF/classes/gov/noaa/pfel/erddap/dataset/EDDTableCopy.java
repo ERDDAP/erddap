@@ -30,13 +30,13 @@ import gov.noaa.pfel.erddap.variable.*;
 @SaxHandlerClass(EDDTableCopyHandler.class)
 public class EDDTableCopy extends EDDTable {
 
-  protected EDDTable sourceEdd;
+  protected final EDDTable sourceEdd;
   protected EDDTableFromFiles localEdd;
 
   /** Some tests set EDDTableCopy.defaultCheckSourceData = false; Don't set it here. */
-  public static boolean defaultCheckSourceData = true;
+  public static final boolean defaultCheckSourceData = true;
 
-  protected static int maxChunks = Integer.MAX_VALUE; // some test methods reduce this
+  protected static final int maxChunks = Integer.MAX_VALUE; // some test methods reduce this
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -47,7 +47,7 @@ public class EDDTableCopy extends EDDTable {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
   protected int standardizeWhat = Integer.MAX_VALUE; // =not specified by user
   protected int nThreads = -1; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
@@ -101,42 +101,42 @@ public class EDDTableCopy extends EDDTable {
 
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<nThreads>",
+            "<standardizeWhat>",
+            "<accessibleViaFiles>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<fileTableInMemory>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<checkSourceData>",
+            "<orderExtractBy>",
+            "<extractDestinationNames>",
+            "<reloadEveryNMinutes>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<extractDestinationNames>" -> {}
         case "</extractDestinationNames>" -> tExtractDestinationNames = content;
-        case "<orderExtractBy>" -> {}
         case "</orderExtractBy>" -> tOrderExtractBy = content;
-        case "<checkSourceData>" -> {}
         case "</checkSourceData>" -> checkSourceData = String2.parseBoolean(content);
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<fileTableInMemory>" -> {}
         case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<standardizeWhat>" -> {}
         case "</standardizeWhat>" -> tStandardizeWhat = String2.parseInt(content);
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
         case "<dataset>" -> {
           if ("false".equals(xmlReader.attributeValue("active"))) {
@@ -406,7 +406,7 @@ public class EDDTableCopy extends EDDTable {
 
             // does the file already exist
             String fileName = String2.encodeFileNameSafe(table.getStringData(nCols - 1, row));
-            if (File2.isFile(fileDir.toString() + fileName + ".nc")) {
+            if (File2.isFile(fileDir + fileName + ".nc")) {
               if (reallyVerbose)
                 String2.log("  file already exists: " + fileDir + fileName + ".nc");
               continue;
@@ -436,9 +436,9 @@ public class EDDTableCopy extends EDDTable {
                     "  task#"
                         + taskNumber
                         + " TASK_MAKE_A_DATAFILE "
-                        + tQuery.toString()
+                        + tQuery
                         + "\n    "
-                        + fileDir.toString()
+                        + fileDir
                         + fileName
                         + ".nc");
             }
@@ -534,9 +534,9 @@ public class EDDTableCopy extends EDDTable {
     String sortedColumn = orderExtractBy == null ? "" : orderExtractBy.get(0); // the first column
     if (sortedColumn.length() > 0) {
       for (int dv = 0; dv < nDataVariables; dv++) {
-        if (sortedColumn.equals((String) tDataVariables[dv][0])
+        if (sortedColumn.equals(tDataVariables[dv][0])
             && // columnName
-            "String".equals((String) tDataVariables[dv][3])) { // columnType
+            "String".equals(tDataVariables[dv][3])) { // columnType
           if (verbose)
             String2.log(
                 "orderExtractBy #0="
@@ -632,7 +632,7 @@ public class EDDTableCopy extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableCopy "
               + datasetID
               + " constructor finished. TIME="

@@ -77,7 +77,7 @@ public class FindDuplicateTime {
 
       } catch (Throwable t) {
         nErrors++;
-        results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t.toString() + "\n");
+        results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t + "\n");
       }
     }
 

@@ -123,13 +123,19 @@ public class EDDTableFromEDDGrid extends EDDTable {
             }
           }
         }
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaFiles>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
           // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
@@ -138,17 +144,11 @@ public class EDDTableFromEDDGrid extends EDDTable {
           // String2.parseInt(content);
         case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         case "<addAttributes>" -> tAddGlobalAttributes = getAttributesFromXml(xmlReader);
         default -> xmlReader.unexpectedTagException();
@@ -355,7 +355,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromEDDGrid "
               + datasetID
               + " constructor finished. TIME="

@@ -563,7 +563,7 @@ public class ErrorParserTokenManager implements ErrorParserConstants {
   }
 
   public void SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0)
+    if (lexState != 0)
       throw new TokenMgrError(
           "Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.",
           TokenMgrError.INVALID_LEXICAL_STATE);
@@ -583,7 +583,7 @@ public class ErrorParserTokenManager implements ErrorParserConstants {
   }
 
   int curLexState = 0;
-  int defaultLexState = 0;
+  final int defaultLexState = 0;
   int jjnewStateCnt;
   int jjround;
   int jjmatchedPos;

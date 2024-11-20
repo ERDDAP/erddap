@@ -20,7 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class SaxHandler extends DefaultHandler {
   private State state;
-  SaxParsingContext context;
+  final SaxParsingContext context;
 
   public SaxHandler(SaxParsingContext context) {
     this.context = context;

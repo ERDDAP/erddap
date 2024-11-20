@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridSideBySideHandler extends BaseGridHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDGridSideBySideHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
@@ -20,7 +20,7 @@ public class EDDGridSideBySideHandler extends BaseGridHandler {
     this.context = context;
   }
 
-  private ArrayList<EDDGrid> tChildDatasets = new ArrayList<>();
+  private final ArrayList<EDDGrid> tChildDatasets = new ArrayList<>();
   private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 

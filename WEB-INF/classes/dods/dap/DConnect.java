@@ -118,7 +118,7 @@ public class DConnect {
 
   private static class CleanupConnect implements Runnable {
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
     private CleanupConnect(InputStream input) {
       this.inputStream = input;

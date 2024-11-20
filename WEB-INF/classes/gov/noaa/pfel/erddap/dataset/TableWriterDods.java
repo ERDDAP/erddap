@@ -26,7 +26,7 @@ import java.io.OutputStream;
 public class TableWriterDods extends TableWriter {
 
   // set by constructor
-  protected String sequenceName;
+  protected final String sequenceName;
 
   // set by firstTime
   protected DataOutputStream dos;

@@ -41,8 +41,8 @@ import java.util.Arrays;
 @SaxHandlerClass(EDDGridSideBySideHandler.class)
 public class EDDGridSideBySide extends EDDGrid {
 
-  protected EDDGrid childDatasets[];
-  protected int childStopsAt[]; // the last valid dataVariables index for each childDataset
+  protected final EDDGrid[] childDatasets;
+  protected final int[] childStopsAt; // the last valid dataVariables index for each childDataset
   protected IntArray indexOfAxis0Value[]; // an IntArray for each child; a row for each axis0 value
 
   /**
@@ -141,33 +141,33 @@ public class EDDGridSideBySide extends EDDGrid {
             }
           }
         }
-        case "<onChange>" -> {}
+        case "<onChange>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<ensureAxisValuesAreEqual>",
+            "<matchAxisNDigits>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<matchAxisNDigits>" -> {}
         case "</matchAxisNDigits>" ->
             tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-        case "<ensureAxisValuesAreEqual>" -> {}
         case "</ensureAxisValuesAreEqual>" ->
             tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-        case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaWMS>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
         default -> xmlReader.unexpectedTagException();
@@ -421,7 +421,7 @@ public class EDDGridSideBySide extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridSideBySide "
               + datasetID
               + " constructor finished. TIME="

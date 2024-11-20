@@ -800,7 +800,7 @@ public class NcHelper {
    * @return a Variable[] (or null if list is null)
    */
   public static Variable[] variableListToArray(List<Variable> list) {
-    return (Variable[]) (list == null ? null : list.toArray(new Variable[0]));
+    return list == null ? null : list.toArray(new Variable[0]);
   }
 
   /**
@@ -810,7 +810,7 @@ public class NcHelper {
    * @return a Dimensione[] (or null if list is null)
    */
   public static Dimension[] dimensionListToArray(List<Dimension> list) {
-    return (Dimension[]) (list == null ? null : list.toArray(new Dimension[0]));
+    return list == null ? null : list.toArray(new Dimension[0]);
   }
 
   /**
@@ -886,7 +886,7 @@ public class NcHelper {
     // look for a time variable (units contain " since ")
     if (mainDimension == null) {
       for (Variable rootGroupVariable : rootGroupVariables) {
-        Variable variable = (Variable) rootGroupVariable;
+        Variable variable = rootGroupVariable;
         List<Dimension> dimensions = variable.getDimensions();
         PrimitiveArray units = getVariableAttribute(variable, "units");
         if (units != null
@@ -907,7 +907,7 @@ public class NcHelper {
     // data variables)
     if (mainDimension == null) {
       for (int v = rootGroupVariables.size() - 1; v >= 0; v--) {
-        Variable variable = (Variable) rootGroupVariables.get(v);
+        Variable variable = rootGroupVariables.get(v);
         List<Dimension> dimensions = variable.getDimensions();
         if (dimensions.size() > 0) {
           mainDimension = dimensions.getFirst();

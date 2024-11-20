@@ -55,17 +55,17 @@ import javax.sql.DataSource;
 public class EDDTableFromDatabase extends EDDTable {
 
   /** set by the constructor */
-  protected String dataSourceName;
+  protected final String dataSourceName;
 
   protected DataSource dataSource; // null if none available
-  protected String driverName;
-  protected String connectionProperties[]; // may have username and password!
-  protected String catalogName;
-  protected String schemaName;
-  protected String tableName;
+  protected final String driverName;
+  protected final String[] connectionProperties; // may have username and password!
+  protected final String catalogName;
+  protected final String schemaName;
+  protected final String tableName;
   protected String columnNameQuotes = "\""; // may also be ' or empty string
-  protected String orderBy[];
-  protected Map<String, Set<String>> scriptNeedsColumns =
+  protected final String[] orderBy;
+  protected final Map<String, Set<String>> scriptNeedsColumns =
       new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   protected String catalogSeparator;
@@ -151,52 +151,52 @@ public class EDDTableFromDatabase extends EDDTable {
         case "<altitudeMetersPerSourceUnit>" ->
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceCanDoDistinct>",
+            "<sourceCanOrderBy>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<orderBy>",
+            "<columnNameQuotes>",
+            "<tableName>",
+            "<schemaName>",
+            "<catalogName>",
+            "<driverName>",
+            "<dataSourceName>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<dataSourceName>" -> {}
         case "</dataSourceName>" -> tDataSourceName = content;
-        case "<driverName>" -> {}
         case "</driverName>" -> tDriverName = content;
         case "<connectionProperty>" -> tConnectionProperties.add(xmlReader.attributeValue("name"));
         case "</connectionProperty>" -> tConnectionProperties.add(content);
-        case "<catalogName>" -> {}
         case "</catalogName>" -> tCatalogName = content;
-        case "<schemaName>" -> {}
         case "</schemaName>" -> tSchemaName = content;
-        case "<tableName>" -> {}
         case "</tableName>" -> tTableName = content;
-        case "<columnNameQuotes>" -> {}
         case "</columnNameQuotes>" -> tColumnNameQuotes = content;
-        case "<orderBy>" -> {}
         case "</orderBy>" -> {
           if (content != null && content.length() > 0) tOrderBy = String2.split(content, ',');
         }
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<sourceCanOrderBy>" -> {}
         case "</sourceCanOrderBy>" -> tSourceCanOrderBy = content;
-        case "<sourceCanDoDistinct>" -> {}
         case "</sourceCanDoDistinct>" -> tSourceCanDoDistinct = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -653,7 +653,7 @@ public class EDDTableFromDatabase extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromDatabase "
               + datasetID
               + " constructor finished. TIME="
@@ -934,13 +934,13 @@ public class EDDTableFromDatabase extends EDDTable {
                     + "("
                     + EDStatic.databaseUnableToConnectAr[0]
                     + ": "
-                    + t.toString()
+                    + t
                     + ")",
                 EDStatic.waitThenTryAgainAr[language]
                     + "("
                     + EDStatic.databaseUnableToConnectAr[language]
                     + ": "
-                    + t.toString()
+                    + t
                     + ")"));
       }
     }
@@ -1026,7 +1026,7 @@ public class EDDTableFromDatabase extends EDDTable {
         humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
       }
       if (orderBySB.length() > 0) {
-        String ts = " ORDER BY " + orderBySB.toString();
+        String ts = " ORDER BY " + orderBySB;
         query.append(ts);
         humanQuery.append(ts);
       }
@@ -1079,8 +1079,7 @@ public class EDDTableFromDatabase extends EDDTable {
               "Prepared statements don't support class type=" + edv.sourceDataType() + ".");
       }
       if (verbose)
-        String2.log(
-            "  statement=" + statement.toString() + "\n" + " statement~=" + humanQuery.toString());
+        String2.log("  statement=" + statement.toString() + "\n" + " statement~=" + humanQuery);
 
       // execute the query
       ResultSet rs = statement.executeQuery();
@@ -1205,7 +1204,7 @@ public class EDDTableFromDatabase extends EDDTable {
         throw t;
       } else {
         // all other errors probably from database
-        throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+        throw new Throwable(EDStatic.errorFromDataSource + t, t);
       }
     }
   }

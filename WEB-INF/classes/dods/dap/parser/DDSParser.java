@@ -266,7 +266,7 @@ public class DDSParser implements DDSParserConstants {
               + "\n"
               + "In the dataset descriptor object:\n"
               + "Expected a variable declaration (e.g., Int32 i;). ("
-              + e.toString()
+              + e
               + ")"); // bob added
     }
     throw new Error("Missing return statement in function");
@@ -711,7 +711,7 @@ public class DDSParser implements DDSParserConstants {
               + t.image
               + " is not an integer value.\n"
               + "Index values must be integers. ("
-              + e.toString()
+              + e
               + ")"); // bob added
     } catch (ParseException e) {
       error(
@@ -795,7 +795,7 @@ public class DDSParser implements DDSParserConstants {
       error(
           "Error parsing the dataset name.\n"
               + "The name may be missing or may contain an illegal character. ("
-              + e.toString()
+              + e
               + ")"); // bob added
     }
   }
@@ -828,7 +828,7 @@ public class DDSParser implements DDSParserConstants {
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
-  public boolean lookingAhead = false;
+  public final boolean lookingAhead = false;
   private int jj_gen;
   private final int[] jj_la1 = new int[22];
   private final int[] jj_la1_0 = {
@@ -968,10 +968,10 @@ public class DDSParser implements DDSParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
+  private final java.util.Vector jj_expentries = new java.util.Vector();
   private int[] jj_expentry;
   private int jj_kind = -1;
-  private int[] jj_lasttokens = new int[100];
+  private final int[] jj_lasttokens = new int[100];
   private int jj_endpos;
 
   private void jj_add_error_token(int kind, int pos) {

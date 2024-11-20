@@ -171,8 +171,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     combinedAttributes.set("time_origin", "01-JAN-1970 00:00:00");
     combinedAttributes.set("units", units);
     longName = combinedAttributes.getString("long_name");
-    if (longName == null
-        || longName.toLowerCase().equals("time")) // catch nothing or alternate case
+    if (longName == null || longName.equalsIgnoreCase("time")) // catch nothing or alternate case
     combinedAttributes.set("long_name", TIME_LONGNAME);
     longName = combinedAttributes.getString("long_name");
 

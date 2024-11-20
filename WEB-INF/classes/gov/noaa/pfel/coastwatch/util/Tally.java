@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Tally {
   // thread-safe; use default nConcurrent
-  protected ConcurrentHashMap<String, ConcurrentHashMap<String, IntObject>> mainHashMap =
+  protected final ConcurrentHashMap<String, ConcurrentHashMap<String, IntObject>> mainHashMap =
       new ConcurrentHashMap<>();
 
   /** This adds 1 tally mark. */

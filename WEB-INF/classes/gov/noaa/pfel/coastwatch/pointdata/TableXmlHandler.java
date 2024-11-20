@@ -47,13 +47,13 @@ public class TableXmlHandler extends DefaultHandler {
    */
   public static boolean verbose = false;
 
-  private String errorInMethod = String2.ERROR + " in TableXmlHandler:\n";
+  private final String errorInMethod = String2.ERROR + " in TableXmlHandler:\n";
 
   // set by constructor
-  private Table table;
-  private String rowStack[];
-  private int rowStackSize;
-  private String[] rowElementAttributes;
+  private final Table table;
+  private final String[] rowStack;
+  private final int rowStackSize;
+  private final String[] rowElementAttributes;
 
   // reset by startDocument
   private int row;

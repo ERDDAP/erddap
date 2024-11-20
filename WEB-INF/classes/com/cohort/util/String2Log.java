@@ -24,7 +24,7 @@ public class String2Log implements Log {
   public static final int WARN_LEVEL = 3;
   public static final int ERROR_LEVEL = 4;
   public static final int FATAL_LEVEL = 5;
-  private int level; // messages of this level and higher are sent to String2.log.
+  private final int level; // messages of this level and higher are sent to String2.log.
 
   /**
    * The constructor.

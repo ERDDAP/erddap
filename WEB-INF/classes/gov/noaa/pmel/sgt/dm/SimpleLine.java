@@ -191,7 +191,7 @@ public class SimpleLine implements SGTLine, Cartesian, Serializable, Cloneable {
     } catch (CloneNotSupportedException e) {
       newLine = new SimpleLine();
     }
-    return (SGTData) newLine;
+    return newLine;
   }
 
   /** Get the X coordinate array. */

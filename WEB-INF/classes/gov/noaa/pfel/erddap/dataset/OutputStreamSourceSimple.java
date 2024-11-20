@@ -13,7 +13,7 @@ import java.io.OutputStream;
  */
 public class OutputStreamSourceSimple implements OutputStreamSource {
 
-  private OutputStream outputStream;
+  private final OutputStream outputStream;
 
   /**
    * The constructor.

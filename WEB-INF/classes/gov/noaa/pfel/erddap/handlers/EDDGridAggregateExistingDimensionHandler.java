@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridAggregateExistingDimensionHandler extends BaseGridHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDGridAggregateExistingDimensionHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
@@ -21,7 +21,7 @@ public class EDDGridAggregateExistingDimensionHandler extends BaseGridHandler {
   }
 
   private EDDGrid firstChild = null;
-  private StringArray tLocalSourceUrls = new StringArray();
+  private final StringArray tLocalSourceUrls = new StringArray();
   private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 

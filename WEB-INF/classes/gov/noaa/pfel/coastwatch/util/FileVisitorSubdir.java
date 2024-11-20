@@ -32,7 +32,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
   public static boolean reallyVerbose = false;
   public static boolean debugMode = false;
@@ -41,13 +41,14 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
       "FileVisitorSubdir caught an Exception but is continuing and returning the info it has: ";
 
   /** things set by constructor */
-  public String dir; // with \\ or / separators. With trailing slash (to match).
+  public final String dir; // with \\ or / separators. With trailing slash (to match).
 
-  private char fromSlash, toSlash;
-  public String pathRegex; // will be null if equivalent of .*
-  public Pattern pathPattern; // will be null if pathRegex is null
+  private final char fromSlash;
+  private final char toSlash;
+  public final String pathRegex; // will be null if equivalent of .*
+  public final Pattern pathPattern; // will be null if pathRegex is null
 
-  public StringArray results = new StringArray();
+  public final StringArray results = new StringArray();
 
   /**
    * The constructor.

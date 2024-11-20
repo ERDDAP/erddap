@@ -38,7 +38,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
 
   // set by constructor
   protected final TableWriter otherTableWriter;
-  public String orderBy[];
+  public final String[] orderBy;
   // maintains count of the number of values in average
   protected final Map<String, int[]> counts = new HashMap<>();
   protected final Map<String, Integer> rowmap = new HashMap<>();
@@ -373,7 +373,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
   }
 
   private static class DegreesAccumulator {
-    boolean isDegreesTrue;
+    final boolean isDegreesTrue;
     boolean allSame = true;
     double deg = Double.NaN; // the value if allSame
     double meanx = Double.NaN;

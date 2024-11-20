@@ -29,7 +29,7 @@ import javax.imageio.stream.ImageInputStream;
 public class HtmlWidgets {
 
   /** Leave this set to false here, but change within a program if desired. */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * This is the standard start of an HTML 5 document up to and including the 'head' and 'meta
@@ -90,7 +90,7 @@ public class HtmlWidgets {
    * This will display a message to the user if JavaScript is not supported or disabled. Last
    * updated 2019-12-19. FUTURE: refer to https://enable-javascript.com/ ???
    */
-  public static String ifJavaScriptDisabled =
+  public static final String ifJavaScriptDisabled =
       "<noscript><div style=\"color:red\"><strong>To work correctly, this web page requires that JavaScript be enabled in your browser.</strong> Please:\n"
           + "<br>1) Enable JavaScript in your browser:\n"
           + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Advanced : Privacy and security : Site Settings : JavaScript\"\n"
@@ -175,9 +175,9 @@ public class HtmlWidgets {
    * images in imageDirUrl. sliderBg.gif must have sliderThumbHeight. (These were created in Paint,
    * not CoPlot.)
    */
-  public static int sliderThumbWidth = 15;
+  public static final int sliderThumbWidth = 15;
 
-  public static int sliderThumbHeight = 17;
+  public static final int sliderThumbHeight = 17;
 
   /**
    * This style removes the extra padding on the left and right of a button. But for ERDDAP, see CSS
@@ -225,7 +225,7 @@ public class HtmlWidgets {
    * This is a standalone javascript which does percent encoding of a string, similar to
    * SSR.minimalPercentEncode.
    */
-  public static String PERCENT_ENCODE_JS =
+  public static final String PERCENT_ENCODE_JS =
       "<script> \n"
           + "function percentEncode(s) { \n"
           + "  var s2=\"\";\n"
@@ -245,7 +245,7 @@ public class HtmlWidgets {
   public boolean htmlTooltips;
 
   /** From EDStatic.imagedirUrl(loggedInAs, language). */
-  public String imageDirUrl;
+  public final String imageDirUrl;
 
   // this is set by beginForm
   public String formName;
@@ -1371,44 +1371,44 @@ public class HtmlWidgets {
       String other,
       String onChange) {
 
-    StringBuilder sb = new StringBuilder();
     int nOptions = options.length;
 
     // the cssTooltip approach
-    sb.append("<span class=\"nowrap\">");
-    sb.append(textField(name, tooltip, fieldLength, maxLength, initialTextValue, other));
-    sb.append(
-        cssTooltip(
-            "<img "
-                + // imgOther + //there could be additional attributes for the image
-                " style=\"vertical-align:top;\" "
-                + completeTooltip(comboBoxAltAr[language])
-                + "\n  src=\""
-                + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
-                + "\"\n"
-                + "  alt=\""
-                + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
-                + "\"\n"
-                + ">",
-            "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
-            select(
-                name + "TooltipSelect",
-                "",
-                Math.min(nOptions, 10),
-                options,
-                -1,
-                // !!! This javascript is identical to other places (except within popup).
-                // It works in all browsers except MS Edge (item is selected, but value not copied
-                // to 'name' textfield).
-                "\n  "
-                    + (onChange == null
-                        ? "onChange=\"document."
-                            + formName
-                            + "."
-                            + name
-                            + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
-                        : onChange))));
-    sb.append("</span>");
+    String sb =
+        "<span class=\"nowrap\">"
+            + textField(name, tooltip, fieldLength, maxLength, initialTextValue, other)
+            + cssTooltip(
+                "<img "
+                    + // imgOther + //there could be additional attributes for the image
+                    " style=\"vertical-align:top;\" "
+                    + completeTooltip(comboBoxAltAr[language])
+                    + "\n  src=\""
+                    + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
+                    + "\"\n"
+                    + "  alt=\""
+                    + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
+                    + "\"\n"
+                    + ">",
+                "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
+                select(
+                    name + "TooltipSelect",
+                    "",
+                    Math.min(nOptions, 10),
+                    options,
+                    -1,
+                    // !!! This javascript is identical to other places (except within popup).
+                    // It works in all browsers except MS Edge (item is selected, but value not
+                    // copied
+                    // to 'name' textfield).
+                    "\n  "
+                        + (onChange == null
+                            ? "onChange=\"document."
+                                + formName
+                                + "."
+                                + name
+                                + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
+                            : onChange)))
+            + "</span>";
 
     /*
             //the <input> widget and the <datalist> approach
@@ -1439,7 +1439,7 @@ public class HtmlWidgets {
             sb.append("</datalist>");
     */
 
-    return sb.toString();
+    return sb;
   }
 
   /**
@@ -1646,7 +1646,7 @@ public class HtmlWidgets {
     String2.replaceAll(sb, "&#39;", "\\&#39;");
     String2.replaceAll(sb, "  ", "&nbsp;&nbsp;");
     return " onmouseover=\"Tip('"
-        + sb.toString()
+        + sb
         + "')\" onmouseout=\"UnTip()\" "; // with space at beginning and end
   }
 
@@ -2215,8 +2215,7 @@ public class HtmlWidgets {
 
     if (tooltip == null) tooltip = twoClickMapDefaultTooltipAr[language];
 
-    StringBuilder sb0 = new StringBuilder();
-    sb0.append(
+    String sb0 =
         "\n"
             + "<!-- start of twoClickMap[0] -->\n"
             + "<img \n"
@@ -2228,10 +2227,9 @@ public class HtmlWidgets {
             + tooltip
             + "\" \n"
             + "  style=\"cursor:crosshair; vertical-align:middle; border:0;\">\n"
-            + "<!-- end of twoClickMap[0] -->\n");
+            + "<!-- end of twoClickMap[0] -->\n";
 
-    StringBuilder sb1 = new StringBuilder();
-    sb1.append(
+    String sb1 =
         "<!-- start of twoClickMap[1] -->\n"
             + "<map name=\"worldImageMap\">\n"
             + "  <area href=\""
@@ -2250,33 +2248,34 @@ public class HtmlWidgets {
             + "        onClick=\"return rubber(true, event)\" \n"
             + "    onMouseMove=\"return rubber(false, event)\" > \n"
             + "</map>\n"
-            + "<!-- end of twoClickMap[1] -->\n");
+            + "<!-- end of twoClickMap[1] -->\n";
 
-    StringBuilder sb2 = new StringBuilder();
-    sb2.append(
+    String sb2 =
         """
 
-                    <!-- start of twoClickMap[2] -->
-                    <div id="rubberBand" style="position:absolute; visibility:hidden; width:0px; height:0px; \
-                    font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;"\s
-                          onClick="return rubber(true, event)"\s
-                      onMouseMove="return rubber(false, event)" ></div>
+              <!-- start of twoClickMap[2] -->
+              <div id="rubberBand" style="position:absolute; visibility:hidden; width:0px; height:0px; \
+              font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;"\s
+                    onClick="return rubber(true, event)"\s
+                onMouseMove="return rubber(false, event)" ></div>
 
-                    <script>
-                    <!--
-                    var tcNextI = 0;
-                    var tcCx = new Array(0,0);
-                    var tcCy = new Array(0,0);
+              <script>
+              <!--
+              var tcNextI = 0;
+              var tcCx = new Array(0,0);
+              var tcCy = new Array(0,0);
 
-                    """);
+              """
+            +
 
-    sb2.append(
-        // basically, this finds the offsetXY of an element by adding up the offsets of all parent
-        // elements
-        // was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n" +
-        // but that's gone
-        // https://www.chestysoft.com/imagefile/javascript/get-coordinates.asp
-        "function findPosXY(obj) {\n"
+            // basically, this finds the offsetXY of an element by adding up the offsets of all
+            // parent
+            // elements
+            // was "//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/\n"
+            // +
+            // but that's gone
+            // https://www.chestysoft.com/imagefile/javascript/get-coordinates.asp
+            "function findPosXY(obj) {\n"
             + "  var curleft = 0;\n"
             + "  var curtop = 0;\n"
             + "  if(obj.offsetParent) {\n"
@@ -2497,9 +2496,9 @@ public class HtmlWidgets {
             + "--> \n"
             + "</script>\n"
             + "<!-- end of twoClickMap[2] -->\n"
-            + "\n");
+            + "\n";
 
-    return new String[] {sb0.toString(), sb1.toString(), sb2.toString()};
+    return new String[] {sb0, sb1, sb2};
   }
 
   /* *  NOT FINISHED

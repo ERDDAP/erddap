@@ -163,6 +163,6 @@ public class SoTPoint implements Serializable, Cloneable {
    */
   @Override
   public String toString() {
-    return new String("(" + x_ + ", " + y_ + ")");
+    return "(" + x_ + ", " + y_ + ")";
   }
 }

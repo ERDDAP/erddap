@@ -38,9 +38,9 @@ public class PathCartesianRenderer extends CartesianRenderer {
   // things set by constructor
   private CartesianGraph graph;
   private GeneralPath path;
-  private double scale;
-  private Color fillColor;
-  private Color strokeColor;
+  private final double scale;
+  private final Color fillColor;
+  private final Color strokeColor;
 
   /** Bob Simons added this to avoid memory leak problems. */
   @Override

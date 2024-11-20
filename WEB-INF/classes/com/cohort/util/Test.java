@@ -1049,12 +1049,12 @@ public class Test {
               + "a("
               + a.getClass().getName()
               + ")="
-              + a.toString()
+              + a
               + "\n"
               + "b("
               + b.getClass().getName()
               + ")="
-              + b.toString());
+              + b);
   }
 
   /**

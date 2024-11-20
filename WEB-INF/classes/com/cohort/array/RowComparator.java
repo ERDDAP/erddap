@@ -12,9 +12,9 @@ import java.util.List;
 /** This is used by PrimitiveArray.rank to rank a table of data stored as a PrimitiveArray[]. */
 public class RowComparator implements Comparator<Integer> {
 
-  protected List<PrimitiveArray> table;
-  protected int[] keys;
-  protected boolean[] ascending;
+  protected final List<PrimitiveArray> table;
+  protected final int[] keys;
+  protected final boolean[] ascending;
 
   /**
    * A constructor used by PrimitiveArray.rank.

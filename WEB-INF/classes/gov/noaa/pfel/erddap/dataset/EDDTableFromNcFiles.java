@@ -48,7 +48,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -1074,6 +1074,6 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         // String2.log(t.toString());
       }
     }
-    String2.log("\n" + tally.toString());
+    String2.log("\n" + tally);
   }
 }

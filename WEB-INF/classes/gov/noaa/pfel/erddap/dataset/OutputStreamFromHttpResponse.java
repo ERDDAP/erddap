@@ -26,17 +26,17 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
    */
   public static boolean verbose = false;
 
-  public static String HTML_MIME_TYPE = "text/html";
-  public static String KML_MIME_TYPE = "application/vnd.google-earth.kml+xml";
+  public static final String HTML_MIME_TYPE = "text/html";
+  public static final String KML_MIME_TYPE = "application/vnd.google-earth.kml+xml";
 
-  private HttpServletRequest request;
-  private HttpServletResponse response;
+  private final HttpServletRequest request;
+  private final HttpServletResponse response;
   private String fileName;
-  private String fileType;
-  private String extension;
+  private final String fileType;
+  private final String extension;
   private String usingCompression = ""; // not yet set
   private OutputStream outputStream;
-  private boolean hasRangeRequest;
+  private final boolean hasRangeRequest;
 
   /**
    * The constructor.

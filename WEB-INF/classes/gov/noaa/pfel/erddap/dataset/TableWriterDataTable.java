@@ -33,7 +33,7 @@ import java.util.GregorianCalendar;
 public class TableWriterDataTable extends TableWriter {
 
   // set by constructor
-  protected boolean writeUnits;
+  protected final boolean writeUnits;
 
   // set by firstTime
   protected boolean isCharOrString[];

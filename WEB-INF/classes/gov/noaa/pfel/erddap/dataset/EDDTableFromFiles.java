@@ -68,7 +68,7 @@ import java.util.regex.*;
 public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateHandler {
 
   public static final String MF_FIRST = "first", MF_LAST = "last";
-  public static int suggestedUpdateEveryNMillis = 10000;
+  public static final int suggestedUpdateEveryNMillis = 10000;
 
   public static int suggestUpdateEveryNMillis(String tFileDir) {
     return String2.isTrulyRemote(tFileDir) ? 0 : suggestedUpdateEveryNMillis;
@@ -119,7 +119,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   protected StringArray sourceDataNames;
   protected StringArray safeSourceDataNames;
   protected String sourceDataTypes[];
-  protected Map<String, Set<String>> scriptNeedsColumns = new HashMap<>(); // <sourceName,
+  protected final Map<String, Set<String>> scriptNeedsColumns = new HashMap<>(); // <sourceName,
   // otherSourceColumnNames>
 
   // arrays to hold expected source add_offset, fillValue, missingValue,
@@ -184,7 +184,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   protected String cachePartialPathRegex = null; // null if inactive
 
   /** When threshold size is reached, prune the cache to fraction*threshold. */
-  protected double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
+  protected final double cacheFraction = FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -267,86 +267,86 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         case "<altitudeMetersPerSourceUnit>" ->
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<cachePartialPathRegex>",
+            "<cacheSizeGB>",
+            "<cacheFromUrl>",
+            "<nThreads>",
+            "<standardizeWhat>",
+            "<removeMVRows>",
+            "</isLocal>",
+            "<isLocal>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<fileTableInMemory>",
+            "<specialMode>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<columnSeparator>",
+            "<firstDataRow>",
+            "<columnNamesRow>",
+            "<skipLinesRegex>",
+            "<skipHeaderToRegex>",
+            "<charset>",
+            "<sortFilesBySourceNames>",
+            "<sortedColumnSourceName>",
+            "<columnNameForExtract>",
+            "<extractRegex>",
+            "<postExtractRegex>",
+            "<preExtractRegex>",
+            "</nDimensions>",
+            "<nDimensions>",
+            "<metadataFrom>",
+            "<accessibleViaFiles>",
+            "<pathRegex>",
+            "<recursive>",
+            "<fileNameRegex>",
+            "<fileDir>",
+            "<updateEveryNMillis>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<updateEveryNMillis>" -> {}
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
-        case "<fileDir>" -> {}
         case "</fileDir>" -> tFileDir = content;
-        case "<fileNameRegex>" -> {}
         case "</fileNameRegex>" -> tFileNameRegex = content;
-        case "<recursive>" -> {}
         case "</recursive>" -> tRecursive = String2.parseBoolean(content);
-        case "<pathRegex>" -> {}
         case "</pathRegex>" -> tPathRegex = content;
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<metadataFrom>" -> {}
         case "</metadataFrom>" -> tMetadataFrom = content;
-        case "<nDimensions>" -> {}
-        case "</nDimensions>" -> {}
-        case "<preExtractRegex>" -> {}
         case "</preExtractRegex>" -> tPreExtractRegex = content;
-        case "<postExtractRegex>" -> {}
         case "</postExtractRegex>" -> tPostExtractRegex = content;
-        case "<extractRegex>" -> {}
         case "</extractRegex>" -> tExtractRegex = content;
-        case "<columnNameForExtract>" -> {}
         case "</columnNameForExtract>" -> tColumnNameForExtract = content;
-        case "<sortedColumnSourceName>" -> {}
         case "</sortedColumnSourceName>" -> tSortedColumnSourceName = content;
-        case "<sortFilesBySourceNames>" -> {}
         case "</sortFilesBySourceNames>" -> tSortFilesBySourceNames = content;
-        case "<charset>" -> {}
         case "</charset>" -> tCharset = content;
-        case "<skipHeaderToRegex>" -> {}
         case "</skipHeaderToRegex>" -> tSkipHeaderToRegex = content;
-        case "<skipLinesRegex>" -> {}
         case "</skipLinesRegex>" -> tSkipLinesRegex = content;
-        case "<columnNamesRow>" -> {}
         case "</columnNamesRow>" -> tColumnNamesRow = String2.parseInt(content);
-        case "<firstDataRow>" -> {}
         case "</firstDataRow>" -> tFirstDataRow = String2.parseInt(content);
-        case "<columnSeparator>" -> {}
         case "</columnSeparator>" -> tColumnSeparator = content;
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<specialMode>" -> {}
         case "</specialMode>" -> tSpecialMode = content;
-        case "<fileTableInMemory>" -> {}
         case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
-        case "<isLocal>" -> {}
-        case "</isLocal>" -> {}
-        case "<removeMVRows>" -> {}
         case "</removeMVRows>" -> tRemoveMVRows = String2.parseBoolean(content);
-        case "<standardizeWhat>" -> {}
         case "</standardizeWhat>" -> tStandardizeWhat = String2.parseInt(content);
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tNThreads = String2.parseInt(content);
-        case "<cacheFromUrl>" -> {}
         case "</cacheFromUrl>" -> tCacheFromUrl = content;
-        case "<cacheSizeGB>" -> {}
         case "</cacheSizeGB>" -> tCacheSizeGB = String2.parseInt(content);
-        case "<cachePartialPathRegex>" -> {}
         case "</cachePartialPathRegex>" -> tCachePartialPathRegex = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -2208,11 +2208,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // send email with bad file info
     if (!badFileMap.isEmpty()) {
-      StringBuilder emailSB = new StringBuilder();
-      emailSB.append(badFileMapToString(badFileMap, dirList));
-      emailSB.append(msg + "\n\n");
-      EDStatic.email(
-          EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB.toString());
+      String emailSB = badFileMapToString(badFileMap, dirList) + msg + "\n\n";
+      EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
     }
     // if (debugMode) String2.log(">> EDDTableFromFiles " +
     // Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished sending email
@@ -2596,7 +2593,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromFiles "
               + datasetID
               + " constructor finished. TIME="
@@ -3127,7 +3124,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           String2.log(
               sourceDataNames.get(dv)
                   + " minMin="
-                  + (isCharOrString ? String2.toJson(nMinMax[1], 256) : "" + nMinMax[1])
+                  + (isCharOrString ? String2.toJson(nMinMax[1], 256) : nMinMax[1])
                   + (row < 0
                       ? " (fileTable row not found)"
                       : " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row)));
@@ -3146,7 +3143,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           String2.log(
               sourceDataNames.get(dv)
                   + " maxMax="
-                  + (isCharOrString ? String2.toJson(nMinMax[2], 256) : "" + nMinMax[2])
+                  + (isCharOrString ? String2.toJson(nMinMax[2], 256) : nMinMax[2])
                   + (row < 0
                       ? " (fileTable row not found)"
                       : " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row)));

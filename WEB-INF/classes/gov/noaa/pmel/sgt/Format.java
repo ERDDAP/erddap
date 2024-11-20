@@ -130,9 +130,7 @@ public class Format {
 
   private static String repeat(char c, int n) {
     if (n <= 0) return "";
-    StringBuilder s = new StringBuilder(n);
-    s.append(String.valueOf(c).repeat(n));
-    return s.toString();
+    return String.valueOf(c).repeat(n);
   }
 
   private static String convert(long x, int n, int m, String d) {
@@ -197,7 +195,7 @@ public class Format {
       long l = (long) (factor * fr);
       // long l = (long) (factor * fr + 0.5);
       z = leading_zeroes.toString() + l;
-      z = z.substring(z.length() - precision, z.length());
+      z = z.substring(z.length() - precision);
     }
 
     if (precision > 0 || alternate) z = "." + z;
@@ -245,7 +243,7 @@ public class Format {
       p = p + -e;
     }
 
-    return f + p.substring(p.length() - 3, p.length());
+    return f + p.substring(p.length() - 3);
   }
 
   /**

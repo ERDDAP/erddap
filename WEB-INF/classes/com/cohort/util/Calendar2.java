@@ -2244,20 +2244,20 @@ public class Calendar2 {
           "EEEE MMMM d HH:mm:ss yyyy");
 
   /** This makes a hashMap of the dateTimeFormat pointing to a compiled regex. */
-  public static HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap();
+  public static final HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap();
 
   /** This makes a hashMap of the dateTimeFormat pointing to a parsed formatter. */
-  public static HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM = new HashMap();
+  public static final HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM = new HashMap();
 
   // can't test hasComma because of e.g., {1,6}
-  public static char digitRegexTimeFormatLastChar[] =
+  public static char[] digitRegexTimeFormatLastChar =
       new char[digitRegexTimeFormat.size()]; // to catch/match C|T|Z
-  public static BitSet digitRegexTimeFormatHasColon = new BitSet(digitRegexTimeFormat.size());
-  public static BitSet digitRegexTimeFormatHasPeriod =
+  public static final BitSet digitRegexTimeFormatHasColon = new BitSet(digitRegexTimeFormat.size());
+  public static final BitSet digitRegexTimeFormatHasPeriod =
       new BitSet(digitRegexTimeFormat.size()); // all periods in regexes are literals
-  public static BitSet digitRegexTimeFormatHasSlash = new BitSet(digitRegexTimeFormat.size());
+  public static final BitSet digitRegexTimeFormatHasSlash = new BitSet(digitRegexTimeFormat.size());
   // not hasT because of 'T'hursday
-  public static char letterRegexTimeFormatLastChar[] = new char[letterRegexTimeFormat.size()];
+  public static char[] letterRegexTimeFormatLastChar = new char[letterRegexTimeFormat.size()];
 
   static {
     for (int i = 0; i < digitRegexTimeFormat.size(); i += 2) {
@@ -2292,19 +2292,19 @@ public class Calendar2 {
   }
 
   /** The IDEAL values are used for makeIdealGC. */
-  public static String IDEAL_N_OPTIONS[] = new String[100];
+  public static String[] IDEAL_N_OPTIONS = new String[100];
 
   static {
     for (int i = 0; i < 100; i++) IDEAL_N_OPTIONS[i] = "" + (i + 1);
   }
 
-  public static String IDEAL_UNITS_OPTIONS[] =
+  public static final String[] IDEAL_UNITS_OPTIONS =
       new String[] {"second(s)", "minute(s)", "hour(s)", "day(s)", "month(s)", "year(s)"};
-  public static double IDEAL_UNITS_SECONDS[] =
+  public static final double[] IDEAL_UNITS_SECONDS =
       new double[] { // where imprecise, these are on the low end
         1, 60, SECONDS_PER_HOUR, SECONDS_PER_DAY, 30.0 * SECONDS_PER_DAY, 365.0 * SECONDS_PER_DAY
       };
-  public static int IDEAL_UNITS_FIELD[] =
+  public static final int[] IDEAL_UNITS_FIELD =
       new int[] {SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR}; // month is 0..
 
   public static int YMDHMSM_FIELDS[] =
@@ -2326,7 +2326,7 @@ public class Calendar2 {
    * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * For diagnostic purposes, this returns the name of one of the fields defined above (or
@@ -3633,7 +3633,7 @@ public class Calendar2 {
         || !String2.isDigit(cdt.charAt(1))
         || !String2.isDigit(cdt.charAt(2))
         || !String2.isDigit(cdt.charAt(3))) return cdt; // unchanged
-    sb.append(cdt.substring(0, 4));
+    sb.append(cdt, 0, 4);
     if (len < 6 || !String2.isDigit(cdt.charAt(4)) || !String2.isDigit(cdt.charAt(5)))
       return sb.toString();
     sb.append("-" + cdt.substring(4, 6));
@@ -6068,7 +6068,7 @@ public class Calendar2 {
                         + " with format="
                         + dateTimeFormat
                         + "\n"
-                        + t2.toString());
+                        + t2);
                 printError = false;
               }
             }
@@ -6078,8 +6078,7 @@ public class Calendar2 {
 
     } catch (Throwable t) {
       if (verbose)
-        String2.log(
-            "  Calendar2.toEpochSeconds: format=" + dateTimeFormat + ", error=" + t.toString());
+        String2.log("  Calendar2.toEpochSeconds: format=" + dateTimeFormat + ", error=" + t);
     }
     return da;
   }

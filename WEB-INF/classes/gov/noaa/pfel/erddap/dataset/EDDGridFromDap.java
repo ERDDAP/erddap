@@ -66,7 +66,7 @@ public class EDDGridFromDap extends EDDGrid {
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This constructs an EDDGridFromDap based on the information in an .xml file.
@@ -122,31 +122,31 @@ public class EDDGridFromDap extends EDDGrid {
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<axisVariable>" -> tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceUrl>",
+            "<updateEveryNMillis>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaWMS>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<updateEveryNMillis>" -> {}
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
         default -> xmlReader.unexpectedTagException();
@@ -564,7 +564,7 @@ public class EDDGridFromDap extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromDap "
               + datasetID
               + " constructor finished. TIME="
@@ -998,7 +998,7 @@ public class EDDGridFromDap extends EDDGrid {
                 EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
                     + "\n("
                     + EDStatic.errorFromDataSource
-                    + t.toString()
+                    + t
                     + ")",
                 t);
       }
@@ -1195,8 +1195,7 @@ public class EDDGridFromDap extends EDDGrid {
       // ensure it is a DGrid or DArray
       DArray mainDArray;
       if (bt instanceof DGrid dgrid)
-        mainDArray =
-            (DArray) dgrid.getVariables().nextElement(); // first element is always main array
+        mainDArray = dgrid.getVariables().nextElement(); // first element is always main array
       else if (bt instanceof DArray darray) mainDArray = darray;
       else continue;
 
@@ -1488,7 +1487,7 @@ public class EDDGridFromDap extends EDDGrid {
                 + "?"
                 + tSourceName
                 + "\n"
-                + sb.toString());
+                + sb);
 
       // ensure no missing values or values > 1e20
       double stats[] = axisPAs[av].calculateStats();
@@ -2516,13 +2515,13 @@ public class EDDGridFromDap extends EDDGrid {
                 String tType = id.getType();
                 if (!String2.isSomething(tType)) continue;
                 String tContent = id.getInlineContent();
-                if (tType.toLowerCase().equals("funding")
+                if (tType.equalsIgnoreCase("funding")
                     && !String2.looselyContains(tAck.toString(), tContent))
                   String2.ifSomethingConcat(tAck, " ", tContent);
-                if (tType.toLowerCase().equals("rights")
+                if (tType.equalsIgnoreCase("rights")
                     && !String2.looselyContains(tLicense.toString(), tContent))
                   String2.ifSomethingConcat(tLicense, " ", tContent);
-                if (tType.toLowerCase().equals("summary")
+                if (tType.equalsIgnoreCase("summary")
                     && !String2.looselyContains(tSummary.toString(), tContent))
                   String2.ifSomethingConcat(tSummary, " ", tContent);
               }

@@ -28,9 +28,9 @@ public class EDDTableFromAllDatasets extends EDDTable {
   public static final String DATASET_ID = "allDatasets";
 
   /** set by the constructor */
-  private ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap;
+  private final ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap;
 
-  private ConcurrentHashMap<String, EDDTable> tableDatasetHashMap;
+  private final ConcurrentHashMap<String, EDDTable> tableDatasetHashMap;
 
   /**
    * The constructor. This is a built-in class with no options. It is not specified in datasets.xml.
@@ -120,7 +120,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromAllDatasets constructor finished. TIME="
               + cTime
               + "ms"

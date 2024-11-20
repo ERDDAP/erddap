@@ -2562,7 +2562,7 @@ public abstract class PrimitiveArray {
           // not NaN
           continue;
 
-        if (s.toLowerCase().equals("nan")) { // signifies a numeric missing value
+        if (s.equalsIgnoreCase("nan")) { // signifies a numeric missing value
           // non-specific, skip this row
           hasNaN = true;
           continue;

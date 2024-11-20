@@ -540,7 +540,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       return sb.toString();
   } */
 
-  private static String stationsFileName = "c:/programs/nos/stations.xml";
+  private static final String stationsFileName = "c:/programs/nos/stations.xml";
 
   /**
    * Bob uses this to reload the Water Level and Meteorological Capabilities document and store it

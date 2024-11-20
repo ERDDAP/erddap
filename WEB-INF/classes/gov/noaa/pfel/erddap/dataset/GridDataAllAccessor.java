@@ -32,7 +32,7 @@ public class GridDataAllAccessor implements AutoCloseable {
   public static boolean verbose = false;
 
   // things passed into the constructor
-  protected GridDataAccessor gridDataAccessor;
+  protected final GridDataAccessor gridDataAccessor;
 
   // things the constructor sets
   protected String baseFileName; // to which the dv number is added

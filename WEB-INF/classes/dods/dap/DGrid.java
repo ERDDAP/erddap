@@ -85,7 +85,7 @@ public class DGrid extends DConstructor implements ClientIO {
   @Override
   public DGrid clone() {
     DGrid g = (DGrid) super.clone();
-    g.arrayVar = (DArray) arrayVar.clone();
+    g.arrayVar = arrayVar.clone();
     g.mapVars = new Vector<>();
     for (int i = 0; i < mapVars.size(); i++) {
       BaseType bt = mapVars.elementAt(i);
@@ -217,7 +217,7 @@ public class DGrid extends DConstructor implements ClientIO {
    */
   class EnumerateDGrid implements Enumeration {
     boolean array;
-    Iterator e;
+    final Iterator e;
 
     EnumerateDGrid() {
       array = false; // true when the array is/has being/been

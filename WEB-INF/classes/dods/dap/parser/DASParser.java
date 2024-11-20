@@ -389,15 +389,9 @@ public class DASParser implements DASParserConstants {
       }
       jj_consume_token(22);
     } catch (NoSuchAttributeException e) {
-      error(
-          "Error: The attribute " + attr + " does not exist. (" + e.toString() + ")"); // bob added
+      error("Error: The attribute " + attr + " does not exist. (" + e + ")"); // bob added
     } catch (AttributeExistsException e) {
-      error(
-          "Error: The alias "
-              + alias
-              + " already exists in this DAS. ("
-              + e.toString()
-              + ")"); // bob added
+      error("Error: The alias " + alias + " already exists in this DAS. (" + e + ")"); // bob added
     }
   }
 
@@ -516,7 +510,7 @@ public class DASParser implements DASParserConstants {
               + " "
               + getTypeName(type)
               + " value. ("
-              + e.toString()
+              + e
               + ")"; // bob added
       addBadAttribute(topOfStack().getName(), type, name, value, msg);
     }
@@ -875,7 +869,7 @@ public class DASParser implements DASParserConstants {
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
-  public boolean lookingAhead = false;
+  public final boolean lookingAhead = false;
   private int jj_gen;
   private final int[] jj_la1 = new int[14];
   private final int[] jj_la1_0 = {
@@ -1014,10 +1008,10 @@ public class DASParser implements DASParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private List<int[]> jj_expentries = new ArrayList<>();
+  private final List<int[]> jj_expentries = new ArrayList<>();
   private int[] jj_expentry;
   private int jj_kind = -1;
-  private int[] jj_lasttokens = new int[100];
+  private final int[] jj_lasttokens = new int[100];
   private int jj_endpos;
 
   private void jj_add_error_token(int kind, int pos) {

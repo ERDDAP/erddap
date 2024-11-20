@@ -21,7 +21,7 @@ public class EDDTableFromCassandraHandler extends BaseTableHandler {
   private String tIndexColumnSourceNames = null;
   private double tMaxRequestFraction = 1;
   private String tColumnNameQuotes = "";
-  private StringArray tConnectionProperties = new StringArray();
+  private final StringArray tConnectionProperties = new StringArray();
   private boolean tSourceNeedsExpandedFP_EQ = true;
   private String tPartitionKeyCSV = null;
 

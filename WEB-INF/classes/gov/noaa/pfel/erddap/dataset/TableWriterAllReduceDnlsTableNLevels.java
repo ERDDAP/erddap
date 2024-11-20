@@ -23,9 +23,9 @@ import java.util.Set;
  */
 public class TableWriterAllReduceDnlsTableNLevels extends TableWriterAll {
 
-  String baseDir;
-  int nLevels;
-  HashSet<String> subdirHash = new HashSet<>();
+  final String baseDir;
+  final int nLevels;
+  final HashSet<String> subdirHash = new HashSet<>();
 
   /**
    * The constructor.

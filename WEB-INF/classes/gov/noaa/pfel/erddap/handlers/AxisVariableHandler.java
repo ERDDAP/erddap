@@ -8,10 +8,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class AxisVariableHandler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
-  private List<Object[]> tAxisVariables;
+  private final StringBuilder content = new StringBuilder();
+  private final List<Object[]> tAxisVariables;
   private String tSourceName = null, tDestinationName = null;
-  private com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
+  private final com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
   private PrimitiveArray tValuesPA = null;
 
   public AxisVariableHandler(

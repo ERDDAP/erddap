@@ -25,16 +25,16 @@ import java.io.Reader;
 public class SimpleXMLReader {
 
   private Reader reader;
-  private StringArray stack = new StringArray();
-  private StringArray attributeNames = new StringArray();
-  private StringArray attributeValues = new StringArray();
+  private final StringArray stack = new StringArray();
+  private final StringArray attributeNames = new StringArray();
+  private final StringArray attributeValues = new StringArray();
   private boolean itsOwnEndTag = false;
-  private StringBuilder allTags = new StringBuilder();
-  private StringBuilder contentBuffer = new StringBuilder();
+  private final StringBuilder allTags = new StringBuilder();
+  private final StringBuilder contentBuffer = new StringBuilder();
   private String rawContent = "";
   private String content = "";
   private String endWhiteSpace = "";
-  private StringBuilder tagBuffer = new StringBuilder();
+  private final StringBuilder tagBuffer = new StringBuilder();
   private long lineNumber = 1, tagNumber = 0;
 
   /**
@@ -53,9 +53,7 @@ public class SimpleXMLReader {
         b = inputStream.read();
         if (b < 0) {
           throwException(
-              "Unexpected end of file while looking for end of first tag=\""
-                  + sb.toString()
-                  + "\".");
+              "Unexpected end of file while looking for end of first tag=\"" + sb + "\".");
         } else if (b == '\n') lineNumber++;
       }
       sb.append((char) b);
@@ -63,7 +61,7 @@ public class SimpleXMLReader {
       } else {
         throwException(
             "The first XML tag=\""
-                + sb.toString()
+                + sb
                 + "\" should have started with \"<?xml \" and ended with \"?>\".");
       }
 

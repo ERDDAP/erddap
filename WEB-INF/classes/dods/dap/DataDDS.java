@@ -25,7 +25,7 @@ import java.util.zip.DeflaterOutputStream;
  */
 public class DataDDS extends DDS {
   /** The ServerVersion returned from the open DODS connection. */
-  private ServerVersion ver;
+  private final ServerVersion ver;
 
   /**
    * Construct the DataDDS with the given server version.

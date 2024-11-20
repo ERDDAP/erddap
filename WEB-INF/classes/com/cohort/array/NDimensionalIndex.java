@@ -22,13 +22,13 @@ import java.util.Arrays;
 public class NDimensionalIndex {
 
   /** The original shape[] set by the constructor. */
-  protected int[] shape;
+  protected final int[] shape;
 
   /** The factors[] of each element (each is the product of the elements to the right). */
   protected long[] factors;
 
   /** Set by the constructor (shape.length). */
-  protected int nDimensions;
+  protected final int nDimensions;
 
   /** Set by the constructor (all of the shape values multiplied together). */
   protected long size;

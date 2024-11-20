@@ -183,7 +183,7 @@ public class LineCartesianRenderer extends CartesianRenderer {
    * @see Graph
    */
   public LineCartesianRenderer(CartesianGraph cg) {
-    this(cg, (SGTLine) null, null);
+    this(cg, null, null);
   }
 
   /**

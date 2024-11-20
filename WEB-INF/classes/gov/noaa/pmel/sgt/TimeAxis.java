@@ -144,41 +144,41 @@ public class TimeAxis extends Axis implements Cloneable {
     if (days > 260000.0) { // ~800 years
       // System.out.println("CenturyAxis");
       if (!(txt_ instanceof CenturyAxis)) {
-        newStyle = (TimeAxisStyle) new CenturyAxis();
+        newStyle = new CenturyAxis();
       }
     } else if (days > 26000.0) { // ~80 years
       // System.out.println("DecadeAxis");
       if (!(txt_ instanceof DecadeAxis)) {
-        newStyle = (TimeAxisStyle) new DecadeAxis();
+        newStyle = new DecadeAxis();
       }
     } else if (days > 1000.0) { // ~3 years
       // System.out.println("YearDecadeAxis");
       if (!(txt_ instanceof YearDecadeAxis)) {
-        newStyle = (TimeAxisStyle) new YearDecadeAxis();
+        newStyle = new YearDecadeAxis();
       }
     } else if (days > 91.0) {
       if (!(txt_ instanceof MonthYearAxis)) {
-        newStyle = (TimeAxisStyle) new MonthYearAxis();
+        newStyle = new MonthYearAxis();
       }
     } else if (days > 3.0) {
       if (!(txt_ instanceof DayMonthAxis)) {
-        newStyle = (TimeAxisStyle) new DayMonthAxis();
+        newStyle = new DayMonthAxis();
       }
     } else if (days > 0.1666666) { // 4 hours     (5 has cramped major labels)
       if (!(txt_ instanceof HourDayAxis)) {
-        newStyle = (TimeAxisStyle) new HourDayAxis();
+        newStyle = new HourDayAxis();
       }
     } else if (days > 2.777777e-3) { // 4 minutes   (5 has cramped major labels)
       if (!(txt_ instanceof MinuteHourAxis)) {
-        newStyle = (TimeAxisStyle) new MinuteHourAxis();
+        newStyle = new MinuteHourAxis();
       }
     } else if (days > 4.62961e-5) { // 4 seconds   (5 has cramped major labels)
       if (!(txt_ instanceof SecondMinuteAxis)) {
-        newStyle = (TimeAxisStyle) new SecondMinuteAxis();
+        newStyle = new SecondMinuteAxis();
       }
     } else {
       if (!(txt_ instanceof MilliSecondAxis)) {
-        newStyle = (TimeAxisStyle) new MilliSecondAxis();
+        newStyle = new MilliSecondAxis();
       }
     }
     if (newStyle != null) {
@@ -369,15 +369,15 @@ public class TimeAxis extends Axis implements Cloneable {
     axisStyle_ = style;
     //
     if (axisStyle_ == AUTO || axisStyle_ == MONTH_YEAR) {
-      txt_ = (TimeAxisStyle) new MonthYearAxis();
+      txt_ = new MonthYearAxis();
     } else if (axisStyle_ == YEAR_DECADE) {
-      txt_ = (TimeAxisStyle) new YearDecadeAxis();
+      txt_ = new YearDecadeAxis();
     } else if (axisStyle_ == DAY_MONTH) {
-      txt_ = (TimeAxisStyle) new DayMonthAxis();
+      txt_ = new DayMonthAxis();
     } else if (axisStyle_ == HOUR_DAY) {
-      txt_ = (TimeAxisStyle) new HourDayAxis();
+      txt_ = new HourDayAxis();
     } else {
-      txt_ = (TimeAxisStyle) new MinuteHourAxis();
+      txt_ = new MinuteHourAxis();
     }
     minorLabelFormat_ = txt_.getDefaultMinorLabelFormat();
     majorLabelFormat_ = txt_.getDefaultMajorLabelFormat();

@@ -55,11 +55,11 @@ public class DigirHelper {
 
   public static boolean reallyVerbose = false;
 
-  public static ResourceBundle2 digirDarwin2Properties =
+  public static final ResourceBundle2 digirDarwin2Properties =
       new ResourceBundle2("gov.noaa.pfel.coastwatch.pointdata.DigirDarwin2");
-  public static ResourceBundle2 digirObisProperties =
+  public static final ResourceBundle2 digirObisProperties =
       new ResourceBundle2("gov.noaa.pfel.coastwatch.pointdata.DigirObis");
-  public static ResourceBundle2 digirBmdeProperties =
+  public static final ResourceBundle2 digirBmdeProperties =
       new ResourceBundle2("gov.noaa.pfel.coastwatch.pointdata.DigirBmde");
   private static String[] darwin2Variables, obisVariables, darwin2ObisVariables, bmdeVariables;
 
@@ -143,7 +143,7 @@ public class DigirHelper {
   /* SOURCE_IP is the reference ip used for digir requests.
   It isn't actually used for ip addressing.
   "65.219.21.6" is upwell here at pfeg.noaa.gov */
-  public static String SOURCE_IP = "65.219.21.6"; // upwell
+  public static final String SOURCE_IP = "65.219.21.6"; // upwell
 
   // LOP - logical operator
   // how are lops used?  as a tree form of a SQL WHERE clause
@@ -396,22 +396,19 @@ public class DigirHelper {
     */
 
     // make the request
-    StringBuilder requestSB = new StringBuilder();
-    requestSB.append(
+    String request =
         getPreDestinationRequest(
-            version,
-            // only digir (not darwin or obis or ...) namespace and schema is needed
-            ImmutableList.of(""),
-            ImmutableList.of(DIGIR_XMLNS),
-            ImmutableList.of(DIGIR_XSD)));
-    requestSB.append(
-        "    <destination>"
+                version,
+                // only digir (not darwin or obis or ...) namespace and schema is needed
+                ImmutableList.of(""),
+                ImmutableList.of(DIGIR_XMLNS),
+                ImmutableList.of(DIGIR_XSD))
+            + "    <destination>"
             + url
             + "</destination>\n"
             + "    <type>metadata</type>\n"
             + "  </header>\n"
-            + "</request>\n");
-    String request = requestSB.toString();
+            + "</request>\n";
     long time = System.currentTimeMillis();
     if (reallyVerbose)
       String2.log(
@@ -539,10 +536,9 @@ public class DigirHelper {
         filterVariables == null || filterVariables.length == 0
             ? ""
             : getFilterRequest(filterVariables, filterCops, filterValues);
-    StringBuilder requestSB = new StringBuilder();
-    requestSB.append(getPreDestinationRequest(version, xmlnsPrefix, xmlnsNS, xmlnsXSD));
-    requestSB.append(
-        "    <destination resource=\""
+    String request =
+        getPreDestinationRequest(version, xmlnsPrefix, xmlnsNS, xmlnsXSD)
+            + "    <destination resource=\""
             + resource
             + "\">"
             + url
@@ -555,8 +551,7 @@ public class DigirHelper {
             + resultsVariable
             + " />\n"
             + "  </inventory>\n"
-            + "</request>\n");
-    String request = requestSB.toString();
+            + "</request>\n";
     if (reallyVerbose) String2.log("\nDigirHelper.getInventory request=\n" + request);
 
     // get the response
@@ -679,7 +674,7 @@ public class DigirHelper {
         countIA.add(String2.parseInt(element.getAttribute("count")));
       }
     }
-    String2.log("inventoryTable:\n" + table.toString());
+    String2.log("inventoryTable:\n" + table);
     return table;
   }
 
@@ -1616,8 +1611,7 @@ public class DigirHelper {
     // get the data from opendap
 
     // format as Digir response xml
-    StringBuilder response = new StringBuilder();
 
-    return response.toString();
+    return "";
   }
 }

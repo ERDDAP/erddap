@@ -706,7 +706,7 @@ public class DASParserTokenManager implements DASParserConstants {
   }
 
   public void SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0)
+    if (lexState != 0)
       throw new TokenMgrError(
           "Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.",
           TokenMgrError.INVALID_LEXICAL_STATE);
@@ -726,7 +726,7 @@ public class DASParserTokenManager implements DASParserConstants {
   }
 
   int curLexState = 0;
-  int defaultLexState = 0;
+  final int defaultLexState = 0;
   int jjnewStateCnt;
   int jjround;
   int jjmatchedPos;

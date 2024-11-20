@@ -184,7 +184,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof SGLabel)) return false;
+    if (!(obj instanceof SGLabel)) return false;
     SGLabel sg = (SGLabel) obj;
     /*    boolean t1 = !ident_.equals(sg.getId());
     boolean t2 = !proxy_.getText().equals(sg.getText());

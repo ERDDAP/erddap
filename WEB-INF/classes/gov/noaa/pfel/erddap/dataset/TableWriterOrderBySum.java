@@ -36,7 +36,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
 
   // set by constructor
   protected final TableWriter otherTableWriter;
-  public String orderBy[];
+  public final String[] orderBy;
   // maintains count of the number of values in sum
   protected final Map<String, int[]> counts = new HashMap<>();
   protected final Map<String, Integer> rowmap = new HashMap<>();

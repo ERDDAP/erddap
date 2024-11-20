@@ -12,19 +12,20 @@ import com.cohort.util.DoubleObject;
  */
 public class CartesianProjection implements Projection {
 
-  private double graphMinX;
-  private double graphMaxX;
-  private double graphMinY;
-  private double graphMaxY;
-  private double lgraphMinX;
-  private double lgraphMinY;
-  private double deviceMinX;
-  private double deviceMaxX;
-  private double deviceMinY;
-  private double deviceMaxY;
-  private double deviceOverLGraphXRange;
-  private double deviceOverLGraphYRange;
-  private boolean xIsLogAxis, yIsLogAxis;
+  private final double graphMinX;
+  private final double graphMaxX;
+  private final double graphMinY;
+  private final double graphMaxY;
+  private final double lgraphMinX;
+  private final double lgraphMinY;
+  private final double deviceMinX;
+  private final double deviceMaxX;
+  private final double deviceMinY;
+  private final double deviceMaxY;
+  private final double deviceOverLGraphXRange;
+  private final double deviceOverLGraphYRange;
+  private final boolean xIsLogAxis;
+  private final boolean yIsLogAxis;
   public static final String cantBecauseLog =
       "CartesianProjection.graphToDeviceX/YDistance() can't be used when the x and/or y axis is a log axis.";
 

@@ -137,7 +137,7 @@ public class EDVTimeStamp extends EDV {
       longName =
           suggestLongName(longName, destinationName, combinedAttributes.getString("standard_name"));
       combinedAttributes.set("long_name", longName);
-    } else if (longName.toLowerCase().equals("time")) { // catch alternate case
+    } else if (longName.equalsIgnoreCase("time")) { // catch alternate case
       longName = TIME_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }
@@ -519,10 +519,7 @@ public class EDVTimeStamp extends EDV {
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(
-            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime="
-                + sourceTime
-                + "\n"
-                + t.toString());
+            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime=" + sourceTime + "\n" + t);
       return Double.NaN;
     }
   }

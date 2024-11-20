@@ -18,7 +18,7 @@ public class ScriptRow {
 
   private String fullFileName = "";
   private String fileName = "";
-  private Table table;
+  private final Table table;
   private int row = 0;
 
   /**

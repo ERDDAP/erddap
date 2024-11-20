@@ -143,7 +143,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
       if (children_ != null) {
         Vector<LayerChild> o = children_; // done this way to avoid infinite loop
         children_ = null;
-        for (Object o2 : o) ((LayerChild) o2).releaseResources();
+        for (LayerChild o2 : o) o2.releaseResources();
         o.clear();
       }
       pane_ = null; // not releaseResources, else infinite loop
@@ -339,7 +339,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @return physical x coordinate
    */
   public double getXDtoP(int xd) {
-    return (double) (xd - xoff2_) / ax_;
+    return (xd - xoff2_) / ax_;
   }
 
   /**
@@ -349,7 +349,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @return physical y coordinate
    */
   public double getYDtoP(int yd) {
-    return (double) (yoff2_ - yd) / ay_;
+    return (yoff2_ - yd) / ay_;
   }
 
   /**
@@ -411,7 +411,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     // copy Graph
     //
-    if (graph_ != (Graph) null) {
+    if (graph_ != null) {
       Graph newGraph = graph_.copy();
       newLayer.setGraph(newGraph);
     }
@@ -449,7 +449,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     // draw Graph
     //
-    if (graph_ != (Graph) null) graph_.draw(g);
+    if (graph_ != null) graph_.draw(g);
     //
     // draw children
     //
@@ -679,7 +679,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public LayerChild[] getChildren() {
     LayerChild[] childs = new LayerChild[0];
-    childs = (LayerChild[]) children_.toArray(childs);
+    childs = children_.toArray(childs);
     return childs;
   }
 
@@ -826,7 +826,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
       obj = graph_.getObjectAt(pt);
       if (obj != null) return obj;
     }
-    return (Object) null;
+    return null;
   }
 
   /**

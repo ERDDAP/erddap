@@ -40,7 +40,7 @@ import java.awt.Rectangle;
  */
 public class LogAxis extends SpaceAxis implements Cloneable {
 
-  gov.noaa.pfel.coastwatch.sgt.GenEFormatter genEFormatter =
+  final gov.noaa.pfel.coastwatch.sgt.GenEFormatter genEFormatter =
       new gov.noaa.pfel.coastwatch.sgt.GenEFormatter();
 
   public LogAxis(String id) {
@@ -57,7 +57,7 @@ public class LogAxis extends SpaceAxis implements Cloneable {
     } catch (CloneNotSupportedException e) {
       newAxis = new LogAxis(getId());
     }
-    return (Axis) newAxis;
+    return newAxis;
   }
 
   @Override
@@ -118,8 +118,8 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       /*      System.out.println("uRange.start/end: "+uRangeStart+"/"+uRangeEnd);
             System.out.println("uRangeP: "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
       */
-      double min = (double) Math.pow(10, imin);
-      double max = (double) Math.pow(10, imax);
+      double min = Math.pow(10, imin);
+      double max = Math.pow(10, imax);
 
       xt = min;
       x = xt;
@@ -248,8 +248,8 @@ public class LogAxis extends SpaceAxis implements Cloneable {
       // System.out.println("uRangeP:
       // "+graph_.getYUtoP(uRangeStart)+"/"+graph_.getYUtoP(uRangeEnd));
 
-      double min = (double) Math.pow(10, imin);
-      double max = (double) Math.pow(10, imax);
+      double min = Math.pow(10, imin);
+      double max = Math.pow(10, imax);
       // System.out.println(">> LogAxis vertical imax=" + imax + " max=" + max);
 
       yt = min;

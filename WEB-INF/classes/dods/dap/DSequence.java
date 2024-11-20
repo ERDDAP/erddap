@@ -32,10 +32,10 @@ import java.util.Vector;
  */
 public class DSequence extends DConstructor implements ClientIO {
   /** The start of instance byte marker */
-  protected static byte START_OF_INSTANCE = 0x5A;
+  protected static final byte START_OF_INSTANCE = 0x5A;
 
   /** The end of sequence byte marker */
-  protected static byte END_OF_SEQUENCE = (byte) 0xA5;
+  protected static final byte END_OF_SEQUENCE = (byte) 0xA5;
 
   /**
    * The variables in this <code>DSequence</code>, stored in a <code>Vector</code> of <code>BaseType

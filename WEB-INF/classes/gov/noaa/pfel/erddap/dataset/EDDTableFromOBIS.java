@@ -33,7 +33,7 @@ import java.util.HashSet;
 @SaxHandlerClass(EDDTableFromOBISHandler.class)
 public class EDDTableFromOBIS extends EDDTable {
 
-  protected String sourceCode;
+  protected final String sourceCode;
   protected int nFixedVariables;
 
   public static final String STANDARD_INFO_URL = "http://www.iobis.org";
@@ -246,48 +246,48 @@ public class EDDTableFromOBIS extends EDDTable {
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
         case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
-        case "<sourceUrl>" -> {}
+        case "<sourceUrl>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<timeSourceMaximum>",
+            "<timeSourceMinimum>",
+            "<altitudeSourceMaximum>",
+            "<altitudeSourceMinimum>",
+            "<latitudeSourceMaximum>",
+            "<latitudeSourceMinimum>",
+            "<longitudeSourceMaximum>",
+            "<longitudeSourceMinimum>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<sourceCode>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<sourceCode>" -> {}
         case "</sourceCode>" -> tSourceCode = content;
-        case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<longitudeSourceMinimum>" -> {}
         case "</longitudeSourceMinimum>" -> tLongitudeSourceMinimum = String2.parseDouble(content);
-        case "<longitudeSourceMaximum>" -> {}
         case "</longitudeSourceMaximum>" -> tLongitudeSourceMaximum = String2.parseDouble(content);
-        case "<latitudeSourceMinimum>" -> {}
         case "</latitudeSourceMinimum>" -> tLatitudeSourceMinimum = String2.parseDouble(content);
-        case "<latitudeSourceMaximum>" -> {}
         case "</latitudeSourceMaximum>" -> tLatitudeSourceMaximum = String2.parseDouble(content);
-        case "<altitudeSourceMinimum>" -> {}
         case "</altitudeSourceMinimum>" -> tAltitudeSourceMinimum = String2.parseDouble(content);
-        case "<altitudeSourceMaximum>" -> {}
         case "</altitudeSourceMaximum>" -> tAltitudeSourceMaximum = String2.parseDouble(content);
-        case "<timeSourceMinimum>" -> {}
         case "</timeSourceMinimum>" -> tTimeSourceMinimum = content;
-        case "<timeSourceMaximum>" -> {}
         case "</timeSourceMaximum>" -> tTimeSourceMaximum = content;
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -630,7 +630,7 @@ public class EDDTableFromOBIS extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromOBIS "
               + datasetID
               + " constructor finished. TIME="
@@ -860,8 +860,7 @@ public class EDDTableFromOBIS extends EDDTable {
     // don't use suggestSubsetVariables since sourceTable not really available
 
     // generate the datasets.xml
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+    String sb =
         "<dataset type=\"EDDTableFromOBIS\" datasetID=\""
             + suggestDatasetID(tPublicSourceUrl)
             + "\" active=\"true\">\n"
@@ -889,9 +888,9 @@ public class EDDTableFromOBIS extends EDDTable {
             cdmSuggestion()
             + writeAttsForDatasetsXml(true, addAtts, "    ")
             + "</dataset>\n"
-            + "\n");
+            + "\n";
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

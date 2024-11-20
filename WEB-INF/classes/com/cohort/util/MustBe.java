@@ -37,7 +37,7 @@ import java.util.Map;
  * </UL>
  */
 public class MustBe {
-  public static String lineSeparator = "\n"; // not String2.lineSeparator;
+  public static final String lineSeparator = "\n"; // not String2.lineSeparator;
 
   /**
    * This matches the standard DAP message (except different case) for no data found. This is NOT
@@ -417,9 +417,9 @@ public class MustBe {
           }
 
           sar[count] =
-              t.toString()
+              t
                   + " "
-                  + t.getState().toString()
+                  + t.getState()
                   + (t.isDaemon() ? " daemon\n" : "\n")
                   + String2.toNewlineString(ste)
                   + "\n";

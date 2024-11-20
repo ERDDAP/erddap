@@ -54,7 +54,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -683,7 +683,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String msg = MustBe.throwableToString(t);
         if (msg.indexOf("ERROR: whichChild=") < 0 || msg.indexOf(" not found as ") < 0) msg = "";
         else msg = "<!-- " + String2.replaceAll(msg, "--", "- - ") + " -->\n\n";
-        return whichChild > 1 ? children.toString() + msg : main + msg;
+        return whichChild > 1 ? children + msg : main + msg;
       }
     }
     return children.toString();
@@ -1110,7 +1110,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           } else if (attTags.equals("</description>") && hasContent) {
             // description -> comment
             // widely used  (Is <description> used another way?)
-            if (content.toLowerCase().equals("month/day/year")) { // date format
+            if (content.equalsIgnoreCase("month/day/year")) { // date format
               varAddAtts.set("units", "M/d/yyyy");
               varAddAtts.set("time_precision", "1970-01-01");
             } else {
@@ -1892,8 +1892,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         addTable.setColumn(col, destPA);
       }
       if (destPA.elementType() == PAType.STRING) {
-        tUnits =
-            Calendar2.suggestDateTimeFormat((StringArray) destPA, false); // evenIfPurelyNumeric
+        tUnits = Calendar2.suggestDateTimeFormat(destPA, false); // evenIfPurelyNumeric
         if (tUnits.length() > 0) addAtts.set("units", tUnits);
         // ??? and if tUnits = "", set to ""???
       }
@@ -2718,8 +2717,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             // convert e.g., yyyyMMdd columns from int to String
             addTable.setColumn(col, new StringArray(destPA));
           if (destPA.elementType() == PAType.STRING) {
-            tUnits =
-                Calendar2.suggestDateTimeFormat((StringArray) destPA, false); // evenIfPurelyNumeric
+            tUnits = Calendar2.suggestDateTimeFormat(destPA, false); // evenIfPurelyNumeric
             if (tUnits.length() > 0) addTable.columnAttributes(col).set("units", tUnits);
             // ??? and if tUnits = "", set to ""???
           }

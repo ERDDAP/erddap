@@ -81,7 +81,7 @@ public class Contour implements PropertyChangeListener {
   private double[] zz_;
   private boolean[] used_;
   private int[] kabov_;
-  private int[] isin_ = {0, 1, 0, -1};
+  private final int[] isin_ = {0, 1, 0, -1};
   private double weezee_;
   private int nx_;
   private int ny_;
@@ -422,7 +422,7 @@ public class Contour implements PropertyChangeListener {
                     //       pt(1) = pt(2)
                     //  pt(kmax+1) = pt(kmax)
                     //
-                    cl.setElementAt((Point2D.Double) cl.elementAt(1), 0);
+                    cl.setElementAt(cl.elementAt(1), 0);
                     cl.addPoint((Point2D.Double) cl.elementAt(k));
                     cl.setClosed(false);
                     cl.setKmax(kmax);
@@ -460,7 +460,7 @@ public class Contour implements PropertyChangeListener {
               //   pt(kmax+1) = pt(3)
               //
               cl.addPoint((Point2D.Double) cl.elementAt(1));
-              cl.setElementAt((Point2D.Double) cl.elementAt(k), 0);
+              cl.setElementAt(cl.elementAt(k), 0);
               cl.addPoint((Point2D.Double) cl.elementAt(2));
               cl.setClosed(true);
               cl.setKmax(kmax);

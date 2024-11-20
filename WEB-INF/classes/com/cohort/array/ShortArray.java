@@ -341,7 +341,7 @@ public class ShortArray extends PrimitiveArray {
   @Override
   public void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value != null && value instanceof Number nu ? nu.doubleValue() : Double.NaN);
+    addDouble(value instanceof Number nu ? nu.doubleValue() : Double.NaN);
   }
 
   /**

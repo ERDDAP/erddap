@@ -86,17 +86,17 @@ public class Grid {
    * Set this to true (by calling doExtraErrorChecking=true in your program, not by changing the
    * code here) if you want extra error checking to be done.
    */
-  public static boolean doExtraErrorChecking = false;
+  public static final boolean doExtraErrorChecking = false;
 
   /* A string used by climatology datasets. */
   public static final String SINCE_111 = "since 0001-01-01";
 
   /** The attribute lists are used sporadically; see method documentation. */
-  private Attributes globalAttributes = new Attributes();
+  private final Attributes globalAttributes = new Attributes();
 
-  private Attributes latAttributes = new Attributes();
-  private Attributes lonAttributes = new Attributes();
-  private Attributes dataAttributes = new Attributes();
+  private final Attributes latAttributes = new Attributes();
+  private final Attributes lonAttributes = new Attributes();
+  private final Attributes dataAttributes = new Attributes();
 
   /**
    * This returns a medium-deep clone of this Grid.

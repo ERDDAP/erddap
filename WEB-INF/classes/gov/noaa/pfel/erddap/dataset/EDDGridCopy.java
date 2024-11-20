@@ -38,7 +38,7 @@ import ucar.nc2.*;
 @SaxHandlerClass(EDDGridCopyHandler.class)
 public class EDDGridCopy extends EDDGrid {
 
-  protected EDDGrid sourceEdd;
+  protected final EDDGrid sourceEdd;
   protected EDDGridFromNcFiles localEdd;
 
   /**
@@ -100,42 +100,42 @@ public class EDDGridCopy extends EDDGrid {
 
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<onlySince>",
+            "<accessibleViaFiles>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<fileTableInMemory>",
+            "<checkSourceData>",
+            "<reloadEveryNMinutes>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<ensureAxisValuesAreEqual>",
+            "<matchAxisNDigits>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaWMS>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<matchAxisNDigits>" -> {}
         case "</matchAxisNDigits>" ->
             tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS);
-        case "<ensureAxisValuesAreEqual>" -> {}
         case "</ensureAxisValuesAreEqual>" ->
             tMatchAxisNDigits = String2.parseBoolean(content) ? 20 : 0;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<checkSourceData>" -> {}
         case "</checkSourceData>" -> checkSourceData = String2.parseBoolean(content);
-        case "<fileTableInMemory>" -> {}
         case "</fileTableInMemory>" -> tFileTableInMemory = String2.parseBoolean(content);
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<onlySince>" -> {}
         case "</onlySince>" -> tOnlySince = content;
         case "<dataset>" -> {
           if ("false".equals(xmlReader.attributeValue("active"))) {
@@ -357,7 +357,7 @@ public class EDDGridCopy extends EDDGrid {
                     "  task#"
                         + taskNumber
                         + " TASK_MAKE_A_DATAFILE "
-                        + tQuery.toString()
+                        + tQuery
                         + "\n    "
                         + copyDatasetDir
                         + fileName
@@ -561,7 +561,7 @@ public class EDDGridCopy extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridCopy "
               + datasetID
               + " constructor finished. TIME="

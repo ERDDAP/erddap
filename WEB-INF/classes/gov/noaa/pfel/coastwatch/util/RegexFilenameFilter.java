@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public class RegexFilenameFilter implements FilenameFilter {
-  private Pattern pattern;
+  private final Pattern pattern;
 
   // ideally, not static, but used for informational purposes only
   public static long getTime, matchTime, sortTime;

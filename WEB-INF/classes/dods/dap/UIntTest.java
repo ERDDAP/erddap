@@ -41,7 +41,7 @@ class UIntTest {
     System.out.println("\nReading data...");
     s = fp.readShort();
     System.out.println("System read short from file as: " + s);
-    i1 = ((int) s);
+    i1 = s;
     System.out.println("Converted short to int: " + i1);
     i1 = i1 & 0xFFFF;
     System.out.println("And'd with 0xFFFF (represented as an int in memory): " + i1);
@@ -49,7 +49,7 @@ class UIntTest {
     System.out.println("\nReading data...");
     s = fp.readShort();
     System.out.println("System read short from file as: " + s);
-    i1 = ((int) s);
+    i1 = s;
     System.out.println("Converted short to int: " + i1);
     i1 = i1 & 0xFFFF;
     System.out.println("And'd with 0xFFFF (represented as an int in memory): " + i1);
@@ -57,7 +57,7 @@ class UIntTest {
     System.out.println("\nReading data...");
     i2 = fp.readInt();
     System.out.println("\nSystem read int from file as: " + i2);
-    l = ((long) i2);
+    l = i2;
     System.out.println("Converted int to long: " + l);
     l = l & 0xFFFFFFFFL;
     System.out.println("And'd with 0xFFFFFFFFL (represented as a long in memory): " + l);
@@ -65,7 +65,7 @@ class UIntTest {
     System.out.println("\nReading data...");
     i2 = fp.readInt();
     System.out.println("\nSystem read int from file as: " + i2);
-    l = ((long) i2);
+    l = i2;
     System.out.println("Converted int to long: " + l);
     l = l & 0xFFFFFFFFL;
     System.out.println("And'd with 0xFFFFFFFFL (represented as a long in memory): " + l);

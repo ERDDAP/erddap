@@ -120,7 +120,7 @@ public class EDDTableFromSOS extends EDDTable {
   protected static final int stationProcedureCol = 5;
   protected static final String defaultStationIdSourceName = "station_id";
   protected static final String stationIdDestinationName = "station_id";
-  static String sosCopyDir = EDStatic.fullCopyDirectory + "_SOS_cache/";
+  static final String sosCopyDir = EDStatic.fullCopyDirectory + "_SOS_cache/";
 
   /**
    * The first nFixedVariables dataVariables are always created automatically (don't include in
@@ -240,65 +240,65 @@ public class EDDTableFromSOS extends EDDTable {
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
         case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
-        case "<sosVersion>" -> {}
+        case "<sosVersion>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<bboxParameter>",
+            "<bboxOffering>",
+            "<responseFormat>",
+            "<requestObservedPropertiesSeparately>",
+            "<observationOfferingIdRegex>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<timeSourceFormat>",
+            "<timeSourceName>",
+            "<altitudeMetersPerSourceUnit>",
+            "<altitudeSourceMaximum>",
+            "<altitudeSourceMinimum>",
+            "<altitudeSourceName>",
+            "<latitudeSourceName>",
+            "<longitudeSourceName>",
+            "<stationIdSourceName>",
+            "<sosServerType>" -> {}
         case "</sosVersion>" -> tSosVersion = content;
-        case "<sosServerType>" -> {}
         case "</sosServerType>" -> tSosServerType = content;
-        case "<stationIdSourceName>" -> {}
         case "</stationIdSourceName>" -> tStationIdSourceName = content;
-        case "<longitudeSourceName>" -> {}
         case "</longitudeSourceName>" -> tLongitudeSourceName = content;
-        case "<latitudeSourceName>" -> {}
         case "</latitudeSourceName>" -> tLatitudeSourceName = content;
-        case "<altitudeSourceName>" -> {}
         case "</altitudeSourceName>" -> tAltitudeSourceName = content;
-        case "<altitudeSourceMinimum>" -> {}
         case "</altitudeSourceMinimum>" -> tAltitudeSourceMinimum = String2.parseDouble(content);
-        case "<altitudeSourceMaximum>" -> {}
         case "</altitudeSourceMaximum>" -> tAltitudeSourceMaximum = String2.parseDouble(content);
-        case "<altitudeMetersPerSourceUnit>" -> {}
         case "</altitudeMetersPerSourceUnit>" ->
             tAltitudeMetersPerSourceUnit = String2.parseDouble(content);
-        case "<timeSourceName>" -> {}
         case "</timeSourceName>" -> tTimeSourceName = content;
-        case "<timeSourceFormat>" -> {}
         case "</timeSourceFormat>" -> tTimeSourceFormat = content;
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<observationOfferingIdRegex>" -> {}
         case "</observationOfferingIdRegex>" -> tObservationOfferingIdRegex = content;
-        case "<requestObservedPropertiesSeparately>" -> {}
         case "</requestObservedPropertiesSeparately>" ->
             tRequestObservedPropertiesSeparately = content.equals("true");
-        case "<responseFormat>" -> {}
         case "</responseFormat>" -> tResponseFormat = content;
-        case "<bboxOffering>" -> {}
         case "</bboxOffering>" -> tBBoxOffering = content;
-        case "<bboxParameter>" -> {}
         case "</bboxParameter>" -> tBBoxParameter = content;
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -884,7 +884,7 @@ public class EDDTableFromSOS extends EDDTable {
                 String2.log(
                     "    beginTime(from <gml:TimePeriod></gml:beginPosition>)=" + tBeginTime);
             } catch (Throwable t) {
-              String2.log("Warning while parsing gml:beginPosition ISO time: " + t.toString());
+              String2.log("Warning while parsing gml:beginPosition ISO time: " + t);
               tBeginTime = defaultBeginTime;
             }
 
@@ -905,7 +905,7 @@ public class EDDTableFromSOS extends EDDTable {
               try {
                 tEndTime = Calendar2.isoStringToEpochSeconds(content);
               } catch (Throwable t) {
-                String2.log("Warning while parsing gml:endPosition ISO time: " + t.toString());
+                String2.log("Warning while parsing gml:endPosition ISO time: " + t);
                 tEndTime = Double.NaN;
               }
               // are they being precise about recent end time?  change to NaN
@@ -1239,7 +1239,7 @@ public class EDDTableFromSOS extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromSOS "
               + datasetID
               + " constructor finished. TIME="
@@ -1699,7 +1699,7 @@ public class EDDTableFromSOS extends EDDTable {
           // getSB.append("&text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22");
 
           if (reallyVerbose && !aConstraintShown) {
-            String2.log("  requestURL=" + localSourceUrl + getSB.toString());
+            String2.log("  requestURL=" + localSourceUrl + getSB);
             // aConstraintShown = true;
           }
           if (false) { // debugMode) {
@@ -1788,10 +1788,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
-                  + "\n("
-                  + t.toString()
-                  + ")");
+              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
     }
 
     try {
@@ -1929,10 +1926,7 @@ public class EDDTableFromSOS extends EDDTable {
       if (unexpectedColumns.size() > 0) {
         String2.log("dataVariableSourceNames=" + String2.toCSSVString(dataVariableSourceNames));
         throw new SimpleException(
-            String2.ERROR
-                + ": unexpected column(s) in SOS response: "
-                + unexpectedColumns.toString()
-                + ".");
+            String2.ERROR + ": unexpected column(s) in SOS response: " + unexpectedColumns + ".");
       }
 
       // find the corresponding column number in sosTable  (may be -1)
@@ -1950,7 +1944,7 @@ public class EDDTableFromSOS extends EDDTable {
       if (notFound.size() > 0)
         String2.log(
             "WARNING: desired sourceNames not in SOS response: "
-                + notFound.toString()
+                + notFound
                 + "\n  sosTable has "
                 + String2.toCSSVString(sosTable.getColumnNames()));
       else if (reallyVerbose)
@@ -2123,10 +2117,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
-                  + "\n("
-                  + t.toString()
-                  + ")");
+              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
     }
     try {
 
@@ -2462,10 +2453,7 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
-                  + "\n("
-                  + t.toString()
-                  + ")");
+              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
     }
 
     try {
@@ -2882,7 +2870,7 @@ public class EDDTableFromSOS extends EDDTable {
           String ts = xmlReader.attributeValue("tokenSeparator");
           if (String2.isSomething(ts)) {
             tokenSeparator = ts.charAt(0);
-            if (reallyVerbose) String2.log("  tokenSeparator=" + String2.annotatedString("" + ts));
+            if (reallyVerbose) String2.log("  tokenSeparator=" + String2.annotatedString(ts));
           }
           ts = xmlReader.attributeValue("blockSeparator");
           if (String2.isSomething(ts)) {
@@ -3084,7 +3072,7 @@ public class EDDTableFromSOS extends EDDTable {
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.equalsIgnoreCase("none")) {
             license = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + license);
           }
@@ -3162,7 +3150,7 @@ public class EDDTableFromSOS extends EDDTable {
             // xlink:href="http://mmisw.org/ont/cf/parameter/sea_water_temperature"
 
             String tXlink = xmlReader.attributeValue("xlink:href"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (reallyVerbose) String2.log("  observedProperty=" + tXlink);
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
@@ -3178,7 +3166,7 @@ public class EDDTableFromSOS extends EDDTable {
             // handle composite observedProperty
             // <swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
             String tXlink = xmlReader.attributeValue("gml:id"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (reallyVerbose) String2.log("  composite observedProperty=" + tXlink);
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
@@ -3408,7 +3396,7 @@ public class EDDTableFromSOS extends EDDTable {
     String2.log(
         "EDDTableFromSos.generateDatasetsXmlFromIOOS" + "\n  tLocalSourceUrl=" + tLocalSourceUrl);
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
-    boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
+    boolean isIoos52N = sosServerType.equalsIgnoreCase(SosServerTypeIoos52N);
 
     String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
     if (sosVersion != null && sosVersion.length() > 0) {
@@ -3510,7 +3498,7 @@ public class EDDTableFromSOS extends EDDTable {
 
         } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
           String s = xmlReader.content();
-          if (!s.isEmpty() && !s.toLowerCase().equals("none")) {
+          if (!s.isEmpty() && !s.equalsIgnoreCase("none")) {
             tLicense = s;
             if (verbose) String2.log("  license(from AccessConstraints)=" + tLicense);
           }
@@ -3583,7 +3571,7 @@ public class EDDTableFromSOS extends EDDTable {
             // NOW http://mmisw.org/ont/cf/parameter/sea_water_salinity
             //    http://marinemetadata.org is GONE!
             String tXlink = xmlReader.attributeValue("xlink:href"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               if (!isIoos52N) {
                 // shorten it
                 int po = tXlink.lastIndexOf("#");
@@ -3607,7 +3595,7 @@ public class EDDTableFromSOS extends EDDTable {
             // handle composite observedProperty
             // <swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
             String tXlink = xmlReader.attributeValue("gml:id"); // without quotes
-            if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+            if (tXlink != null && !tXlink.equalsIgnoreCase("none")) {
               int opPo = uniqueObsProp.indexOf(tXlink);
               if (opPo < 0) {
                 opPo = uniqueObsProp.size();
@@ -3794,7 +3782,7 @@ public class EDDTableFromSOS extends EDDTable {
 
     sosVersion = sosVersion == null ? "" : sosVersion.trim();
     sosServerType = sosServerType == null ? "" : sosServerType.trim();
-    boolean isIoos52N = sosServerType.toLowerCase().equals(SosServerTypeIoos52N.toLowerCase());
+    boolean isIoos52N = sosServerType.equalsIgnoreCase(SosServerTypeIoos52N);
     String2.log(
         "\nEDDTableFromSos.generateDatasetsXmlFromOneIOOS isIoos52N="
             + isIoos52N

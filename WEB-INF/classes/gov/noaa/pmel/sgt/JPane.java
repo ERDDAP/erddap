@@ -288,7 +288,7 @@ public class JPane extends javax.swing.JLayeredPane
    * @see StackedLayout
    */
   public JPane() {
-    this(new String(""), new Dimension(50, 50));
+    this("", new Dimension(50, 50));
   }
 
   /**
@@ -597,7 +597,7 @@ public class JPane extends javax.swing.JLayeredPane
 
   @Override
   public Component getComponent() {
-    return (Component) this;
+    return this;
   }
 
   @Override

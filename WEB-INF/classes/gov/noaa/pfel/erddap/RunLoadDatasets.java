@@ -197,8 +197,8 @@ public class RunLoadDatasets extends Thread {
                     File2.delete(fDir[hs] + ttName);
 
                     if (String2.isFileNameSafe(ttName)) {
-                      EDD edd = (EDD) erddap.gridDatasetHashMap.get(ttName);
-                      if (edd == null) edd = (EDD) erddap.tableDatasetHashMap.get(ttName);
+                      EDD edd = erddap.gridDatasetHashMap.get(ttName);
+                      if (edd == null) edd = erddap.tableDatasetHashMap.get(ttName);
 
                       // if hardFlag, delete cached dataset info
                       //  (whether the dataset is live or not)

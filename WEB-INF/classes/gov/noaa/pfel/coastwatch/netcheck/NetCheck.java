@@ -81,12 +81,12 @@ public class NetCheck {
   private String smtpFromAddress;
   private int memoryWarningMB;
   // emailAdministrator is just one person, but is an ArrayList to standardize subscriber lists
-  private ArrayList<String> emailAdministrator = new ArrayList<>();
-  private ArrayList<String> emailStatusTo = new ArrayList<>();
-  private ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
-  private ArrayList<String> emailChangesTo = new ArrayList<>();
-  private ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
-  private ArrayList<NetCheckTest> netCheckTests = new ArrayList<>();
+  private final ArrayList<String> emailAdministrator = new ArrayList<>();
+  private final ArrayList<String> emailStatusTo = new ArrayList<>();
+  private final ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
+  private final ArrayList<String> emailChangesTo = new ArrayList<>();
+  private final ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
+  private final ArrayList<NetCheckTest> netCheckTests = new ArrayList<>();
   private String lastResult[]; // initially all ""
   private int nPass[];
   private int nTry[];
@@ -194,44 +194,44 @@ public class NetCheck {
         // process the tags
         // String2.log(tags + xmlReader.content());
         switch (tags) {
-          case "<netCheck>" -> {}
-          case "<netCheck><setup>" -> {}
-          case "<netCheck></setup>" -> {}
-          case "<netCheck><setup><minutesBetweenTests>" -> {}
+          case "<netCheck>",
+              "<netCheck><setup><memoryWarningMB>",
+              "<netCheck><setup><testMode>",
+              "<netCheck><setup><emailChangeHeadlinesTo>",
+              "<netCheck><setup><emailChangesTo>",
+              "<netCheck><setup><emailStatusHeadlinesTo>",
+              "<netCheck><setup><emailStatusTo>",
+              "<netCheck><setup><smtpFromAddress>",
+              "<netCheck><setup><smtpPassword>",
+              "<netCheck><setup><smtpUser>",
+              "<netCheck><setup><smtpProperties>",
+              "<netCheck><setup><smtpPort>",
+              "<netCheck><setup><smtpServer>",
+              "<netCheck><setup><mustRespondWithinSeconds>",
+              "<netCheck><setup><minutesBetweenStatusReports>",
+              "<netCheck><setup><minutesBetweenTests>",
+              "<netCheck></setup>",
+              "<netCheck><setup>" -> {}
           case "<netCheck><setup></minutesBetweenTests>" ->
               minutesBetweenTests = String2.parseDouble(xmlReader.content());
-          case "<netCheck><setup><minutesBetweenStatusReports>" -> {}
           case "<netCheck><setup></minutesBetweenStatusReports>" ->
               minutesBetweenStatusReports = String2.parseInt(xmlReader.content());
-          case "<netCheck><setup><mustRespondWithinSeconds>" -> {}
           case "<netCheck><setup></mustRespondWithinSeconds>" ->
               mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
-          case "<netCheck><setup><smtpServer>" -> {}
           case "<netCheck><setup></smtpServer>" -> smtpServer = xmlReader.content();
-          case "<netCheck><setup><smtpPort>" -> {}
           case "<netCheck><setup></smtpPort>" -> smtpPort = String2.parseInt(xmlReader.content());
-          case "<netCheck><setup><smtpProperties>" -> {}
           case "<netCheck><setup></smtpProperties>" -> smtpProperties = xmlReader.content();
-          case "<netCheck><setup><smtpUser>" -> {}
           case "<netCheck><setup></smtpUser>" -> smtpUser = xmlReader.content();
-          case "<netCheck><setup><smtpPassword>" -> {}
           case "<netCheck><setup></smtpPassword>" -> smtpPassword = xmlReader.content();
-          case "<netCheck><setup><smtpFromAddress>" -> {}
           case "<netCheck><setup></smtpFromAddress>" -> smtpFromAddress = xmlReader.content();
-          case "<netCheck><setup><emailStatusTo>" -> {}
           case "<netCheck><setup></emailStatusTo>" -> emailStatusTo.add(xmlReader.content());
-          case "<netCheck><setup><emailStatusHeadlinesTo>" -> {}
           case "<netCheck><setup></emailStatusHeadlinesTo>" ->
               emailStatusHeadlinesTo.add(xmlReader.content());
-          case "<netCheck><setup><emailChangesTo>" -> {}
           case "<netCheck><setup></emailChangesTo>" -> emailChangesTo.add(xmlReader.content());
-          case "<netCheck><setup><emailChangeHeadlinesTo>" -> {}
           case "<netCheck><setup></emailChangeHeadlinesTo>" ->
               emailChangeHeadlinesTo.add(xmlReader.content());
-          case "<netCheck><setup><testMode>" -> {}
           case "<netCheck><setup></testMode>" ->
               testMode = String2.parseBoolean(xmlReader.content());
-          case "<netCheck><setup><memoryWarningMB>" -> {}
           case "<netCheck><setup></memoryWarningMB>" ->
               memoryWarningMB = String2.parseInt(xmlReader.content());
           case "<netCheck><httpTest>" ->
@@ -648,7 +648,7 @@ public class NetCheck {
     boolean testMode = false;
     String xmlName = null;
     for (String arg : args) {
-      if (arg.toLowerCase().equals("-testmode")) testMode = true;
+      if (arg.equalsIgnoreCase("-testmode")) testMode = true;
       else if (arg.endsWith(".xml")) xmlName = arg;
     }
 

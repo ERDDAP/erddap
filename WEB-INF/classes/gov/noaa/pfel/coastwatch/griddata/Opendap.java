@@ -31,7 +31,7 @@ public class Opendap {
   public static boolean verbose = false;
 
   /** The following information about this OPeNDAP data set is set by the constructor. */
-  public String url;
+  public final String url;
 
   public boolean acceptDeflate =
       true; // Dave got faster than possible response; ergo, compression is working(?)
@@ -265,8 +265,7 @@ public class Opendap {
 
     // get the grid baseType
     BaseType bt = dds.getVariable(gridName); // throws exception if not found
-    DArray da =
-        (DArray) ((DGrid) bt).getVariables().nextElement(); // first element is always main array
+    DArray da = ((DGrid) bt).getVariables().nextElement(); // first element is always main array
     // if (verbose) String2.log("  da.getName()=" + da.getName()); //always(?) same as gridName
 
     // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)

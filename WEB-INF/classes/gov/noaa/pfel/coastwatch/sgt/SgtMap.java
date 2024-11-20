@@ -68,18 +68,18 @@ public class SgtMap {
   // //"Dialog"; //"Lucida Sans"; //"SansSerif";
 
   public static String fullPrivateDirectory = SSR.getTempDirectory();
-  public static double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
-  public static double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
+  public static final double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
+  public static final double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
 
-  public static Color oceanColor = new Color(128, 128, 128);
-  public static Color landColor = new Color(204, 204, 204); // lynn uses 191
-  public static Color landMaskStrokeColor = Color.DARK_GRAY; // is 64,64,64
-  public static Color nationsColor = Color.DARK_GRAY;
-  public static Color statesColor =
+  public static final Color oceanColor = new Color(128, 128, 128);
+  public static final Color landColor = new Color(204, 204, 204); // lynn uses 191
+  public static final Color landMaskStrokeColor = Color.DARK_GRAY; // is 64,64,64
+  public static final Color nationsColor = Color.DARK_GRAY;
+  public static final Color statesColor =
       new Color(144, 144, 144); // 119, 0, 119); //192, 64, 192); //128, 32, 32);
-  public static Color riversColor =
+  public static final Color riversColor =
       new Color(122, 170, 210); // matches ocean.cpt and topography.cpt
-  public static Color lakesColor = riversColor;
+  public static final Color lakesColor = riversColor;
   public static boolean drawPoliticalBoundaries =
       true; // a kill switch for nation and state boundaries
   public static final int NO_LAKES_AND_RIVERS = 0; // used for drawLakesAndRivers
@@ -125,14 +125,14 @@ public class SgtMap {
    * (?=f|h|i|l|c) files. The files are from the GSHHS project
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
-  public static String fullRefDirectory =
+  public static final String fullRefDirectory =
       File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
 
   // some of this information is in DataSet.properties too, see BAthymFGDC
   public static final String etopoFileName = "etopo1_ice_g_i2.bin";
-  public static String fullEtopoFileName = fullRefDirectory + etopoFileName;
+  public static final String fullEtopoFileName = fullRefDirectory + etopoFileName;
   public static final String BATHYMETRY_BOLD_TITLE =
       "Bathymetry, ETOPO1, 0.0166667 degrees, Global (Ice Sheet Surface)"; // Grid Registered)";
   public static final String BATHYMETRY_SUMMARY =
@@ -160,10 +160,10 @@ public class SgtMap {
    * differences from GSHHS!). The True version stops at -1, treats land as NaN, and is used for
    * transparent .png's. File must be in the gov/noaa/pfel/coastwatch/sgt directory.
    */
-  public static String bathymetryCpt = "Ocean.cpt";
+  public static final String bathymetryCpt = "Ocean.cpt";
 
-  public static String bathymetryCptTrue = "OceanTrue.cpt";
-  public static URL bathymetryCptFullName =
+  public static final String bathymetryCptTrue = "OceanTrue.cpt";
+  public static final URL bathymetryCptFullName =
       Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
   public static URL bathymetryCptTrueFullName =
       Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + bathymetryCptTrue);
@@ -182,14 +182,14 @@ public class SgtMap {
    * topographyCpt is used to draw bathymetry+topography colors on maps. File must be in the
    * gov/noaa/pfel/coastwatch/sgt directory.
    */
-  public static String topographyCpt = "Topography.cpt";
+  public static final String topographyCpt = "Topography.cpt";
 
-  public static URL topographyCptFullName =
+  public static final URL topographyCptFullName =
       Resources.getResource("gov/noaa/pfel/coastwatch/sgt/" + topographyCpt);
 
-  public static Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
-  public static Boundaries stateBoundaries = Boundaries.getStateBoundaries();
-  public static Boundaries rivers = Boundaries.getRivers();
+  public static final Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
+  public static final Boundaries stateBoundaries = Boundaries.getStateBoundaries();
+  public static final Boundaries rivers = Boundaries.getRivers();
 
   /**
    * This suggests the appropriate maxRange category.
@@ -516,7 +516,7 @@ public class SgtMap {
       long time = System.currentTimeMillis();
 
       // We want == here not object.equals.
-      if (gridGrid != null && contourGrid != null && gridGrid == contourGrid)
+      if (contourGrid != null && gridGrid == contourGrid)
         Test.error(String2.ERROR + " in SgtMap.makeMap: gridGrid == contourGrid!");
       if (!Double.isFinite(minX))
         throw new SimpleException(String2.ERROR + " when making map: minLon wasn't set.");
@@ -1481,7 +1481,7 @@ public class SgtMap {
           } else if (legendPosition == SgtUtil.LEGEND_BELOW) {
 
             // add a horizontal colorBar
-            if (gdl.colorMap != null && gdl.colorMap instanceof CompoundColorMap) {
+            if (gdl.colorMap instanceof CompoundColorMap) {
               legendTextY += labelHeightPixels;
               CompoundColorMapLayerChild ccmLayerChild =
                   new CompoundColorMapLayerChild("", (CompoundColorMap) gdl.colorMap);

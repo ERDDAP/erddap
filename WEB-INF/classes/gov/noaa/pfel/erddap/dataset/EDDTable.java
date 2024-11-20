@@ -123,13 +123,13 @@ public abstract class EDDTable extends EDD {
   public static final ImmutableList<String> GTLT_OPERATORS = ImmutableList.of("<=", ">=", "<", ">");
 
   /** The index of REGEX_OP in OPERATORS. */
-  public static int REGEX_OP_INDEX = OPERATORS.indexOf(PrimitiveArray.REGEX_OP);
+  public static final int REGEX_OP_INDEX = OPERATORS.indexOf(PrimitiveArray.REGEX_OP);
 
   /**
    * The orderBy options. The order/positions may change as new ones are added. No codes depends on
    * the specific order/positions, except [0]="".
    */
-  public static String orderByOptions[] = {
+  public static final String[] orderByOptions = {
     "",
     "orderBy",
     "orderByDescending",
@@ -143,10 +143,10 @@ public abstract class EDDTable extends EDD {
     "orderBySum"
   };
 
-  public static String DEFAULT_ORDERBYLIMIT = "100";
+  public static final String DEFAULT_ORDERBYLIMIT = "100";
 
   /** These are used on web pages when a user changes orderBy. They parallel the orderByOptions. */
-  public static String orderByExtraDefaults[] = {
+  public static final String[] orderByExtraDefaults = {
     "", "", "", "", "", DEFAULT_ORDERBYLIMIT, "", "", "", "", ""
   };
 
@@ -154,7 +154,7 @@ public abstract class EDDTable extends EDD {
    * This is the minimum number of orderBy variables that must be specified (not counting the
    * orderByExtra item).
    */
-  public static byte minOrderByVariables[] = {0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0};
+  public static final byte[] minOrderByVariables = {0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0};
 
   /** This is used in many file types as the row identifier. */
   public static final String ROW_NAME = "row"; // see also Table.ROW_NAME
@@ -250,9 +250,10 @@ public abstract class EDDTable extends EDD {
           ".wav",
           ".xhtml");
   // These all used to have " (It may take a while. Please be patient.)" at the end.
-  public static String[][] dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
+  public static final String[][]
+      dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
   // These are encoded for use as HTML attributes (href)
-  public static ImmutableList<String> dataFileTypeInfo =
+  public static final ImmutableList<String> dataFileTypeInfo =
       ImmutableList.of( // "" if not available
           "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
           // ascii
@@ -314,8 +315,9 @@ public abstract class EDDTable extends EDD {
           ".transparentPng");
   public static final ImmutableList<String> imageFileTypeExtensions =
       ImmutableList.of(".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
-  public static String[][] imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static ImmutableList<String> imageFileTypeInfo =
+  public static final String[][]
+      imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
+  public static final ImmutableList<String> imageFileTypeInfo =
       ImmutableList.of(
           "https://developers.google.com/kml/", // kml
           "https://www.adobe.com/acrobat/about-adobe-pdf.html", // pdf
@@ -327,10 +329,11 @@ public abstract class EDDTable extends EDD {
           "http://www.libpng.org/pub/png/" // png
           );
 
-  private static String[][] allFileTypeOptionsAr;
-  private static String[] allFileTypeNames;
-  private static String[] publicGraphFileTypeNames;
-  private static int defaultFileTypeOption, defaultPublicGraphFileTypeOption;
+  private static final String[][] allFileTypeOptionsAr;
+  private static final String[] allFileTypeNames;
+  private static final String[] publicGraphFileTypeNames;
+  private static final int defaultFileTypeOption;
+  private static final int defaultPublicGraphFileTypeOption;
 
   /** SOS static values. */
   public static final String sosServer = "server";
@@ -623,16 +626,16 @@ public abstract class EDDTable extends EDD {
    */
   private String subsetVariables[] = null;
 
-  public static String DEFAULT_SUBSET_VIEWS = // viewDistinctData will default to 1000
+  public static final String DEFAULT_SUBSET_VIEWS = // viewDistinctData will default to 1000
       "&.viewDistinctMap=true";
 
   /**
    * EDDTable.subsetVariables relies on this name ending to know which cached subset files to delete
    * when a dataset is reloaded.
    */
-  public static String SUBSET_FILENAME = "subset.nc";
+  public static final String SUBSET_FILENAME = "subset.nc";
 
-  public static String DISTINCT_SUBSET_FILENAME = "distinct.nc";
+  public static final String DISTINCT_SUBSET_FILENAME = "distinct.nc";
 
   /**
    * These are parallel data structures for use by setSosOfferingTypeAndIndex(). If cdmDataType is
@@ -640,10 +643,10 @@ public abstract class EDDTable extends EDD {
    * with cf_role=sosCdmCfRoles[t], !!!FOR NOW, cdm_data_type must be TimeSeries and so
    * sosOfferingType must be Station (?Check with Derrick)
    */
-  public static String sosCdmDataTypes[] = {"TimeSeries"};
+  public static final String[] sosCdmDataTypes = {"TimeSeries"};
 
-  public static String sosCdmOfferingTypes[] = {"Station"};
-  public static String sosCdmCfRoles[] = {"timeseries_id"};
+  public static final String[] sosCdmOfferingTypes = {"Station"};
+  public static final String[] sosCdmCfRoles = {"timeseries_id"};
 
   /**
    * This is usually set by setSosOfferingTypeAndIndex(). This will be null if the dataset is not
@@ -1072,8 +1075,7 @@ public abstract class EDDTable extends EDD {
   @Override
   public String toString() {
     // make this JSON format?
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+    String sb =
         "//** EDDTable "
             + super.toString()
             + "\nsourceCanConstrainNumericData="
@@ -1083,8 +1085,8 @@ public abstract class EDDTable extends EDD {
             + "\nsourceCanConstrainStringRegex=\""
             + sourceCanConstrainStringRegex
             + "\""
-            + "\n\\**\n\n");
-    return sb.toString();
+            + "\n\\**\n\n";
+    return sb;
   }
 
   /**
@@ -3476,7 +3478,7 @@ public abstract class EDDTable extends EDD {
             catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
 
             PrimitiveArray pa = catts.get("actual_range");
-            if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+            if (pa instanceof DoubleArray && pa.size() == 2) {
               StringArray sa = new StringArray();
               for (int i = 0; i < 2; i++)
                 sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
@@ -3888,7 +3890,7 @@ public abstract class EDDTable extends EDD {
           }
           // add missing vars to beginning of userDapQuery (they're outer vars, so beginning is
           // good)
-          userDapQuery = addVars.toString() + userDapQuery;
+          userDapQuery = addVars + userDapQuery;
 
           // query must include at least one non-outer variable
           boolean ok = false;
@@ -6739,9 +6741,9 @@ public abstract class EDDTable extends EDD {
             "  nFeatures="
                 + nFeatures
                 + "\n  featureFirstRow="
-                + featureFirstRow.toString()
+                + featureFirstRow
                 + "\n  featureNRows="
-                + featureNRows.toString()
+                + featureNRows
                 + "\n  maxFeatureNRows="
                 + maxFeatureNRows);
       // conserve memory
@@ -8182,14 +8184,14 @@ public abstract class EDDTable extends EDD {
             "CheckAll",
             EDStatic.EDDTableCheckAllTooltipAr[language],
             EDStatic.EDDTableCheckAllAr[language],
-            "onclick=\"" + checkAll.toString() + "\""));
+            "onclick=\"" + checkAll + "\""));
     writer.write(
         widgets.button(
             "button",
             "UncheckAll",
             EDStatic.EDDTableUncheckAllTooltipAr[language],
             EDStatic.EDDTableUncheckAllAr[language],
-            "onclick=\"" + uncheckAll.toString() + "\""));
+            "onclick=\"" + uncheckAll + "\""));
 
     writer.write(
         "  &nbsp;</th>\n"
@@ -11818,14 +11820,14 @@ public abstract class EDDTable extends EDD {
           // ensure conVal[cv][con] is valid
           if (conVal[cv][con] == null) {
           } else if (conVal[cv][con].length() > 0) {
-            if (conEdv != null && conEdv instanceof EDVTimeStamp ts) {
+            if (conEdv instanceof EDVTimeStamp ts) {
               // convert numeric time (from parseUserDapQuery) to iso
               conVal[cv][con] = ts.destinationToString(String2.parseDouble(conVal[cv][con]));
             } else if (dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.CHAR
                 || dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.STRING) {
               // -1 above since option 0=""
               // leave String constraint values intact
-            } else if (conVal[cv][con].toLowerCase().equals("nan")) { // NaN  (or clean up to "NaN")
+            } else if (conVal[cv][con].equalsIgnoreCase("nan")) { // NaN  (or clean up to "NaN")
               conVal[cv][con] = "NaN";
             } else if (Double.isNaN(String2.parseDouble(conVal[cv][con]))) {
               // it should be numeric, but NaN, set to null
@@ -16329,8 +16331,8 @@ public abstract class EDDTable extends EDD {
 
       // ensure there is no overlap of cdm_xxx_variables
       // test profile and timeseries
-      StringArray sa1 = new StringArray((String[]) cdmVars[0].clone());
-      StringArray sa2 = new StringArray((String[]) cdmVars[1].clone());
+      StringArray sa1 = new StringArray(cdmVars[0].clone());
+      StringArray sa2 = new StringArray(cdmVars[1].clone());
       sa1.sort();
       sa2.sort();
       sa1.inCommon(sa2);
@@ -16338,7 +16340,7 @@ public abstract class EDDTable extends EDD {
         throw new SimpleException(
             "There must not be any variables common to cdm_profile_variables and "
                 + "cdm_timeseries_variables. Please fix these: "
-                + sa1.toString()
+                + sa1
                 + ".");
 
       // test timeseries and trajectory   -- actually, they shouldn't coexist
@@ -16347,8 +16349,8 @@ public abstract class EDDTable extends EDD {
             "cdm_timeseries_variables and cdm_trajectory_variables must never both be defined.");
 
       // test trajectory and profile
-      sa1 = new StringArray((String[]) cdmVars[2].clone());
-      sa2 = new StringArray((String[]) cdmVars[0].clone());
+      sa1 = new StringArray(cdmVars[2].clone());
+      sa2 = new StringArray(cdmVars[0].clone());
       sa1.sort();
       sa2.sort();
       sa1.inCommon(sa2);
@@ -16356,7 +16358,7 @@ public abstract class EDDTable extends EDD {
         throw new SimpleException(
             "There must not be any variables common to cdm_profile_variables and "
                 + "cdm_trajectory_variables. Please fix these: "
-                + sa1.toString()
+                + sa1
                 + ".");
 
       // check the cdmType's requirements
@@ -17865,7 +17867,7 @@ public abstract class EDDTable extends EDD {
     // &eventTime=2008-08-01T00:00:00Z/2008-08-01T04:00:00Z
     // or
     // featureOfInterest=BBOX:<min_lon>,<min_lat>,<max_lon>,<max_lat>
-    StringBuilder dapQuery = new StringBuilder("");
+    StringBuilder dapQuery = new StringBuilder();
 
     // service   required
     String service = sosQueryMap.get("service"); // test name.toLowerCase()
@@ -18212,7 +18214,7 @@ public abstract class EDDTable extends EDD {
     if (reallyVerbose)
       String2.log(
           "sosQueryToDapQuery="
-              + dapQuery.toString()
+              + dapQuery
               + "\n  requestOfferingType="
               + requestOfferingType
               + " requestShortOfferingName="

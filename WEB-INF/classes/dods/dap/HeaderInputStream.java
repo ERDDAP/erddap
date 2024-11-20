@@ -24,7 +24,7 @@ import java.io.*;
  */
 class HeaderInputStream extends FilterInputStream {
   /** Each line is buffered here. */
-  private byte lineBuf[];
+  private final byte[] lineBuf;
 
   /** Number of bytes remaining in buffer. */
   private int bytesRemaining;
@@ -33,7 +33,7 @@ class HeaderInputStream extends FilterInputStream {
   private int currentOffset;
 
   /** End sequence to look for: "\nData:\n" */
-  private byte[] endSequence = {
+  private final byte[] endSequence = {
     (byte) '\n', (byte) 'D', (byte) 'a', (byte) 't', (byte) 'a', (byte) ':', (byte) '\n'
   };
 

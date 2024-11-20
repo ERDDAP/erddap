@@ -43,7 +43,7 @@ import java.io.Serializable;
  * @since 1.0
  */
 public abstract class ColorMap implements Cloneable, PropertyChangeListener, Serializable {
-  private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
+  private final PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
   protected boolean batch_ = false;
   protected boolean local_ = true;
   protected boolean modified_ = false;

@@ -301,8 +301,7 @@ public class DoubleArray extends PrimitiveArray {
   public void addObject(final Object value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] =
-        value != null && value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
+    array[size++] = value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
   }
 
   /**
@@ -794,7 +793,7 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public void setFloat(final int index, final float d) {
-    set(index, (double) d);
+    set(index, d);
   }
 
   /**
@@ -1015,7 +1014,7 @@ public class DoubleArray extends PrimitiveArray {
   @Override
   public String toNccsvAttString() {
     final StringBuilder sb = new StringBuilder(size * 15);
-    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + String.valueOf(array[i]) + "d");
+    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + array[i] + "d");
     return sb.toString();
   }
 

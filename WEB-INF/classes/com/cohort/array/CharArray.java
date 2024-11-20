@@ -332,8 +332,7 @@ public class CharArray extends PrimitiveArray {
   @Override
   public final void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(
-        value != null && value instanceof Number ? ((Number) value).doubleValue() : Double.NaN);
+    addDouble(value instanceof Number ? ((Number) value).doubleValue() : Double.NaN);
   }
 
   /**

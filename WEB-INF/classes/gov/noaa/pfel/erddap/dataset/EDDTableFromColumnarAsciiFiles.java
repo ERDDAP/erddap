@@ -46,7 +46,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor.
@@ -857,7 +857,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     // gather/generate
     StringBuilder address = new StringBuilder();
     String altitudeUnits = "";
-    StringBuilder boundingCoordinates = new StringBuilder("");
+    StringBuilder boundingCoordinates = new StringBuilder();
     StringBuilder coverage = new StringBuilder();
     String dataFileName = "";
     String dataFileDelimiter = "";
@@ -876,7 +876,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     StringBuilder individualName = new StringBuilder();
     HashSet<String> keywords = new HashSet<>();
     StringBuilder license = new StringBuilder();
-    StringBuilder licenseOther = new StringBuilder("");
+    StringBuilder licenseOther = new StringBuilder();
     StringBuilder methods = new StringBuilder();
     int methodNumber = 0;
     String methodsDescription = "";
@@ -1486,7 +1486,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
           String tc = xmlReader.content();
           if (emlIsSomething(tc)
-              && !tc.toLowerCase().equals("string")) // too many are erroneously marked 'string'
+              && !tc.equalsIgnoreCase("string")) // too many are erroneously marked 'string'
           varType = tc;
 
         } else if (
@@ -2219,7 +2219,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
               "time_zone=\"(.*)\"",
               1);
         if (tTimeZone == null) tTimeZone = "";
-        else if (tTimeZone.toLowerCase().equals("gmt") || tTimeZone.toLowerCase().equals("utc"))
+        else if (tTimeZone.equalsIgnoreCase("gmt") || tTimeZone.equalsIgnoreCase("utc"))
           tTimeZone = "Zulu";
         // test for local first, since some say "local time, -8:00 from UTC"
         if (sourceNameLC.indexOf("local") >= 0
@@ -2430,10 +2430,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     defaultGraphQuery.append("&amp;.marker=1|5");
 
     // write the information
-    StringBuilder sb = new StringBuilder();
     String tSortFilesBySourceNames = "";
 
-    sb.append(
+    String sb =
         "<dataset type=\"EDDTableFrom"
             + (columnar ? "Columnar" : "")
             + "AsciiFiles\" "
@@ -2481,20 +2480,21 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             + XML.encodeAsXML(tSortFilesBySourceNames)
             + "</sortFilesBySourceNames>\n"
             + "    <fileTableInMemory>false</fileTableInMemory>\n"
-            + "    <accessibleViaFiles>true</accessibleViaFiles>\n");
-    sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    "));
+            + "    <accessibleViaFiles>true</accessibleViaFiles>\n"
+            + writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    ")
+            +
 
-    // last 2 params: includeDataType, questionDestinationName
-    sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false));
-    sb.append("""
-            </dataset>
+            // last 2 params: includeDataType, questionDestinationName
+            writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false)
+            + """
+                      </dataset>
 
-            """);
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 
   /**

@@ -32,7 +32,7 @@ import java.io.IOException;
 public class TableWriterGeoJson extends TableWriter {
 
   // set by constructor
-  protected String jsonp;
+  protected final String jsonp;
 
   // set by firstTime
   protected int lonColumn = -1, latColumn = -1, altColumn = -1;

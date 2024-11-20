@@ -52,13 +52,13 @@ public class SgtGraph {
    */
   public static boolean reallyVerbose = false;
 
-  private String fontFamily;
-  public double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
-  public double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
-  public double majorLabelRatio = 1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
+  private final String fontFamily;
+  public final double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
+  public final double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
+  public final double majorLabelRatio = 1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
 
   public static Color DefaultBackgroundColor = new Color(0xCCCCFF); // just the RGB part (no A)
-  public int widenOnePoint = 1; // pixels
+  public final int widenOnePoint = 1; // pixels
   public static String fullTestCacheDir =
       "/erddapBPD/cache/_test/"; // EDStatic resets this if needed
 
@@ -848,14 +848,12 @@ public class SgtGraph {
       // redefine some graph parts for this graph with SoT objects -- minX vs beginX
       SoTRange xUserRange =
           xIsTimeAxis
-              ? (SoTRange)
-                  new SoTRange.Time((long) (beginX * scaleXIfTime), (long) (endX * scaleXIfTime))
-              : (SoTRange) new SoTRange.Double(beginX, endX, (xAscending ? 1 : -1) * xDivisions[0]);
+              ? new SoTRange.Time((long) (beginX * scaleXIfTime), (long) (endX * scaleXIfTime))
+              : new SoTRange.Double(beginX, endX, (xAscending ? 1 : -1) * xDivisions[0]);
       SoTRange yUserRange =
           yIsTimeAxis
-              ? (SoTRange)
-                  new SoTRange.Time((long) (beginY * scaleYIfTime), (long) (endY * scaleYIfTime))
-              : (SoTRange) new SoTRange.Double(beginY, endY, (yAscending ? 1 : -1) * yDivisions[0]);
+              ? new SoTRange.Time((long) (beginY * scaleYIfTime), (long) (endY * scaleYIfTime))
+              : new SoTRange.Double(beginY, endY, (yAscending ? 1 : -1) * yDivisions[0]);
       gov.noaa.pmel.sgt.AxisTransform xt =
           xIsLogAxis
               ? new gov.noaa.pmel.sgt.LogTransform(xPhysRange, xUserRange)
@@ -867,11 +865,11 @@ public class SgtGraph {
       SoTPoint origin2 =
           new SoTPoint( // where are axes drawn?
               xIsTimeAxis
-                  ? (SoTValue) new SoTValue.Time((long) (beginX * scaleXIfTime))
-                  : (SoTValue) new SoTValue.Double(beginX),
+                  ? new SoTValue.Time((long) (beginX * scaleXIfTime))
+                  : new SoTValue.Double(beginX),
               yIsTimeAxis
-                  ? (SoTValue) new SoTValue.Time((long) (beginY * scaleYIfTime))
-                  : (SoTValue) new SoTValue.Double(beginY));
+                  ? new SoTValue.Time((long) (beginY * scaleYIfTime))
+                  : new SoTValue.Double(beginY));
 
       // draw the point layers
       int nTotalValid = 0;

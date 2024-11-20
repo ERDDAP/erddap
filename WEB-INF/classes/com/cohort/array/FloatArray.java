@@ -287,7 +287,7 @@ public class FloatArray extends PrimitiveArray {
   public void addObject(final Object value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] = value != null && value instanceof Number na ? na.floatValue() : Float.NaN;
+    array[size++] = value instanceof Number na ? na.floatValue() : Float.NaN;
   }
 
   /**
@@ -1027,7 +1027,7 @@ public class FloatArray extends PrimitiveArray {
   @Override
   public String toNccsvAttString() {
     final StringBuilder sb = new StringBuilder(size * 11);
-    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + String.valueOf(array[i]) + "f");
+    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + array[i] + "f");
     return sb.toString();
   }
 

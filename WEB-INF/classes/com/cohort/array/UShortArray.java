@@ -414,7 +414,7 @@ public class UShortArray extends PrimitiveArray {
   @Override
   public void addObject(final Object value) {
     // double is good intermediate because it has the idea of NaN
-    addDouble(value != null && value instanceof Number nu ? nu.doubleValue() : Double.NaN);
+    addDouble(value instanceof Number nu ? nu.doubleValue() : Double.NaN);
   }
 
   /**
@@ -488,7 +488,7 @@ public class UShortArray extends PrimitiveArray {
       maxIsMV = true;
       atInsert(index, MAX_VALUE);
     } else {
-      atInsert(index, (int) ti);
+      atInsert(index, ti);
     }
   }
 

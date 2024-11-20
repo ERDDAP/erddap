@@ -39,7 +39,7 @@ import java.util.ArrayList;
  * @version $Revision: 1.35 $, $Date: 2003/09/19 23:14:24 $
  */
 public class PaneProxy { // Bob Simons made public
-  public static String SGTVersion = "3.0";
+  public static final String SGTVersion = "3.0";
   public static boolean Java2D = false;
   public static StrokeDrawer strokeDrawer = null;
 
@@ -58,9 +58,9 @@ public class PaneProxy { // Bob Simons made public
   private Object selectedobject_;
   private Object old_selectedobject_ = null;
   private Rectangle selectedRect_;
-  private Rectangle zoom_rect_ = new Rectangle(0, 0, 0, 0);
+  private final Rectangle zoom_rect_ = new Rectangle(0, 0, 0, 0);
   private Rectangle old_zoom_rect_;
-  private Point zoom_start_ = new Point(0, 0);
+  private final Point zoom_start_ = new Point(0, 0);
   private boolean in_zoom_ = false;
   private boolean in_select_ = false;
   private boolean in_move_ = false;
@@ -144,7 +144,7 @@ public class PaneProxy { // Bob Simons made public
     }
     Graphics goff;
     Dimension isze = pane_.getSize();
-    if (offscreen_ == (Image) null) {
+    if (offscreen_ == null) {
       offscreen_ = pane_.createImage(isze.width, isze.height);
     } else {
       if (isze.width != panesize_.width || isze.height != panesize_.height) {
@@ -388,12 +388,10 @@ public class PaneProxy { // Bob Simons made public
   Object getObjectAt(int x, int y) {
     Object obj = null;
     Component[] comps = pane_.getComponents();
-    if (comps.length != 0) {
-      for (Component comp : comps) {
-        if (comp instanceof Layer) {
-          obj = ((Layer) comp).getObjectAt(x, y, false);
-          if (obj != null) return obj;
-        }
+    for (Component comp : comps) {
+      if (comp instanceof Layer) {
+        obj = ((Layer) comp).getObjectAt(x, y, false);
+        if (obj != null) return obj;
       }
     }
     return obj;
@@ -406,12 +404,10 @@ public class PaneProxy { // Bob Simons made public
     ArrayList<Object> obList = new ArrayList<>();
     Object obj = null;
     Component[] comps = pane_.getComponents();
-    if (comps.length != 0) {
-      for (Component comp : comps) {
-        if (comp instanceof Layer) {
-          obj = ((Layer) comp).getObjectAt(x, y, false);
-          if (obj != null) obList.add(obj);
-        }
+    for (Component comp : comps) {
+      if (comp instanceof Layer) {
+        obj = ((Layer) comp).getObjectAt(x, y, false);
+        if (obj != null) obList.add(obj);
       }
     }
     return obList.toArray();

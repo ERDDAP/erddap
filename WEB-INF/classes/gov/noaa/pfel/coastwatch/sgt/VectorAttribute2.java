@@ -89,7 +89,7 @@ public class VectorAttribute2 implements Attribute, Cloneable, java.io.Serializa
    * sourceID identifies the source of the data (e.g., -1 for pointVectorScreen, -2 for
    * pointScreen).
    */
-  public int sourceID;
+  public final int sourceID;
 
   /**
    * <code>VectorAttribute</code> constructor. Default vector style is HEAD.

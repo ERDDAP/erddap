@@ -102,8 +102,7 @@ public class EDVGridAxis extends EDV {
     // test for ties (after isAscending and isDescending)
     StringBuilder sb = new StringBuilder();
     if (tSourceValues.removeDuplicates(false, sb) > 0)
-      throw new RuntimeException(
-          "AxisVariable=" + destinationName + " has tied values:\n" + sb.toString());
+      throw new RuntimeException("AxisVariable=" + destinationName + " has tied values:\n" + sb);
 
     // test if evenly spaced
     resetIsEvenlySpaced();
@@ -239,7 +238,7 @@ public class EDVGridAxis extends EDV {
               new String[] {destinationName},
               varsRead);
       if (varsRead.size() != 1 || !varsRead.get(0).equals(destinationName))
-        throw new RuntimeException(String2.ERROR + ": unexpected varsRead=" + varsRead.toString());
+        throw new RuntimeException(String2.ERROR + ": unexpected varsRead=" + varsRead);
       sourceValues = pas[0];
       return pas[0];
     } catch (Exception e) {
@@ -591,7 +590,7 @@ public class EDVGridAxis extends EDV {
     String tSpacing =
         isTimeStamp
             ? Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000)
-            : "" + Math2.floatToDouble(averageSpacing()) + " " + tUnits;
+            : Math2.floatToDouble(averageSpacing()) + " " + tUnits;
     return destinationName
         + " has "
         + tSourceValues.size()

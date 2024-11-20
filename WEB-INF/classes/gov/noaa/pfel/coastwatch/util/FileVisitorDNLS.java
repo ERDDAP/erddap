@@ -126,17 +126,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
    *
    * <p>Files with lastMod in the last n milliseconds are not removed from the cache.
    */
-  public static int PRUNE_CACHE_SAFE_MILLIS =
+  public static final int PRUNE_CACHE_SAFE_MILLIS =
       20 * 1000; // 20 seconds = 2*10 (10 seconds to decompress jplMur files)
 
   /**
    * When threshold size is reached, prune the cache to fraction*threshold. Normally, you won't
    * change this, but will change the fraction in code calling pruneCache().
    */
-  public static double PRUNE_CACHE_DEFAULT_FRACTION = 0.75;
+  public static final double PRUNE_CACHE_DEFAULT_FRACTION = 0.75;
 
   /** ConcurrentHashMap handles multi-threaded access well. */
-  public static ConcurrentHashMap<String, Long> pruneCacheDirSize =
+  public static final ConcurrentHashMap<String, Long> pruneCacheDirSize =
       new ConcurrentHashMap(); /* dirName, bytes */
 
   /** Max allowed is 1000. Only use smaller number for testing. */
@@ -2072,8 +2072,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       // note that String2.extractCaptureGroup fails if the string has line terminators
       String content1 = String2.extractRegex(td1, TT_REGEX, 0);
       String content2 = String2.extractRegex(thisRow.substring(td2Po, td3Po), TT_REGEX, 0);
-      String content3 =
-          String2.extractRegex(thisRow.substring(td3Po, thisRow.length()), TT_REGEX, 0);
+      String content3 = String2.extractRegex(thisRow.substring(td3Po), TT_REGEX, 0);
       if (diagnosticMode)
         String2.log("=== <td><tt> content #1=" + content1 + " #2=" + content2 + " #3=" + content3);
       content1 = content1 == null ? "" : content1.substring(4, content1.length() - 5);
@@ -2600,7 +2599,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     HashSet<String> subdirHash = new HashSet<>();
     reduceDnlsTableToOneDir(dnlsTable, oneDir, subdirHash);
 
-    String subDirs[] = (String[]) subdirHash.toArray(new String[0]);
+    String subDirs[] = subdirHash.toArray(new String[0]);
     Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
     return subDirs;
   }

@@ -49,7 +49,7 @@ public class GSHHS {
    * from the GSHHS project (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir
    * should have slash at end.
    */
-  public static String gshhsDirectory =
+  public static final String gshhsDirectory =
       File2.getWebInfParentDirectory()
           + // with / separator and / at the end
           "WEB-INF/ref/";
@@ -68,7 +68,7 @@ public class GSHHS {
    */
   public static final int CACHE_SIZE = 100;
 
-  private static Map<String, GeneralPath> cache =
+  private static final Map<String, GeneralPath> cache =
       Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
   private static int nCoarse = 0;
   private static int nSuccesses = 0;
@@ -78,7 +78,7 @@ public class GSHHS {
    * This limits the number of lakes that appear at lower resolutions. Smaller numbers lead to more
    * lakes. 0=all
    */
-  public static int lakeMinN = 12;
+  public static final int lakeMinN = 12;
 
   /**
    * This gets the GeneralPath with the relevant shoreline information. This is thread-safe because

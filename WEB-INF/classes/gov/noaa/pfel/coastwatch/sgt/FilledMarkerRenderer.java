@@ -38,16 +38,17 @@ public class FilledMarkerRenderer extends CartesianRenderer {
 
   // things set by constructor
   private CartesianGraph graph;
-  private boolean xIsLogAxis, yIsLogAxis;
+  private final boolean xIsLogAxis;
+  private final boolean yIsLogAxis;
   private PrimitiveArray xPA, yPA, dataPA;
-  private int markerType;
+  private final int markerType;
   private ColorMap colorMap;
-  private Color lineColor;
-  private int markerSize;
-  private boolean drawLine;
+  private final Color lineColor;
+  private final int markerSize;
+  private final boolean drawLine;
 
   /** resultXxx set by draw() to be used for constructing user maps on the .gif */
-  public int sourceID;
+  public final int sourceID;
 
   public IntArray resultMinX, resultMaxX, resultMinY, resultMaxY, resultRowNumber;
 
@@ -132,8 +133,8 @@ public class FilledMarkerRenderer extends CartesianRenderer {
     Shape originalClip = g2.getClip();
 
     // modify the transform  so degrees is converted to device coordinates
-    gov.noaa.pmel.sgt.AxisTransform xt = (gov.noaa.pmel.sgt.AxisTransform) graph.getXTransform();
-    gov.noaa.pmel.sgt.AxisTransform yt = (gov.noaa.pmel.sgt.AxisTransform) graph.getYTransform();
+    gov.noaa.pmel.sgt.AxisTransform xt = graph.getXTransform();
+    gov.noaa.pmel.sgt.AxisTransform yt = graph.getYTransform();
     Range2D xUserRange = xt.getRangeU();
     Range2D yUserRange = yt.getRangeU();
     int leftX = graph.getXUtoD(xUserRange.start);

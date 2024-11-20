@@ -39,17 +39,18 @@ import java.util.Enumeration;
 @SaxHandlerClass(EDDTableFromDapSequenceHandler.class)
 public class EDDTableFromDapSequence extends EDDTable {
 
-  protected String outerSequenceName, innerSequenceName;
-  protected boolean sourceCanConstrainStringEQNE,
-      sourceCanConstrainStringGTLT,
-      skipDapperSpacerRows;
+  protected final String outerSequenceName;
+  protected final String innerSequenceName;
+  protected final boolean sourceCanConstrainStringEQNE;
+  protected final boolean sourceCanConstrainStringGTLT;
+  protected final boolean skipDapperSpacerRows;
   protected boolean isOuterVar[];
 
   /**
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This constructs an EDDTableFromDapSequence based on the information in an .xml file.
@@ -107,44 +108,44 @@ public class EDDTableFromDapSequence extends EDDTable {
         case "<altitudeMetersPerSourceUnit>" ->
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<skipDapperSpacerRows>",
+            "<sourceCanConstrainStringRegex>",
+            "<sourceCanConstrainStringGTLT>",
+            "<sourceCanConstrainStringEQNE>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<innerSequenceName>",
+            "<outerSequenceName>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<outerSequenceName>" -> {}
         case "</outerSequenceName>" -> tOuterSequenceName = content;
-        case "<innerSequenceName>" -> {}
         case "</innerSequenceName>" -> tInnerSequenceName = content;
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<sourceCanConstrainStringEQNE>" -> {}
         case "</sourceCanConstrainStringEQNE>" ->
             tSourceCanConstrainStringEQNE = String2.parseBoolean(content);
-        case "<sourceCanConstrainStringGTLT>" -> {}
         case "</sourceCanConstrainStringGTLT>" ->
             tSourceCanConstrainStringGTLT = String2.parseBoolean(content);
-        case "<sourceCanConstrainStringRegex>" -> {}
         case "</sourceCanConstrainStringRegex>" -> tSourceCanConstrainStringRegex = content;
-        case "<skipDapperSpacerRows>" -> {}
         case "</skipDapperSpacerRows>" -> tSkipDapperSpacerRows = String2.parseBoolean(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -385,7 +386,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     }
 
     // delve into the outerSequence
-    BaseType outerVariable = (BaseType) dds.getVariable(outerSequenceName);
+    BaseType outerVariable = dds.getVariable(outerSequenceName);
     if (!(outerVariable instanceof DSequence))
       throw new RuntimeException(
           errorInMethod
@@ -399,7 +400,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
 
       // look at the variables in the outer sequence
-      BaseType obt = (BaseType) outerSequence.getVar(outerCol);
+      BaseType obt = outerSequence.getVar(outerCol);
       String oName = obt.getName();
       if (innerSequenceName != null && oName.equals(innerSequenceName)) {
 
@@ -631,7 +632,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromDapSequence "
               + datasetID
               + " constructor finished. TIME="
@@ -998,8 +999,8 @@ public class EDDTableFromDapSequence extends EDDTable {
 
     // write the information
     boolean isDapper = tLocalSourceUrl.indexOf("dapper") > 0;
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<dataset type=\"EDDTableFromDapSequence\" datasetID=\""
             + suggestDatasetID(tPublicSourceUrl)
             + "\" active=\"true\">\n"
@@ -1029,20 +1030,21 @@ public class EDDTableFromDapSequence extends EDDTable {
             + // was ~=, now ""; see notes.txt for 2009-01-16
             "    <reloadEveryNMinutes>"
             + tReloadEveryNMinutes
-            + "</reloadEveryNMinutes>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            + "</reloadEveryNMinutes>\n"
+            + writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            +
 
-    // last 2 params: includeDataType, questionDestinationName
-    sb.append(
-        writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
-    sb.append("""
-            </dataset>
+            // last 2 params: includeDataType, questionDestinationName
+            writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", false, false)
+            + """
+                      </dataset>
 
-            """);
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

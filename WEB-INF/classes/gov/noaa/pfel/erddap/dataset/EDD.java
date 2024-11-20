@@ -228,7 +228,7 @@ public abstract class EDD {
    */
   public static final String LEGEND_BOTTOM = "Bottom", LEGEND_OFF = "Off", LEGEND_ONLY = "Only";
 
-  public static int DEFAULT_RELOAD_EVERY_N_MINUTES =
+  public static final int DEFAULT_RELOAD_EVERY_N_MINUTES =
       10080; // 1 week  //The value is mentioned in datasets.xml.
 
   public static final String _dirFileTableVersion_ = "_dirFileTableVersion_";
@@ -313,15 +313,15 @@ public abstract class EDD {
    * 0.5 will cause suggestReloadEveryNMinutes to return smaller numbers (hence more aggressive
    * reloading). Don't change this value here. Change it in calling code as needed.
    */
-  public static double suggestReloadEveryNMinutesFactor = 1.0;
+  public static final double suggestReloadEveryNMinutesFactor = 1.0;
 
   /**
    * This sets the minimum and maximum values that will be returned by suggestReloadEveryNMinutes.
    * Don't change this value here. Change it in calling code as needed.
    */
-  public static int suggestReloadEveryNMinutesMin = 1;
+  public static final int suggestReloadEveryNMinutesMin = 1;
 
-  public static int suggestReloadEveryNMinutesMax = 2000000000;
+  public static final int suggestReloadEveryNMinutesMax = 2000000000;
 
   /**
    * generateDatasetsXml may set this to true to force
@@ -440,9 +440,9 @@ public abstract class EDD {
 
   /** Internal class for storing conrete EDD subclass information. */
   public static final class EDDClassInfo {
-    private Class<EDD> eddClass;
-    private Optional<Method> fromXmlMethod;
-    private Optional<Class<State>> saxHandlerClass;
+    private final Class<EDD> eddClass;
+    private final Optional<Method> fromXmlMethod;
+    private final Optional<Class<State>> saxHandlerClass;
 
     public EDDClassInfo(
         Class<EDD> eddClass,
@@ -587,7 +587,13 @@ public abstract class EDD {
           case "EDDGridCopy" -> {
             return EDDGridCopy.fromXml(erddap, xmlReader);
           }
-          case "EDDGridFromAudioFiles" -> {
+          case "EDDGridFromAudioFiles",
+              "EDDGridFromNcFilesUnpacked",
+              "EDDGridFromNcFiles",
+              "EDDGridFromMergeIRFiles",
+              "EDDGridLonPM180",
+              "EDDGridLon0360",
+              "EDDGridSideBySide" -> {
             return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
           }
           case "EDDGridFromDap" -> {
@@ -601,24 +607,6 @@ public abstract class EDD {
           }
           case "EDDGridFromEtopo" -> {
             return EDDGridFromEtopo.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromMergeIRFiles" -> {
-            return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromNcFiles" -> {
-            return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromNcFilesUnpacked" -> {
-            return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridLonPM180" -> {
-            return EDDGridLonPM180.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridLon0360" -> {
-            return EDDGridLon0360.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridSideBySide" -> {
-            return EDDGridSideBySide.fromXml(erddap, xmlReader);
           }
           case "EDDTableAggregateRows" -> {
             return EDDTableAggregateRows.fromXml(erddap, xmlReader);
@@ -857,85 +845,85 @@ public abstract class EDD {
                 if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
                   EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
               }
-              case "<erddapDatasets></convertToPublicSourceUrl>" -> {}
-              case "<erddapDatasets><angularDegreeUnits>" -> {}
-              case "<erddapDatasets></angularDegreeUnits>" -> {}
-              case "<erddapDatasets><angularDegreeTrueUnits>" -> {}
-              case "<erddapDatasets></angularDegreeTrueUnits>" -> {}
-              case "<erddapDatasets><cacheMinutes>" -> {}
-              case "<erddapDatasets></cacheMinutes>" -> {}
-              case "<erddapDatasets><commonStandardNames>" -> {}
-              case "<erddapDatasets></commonStandardNames>" -> {}
-              case "<erddapDatasets><decompressedCacheMaxGB>" -> {}
-              case "<erddapDatasets></decompressedCacheMaxGB>" -> {}
-              case "<erddapDatasets><decompressedCacheMaxMinutesOld>" -> {}
-              case "<erddapDatasets></decompressedCacheMaxMinutesOld>" -> {}
-              case "<erddapDatasets><drawLandMask>" -> {}
-              case "<erddapDatasets></drawLandMask>" -> {}
-              case "<erddapDatasets><emailDiagnosticsToErdData>" -> {}
-              case "<erddapDatasets></emailDiagnosticsToErdData>" -> {}
-              case "<erddapDatasets><graphBackgroundColor>" -> {}
-              case "<erddapDatasets></graphBackgroundColor>" -> {}
-              case "<erddapDatasets><ipAddressMaxRequests>" -> {}
-              case "<erddapDatasets></ipAddressMaxRequests>" -> {}
-              case "<erddapDatasets><ipAddressMaxRequestsActive>" -> {}
-              case "<erddapDatasets></ipAddressMaxRequestsActive>" -> {}
-              case "<erddapDatasets><ipAddressUnlimited>" -> {}
-              case "<erddapDatasets></ipAddressUnlimited>" -> {}
-              case "<erddapDatasets><loadDatasetsMinMinutes>" -> {}
-              case "<erddapDatasets></loadDatasetsMinMinutes>" -> {}
-              case "<erddapDatasets><loadDatasetsMaxMinutes>" -> {}
-              case "<erddapDatasets></loadDatasetsMaxMinutes>" -> {}
-              case "<erddapDatasets><logLevel>" -> {}
-              case "<erddapDatasets></logLevel>" -> {}
-              case "<erddapDatasets><nGridThreads>" -> {}
-              case "<erddapDatasets></nGridThreads>" -> {}
-              case "<erddapDatasets><nTableThreads>" -> {}
-              case "<erddapDatasets></nTableThreads>" -> {}
-              case "<erddapDatasets><palettes>" -> {}
-              case "<erddapDatasets></palettes>" -> {}
-              case "<erddapDatasets><partialRequestMaxBytes>" -> {}
-              case "<erddapDatasets></partialRequestMaxBytes>" -> {}
-              case "<erddapDatasets><partialRequestMaxCells>" -> {}
-              case "<erddapDatasets></partialRequestMaxCells>" -> {}
-              case "<erddapDatasets><requestBlacklist>" -> {}
-              case "<erddapDatasets></requestBlacklist>" -> {}
-              case "<erddapDatasets><slowDownTroubleMillis>" -> {}
-              case "<erddapDatasets></slowDownTroubleMillis>" -> {}
-              case "<erddapDatasets><subscriptionEmailBlacklist>" -> {}
-              case "<erddapDatasets></subscriptionEmailBlacklist>" -> {}
-              case "<erddapDatasets><standardLicense>" -> {}
-              case "<erddapDatasets></standardLicense>" -> {}
-              case "<erddapDatasets><standardContact>" -> {}
-              case "<erddapDatasets></standardContact>" -> {}
-              case "<erddapDatasets><standardDataLicenses>" -> {}
-              case "<erddapDatasets></standardDataLicenses>" -> {}
-              case "<erddapDatasets><standardDisclaimerOfEndorsement>" -> {}
-              case "<erddapDatasets></standardDisclaimerOfEndorsement>" -> {}
-              case "<erddapDatasets><standardDisclaimerOfExternalLinks>" -> {}
-              case "<erddapDatasets></standardDisclaimerOfExternalLinks>" -> {}
-              case "<erddapDatasets><standardGeneralDisclaimer>" -> {}
-              case "<erddapDatasets></standardGeneralDisclaimer>" -> {}
-              case "<erddapDatasets><standardPrivacyPolicy>" -> {}
-              case "<erddapDatasets></standardPrivacyPolicy>" -> {}
-              case "<erddapDatasets><startHeadHtml5>" -> {}
-              case "<erddapDatasets></startHeadHtml5>" -> {}
-              case "<erddapDatasets><startBodyHtml5>" -> {}
-              case "<erddapDatasets></startBodyHtml5>" -> {}
-              case "<erddapDatasets><theShortDescriptionHtml>" -> {}
-              case "<erddapDatasets></theShortDescriptionHtml>" -> {}
-              case "<erddapDatasets><endBodyHtml5>" -> {}
-              case "<erddapDatasets></endBodyHtml5>" -> {}
-              case "<erddapDatasets><convertInterpolateRequestCSVExample>" -> {}
-              case "<erddapDatasets></convertInterpolateRequestCSVExample>" -> {}
-              case "<erddapDatasets><convertInterpolateDatasetIDVariableList>" -> {}
-              case "<erddapDatasets></convertInterpolateDatasetIDVariableList>" -> {}
-              case "<erddapDatasets><unusualActivity>" -> {}
-              case "<erddapDatasets></unusualActivity>" -> {}
-              case "<erddapDatasets><updateMaxEvents>" -> {}
-              case "<erddapDatasets></updateMaxEvents>" -> {}
-              case "<erddapDatasets><user>" -> {}
-              case "<erddapDatasets></user>" -> {}
+              case "<erddapDatasets></convertToPublicSourceUrl>",
+                  "<erddapDatasets></user>",
+                  "<erddapDatasets><user>",
+                  "<erddapDatasets></updateMaxEvents>",
+                  "<erddapDatasets><updateMaxEvents>",
+                  "<erddapDatasets></unusualActivity>",
+                  "<erddapDatasets><unusualActivity>",
+                  "<erddapDatasets></convertInterpolateDatasetIDVariableList>",
+                  "<erddapDatasets><convertInterpolateDatasetIDVariableList>",
+                  "<erddapDatasets></convertInterpolateRequestCSVExample>",
+                  "<erddapDatasets><convertInterpolateRequestCSVExample>",
+                  "<erddapDatasets></endBodyHtml5>",
+                  "<erddapDatasets><endBodyHtml5>",
+                  "<erddapDatasets></theShortDescriptionHtml>",
+                  "<erddapDatasets><theShortDescriptionHtml>",
+                  "<erddapDatasets></startBodyHtml5>",
+                  "<erddapDatasets><startBodyHtml5>",
+                  "<erddapDatasets></startHeadHtml5>",
+                  "<erddapDatasets><startHeadHtml5>",
+                  "<erddapDatasets></standardPrivacyPolicy>",
+                  "<erddapDatasets><standardPrivacyPolicy>",
+                  "<erddapDatasets></standardGeneralDisclaimer>",
+                  "<erddapDatasets><standardGeneralDisclaimer>",
+                  "<erddapDatasets></standardDisclaimerOfExternalLinks>",
+                  "<erddapDatasets><standardDisclaimerOfExternalLinks>",
+                  "<erddapDatasets></standardDisclaimerOfEndorsement>",
+                  "<erddapDatasets><standardDisclaimerOfEndorsement>",
+                  "<erddapDatasets></standardDataLicenses>",
+                  "<erddapDatasets><standardDataLicenses>",
+                  "<erddapDatasets></standardContact>",
+                  "<erddapDatasets><standardContact>",
+                  "<erddapDatasets></standardLicense>",
+                  "<erddapDatasets><standardLicense>",
+                  "<erddapDatasets></subscriptionEmailBlacklist>",
+                  "<erddapDatasets><subscriptionEmailBlacklist>",
+                  "<erddapDatasets></slowDownTroubleMillis>",
+                  "<erddapDatasets><slowDownTroubleMillis>",
+                  "<erddapDatasets></requestBlacklist>",
+                  "<erddapDatasets><requestBlacklist>",
+                  "<erddapDatasets></partialRequestMaxCells>",
+                  "<erddapDatasets><partialRequestMaxCells>",
+                  "<erddapDatasets></partialRequestMaxBytes>",
+                  "<erddapDatasets><partialRequestMaxBytes>",
+                  "<erddapDatasets></palettes>",
+                  "<erddapDatasets><palettes>",
+                  "<erddapDatasets></nTableThreads>",
+                  "<erddapDatasets><nTableThreads>",
+                  "<erddapDatasets></nGridThreads>",
+                  "<erddapDatasets><nGridThreads>",
+                  "<erddapDatasets></logLevel>",
+                  "<erddapDatasets><logLevel>",
+                  "<erddapDatasets></loadDatasetsMaxMinutes>",
+                  "<erddapDatasets><loadDatasetsMaxMinutes>",
+                  "<erddapDatasets></loadDatasetsMinMinutes>",
+                  "<erddapDatasets><loadDatasetsMinMinutes>",
+                  "<erddapDatasets></ipAddressUnlimited>",
+                  "<erddapDatasets><ipAddressUnlimited>",
+                  "<erddapDatasets></ipAddressMaxRequestsActive>",
+                  "<erddapDatasets><ipAddressMaxRequestsActive>",
+                  "<erddapDatasets></ipAddressMaxRequests>",
+                  "<erddapDatasets><ipAddressMaxRequests>",
+                  "<erddapDatasets></graphBackgroundColor>",
+                  "<erddapDatasets><graphBackgroundColor>",
+                  "<erddapDatasets></emailDiagnosticsToErdData>",
+                  "<erddapDatasets><emailDiagnosticsToErdData>",
+                  "<erddapDatasets></drawLandMask>",
+                  "<erddapDatasets><drawLandMask>",
+                  "<erddapDatasets></decompressedCacheMaxMinutesOld>",
+                  "<erddapDatasets><decompressedCacheMaxMinutesOld>",
+                  "<erddapDatasets></decompressedCacheMaxGB>",
+                  "<erddapDatasets><decompressedCacheMaxGB>",
+                  "<erddapDatasets></commonStandardNames>",
+                  "<erddapDatasets><commonStandardNames>",
+                  "<erddapDatasets></cacheMinutes>",
+                  "<erddapDatasets><cacheMinutes>",
+                  "<erddapDatasets></angularDegreeTrueUnits>",
+                  "<erddapDatasets><angularDegreeTrueUnits>",
+                  "<erddapDatasets></angularDegreeUnits>",
+                  "<erddapDatasets><angularDegreeUnits>" -> {}
               default -> xmlReader.unexpectedTagException();
             }
           }
@@ -1878,9 +1866,8 @@ public abstract class EDD {
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
       switch (topTag) {
-        case "sourceName" -> {}
+        case "sourceName", "destinationName" -> {}
         case "/sourceName" -> tSourceName = content;
-        case "destinationName" -> {}
         case "/destinationName" -> tDestinationName = content;
         case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
         case "values" -> {
@@ -1916,8 +1903,7 @@ public abstract class EDD {
             // make a new PA from content values
             tValuesPA = PrimitiveArray.csvFactory(tValuesPA.elementType(), content);
           }
-          if (reallyVerbose)
-            String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA.toString());
+          if (reallyVerbose) String2.log("values for sourceName=" + tSourceName + "=" + tValuesPA);
         }
         default -> xmlReader.unexpectedTagException();
       }
@@ -1963,11 +1949,9 @@ public abstract class EDD {
       if (xmlReader.stackSize() > startOfTagsN + 1) xmlReader.unexpectedTagException();
 
       switch (topTag) {
-        case "sourceName" -> {}
+        case "sourceName", "dataType", "destinationName" -> {}
         case "/sourceName" -> tSourceName = content;
-        case "destinationName" -> {}
         case "/destinationName" -> tDestinationName = content;
-        case "dataType" -> {}
         case "/dataType" -> tDataType = content;
         case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
 
@@ -4069,7 +4053,7 @@ public abstract class EDD {
           if (isNumeric && EDV.couldBeLonUnits(units)) {
             addTable.setColumnName(col, EDV.LON_NAME);
             if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-                && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+                && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
             if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
             if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
           } else {
@@ -4077,14 +4061,14 @@ public abstract class EDD {
             while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
             addTable.setColumnName(col, EDV.LON_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-                && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+                && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           }
         }
         case EDV.LAT_NAME -> {
           if (isNumeric && EDV.couldBeLatUnits(units)) {
             addTable.setColumnName(col, EDV.LAT_NAME);
             if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-                && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+                && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
             if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
             if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
           } else {
@@ -4092,7 +4076,7 @@ public abstract class EDD {
             while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
             addTable.setColumnName(col, EDV.LAT_NAME + n);
             if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-                && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+                && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           }
         }
         case EDV.ALT_NAME, EDV.DEPTH_NAME -> {
@@ -4212,7 +4196,7 @@ public abstract class EDD {
         if (isNumeric && EDV.couldBeLonUnits(units)) {
           addTable.setColumnName(col, EDV.LON_NAME);
           if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
           if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
           hasLon = true;
@@ -4221,13 +4205,13 @@ public abstract class EDD {
           while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0) n++;
           addTable.setColumnName(col, EDV.LON_NAME + n);
           if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-              && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lon".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
         }
       } else if (!hasLat && colNameLC.equals(EDV.LAT_NAME)) {
         if (isNumeric && EDV.couldBeLatUnits(units)) {
           addTable.setColumnName(col, EDV.LAT_NAME);
           if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
           if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
           if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
           hasLat = true;
@@ -4236,7 +4220,7 @@ public abstract class EDD {
           while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0) n++;
           addTable.setColumnName(col, EDV.LAT_NAME + n);
           if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-              && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+              && !"lat".equalsIgnoreCase(sourceName)) addAtts.set("source_name", sourceName);
         }
       } else if (!hasAltDepth
           && (colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
@@ -4307,8 +4291,8 @@ public abstract class EDD {
           && // extra criteria compared to below
           (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
         addTable.setColumnName(col, EDV.LON_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-            && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LON_NAME) && !"lon".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
         hasLon = true;
@@ -4318,8 +4302,8 @@ public abstract class EDD {
           && // extra criteria compared to below
           (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
         addTable.setColumnName(col, EDV.LAT_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-            && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) && !"lat".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
         hasLat = true;
@@ -4358,8 +4342,8 @@ public abstract class EDD {
           && isNumeric
           && (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
         addTable.setColumnName(col, EDV.LON_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LON_NAME)
-            && !"lon".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LON_NAME) && !"lon".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LON_UNITS.equals(units)) addAtts.set("units", EDV.LON_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
         hasLon = true;
@@ -4367,8 +4351,8 @@ public abstract class EDD {
           && isNumeric
           && (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
         addTable.setColumnName(col, EDV.LAT_NAME);
-        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME)
-            && !"lat".equals(sourceName.toLowerCase())) addAtts.set("source_name", sourceName);
+        if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) && !"lat".equalsIgnoreCase(sourceName))
+          addAtts.set("source_name", sourceName);
         if (!EDV.LAT_UNITS.equals(units)) addAtts.set("units", EDV.LAT_UNITS);
         if (stdName == null) addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
         hasLat = true;
@@ -5902,8 +5886,8 @@ public abstract class EDD {
     value = getAddOrSourceAtt(addAtts, sourceAtts, "contact__email", value);
     value = getAddOrSourceAtt(addAtts, sourceAtts, "Principle_investigator_email", value);
     String creator_email = String2.isSomething2(value) ? value : "";
-    if (creator_email.toLowerCase().equals("dave.foley@noaa.gov")
-        || creator_email.toLowerCase().equals("roy.mendelssohn@noaa.gov"))
+    if (creator_email.equalsIgnoreCase("dave.foley@noaa.gov")
+        || creator_email.equalsIgnoreCase("roy.mendelssohn@noaa.gov"))
       creator_email = "erd.data@noaa.gov";
 
     // creator_name    (not required, but useful ACDD and for ISO 19115 and FGDC)
@@ -6549,7 +6533,7 @@ public abstract class EDD {
         if (tInstitution.startsWith(". ")
             || tInstitution.startsWith(", ")
             || tInstitution.startsWith("; ")) {
-          newValue.append(tInstitution.substring(0, 2));
+          newValue.append(tInstitution, 0, 2);
           tInstitution = tInstitution.substring(2);
         } else if (tInstitution.startsWith("and ")) {
           newValue.append(" " + tInstitution.substring(0, 4));
@@ -7625,8 +7609,8 @@ public abstract class EDD {
       cleanSuggestedKeywords(suggestedKeywords);
 
       // build new keywords String
-      StringBuilder sb = new StringBuilder("");
-      String keywordSar[] = (String[]) suggestedKeywords.toArray(new String[0]);
+      StringBuilder sb = new StringBuilder();
+      String keywordSar[] = suggestedKeywords.toArray(new String[0]);
       // they are consistently capitalized, so will sort very nicely:
       //  single words then gcmd
       Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE);
@@ -8933,7 +8917,7 @@ public abstract class EDD {
     switch (tDestName) {
       case EDV.LON_NAME -> {
         tLongName =
-            String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LON_NAME)
+            String2.isSomething2(tLongName) && !tLongName.equalsIgnoreCase(EDV.LON_NAME)
                 ? tLongName
                 : "Longitude";
         tStandardName = EDV.LON_NAME;
@@ -8941,7 +8925,7 @@ public abstract class EDD {
       }
       case EDV.LAT_NAME -> {
         tLongName =
-            String2.isSomething2(tLongName) && !tLongName.toLowerCase().equals(EDV.LAT_NAME)
+            String2.isSomething2(tLongName) && !tLongName.equalsIgnoreCase(EDV.LAT_NAME)
                 ? tLongName
                 : "Latitude";
         tStandardName = EDV.LAT_NAME;
@@ -10197,7 +10181,6 @@ public abstract class EDD {
         tMin = 0;
         tMax = 5000;
       } else if (tStandardName.equals("sea_surface_salinity")
-          || tStandardName.equals("sea_water_salinity")
           || tStandardName.equals("sea_water_absolute_salinity")
           || tStandardName.equals("sea_water_cox_salinity")
           || tStandardName.equals("sea_water_knudsen_salinity")
@@ -10903,7 +10886,7 @@ public abstract class EDD {
                   || lcu.indexOf("|solar|") >= 0)
               && (lcu.indexOf("|flux|") >= 0 || lcu.indexOf("|fluxd|") >= 0))
           || lcu.indexOf("|w/m^2|") >= 0
-          || tSourceName.toLowerCase().equals("graphics")) {
+          || tSourceName.equalsIgnoreCase("graphics")) {
         addAtts.add("ioos_category", "Optical Properties");
 
         // Physical Oceanography, see below
@@ -12265,9 +12248,9 @@ public abstract class EDD {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
         PrimitiveArray pa;
-        pa = (DoubleArray) mmal.get(7);
+        pa = mmal.get(7);
         sb.append(String2.toJson("graphDoubleWESN") + ": [" + pa.toJsonCsvString() + "],\n");
-        pa = (IntArray) mmal.get(6);
+        pa = mmal.get(6);
         sb.append(String2.toJson("graphIntWESN") + ": [" + pa.toJsonCsvString() + "],\n");
         sb.append("}\n");
 
@@ -12293,7 +12276,7 @@ public abstract class EDD {
                   + "    infoFileName="
                   + infoFileName
                   + "\n"
-                  + sb.toString());
+                  + sb);
 
       } finally {
         lock.unlock();
@@ -14102,8 +14085,7 @@ public abstract class EDD {
       return s;
 
     } catch (Exception e) {
-      String2.log(
-          String2.ERROR + " in sparqlP01toP02(" + p01 + ") url=" + urlString + "\n" + e.toString());
+      String2.log(String2.ERROR + " in sparqlP01toP02(" + p01 + ") url=" + urlString + "\n" + e);
       return null;
     }
   }
@@ -14169,7 +14151,7 @@ public abstract class EDD {
       if (reallyVerbose) String2.log("  remote ERDDAP version=" + v);
       return Double.isNaN(v) ? 1.22 : v;
     } catch (Throwable t) {
-      String2.log(String2.ERROR + " in getRemoteErddapVersion(" + vUrl + ")\n" + t.toString());
+      String2.log(String2.ERROR + " in getRemoteErddapVersion(" + vUrl + ")\n" + t);
       return 1.22;
     }
   }

@@ -1,7 +1,7 @@
 package gov.noaa.pfel.erddap.handlers;
 
 public abstract class StateWithParent extends State {
-  protected State completeState;
+  protected final State completeState;
 
   public StateWithParent(SaxHandler saxHandler, State completeState) {
     super(saxHandler);

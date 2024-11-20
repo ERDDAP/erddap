@@ -61,19 +61,19 @@ public class Math2 {
   public static final java.util.Random random = new java.util.Random();
   public static volatile long lastUsingMemory = 0; // volatile: used by all threads
   public static volatile long maxUsingMemory = 0; // volatile: used by all threads
-  public static long maxMemory = Runtime.getRuntime().maxMemory();
+  public static final long maxMemory = Runtime.getRuntime().maxMemory();
 
-  public static long halfMemory =
+  public static final long halfMemory =
       maxMemory / 2; // 50%   time for shedThisRequest to call gc and reject highMemory requests
-  public static long highMemory =
+  public static final long highMemory =
       maxMemory * 65L
           / 100; // 65%   time for shedThisRequest to call gc and reject lowMemory requests
-  public static long maxSafeMemory =
+  public static final long maxSafeMemory =
       maxMemory * 3L / 4; // 75%   the max we should consider getting to
-  public static long dangerousMemory = maxMemory * 9L / 10; // 90%   this is really bad
+  public static final long dangerousMemory = maxMemory * 9L / 10; // 90%   this is really bad
 
-  public static long alwaysOkayMemoryRequest = maxSafeMemory / 40;
-  public static volatile AtomicInteger gcCallCount =
+  public static final long alwaysOkayMemoryRequest = maxSafeMemory / 40;
+  public static final AtomicInteger gcCallCount =
       new AtomicInteger(0); // since last Major LoadDatasets
   public static volatile long timeGCLastCalled = 0;
 
@@ -108,13 +108,13 @@ public class Math2 {
    * smaller tasks are usually given to computers with fewer, slower cores and less memory.
    * 2022-09-12 On CoastWatch ERDDAP, about 85% of "Pause Full (System.gc())" complete in <=400ms.
    */
-  public static int shortSleep = 400;
+  public static final int shortSleep = 400;
 
   /** If memory use jumps by this amount, a call to incgc will trigger a call to System.gc. */
-  public static long gcTrigger = maxMemory / 8;
+  public static final long gcTrigger = maxMemory / 8;
 
   /** This should return "?", "32", or "64". */
-  public static String JavaBits =
+  public static final String JavaBits =
       System.getProperty("sun.arch.data.model") == null
           ? "?"
           : System.getProperty("sun.arch.data.model");
@@ -805,7 +805,7 @@ public class Math2 {
    *     the current value.
    */
   public static final int minMax(final int min, final int max, final int current) {
-    return (current < min) ? min : ((current > max) ? max : current);
+    return (current < min) ? min : Math.min(current, max);
   }
 
   /**
@@ -818,7 +818,7 @@ public class Math2 {
    *     the current value.
    */
   public static final double minMax(final double min, final double max, final double current) {
-    return (current < min) ? min : ((current > max) ? max : current);
+    return (current < min) ? min : Math.min(current, max);
   }
 
   /**
@@ -1276,7 +1276,7 @@ public class Math2 {
             || i.compareTo(new BigInteger("" + UINT_MAX_VALUE)) > 0
             || i.compareTo(new BigInteger("" + UINT_MIN_VALUE)) < 0
         ? UINT_MAX_VALUE
-        : (long) i.longValue();
+        : i.longValue();
   }
 
   /**
@@ -1591,7 +1591,7 @@ public class Math2 {
   public static final double floatToDoubleNaN(final double f) {
     if (Double.isNaN(f) || Double.isInfinite(f)) return Double.NaN;
 
-    return (double) f;
+    return f;
   }
 
   /**

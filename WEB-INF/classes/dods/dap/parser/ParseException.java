@@ -52,7 +52,7 @@ public class ParseException extends Exception {
    * This variable determines which constructor was used to create this object and thereby affects
    * the semantics of the "getMessage" method (see below).
    */
-  protected boolean specialConstructor;
+  protected final boolean specialConstructor;
 
   /**
    * This is the last token that has been consumed successfully. If this object has been created due
@@ -125,7 +125,7 @@ public class ParseException extends Exception {
   }
 
   /** The end of line string for this machine. */
-  protected String eol = System.getProperty("line.separator", "\n");
+  protected final String eol = System.getProperty("line.separator", "\n");
 
   /**
    * Used to convert raw characters to their escaped version when these raw version cannot be used
@@ -165,7 +165,7 @@ public class ParseException extends Exception {
         default:
           if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
             String s = "0000" + Integer.toString(ch, 16);
-            retval.append("\\u" + s.substring(s.length() - 4, s.length()));
+            retval.append("\\u" + s.substring(s.length() - 4));
           } else {
             retval.append(ch);
           }

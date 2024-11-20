@@ -48,8 +48,8 @@ import ucar.ma2.StructureData;
  */
 public class StringArray extends PrimitiveArray {
 
-  static StringHolderComparator stringHolderComparator = new StringHolderComparator();
-  static StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase =
+  static final StringHolderComparator stringHolderComparator = new StringHolderComparator();
+  static final StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase =
       new StringHolderComparatorIgnoreCase();
 
   /**
@@ -1945,7 +1945,7 @@ public class StringArray extends PrimitiveArray {
     Arrays.sort(unique); // a variant could use String2.STRING_COMPARATOR_IGNORE_CASE);
 
     // special for StringArray: "" (missing value) sorts highest
-    if (((String) unique[0]).length() == 0) {
+    if (unique[0].length() == 0) {
       System.arraycopy(unique, 1, unique, 0, nUnique - 1);
       unique[nUnique - 1] = "";
     }
@@ -2208,12 +2208,12 @@ public class StringArray extends PrimitiveArray {
             // String2.log(">> quoteloop ch=" + ch);
             // "" internal quote
             if (ch == '"' && po < n && searchFor.charAt(po) == '"') {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               start = po++; // the 2nd char " will be the first appended later
 
               // backslashed character
             } else if (ch == '\\' && po < n) {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               ch = searchFor.charAt(po++);
               // don't support \\b, it's trouble
               if (ch == 'f') word.append('\f');
@@ -2237,12 +2237,12 @@ public class StringArray extends PrimitiveArray {
 
               // the end of the quoted string?
             } else if (ch == '"') {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               break;
 
               // the end of searchFor?
             } else if (po == n) {
-              word.append(searchFor.substring(start, po));
+              word.append(searchFor, start, po);
               break;
 
               // a letter in the quoted string

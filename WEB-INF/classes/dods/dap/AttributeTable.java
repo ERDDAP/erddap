@@ -134,7 +134,7 @@ public class AttributeTable implements Cloneable {
    * @see Attribute
    */
   public final Attribute getAttribute(String name) {
-    return (Attribute) attr.get(name);
+    return attr.get(name);
   }
 
   /**
@@ -158,7 +158,7 @@ public class AttributeTable implements Cloneable {
   public final void appendAttribute(String name, int type, String value, boolean check)
       throws AttributeExistsException, AttributeBadValueException {
 
-    Attribute a = (Attribute) attr.get(name);
+    Attribute a = attr.get(name);
 
     if (a != null && (type != a.getType())) {
 
@@ -233,7 +233,7 @@ public class AttributeTable implements Cloneable {
       throw new AttributeExistsException("Could not alias `" + name + "' and `" + alias + "'.");
 
     // Make sure name exists.
-    Attribute a = (Attribute) attr.get(name);
+    Attribute a = attr.get(name);
     if (a == null)
       throw new NoSuchAttributeException("Could not alias `" + name + "' and `" + alias + "'.");
 
@@ -270,7 +270,7 @@ public class AttributeTable implements Cloneable {
 
     } else {
 
-      Attribute a = (Attribute) attr.get(name);
+      Attribute a = attr.get(name);
 
       if (a != null) {
 
@@ -311,7 +311,7 @@ public class AttributeTable implements Cloneable {
         if (a.isContainer()) {
           if (_Debug) System.out.println("  Attribute \"" + name + "\" is a Container.");
           os.println(pad + name + " {");
-          ((AttributeTable) a.getContainer()).print(os, pad + "    ");
+          a.getContainer().print(os, pad + "    ");
           os.println(pad + "}");
         } else {
           if (_Debug) System.out.println("    Printing Attribute \"" + name + "\".");

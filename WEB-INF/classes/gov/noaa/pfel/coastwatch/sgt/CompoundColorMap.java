@@ -42,7 +42,7 @@ public class CompoundColorMap extends ColorMap {
    * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
    * if you want lots and lots of diagnostic messages sent to String2.log.
    */
-  public static boolean reallyVerbose = false;
+  public static final boolean reallyVerbose = false;
 
   /** Set in the constructor. */
   public double rangeLow[]; // stores the low ends of a piece
@@ -110,7 +110,7 @@ public class CompoundColorMap extends ColorMap {
     ccm.halfStart = halfStart;
     ccm.continuous = continuous;
     ccm.color = color;
-    return (ColorMap) ccm;
+    return ccm;
   }
 
   /** This consructs an empty CompoundColorMap. This used by copy(). */
@@ -783,7 +783,7 @@ public class CompoundColorMap extends ColorMap {
             }
           }
         }
-        if (reallyVerbose) String2.log("CompoundColorMap.makeCPT levels=" + levels.toString());
+        if (reallyVerbose) String2.log("CompoundColorMap.makeCPT levels=" + levels);
 
         // sort the values
         levels.sort();

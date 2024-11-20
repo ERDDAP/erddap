@@ -20,8 +20,8 @@ import java.math.BigInteger;
  */
 public class PAOne implements Comparable<PAOne> {
 
-  private PrimitiveArray pa;
-  private int elementSize;
+  private final PrimitiveArray pa;
+  private final int elementSize;
 
   /** This constructs a paOne (with a value of 0) of the specified type. */
   public PAOne(PAType paType) {
@@ -391,7 +391,7 @@ public class PAOne implements Comparable<PAOne> {
    */
   @Override
   public final boolean equals(Object otherPAOne) {
-    if (otherPAOne == null || !(otherPAOne instanceof PAOne)) {
+    if (!(otherPAOne instanceof PAOne)) {
       return false;
     }
     return compareTo((PAOne) otherPAOne) == 0;

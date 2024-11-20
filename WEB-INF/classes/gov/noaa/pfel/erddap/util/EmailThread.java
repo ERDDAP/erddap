@@ -32,7 +32,7 @@ public class EmailThread extends Thread {
   private long lastStartTime = -1; // -1 if session not active
   public long lastSessionMillis = -1; // duration
 
-  public static long defaultSleepMillis = 15000;
+  public static final long defaultSleepMillis = 15000;
   public static long sleepMillis = defaultSleepMillis;
 
   /** The constructor. EmailThread uses email variables in EDStatic. */

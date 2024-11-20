@@ -79,7 +79,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   private SoTRange xEdgesRange_ = null;
   private SoTRange yEdgesRange_ = null;
   private Range2D zRange_ = null;
-  private PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
+  private final PropertyChangeSupport changes_ = new PropertyChangeSupport(this);
 
   /** Bob Simons added this to avoid memory leak problems. */
   @Override
@@ -189,7 +189,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
     } catch (CloneNotSupportedException e) {
       newGrid = new SimpleGrid();
     }
-    return (SGTData) newGrid;
+    return newGrid;
   }
 
   @Override

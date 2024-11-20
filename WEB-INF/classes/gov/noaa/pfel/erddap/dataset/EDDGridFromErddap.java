@@ -54,7 +54,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   protected String publicSourceErddapUrl;
   protected boolean subscribeToRemoteErddapDataset;
@@ -109,9 +109,22 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
-        case "<reloadEveryNMinutes>" -> {}
+        case "<reloadEveryNMinutes>",
+            "<redirect>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceUrl>",
+            "<subscribeToRemoteErddapDataset>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>",
+            "<updateEveryNMillis>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<updateEveryNMillis>" -> {}
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
 
           // Since this erddap can never be logged in to the remote ERDDAP,
@@ -122,33 +135,20 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
           // So there is currently no way to make this work.
         case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaWMS>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<subscribeToRemoteErddapDataset>" -> {}
         case "</subscribeToRemoteErddapDataset>" ->
             tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
-        case "<redirect>" -> {}
         case "</redirect>" -> tRedirect = String2.parseBoolean(content);
         default -> xmlReader.unexpectedTagException();
       }
@@ -274,7 +274,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String sourceInfoString = null;
     if (quickRestartAttributes != null) {
       PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
-      if (sourceInfoBytes != null && sourceInfoBytes instanceof ByteArray)
+      if (sourceInfoBytes instanceof ByteArray)
         sourceInfoString =
             new String(((ByteArray) sourceInfoBytes).toArray(), StandardCharsets.UTF_8);
     }
@@ -495,7 +495,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromErddap "
               + datasetID
               + " constructor finished. TIME="
@@ -939,7 +939,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
                     + "\n("
                     + EDStatic.errorFromDataSource
-                    + t.toString()
+                    + t
                     + ")",
                 t);
       }

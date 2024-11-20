@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
-  int maxSize;
+  final int maxSize;
 
   /**
    * Constructor

@@ -59,42 +59,42 @@ public class OpendapTest extends NetCheckTest {
       // process the tags
       if (verbose) String2.log(tags + xmlReader.content());
       switch (tags) {
-        case "<netCheck><opendapTest><title>" -> {}
+        case "<netCheck><opendapTest><title>",
+            "<netCheck><opendapTest><emailChangeHeadlinesTo>",
+            "<netCheck><opendapTest><emailChangesTo>",
+            "<netCheck><opendapTest><emailStatusHeadlinesTo>",
+            "<netCheck><opendapTest><emailStatusTo>",
+            "<netCheck><opendapTest><mustRespondWithinSeconds>",
+            "<netCheck><opendapTest><gridNLatValues>",
+            "<netCheck><opendapTest><gridNLonValues>",
+            "<netCheck><opendapTest><ddsMustContain>",
+            "<netCheck><opendapTest><dasMustContain>",
+            "<netCheck><opendapTest><minMaxXY>",
+            "<netCheck><opendapTest><offsetDate>",
+            "<netCheck><opendapTest><missingValue>",
+            "<netCheck><opendapTest><variableName>",
+            "<netCheck><opendapTest><url>" -> {}
         case "<netCheck><opendapTest></title>" -> title = xmlReader.content();
-        case "<netCheck><opendapTest><url>" -> {}
         case "<netCheck><opendapTest></url>" -> url = xmlReader.content();
-        case "<netCheck><opendapTest><variableName>" -> {}
         case "<netCheck><opendapTest></variableName>" -> variableName = xmlReader.content();
-        case "<netCheck><opendapTest><missingValue>" -> {}
         case "<netCheck><opendapTest></missingValue>" -> missingValue = xmlReader.content();
-        case "<netCheck><opendapTest><offsetDate>" -> {}
         case "<netCheck><opendapTest></offsetDate>" ->
             offsetDate =
                 Calendar2.parseISODateTimeZulu(xmlReader.content()); // throws Exception if trouble
-        case "<netCheck><opendapTest><minMaxXY>" -> {}
         case "<netCheck><opendapTest></minMaxXY>" ->
             minMaxXY = String2.csvToDoubleArray(xmlReader.content());
-        case "<netCheck><opendapTest><dasMustContain>" -> {}
         case "<netCheck><opendapTest></dasMustContain>" -> dasMustContain = xmlReader.content();
-        case "<netCheck><opendapTest><ddsMustContain>" -> {}
         case "<netCheck><opendapTest></ddsMustContain>" -> ddsMustContain = xmlReader.content();
-        case "<netCheck><opendapTest><gridNLonValues>" -> {}
         case "<netCheck><opendapTest></gridNLonValues>" ->
             gridNLonValues = String2.parseInt(xmlReader.content());
-        case "<netCheck><opendapTest><gridNLatValues>" -> {}
         case "<netCheck><opendapTest></gridNLatValues>" ->
             gridNLatValues = String2.parseInt(xmlReader.content());
-        case "<netCheck><opendapTest><mustRespondWithinSeconds>" -> {}
         case "<netCheck><opendapTest></mustRespondWithinSeconds>" ->
             mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
-        case "<netCheck><opendapTest><emailStatusTo>" -> {}
         case "<netCheck><opendapTest></emailStatusTo>" -> emailStatusTo.add(xmlReader.content());
-        case "<netCheck><opendapTest><emailStatusHeadlinesTo>" -> {}
         case "<netCheck><opendapTest></emailStatusHeadlinesTo>" ->
             emailStatusHeadlinesTo.add(xmlReader.content());
-        case "<netCheck><opendapTest><emailChangesTo>" -> {}
         case "<netCheck><opendapTest></emailChangesTo>" -> emailChangesTo.add(xmlReader.content());
-        case "<netCheck><opendapTest><emailChangeHeadlinesTo>" -> {}
         case "<netCheck><opendapTest></emailChangeHeadlinesTo>" ->
             emailChangeHeadlinesTo.add(xmlReader.content());
         default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);

@@ -15,10 +15,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class TopLevelHandler extends State {
-  private StringBuilder data = new StringBuilder();
-  private SaxParsingContext context;
-  private boolean reallyVerbose;
-  private StringBuilder warningsFromLoadDatasets;
+  private final StringBuilder data = new StringBuilder();
+  private final SaxParsingContext context;
+  private final boolean reallyVerbose;
+  private final StringBuilder warningsFromLoadDatasets;
   private int nDatasets = 0;
 
   public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {

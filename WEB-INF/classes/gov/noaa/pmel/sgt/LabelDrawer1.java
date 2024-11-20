@@ -34,10 +34,10 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
   private int orient_;
   private int halign_;
   private int valign_;
-  private Point dorigin_;
+  private final Point dorigin_;
   private Rectangle dbounds_;
   private Point2D.Double porigin_;
-  private Rectangle2D.Double pbounds_;
+  private final Rectangle2D.Double pbounds_;
   private Polygon dpolygon_;
   private double angle_;
   private double sinthta_;
@@ -80,8 +80,8 @@ public class LabelDrawer1 implements LabelDrawer, Cloneable {
   public void draw(Graphics g) throws LayerNotFoundException {
     FontMetrics fmet;
     int xs, ys;
-    if ((label_.length() <= 0) || !visible_ || g == null) return;
-    if (layer_ == (Layer) null) throw new LayerNotFoundException();
+    if ((label_.length() == 0) || !visible_ || g == null) return;
+    if (layer_ == null) throw new LayerNotFoundException();
     //
     // set label heigth in physical units
     //

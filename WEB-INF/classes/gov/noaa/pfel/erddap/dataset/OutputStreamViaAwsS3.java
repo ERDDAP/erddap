@@ -21,7 +21,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
   private OutputStreamFromHttpResponseViaAwsS3 parent;
   private String fullLocalFileName;

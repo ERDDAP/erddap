@@ -111,28 +111,28 @@ public class EDDTableAggregateRows extends EDDTable {
             tChildren.add((EDDTable) EDD.fromXml(tErddap, tType, xmlReader));
           }
         }
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<updateEveryNMillis>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
           // accessibleTo overwrites any child accessibleTo
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<updateEveryNMillis>" -> {}
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         case "<addAttributes>" -> tAddGlobalAttributes = getAttributesFromXml(xmlReader);
         default -> xmlReader.unexpectedTagException();
@@ -429,7 +429,7 @@ public class EDDTableAggregateRows extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableAggregateRows "
               + datasetID
               + " constructor finished. TIME="

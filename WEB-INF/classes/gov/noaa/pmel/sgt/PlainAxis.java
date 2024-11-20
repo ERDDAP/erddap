@@ -85,7 +85,7 @@ public class PlainAxis extends SpaceAxis implements Cloneable {
       g.setColor(lineColor_);
     }
     //
-    if (labelFormat_.length() <= 0) {
+    if (labelFormat_.length() == 0) {
       format = new Format(Format.computeFormat(uRange_.start, uRange_.end, sigDigits_));
     } else {
       format = new Format(labelFormat_);

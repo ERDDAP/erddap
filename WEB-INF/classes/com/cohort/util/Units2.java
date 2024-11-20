@@ -27,7 +27,7 @@ import ucar.units.UnitFormat;
 public class Units2 {
 
   /** UDUNITS and UCUM support metric prefixes. */
-  public static String metricName[] = {
+  public static final String[] metricName = {
     "yotta", "zetta", "exa", "peta", "tera",
     "giga", "mega", "kilo", "hecto", "deka",
     "deci", "centi", "milli", "micro", "nano",
@@ -35,33 +35,33 @@ public class Units2 {
     "µ",
   };
 
-  public static String metricAcronym[] = {
+  public static final String[] metricAcronym = {
     "Y", "Z", "E", "P", "T",
     "G", "M", "k", "h", "da",
     "d", "c", "m", "u", "n",
     "p", "f", "a", "z", "y",
     "u"
   };
-  public static int nMetric = metricName.length;
+  public static final int nMetric = metricName.length;
 
   /** UCUM supports power-of-two prefixes, but UDUNITS doesn't. */
-  public static String twoAcronym[] = {"Ki", "Mi", "Gi", "Ti"};
+  public static final String[] twoAcronym = {"Ki", "Mi", "Gi", "Ti"};
 
-  public static String twoValue[] = {"1024", "1048576", "1073741824", "1.099511627776e12"};
-  public static int nTwo = twoAcronym.length;
+  public static final String[] twoValue = {"1024", "1048576", "1073741824", "1.099511627776e12"};
+  public static final int nTwo = twoAcronym.length;
 
   // these don't need to be thread-safe because they are read-only after creation
-  private static Map<String, String> udHashMap =
+  private static final Map<String, String> udHashMap =
       getHashMapStringString(
           Resources.getResource("com/cohort/util/UdunitsToUcum.properties"), File2.UTF_8);
-  protected static Map<String, String> ucHashMap =
+  protected static final Map<String, String> ucHashMap =
       getHashMapStringString(
           Resources.getResource("com/cohort/util/UcumToUdunits.properties"), File2.UTF_8);
 
   // these special cases are usually populated by EDStatic static constructor, but don't have to be
-  public static Map<String, String> standardizeUdunitsHM = new HashMap();
-  public static Map<String, String> ucumToUdunitsHM = new HashMap();
-  public static Map<String, String> udunitsToUcumHM = new HashMap();
+  public static final Map<String, String> standardizeUdunitsHM = new HashMap();
+  public static final Map<String, String> ucumToUdunitsHM = new HashMap();
+  public static final Map<String, String> udunitsToUcumHM = new HashMap();
 
   /**
    * Set this to true (by calling reallyReallyVerbose=true in your program, not by changing the code
@@ -69,7 +69,7 @@ public class Units2 {
    */
   public static boolean verbose = false;
 
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * This is like udunitsToUcum() but won't throw an exception. If there is trouble, it returns
@@ -338,7 +338,7 @@ public class Units2 {
     if (udunits.startsWith("two digit ")) // e.g. month, day, hour, minute, second
     udunits = udunits.substring(10);
 
-    if (udunits.toLowerCase().equals("unitless")) return "1";
+    if (udunits.equalsIgnoreCase("unitless")) return "1";
 
     if (udunits.equals("volts (0-5 FSO)")) return "V";
 
@@ -368,14 +368,14 @@ public class Units2 {
       if (ch == '{') {
         int po2 = po + 1;
         while (po2 < udLength && udunits.charAt(po2) != '}') po2++;
-        ucum.append(udunits.substring(po, po2 + 1));
+        ucum.append(udunits, po, po2 + 1);
         po = po2 + 1;
         continue;
       }
 
       // PER
       if (po <= udLength - 3) {
-        if (udunits.substring(po, po + 3).toLowerCase().equals("per")
+        if (udunits.substring(po, po + 3).equalsIgnoreCase("per")
             && (po + 3 == udLength || !String2.isLetter(udunits.charAt(po + 3)))) {
           dividePending = !dividePending;
           po += 3;
@@ -739,7 +739,7 @@ public class Units2 {
       if (ch == '{') {
         int po2 = po + 1;
         while (po2 < ucLength && ucum.charAt(po2) != '}') po2++;
-        udunits.append(ucum.substring(po + 1, po2)); // non-standard udunits comment or unknown term
+        udunits.append(ucum, po + 1, po2); // non-standard udunits comment or unknown term
         po = po2 + 1;
         continue;
       }
@@ -989,7 +989,7 @@ public class Units2 {
         int po = s.indexOf('=');
         if (po < 0) continue;
         // new String: so not linked to big source file's text
-        ht.put(new String(s.substring(0, po).trim()), new String(s.substring(po + 1).trim()));
+        ht.put(s.substring(0, po).trim(), s.substring(po + 1).trim());
       }
       return ht;
     } catch (Throwable t) {
@@ -1119,7 +1119,7 @@ public class Units2 {
   }
 
   // ******************************
-  public static UnitFormat unitFormat = ucar.units.StandardUnitFormat.instance();
+  public static final UnitFormat unitFormat = ucar.units.StandardUnitFormat.instance();
 
   /**
    * This tries to return a standardized (lightly canonical) version of a UDUnits string. This is
@@ -1260,7 +1260,7 @@ public class Units2 {
     // So look at data types and guess which to do, with preference to believing they're already
     // unpacked
     // Note that at this point in this method, we're dealing with a packed data variable
-    if (destPAType != null && (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
+    if ((destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
       for (int i = 0; i < Attributes.signedToUnsignedAttNames.length; i++) {
         String name = Attributes.signedToUnsignedAttNames[i];
         PrimitiveArray pa = atts.get(name);

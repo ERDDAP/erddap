@@ -101,7 +101,19 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
       // try to make the tag names as consistent, descriptive and readable as possible
       switch (localTags) {
-        case "<reloadEveryNMinutes>" -> {}
+        case "<reloadEveryNMinutes>",
+            "<redirect>",
+            "<subscribeToRemoteErddapDataset>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceUrl>",
+            "<accessibleViaFiles>",
+            "<graphsAccessibleTo>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
           // Since this erddap can never be logged in to the remote ERDDAP,
@@ -112,30 +124,18 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
           // So there is currently no way to make this work.
         case "<accessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
-        case "<subscribeToRemoteErddapDataset>" -> {}
         case "</subscribeToRemoteErddapDataset>" ->
             tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
-        case "<redirect>" -> {}
         case "</redirect>" -> tRedirect = String2.parseBoolean(content);
         default -> xmlReader.unexpectedTagException();
       }
@@ -296,7 +296,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
 
         // delve into the outerSequence
-        BaseType outerVariable = (BaseType) dds.getVariable(SEQUENCE_NAME);
+        BaseType outerVariable = dds.getVariable(SEQUENCE_NAME);
         if (!(outerVariable instanceof DSequence))
           throw new IllegalArgumentException(
               errorInMethod
@@ -310,7 +310,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
 
           // look at the variables in the outer sequence
-          BaseType obt = (BaseType) outerSequence.getVar(outerCol);
+          BaseType obt = outerSequence.getVar(outerCol);
           String tSourceName = obt.getName();
 
           // get the data sourcePAType
@@ -517,7 +517,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromErddap "
               + datasetID
               + " constructor finished. TIME="

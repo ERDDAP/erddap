@@ -144,7 +144,7 @@ public class Table {
   public boolean allowRaggedRightInReadASCII = false;
 
   /** If true, readOpendap requestes compressed data. I think this should always be true. */
-  public boolean opendapAcceptDeflate = true;
+  public final boolean opendapAcceptDeflate = true;
 
   /**
    * Since users use these numbers (not names) from the command line, the value for a given option
@@ -185,11 +185,12 @@ public class Table {
 
   public static final String SEQUENCE_NAME = "s";
 
-  public static String QUERY_ERROR = "Query error: ";
+  public static final String QUERY_ERROR = "Query error: ";
 
-  public static String NOT_FOUND_EOF = " not found before end-of-file.";
-  public static String ELAPSED_TIME = "elapsedTime";
-  public static String WARNING_BAD_LINE_OF_DATA_IN = String2.WARNING + ": Bad line(s) of data in ";
+  public static final String NOT_FOUND_EOF = " not found before end-of-file.";
+  public static final String ELAPSED_TIME = "elapsedTime";
+  public static final String WARNING_BAD_LINE_OF_DATA_IN =
+      String2.WARNING + ": Bad line(s) of data in ";
 
   /**
    * Igor Text File File reference: in Bob's /programs/igor/ or
@@ -586,7 +587,7 @@ public class Table {
    * A link to erddap2.css. HTML allows link or inline. XHTML only allows link (and no close link
    * tag!). See https://en.wikibooks.org/wiki/Cascading_Style_Sheets/Applying_CSS_to_HTML_and_XHTML
    */
-  public static String ERD_TABLE_CSS =
+  public static final String ERD_TABLE_CSS =
       "<link href=\"https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">";
 
   // this is used to find out if all readNcCF code is tested: cc=code coverage
@@ -594,7 +595,7 @@ public class Table {
   public static BitSet ncCFcc = null; // null=inactive, new BitSet() = active
 
   /** An arrayList to hold 0 or more PrimitiveArray's with data. */
-  protected ArrayList<PrimitiveArray> columns = new ArrayList<>();
+  protected final ArrayList<PrimitiveArray> columns = new ArrayList<>();
 
   /** An arrayList to hold the column names. */
   protected StringArray columnNames = new StringArray();
@@ -611,7 +612,7 @@ public class Table {
    * Although a HashTable is more appropriate for name=value pairs, this uses ArrayList to preserve
    * the order of the attributes. This may be null if not in use.
    */
-  protected ArrayList<Attributes> columnAttributes = new ArrayList<>();
+  protected final ArrayList<Attributes> columnAttributes = new ArrayList<>();
 
   /** The one known valid url for readIobis. */
   public static final String IOBIS_URL = "http://www.iobis.org/OBISWEB/ObisControllerServlet";
@@ -2991,8 +2992,7 @@ public class Table {
       // if (debugMode) String2.log(">> partial table:\n" + dataToString(4));
 
       if (warnings.length() > 0)
-        String2.log(
-            WARNING_BAD_LINE_OF_DATA_IN + "readASCII(" + fileName + "):\n" + warnings.toString());
+        String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readASCII(" + fileName + "):\n" + warnings);
 
       // no data?
       if (loadColumnNumbers == null)
@@ -3650,8 +3650,7 @@ public class Table {
       //    throw new SimpleException(String2.NCCSV_END_DATA + NOT_FOUND_EOF);
 
       if (warnings.length() > 0)
-        String2.log(
-            WARNING_BAD_LINE_OF_DATA_IN + "readNccsv(" + fullName + "):\n" + warnings.toString());
+        String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readNccsv(" + fullName + "):\n" + warnings);
 
       // expand scalars
       ensureColumnsAreSameSize_LastValue();
@@ -4028,10 +4027,8 @@ public class Table {
             + "&species="
             + species
             + "&date1="
-            + ""
             + // startDate +
             "&date2="
-            + ""
             + // endDate +
             "&depth1="
             + minDepth
@@ -5551,7 +5548,7 @@ public class Table {
         atts.remove("_Unsigned");
         setColumn(col, CharArray.fromShortArrayBytes(sa));
 
-      } else if (sourceVersion >= 4
+      } else if (sourceVersion == 4
           && pa instanceof ShortArray sa
           && "fromChar".equals(atts.getString("_encoded_"))) {
         atts.remove("_encoded_");
@@ -6142,7 +6139,7 @@ public class Table {
           int nDims = loadDims.length;
           if (nDims == 0) {
             if (verbose && varsNotFound.size() > 0)
-              String2.log("  vars not found: " + varsNotFound.toString());
+              String2.log("  vars not found: " + varsNotFound);
             return; // empty table
           }
           // just load dimensions that aren't variables
@@ -6161,8 +6158,7 @@ public class Table {
           decodeCharsAndStrings();
           convertToUnsignedPAs();
           // no metadata so no unpack
-          if (verbose && varsNotFound.size() > 0)
-            String2.log("  vars not found: " + varsNotFound.toString());
+          if (verbose && varsNotFound.size() > 0) String2.log("  vars not found: " + varsNotFound);
           return;
         }
       }
@@ -6361,7 +6357,7 @@ public class Table {
           axisLengths = new int[nAxes];
 
           for (int a = 0; a < nAxes; a++) {
-            Dimension dimension = (Dimension) dimensions.get(a);
+            Dimension dimension = dimensions.get(a);
             String axisName = dimension.getName();
             Attributes atts = new Attributes();
             axisLengths[a] = dimension.getLength();
@@ -6469,8 +6465,7 @@ public class Table {
       }
       decodeCharsAndStrings();
       convertToUnsignedPAs();
-      if (verbose && varsNotFound.size() > 0)
-        String2.log("  vars not found: " + varsNotFound.toString());
+      if (verbose && varsNotFound.size() > 0) String2.log("  vars not found: " + varsNotFound);
       if (reallyVerbose)
         String2.log(
             msg
@@ -9487,7 +9482,7 @@ public class Table {
       AudioFormat af = audioInputStream.getFormat();
 
       int bytesPerFrame = af.getFrameSize();
-      if (bytesPerFrame == AudioSystem.NOT_SPECIFIED || bytesPerFrame <= 0) {
+      if (bytesPerFrame <= 0) {
         // some audio formats may have unspecified frame size
         // in that case we may read any amount of bytes
         bytesPerFrame = 1;
@@ -9521,7 +9516,7 @@ public class Table {
         // and to avoid clash if same name
         // but map common properties to CF terms if possible
         // (see list in Javadocs for AudioFileFormat)
-        String key = pair.getKey().toString();
+        String key = pair.getKey();
         key =
             switch (key) {
               case "author" -> "creator_name";
@@ -9951,13 +9946,13 @@ public class Table {
     HashMap<String, Object> props = new HashMap();
     for (String k : keys) {
       switch (k) {
-        case "audioBigEndian" -> {}
-        case "audioChannels" -> {}
-        case "audioEncoding" -> {}
+        case "audioBigEndian",
+            "audioSampleSizeInBits",
+            "audioFrameSize",
+            "audioEncoding",
+            "audioChannels" -> {}
         case "audioFrameRate" -> frameRate = globalAtts.getFloat(k);
-        case "audioFrameSize" -> {}
         case "audioSampleRate" -> sampleRate = globalAtts.getFloat(k);
-        case "audioSampleSizeInBits" -> {}
         default -> {
           String k2 = k;
           if (k.startsWith("audio_")) k2 = k.substring(6);
@@ -10022,7 +10017,7 @@ public class Table {
                 + " nChannels="
                 + nCol
                 + " encoding="
-                + encoding.toString()
+                + encoding
                 + " isBigEndian=true"
                 + " nBits="
                 + nBits
@@ -10470,7 +10465,7 @@ public class Table {
               + "="
               + getColumnName(keyCol)
               + " insertedColumns="
-              + insertedColumnNames.toString()
+              + insertedColumnNames
               + ") nMatched="
               + nMatched
               + " nNotMatched="
@@ -10603,7 +10598,7 @@ public class Table {
               + nColsMatched
               + " of "
               + nCols
-              + (nColsMatched == nCols ? "" : " (missing: " + colsNotMatched.toString() + ")")
+              + (nColsMatched == nCols ? "" : " (missing: " + colsNotMatched + ")")
               + ", nRowsMatched="
               + nRowsMatched
               + ", nNewRows="
@@ -11216,7 +11211,7 @@ public class Table {
         qSB.append("&" + testColumns[col] + "%3C=" + testMax[col]);
       }
     }
-    readOpendapSequence(url + "?" + qSB.toString(), skipDapperSpacerRows);
+    readOpendapSequence(url + "?" + qSB, skipDapperSpacerRows);
   }
 
   /**
@@ -12129,7 +12124,7 @@ public class Table {
       if (reallyVerbose) {
         StringArray sa = new StringArray();
         for (int col = colNames.length; col < tnCols; col++) sa.add(getColumnName(col));
-        String2.log("Table.justKeepColumns removing excess columns: " + sa.toString());
+        String2.log("Table.justKeepColumns removing excess columns: " + sa);
       }
       removeColumns(colNames.length, tnCols);
     }
@@ -14744,7 +14739,7 @@ public class Table {
                     + "[C ERROR] "
                     + MustBe.throwableToString(caughtException)
                     + "[RB ERROR] "
-                    + rbe.toString());
+                    + rbe);
         msg += "\nsmall ERROR during rollback:\n" + MustBe.throwableToString(caughtException);
       }
     }
@@ -14770,7 +14765,7 @@ public class Table {
           failedRows.add(i);
         }
       }
-      if (failedRows.size() > 0) msg += "\n  failedRows(0..)=" + failedRows.toString();
+      if (failedRows.size() > 0) msg += "\n  failedRows(0..)=" + failedRows;
       String2.log(
           msg
               + "\n  done. nColumns="
@@ -15703,12 +15698,7 @@ public class Table {
     }
 
     if (warnings.length() > 0)
-      String2.log(
-          WARNING_BAD_LINE_OF_DATA_IN
-              + "readJsonlCSV("
-              + fullFileName
-              + "):\n"
-              + warnings.toString());
+      String2.log(WARNING_BAD_LINE_OF_DATA_IN + "readJsonlCSV(" + fullFileName + "):\n" + warnings);
 
     if (colNames != null) reorderColumns(colNames, false);
 
@@ -15936,11 +15926,7 @@ public class Table {
       }
       if (warnings.length() > 0)
         String2.log(
-            WARNING_BAD_LINE_OF_DATA_IN
-                + "readParquet("
-                + fullFileName
-                + "):\n"
-                + warnings.toString());
+            WARNING_BAD_LINE_OF_DATA_IN + "readParquet(" + fullFileName + "):\n" + warnings);
     }
 
     if (colNames != null) reorderColumns(colNames, false);
@@ -16004,46 +15990,22 @@ public class Table {
         continue;
       }
       switch (getColumn(j).elementType()) {
-        case BYTE:
+        case BYTE, USHORT, UBYTE, INT, SHORT:
           schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
           break;
-        case SHORT:
-          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
-          break;
-        case CHAR:
+        case CHAR, STRING:
           schemaBuilder
               .optional(PrimitiveTypeName.BINARY)
               .as(LogicalTypeAnnotation.stringType())
               .named(columnName);
           break;
-        case INT:
-          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
-          break;
-        case LONG:
+        case LONG, UINT:
           schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
           break;
         case FLOAT:
           schemaBuilder.optional(PrimitiveTypeName.FLOAT).named(columnName);
           break;
-        case DOUBLE:
-          schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
-          break;
-        case STRING:
-          schemaBuilder
-              .optional(PrimitiveTypeName.BINARY)
-              .as(LogicalTypeAnnotation.stringType())
-              .named(columnName);
-          break;
-        case UBYTE:
-          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
-          break;
-        case USHORT:
-          schemaBuilder.optional(PrimitiveTypeName.INT32).named(columnName);
-          break;
-        case UINT:
-          schemaBuilder.optional(PrimitiveTypeName.INT64).named(columnName);
-          break;
-        case ULONG:
+        case DOUBLE, ULONG:
           schemaBuilder.optional(PrimitiveTypeName.DOUBLE).named(columnName);
           break;
         case BOOLEAN:

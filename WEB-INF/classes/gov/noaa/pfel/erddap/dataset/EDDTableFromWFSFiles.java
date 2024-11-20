@@ -29,7 +29,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
   public static final String DefaultRowElementXPath = "/wfs:FeatureCollection/gml:featureMember";
 
   /** For testing, you may set this to true programmatically where needed, not here. */
-  public static boolean developmentMode = false;
+  public static final boolean developmentMode = false;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -41,7 +41,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -379,8 +379,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
           .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
 
     // write the information
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n"
             + "  below, notably 'units' for each of the dataVariables. -->\n"
             + "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\""
@@ -399,35 +399,36 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             + "    <standardizeWhat>"
             + tStandardizeWhat
             + "</standardizeWhat>\n"
-            + "    <fileTableInMemory>false</fileTableInMemory>\n");
-    // "    <charset>UTF-8</charset>\n" +
-    // "    <columnNamesRow>1</columnNamesRow>\n" +
-    // "    <firstDataRow>3</firstDataRow>\n" +
-    // (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage
-    // sourceName=***fileName,...
-    //  "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
-    //  "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
-    //  "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-    //  "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" : "") +
-    // "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-    // "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            +
+            // "    <charset>UTF-8</charset>\n" +
+            // "    <columnNamesRow>1</columnNamesRow>\n" +
+            // "    <firstDataRow>3</firstDataRow>\n" +
+            // (String2.isSomething(tColumnNameForExtract)? //Discourage Extract. Encourage
+            // sourceName=***fileName,...
+            //  "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n"
+            // +
+            //  "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) +
+            // "</postExtractRegex>\n" +
+            //  "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+            //  "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" :
+            // "") +
+            // "    <sortedColumnSourceName>" + tSortedColumnSourceName +
+            // "</sortedColumnSourceName>\n" +
+            // "    <sortFilesBySourceNames>" + tSortFilesBySourceNames +
+            // "</sortFilesBySourceNames>\n");
+            writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", true, false)
+            + // includeDataType, questionDestinationName
+            """
+                      </dataset>
 
-    sb.append(
-        writeVariablesForDatasetsXml(
-            dataSourceTable,
-            dataAddTable,
-            "dataVariable",
-            true,
-            false)); // includeDataType, questionDestinationName
-    sb.append("""
-            </dataset>
-
-            """);
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

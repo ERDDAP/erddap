@@ -19,8 +19,8 @@ import java.util.ArrayList;
 public class HttpTest extends NetCheckTest {
 
   private String url;
-  private ArrayList<String> responseMustInclude = new ArrayList();
-  private ArrayList<String> responseMustNotInclude = new ArrayList();
+  private final ArrayList<String> responseMustInclude = new ArrayList();
+  private final ArrayList<String> responseMustNotInclude = new ArrayList();
 
   /**
    * This constructor loads the information for a test with information from the xmlReader. The
@@ -46,27 +46,27 @@ public class HttpTest extends NetCheckTest {
       // process the tags
       if (verbose) String2.log(tags + xmlReader.content());
       switch (tags) {
-        case "<netCheck><httpTest><title>" -> {}
+        case "<netCheck><httpTest><title>",
+            "<netCheck><httpTest><emailChangeHeadlinesTo>",
+            "<netCheck><httpTest><emailChangesTo>",
+            "<netCheck><httpTest><emailStatusHeadlinesTo>",
+            "<netCheck><httpTest><emailStatusTo>",
+            "<netCheck><httpTest><responseMustNotInclude>",
+            "<netCheck><httpTest><responseMustInclude>",
+            "<netCheck><httpTest><mustRespondWithinSeconds>",
+            "<netCheck><httpTest><url>" -> {}
         case "<netCheck><httpTest></title>" -> title = xmlReader.content();
-        case "<netCheck><httpTest><url>" -> {}
         case "<netCheck><httpTest></url>" -> url = xmlReader.content();
-        case "<netCheck><httpTest><mustRespondWithinSeconds>" -> {}
         case "<netCheck><httpTest></mustRespondWithinSeconds>" ->
             mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
-        case "<netCheck><httpTest><responseMustInclude>" -> {}
         case "<netCheck><httpTest></responseMustInclude>" ->
             responseMustInclude.add(xmlReader.content());
-        case "<netCheck><httpTest><responseMustNotInclude>" -> {}
         case "<netCheck><httpTest></responseMustNotInclude>" ->
             responseMustNotInclude.add(xmlReader.content());
-        case "<netCheck><httpTest><emailStatusTo>" -> {}
         case "<netCheck><httpTest></emailStatusTo>" -> emailStatusTo.add(xmlReader.content());
-        case "<netCheck><httpTest><emailStatusHeadlinesTo>" -> {}
         case "<netCheck><httpTest></emailStatusHeadlinesTo>" ->
             emailStatusHeadlinesTo.add(xmlReader.content());
-        case "<netCheck><httpTest><emailChangesTo>" -> {}
         case "<netCheck><httpTest></emailChangesTo>" -> emailChangesTo.add(xmlReader.content());
-        case "<netCheck><httpTest><emailChangeHeadlinesTo>" -> {}
         case "<netCheck><httpTest></emailChangeHeadlinesTo>" ->
             emailChangeHeadlinesTo.add(xmlReader.content());
         default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);

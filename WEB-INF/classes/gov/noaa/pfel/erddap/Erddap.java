@@ -123,14 +123,14 @@ public class Erddap extends HttpServlet {
    * Set this to true (by calling debugMod=true in your program, not by changing the code here) if
    * you want debug-level diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * The programmatic/computer access to Erddap services are available as all of the plainFileTypes.
    * All plainFileTypes must be valid EDDTable.dataFileTypeNames. If added a new type, also add to
    * sendPlainTable below and "//list of plainFileTypes" for rest.html.
    */
-  public static String plainFileTypes[] = {
+  public static final String[] plainFileTypes = {
     // no need for .csvp or .tsvp, because plainFileTypes never write units
     ".csv",
     ".htmlTable",
@@ -146,7 +146,7 @@ public class Erddap extends HttpServlet {
     ".xhtml"
   };
 
-  public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
+  public static final String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
   // version when new file types added
   public static final ImmutableList<String> FILE_TYPES_124 =
@@ -169,7 +169,7 @@ public class Erddap extends HttpServlet {
   // ************** END OF STATIC VARIABLES *****************************
 
   protected RunLoadDatasets runLoadDatasets;
-  public AtomicInteger totalNRequests = new AtomicInteger();
+  public final AtomicInteger totalNRequests = new AtomicInteger();
   public String lastReportDate = "";
 
   /** Set by loadDatasets. */
@@ -179,17 +179,18 @@ public class Erddap extends HttpServlet {
    * Projects.testHashMaps() which shows that ConcurrentHashMap gives me a thread-safe class without
    * the time penalty of Collections.synchronizedMap(new HashMap()).]
    */
-  public ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
+  public final ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
+  public final ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
+  public final ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap<>(16, 0.75f, 4);
-  public ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
+  public final ConcurrentHashMap<String, int[]> failedLogins =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
+  public final ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
       new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
@@ -947,8 +948,7 @@ public class Erddap extends HttpServlet {
                   + "ms"
                   + (responseTime >= 600000
                       ? "  (>10m!)"
-                      : responseTime >= 10000 ? "  (>10s!)" : "")
-                  + "");
+                      : responseTime >= 10000 ? "  (>10s!)" : ""));
 
         // if sendErrorCode fails because response.isCommitted(), it throws ServletException
         try {
@@ -2299,7 +2299,7 @@ public class Erddap extends HttpServlet {
             || // shouldn't happen
             System.currentTimeMillis() > String2.parseLong(parts[1])
             || // waited too long?
-            !nonce.toLowerCase().equals(parts[2].toLowerCase())) { // wrong nonce?
+            !nonce.equalsIgnoreCase(parts[2])) { // wrong nonce?
           // failure
           if (session != null) {
             session.removeAttribute("loggingInAs:" + EDStatic.warName);
@@ -3063,8 +3063,7 @@ public class Erddap extends HttpServlet {
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Contact Info
       String dataProviderContactInfo =
@@ -3545,8 +3544,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Global Metadata
       writer.write(EDStatic.dataProviderFormPart2GlobalMetadataAr[language] /*
@@ -4101,7 +4099,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content.toString());
+                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
@@ -4180,8 +4178,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Variable Metadata
       writer.write(
@@ -4586,8 +4583,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // other comments
       writer.write(
@@ -4763,7 +4759,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
       int po = traces.indexOf('\n');
-      if (po > 0) sb.append(traces.substring(0, po + 1));
+      if (po > 0) sb.append(traces, 0, po + 1);
       sb.append(
           Math2.gcCallCount
               + " gc calls, "
@@ -9351,7 +9347,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDD.WMS_MAX_HEIGHT
                 + ".");
       }
-      if (format == null || !format.toLowerCase().equals("image/png")) {
+      if (format == null || !format.equalsIgnoreCase("image/png")) {
         exceptions = "XML"; // fall back
         throw new SimpleException(
             EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
@@ -9608,7 +9604,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // style  (currently just the default)
         if (!styles[layeri].isEmpty()
-            && !styles[layeri].toLowerCase().equals("default")) { // nonstandard?  but allow it
+            && !styles[layeri].equalsIgnoreCase("default")) { // nonstandard?  but allow it
           throw new SimpleException(
               EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                   + "For LAYER="
@@ -9674,7 +9670,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                                   .toLowerCase(); // make it case-insensitive for queryMap.get
           String tValueS = queryMap.get(tAvName);
           if (tValueS == null
-              || (avi == eddGrid.timeIndex() && tValueS.toLowerCase().equals("current")))
+              || (avi == eddGrid.timeIndex() && tValueS.equalsIgnoreCase("current")))
             // default is always the last value
             tQuery.append("[" + (ava[avi].sourceValues().size() - 1) + "]");
           else {
@@ -13605,8 +13601,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // gather slide title, url, x, y
       int newSlide = 0;
       int maxY = 150; // guess at header height
-      StringBuilder addToJavaScript = new StringBuilder();
-      StringBuilder otherSetDhtml = new StringBuilder();
+      String addToJavaScript = "";
+      String otherSetDhtml = "";
       for (int oldSlide = 0; oldSlide <= nSlides; oldSlide++) { // yes <=
         String tTitle = oldSlide == nSlides ? "" : request.getParameter("title" + oldSlide);
         String tUrl = oldSlide == nSlides ? "" : request.getParameter("url" + oldSlide);
@@ -14067,7 +14063,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       <!--
                       SET_DHTML(CURSOR_MOVE"""); // the default cursor for the div's
       for (int i = 0; i < newSlide; i++) writer.write(",\"div" + i + "\"");
-      writer.write(otherSetDhtml.toString() + ");\n");
+      writer.write(otherSetDhtml + ");\n");
       for (int i = 0; i < newSlide; i++)
         writer.write("dd.elements.div" + i + ".setZ(" + i + "); \n");
       writer.write(
@@ -14076,7 +14072,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ","
               + scrollY
               + ");\n"
-              + addToJavaScript.toString()
+              + addToJavaScript
               + "//-->\n"
               + "</script>\n");
 
@@ -15388,7 +15384,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDStatic.htmlTooltipImage(
                     language,
                     loggedInAs,
-                    "<div class=\"standard_max_width\">" + protocolTooltip.toString() + "</div>")
+                    "<div class=\"standard_max_width\">" + protocolTooltip + "</div>")
                 + "\n"
                 + "  </td>\n"
                 + "  <td style=\"width:80%;\">&nbsp;=&nbsp;"
@@ -15934,28 +15930,31 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   public static String getYouAreHereTable(String leftSide, String rightSide) throws Throwable {
 
     // begin table
-    StringBuilder sb =
-        new StringBuilder(
-            """
-                        <table class="compact" style="width:100%; border-spacing:2px;">
-                        <tr>
-                        <td class="B" style="width:90%;">""");
 
     // you are here
-    sb.append(leftSide);
-    sb.append("</td>\n" + "<td style=\"white-space:nowrap; width:10%;\">");
 
-    // rightside
-    sb.append(rightSide);
+    String sb =
+        """
+              <table class="compact" style="width:100%; border-spacing:2px;">
+              <tr>
+              <td class="B" style="width:90%;">"""
+            + leftSide
+            + "</td>\n"
+            + "<td style=\"white-space:nowrap; width:10%;\">"
+            +
 
-    // end table
-    sb.append("""
-            </td>
-            </tr>
-            </table>
-            """);
+            // rightside
+            rightSide
+            +
 
-    return sb.toString();
+            // end table
+            """
+                      </td>
+                      </tr>
+                      </table>
+                      """;
+
+    return sb;
   }
 
   /**
@@ -18910,8 +18909,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
@@ -18959,8 +18957,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
@@ -18993,8 +18990,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
@@ -19240,12 +19236,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     if (toCode) {
       // process code=,   a toCode query
-      int po = ((StringArray) fipsTable.getColumn(1)).indexOf(queryCounty);
+      int po = fipsTable.getColumn(1).indexOf(queryCounty);
       if (po < 0) {
         tError = "county=\"" + queryCounty + "\" isn't an exact match of a FIPS county name.";
       } else {
@@ -19256,7 +19251,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     } else if (toCounty) {
       // process county=,   a toCounty query
-      int po = ((StringArray) fipsTable.getColumn(0)).indexOf(queryCode);
+      int po = fipsTable.getColumn(0).indexOf(queryCode);
       if (po < 0) {
         tError = "code=\"" + queryCode + "\" isn't an exact match of a 5-digit, FIPS county code.";
       } else {
@@ -19520,8 +19515,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     StringArray acronymSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -19811,8 +19805,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     StringArray variableNameSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -20953,9 +20946,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         lonDIndexPA.add(lonDIndex);
         isValidPA.add(timeDIndex < 0 || latDIndex < 0 || lonDIndex < 0 ? 0 : 1);
       }
-      if (debugMode)
-        String2.log(
-            ">> timePA=" + timePA.toString() + "\n>> timeDIndexPA=" + timeDIndexPA.toString());
+      if (debugMode) String2.log(">> timePA=" + timePA + "\n>> timeDIndexPA=" + timeDIndexPA);
 
       // rank table by isValid, time, lat, lon
       int rank[] =
@@ -21222,10 +21213,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 gdraim.getDataValueAsPAOne(current, 0, paOne);
                 if (debugMode)
                   String2.log(
-                      ">> b current="
-                          + String2.toCSSVString(current)
-                          + " datasetValue="
-                          + paOne.toString());
+                      ">> b current=" + String2.toCSSVString(current) + " datasetValue=" + paOne);
                 if (!isBilinear && Double.isNaN(paOne.getDouble())) continue;
 
                 // calculate distance
@@ -21415,7 +21403,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "/"
                 + variable[dv]
                 + " howGrouped:"
-                + howGrouped.toString());
+                + howGrouped);
     }
 
     return sourceTable;

@@ -1222,7 +1222,7 @@ public class TestAll {
               "errorSB from TestAll which finished at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ()
                   + "\n"
-                  + errorSB.toString()));
+                  + errorSB));
       Test.displayInBrowser("file://" + fileName); // .txt
     }
 

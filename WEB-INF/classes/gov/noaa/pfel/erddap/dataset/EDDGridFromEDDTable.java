@@ -38,15 +38,15 @@ import java.util.Arrays;
 @SaxHandlerClass(EDDGridFromEDDTableHandler.class)
 public class EDDGridFromEDDTable extends EDDGrid {
 
-  protected EDDTable eddTable;
+  protected final EDDTable eddTable;
 
-  protected int gapThreshold;
+  protected final int gapThreshold;
   static final int defaultGapThreshold = 1000;
   // for precision of axis value matching
   static final int floatPrecision = 5;
   static final int doublePrecision = 9;
   static final int fullPrecision = 16; // nominal, used to symbolize fullPrecision
-  protected int avPrecision[];
+  protected final int[] avPrecision;
 
   /**
    * This constructs an EDDGridFromEDDTable based on the information in an .xml file.
@@ -136,34 +136,34 @@ public class EDDGridFromEDDTable extends EDDGrid {
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<axisVariable>" -> tAxisVariables.add(getSDAVVariableFromXml(xmlReader));
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<gapThreshold>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<updateEveryNMillis>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaFiles>",
+            "<accessibleViaWMS>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<accessibleViaWMS>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<updateEveryNMillis>" -> {}
         case "</updateEveryNMillis>" -> tUpdateEveryNMillis = String2.parseInt(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
-        case "<gapThreshold>" -> {}
         case "</gapThreshold>" -> tGapThreshold = String2.parseInt(content);
         default -> xmlReader.unexpectedTagException();
       }
@@ -365,7 +365,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
             || tStart > tStop
             || tStride <= 0
             || tStride > tStop - tStart
-            || ((tStop - tStart) / (double) tStride > 1e7))
+            || ((tStop - tStart) / tStride > 1e7))
           throw new RuntimeException(
               msg
                   + "Invalid "
@@ -376,7 +376,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                   + tStride
                   + ", stop="
                   + tStop);
-        int n = Math2.roundToInt((tStop - tStart) / (double) tStride) + 3; // 2 extra
+        int n = Math2.roundToInt((tStop - tStart) / tStride) + 3; // 2 extra
         tSourceValues = PrimitiveArray.factory(sss.elementType(), n, false);
         for (int i = 0; i < n; i++) {
           double d = tStart + i * tStride; // more accurate than repeatedly add
@@ -450,7 +450,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromEDDTable "
               + datasetID
               + " constructor finished. TIME="
@@ -922,8 +922,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     }
 
     // write the information
-    StringBuilder results = new StringBuilder();
-    results.append(
+    String results =
         "<dataset type=\"EDDGridFromEDDTable\" datasetID=\""
             + suggestDatasetID(eddTableID + "/EDDGridFromEDDTable")
             + "\" active=\"true\">\n"
@@ -934,40 +933,34 @@ public class EDDGridFromEDDTable extends EDDGrid {
             + "</reloadEveryNMinutes>\n"
             + "    <gapThreshold>"
             + defaultGapThreshold
-            + "</gapThreshold>\n");
-    results.append(writeAttsForDatasetsXml(false, sourceDataTable.globalAttributes(), "    "));
-    results.append(writeAttsForDatasetsXml(true, addDataTable.globalAttributes(), "    "));
-    results.append(
-        """
+            + "</gapThreshold>\n"
+            + writeAttsForDatasetsXml(false, sourceDataTable.globalAttributes(), "    ")
+            + writeAttsForDatasetsXml(true, addDataTable.globalAttributes(), "    ")
+            + """
 
-                        <!-- *** If appropriate:
-                          * Change some of the <dataVariables> to be <axisVariables>.
-                          * Insert them here in the correct order.
-                          * For each one, add to its <addAttributes> one of:
-                            <att name="axisValues" type="doubleList">a CSV list of values</att>
-                            <att name="axisValuesStartStrideStop" type="doubleList">startValue, strideValue, stopValue</att>
-                          * For each one, if defaults aren't suitable, add
-                            <att name="precision" type="int">totalNumberOfDigitsToMatch</att>
-                        -->
+                          <!-- *** If appropriate:
+                            * Change some of the <dataVariables> to be <axisVariables>.
+                            * Insert them here in the correct order.
+                            * For each one, add to its <addAttributes> one of:
+                              <att name="axisValues" type="doubleList">a CSV list of values</att>
+                              <att name="axisValuesStartStrideStop" type="doubleList">startValue, strideValue, stopValue</att>
+                            * For each one, if defaults aren't suitable, add
+                              <att name="precision" type="int">totalNumberOfDigitsToMatch</att>
+                          -->
 
-                    """);
-    results.append(
-        writeVariablesForDatasetsXml(
-            sourceAxisTable,
-            addAxisTable,
-            "axisVariable", // assume LLAT already identified
-            false,
-            false)); // includeDataType, questionDestinationName
-    results.append("\n");
-    results.append(
-        writeVariablesForDatasetsXml(
-            sourceDataTable,
-            addDataTable,
-            "dataVariable",
-            false,
-            false)); // includeDataType, questionDestinationName
-    results.append(
-        "\n"
+                      """
+            + writeVariablesForDatasetsXml(
+                sourceAxisTable,
+                addAxisTable,
+                "axisVariable", // assume LLAT already identified
+                false,
+                false)
+            + // includeDataType, questionDestinationName
+            "\n"
+            + writeVariablesForDatasetsXml(
+                sourceDataTable, addDataTable, "dataVariable", false, false)
+            + // includeDataType, questionDestinationName
+            "\n"
             + "    <!-- *** Insert the entire <dataset> chunk for "
             + eddTableID
             + " here.\n"
@@ -976,9 +969,9 @@ public class EDDGridFromEDDTable extends EDDGrid {
             + "    <dataset ... > ... </dataset>\n"
             + "\n"
             + "</dataset>\n"
-            + "\n");
+            + "\n";
 
     String2.log("\n*** generateDatasetsXml finished successfully.\n");
-    return results.toString();
+    return results;
   }
 }

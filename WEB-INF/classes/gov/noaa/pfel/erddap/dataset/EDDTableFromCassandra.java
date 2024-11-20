@@ -267,23 +267,23 @@ public class EDDTableFromCassandra extends EDDTable {
 
   // see getSession
   private static ConcurrentHashMap<String, Session> sessionsMap = new ConcurrentHashMap();
-  private static ConcurrentHashMap<String, PreparedStatement> statementMap =
+  private static final ConcurrentHashMap<String, PreparedStatement> statementMap =
       new ConcurrentHashMap();
-  public static String LIST = "!!!LIST!!!";
+  public static final String LIST = "!!!LIST!!!";
 
   /** set by the constructor */
   private Session session;
 
   private ProtocolVersion protocolVersion =
       ProtocolVersion.NEWEST_SUPPORTED; // but may be changed below
-  protected String keyspace;
-  protected String tableName;
-  protected int nPartitionKeys;
-  protected String partitionKeyNames[]; // source names
-  protected String partitionKeyFrom[]; // null or name of timestamp var it is derived from
-  protected String partitionKeyPrecision[]; // null or precision of timestamp var
-  protected String
-      partitionKeyFixedValue[]; // null, or the fixed value (plain number or string in quotes)
+  protected final String keyspace;
+  protected final String tableName;
+  protected final int nPartitionKeys;
+  protected final String[] partitionKeyNames; // source names
+  protected final String[] partitionKeyFrom; // null or name of timestamp var it is derived from
+  protected final String[] partitionKeyPrecision; // null or precision of timestamp var
+  protected final String[]
+      partitionKeyFixedValue; // null, or the fixed value (plain number or string in quotes)
   protected EDV partitionKeyEDV[]; // edv of each partitionKey
   protected static final String PartitionKeysDistinctTableName = "PartitionKeysDistinctTable.nc";
   protected HashSet<String> clusterColumnSourceNames;
@@ -291,7 +291,7 @@ public class EDDTableFromCassandra extends EDDTable {
   protected double maxRequestFraction = 1; // >0..1; 1 until subsetVarTable has been made
   protected String partitionKeyRelatedVariables; // CSSV for error message
   protected EDV rvToResultsEDV[]; // needed in expandPartitionKeyCSV
-  protected String partitionKeyCSV; // null or csv before expansion
+  protected final String partitionKeyCSV; // null or csv before expansion
 
   // Double quotes, see
   // http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/escape_char_r.html
@@ -367,48 +367,48 @@ public class EDDTableFromCassandra extends EDDTable {
       switch (localTags) {
         case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<partitionKeyCSV>",
+            "<columnNameQuotes>",
+            "<maxRequestFraction>",
+            "<indexColumnSourceNames>",
+            "<clusterColumnSourceNames>",
+            "<partitionKeySourceNames>",
+            "<tableName>",
+            "<keyspace>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
         case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrl = content;
         case "<connectionProperty>" -> tConnectionProperties.add(xmlReader.attributeValue("name"));
         case "</connectionProperty>" -> tConnectionProperties.add(content);
-        case "<keyspace>" -> {}
         case "</keyspace>" -> tKeyspace = content;
-        case "<tableName>" -> {}
         case "</tableName>" -> tTableName = content;
-        case "<partitionKeySourceNames>" -> {}
         case "</partitionKeySourceNames>" -> tPartitionKeySourceNames = content;
-        case "<clusterColumnSourceNames>" -> {}
         case "</clusterColumnSourceNames>" -> tClusterColumnSourceNames = content;
-        case "<indexColumnSourceNames>" -> {}
         case "</indexColumnSourceNames>" -> tIndexColumnSourceNames = content;
-        case "<maxRequestFraction>" -> {}
         case "</maxRequestFraction>" -> tMaxRequestFraction = String2.parseDouble(content);
-        case "<columnNameQuotes>" -> {}
         case "</columnNameQuotes>" -> tColumnNameQuotes = content;
-        case "<partitionKeyCSV>" -> {}
         case "</partitionKeyCSV>" -> tPartitionKeyCSV = content;
-        case "<sourceNeedsExpandedFP_EQ>" -> {}
         case "</sourceNeedsExpandedFP_EQ>" ->
             tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -691,7 +691,7 @@ public class EDDTableFromCassandra extends EDDTable {
     StringBuilder dapVars = new StringBuilder();
     StringBuilder cassVars = new StringBuilder();
     StringBuilder dapConstraints = new StringBuilder();
-    StringBuilder cassConstraints = new StringBuilder();
+    String cassConstraints = "";
     int resultsDVI[] = new int[nPartitionKeys];
     rvToResultsEDV = new EDV[nPartitionKeys]; // make and keep this
     File2.makeDirectory(datasetDir());
@@ -728,9 +728,8 @@ public class EDDTableFromCassandra extends EDDTable {
       if (dvi >= 0) pkRelated.add(dataVariables[dvi].destinationName());
     }
     partitionKeyRelatedVariables = pkRelated.toString();
-    String dapQuery = dapVars.toString() + dapConstraints.toString() + "&distinct()";
-    String cassQuery =
-        cassVars.toString() + " FROM " + keyspace + "." + tableName + cassConstraints.toString();
+    String dapQuery = dapVars.toString() + dapConstraints + "&distinct()";
+    String cassQuery = cassVars + " FROM " + keyspace + "." + tableName + cassConstraints;
     if (verbose)
       String2.log(
           "* PrimaryKeys DAP  query=" + dapQuery + "\n" + "* PrimaryKeys Cass query=" + cassQuery);
@@ -804,7 +803,7 @@ public class EDDTableFromCassandra extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromCassandra "
               + datasetID
               + " constructor finished. TIME="
@@ -1378,7 +1377,7 @@ public class EDDTableFromCassandra extends EDDTable {
     //  normally allow because of "performance unpredictability".
     // http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/select_r.html
     query.append(" ALLOW FILTERING;");
-    if (verbose) String2.log("statement as text: " + query.toString());
+    if (verbose) String2.log("statement as text: " + query);
 
     // Cassandra doesn't like preparing the same query more than once.
     // "WARNING: Re-preparing already prepared query SELECT deviceid, sampletime, ctext
@@ -1594,7 +1593,7 @@ public class EDDTableFromCassandra extends EDDTable {
                 + ": sourceName="
                 + sn
                 + " not in Cassandra resultsSet columns=\""
-                + tsa.toString()
+                + tsa
                 + "\".");
       }
       rvToCassDataType[rv] = columnDef.getType(rvToRsCol[rv]);
@@ -1675,7 +1674,7 @@ public class EDDTableFromCassandra extends EDDTable {
             listSizeDVI = resultsDVI[rv];
             listSize = tListSize;
           } else if (listSize != tListSize) {
-            String2.log("This resultSet row has different list sizes=\n" + r.toString());
+            String2.log("This resultSet row has different list sizes=\n" + r);
             throw new RuntimeException(
                 "Source data error: on one row, "
                     + "two list variables have lists of different sizes ("
@@ -2113,12 +2112,11 @@ public class EDDTableFromCassandra extends EDDTable {
         String find = "<sourceName>" + dataSourceTable.getColumnName(col) + "</sourceName>";
         int po = sb.indexOf(find);
         if (po < 0)
-          throw new RuntimeException(
-              "Internal ERROR: \"" + find + "\" not found in sb=\n" + sb.toString());
+          throw new RuntimeException("Internal ERROR: \"" + find + "\" not found in sb=\n" + sb);
         po = sb.indexOf("</dataType>", po + find.length());
         if (po < 0)
           throw new RuntimeException(
-              "Internal ERROR: \"" + find + "\" + </dataType> not found in sb=\n" + sb.toString());
+              "Internal ERROR: \"" + find + "\" + </dataType> not found in sb=\n" + sb);
         sb.insert(po, "List");
       }
     }

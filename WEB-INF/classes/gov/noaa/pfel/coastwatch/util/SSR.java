@@ -103,7 +103,7 @@ public class SSR {
   public static String erddapVersion = "2"; // vague. will be updated by EDStatic
 
   private static String tempDirectory; // lazy creation by getTempDirectory
-  public static ReentrantLock emailLock = new ReentrantLock();
+  public static final ReentrantLock emailLock = new ReentrantLock();
 
   static {
     HttpURLConnection.setFollowRedirects(true); // it's a static method!
@@ -528,6 +528,7 @@ public class SSR {
       double bBoxLLX,
       double bBoxLLY,
       String epsContents) {
+    // "} bind def\n" +
     return
     // This is from PostScript Language Reference Manual 2nd ed, pg 726
     // (in "Appendix H: Encapsulated PostScript File Format - Version 3.0"
@@ -582,10 +583,7 @@ public class SSR {
         "  count op_count sub {pop} repeat\n"
         + "  countdictstack dict_count sub {end} repeat\n"
         + // clean up dict stack
-        "  b4_inc_state restore\n"
-        +
-        // "} bind def\n" +
-        "";
+        "  b4_inc_state restore\n";
   }
 
   /**
@@ -1601,7 +1599,7 @@ public class SSR {
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
   }
 
@@ -1655,7 +1653,7 @@ public class SSR {
       } catch (Exception e) {
         String msg = e.toString();
         if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-        throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+        throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
       }
     }
 
@@ -1724,7 +1722,7 @@ public class SSR {
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
   }
 
@@ -1764,7 +1762,7 @@ public class SSR {
     } catch (Exception e) {
       String msg = e.toString();
       if (String2.isSomething(msg) && msg.indexOf(urlString) >= 0) throw e;
-      throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+      throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e, e);
     }
   }
 
@@ -1792,7 +1790,7 @@ public class SSR {
       return baos.toByteArray();
     } catch (Exception e) {
       // String2.log(e.toString());
-      throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString(), e);
+      throw new Exception("ERROR while reading file=" + fileName + " : " + e, e);
     }
   }
 

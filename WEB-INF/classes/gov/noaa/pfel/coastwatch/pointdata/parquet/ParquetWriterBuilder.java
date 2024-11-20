@@ -11,7 +11,7 @@ import org.apache.parquet.schema.MessageType;
 
 public class ParquetWriterBuilder extends ParquetWriter.Builder<List<PAOne>, ParquetWriterBuilder> {
 
-  private CustomWriteSupport writeSupport;
+  private final CustomWriteSupport writeSupport;
 
   public ParquetWriterBuilder(MessageType schema, OutputFile file, Map<String, String> metadata) {
     super(file);

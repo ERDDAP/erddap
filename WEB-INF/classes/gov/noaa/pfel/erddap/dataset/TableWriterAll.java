@@ -29,13 +29,13 @@ import java.io.FileOutputStream;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public class TableWriterAll extends TableWriter {
-  public static String attributeTo = "gathering data in TableWriterAll";
+  public static final String attributeTo = "gathering data in TableWriterAll";
 
-  protected int randomInt = Math2.random(Integer.MAX_VALUE);
+  protected final int randomInt = Math2.random(Integer.MAX_VALUE);
 
   // set by constructor
-  protected String dir;
-  protected String fileNameNoExt;
+  protected final String dir;
+  protected final String fileNameNoExt;
 
   // set firstTime
   // POLICY: because this class may be used in more than one thread,
@@ -44,7 +44,7 @@ public class TableWriterAll extends TableWriter {
   protected volatile long totalNRows = 0;
 
   protected Table cumulativeTable; // set by writeAllAndFinish, if used
-  private CleanupTableWriterAction cleanupAction;
+  private final CleanupTableWriterAction cleanupAction;
 
   /**
    * The constructor. TableWriterAll will create several temporary files using the dir+name as the
@@ -73,9 +73,9 @@ public class TableWriterAll extends TableWriter {
 
     private DataOutputStream[] columnStreams;
     private String[] columnNames;
-    private String dir;
-    private String fileNameNoExt;
-    private int randomInt;
+    private final String dir;
+    private final String fileNameNoExt;
+    private final int randomInt;
 
     private CleanupTableWriterAction(String dir, String fileNameNoExt, int randomInt) {
       this.dir = dir;

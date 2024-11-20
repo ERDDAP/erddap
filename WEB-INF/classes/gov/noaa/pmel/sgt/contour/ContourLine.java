@@ -329,16 +329,16 @@ public class ContourLine extends Vector {
     }
     switch (defaultAttr_.getStyle()) {
       case LineAttribute.HIGHLIGHT:
-        stroke_.drawHighlight(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawHighlight(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.HEAVY:
-        stroke_.drawHeavy(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawHeavy(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.DASHED:
-        stroke_.drawDashed(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawDashed(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.STROKE:
-        stroke_.drawStroke(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawStroke(g, xp, yp, size, defaultAttr_);
         break;
       default:
       case LineAttribute.MARK:
@@ -359,16 +359,16 @@ public class ContourLine extends Vector {
     yp[1] = cg_.getLayer().getYPtoD(y1);
     switch (defaultAttr_.getStyle()) {
       case LineAttribute.HIGHLIGHT:
-        stroke_.drawHighlight(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawHighlight(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.HEAVY:
-        stroke_.drawHeavy(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawHeavy(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.DASHED:
-        stroke_.drawDashed(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawDashed(g, xp, yp, size, defaultAttr_);
         break;
       case LineAttribute.STROKE:
-        stroke_.drawStroke(g, xp, yp, size, (LineAttribute) defaultAttr_);
+        stroke_.drawStroke(g, xp, yp, size, defaultAttr_);
         break;
       default:
       case LineAttribute.MARK:

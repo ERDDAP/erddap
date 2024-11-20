@@ -51,7 +51,7 @@ public final class DArrayDimension implements Cloneable {
   @Override
   public Object clone() {
     try {
-      return (DArrayDimension) super.clone();
+      return super.clone();
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
       throw new InternalError();

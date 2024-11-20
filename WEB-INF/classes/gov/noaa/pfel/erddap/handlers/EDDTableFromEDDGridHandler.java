@@ -9,7 +9,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.xml.sax.Attributes;
 
 public class EDDTableFromEDDGridHandler extends BaseTableHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDTableFromEDDGridHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {

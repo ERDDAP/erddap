@@ -25,12 +25,13 @@ public class Attributes {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
   public static boolean debugMode = false;
 
   /** The backing data structure. It is thread-safe. */
-  private ConcurrentHashMap<String, PrimitiveArray> hashmap = new ConcurrentHashMap<>(16, 0.75f, 4);
+  private final ConcurrentHashMap<String, PrimitiveArray> hashmap =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public static String signedToUnsignedAttNames[] =
       new String[] {
@@ -750,7 +751,7 @@ public class Attributes {
           sb.append("f");
         }
       } else {
-        sb.append(pa.toString());
+        sb.append(pa);
       }
       sb.append(suffix + "\n");
     }
@@ -798,7 +799,7 @@ public class Attributes {
   public String testEquals(Object o) {
     if (o == null) return "The new Attributes object is null.";
     if (!(o instanceof Attributes)) return "The new object isn't an Attributes object.";
-    return Test.testEqual(toString(), ((Attributes) o).toString(), "");
+    return Test.testEqual(toString(), o.toString(), "");
   }
 
   /**
@@ -810,8 +811,7 @@ public class Attributes {
    */
   public static String valueToNcString(PrimitiveArray pa) {
     if (pa.elementType() == PAType.STRING)
-      return String2.toSVString(
-          ((StringArray) pa).toStringArray(), "\n", false); // false=no trailing newline
+      return String2.toSVString(pa.toStringArray(), "\n", false); // false=no trailing newline
     return pa.toString();
   }
 
@@ -1331,7 +1331,7 @@ public class Attributes {
                   + " dataPaMV="
                   + dataPaMV
                   + " dataPa= "
-                  + dataPa.toString());
+                  + dataPa);
         dataPa =
             // if stated missing_value or _FillValue is same as cohort missingValue...
             unsigned
@@ -1699,7 +1699,7 @@ public class Attributes {
       try {
         baseFactor = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
       } catch (Exception e) {
-        String2.log(tUnits.toString());
+        String2.log(tUnits);
         return PrimitiveArray.factory(PAType.DOUBLE, dataPa.size(), ""); // i.e. uninterpretable
       }
 

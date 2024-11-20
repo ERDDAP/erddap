@@ -30,7 +30,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
 
   // set by constructor
   protected TableWriter otherTableWriter;
-  public String orderBy[];
+  public final String[] orderBy;
 
   /**
    * The constructor.

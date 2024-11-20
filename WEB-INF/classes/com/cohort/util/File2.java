@@ -295,7 +295,7 @@ public class File2 {
 
   private static String tempDirectory; // lazy creation by getSystemTempDirectory
 
-  private static ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
 
   public static String getClassPath() {
     String find = "/com/cohort/util/String2.class";
@@ -735,7 +735,7 @@ public class File2 {
           .deleteObject(DeleteObjectRequest.builder().bucket(bro[0]).key(bro[2]).build());
       return true;
     } catch (Exception e) {
-      String2.log("Caught exception while deleting " + awsUrl + " : " + e.toString());
+      String2.log("Caught exception while deleting " + awsUrl + " : " + e);
       return false;
     }
     // even with response, no easy way to determine if successfull
@@ -2112,7 +2112,7 @@ public class File2 {
       out = new BufferedOutputStream(new FileOutputStream(destination));
       success = copy(source, out, first, last);
     } catch (Exception e) {
-      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e.toString());
+      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e);
     }
     try {
       if (out != null) out.close();
@@ -2150,7 +2150,7 @@ public class File2 {
       out = new BufferedOutputStream(new FileOutputStream(destination));
       success = copy(in, out, 0, -1);
     } catch (Exception e) {
-      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e.toString());
+      String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e);
     }
     try {
       if (in != null) in.close();

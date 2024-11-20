@@ -21,7 +21,7 @@ public class EDDTableFromDatabaseHandler extends BaseTableHandler {
   private String tTableName = null;
   private String tColumnNameQuotes = "\"";
   private String[] tOrderBy = new String[0];
-  private StringArray tConnectionProperties = new StringArray();
+  private final StringArray tConnectionProperties = new StringArray();
   private boolean tSourceNeedsExpandedFP_EQ = true;
   private String tSourceCanOrderBy = "no";
   private String tSourceCanDoDistinct = "no";

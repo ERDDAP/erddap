@@ -61,19 +61,19 @@ public class GridDataAccessor implements AutoCloseable {
    * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
    * you want all diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   // things passed into the constructor
-  protected int language;
-  protected EDDGrid eddGrid;
-  protected String userDapQuery;
-  protected boolean rowMajor;
-  protected boolean convertToNaN;
+  protected final int language;
+  protected final EDDGrid eddGrid;
+  protected final String userDapQuery;
+  protected final boolean rowMajor;
+  protected final boolean convertToNaN;
 
   // things the constructor generates
   protected int nAxisVariables;
   protected EDV dataVariables[]; // [dv in the query]
-  protected IntArray constraints;
+  protected final IntArray constraints;
   protected int getAllOfNAxes;
   protected NDimensionalIndex totalIndex, driverIndex, partialIndex;
   protected boolean avInDriver[];

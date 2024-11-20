@@ -185,9 +185,10 @@ public abstract class EDDGrid extends EDD {
           ".tsv",
           ".wav",
           ".xhtml");
-  public static String[][] dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
+  public static final String[][]
+      dataFileTypeDescriptionsAr; // [lang][n]  see static constructor below
   // These are encoded for use as HTML attributes (href)
-  public static ImmutableList<String> dataFileTypeInfo =
+  public static final ImmutableList<String> dataFileTypeInfo =
       ImmutableList.of( // "" if not available
           "https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", // OPeNDAP
           // ascii
@@ -248,8 +249,9 @@ public abstract class EDDGrid extends EDD {
           ".transparentPng");
   public static final ImmutableList<String> imageFileTypeExtensions =
       ImmutableList.of(".tif", ".kml", ".pdf", ".pdf", ".pdf", ".png", ".png", ".png", ".png");
-  public static String[][] imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
-  public static ImmutableList<String> imageFileTypeInfo =
+  public static final String[][]
+      imageFileTypeDescriptionsAr; // [lang][n]  see static constructor below
+  public static final ImmutableList<String> imageFileTypeInfo =
       ImmutableList.of(
           "https://trac.osgeo.org/geotiff/", // geotiff
           "https://developers.google.com/kml/", // kml
@@ -262,10 +264,11 @@ public abstract class EDDGrid extends EDD {
           "http://www.libpng.org/pub/png/" // png
           );
 
-  private static String[][] allFileTypeOptionsAr;
-  private static String[] allFileTypeNames;
-  private static String[] publicGraphFileTypeNames;
-  private static int defaultFileTypeOption, defaultPublicGraphFileTypeOption;
+  private static final String[][] allFileTypeOptionsAr;
+  private static final String[] allFileTypeNames;
+  private static final String[] publicGraphFileTypeNames;
+  private static final int defaultFileTypeOption;
+  private static final int defaultPublicGraphFileTypeOption;
 
   // wcs
   public static final String wcsServer = "server";
@@ -406,7 +409,7 @@ public abstract class EDDGrid extends EDD {
   }
 
   // the diagnostic tests change this just for testing
-  static int tableWriterNBufferRows = 100000;
+  static final int tableWriterNBufferRows = 100000;
 
   // *********** end of static declarations ***************************
 
@@ -1217,8 +1220,8 @@ public abstract class EDDGrid extends EDD {
   @Override
   public EDV findVariableByDestinationName(String tDestinationName) throws Throwable {
     for (EDVGridAxis axisVariable : axisVariables)
-      if (axisVariable.destinationName().equals(tDestinationName)) return (EDV) axisVariable;
-    return (EDV) findDataVariableByDestinationName(tDestinationName);
+      if (axisVariable.destinationName().equals(tDestinationName)) return axisVariable;
+    return findDataVariableByDestinationName(tDestinationName);
   }
 
   /**
@@ -3485,8 +3488,8 @@ public abstract class EDDGrid extends EDD {
       if (axisVariables.length >= 1 && dataVariables.length >= 2) drawsSA.add("sticks");
       if (nAvNames >= 2) {
         if ((lonIndex >= 0 && latIndex >= 0)
-            || ("x".equals(avNames[nAvNames - 1].toLowerCase())
-                && "y".equals(avNames[nAvNames - 2].toLowerCase()))) defaultDraw = drawsSA.size();
+            || ("x".equalsIgnoreCase(avNames[nAvNames - 1])
+                && "y".equalsIgnoreCase(avNames[nAvNames - 2]))) defaultDraw = drawsSA.size();
         drawsSA.add("surface");
       }
       if (lonIndex >= 0 && latIndex >= 0 && dataVariables.length >= 2) drawsSA.add("vectors");
@@ -4312,7 +4315,7 @@ public abstract class EDDGrid extends EDD {
       if (zoomTime) {
         writer.write(
             widgets.hidden("timeN", "" + idealTimeN)
-                + widgets.hidden("timeUnits", "" + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits]));
+                + widgets.hidden("timeUnits", Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits]));
       }
 
       // add .draw and .vars to graphQuery
@@ -9157,7 +9160,7 @@ public abstract class EDDGrid extends EDD {
             catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
 
             PrimitiveArray pa = catts.get("actual_range");
-            if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+            if (pa instanceof DoubleArray && pa.size() == 2) {
               StringArray sa = new StringArray();
               for (int i = 0; i < 2; i++)
                 sa.add(Calendar2.epochSecondsToLimitedIsoStringT(timePre, pa.getDouble(i), ""));
@@ -11734,14 +11737,14 @@ public abstract class EDDGrid extends EDD {
             "CheckAll",
             EDStatic.EDDGridCheckAllTooltipAr[language],
             EDStatic.EDDGridCheckAllAr[language],
-            "onclick=\"" + checkAll.toString() + "\""));
+            "onclick=\"" + checkAll + "\""));
     writer.write(
         widgets.button(
             "button",
             "UncheckAll",
             EDStatic.EDDGridUncheckAllTooltipAr[language],
             EDStatic.EDDGridUncheckAllAr[language],
-            "onclick=\"" + uncheckAll.toString() + "\""));
+            "onclick=\"" + uncheckAll + "\""));
 
     writer.write("</td></tr>\n");
 
@@ -13546,8 +13549,7 @@ public abstract class EDDGrid extends EDD {
           subset.append("[0:" + (nValues / 18) + ":" + (nValues - 1) + "]");
         else subset.append("[" + (nValues / 2) + "]");
       }
-      String2.log(
-          "subset=" + subset.toString() + "\nnDim=" + nDim + " vars=" + dataVars.toString());
+      String2.log("subset=" + subset + "\nnDim=" + nDim + " vars=" + dataVars);
 
       // get suggested range for each dataVariable
       Table data = new Table();
@@ -13560,7 +13562,7 @@ public abstract class EDDGrid extends EDD {
                   + dsName
                   + ".tsv?"
                   + varName
-                  + subset.toString(),
+                  + subset,
               tDir + tName,
               true);
 
@@ -14390,8 +14392,7 @@ public abstract class EDDGrid extends EDD {
 
     // version
     String version = wcsQueryMap.get("version"); // test name.toLowerCase()
-    if (version == null
-        || !wcsVersion.equals(version)) // String2.indexOf(wcsVersions, version) < 0)
+    if (!wcsVersion.equals(version)) // String2.indexOf(wcsVersions, version) < 0)
     throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
               + "version="
@@ -14688,7 +14689,7 @@ public abstract class EDDGrid extends EDD {
           String timeSA[] = String2.split(time, '/');
           // 'now', see 1.0.0 section 9.2.2.8
           for (int ti = 0; ti < timeSA.length; ti++) {
-            if (timeSA[ti].toLowerCase().equals("now")) timeSA[ti] = "last";
+            if (timeSA[ti].equalsIgnoreCase("now")) timeSA[ti] = "last";
           }
           if (timeSA.length == 0 || timeSA[0].length() == 0) {
             throw new SimpleException(
@@ -14784,7 +14785,7 @@ public abstract class EDDGrid extends EDD {
     if (reallyVerbose)
       String2.log(
           "wcsQueryToDapQuery="
-              + dapQuery.toString()
+              + dapQuery
               + "\n  version="
               + version
               + " format="

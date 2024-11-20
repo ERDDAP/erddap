@@ -47,15 +47,18 @@ public class FileNameUtility {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
-  public String fullClassName;
-  private ResourceBundle2 classRB2;
-  private ResourceBundle2 dataSetRB2;
+  public final String fullClassName;
+  private final ResourceBundle2 classRB2;
+  private final ResourceBundle2 dataSetRB2;
 
-  public double regionMinX, regionMaxX, regionMinY, regionMaxY;
+  public final double regionMinX;
+  public final double regionMaxX;
+  public final double regionMinY;
+  public final double regionMaxY;
 
-  public static URL STANDARD_REGIONS_FILE_NAME =
+  public static final URL STANDARD_REGIONS_FILE_NAME =
       Resources.getResource("gov/noaa/pfel/coastwatch/griddata/regions");
 
   public static String getAcknowledgement() {
@@ -129,8 +132,8 @@ public class FileNameUtility {
 
   // was 55
 
-  private String categoryLetters;
-  private String[] categoryNames;
+  private final String categoryLetters;
+  private final String[] categoryNames;
 
   /**
    * This uses the class name to find the <classname>.properties and DataSet.properties file (in
@@ -471,7 +474,7 @@ public class FileNameUtility {
         timePeriodInFileName
         + "_"
         + centeredDateTime
-        + wesnSB.toString();
+        + wesnSB;
   }
 
   /**

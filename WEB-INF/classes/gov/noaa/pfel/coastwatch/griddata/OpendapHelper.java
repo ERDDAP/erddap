@@ -46,7 +46,7 @@ public class OpendapHelper {
    * Set this to true (by calling debug=true in your program, not by changing the code here) if you
    * want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debug = false;
+  public static final boolean debug = false;
 
   /**
    * This defines the end-of-line characters to use when writing dap responses. <br>
@@ -61,7 +61,7 @@ public class OpendapHelper {
    */
   public static final String EOL = "\n";
 
-  public static int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
+  public static final int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
 
   /**
    * This converts a das to a string.
@@ -102,7 +102,7 @@ public class OpendapHelper {
       // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
       Iterator<String> names = das.getNames();
       while (names.hasNext()) {
-        String s = (String) names.next();
+        String s = names.next();
         if (s.indexOf("GLOBAL") >= 0) {
           return das.getAttributeTable(s);
         }
@@ -179,7 +179,7 @@ public class OpendapHelper {
     // get the attributes
     Iterator<String> names = attributeTable.getNames();
     while (names.hasNext()) {
-      String name = (String) names.next();
+      String name = names.next();
       Attribute attribute = attributeTable.getAttribute(name);
       if (attribute.isContainer()) {
         // process an attribute that isContainer by flattening it (name_subname=...)
@@ -511,7 +511,7 @@ public class OpendapHelper {
         while (e.hasMoreElements()) al.add(e.nextElement());
         PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
         for (int i = 0; i < al.size(); i++)
-          paAr[i] = getPrimitiveArray(((DArray) al.get(i)).getPrimitiveVector());
+          paAr[i] = getPrimitiveArray(al.get(i).getPrimitiveVector());
         return paAr;
       }
       case DArray da -> {
@@ -875,7 +875,7 @@ public class OpendapHelper {
           sb.append(ts + (pai < paSize - 1 ? ", " : ""));
         }
       } else {
-        sb.append(pa.toString());
+        sb.append(pa);
       }
       sb.append(";" + EOL);
     }
@@ -1553,7 +1553,7 @@ public class OpendapHelper {
 
         } catch (Throwable t) {
           varNames[v] = null;
-          if (verbose) String2.log("  removing variable: " + t.toString());
+          if (verbose) String2.log("  removing variable: " + t);
           continue;
         }
       }

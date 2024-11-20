@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridFromFilesHandler extends BaseGridHandler {
-  private String datasetType;
+  private final String datasetType;
 
   public EDDGridFromFilesHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {

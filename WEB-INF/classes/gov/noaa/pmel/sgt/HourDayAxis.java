@@ -36,7 +36,7 @@ public class HourDayAxis implements TimeAxisStyle {
   static final String defaultMajorLabelFormat__ = "yyyy-MM-dd";
   static final int defaultNumSmallTics__ = 0;
   int defaultMinorLabelInterval_ = 2;
-  int defaultMajorLabelInterval_ = 1;
+  final int defaultMajorLabelInterval_ = 1;
   static final double incrementValue__ = 1.0;
   static final int incrementUnits__ = GeoDate.HOURS;
 

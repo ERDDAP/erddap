@@ -167,7 +167,7 @@ public class DDS implements Cloneable {
         BaseType element = vars.elementAt(i);
         d.vars.addElement(element.clone());
       }
-      d.name = new String(this.name);
+      d.name = this.name;
 
       // Question:
       // What about copying the BaseTypeFactory?
@@ -272,7 +272,7 @@ public class DDS implements Cloneable {
   public BaseType getVariable(String name) throws NoSuchVariableException {
     Deque<BaseType> s = new ArrayDeque<>();
     s = search(name, s);
-    return (BaseType) s.pop();
+    return s.pop();
   }
 
   /**
@@ -314,7 +314,7 @@ public class DDS implements Cloneable {
    * Find variables in the DDS when users name them with either fully- or partially-qualified names.
    */
   private final class DDSSearch {
-    Deque<BaseType> components;
+    final Deque<BaseType> components;
 
     DDSSearch(Deque<BaseType> c) {
       components = c;
@@ -348,7 +348,7 @@ public class DDS implements Cloneable {
      */
     boolean deepSearch(String name) throws NoSuchVariableException {
 
-      BaseType start = components.isEmpty() ? null : (BaseType) components.peek();
+      BaseType start = components.isEmpty() ? null : components.peek();
 
       BaseType found;
 

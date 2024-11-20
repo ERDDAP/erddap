@@ -96,7 +96,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
   //  passed directly to the new EDDTableFromHttpGet when the dataset is reloaded
   //  or to force the old version of the dataset to save fileTable info to disk
   //  right before reading it for new dataset.
-  public static long saveDirTableFileTableBadFilesEveryMS = 5000;
+  public static final long saveDirTableFileTableBadFilesEveryMS = 5000;
 
   /**
    * EDDTableFromHttpGet DOESN'T SUPPORT UNPACKWHAT OPTIONS (other than 0). This returns the default
@@ -109,7 +109,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * This extracts the numericTimestamp from the results.
@@ -630,7 +630,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                   + "="
                   + parts[p]
                   + " as a columnName ("
-                  + e.toString()
+                  + e
                   + ").");
         }
       }
@@ -740,7 +740,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
       }
     }
 
-    return dirSB.toString() + nameSB.toString() + ".jsonl";
+    return dirSB.toString() + nameSB + ".jsonl";
   }
 
   /**
@@ -1381,7 +1381,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String fileName = File2.getNameAndExtension(fullFileName);
 
             // which row in dirTable?
-            int dirTableRow = ((StringArray) dirTable.getColumn(0)).indexOf(fileDir);
+            int dirTableRow = dirTable.getColumn(0).indexOf(fileDir);
             if (dirTableRow < 0) {
               dirTableRow = dirTable.getColumn(0).size();
               dirTable.getColumn(0).addString(fileDir);
@@ -1599,7 +1599,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (sourcePA.elementType() == PAType.STRING) {
           String tFormat =
               Calendar2.suggestDateTimeFormat(
-                  (StringArray) sourcePA, true); // evenIfPurelyNumeric?   true since String data
+                  sourcePA, true); // evenIfPurelyNumeric?   true since String data
           destAtts.add(
               "units",
               tFormat.length() > 0
@@ -1725,8 +1725,8 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     addGlobalAtts.add("testOutOfDate", "now-1day");
 
     // write the information
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<!-- NOTE! Since JSON Lines CSV files have no metadata, you MUST edit the chunk\n"
             + "  of datasets.xml below to add all of the metadata (especially \"units\"). -->\n"
             + "<dataset type=\"EDDTableFromHttpGet\" datasetID=\""
@@ -1768,24 +1768,19 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             + "</sortFilesBySourceNames>\n"
             + "    <fileTableInMemory>false</fileTableInMemory>\n"
             + // safer. good for all except super frequent updates
-            "    <accessibleViaFiles>true</accessibleViaFiles>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            "    <accessibleViaFiles>true</accessibleViaFiles>\n"
+            + writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", true, false)
+            + // includeDataType, questionDestinationName
+            """
+                      </dataset>
 
-    sb.append(
-        writeVariablesForDatasetsXml(
-            dataSourceTable,
-            dataAddTable,
-            "dataVariable",
-            true,
-            false)); // includeDataType, questionDestinationName
-    sb.append("""
-            </dataset>
-
-            """);
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

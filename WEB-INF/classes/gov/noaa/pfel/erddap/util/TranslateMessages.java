@@ -8,7 +8,7 @@ import java.net.URL;
  */
 public class TranslateMessages {
   /** This is the order the languages will appear in the list shown to users in ERRDDAP */
-  public static String[] languageList = {
+  public static final String[] languageList = {
     // arbitrarily selected from most commonly used:
     // https://www.visualcapitalist.com/100-most-spoken-languages/
     // Chinese-CN=Simplified  Chinese-TW=Traditional -- I wanted shorter names
@@ -60,7 +60,7 @@ public class TranslateMessages {
     // "Tiếng Việt Nam - Vietnamese"
   };
 
-  public static String[] languageCodeList = {
+  public static final String[] languageCodeList = {
     // The commented out languages are because the current translation approach does not
     // include support for them.
     "en",
@@ -100,8 +100,8 @@ public class TranslateMessages {
     // "vi"
   };
 
-  public static String utilDir = "/gov/noaa/pfel/erddap/util/";
-  public static URL translatedMessagesDir =
+  public static final String utilDir = "/gov/noaa/pfel/erddap/util/";
+  public static final URL translatedMessagesDir =
       TranslateMessages.class.getResource(utilDir + "translatedMessages/");
 
   protected static String[] HTMLEntities = {

@@ -47,22 +47,22 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDDGridFromEtopo extends EDDGrid {
 
   /** Properties of the datafile */
-  protected static String fileName =
+  protected static final String fileName =
       File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
 
   protected static final double fileMinLon = -180, fileMaxLon = 180;
   protected static final double fileMinLat = -90, fileMaxLat = 90;
   protected static final int fileNLons = 21601, fileNLats = 10801;
   protected static final int bytesPerValue = 2;
-  protected static double fileLonSpacing = (fileMaxLon - fileMinLon) / (fileNLons - 1);
-  protected static double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLats - 1);
-  protected static double fileLons[] =
+  protected static final double fileLonSpacing = (fileMaxLon - fileMinLon) / (fileNLons - 1);
+  protected static final double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLats - 1);
+  protected static final double[] fileLons =
       DataHelper.getRegularArray(fileNLons, fileMinLon, fileLonSpacing);
-  protected static double fileLats[] =
+  protected static final double[] fileLats =
       DataHelper.getRegularArray(fileNLats, fileMinLat, fileLatSpacing);
 
   /** Set by the constructor */
-  protected boolean is180;
+  protected final boolean is180;
 
   private int nCoarse = 0, nReadFromCache = 0, nWrittenToCache = 0, nFailed = 0;
 
@@ -104,13 +104,13 @@ public class EDDGridFromEtopo extends EDDGrid {
       // no support for accessibleTo, since accessible to all
       // no support for onChange since dataset never changes
       switch (localTags) {
-        case "<accessibleViaWMS>" -> {}
+        case "<accessibleViaWMS>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<accessibleViaFiles>" -> {}
         case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
-        case "<accessibleViaFiles>" -> {}
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
-        case "<nThreads>" -> {}
         case "</nThreads>" -> tnThreads = String2.parseInt(content);
-        case "<dimensionValuesInMemory>" -> {}
         case "</dimensionValuesInMemory>" ->
             tDimensionValuesInMemory = String2.parseBoolean(content);
         default -> xmlReader.unexpectedTagException();
@@ -241,7 +241,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromEtopo "
               + datasetID
               + " constructor finished. TIME="

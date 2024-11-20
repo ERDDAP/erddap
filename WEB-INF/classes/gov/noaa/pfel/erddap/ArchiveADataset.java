@@ -591,7 +591,7 @@ public class ArchiveADataset {
                   whichArg,
                   def,
                   "Create which file type ("
-                      + fileTypeOptions.toString()
+                      + fileTypeOptions
                       + ")\n"
                       + "(NCEI prefers .ncCFMA if it is an option)");
           if (fileTypeOptions.indexOf(fileType) < 0) {

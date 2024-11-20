@@ -49,7 +49,7 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -381,7 +381,7 @@ public class EDDTableFromInvalidCRAFiles extends EDDTableFromFiles {
     // find altitude_proxy
     String ft = dataSourceTable.globalAttributes().getString("featureType");
     if (ft != null
-        && ft.toLowerCase().equals("profile")
+        && ft.equalsIgnoreCase("profile")
         && dataAddTable.findColumnNumber("depth") < 0
         && dataAddTable.findColumnNumber("altitude") < 0) {
       int col = dataAddTable.findColumnNumber("z");

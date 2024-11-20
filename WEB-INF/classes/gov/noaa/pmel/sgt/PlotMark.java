@@ -34,11 +34,11 @@ import javax.swing.*;
  */
 public class PlotMark {
   protected int mark_;
-  protected int tableSize_ = 51;
+  protected final int tableSize_ = 51;
   protected int firstPoint_;
   protected int lastPoint_;
   protected double markHeight_;
-  protected int fillMark_ = 44;
+  protected final int fillMark_ = 44;
   protected boolean fill_ = false;
   protected boolean circle_ = false;
 

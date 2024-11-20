@@ -54,9 +54,9 @@ public class String2 {
    * files. This is NOT final, so EDStatic can change it. This is the original definition,
    * referenced by many other classes.
    */
-  public static String ERROR = "ERROR";
+  public static final String ERROR = "ERROR";
 
-  public static String WARNING = "WARNING";
+  public static final String WARNING = "WARNING";
 
   // public static Logger log = Logger.getLogger("com.cohort.util");
   private static boolean logToSystemOut = true;
@@ -73,7 +73,7 @@ public class String2 {
   public static int logFileMaxSize = logFileDefaultMaxSize;
 
   /** This returns the line separator from <code>System.getProperty("line.separator");</code> */
-  public static String lineSeparator = System.getProperty("line.separator");
+  public static final String lineSeparator = System.getProperty("line.separator");
 
   public static final String JSON = "JSON";
   public static final StringComparatorIgnoreCase STRING_COMPARATOR_IGNORE_CASE =
@@ -85,12 +85,12 @@ public class String2 {
   public static final StringHolder STRING_HOLDER_ZERO = new StringHolder("");
 
   /** Returns true if the current Operating System is Windows. */
-  public static String OSName = System.getProperty("os.name");
+  public static final String OSName = System.getProperty("os.name");
 
-  public static boolean OSIsWindows = OSName.toLowerCase().indexOf("windows") >= 0;
+  public static final boolean OSIsWindows = OSName.toLowerCase().indexOf("windows") >= 0;
 
   /** Returns true if the current Operating System is Linux. */
-  public static boolean OSIsLinux = OSName.toLowerCase().indexOf("linux") >= 0;
+  public static final boolean OSIsLinux = OSName.toLowerCase().indexOf("linux") >= 0;
 
   /**
    * Returns true if the current Operating System is Mac OS X. 2014-01-09 was
@@ -188,18 +188,18 @@ public class String2 {
   /**
    * These are NOT thread-safe. Always use them in synchronized blocks ("synchronized(gen....) {}").
    */
-  private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
+  private static final DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
 
-  private static DecimalFormat genExpFormat6 = new DecimalFormat("0.######E0");
-  private static DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
-  private static DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
+  private static final DecimalFormat genExpFormat6 = new DecimalFormat("0.######E0");
+  private static final DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
+  private static final DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
   // splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each
   // to be bigger and makes synchronized contention less common.
   // 127 seems better than 128. See stats at end of Table.testBigAscii();
   private static final int nCanonicalMaps = 127;
-  private static Map<String, WeakReference<String>> canonicalMap[] = new Map[nCanonicalMaps];
-  private static Map<StringHolder, WeakReference<StringHolder>> canonicalStringHolderMap[] =
+  private static final Map<String, WeakReference<String>>[] canonicalMap = new Map[nCanonicalMaps];
+  private static final Map<StringHolder, WeakReference<StringHolder>>[] canonicalStringHolderMap =
       new Map[nCanonicalMaps];
 
   static {
@@ -209,8 +209,9 @@ public class String2 {
     }
   }
 
-  private static Map<Object, WeakReference<ReentrantLock>> canonicalLockMap = new WeakHashMap<>();
-  public static int longTimeoutSeconds =
+  private static final Map<Object, WeakReference<ReentrantLock>> canonicalLockMap =
+      new WeakHashMap<>();
+  public static final int longTimeoutSeconds =
       300; // 5 minutes. This is >= other timeouts in the system. This is used in places that
 
   // previously waited forever.
@@ -467,7 +468,7 @@ public class String2 {
     }
     if (s2sb.length() == 0) return false;
 
-    return s1sb.toString().equals(s2sb.toString());
+    return s1sb.toString().contentEquals(s2sb);
   }
 
   /**
@@ -631,7 +632,7 @@ public class String2 {
       al.add(m.group(captureGroupNumber));
       fromIndex = m.end();
     }
-    return (String[]) al.toArray(new String[0]);
+    return al.toArray(new String[0]);
   }
 
   /**
@@ -1012,7 +1013,7 @@ public class String2 {
     }
 
     // NaN?
-    if (ch0 == 'n' || ch0 == 'N') return s.toUpperCase().equals("NAN");
+    if (ch0 == 'n' || ch0 == 'N') return s.equalsIgnoreCase("NAN");
 
     // *** rest of method: test if floating point
     // is 1st char .+-?
@@ -1139,7 +1140,7 @@ public class String2 {
     int start = 0;
     for (int i = 0; i < n; i++) {
       if (!isPrintable(s.charAt(i))) {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
       }
     }
@@ -1494,7 +1495,7 @@ public class String2 {
     if (s == null || findS == null || findS.length() == 0) return 0;
     int n = 0;
     final int sLength = findS.length();
-    int po = s.indexOf(findS, 0);
+    int po = s.indexOf(findS);
     while (po >= 0) {
       n++;
       po = s.indexOf(findS, po + sLength);
@@ -1598,7 +1599,7 @@ public class String2 {
     int n = 0;
     while (po >= 0) {
       n++;
-      sb2.append(sb.substring(base, po));
+      sb2.append(sb, base, po);
       sb2.append(newS);
       base = po + oldSL;
       po = testSB.indexOf(testOldS, base);
@@ -1976,7 +1977,7 @@ public class String2 {
       final char ch = s.charAt(i);
       // using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
       if (ch < 32 || ch >= firstUEncodedChar) {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         if (ch == '\f') sb.append("\\f");
         else if (ch == '\n') sb.append(encodeNewline ? "\\n" : "\n");
@@ -1987,11 +1988,11 @@ public class String2 {
         //  / can be encoded as \/ but there is no need and it looks odd
         else sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
       } else if (ch == '\\') {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         sb.append("\\\\");
       } else if (ch == '\"') {
-        sb.append(s.substring(start, i));
+        sb.append(s, start, i);
         start = i + 1;
         sb.append("\\\"");
       } // else normal character will be appended later via s.substring
@@ -2054,7 +2055,7 @@ public class String2 {
     while (po < sLength) {
       char ch = s.charAt(po);
       if (ch == '\\') {
-        sb.append(s.substring(start, po));
+        sb.append(s, start, po);
         if (po == sLength - 1) po--; // so reread \ and treat as \\
         po++;
         start = po + 1;
@@ -2235,7 +2236,7 @@ public class String2 {
 
     // surround in "'s?
     if (hasSpecialChar || s.startsWith(" ") || s.endsWith(" ") || s.equals("null"))
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2258,7 +2259,7 @@ public class String2 {
 
     // surround in "'s?
     if (hasSpecialChar || s.startsWith(" ") || s.endsWith(" ") || s.equals("null"))
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2288,7 +2289,7 @@ public class String2 {
             .matcher(s)
             .matches()) // Looks Like A Number (It looks like a number so it needs "'s to force it
       // to be seen as a String.)
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2319,7 +2320,7 @@ public class String2 {
             .matcher(s)
             .matches()) // Looks Like A number (It looks like a number so it needs "'s to force it
       // to be seen as a String.)
-      return "\"" + sb.toString() + "\"";
+      return "\"" + sb + "\"";
     return sb.toString();
   }
 
@@ -2359,7 +2360,7 @@ public class String2 {
       if (!(isPrintable(ch) || ch == '\t')) {
         // unprintable
         // copy the accumulated printable chars
-        oneLine.append(s.substring(start, po));
+        oneLine.append(s, start, po);
         start = po + 1;
         if (ch == endOfLineChar) {
           // so it catches *the* designated eol char (e.g., \r),
@@ -4764,7 +4765,7 @@ public class String2 {
             // newline not inserted above; insert it at oi
             i = oi;
           }
-          sb.append(s.substring(start, i));
+          sb.append(s, start, i);
           sb.append("\n" + spaces);
           start = i;
           count = spacesLength;
@@ -6020,7 +6021,7 @@ public class String2 {
       if (canonical == null) {
         // For proof that new String(s.substring(,)) is just storing relevant chars,
         // not a reference to the parent string, see TestUtil.testString2canonical2()
-        canonical = new String(s); // in case s is from s2.substring, copy to be just the characters
+        canonical = s; // in case s is from s2.substring, copy to be just the characters
         tCanonicalMap.put(canonical, new WeakReference(canonical));
         // log("new canonical string: " + canonical);
       }
@@ -6091,7 +6092,7 @@ public class String2 {
     synchronized (canonicalLockMap) {
       WeakReference<ReentrantLock> wr = canonicalLockMap.get(o);
       // wr won't be garbage collected, but reference might (making wr.get() return null)
-      ReentrantLock canonical = wr == null ? null : (ReentrantLock) wr.get();
+      ReentrantLock canonical = wr == null ? null : wr.get();
       if (canonical == null) {
         canonical = new ReentrantLock();
         canonicalLockMap.put(o, new WeakReference<>(canonical));

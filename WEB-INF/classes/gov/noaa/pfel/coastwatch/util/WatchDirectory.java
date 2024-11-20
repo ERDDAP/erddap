@@ -99,7 +99,7 @@ public class WatchDirectory implements AutoCloseable {
 
   private static class CleanupWatchService implements Runnable {
 
-    private WatchService watchService;
+    private final WatchService watchService;
 
     private CleanupWatchService(WatchService watchService) {
       this.watchService = watchService;

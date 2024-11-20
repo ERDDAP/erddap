@@ -55,7 +55,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
   }
 
   /** Used by Bob only. Don't set this to true here -- do it in the calling code. */
-  public static boolean generateDatasetsXmlCoastwatchErdMode = false;
+  public static final boolean generateDatasetsXmlCoastwatchErdMode = false;
 
   /** The constructor just calls the super constructor. */
   public EDDGridFromNcLow(

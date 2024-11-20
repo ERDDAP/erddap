@@ -32,18 +32,18 @@ public class AttributedString2 {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
-  protected StringBuilder cumulative = new StringBuilder();
+  protected final StringBuilder cumulative = new StringBuilder();
   protected int lastStart = 0;
 
-  protected ArrayList baseAttributes = new ArrayList();
-  protected ArrayList baseObjects = new ArrayList();
+  protected final ArrayList baseAttributes = new ArrayList();
+  protected final ArrayList baseObjects = new ArrayList();
 
-  protected ArrayList attributes = new ArrayList();
-  protected ArrayList objects = new ArrayList();
-  protected IntArray start = new IntArray();
-  protected IntArray end = new IntArray();
+  protected final ArrayList attributes = new ArrayList();
+  protected final ArrayList objects = new ArrayList();
+  protected final IntArray start = new IntArray();
+  protected final IntArray end = new IntArray();
 
   /**
    * A constructor.

@@ -66,7 +66,7 @@ class Util {
     String[] names = new String[v.size()];
     int count = 0;
     for (Enumeration<BaseType> e = v.elements(); e.hasMoreElements(); ) {
-      BaseType bt = (BaseType) e.nextElement();
+      BaseType bt = e.nextElement();
       String tempName = bt.getName();
       if (tempName == null)
         throw new BadSemanticsException(bt.getClass().getName() + " variable with no name");

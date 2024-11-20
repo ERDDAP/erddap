@@ -248,7 +248,7 @@ public class TaskThread extends Thread {
                 + (EDStatic.nextTask.get() - 1)
                 + " failed after "
                 + Calendar2.elapsedTimeString(tElapsedTime);
-        String content = "" + taskSummary + "\n" + MustBe.throwableToString(t);
+        String content = taskSummary + "\n" + MustBe.throwableToString(t);
         String2.log("%%% " + subject + "\n" + content);
         EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
       }

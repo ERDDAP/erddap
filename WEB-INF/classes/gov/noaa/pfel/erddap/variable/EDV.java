@@ -72,16 +72,16 @@ public class EDV {
       TIME_STANDARD_NAME = "time",
       TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
 
-  public static String[] LON_UNITS_VARIANTS = {
+  public static final String[] LON_UNITS_VARIANTS = {
     LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E"
   };
-  public static String[] LAT_UNITS_VARIANTS = {
+  public static final String[] LAT_UNITS_VARIANTS = {
     LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N"
   };
-  public static String[] METERS_VARIANTS = {ALT_UNITS, "meter", "meters", "metre", "metres"};
+  public static final String[] METERS_VARIANTS = {ALT_UNITS, "meter", "meters", "metre", "metres"};
 
   /** */
-  public static String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
+  public static final String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
 
   /**
    * The optional string for no units. There doesn't seem to be a udUnits standard. But LAS uses
@@ -742,7 +742,7 @@ public class EDV {
                 + " paType="
                 + destinationDataPAType()
                 + " "
-                + pa.toString());
+                + pa);
     }
   }
 
@@ -1758,7 +1758,7 @@ public class EDV {
                 "<att name=\"_FillValue\" type=\""
                     + tmv.pa().elementTypeString()
                     + "\">"
-                    + tmv.toString()
+                    + tmv
                     + "</att>")
             + "\n");
     String2.log(
@@ -1771,7 +1771,7 @@ public class EDV {
             + ", in the <addAttributes> section, add <att name=\"_FillValue\" type=\""
             + tmv.pa().elementTypeString()
             + "\">"
-            + tmv.toString()
+            + tmv
             + "</att> .");
   }
 

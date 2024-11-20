@@ -63,7 +63,7 @@ public class EDVDepth extends EDV {
     longName = combinedAttributes.getString("long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("depth")) { // catch alternate case
+        longName.equalsIgnoreCase("depth")) { // catch alternate case
       longName = DEPTH_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }

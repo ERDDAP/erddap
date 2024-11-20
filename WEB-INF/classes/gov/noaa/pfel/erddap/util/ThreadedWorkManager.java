@@ -11,8 +11,8 @@ import java.util.concurrent.FutureTask;
 
 public class ThreadedWorkManager<T> {
   ExecutorService executorService = null;
-  List<FutureTask<T>> taskList = new ArrayList<>();
-  WorkConsumer<T> processor;
+  final List<FutureTask<T>> taskList = new ArrayList<>();
+  final WorkConsumer<T> processor;
 
   int completed = 0;
 

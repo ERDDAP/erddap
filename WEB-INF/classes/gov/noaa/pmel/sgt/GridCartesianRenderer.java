@@ -432,7 +432,7 @@ public class GridCartesianRenderer extends CartesianRenderer {
           val = clevels.getLevel(i);
           attr = clevels.getDefaultContourLineAttribute(i);
           if (attr.isAutoLabel()) {
-            if (attr.getLabelFormat().length() <= 0) {
+            if (attr.getLabelFormat().length() == 0) {
               format =
                   new Format(
                       Format.computeFormat(range.start, range.end, attr.getSignificantDigits()));

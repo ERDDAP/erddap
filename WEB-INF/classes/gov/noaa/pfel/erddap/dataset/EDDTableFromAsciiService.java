@@ -33,7 +33,7 @@ import java.util.ArrayList;
 @SaxHandlerClass(EDDTableFromAsciiServiceHandler.class)
 public abstract class EDDTableFromAsciiService extends EDDTable {
 
-  protected String beforeData[];
+  protected final String[] beforeData;
   protected String afterData = null; // inactive if null or ""
   protected String noData = null; // inactive if null or ""
   protected int responseSubstringStart[] =
@@ -96,15 +96,17 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         case "<altitudeMetersPerSourceUnit>" ->
             throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
         case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
-        case "<accessibleTo>" -> {}
-        case "</accessibleTo>" -> tAccessibleTo = content;
-        case "<graphsAccessibleTo>" -> {}
-        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
-        case "<reloadEveryNMinutes>" -> {}
-        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
-        case "<sourceUrl>" -> {}
-        case "</sourceUrl>" -> tLocalSourceUrl = content;
-        case "<beforeData1>",
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<noData>",
+            "<afterData>",
+            "<beforeData1>",
             "<beforeData2>",
             "<beforeData3>",
             "<beforeData4>",
@@ -113,7 +115,14 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
             "<beforeData7>",
             "<beforeData8>",
             "<beforeData9>",
-            "<beforeData10>" -> {}
+            "<beforeData10>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
         case "</beforeData1>",
                 "</beforeData2>",
                 "</beforeData3>",
@@ -126,23 +135,14 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
                 "</beforeData10>" ->
             tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] =
                 content;
-        case "<afterData>" -> {}
         case "</afterData>" -> tAfterData = content;
-        case "<noData>" -> {}
         case "</noData>" -> tNoData = content;
-        case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
-        case "<fgdcFile>" -> {}
         case "</fgdcFile>" -> tFgdcFile = content;
-        case "<iso19115File>" -> {}
         case "</iso19115File>" -> tIso19115File = content;
-        case "<sosOfferingPrefix>" -> {}
         case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
-        case "<defaultDataQuery>" -> {}
         case "</defaultDataQuery>" -> tDefaultDataQuery = content;
-        case "<defaultGraphQuery>" -> {}
         case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
-        case "<addVariablesWhere>" -> {}
         case "</addVariablesWhere>" -> tAddVariablesWhere = content;
         default -> xmlReader.unexpectedTagException();
       }
@@ -346,7 +346,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         int i2 = String2.parseInt(resSub[1]);
         responseSubstringStart[dv] = i1;
         responseSubstringEnd[dv] = i2;
-        if (i1 < 0 || i1 > 100000 || i2 <= i1 || i2 > 100000)
+        if (i1 < 0 || i2 <= i1 || i2 > 100000)
           throw new SimpleException(
               errorInMethod
                   + "For destinationName="
@@ -462,7 +462,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** "
               + tDatasetType
               + " "

@@ -26,7 +26,7 @@ import ucar.nc2.Variable;
 
 public class TableFromMultidimNcFile {
 
-  private Table table;
+  private final Table table;
   private VarData cachedVarData[];
   private String warningInMethod;
   private Set<Dimension> notStringLengthDims;
@@ -925,7 +925,7 @@ public class TableFromMultidimNcFile {
           }
         } catch (Exception e) {
           // FUTURE: read all static variables
-          String2.log("Table.readMultidimNc caught: " + e.toString());
+          String2.log("Table.readMultidimNc caught: " + e);
         }
 
       } else {

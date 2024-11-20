@@ -36,7 +36,7 @@ public class CfToFromGcmd {
    * The first value is "". <br>
    * CF Standard Names which have no corresponding GCMD Science Keyword are not in this list.
    */
-  public static String cfNames[];
+  public static final String[] cfNames;
 
   /**
    * The GCMD Science Keywords associated with each of the cfNames. <br>
@@ -44,7 +44,7 @@ public class CfToFromGcmd {
    *
    * <p>!!!Note the some will be String[0] because there are no matching GCMD keywords!
    */
-  public static String cfToGcmd[][];
+  public static final String[][] cfToGcmd;
 
   /**
    * The (simply sorted) list of GCMD Science Keywords. <br>
@@ -52,16 +52,16 @@ public class CfToFromGcmd {
    * The first value is "". <br>
    * GCMD Science Keywords which have no corresponding CF Standard Names not in this list.
    */
-  public static String gcmdKeywords[];
+  public static final String[] gcmdKeywords;
 
   /**
    * The CF Standard Names associated with each of the gcmdKeywords. <br>
    * Other classes can use this but shouldn't change it!
    */
-  public static String gcmdToCf[][];
+  public static final String[][] gcmdToCf;
 
   /** Other classes can use this but shouldn't change it! */
-  public static String array0[] = new String[0];
+  public static final String[] array0 = new String[0];
 
   /**
    * This static block reads the information from [thisDirectory]/CfToGcmd.txt and organizes the
@@ -146,7 +146,7 @@ public class CfToFromGcmd {
     gcmdToCf = new String[nGCMD][];
     for (int i = 0; i < nGCMD; i++) {
       HashSet<String> hashSet = (HashSet) gcmdHashMap.get(gcmdKeywords[i]);
-      gcmdToCf[i] = (String[]) hashSet.toArray(new String[0]);
+      gcmdToCf[i] = hashSet.toArray(new String[0]);
       Arrays.sort(gcmdToCf[i]); // they are consistently capitalized, so sort works nicely
     }
   }

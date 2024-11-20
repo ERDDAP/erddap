@@ -115,7 +115,7 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof PointAttribute)) return false;
+    if (!(obj instanceof PointAttribute)) return false;
     PointAttribute attr = (PointAttribute) obj;
     if (!id_.equals(attr.getId())
         || !color_.equals(attr.getColor())

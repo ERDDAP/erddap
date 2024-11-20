@@ -64,7 +64,7 @@ public class SgtUtil {
   public static final Color TRANSPARENT =
       new Color(0, 0, 0, 0); // 4th 0 is alpha value   //Hmmm, it may not be this simple
 
-  public static double AVG_CHAR_WIDTH = 4.5;
+  public static final double AVG_CHAR_WIDTH = 4.5;
 
   public static String isBufferedImageAccelerated;
 

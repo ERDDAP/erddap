@@ -31,10 +31,10 @@ public class TableWriterWav extends TableWriter {
   // set by constructor
 
   // set by firstTime
-  protected volatile int randomInt;
-  protected volatile String fullDosName;
+  protected final int randomInt;
+  protected final String fullDosName;
   protected volatile DataOutputStream dos;
-  protected volatile String fullOutName;
+  protected final String fullOutName;
   protected volatile String tClass;
   protected volatile boolean isLong; // if true, save as int (from high 4 bytes)
   public volatile long totalNRows = 0;

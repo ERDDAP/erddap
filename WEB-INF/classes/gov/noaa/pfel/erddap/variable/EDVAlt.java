@@ -19,7 +19,7 @@ import com.cohort.util.String2;
  */
 public class EDVAlt extends EDV {
 
-  public static String stopUsingAltitudeMetersPerSourceUnit =
+  public static final String stopUsingAltitudeMetersPerSourceUnit =
       "Please stop using <altitudeMetersPerSourceUnit>.  "
           + "When the value is 1, just delete it.  "
           + "For other values, set the altitude variable's <scale_factor> instead.";
@@ -66,8 +66,8 @@ public class EDVAlt extends EDV {
     longName = combinedAttributes.getString("long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("alt")
-        || longName.toLowerCase().equals("altitude")) { // catch alternate case
+        longName.equalsIgnoreCase("alt")
+        || longName.equalsIgnoreCase("altitude")) { // catch alternate case
       longName = ALT_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }

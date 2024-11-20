@@ -147,13 +147,13 @@ public class CartesianGraph extends Graph {
       if (xAxis_ != null) {
         Vector<Axis> v = xAxis_;
         xAxis_ = null;
-        for (Object o : v) ((Axis) o).releaseResources();
+        for (Axis o : v) o.releaseResources();
         v.clear();
       }
       if (yAxis_ != null) {
         Vector<Axis> v = yAxis_;
         yAxis_ = null;
-        for (Object o : v) ((Axis) o).releaseResources();
+        for (Axis o : v) o.releaseResources();
         v.clear();
       }
       if (xTransform_ != null) {
@@ -763,7 +763,7 @@ public class CartesianGraph extends Graph {
         }
       }
     }
-    return (Object) null;
+    return null;
   }
 
   /**

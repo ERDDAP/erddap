@@ -47,7 +47,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -59,7 +59,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -581,7 +581,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       } else if (baseType instanceof DArray dArray) { // for the dimension vars
         pv = dArray.getPrimitiveVector();
       } else {
-        if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");
+        if (verbose) String2.log("  baseType=" + baseType + " isn't supported yet.\n");
       }
       if (pv != null) {
         PrimitiveArray sourcePA =

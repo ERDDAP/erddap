@@ -23,7 +23,7 @@ import org.xml.sax.InputSource;
 public class XML {
 
   /** This returns the line separator from <code>System.getProperty("line.separator");</code> */
-  public static String LS = System.getProperty("line.separator");
+  public static final String LS = System.getProperty("line.separator");
 
   /**
    * For each character 0 - 255, these indicate how the character should appear in HTML content. See
@@ -32,7 +32,7 @@ public class XML {
    * ) &quot; and &#39; are encoded to be safe (see encodeAsXML comments) and consistent with
    * encodeAsXML.
    */
-  public static String[] HTML_ENTITIES = {
+  public static final String[] HTML_ENTITIES = {
     "",
     "",
     "",
@@ -295,7 +295,7 @@ public class XML {
     "&yuml;"
   }; // 255
 
-  public static HashMap<String, Character> ENTITY_TO_CHAR_HASHMAP = new HashMap();
+  public static final HashMap<String, Character> ENTITY_TO_CHAR_HASHMAP = new HashMap();
 
   static {
     Test.ensureEqual(HTML_ENTITIES.length, 256, "HTML_ENTITIES.length");
@@ -973,7 +973,7 @@ public class XML {
       start = nextStart;
 
       // deal with comment: <!--  -->
-      if (xml.substring(start, start + 4).equals("<!--")) {
+      if (xml.startsWith("<!--", start)) {
         end = xml.indexOf("-->", start + 4);
         if (end < 0) throw new RuntimeException("No end '-->' for last comment.");
         nextStart = xml.indexOf('<', end + 3);
@@ -985,7 +985,7 @@ public class XML {
         if (start > 0) sb.append('\n');
         sb.append(" ".repeat(Math.max(0, indent)));
         // write tag
-        sb.append(xml.substring(start, end + 3));
+        sb.append(xml, start, end + 3);
         // write content
         sb.append(content);
         lastHadContent = false;
@@ -993,7 +993,7 @@ public class XML {
       }
 
       // deal with CDATA: <![CDATA[     ]]>
-      if (xml.substring(start, start + 9).equals("<![CDATA[")) {
+      if (xml.startsWith("<![CDATA[", start)) {
         end = xml.indexOf("]]>", start + 9);
         if (end < 0) throw new RuntimeException("No end ']]>' for last <![CDATA[.");
         nextStart = xml.indexOf('<', end + 3);
@@ -1002,7 +1002,7 @@ public class XML {
         String content = xml.substring(end + 3, nextStart).trim();
 
         // write tag
-        sb.append(xml.substring(start, end + 3));
+        sb.append(xml, start, end + 3);
         // write content
         sb.append(content);
         lastHadContent = true;
@@ -1024,7 +1024,7 @@ public class XML {
         if (start > 0) sb.append('\n');
         sb.append(" ".repeat(Math.max(0, indent)));
       }
-      sb.append(xml.substring(start, end + 1));
+      sb.append(xml, start, end + 1);
       sb.append(content);
       lastHadContent = content.length() > 0;
 

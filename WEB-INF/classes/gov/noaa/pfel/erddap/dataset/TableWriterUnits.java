@@ -22,7 +22,8 @@ public class TableWriterUnits extends TableWriter {
 
   // set by constructor
   protected TableWriter otherTableWriter;
-  public String fromUnits, toUnits;
+  public final String fromUnits;
+  public final String toUnits;
 
   /**
    * The constructor.

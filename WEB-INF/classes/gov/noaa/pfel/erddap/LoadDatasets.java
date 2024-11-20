@@ -70,10 +70,10 @@ public class LoadDatasets extends Thread {
   public static boolean reallyVerbose = false;
 
   // *** things set by constructor
-  private Erddap erddap;
-  private String datasetsRegex;
+  private final Erddap erddap;
+  private final String datasetsRegex;
   private InputStream inputStream;
-  private boolean majorLoad;
+  private final boolean majorLoad;
   private long lastLuceneUpdate = System.currentTimeMillis();
 
   private static final boolean ADD = true;
@@ -86,7 +86,7 @@ public class LoadDatasets extends Thread {
    * This is a collection of all the exceptions from all the datasets that didn't load successfully
    * and other warnings from LoadDatasets. It will be length=0 if no warnings.
    */
-  public StringBuilder warningsFromLoadDatasets = new StringBuilder();
+  public final StringBuilder warningsFromLoadDatasets = new StringBuilder();
 
   /**
    * The constructor.
@@ -720,8 +720,7 @@ public class LoadDatasets extends Thread {
 
                 // stop???
                 if (!xmlReader.isOpen()) { // error was really serious
-                  throw new RuntimeException(
-                      startError + xmlReader.lineNumber() + ": " + t.toString(), t);
+                  throw new RuntimeException(startError + xmlReader.lineNumber() + ": " + t, t);
                 }
 
                 // skip over the remaining tags for this dataset
@@ -729,8 +728,7 @@ public class LoadDatasets extends Thread {
                   while (!xmlReader.allTags().equals("<erddapDatasets></dataset>"))
                     xmlReader.nextTag();
                 } catch (Throwable t2) {
-                  throw new RuntimeException(
-                      startError + xmlReader.lineNumber() + ": " + t2.toString(), t2);
+                  throw new RuntimeException(startError + xmlReader.lineNumber() + ": " + t2, t2);
                 }
 
                 // change      (if oldDataset=null and new one failed to load, no change)
@@ -759,7 +757,47 @@ public class LoadDatasets extends Thread {
             }
 
             break;
-          case "<erddapDatasets><angularDegreeUnits>":
+          case "<erddapDatasets><angularDegreeUnits>",
+              "<erddapDatasets><updateMaxEvents>",
+              "<erddapDatasets><unusualActivityFailPercent>",
+              "<erddapDatasets><unusualActivity>",
+              "<erddapDatasets><convertInterpolateDatasetIDVariableList>",
+              "<erddapDatasets><convertInterpolateRequestCSVExample>",
+              "<erddapDatasets><endBodyHtml5>",
+              "<erddapDatasets><theShortDescriptionHtml>",
+              "<erddapDatasets><startBodyHtml5>",
+              "<erddapDatasets><startHeadHtml5>",
+              "<erddapDatasets><standardPrivacyPolicy>",
+              "<erddapDatasets><standardGeneralDisclaimer>",
+              "<erddapDatasets><standardDisclaimerOfExternalLinks>",
+              "<erddapDatasets><standardDisclaimerOfEndorsement>",
+              "<erddapDatasets><standardDataLicenses>",
+              "<erddapDatasets><standardContact>",
+              "<erddapDatasets><standardLicense>",
+              "<erddapDatasets><subscriptionEmailBlacklist>",
+              "<erddapDatasets><slowDownTroubleMillis>",
+              "<erddapDatasets><requestBlacklist>",
+              "<erddapDatasets><partialRequestMaxCells>",
+              "<erddapDatasets><partialRequestMaxBytes>",
+              "<erddapDatasets><palettes>",
+              "<erddapDatasets><nTableThreads>",
+              "<erddapDatasets><nGridThreads>",
+              "<erddapDatasets><logLevel>",
+              "<erddapDatasets><loadDatasetsMaxMinutes>",
+              "<erddapDatasets><loadDatasetsMinMinutes>",
+              "<erddapDatasets><ipAddressUnlimited>",
+              "<erddapDatasets><ipAddressMaxRequestsActive>",
+              "<erddapDatasets><ipAddressMaxRequests>",
+              "<erddapDatasets><graphBackgroundColor>",
+              "<erddapDatasets><emailDiagnosticsToErdData>",
+              "<erddapDatasets><drawLandMask>",
+              "<erddapDatasets><decompressedCacheMaxMinutesOld>",
+              "<erddapDatasets><decompressedCacheMaxGB>",
+              "<erddapDatasets></convertToPublicSourceUrl>",
+              "<erddapDatasets><commonStandardNames>",
+              "<erddapDatasets><cacheMinutes>",
+              "<erddapDatasets><awsS3OutputBucketUrl>",
+              "<erddapDatasets><angularDegreeTrueUnits>":
             break;
           case "<erddapDatasets></angularDegreeUnits>":
             {
@@ -775,8 +813,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><angularDegreeTrueUnits>":
-            break;
           case "<erddapDatasets></angularDegreeTrueUnits>":
             {
               String ts = xmlReader.content();
@@ -792,8 +828,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><awsS3OutputBucketUrl>":
-            break;
           case "<erddapDatasets></awsS3OutputBucketUrl>":
             {
               String ts = xmlReader.content();
@@ -803,8 +837,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><cacheMinutes>":
-            break;
           case "<erddapDatasets></cacheMinutes>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -815,8 +847,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><commonStandardNames>":
-            break;
           case "<erddapDatasets></commonStandardNames>":
             {
               String ts = xmlReader.content();
@@ -836,10 +866,6 @@ public class LoadDatasets extends Thread {
             if (tFrom != null && tFrom.length() > 3 && spo == tFrom.length() - 1 && tTo != null)
               EDStatic.convertToPublicSourceUrl.put(tFrom, tTo);
             break;
-          case "<erddapDatasets></convertToPublicSourceUrl>":
-            break;
-          case "<erddapDatasets><decompressedCacheMaxGB>":
-            break;
           case "<erddapDatasets></decompressedCacheMaxGB>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -851,8 +877,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><decompressedCacheMaxMinutesOld>":
-            break;
           case "<erddapDatasets></decompressedCacheMaxMinutesOld>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -865,8 +889,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><drawLandMask>":
-            break;
           case "<erddapDatasets></drawLandMask>":
             {
               String ts = xmlReader.content();
@@ -877,8 +899,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><emailDiagnosticsToErdData>":
-            break;
           case "<erddapDatasets></emailDiagnosticsToErdData>":
             {
               String ts = xmlReader.content();
@@ -890,8 +910,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><graphBackgroundColor>":
-            break;
           case "<erddapDatasets></graphBackgroundColor>":
             {
               String ts = xmlReader.content();
@@ -905,8 +923,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><ipAddressMaxRequests>":
-            break;
           case "<erddapDatasets></ipAddressMaxRequests>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -916,8 +932,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><ipAddressMaxRequestsActive>":
-            break;
           case "<erddapDatasets></ipAddressMaxRequestsActive>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -927,8 +941,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><ipAddressUnlimited>":
-            break;
           case "<erddapDatasets></ipAddressUnlimited>":
             {
               String ts = xmlReader.content();
@@ -947,8 +959,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><loadDatasetsMinMinutes>":
-            break;
           case "<erddapDatasets></loadDatasetsMinMinutes>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -963,8 +973,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><loadDatasetsMaxMinutes>":
-            break;
           case "<erddapDatasets></loadDatasetsMaxMinutes>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -979,14 +987,10 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><logLevel>":
-            break;
           case "<erddapDatasets></logLevel>":
             EDStatic.setLogLevel(
                 xmlReader.content()); // ""->"info".  It prints diagnostic to log.txt.
 
-            break;
-          case "<erddapDatasets><nGridThreads>":
             break;
           case "<erddapDatasets></nGridThreads>":
             {
@@ -997,8 +1001,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><nTableThreads>":
-            break;
           case "<erddapDatasets></nTableThreads>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -1008,8 +1010,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><palettes>":
-            break;
           case "<erddapDatasets></palettes>":
             String tContent = xmlReader.content();
             String tPalettes[] =
@@ -1034,8 +1034,6 @@ public class LoadDatasets extends Thread {
             String2.log("palettes=" + String2.toCSSVString(tPalettes));
 
             break;
-          case "<erddapDatasets><partialRequestMaxBytes>":
-            break;
           case "<erddapDatasets></partialRequestMaxBytes>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -1047,8 +1045,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><partialRequestMaxCells>":
-            break;
           case "<erddapDatasets></partialRequestMaxCells>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -1060,13 +1056,9 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><requestBlacklist>":
-            break;
           case "<erddapDatasets></requestBlacklist>":
             EDStatic.setRequestBlacklist(xmlReader.content());
 
-            break;
-          case "<erddapDatasets><slowDownTroubleMillis>":
             break;
           case "<erddapDatasets></slowDownTroubleMillis>":
             int tms = String2.parseInt(xmlReader.content());
@@ -1074,14 +1066,10 @@ public class LoadDatasets extends Thread {
             String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
 
             break;
-          case "<erddapDatasets><subscriptionEmailBlacklist>":
-            break;
           case "<erddapDatasets></subscriptionEmailBlacklist>":
             if (EDStatic.subscriptionSystemActive)
               EDStatic.subscriptions.setEmailBlacklist(xmlReader.content());
 
-            break;
-          case "<erddapDatasets><standardLicense>":
             break;
           case "<erddapDatasets></standardLicense>":
             {
@@ -1092,8 +1080,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardContact>":
-            break;
           case "<erddapDatasets></standardContact>":
             {
               String ts = xmlReader.content();
@@ -1107,8 +1093,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardDataLicenses>":
-            break;
           case "<erddapDatasets></standardDataLicenses>":
             {
               String ts = xmlReader.content();
@@ -1118,8 +1102,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardDisclaimerOfEndorsement>":
-            break;
           case "<erddapDatasets></standardDisclaimerOfEndorsement>":
             {
               String ts = xmlReader.content();
@@ -1131,8 +1113,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardDisclaimerOfExternalLinks>":
-            break;
           case "<erddapDatasets></standardDisclaimerOfExternalLinks>":
             {
               String ts = xmlReader.content();
@@ -1144,8 +1124,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardGeneralDisclaimer>":
-            break;
           case "<erddapDatasets></standardGeneralDisclaimer>":
             {
               String ts = xmlReader.content();
@@ -1155,8 +1133,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><standardPrivacyPolicy>":
-            break;
           case "<erddapDatasets></standardPrivacyPolicy>":
             {
               String ts = xmlReader.content();
@@ -1166,8 +1142,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><startHeadHtml5>":
-            break;
           case "<erddapDatasets></startHeadHtml5>":
             {
               String ts = xmlReader.content();
@@ -1184,8 +1158,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><startBodyHtml5>":
-            break;
           case "<erddapDatasets></startBodyHtml5>":
             {
               String ts = xmlReader.content();
@@ -1196,8 +1168,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><theShortDescriptionHtml>":
-            break;
           case "<erddapDatasets></theShortDescriptionHtml>":
             {
               String ts = xmlReader.content();
@@ -1208,8 +1178,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><endBodyHtml5>":
-            break;
           case "<erddapDatasets></endBodyHtml5>":
             {
               String ts = xmlReader.content();
@@ -1222,14 +1190,10 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><convertInterpolateRequestCSVExample>":
-            break;
           case "<erddapDatasets></convertInterpolateRequestCSVExample>":
             EDStatic.convertInterpolateRequestCSVExample = xmlReader.content();
             String2.log("convertInterpolateRequestCSVExample=" + xmlReader.content());
 
-            break;
-          case "<erddapDatasets><convertInterpolateDatasetIDVariableList>":
             break;
           case "<erddapDatasets></convertInterpolateDatasetIDVariableList>":
             {
@@ -1239,8 +1203,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><unusualActivity>":
-            break;
           case "<erddapDatasets></unusualActivity>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -1250,8 +1212,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><unusualActivityFailPercent>":
-            break;
           case "<erddapDatasets></unusualActivityFailPercent>":
             {
               int tnt = String2.parseInt(xmlReader.content());
@@ -1263,8 +1223,6 @@ public class LoadDatasets extends Thread {
 
               break;
             }
-          case "<erddapDatasets><updateMaxEvents>":
-            break;
           case "<erddapDatasets></updateMaxEvents>":
             {
               int tnt = String2.parseInt(xmlReader.content());

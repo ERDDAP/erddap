@@ -37,16 +37,16 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   private int orient_;
   private int halign_;
   private int valign_;
-  private Point dorigin_;
+  private final Point dorigin_;
   private Rectangle dbounds_;
   private Point2D.Double porigin_;
-  private Rectangle2D.Double pbounds_;
+  private final Rectangle2D.Double pbounds_;
   private double angle_;
   private double sinthta_;
   private double costhta_;
   private double height_;
   private boolean visible_;
-  private static boolean fixMetrics_ = MRJUtil.fixFontMetrics();
+  private static final boolean fixMetrics_ = MRJUtil.fixFontMetrics();
 
   private int xoff_ = 0;
   private int yoff_ = 0;
@@ -86,8 +86,8 @@ public class LabelDrawer2 implements LabelDrawer, Cloneable {
   @Override
   public void draw(Graphics g) throws LayerNotFoundException {
     int xs, ys;
-    if ((label_.length() <= 0) || !visible_ || g == null) return;
-    if (layer_ == (Layer) null) throw new LayerNotFoundException();
+    if ((label_.length() == 0) || !visible_ || g == null) return;
+    if (layer_ == null) throw new LayerNotFoundException();
     //
     // set label heigth in physical units
     //

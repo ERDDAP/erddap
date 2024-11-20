@@ -21,7 +21,7 @@ import java.util.List;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-18
  */
 public class PipeToStringArray extends PipeTo {
-  private ArrayList<String> arrayList = new ArrayList<>();
+  private final ArrayList<String> arrayList = new ArrayList<>();
 
   /**
    * This method grabs all the info from inputStream and stores it in an internal ArrayList. The run

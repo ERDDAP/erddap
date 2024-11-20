@@ -312,7 +312,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
                   "fileTime = "
                       + fileTime
                       + " --> date = \""
-                      + zdt.toString()
+                      + zdt
                       + "\" (d0="
                       + d0
                       + ", d1="
@@ -573,7 +573,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     if (tReloadEveryNMinutes < 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
       tReloadEveryNMinutes = 1440; // daily. More often than usual default.
 
-    StringBuilder sb = new StringBuilder();
     // gather the results
     String tDatasetID = "mergeIR";
 
@@ -581,7 +580,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     // sb.append( "<!-- NOTE! The source for " + tDatasetID + " has nGridVariables=" + 2 +".
     // -->\n");
 
-    sb.append(
+    String sb =
         "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\""
             + tDatasetID
             + "\" active=\"true\">\n"
@@ -602,36 +601,32 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             + "    <recursive>true</recursive>\n"
             + "    <pathRegex>.*</pathRegex>\n"
             + "    <metadataFrom>last</metadataFrom>\n"
-            + "    <fileTableInMemory>false</fileTableInMemory>\n");
-
-    sb.append(
-        """
-                        <addAttributes>
-                            <att name="cdm_data_type">Grid</att>
-                            <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
-                            <att name="creator_name">Bob Joyce</att>
-                            <att name="creator_email">robert.joyce@noaa.gov</att>
-                            <att name="creator_url">https://www.cpc.ncep.noaa.gov/</att>
-                            <att name="drawLandMask">under</att>
-                            <att name="infoUrl">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>
-                            <att name="institution">NOAA NWS NCEP CPC</att>
-                            <att name="keywords">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>
-                            <att name="keywords_vocabulary">GCMD Science Keywords</att>
-                            <att name="license">[standard]</att>
-                            <att name="summary">\
-                    The Climate Prediction Center/NCEP/NWS is now making available
-                    globally-merged (60N-60S) pixel-resolution IR brightness
-                    temperature data (equivalent blackbody temps), merged from all
-                    available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
-                    GMS).  The availability of data from METEOSAT-7, which is
-                    located at 57E at the present time, yields a unique opportunity
-                    for total global (60N-60S) coverage.</att>
-                            <att name="title">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>
-                        </addAttributes>
-                    """);
-
-    sb.append(
-        "    <axisVariable>\n"
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            + """
+                          <addAttributes>
+                              <att name="cdm_data_type">Grid</att>
+                              <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
+                              <att name="creator_name">Bob Joyce</att>
+                              <att name="creator_email">robert.joyce@noaa.gov</att>
+                              <att name="creator_url">https://www.cpc.ncep.noaa.gov/</att>
+                              <att name="drawLandMask">under</att>
+                              <att name="infoUrl">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>
+                              <att name="institution">NOAA NWS NCEP CPC</att>
+                              <att name="keywords">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>
+                              <att name="keywords_vocabulary">GCMD Science Keywords</att>
+                              <att name="license">[standard]</att>
+                              <att name="summary">\
+                      The Climate Prediction Center/NCEP/NWS is now making available
+                      globally-merged (60N-60S) pixel-resolution IR brightness
+                      temperature data (equivalent blackbody temps), merged from all
+                      available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
+                      GMS).  The availability of data from METEOSAT-7, which is
+                      located at 57E at the present time, yields a unique opportunity
+                      for total global (60N-60S) coverage.</att>
+                              <att name="title">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>
+                          </addAttributes>
+                      """
+            + "    <axisVariable>\n"
             + "        <sourceName>time</sourceName>\n"
             + "        <destinationName>time</destinationName>\n"
             + "        <addAttributes>\n"
@@ -657,10 +652,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             + EDV.LON_UNITS
             + "</att>\n"
             + "        </addAttributes>\n"
-            + "    </axisVariable>\n");
-
-    sb.append(
-        "    <dataVariable>\n"
+            + "    </axisVariable>\n"
+            + "    <dataVariable>\n"
             + "        <sourceName>ir</sourceName>\n"
             + "        <dataType>short</dataType>\n"
             + "        <!-- sourceAttributes>\n"
@@ -693,13 +686,12 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "        </addAttributes>\n"
-            + "    </dataVariable>\n");
+            + "    </dataVariable>\n"
+            + """
+                      </dataset>
 
-    sb.append("""
-            </dataset>
+                      """;
 
-            """);
-
-    return sb.toString();
+    return sb;
   }
 }

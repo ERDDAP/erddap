@@ -408,7 +408,7 @@ public class ULongArray extends PrimitiveArray {
    */
   @Override
   public void addObject(final Object value) {
-    if (value != null && value instanceof Number num) {
+    if (value instanceof Number num) {
       if (value instanceof Double) addDouble(num.doubleValue()); // supports NaN
       else if (value instanceof Float) addFloat(num.floatValue()); // supports NaN
       else addLong(num.longValue());
