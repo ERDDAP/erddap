@@ -15,6 +15,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import ucar.ma2.*;
@@ -2110,7 +2111,7 @@ public class NcHelper {
             newVars[var].addAttribute(new Attribute("NcHelper", "JSON encoded"));
         } else {
           newVars[var] =
-              NcHelper.addVariable(rootGroup, name, getNc3DataType(type), Arrays.asList(dimension));
+              NcHelper.addVariable(rootGroup, name, getNc3DataType(type), List.of(dimension));
           if (pas[var].elementType() == PAType.CHAR)
             newVars[var].addAttribute(new Attribute("NcHelper", originally_a_CharArray));
         }

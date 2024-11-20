@@ -545,8 +545,7 @@ public abstract class EDDTable extends EDD {
     }
 
     graphsAccessibleTo_fileTypeNames = new HashSet(); // read only, so needn't be thread-safe
-    for (int i = 0; i < publicGraphFileTypeNames.length; i++)
-      graphsAccessibleTo_fileTypeNames.add(publicGraphFileTypeNames[i]);
+    graphsAccessibleTo_fileTypeNames.addAll(Arrays.asList(publicGraphFileTypeNames));
     defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
 
     Test.ensureEqual(
@@ -6380,7 +6379,7 @@ public abstract class EDDTable extends EDD {
                   twawm.columnMaxStringLength(
                       col)); // nc libs want at least 1; 0 happens if no data
           newVars[col] =
-              NcHelper.addNc3StringVariable(rootGroup, tColName, Arrays.asList(rowDimension), max);
+              NcHelper.addNc3StringVariable(rootGroup, tColName, List.of(rowDimension), max);
         } else {
           newVars[col] =
               NcHelper.addVariable(
@@ -6810,7 +6809,7 @@ public abstract class EDDTable extends EDD {
                   rootGroup,
                   rowSizeName,
                   NcHelper.getNc3DataType(PAType.INT),
-                  Arrays.asList(featureDimension));
+                  List.of(featureDimension));
           // String2.log("  rowSize variable added");
         }
       }
@@ -7262,14 +7261,13 @@ public abstract class EDDTable extends EDD {
                   rootGroup,
                   indexName,
                   NcHelper.getNc3DataType(PAType.INT),
-                  Arrays.asList(
-                      profileDimension)); // yes, profile, since there is one for each profile
+                  List.of(profileDimension)); // yes, profile, since there is one for each profile
           rowSizeVar =
               NcHelper.addVariable(
                   rootGroup,
                   rowSizeName,
                   NcHelper.getNc3DataType(PAType.INT),
-                  Arrays.asList(profileDimension));
+                  List.of(profileDimension));
           // String2.log("  featureIndex and rowSize variable added");
         }
       }

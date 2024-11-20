@@ -943,9 +943,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       results[axisVariables.length + dv] = pa[0];
       if (dv == 0) {
         // I think GridDataAccessor compares observed and expected axis values
-        for (int av = 0; av < axisVariables.length; av++) {
-          results[av] = pa[av + 1];
-        }
+        System.arraycopy(pa, 1, results, 0, axisVariables.length);
       } else {
         for (int av = 0; av < axisVariables.length; av++) {
           String tError = results[av].almostEqual(pa[av + 1]);

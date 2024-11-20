@@ -5078,7 +5078,7 @@ public class EDStatic {
     } else {
       String rb[] = String2.split(csv, ',');
       HashSet<String> hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
-      for (int i = 0; i < rb.length; i++) hs.add(rb[i]);
+      hs.addAll(Arrays.asList(rb));
       requestBlacklist = hs; // set atomically
       String2.log("requestBlacklist is now " + String2.toCSSVString(rb));
     }
@@ -7029,10 +7029,10 @@ public class EDStatic {
     String names[];
     if (sourceAtts != null) {
       names = sourceAtts.getNames();
-      for (int i = 0; i < names.length; i++) hs.add(names[i]);
+      hs.addAll(Arrays.asList(names));
     }
     names = addAtts.getNames();
-    for (int i = 0; i < names.length; i++) hs.add(names[i]);
+    hs.addAll(Arrays.asList(names));
     names = hs.toArray(new String[] {});
 
     // updateUrls in all attributes

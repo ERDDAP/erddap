@@ -13724,7 +13724,7 @@ public class Table {
         } else {
           colVars[col] =
               NcHelper.addVariable(
-                  rootGroup, tColName, NcHelper.getNc3DataType(type), Arrays.asList(dimension));
+                  rootGroup, tColName, NcHelper.getNc3DataType(type), List.of(dimension));
         }
         // nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
       }
@@ -14190,7 +14190,10 @@ public class Table {
           } else {
             colVars[col] =
                 NcHelper.addVariable(
-                    rootGroup, tColName, NcHelper.getNc3DataType(type), Arrays.asList(aDimension));
+                    rootGroup,
+                    tColName,
+                    NcHelper.getNc3DataType(type),
+                    Collections.singletonList(aDimension));
           }
         } else {
 
@@ -14262,7 +14265,7 @@ public class Table {
                 Math.max(1, stringVariableValue.length())); // nclib wants at least 1
         stringVar =
             NcHelper.addVariable(
-                rootGroup, stringVariableName, DataType.CHAR, Arrays.asList(lengthDimension));
+                rootGroup, stringVariableName, DataType.CHAR, List.of(lengthDimension));
 
         // save the attributes
         Attributes tAtts = new Attributes(stringVariableAttributes); // use a copy

@@ -55,6 +55,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -400,8 +401,7 @@ public abstract class EDDGrid extends EDD {
     }
 
     graphsAccessibleTo_fileTypeNames = new HashSet<>(); // read only, so needn't be thread-safe
-    for (int i = 0; i < publicGraphFileTypeNames.length; i++)
-      graphsAccessibleTo_fileTypeNames.add(publicGraphFileTypeNames[i]);
+    graphsAccessibleTo_fileTypeNames.addAll(Arrays.asList(publicGraphFileTypeNames));
     defaultPublicGraphFileTypeOption = String2.indexOf(publicGraphFileTypeNames, ".png");
   }
 
@@ -10502,7 +10502,7 @@ public abstract class EDDGrid extends EDD {
                   NcHelper.getNc3DataType(
                       pa.elementType()), // nc3Mode long & ulong->double done above. No Strings as
                   // axes.
-                  Arrays.asList(dimension));
+                  List.of(dimension));
 
           // write axis attributes
           Attributes atts = new Attributes(ada.axisAttributes(av)); // use a copy
@@ -10630,7 +10630,7 @@ public abstract class EDDGrid extends EDD {
                   avName,
                   NcHelper.getNc3DataType(
                       pa.elementType()), // nc3Mode long->double done above. No Strings as axes.
-                  Arrays.asList(axisDimensionList.get(a)));
+                  Collections.singletonList(axisDimensionList.get(a)));
         }
 
         // define the data variables

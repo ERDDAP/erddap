@@ -2220,23 +2220,22 @@ public class Grid {
       ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
       tTime.set(0, hasTime ? centeredTimeDouble : 0);
       Variable.Builder timeVar =
-          NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, Arrays.asList(timeDimension));
+          NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, List.of(timeDimension));
 
       ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
       tAltitude.set(0, 0); // I treat all as altitude=0 !!!!
       Variable.Builder altitudeVar =
-          NcHelper.addVariable(
-              rootGroup, "altitude", DataType.DOUBLE, Arrays.asList(altitudeDimension));
+          NcHelper.addVariable(rootGroup, "altitude", DataType.DOUBLE, List.of(altitudeDimension));
 
       ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
       for (int i = 0; i < nLat; i++) tLat.set(i, lat[i]);
       Variable.Builder latVar =
-          NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, Arrays.asList(latDimension));
+          NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, List.of(latDimension));
 
       ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
       for (int i = 0; i < nLon; i++) tLon.set(i, lon[i]);
       Variable.Builder lonVar =
-          NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, Arrays.asList(lonDimension));
+          NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, List.of(lonDimension));
 
       // write values to ArrayFloat.D4
       ArrayFloat.D4 tGrid = new ArrayFloat.D4(1, 1, nLat, nLon);
@@ -2417,8 +2416,8 @@ public class Grid {
 
       Dimension sideDimension = NcHelper.addDimension(rootGroup, "side", 2);
       Dimension xysizeDimension = NcHelper.addDimension(rootGroup, "xysize", nLon * nLat);
-      List<Dimension> sideDimList = Arrays.asList(sideDimension);
-      List<Dimension> xysizeDimList = Arrays.asList(xysizeDimension);
+      List<Dimension> sideDimList = List.of(sideDimension);
+      List<Dimension> xysizeDimList = List.of(xysizeDimension);
 
       ArrayDouble.D1 x_range = new ArrayDouble.D1(2);
       x_range.set(0, lon[0]);

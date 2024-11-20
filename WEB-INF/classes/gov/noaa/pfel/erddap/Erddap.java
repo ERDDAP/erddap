@@ -16960,7 +16960,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               // writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new
               // EDD[datasets.size()])));
               // java version:
-              theSchemaDotOrgDataCatalog(writer, datasets.toArray(new EDD[datasets.size()]));
+              theSchemaDotOrgDataCatalog(writer, datasets.toArray(new EDD[0]));
             } catch (Exception e) {
               EDStatic.rethrowClientAbortException(e); // first thing in catch{}
               String2.log(
@@ -17462,10 +17462,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (edd instanceof EDDGrid eddGrid) { // axisVars first so lat/lon/timeIndex are correct
       arr = eddGrid.axisVariables();
       nAxisVariables = arr.length;
-      for (int j = 0; j < arr.length; j++) edv.add(arr[j]);
+      edv.addAll(Arrays.asList(arr));
     }
     arr = edd.dataVariables();
-    for (int j = 0; j < arr.length; j++) edv.add(arr[j]);
+    edv.addAll(Arrays.asList(arr));
     writer.write("  \"variableMeasured\": [\n");
     for (int i = 0; i < edv.size(); i++) {
       Attributes atts = edv.get(i).combinedAttributes();

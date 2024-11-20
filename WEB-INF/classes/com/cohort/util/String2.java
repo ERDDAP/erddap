@@ -676,8 +676,7 @@ public class String2 {
   /** This converts a String[] to a HashSet&lt;String&gt;. */
   public static Set<String> stringArrayToSet(final String sar[]) {
     final HashSet<String> hs = new HashSet<>();
-    final int n = sar.length;
-    for (int i = 0; i < n; i++) hs.add(sar[i]);
+    hs.addAll(Arrays.asList(sar));
     return hs;
   }
 
@@ -2402,7 +2401,7 @@ public class String2 {
   public static List<String> toArrayList(final String objectArray[]) {
     final int n = objectArray.length;
     final ArrayList<String> al = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    al.addAll(Arrays.asList(objectArray));
     return al;
   }
 
@@ -2415,7 +2414,7 @@ public class String2 {
   public static List<Object> toArrayList(final Object objectArray[]) {
     final int n = objectArray.length;
     final ArrayList<Object> al = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    al.addAll(Arrays.asList(objectArray));
     return al;
   }
 
@@ -2428,7 +2427,7 @@ public class String2 {
   public static List<PrimitiveArray> toArrayList(final PrimitiveArray objectArray[]) {
     final int n = objectArray.length;
     final ArrayList<PrimitiveArray> al = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) al.add(objectArray[i]);
+    al.addAll(Arrays.asList(objectArray));
     return al;
   }
 
@@ -2950,8 +2949,7 @@ public class String2 {
    */
   public static void add(final List<Object> arrayList, final Object ar[]) {
     if (arrayList == null || ar == null) return;
-    final int n = ar.length;
-    for (int i = 0; i < n; i++) arrayList.add(ar[i]);
+    arrayList.addAll(Arrays.asList(ar));
   }
 
   /**

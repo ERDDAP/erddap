@@ -18,7 +18,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import ucar.ma2.Array;
@@ -1671,7 +1671,7 @@ public class OpendapHelper {
                       rootGroup,
                       dimName,
                       NcHelper.getNc3DataType(dimPATypes[d]),
-                      Arrays.asList(dims.get(d)));
+                      Collections.singletonList(dims.get(d)));
             } else {
               // check that dimension names are the same
               if (!dimName.equals(dims.get(d).getName())) // the full name

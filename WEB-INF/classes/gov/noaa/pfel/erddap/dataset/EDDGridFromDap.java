@@ -1027,9 +1027,7 @@ public class EDDGridFromDap extends EDDGrid {
         // it's a DGrid;  test the axes
         if (dv == 0) {
           // GridDataAccessor compares observed and expected axis values
-          for (int av = 0; av < axisVariables.length; av++) {
-            results[av] = pa[av + 1];
-          }
+          System.arraycopy(pa, 1, results, 0, axisVariables.length);
         } else if (pa.length != 1) {
           for (int av = 0; av < axisVariables.length; av++) {
             String tError = results[av].almostEqual(pa[av + 1]);
