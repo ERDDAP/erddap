@@ -14,14 +14,12 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.dm.Collection;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTLine;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
-import java.util.Enumeration;
 
 /**
  * Produces a line plot with optional coloring from a second data set. If a second data set is
@@ -48,12 +46,6 @@ public class LineCartesianRenderer extends CartesianRenderer {
    */
   private SGTLine line_ = null;
 
-  /**
-   * @shapeType AggregationLink
-   * @supplierCardinality 0..1
-   */
-  private Collection collection_ = null;
-
   private StrokeDrawer stroke_ = null;
 
   /** Bob Simons added this to avoid memory leak problems. */
@@ -64,10 +56,6 @@ public class LineCartesianRenderer extends CartesianRenderer {
       attr_ = null;
       line_ = null;
       stroke_ = null;
-      if (collection_ != null) {
-        collection_.clear();
-        collection_ = null;
-      }
       if (JPane.debug) String2.log("sgt.LineCartesianRenderer.releaseResources() finished");
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
@@ -239,9 +227,8 @@ public class LineCartesianRenderer extends CartesianRenderer {
    * @see CartesianGraph
    * @see Graph
    */
-  public LineCartesianRenderer(CartesianGraph cg, Collection col, LineAttribute attr) {
+  public LineCartesianRenderer(CartesianGraph cg, LineAttribute attr) {
     cg_ = cg;
-    collection_ = col;
     attr_ = attr;
     if (attr_ != null) attr_.addPropertyChangeListener(this);
     stroke_ = PaneProxy.strokeDrawer;
@@ -256,7 +243,6 @@ public class LineCartesianRenderer extends CartesianRenderer {
   @Override
   public void draw(Graphics g) {
     LineAttribute attr;
-    Object line;
 
     if (cg_.clipping_) {
       int xmin, xmax, ymin, ymax;
@@ -297,16 +283,8 @@ public class LineCartesianRenderer extends CartesianRenderer {
       attr = attr_;
     }
     g.setColor(attr.getColor());
-    if (collection_ == null) {
-      drawLine(g, line_, attr);
-    } else {
-      for (Enumeration li = collection_.elements(); li.hasMoreElements(); ) {
-        line = li.nextElement();
-        if (line instanceof SGTLine) {
-          drawLine(g, (SGTLine) line, attr);
-        }
-      }
-    }
+
+    drawLine(g, line_, attr);
 
     //
     // reset clip
@@ -333,24 +311,6 @@ public class LineCartesianRenderer extends CartesianRenderer {
    */
   public LineAttribute getLineAttribute() {
     return attr_;
-  }
-
-  /**
-   * Test if a <code>Collection</code> of <code>SGTLine</code> was using to construct this renderer.
-   *
-   * @return true if <code>Collection</code> was used
-   */
-  public boolean hasCollection() {
-    return (collection_ != null);
-  }
-
-  /**
-   * Get the <code>Collection</code> of <code>SGTLine</code> objects.
-   *
-   * @return <code>Collection</code>
-   */
-  public Collection getCollection() {
-    return collection_;
   }
 
   /**

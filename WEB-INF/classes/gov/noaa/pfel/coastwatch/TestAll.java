@@ -909,7 +909,6 @@ public class TestAll {
     SgtMap sgtMap;
     SgtUtil sgtUtil;
     gov.noaa.pfel.coastwatch.sgt.PathCartesianRenderer sgtptcr;
-    gov.noaa.pmel.sgt.AnnotationCartesianRenderer sgtacr;
     gov.noaa.pmel.sgt.AxisTransform sgtat;
     gov.noaa.pmel.sgt.CartesianGraph sgtcg;
     gov.noaa.pmel.sgt.CartesianRenderer sgtcr;
@@ -919,10 +918,7 @@ public class TestAll {
     gov.noaa.pmel.sgt.DayMonthAxis sgtdma;
     gov.noaa.pmel.sgt.DecadeAxis sgtda;
     gov.noaa.pmel.sgt.dm.SGTGrid sgtsgdtg;
-    gov.noaa.pmel.sgt.dm.SGTImage sgti;
     gov.noaa.pmel.sgt.dm.SGTLine sgtl;
-    gov.noaa.pmel.sgt.dm.SGTPoint sgtp;
-    gov.noaa.pmel.sgt.dm.SGTVector sgtsgdtv;
     gov.noaa.pmel.sgt.GridAttribute sgtga;
     gov.noaa.pmel.sgt.GridCartesianRenderer sgtgcr;
     gov.noaa.pmel.sgt.Graph sgtg;
@@ -939,10 +935,8 @@ public class TestAll {
     gov.noaa.pmel.sgt.MonthYearAxis sgtmya;
     gov.noaa.pmel.sgt.PaneProxy sgtpp;
     gov.noaa.pmel.sgt.PlainAxis sgtpa;
-    gov.noaa.pmel.sgt.PointCartesianRenderer sgtpcr;
     gov.noaa.pmel.sgt.SecondMinuteAxis sgtsma;
     gov.noaa.pmel.sgt.TimeAxis sgtta;
-    gov.noaa.pmel.sgt.VectorCartesianRenderer sgtvcr;
     gov.noaa.pmel.sgt.YearDecadeAxis sgtyda;
     gov.noaa.pmel.util.GeoDate geodate;
     Script2 script2;
@@ -971,7 +965,6 @@ public class TestAll {
     ULongArray ula;
     Units2 u2;
     UShortArray usa;
-    gov.noaa.pmel.sgt.VectorCartesianRenderer vcr;
     VectorPointsRenderer vpr;
     WatchDirectory wdir;
     XML xml;

@@ -12,15 +12,9 @@
 
 package gov.noaa.pmel.sgt;
 
-import gov.noaa.pfel.coastwatch.sgt.SGTPointsVector;
-import gov.noaa.pfel.coastwatch.sgt.VectorPointsRenderer;
-import gov.noaa.pmel.sgt.dm.Annotation;
-import gov.noaa.pmel.sgt.dm.Collection;
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTGrid;
 import gov.noaa.pmel.sgt.dm.SGTLine;
-import gov.noaa.pmel.sgt.dm.SGTPoint;
-import gov.noaa.pmel.sgt.dm.SGTVector;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
@@ -107,31 +101,32 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
    * @param dmo DataModel object
    */
   public static CartesianRenderer getRenderer(CartesianGraph cg, SGTData dmo, Attribute attr) {
-    if (dmo instanceof SGTPoint) {
-      return new PointCartesianRenderer(cg, (SGTPoint) dmo, (PointAttribute) attr);
-    } else if (dmo instanceof SGTLine) {
+    if (dmo instanceof SGTLine) {
       return new LineCartesianRenderer(cg, (SGTLine) dmo, (LineAttribute) attr);
     } else if (dmo instanceof SGTGrid) {
       return new GridCartesianRenderer(cg, (SGTGrid) dmo, (GridAttribute) attr);
-    } else if (dmo instanceof SGTVector) {
-      return new VectorCartesianRenderer(cg, (SGTVector) dmo, (VectorAttribute) attr);
-    } else if (dmo instanceof SGTPointsVector) {
-      return new VectorPointsRenderer(
-          cg, (SGTPointsVector) dmo, (gov.noaa.pfel.coastwatch.sgt.VectorAttribute2) attr);
-    } else if (dmo instanceof Collection) {
-      Object fe = ((Collection) dmo).firstElement();
-      if (fe instanceof SGTPoint) {
-        return new PointCartesianRenderer(cg, (Collection) dmo, (PointAttribute) attr);
-      } else if (fe instanceof SGTLine) {
-        return new LineCartesianRenderer(cg, (Collection) dmo, (LineAttribute) attr);
-      } else if (fe instanceof SGTVector) {
-        return new VectorCartesianRenderer(cg, (Collection) dmo, (VectorAttribute) attr);
-      }
-    } else if (dmo instanceof Annotation) {
-      return new AnnotationCartesianRenderer(cg, (Annotation) dmo, null);
     }
-    return null;
+    throw new MethodNotImplementedError();
+    // return null;
   }
+
+  /**
+   * public static CartesianRenderer getRenderer(CartesianGraph cg, SGTData dmo, Attribute attr) {
+   * if (dmo instanceof SGTPoint) { return new PointCartesianRenderer(cg, (SGTPoint) dmo,
+   * (PointAttribute) attr); } else if (dmo instanceof SGTLine) { return new
+   * LineCartesianRenderer(cg, (SGTLine) dmo, (LineAttribute) attr); } else if (dmo instanceof
+   * SGTGrid) { return new GridCartesianRenderer(cg, (SGTGrid) dmo, (GridAttribute) attr); } else if
+   * (dmo instanceof SGTVector) { return new VectorCartesianRenderer(cg, (SGTVector) dmo,
+   * (VectorAttribute) attr); } else if (dmo instanceof SGTPointsVector) { return new
+   * VectorPointsRenderer( cg, (SGTPointsVector) dmo,
+   * (gov.noaa.pfel.coastwatch.sgt.VectorAttribute2) attr); } else if (dmo instanceof Collection) {
+   * Object fe = ((Collection) dmo).firstElement(); if (fe instanceof SGTPoint) { return new
+   * PointCartesianRenderer(cg, (Collection) dmo, (PointAttribute) attr); } else if (fe instanceof
+   * SGTLine) { return new LineCartesianRenderer(cg, (Collection) dmo, (LineAttribute) attr); } else
+   * if (fe instanceof SGTVector) { return new VectorCartesianRenderer(cg, (Collection) dmo,
+   * (VectorAttribute) attr); } } else if (dmo instanceof Annotation) { return new
+   * AnnotationCartesianRenderer(cg, (Annotation) dmo, null); } return null; }
+   */
 
   /**
    * Render the <code>SGTData</code> object. This method should never be called directly.

@@ -14,8 +14,6 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.dm.Collection;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.swing.Draggable;
 import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Rectangle2D;
@@ -820,15 +818,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
         child = it.nextElement();
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
-          if (child instanceof LineKey) {
-            return ((LineKey) child).getObjectAt(pt);
-          } else if (child instanceof PointCollectionKey) {
-            return ((PointCollectionKey) child).getObjectAt(pt);
-          } else if (child instanceof VectorKey) {
-            return ((VectorKey) child).getObjectAt(pt);
-          } else {
-            return child;
-          }
+          return child;
         }
       }
     }
@@ -862,18 +852,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
         child = it.nextElement();
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
-          if (child instanceof LineKey) {
-            obj = ((LineKey) child).getObjectAt(pt);
-            if (obj != null) obList.add(obj);
-          } else if (child instanceof PointCollectionKey) {
-            obj = ((PointCollectionKey) child).getObjectAt(pt);
-            if (obj != null) obList.add(obj);
-          } else if (child instanceof VectorKey) {
-            obj = ((VectorKey) child).getObjectAt(pt);
-            if (obj != null) obList.add(obj);
-          } else {
-            if (child != null) obList.add(child);
-          }
+          if (child != null) obList.add(child);
         }
       }
     }
@@ -907,25 +886,9 @@ public class Layer extends Component implements Cloneable, LayerControl {
     if (graph_ instanceof CartesianGraph) {
       CartesianRenderer cr = ((CartesianGraph) graph_).getRenderer();
       if (cr instanceof LineCartesianRenderer) {
-        if (((LineCartesianRenderer) cr).hasCollection()) {
-          Collection co = ((LineCartesianRenderer) cr).getCollection();
-          for (Enumeration it = co.elements(); it.hasMoreElements(); ) {
-            if (((SGTData) it.nextElement()).getId().equals(id)) return true;
-          }
-        } else {
-          return ((LineCartesianRenderer) cr).getLine().getId().equals(id);
-        }
+        return ((LineCartesianRenderer) cr).getLine().getId().equals(id);
       } else if (cr instanceof GridCartesianRenderer) {
         return ((GridCartesianRenderer) cr).getGrid().getId().equals(id);
-      } else if (cr instanceof PointCartesianRenderer) {
-        if (((PointCartesianRenderer) cr).hasCollection()) {
-          Collection co = ((PointCartesianRenderer) cr).getCollection();
-          for (Enumeration it = co.elements(); it.hasMoreElements(); ) {
-            if (((SGTData) it.nextElement()).getId().equals(id)) return true;
-          }
-        } else {
-          return ((PointCartesianRenderer) cr).getPoint().getId().equals(id);
-        }
       }
     }
     return false;
