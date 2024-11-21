@@ -26,7 +26,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * Produces a cartesian plot from a <code>SGTGrid</code> object.
@@ -448,10 +448,10 @@ public class GridCartesianRenderer extends CartesianRenderer {
       }
       con_.generateContourLines();
       con_.generateContourLabels(g);
-      Enumeration elem = con_.elements();
+      Iterator<ContourLine> elem = con_.elements();
       ContourLine cl;
-      while (elem.hasMoreElements()) {
-        cl = (ContourLine) elem.nextElement();
+      while (elem.hasNext()) {
+        cl = elem.next();
         if (Debug.CONTOUR) {
           System.out.println(
               " level = "

@@ -18,8 +18,8 @@
 
 package dods.dap;
 
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * An <code>Attribute</code> holds information about a single attribute in an <code>AttributeTable
@@ -79,8 +79,10 @@ public class Attribute implements Cloneable {
   /** If <code>is_alias</code> is true, the name of the <code>Attribute</code> we are aliased to. */
   private String aliased_to;
 
-  /** Either an AttributeTable or a Vector of String. */
-  private Object attr;
+  /** Either an AttributeTable or a List of String. */
+  private ArrayList<String> attrList;
+
+  private AttributeTable attr;
 
   /**
    * Construct a container attribute.
@@ -114,8 +116,8 @@ public class Attribute implements Cloneable {
     this.type = type;
     this.name = name;
     is_alias = false;
-    attr = new Vector();
-    ((Vector) attr).addElement(value);
+    attrList = new ArrayList<>();
+    attrList.add(value);
   }
 
   /**
@@ -136,8 +138,8 @@ public class Attribute implements Cloneable {
     this.type = type;
     this.name = name;
     is_alias = false;
-    attr = new Vector();
-    ((Vector) attr).addElement(value);
+    attrList = new ArrayList<>();
+    attrList.add(value);
   }
 
   /**
@@ -181,7 +183,7 @@ public class Attribute implements Cloneable {
     this.name = name;
     if (type == CONTAINER)
       throw new IllegalArgumentException("can't construct Attribute(CONTAINER)");
-    else attr = new Vector();
+    else attrList = new ArrayList<>();
   }
 
   /**
@@ -195,8 +197,8 @@ public class Attribute implements Cloneable {
     try {
       Attribute a = (Attribute) super.clone();
       // assume type, is_alias, and aliased_to have been cloned already
-      if (type == CONTAINER) a.attr = ((AttributeTable) attr).clone();
-      else a.attr = ((Vector) attr).clone();
+      if (type == CONTAINER) a.attr = attr.clone();
+      else a.attrList = (ArrayList<String>) attrList.clone();
       return a;
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
@@ -277,7 +279,7 @@ public class Attribute implements Cloneable {
    * @return the <code>AttributeTable</code> container.
    */
   public final AttributeTable getContainer() {
-    return (AttributeTable) attr;
+    return attr;
   }
 
   /**
@@ -285,8 +287,8 @@ public class Attribute implements Cloneable {
    *
    * @return an <code>Enumeration</code> of <code>String</code>.
    */
-  public final Enumeration getValues() {
-    return ((Vector) attr).elements();
+  public final Iterator<String> getValues() {
+    return attrList.iterator();
   }
 
   /**
@@ -296,7 +298,7 @@ public class Attribute implements Cloneable {
    * @return the attribute <code>String</code> at <code>index</code>.
    */
   public final String getValueAt(int index) {
-    return (String) ((Vector) attr).elementAt(index);
+    return attrList.get(index);
   }
 
   /**
@@ -320,7 +322,7 @@ public class Attribute implements Cloneable {
 
     if (check) dispatchCheckValue(type, value);
 
-    ((Vector) attr).addElement(value);
+    attrList.add(value);
   }
 
   /**
@@ -329,7 +331,7 @@ public class Attribute implements Cloneable {
    * @param index the index of the value to remove.
    */
   public final void deleteValueAt(int index) {
-    ((Vector) attr).removeElementAt(index);
+    attrList.remove(index);
   }
 
   /**

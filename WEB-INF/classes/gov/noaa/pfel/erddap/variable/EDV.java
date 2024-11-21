@@ -1748,18 +1748,20 @@ public class EDV {
 
     // suggest adding it to the variable's addAttributes
     PAOne tmv = PrimitiveArray.factory(sourceDataPAType, 1, false).missingValue();
-    EDStatic.suggestAddFillValueCSV.append(
-        String2.toJson(tDatasetID)
-            + ","
-            + String2.toJson(sourceName)
-            + ","
-            + String2.toJson(
-                "<att name=\"_FillValue\" type=\""
-                    + tmv.pa().elementTypeString()
-                    + "\">"
-                    + tmv
-                    + "</att>")
-            + "\n");
+    synchronized (EDStatic.suggestAddFillValueCSV) {
+      EDStatic.suggestAddFillValueCSV.append(
+          String2.toJson(tDatasetID)
+              + ","
+              + String2.toJson(sourceName)
+              + ","
+              + String2.toJson(
+                  "<att name=\"_FillValue\" type=\""
+                      + tmv.pa().elementTypeString()
+                      + "\">"
+                      + tmv
+                      + "</att>")
+              + "\n");
+    }
     String2.log(
         "Add _FillValue Attribute?  "
             + // This exact message is noted in setupDatasetsXml.html

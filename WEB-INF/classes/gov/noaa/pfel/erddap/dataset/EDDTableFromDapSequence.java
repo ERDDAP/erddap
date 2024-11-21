@@ -29,7 +29,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -407,9 +407,9 @@ public class EDDTableFromDapSequence extends EDDTable {
         // look at the variables in the inner sequence
         DSequence innerSequence = (DSequence) obt;
         AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
-        Enumeration ien = innerSequence.getVariables();
-        while (ien.hasMoreElements()) {
-          BaseType ibt = (BaseType) ien.nextElement();
+        Iterator<BaseType> ien = innerSequence.getVariables();
+        while (ien.hasNext()) {
+          BaseType ibt = ien.next();
           String iName = ibt.getName();
 
           // is iName in tDataVariableNames?  i.e., are we interested in this variable?
@@ -865,11 +865,11 @@ public class EDDTableFromDapSequence extends EDDTable {
     // get all of the vars
     String outerSequenceName = null;
     String innerSequenceName = null;
-    Enumeration datasetVars = dds.getVariables();
+    Iterator<BaseType> datasetVars = dds.getVariables();
     int nOuterVars = 0; // so outerVars are first in dataAddTable
     Attributes gridMappingAtts = null;
-    while (datasetVars.hasMoreElements()) {
-      BaseType datasetVar = (BaseType) datasetVars.nextElement();
+    while (datasetVars.hasNext()) {
+      BaseType datasetVar = datasetVars.next();
 
       // is this the pseudo-data grid_mapping variable?
       if (gridMappingAtts == null) {
@@ -882,18 +882,18 @@ public class EDDTableFromDapSequence extends EDDTable {
         outerSequenceName = outerSequence.getName();
 
         // get list of outerSequence variables
-        Enumeration outerVars = outerSequence.getVariables();
-        while (outerVars.hasMoreElements()) {
-          BaseType outerVar = (BaseType) outerVars.nextElement();
+        Iterator<BaseType> outerVars = outerSequence.getVariables();
+        while (outerVars.hasNext()) {
+          BaseType outerVar = outerVars.next();
 
           // catch innerSequence
           if (outerVar instanceof DSequence innerSequence) {
             if (innerSequenceName == null) {
               innerSequenceName = outerVar.getName();
-              Enumeration innerVars = innerSequence.getVariables();
-              while (innerVars.hasMoreElements()) {
+              Iterator<BaseType> innerVars = innerSequence.getVariables();
+              while (innerVars.hasNext()) {
                 // inner variable
-                BaseType innerVar = (BaseType) innerVars.nextElement();
+                BaseType innerVar = innerVars.next();
                 if (innerVar instanceof DConstructor || innerVar instanceof DVector) {
                 } else {
                   String varName = innerVar.getName();

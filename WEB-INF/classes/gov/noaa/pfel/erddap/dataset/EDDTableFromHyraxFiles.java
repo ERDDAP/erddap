@@ -26,8 +26,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -562,11 +562,11 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
 
     // variables
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     double maxTimeES = Double.NaN;
     Attributes gridMappingAtts = null;
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       String varName = baseType.getName();
       Attributes sourceAtts = new Attributes();
       OpendapHelper.getAttributes(das, varName, sourceAtts);

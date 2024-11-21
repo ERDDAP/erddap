@@ -17,7 +17,6 @@ import com.cohort.util.Test;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.TimePeriods;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 
@@ -166,15 +165,15 @@ public class Opendap {
       // search top-level variables
       // dds is read-only so no need to use sychronized(dds)
       int len;
-      Enumeration e = dds.getVariables();
-      while (e.hasMoreElements()) {
-        BaseType bt = (BaseType) e.nextElement();
+      Iterator<BaseType> e = dds.getVariables();
+      while (e.hasNext()) {
+        BaseType bt = e.next();
         len = getDArrayLength(bt, dimensionName);
         if (len > 0) return len;
         if (bt instanceof DGrid dg) {
-          Enumeration e2 = dg.getVariables();
-          while (e2.hasMoreElements()) {
-            len = getDArrayLength((BaseType) e2.nextElement(), dimensionName);
+          Iterator<BaseType> e2 = dg.getVariables();
+          while (e2.hasNext()) {
+            len = getDArrayLength(e2.next(), dimensionName);
             if (len > 0) {
               if (verbose) String2.log("Opendap.getArrayLength(" + dimensionName + ") = " + len);
               return len;
@@ -265,7 +264,7 @@ public class Opendap {
 
     // get the grid baseType
     BaseType bt = dds.getVariable(gridName); // throws exception if not found
-    DArray da = ((DGrid) bt).getVariables().nextElement(); // first element is always main array
+    DArray da = (DArray) ((DGrid) bt).getVariables().next(); // first element is always main array
     // if (verbose) String2.log("  da.getName()=" + da.getName()); //always(?) same as gridName
 
     // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)
@@ -290,10 +289,10 @@ public class Opendap {
     gridDimensionData = new double[numDimensions][];
     gridDimensionAscending = new boolean[numDimensions];
     int po = 0;
-    Enumeration e2 = da.getDimensions();
-    while (e2.hasMoreElements()) {
+    Iterator<DArrayDimension> e2 = da.getDimensions();
+    while (e2.hasNext()) {
       long time1 = System.currentTimeMillis();
-      DArrayDimension dad = (DArrayDimension) e2.nextElement();
+      DArrayDimension dad = e2.next();
       gridDimensionNames[po] = dad.getName();
 
       // get dimension info
@@ -1213,9 +1212,9 @@ public class Opendap {
   private static int getDArrayLength(BaseType bt, String dimensionName) {
     if (bt instanceof DArray da) {
       // bt is read-only so no need to use sychronized(bt)
-      Enumeration e = da.getDimensions();
-      while (e.hasMoreElements()) {
-        DArrayDimension dam = (DArrayDimension) e.nextElement();
+      Iterator<DArrayDimension> e = da.getDimensions();
+      while (e.hasNext()) {
+        DArrayDimension dam = e.next();
         if (dam.getName().equals(dimensionName)) {
           return dam.getStop() + 1; // start = 0; stop is inclusive; so nValues = getStop()+1
         }

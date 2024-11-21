@@ -13,11 +13,16 @@ package dods.dap;
 
 import dods.dap.parser.DDSParser;
 import dods.dap.parser.ParseException;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The DODS Data Descriptor Object (DDS) is a data structure used by the DODS software to describe
@@ -108,7 +113,7 @@ public class DDS implements Cloneable {
   protected String name;
 
   /** Variables at the top level. */
-  protected Vector<BaseType> vars;
+  protected List<BaseType> vars;
 
   /** Factory for new DAP variables. */
   private BaseTypeFactory factory;
@@ -148,7 +153,7 @@ public class DDS implements Cloneable {
    */
   public DDS(String n, BaseTypeFactory factory) {
     name = n;
-    vars = new Vector<>();
+    vars = new ArrayList<>();
     this.factory = factory;
   }
 
@@ -162,10 +167,10 @@ public class DDS implements Cloneable {
   public Object clone() {
     try {
       DDS d = (DDS) super.clone();
-      d.vars = new Vector<>();
+      d.vars = new ArrayList<>();
       for (int i = 0; i < vars.size(); i++) {
-        BaseType element = vars.elementAt(i);
-        d.vars.addElement(element.clone());
+        BaseType element = vars.get(i);
+        d.vars.add(element.clone());
       }
       d.name = this.name;
 
@@ -223,7 +228,7 @@ public class DDS implements Cloneable {
    * @param bt the new variable to add.
    */
   public final void addVariable(BaseType bt) {
-    vars.addElement(bt);
+    vars.add(bt);
   }
 
   /**
@@ -238,7 +243,7 @@ public class DDS implements Cloneable {
   public final void delVariable(String name) {
     try {
       BaseType bt = getVariable(name);
-      vars.removeElement(bt);
+      vars.remove(bt);
     } catch (NoSuchVariableException e) {
     }
   }
@@ -321,15 +326,15 @@ public class DDS implements Cloneable {
     }
 
     BaseType simpleSearch(String name, BaseType start) {
-      Enumeration e = null;
+      Iterator<BaseType> e = null;
       DConstructor dcv;
       if (start == null) e = getVariables(); // Start with the whole DDS
       else if (start instanceof DConstructor) e = ((DConstructor) start).getVariables();
       else if ((dcv = isVectorOfDConstructor(start)) != null) e = dcv.getVariables();
       else return null;
 
-      while (e.hasMoreElements()) {
-        BaseType v = (BaseType) e.nextElement();
+      while (e.hasNext()) {
+        BaseType v = e.next();
         if (v.getName().equals(name)) {
           return v;
         }
@@ -357,15 +362,15 @@ public class DDS implements Cloneable {
         return true;
       }
 
-      Enumeration e;
+      Iterator<BaseType> e;
       DConstructor dcv;
       if (start == null) e = getVariables(); // Start with the whole DDS
       else if (start instanceof DConstructor) e = ((DConstructor) start).getVariables();
       else if ((dcv = isVectorOfDConstructor(start)) != null) e = dcv.getVariables();
       else return false;
 
-      while (e.hasMoreElements()) {
-        BaseType v = (BaseType) e.nextElement();
+      while (e.hasNext()) {
+        BaseType v = e.next();
         components.push(v);
         if (deepSearch(name)) return true;
         else components.pop();
@@ -386,8 +391,8 @@ public class DDS implements Cloneable {
    *
    * @return an <code>Enumeration</code> of <code>BaseType</code>.
    */
-  public final Enumeration getVariables() {
-    return vars.elements();
+  public final Iterator<BaseType> getVariables() {
+    return vars.iterator();
   }
 
   /**

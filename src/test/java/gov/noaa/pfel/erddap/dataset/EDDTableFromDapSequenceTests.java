@@ -23,6 +23,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagExternalERDDAP;
 import tags.TagLocalERDDAP;
@@ -853,11 +854,11 @@ class EDDTableFromDapSequenceTests {
       DataDDS dataDds = dConnect.getData(null); // null = no statusUI
 
       // *** read the data (row-by-row, as it wants)
-      DSequence outerSequence = (DSequence) dataDds.getVariables().nextElement();
+      DSequence outerSequence = (DSequence) dataDds.getVariables().next();
       int nOuterRows = outerSequence.getRowCount();
       System.out.println("nRows=" + nOuterRows);
       for (int outerRow = 0; outerRow < Math.min(5, nOuterRows); outerRow++) {
-        java.util.Vector outerVector = outerSequence.getRow(outerRow);
+        List<BaseType> outerVector = outerSequence.getRow(outerRow);
         StringBuilder sb = new StringBuilder();
 
         // process the other outerCol

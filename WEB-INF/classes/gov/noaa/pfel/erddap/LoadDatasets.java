@@ -171,7 +171,9 @@ public class LoadDatasets extends Thread {
       Set<String> datasetIDSet =
           new HashSet<>(); // to detect duplicates, just local use, no need for thread-safe
       StringArray duplicateDatasetIDs = new StringArray(); // list of duplicates
-      EDStatic.suggestAddFillValueCSV.setLength(0);
+      synchronized (EDStatic.suggestAddFillValueCSV) {
+        EDStatic.suggestAddFillValueCSV.setLength(0);
+      }
 
       // ensure EDDTableFromAllDatasets exists
       // If something causes it to not exist, this will recreate it soon.
@@ -364,42 +366,43 @@ public class LoadDatasets extends Thread {
         EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; // swap into place
         EDStatic.failedDatasetsWithErrors = failedDatasetsWithErrors;
         EDStatic.errorsDuringMajorReload = errorsDuringMajorReload.toString(); // swap into place
-        EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
-            0, // header in EDStatic
-            // "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests
-            // (median times in ms)                Number of Threads      MB    gc   Open\n" +
-            // "  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail
-            // (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n" +
-            // "----------------------------  -----   -----------------
-            // -----------------------------------------------------  ---------------------  -----
-            // ----- -----\n"
-            "  "
-                + cDateTimeLocal
-                + String2.right("" + (loadDatasetsTime / 1000 + 1), 7)
-                + "s"
-                + // time
-                String2.right("" + nTry, 7)
-                + String2.right("" + ndf, 6)
-                + String2.right("" + (EDStatic.nGridDatasets + EDStatic.nTableDatasets), 7)
-                + // nTotal
-                String2.right("" + nResponseSucceeded, 10)
-                + " ("
-                + String2.right("" + Math.min(999999, medianResponseSucceeded), 6)
-                + ")"
-                + String2.right("" + Math.min(999999, nResponseFailed), 6)
-                + " ("
-                + String2.right("" + Math.min(999999, medianResponseFailed), 6)
-                + ")"
-                + String2.right("" + Math.min(99999, EDStatic.requestsShed.get()), 5)
-                + String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures.get()), 8)
-                + String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8)
-                + threadCounts
-                + String2.right("" + using / Math2.BytesPerMB, 7)
-                + // memory using
-                String2.right("" + Math2.gcCallCount, 6)
-                + openFiles
-                + "\n");
-
+        synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+          EDStatic.majorLoadDatasetsTimeSeriesSB.insert(
+              0, // header in EDStatic
+              // "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests
+              // (median times in ms)                Number of Threads      MB    gc   Open\n" +
+              // "  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail
+              // (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n" +
+              // "----------------------------  -----   -----------------
+              // -----------------------------------------------------  ---------------------  -----
+              // ----- -----\n"
+              "  "
+                  + cDateTimeLocal
+                  + String2.right("" + (loadDatasetsTime / 1000 + 1), 7)
+                  + "s"
+                  + // time
+                  String2.right("" + nTry, 7)
+                  + String2.right("" + ndf, 6)
+                  + String2.right("" + (EDStatic.nGridDatasets + EDStatic.nTableDatasets), 7)
+                  + // nTotal
+                  String2.right("" + nResponseSucceeded, 10)
+                  + " ("
+                  + String2.right("" + Math.min(999999, medianResponseSucceeded), 6)
+                  + ")"
+                  + String2.right("" + Math.min(999999, nResponseFailed), 6)
+                  + " ("
+                  + String2.right("" + Math.min(999999, medianResponseFailed), 6)
+                  + ")"
+                  + String2.right("" + Math.min(99999, EDStatic.requestsShed.get()), 5)
+                  + String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures.get()), 8)
+                  + String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8)
+                  + threadCounts
+                  + String2.right("" + using / Math2.BytesPerMB, 7)
+                  + // memory using
+                  String2.right("" + Math2.gcCallCount, 6)
+                  + openFiles
+                  + "\n");
+        }
         // reset  since last majorReload
         Math2.gcCallCount.set(0);
         EDStatic.requestsShed.set(0);
@@ -425,10 +428,12 @@ public class LoadDatasets extends Thread {
         // after every major loadDatasets
         EDStatic.actionsAfterEveryMajorLoadDatasets();
         int tpo = 13200; // 132 char/line * 100 lines
-        if (EDStatic.majorLoadDatasetsTimeSeriesSB.length() > tpo) {
-          // hopefully, start looking at exact desired \n location
-          int apo = EDStatic.majorLoadDatasetsTimeSeriesSB.indexOf("\n", tpo - 1);
-          if (apo >= 0) EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(apo + 1);
+        synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+          if (EDStatic.majorLoadDatasetsTimeSeriesSB.length() > tpo) {
+            // hopefully, start looking at exact desired \n location
+            int apo = EDStatic.majorLoadDatasetsTimeSeriesSB.indexOf("\n", tpo - 1);
+            if (apo >= 0) EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(apo + 1);
+          }
         }
 
         String2.flushLog(); // useful to have this info ASAP and ensure log is flushed periodically
@@ -438,7 +443,9 @@ public class LoadDatasets extends Thread {
       String2.log(e.toString());
       e.printStackTrace();
     } finally {
-      EDStatic.suggestAddFillValueCSV.setLength(0);
+      synchronized (EDStatic.suggestAddFillValueCSV) {
+        EDStatic.suggestAddFillValueCSV.setLength(0);
+      }
     }
   }
 

@@ -12,7 +12,7 @@
 package dods.dap;
 
 import java.io.*;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 
 /**
@@ -68,10 +68,10 @@ public class DataDDS extends DDS {
     // Use a DataInputStream for deserialize
     DataInputStream dataIS = new DataInputStream(bufferedIS);
 
-    for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
+    for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
       if (statusUI != null && statusUI.userCancelled())
         throw new DataReadException("User cancelled");
-      ClientIO bt = (ClientIO) e.nextElement();
+      ClientIO bt = (ClientIO) e.next();
       bt.deserialize(dataIS, ver, statusUI);
     }
     // notify GUI of finished download
@@ -84,8 +84,8 @@ public class DataDDS extends DDS {
    * @param os the <code>PrintWriter</code> to use.
    */
   public void printVal(PrintWriter os) {
-    for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
-      BaseType bt = (BaseType) e.nextElement();
+    for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
+      BaseType bt = e.next();
       bt.printVal(os, "", true);
     }
     os.println();
@@ -147,8 +147,8 @@ public class DataDDS extends DDS {
 
         // Use a DataOutputStream for serialize
         try (DataOutputStream dataOS = new DataOutputStream(bufferedOS)) {
-          for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
-            ClientIO bt = (ClientIO) e.nextElement();
+          for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
+            ClientIO bt = (ClientIO) e.next();
             bt.externalize(dataOS);
           }
           // Note: for DeflaterOutputStream, flush() is not sufficient to flush

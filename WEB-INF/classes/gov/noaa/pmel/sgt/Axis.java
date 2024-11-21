@@ -21,7 +21,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract base class for Cartesian axes. Cartesian axes are designed to be used with the <code>
@@ -47,8 +48,8 @@ public abstract class Axis implements Selectable {
    */
   public CartesianGraph graph_;
 
-  public Vector registeredAxes_;
-  public Vector registeredTransforms_;
+  public List<Axis> registeredAxes_;
+  public List<Transform> registeredTransforms_;
   public Color lineColor_;
   public int numSmallTics_;
   public double largeTicHeight_;
@@ -114,15 +115,15 @@ public abstract class Axis implements Selectable {
       // objects from Axis
       graph_ = null;
       if (registeredAxes_ != null) {
-        Vector o = registeredAxes_;
+        List<Axis> o = registeredAxes_;
         registeredAxes_ = null;
-        for (Object o2 : o) ((Axis) o2).releaseResources();
+        for (Axis o2 : o) o2.releaseResources();
         o.clear();
       }
       if (registeredTransforms_ != null) {
-        Vector o = registeredTransforms_;
+        List<Transform> o = registeredTransforms_;
         registeredTransforms_ = null;
-        for (Object o2 : o) ((Transform) o2).releaseResources();
+        for (Transform o2 : o) o2.releaseResources();
         o.clear();
       }
       labelFont_ = null;
@@ -262,8 +263,8 @@ public abstract class Axis implements Selectable {
    */
   public Axis(String id) {
     ident_ = id;
-    registeredAxes_ = new Vector();
-    registeredTransforms_ = new Vector();
+    registeredAxes_ = new ArrayList<>();
+    registeredTransforms_ = new ArrayList<>();
     //
     // set defaults
     //
@@ -336,7 +337,7 @@ public abstract class Axis implements Selectable {
    * @param axis An Axis object.
    */
   public void register(Axis axis) {
-    registeredAxes_.addElement(axis);
+    registeredAxes_.add(axis);
   }
 
   /**
@@ -346,7 +347,7 @@ public abstract class Axis implements Selectable {
    * @param trns A AxisTransform object.
    */
   public void register(AxisTransform trns) {
-    registeredTransforms_.addElement(trns);
+    registeredTransforms_.add(trns);
   }
 
   /**
@@ -356,7 +357,7 @@ public abstract class Axis implements Selectable {
    */
   public void clear(Axis axis) {
     if (!registeredAxes_.isEmpty()) {
-      registeredAxes_.removeElement(axis);
+      registeredAxes_.remove(axis);
     }
   }
 
@@ -368,13 +369,13 @@ public abstract class Axis implements Selectable {
    */
   public void clear(AxisTransform trns) {
     if (!registeredTransforms_.isEmpty()) {
-      registeredTransforms_.removeElement(trns);
+      registeredTransforms_.remove(trns);
     }
   }
 
   /** Unregister all axes. No axes will be notified of changes in the user range. */
   public void clearAllRegisteredAxes() {
-    registeredAxes_.removeAllElements();
+    registeredAxes_.clear();
   }
 
   /**
@@ -382,7 +383,7 @@ public abstract class Axis implements Selectable {
    * changes in the user of physical range.
    */
   public void clearAllRegisteredTransforms() {
-    registeredTransforms_.removeAllElements();
+    registeredTransforms_.clear();
   }
 
   /**

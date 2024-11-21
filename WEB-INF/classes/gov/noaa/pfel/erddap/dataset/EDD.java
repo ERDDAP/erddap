@@ -2513,7 +2513,7 @@ public abstract class EDD {
     int slashPo2 = EDStatic.convertToPublicSourceUrlFromSlashPo(tLocalSourceUrl);
     if (slashPo2 > 0) {
       String tFrom = tLocalSourceUrl.substring(0, slashPo2 + 1);
-      String tTo = (String) EDStatic.convertToPublicSourceUrl.get(tFrom);
+      String tTo = EDStatic.convertToPublicSourceUrl.get(tFrom);
       if (tTo != null) // there is a match
       return tTo + tLocalSourceUrl.substring(slashPo2 + 1);
     }

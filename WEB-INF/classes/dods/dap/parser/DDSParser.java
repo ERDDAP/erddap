@@ -968,7 +968,7 @@ public class DDSParser implements DDSParserConstants {
     else return (jj_ntk = jj_nt.kind);
   }
 
-  private final java.util.Vector jj_expentries = new java.util.Vector();
+  private final java.util.List<int[]> jj_expentries = new java.util.ArrayList<>();
   private int[] jj_expentry;
   private int jj_kind = -1;
   private final int[] jj_lasttokens = new int[100];
@@ -982,8 +982,7 @@ public class DDSParser implements DDSParserConstants {
       jj_expentry = new int[jj_endpos];
       System.arraycopy(jj_lasttokens, 0, jj_expentry, 0, jj_endpos);
       boolean exists = false;
-      for (java.util.Enumeration myEnum = jj_expentries.elements(); myEnum.hasMoreElements(); ) {
-        int[] oldentry = (int[]) myEnum.nextElement();
+      for (int[] oldentry : jj_expentries) {
         if (oldentry.length == jj_expentry.length) {
           exists = true;
           for (int i = 0; i < jj_expentry.length; i++) {
@@ -995,13 +994,13 @@ public class DDSParser implements DDSParserConstants {
           if (exists) break;
         }
       }
-      if (!exists) jj_expentries.addElement(jj_expentry);
+      if (!exists) jj_expentries.add(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }
 
   public final ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+    jj_expentries.clear();
     boolean[] la1tokens = new boolean[28];
     for (int i = 0; i < 28; i++) {
       la1tokens[i] = false;
@@ -1023,7 +1022,7 @@ public class DDSParser implements DDSParserConstants {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     jj_endpos = 0;
@@ -1031,7 +1030,7 @@ public class DDSParser implements DDSParserConstants {
     jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[]) jj_expentries.elementAt(i);
+      exptokseq[i] = jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }

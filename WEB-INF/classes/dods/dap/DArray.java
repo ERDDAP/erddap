@@ -13,8 +13,9 @@ package dods.dap;
 
 import dods.dap.Server.InvalidParameterException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class is used to hold arrays of other DODS data. The elements of the array can be simple or
@@ -52,7 +53,7 @@ import java.util.Vector;
  */
 public class DArray extends DVector implements Cloneable {
   /** A Vector of DArrayDimension information (i.e. the shape) */
-  private Vector dimVector;
+  private List<DArrayDimension> dimVector;
 
   /** Constructs a new <code>DArray</code>. */
   public DArray() {
@@ -66,7 +67,7 @@ public class DArray extends DVector implements Cloneable {
    */
   public DArray(String n) {
     super(n);
-    dimVector = new Vector();
+    dimVector = new ArrayList<>();
   }
 
   /**
@@ -78,10 +79,9 @@ public class DArray extends DVector implements Cloneable {
   @Override
   public DArray clone() {
     DArray a = (DArray) super.clone();
-    a.dimVector = new Vector<>();
-    for (int i = 0; i < dimVector.size(); i++) {
-      DArrayDimension d = (DArrayDimension) dimVector.elementAt(i);
-      a.dimVector.addElement(d.clone());
+    a.dimVector = new ArrayList<>();
+    for (DArrayDimension d : dimVector) {
+      a.dimVector.add((DArrayDimension) d.clone());
     }
     return a;
   }
@@ -137,8 +137,7 @@ public class DArray extends DVector implements Cloneable {
     // os.println("DArray.printDecl()");
 
     getPrimitiveVector().printDecl(os, space, false, constrained);
-    for (Enumeration e = dimVector.elements(); e.hasMoreElements(); ) {
-      DArrayDimension d = (DArrayDimension) e.nextElement();
+    for (DArrayDimension d : dimVector) {
       os.print("[");
       if (d.getName() != null) os.print(d.getName() + " = ");
       os.print(d.getSize() + "]");
@@ -173,8 +172,7 @@ public class DArray extends DVector implements Cloneable {
     int dims = numDimensions();
     int shape[] = new int[dims];
     int i = 0;
-    for (Enumeration e = dimVector.elements(); e.hasMoreElements(); ) {
-      DArrayDimension d = (DArrayDimension) e.nextElement();
+    for (DArrayDimension d : dimVector) {
       shape[i++] = d.getSize();
     }
 
@@ -226,7 +224,7 @@ public class DArray extends DVector implements Cloneable {
    */
   public void appendDim(int size, String name) {
     DArrayDimension newDim = new DArrayDimension(size, name);
-    dimVector.addElement(newDim);
+    dimVector.add(newDim);
   }
 
   /**
@@ -244,8 +242,8 @@ public class DArray extends DVector implements Cloneable {
    *
    * @return an <code>Enumeration</code> of <code>DArrayDimension</code>s in this array.
    */
-  public final Enumeration getDimensions() {
-    return dimVector.elements();
+  public final Iterator<DArrayDimension> getDimensions() {
+    return dimVector.iterator();
   }
 
   /**
@@ -264,7 +262,7 @@ public class DArray extends DVector implements Cloneable {
   public DArrayDimension getDimension(int dimension) throws InvalidParameterException {
 
     // QC the passed dimension
-    if (dimension < dimVector.size()) return ((DArrayDimension) dimVector.get(dimension));
+    if (dimension < dimVector.size()) return dimVector.get(dimension);
     else
       throw new InvalidParameterException(
           "DArray.getDimension(): Bad dimension request: dimension > # of dimensions");
@@ -272,6 +270,6 @@ public class DArray extends DVector implements Cloneable {
 
   /** Returns the <code>DArrayDimension</code> object for the first dimension. */
   public DArrayDimension getFirstDimension() {
-    return ((DArrayDimension) dimVector.getFirst());
+    return dimVector.getFirst();
   }
 }

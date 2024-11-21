@@ -83,10 +83,10 @@ public class CfToFromGcmd {
       throw new RuntimeException(t);
     }
     int nLines = lines.size();
-    HashMap cfHashMap = new HashMap();
-    HashMap gcmdHashMap = new HashMap();
+    HashMap<String, StringArray> cfHashMap = new HashMap<>();
+    HashMap<String, HashSet<String>> gcmdHashMap = new HashMap<>();
     cfHashMap.put("", new StringArray());
-    gcmdHashMap.put("", new HashSet());
+    gcmdHashMap.put("", new HashSet<>());
     boolean prevLineBlank = true;
     String prevCFs = null;
     StringArray prevCFsar = null;
@@ -119,9 +119,9 @@ public class CfToFromGcmd {
         }
         prevCFsar.add(s);
 
-        HashSet<String> gcmdHashSet = (HashSet) gcmdHashMap.get(s);
+        HashSet<String> gcmdHashSet = gcmdHashMap.get(s);
         if (gcmdHashSet == null) {
-          gcmdHashSet = new HashSet();
+          gcmdHashSet = new HashSet<>();
           gcmdHashMap.put(s, gcmdHashSet);
         }
         gcmdHashSet.add(prevCFs);
@@ -129,23 +129,23 @@ public class CfToFromGcmd {
     }
 
     // convert cfHashMap to cfNames and cfToGcmd
-    cfNames = (String[]) cfHashMap.keySet().toArray(new String[0]);
+    cfNames = cfHashMap.keySet().toArray(new String[0]);
     Arrays.sort(cfNames); // they are consistently capitalized, so sort works nicely
     int nCF = cfNames.length;
     cfToGcmd = new String[nCF][];
     for (int i = 0; i < nCF; i++) {
-      StringArray sar = (StringArray) cfHashMap.get(cfNames[i]);
+      StringArray sar = cfHashMap.get(cfNames[i]);
       // sort?  No, there is a general ordering of best to least good
       cfToGcmd[i] = sar.toArray();
     }
 
     // convert gcmdHashMap to gcmdKeywords and gcmdToCf
-    gcmdKeywords = (String[]) gcmdHashMap.keySet().toArray(new String[0]);
+    gcmdKeywords = gcmdHashMap.keySet().toArray(new String[0]);
     Arrays.sort(gcmdKeywords); // they are consistently capitalized, so sort works nicely
     int nGCMD = gcmdKeywords.length;
     gcmdToCf = new String[nGCMD][];
     for (int i = 0; i < nGCMD; i++) {
-      HashSet<String> hashSet = (HashSet) gcmdHashMap.get(gcmdKeywords[i]);
+      HashSet<String> hashSet = gcmdHashMap.get(gcmdKeywords[i]);
       gcmdToCf[i] = hashSet.toArray(new String[0]);
       Arrays.sort(gcmdToCf[i]); // they are consistently capitalized, so sort works nicely
     }

@@ -37,8 +37,8 @@ import java.io.ByteArrayInputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import thredds.client.catalog.Access;
@@ -1169,7 +1169,7 @@ public class EDDGridFromDap extends EDDGrid {
 
     // read through the variables[]
     HashSet<String> dimensionNameCsvsFound = new HashSet<>();
-    Enumeration vars = dds.getVariables();
+    Iterator<BaseType> vars = dds.getVariables();
     StringArray varNames = new StringArray();
     StringBuilder results = new StringBuilder();
     // if dimensionName!=null, this notes if a var with another dimension combo was found
@@ -1177,8 +1177,8 @@ public class EDDGridFromDap extends EDDGrid {
     String sourceDimensionNamesInBrackets = null;
     Attributes gridMappingAtts = null;
     NEXT_VAR:
-    while (vars.hasMoreElements()) {
-      BaseType bt = (BaseType) vars.nextElement();
+    while (vars.hasNext()) {
+      BaseType bt = vars.next();
       String dName = bt.getName();
       varNames.add(dName);
 
@@ -1195,7 +1195,7 @@ public class EDDGridFromDap extends EDDGrid {
       // ensure it is a DGrid or DArray
       DArray mainDArray;
       if (bt instanceof DGrid dgrid)
-        mainDArray = dgrid.getVariables().nextElement(); // first element is always main array
+        mainDArray = (DArray) dgrid.getVariables().next(); // first element is always main array
       else if (bt instanceof DArray darray) mainDArray = darray;
       else continue;
 

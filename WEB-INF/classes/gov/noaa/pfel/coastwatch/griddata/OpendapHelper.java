@@ -19,8 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayObject;
 import ucar.ma2.DataType;
@@ -194,15 +194,20 @@ public class OpendapHelper {
 
       } else {
         // process a simple attribute
-        String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
+        List<String> sar = new ArrayList<>();
+        Iterator<String> elems = attribute.getValues();
+        while (elems.hasNext()) {
+          sar.add(elems.next());
+        }
 
         // remove enclosing quotes from strings
-        for (int i = 0; i < sar.length; i++) {
-          int sariLength = sar[i].length();
-          if (sariLength >= 2 && sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-            sar[i] = String2.fromJson(sar[i]);
+        for (int i = 0; i < sar.size(); i++) {
+          int sariLength = sar.get(i).length();
+          if (sariLength >= 2
+              && sar.get(i).charAt(0) == '"'
+              && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
         }
-        StringArray sa = new StringArray(sar);
+        StringArray sa = new StringArray(sar.toArray());
 
         // store values in the appropriate type of PrimitiveArray
         PrimitiveArray pa = null;
@@ -285,14 +290,19 @@ public class OpendapHelper {
         return new String[] {};
       }
 
-      String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
-      // remove enclosing quotes from strings
-      for (int i = 0; i < sar.length; i++) {
-        int sariLength = sar[i].length();
-        if (sariLength >= 2 && sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-          sar[i] = String2.fromJson(sar[i]);
+      List<String> sar = new ArrayList<>();
+      Iterator<String> elems = attribute.getValues();
+      while (elems.hasNext()) {
+        sar.add(elems.next());
       }
-      return sar;
+      // remove enclosing quotes from strings
+      for (int i = 0; i < sar.size(); i++) {
+        int sariLength = sar.get(i).length();
+        if (sariLength >= 2
+            && sar.get(i).charAt(0) == '"'
+            && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
+      }
+      return String2.toStringArray(sar.toArray());
     } catch (Exception e) {
       String2.log(
           "WARNING: OpendapHelper.getAttributeValues(\nvarName="
@@ -441,8 +451,7 @@ public class OpendapHelper {
       throws Exception {
     long time = System.currentTimeMillis();
     DataDDS dataDds = dConnect.getData(query, null);
-    BaseType bt =
-        (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
+    BaseType bt = dataDds.getVariables().next(); // first element is always main array
     // bt.printVal(System.out, " ");
     DArray da = (DArray) bt;
     if (verbose)
@@ -486,8 +495,7 @@ public class OpendapHelper {
             "    OpendapHelper.getPrimitiveArrays done. TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-      BaseType bt =
-          (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
+      BaseType bt = dataDds.getVariables().next(); // first element is always main array
       return getPrimitiveArrays(bt);
     } catch (Exception e) {
       throw new RuntimeException(
@@ -507,8 +515,8 @@ public class OpendapHelper {
     switch (baseType) {
       case DGrid dgrid -> {
         ArrayList<DArray> al = new ArrayList<>();
-        Enumeration<DArray> e = dgrid.getVariables();
-        while (e.hasMoreElements()) al.add(e.nextElement());
+        Iterator<BaseType> e = dgrid.getVariables();
+        while (e.hasNext()) al.add((DArray) e.next());
         PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
         for (int i = 0; i < al.size(); i++)
           paAr[i] = getPrimitiveArray(al.get(i).getPrimitiveVector());
@@ -1108,11 +1116,11 @@ public class OpendapHelper {
    */
   public static String[] findVarsWithSharedDimensions(DDS dds) throws Exception {
 
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     StringArray dimNames = new StringArray();
     StringArray varNames = new StringArray(); // vars with same dimNames
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       DArray dArray;
       if (baseType instanceof DGrid) {
         // dGrid has main dArray + dimensions
@@ -1185,10 +1193,10 @@ public class OpendapHelper {
    */
   public static String[] findAllScalarOrMultiDimVars(DDS dds) throws Exception {
 
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     StringArray varNames = new StringArray(); // vars with same dimNames
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       if (instanceofScalarOrMultiDimVar(baseType)) varNames.add(baseType.getName());
     }
     return varNames.toArray();

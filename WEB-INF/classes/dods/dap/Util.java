@@ -11,7 +11,9 @@
 
 package dods.dap;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -21,6 +23,39 @@ import java.util.Vector;
  * @author jehamby
  */
 class Util {
+  /**
+   * Compares elements in a <code>List</code> of <code>BaseType</code>s and throw a <code>
+   * BadSemanticsException</code> if there are any duplicate elements.
+   *
+   * @param v The <code>List</code> to check
+   * @param varName the name of the variable which called us
+   * @param typeName the type name of the variable which called us
+   * @exception BadSemanticsException if there are duplicate elements
+   * @exception IndexOutOfBoundsException if size doesn't match the number of elements in the <code>
+   *     Enumeration</code>
+   */
+  static void uniqueNames(List<BaseType> v, String varName, String typeName)
+      throws BadSemanticsException {
+    List<String> nameList = new ArrayList<>();
+    for (BaseType bt : v) {
+      nameList.add(bt.getName());
+    }
+    nameList.sort(null);
+
+    for (int i = 1; i < nameList.size(); i++) {
+      if (nameList.get(i - 1).equals(nameList.get(i))) {
+        throw new BadSemanticsException(
+            "The variable `"
+                + nameList.get(i)
+                + "' is used more than once in "
+                + typeName
+                + " `"
+                + varName
+                + "'");
+      }
+    }
+  }
+
   /**
    * Compares elements in a <code>Vector</code> of <code>BaseType</code>s and throw a <code>
    * BadSemanticsException</code> if there are any duplicate elements.

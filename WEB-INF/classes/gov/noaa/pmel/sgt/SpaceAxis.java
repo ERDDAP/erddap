@@ -21,7 +21,6 @@ import gov.noaa.pmel.util.SoTValue;
 import gov.noaa.pmel.util.TimePoint;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Enumeration;
 
 // jdk1.2
 // import java.awt.geom.Point2D;
@@ -114,8 +113,8 @@ public abstract class SpaceAxis extends Axis {
   protected void updateRegisteredTransforms() {
     if (!registeredTransforms_.isEmpty()) {
       AxisTransform trns;
-      for (Enumeration it = registeredTransforms_.elements(); it.hasMoreElements(); ) {
-        trns = (AxisTransform) it.nextElement();
+      for (Transform item : registeredTransforms_) {
+        trns = (AxisTransform) item;
         trns.setRangeP(pRange_);
         trns.setRangeU(uRange_);
       }
@@ -127,8 +126,8 @@ public abstract class SpaceAxis extends Axis {
   protected void updateRegisteredAxes() {
     if (!registeredAxes_.isEmpty()) {
       SpaceAxis ax;
-      for (Enumeration it = registeredAxes_.elements(); it.hasMoreElements(); ) {
-        ax = (SpaceAxis) it.nextElement();
+      for (Axis axis : registeredAxes_) {
+        ax = (SpaceAxis) axis;
         ax.setRangeU(uRange_);
         ax.setRangeP(pRange_);
       }

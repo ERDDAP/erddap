@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.sound.sampled.AudioFileFormat;
@@ -10896,7 +10895,7 @@ public class Table {
     DataDDS dataDds = dConnect.getData(null); // null = no statusUI
     if (reallyVerbose)
       String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
-    BaseType firstVariable = (BaseType) dataDds.getVariables().nextElement();
+    BaseType firstVariable = dataDds.getVariables().next();
     if (!(firstVariable instanceof DSequence))
       throw new Exception(
           errorInMethod
@@ -11061,7 +11060,7 @@ public class Table {
 
     // *** read the data (row-by-row, as it wants)
     for (int outerRow = 0; outerRow < nOuterRows; outerRow++) {
-      Vector outerVector = outerSequence.getRow(outerRow);
+      List<BaseType> outerVector = outerSequence.getRow(outerRow);
       int col;
 
       // get data from innerSequence first (so nInnerRows is known)
@@ -11078,11 +11077,11 @@ public class Table {
             errorInMethod + "Unexpected nInnerColumns for outer row #" + outerRow);
         col = innerSequenceColumn;
         for (int innerRow = 0; innerRow < nInnerRows; innerRow++) {
-          Vector innerVector = innerSequence.getRow(innerRow);
+          List<BaseType> innerVector = innerSequence.getRow(innerRow);
           for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
             // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow
             // + " IC=" + innerCol);
-            BaseType ibt = (BaseType) innerVector.get(innerCol);
+            BaseType ibt = innerVector.get(innerCol);
             switch (ibt) {
               case DByte t -> ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
               case DFloat32 t -> ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
@@ -11123,7 +11122,7 @@ public class Table {
 
         // note addN (not add)
         // I tried storing type of column to avoid instanceof, but no faster.
-        BaseType obt = (BaseType) outerVector.get(outerCol);
+        BaseType obt = outerVector.get(outerCol);
         switch (obt) {
           case DByte t -> ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
           case DFloat32 t -> ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());

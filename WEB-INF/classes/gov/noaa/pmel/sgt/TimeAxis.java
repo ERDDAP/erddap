@@ -23,8 +23,7 @@ import gov.noaa.pmel.util.TimeRange;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
 
 // jdk1.2
 // import java.awt.geom.Point2D;
@@ -232,8 +231,8 @@ public class TimeAxis extends Axis implements Cloneable {
   protected void updateRegisteredTransforms() {
     if (!registeredTransforms_.isEmpty()) {
       AxisTransform trns;
-      for (Enumeration it = registeredTransforms_.elements(); it.hasMoreElements(); ) {
-        trns = (AxisTransform) it.nextElement();
+      for (Transform item : registeredTransforms_) {
+        trns = (AxisTransform) item;
         trns.setRangeP(pRange_);
         trns.setRangeU(tRange_);
       }
@@ -245,8 +244,8 @@ public class TimeAxis extends Axis implements Cloneable {
   protected void updateRegisteredAxes() {
     if (!registeredAxes_.isEmpty()) {
       TimeAxis ax;
-      for (Enumeration it = registeredAxes_.elements(); it.hasMoreElements(); ) {
-        ax = (TimeAxis) it.nextElement();
+      for (Axis axis : registeredAxes_) {
+        ax = (TimeAxis) axis;
         ax.setRangeU(tRange_);
         ax.setRangeP(pRange_);
       }
@@ -405,8 +404,8 @@ public class TimeAxis extends Axis implements Cloneable {
     //
     // remove registered axes and transforms
     //
-    newAxis.registeredAxes_ = new Vector(2, 2);
-    newAxis.registeredTransforms_ = new Vector(2, 2);
+    newAxis.registeredAxes_ = new ArrayList<>();
+    newAxis.registeredTransforms_ = new ArrayList<>();
     //
     return newAxis;
   }

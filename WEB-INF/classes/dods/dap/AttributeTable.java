@@ -15,7 +15,6 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -317,12 +316,12 @@ public class AttributeTable implements Cloneable {
           if (_Debug) System.out.println("    Printing Attribute \"" + name + "\".");
 
           os.print(pad + a.getTypeString() + " " + name + " ");
-          Enumeration es = a.getValues();
-          String val = (String) es.nextElement(); // get first element
+          Iterator<String> es = a.getValues();
+          String val = es.next(); // get first element
 
-          while (es.hasMoreElements()) { // lookahead one element
+          while (es.hasNext()) { // lookahead one element
             os.print(val + ", ");
-            val = (String) es.nextElement();
+            val = es.next();
           }
           os.println(val + ";"); // print last element
         }

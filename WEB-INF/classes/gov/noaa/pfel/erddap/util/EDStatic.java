@@ -282,15 +282,15 @@ public class EDStatic {
       new AtomicInteger(0); // since last Major LoadDatasets
   public static final AtomicInteger dangerousMemoryFailures =
       new AtomicInteger(0); // since last Major LoadDatasets
-  public static final StringBuffer suggestAddFillValueCSV =
-      new StringBuffer(); // EDV constructors append message here   //thread-safe but probably
+  public static final StringBuilder suggestAddFillValueCSV =
+      new StringBuilder(); // EDV constructors append message here   //thread-safe but probably
   // doesn't need to be
 
   public static String datasetsThatFailedToLoad = "";
   public static String failedDatasetsWithErrors = "";
   public static String errorsDuringMajorReload = "";
-  public static final StringBuffer majorLoadDatasetsTimeSeriesSB =
-      new StringBuffer(); // thread-safe (1 thread writes but others may read)
+  public static final StringBuilder majorLoadDatasetsTimeSeriesSB =
+      new StringBuilder(); // thread-safe (1 thread writes but others may read)
   public static HashSet<String> requestBlacklist =
       null; // is read-only. Replacement is swapped into place.
   public static final long startupMillis = System.currentTimeMillis();
@@ -555,8 +555,8 @@ public class EDStatic {
    * This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets and is
    * used by EDD.convertToPublicSourceUrl.
    */
-  public static final ConcurrentHashMap convertToPublicSourceUrl =
-      new ConcurrentHashMap(16, 0.75f, 4);
+  public static final ConcurrentHashMap<String, String> convertToPublicSourceUrl =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /**
    * This returns the position of the "/" in if tFrom has "[something]//[something]/...", and is
@@ -2303,7 +2303,7 @@ public class EDStatic {
       // use Lucence?
       if (searchEngine.equals("lucene")) {
         useLuceneSearchEngine = true;
-        luceneDocNToDatasetID = new ConcurrentHashMap();
+        luceneDocNToDatasetID = new ConcurrentHashMap<>();
       } else {
         Test.ensureEqual(
             searchEngine,
@@ -5093,7 +5093,7 @@ public class EDStatic {
       String2.log("requestBlacklist is now null.");
     } else {
       String rb[] = String2.split(csv, ',');
-      HashSet<String> hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
+      HashSet<String> hs = new HashSet<>(Math2.roundToInt(1.4 * rb.length));
       hs.addAll(Arrays.asList(rb));
       requestBlacklist = hs; // set atomically
       String2.log("requestBlacklist is now " + String2.toCSSVString(rb));
@@ -7042,7 +7042,7 @@ public class EDStatic {
    */
   public static void updateUrls(Attributes sourceAtts, Attributes addAtts) {
     // get all the attribute names
-    HashSet<String> hs = new HashSet();
+    HashSet<String> hs = new HashSet<>();
     String names[];
     if (sourceAtts != null) {
       names = sourceAtts.getNames();

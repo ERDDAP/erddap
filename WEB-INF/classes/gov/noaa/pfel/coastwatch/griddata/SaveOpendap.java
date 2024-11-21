@@ -105,8 +105,7 @@ public class SaveOpendap {
           List<Dimension> tDimList = inVar.getDimensions();
 
           // create dimension[]
-          ArrayList<Dimension> dimList = new ArrayList<>();
-          dimList.addAll(tDimList);
+          ArrayList<Dimension> dimList = new ArrayList<>(tDimList);
 
           // add the variable to 'out'
           newVars[v] = NcHelper.addVariable(outRootGroup, varName, inVar.getDataType(), dimList);

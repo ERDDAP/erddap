@@ -29,8 +29,9 @@ import gov.noaa.pmel.util.Range2D;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Contour constructs a set of <code>ContourLine</code> objects based on the <code>ContourLevels
@@ -92,7 +93,7 @@ public class Contour implements PropertyChangeListener {
    * @supplierCardinality 1..*
    * @label contourLines
    */
-  private Vector contourLines_;
+  private List<ContourLine> contourLines_;
 
   /**
    * @link aggregationByValue
@@ -128,10 +129,11 @@ public class Contour implements PropertyChangeListener {
         o.releaseResources();
       }
       if (contourLines_ != null) {
-        Vector o = contourLines_; // done this way to avoid infinite loop
+        List<ContourLine> o = contourLines_; // done this way to avoid infinite loop
         contourLines_ = null;
-        Enumeration en = o.elements();
-        while (en.hasMoreElements()) ((ContourLine) en.nextElement()).releaseResources();
+        for (ContourLine line : o) {
+          line.releaseResources();
+        }
         o.clear();
       }
       sides_ = null;
@@ -199,9 +201,9 @@ public class Contour implements PropertyChangeListener {
    * Return the <code>Enumeration</code> of a <code>Vector</code> containing the <code>ContourLine
    * </code> objects.
    */
-  public Enumeration elements() {
+  public Iterator<ContourLine> elements() {
     if (!upToDate_) generateContourLines();
-    return contourLines_.elements();
+    return contourLines_.iterator();
   }
 
   /** Reponds to changes in the <code>ContourLevels</code> object. */
@@ -278,7 +280,7 @@ public class Contour implements PropertyChangeListener {
 
     if (upToDate_) return;
 
-    contourLines_ = new Vector();
+    contourLines_ = new ArrayList<>();
     upToDate_ = true;
     computeMinMax();
     //
@@ -290,12 +292,12 @@ public class Contour implements PropertyChangeListener {
     //
     // loop over all contour levels
     //
-    Enumeration lenum = contourLevels_.levelElements();
-    while (lenum.hasMoreElements()) {
+    Iterator<Double> lenum = contourLevels_.levelElements();
+    while (lenum.hasNext()) {
       //
       // initialize for level
       //
-      zc = (Double) lenum.nextElement();
+      zc = lenum.next();
       if (Debug.CONTOUR) {
         System.out.println("zc = " + zc);
       }
@@ -353,7 +355,7 @@ public class Contour implements PropertyChangeListener {
           cl.setLevel(zc);
           cl.setCartesianGraph(cg_);
           cl.setTime(tref_, xTime_, yTime_);
-          contourLines_.addElement(cl); /* add to list */
+          contourLines_.add(cl); /* add to list */
           cl.addPoint(0.0, 0.0); /* dummy k=1 point */
           //
           // Given entrance to square(i,j) on side lin,
@@ -422,8 +424,8 @@ public class Contour implements PropertyChangeListener {
                     //       pt(1) = pt(2)
                     //  pt(kmax+1) = pt(kmax)
                     //
-                    cl.setElementAt(cl.elementAt(1), 0);
-                    cl.addPoint((Point2D.Double) cl.elementAt(k));
+                    cl.setPointAt(0, cl.getPointAt(1));
+                    cl.addPoint(cl.getPointAt(k));
                     cl.setClosed(false);
                     cl.setKmax(kmax);
                     continue loop1000;
@@ -459,9 +461,9 @@ public class Contour implements PropertyChangeListener {
               //        pt(1) = pt(k)
               //   pt(kmax+1) = pt(3)
               //
-              cl.addPoint((Point2D.Double) cl.elementAt(1));
-              cl.setElementAt(cl.elementAt(k), 0);
-              cl.addPoint((Point2D.Double) cl.elementAt(2));
+              cl.addPoint(cl.getPointAt(1));
+              cl.setPointAt(0, cl.getPointAt(k));
+              cl.addPoint(cl.getPointAt(2));
               cl.setClosed(true);
               cl.setKmax(kmax);
               continue loop1000;
@@ -577,10 +579,7 @@ public class Contour implements PropertyChangeListener {
     double[] px, py;
     boolean xIncreasing, yIncreasing;
     double dlev, cspace;
-    Enumeration elem = contourLines_.elements();
-    ContourLine cl;
-    while (elem.hasMoreElements()) {
-      cl = (ContourLine) elem.nextElement();
+    for (ContourLine cl : contourLines_) {
       int kmax = cl.getKmax();
       int lev = contourLevels_.getIndex(cl.getLevel());
       if (Debug.CONTOUR) {
