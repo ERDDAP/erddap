@@ -474,10 +474,8 @@ public class SSR {
         }
 
         for (String s : al) {
-          InputStream in =
-              File2.getBufferedInputStream(
-                  s); // not File2.getDecompressedBufferedInputStream(). Read files as is.
-          try {
+          // not File2.getDecompressedBufferedInputStream(). Read files as is.
+          try (InputStream in = File2.getBufferedInputStream(s)) {
 
             // add ZIP entry to output stream
             String tName =
@@ -495,8 +493,6 @@ public class SSR {
 
             // complete the entry
             out.closeEntry();
-          } finally {
-            in.close();
           }
         }
       }

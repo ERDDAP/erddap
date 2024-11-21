@@ -817,8 +817,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
   public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
     if (!accessibleViaFiles) return null;
     // Get childDataset or localChildDataset. Work with stable local reference.
-    EDDTable tChildDataset = eddTable; // getChildDataset();
-    return tChildDataset.accessibleViaFilesFileTable(language, nextPath);
+    // getChildDataset();
+    return eddTable.accessibleViaFilesFileTable(language, nextPath);
   }
 
   /**
@@ -833,8 +833,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
   public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
     if (!accessibleViaFiles) return null;
     // Get childDataset or localChildDataset. Work with stable local reference.
-    EDDTable tChildDataset = eddTable; // getChildDataset();
-    return tChildDataset.accessibleViaFilesGetLocal(language, relativeFileName);
+    // getChildDataset();
+    return eddTable.accessibleViaFilesGetLocal(language, relativeFileName);
   }
 
   /**

@@ -130,21 +130,21 @@ public class Erddap extends HttpServlet {
    * All plainFileTypes must be valid EDDTable.dataFileTypeNames. If added a new type, also add to
    * sendPlainTable below and "//list of plainFileTypes" for rest.html.
    */
-  public static final String[] plainFileTypes = {
-    // no need for .csvp or .tsvp, because plainFileTypes never write units
-    ".csv",
-    ".htmlTable",
-    ".itx",
-    ".json",
-    ".jsonlCSV1",
-    ".jsonlCSV",
-    ".jsonlKVP",
-    ".mat",
-    ".nc",
-    ".nccsv",
-    ".tsv",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> plainFileTypes =
+      ImmutableList.of(
+          // no need for .csvp or .tsvp, because plainFileTypes never write units
+          ".csv",
+          ".htmlTable",
+          ".itx",
+          ".json",
+          ".jsonlCSV1",
+          ".jsonlCSV",
+          ".jsonlKVP",
+          ".mat",
+          ".nc",
+          ".nccsv",
+          ".tsv",
+          ".xhtml");
 
   public static final String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
@@ -455,7 +455,7 @@ public class Erddap extends HttpServlet {
       // there is nothing after hostURL/erddap, no changes needed
       return requestUrl;
     String langCode = requestUrl.substring(protocolStart, langCodeEnd);
-    int langIndex = Arrays.asList(TranslateMessages.languageCodeList).indexOf(langCode);
+    int langIndex = TranslateMessages.languageCodeList.indexOf(langCode);
     if (langIndex == -1) {
       // the content between the "/" after hostURL/erddap and the "/" that follows is not recognized
       // so assume there is no language and that it's a protocol.
@@ -642,7 +642,7 @@ public class Erddap extends HttpServlet {
       int langCodeEnd = requestUrl.indexOf("/", protocolStart);
       if (langCodeEnd < 0) langCodeEnd = requestUrl.length();
       String langCode = requestUrl.substring(protocolStart, langCodeEnd);
-      language = String2.indexOf(TranslateMessages.languageCodeList, langCode);
+      language = TranslateMessages.languageCodeList.indexOf(langCode);
       if (language == -1) {
         // langCode not found in our list, use default(0)
         // assume first thing is a protocol
@@ -5774,16 +5774,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     StringBuilder sb = new StringBuilder();
-    int n = plainFileTypes.length;
+    int n = plainFileTypes.size();
     for (int pft = 0; pft < n; pft++) {
       sb.append(
           "    <a href=\""
               + tErddapUrl
               + relativeUrl
-              + plainFileTypes[pft]
+              + plainFileTypes.get(pft)
               + EDStatic.questionQuery(query)
               + "\">"
-              + plainFileTypes[pft]
+              + plainFileTypes.get(pft)
               + "</a>");
       if (pft <= n - 3) sb.append(",\n");
       if (pft == n - 2) sb.append(", or\n");
@@ -6399,7 +6399,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // catch pseudo filename that is just an extension
     String justExtension = "";
     if (nextPath == null && nameAndExt == null) {
-      int tWhich = String2.indexOf(plainFileTypes, id);
+      int tWhich = plainFileTypes.indexOf(id);
       if (tWhich >= 0) {
         justExtension = id;
         id = "";
@@ -6410,7 +6410,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         return;
       }
     } else {
-      int tWhich = String2.indexOf(plainFileTypes, nameAndExt);
+      int tWhich = plainFileTypes.indexOf(nameAndExt);
       if (tWhich >= 0) {
         // The "fileName" is just one of the plainFileType extensions, e.g., .csv.
         // Remove justExtension from localFullName and nextPath.
@@ -6847,7 +6847,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl(), pre "?"
 
     // ensure valid fileTypeName
-    int pft = String2.indexOf(plainFileTypes, fileTypeName);
+    int pft = plainFileTypes.indexOf(fileTypeName);
     if (pft < 0 && !fileTypeName.equals(".html")) {
       sendResourceNotFoundError(
           requestNumber,
@@ -13296,7 +13296,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String fileType = endOfRequest.substring(start.length() - 1);
     boolean isPlainType = false;
     if (fileType.equals(".html")) {
-    } else if (String2.indexOf(plainFileTypes, fileType) >= 0) {
+    } else if (plainFileTypes.indexOf(fileType) >= 0) {
       isPlainType = true;
     } else {
       throw new SimpleException(
@@ -14383,7 +14383,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (response.isCommitted())
         throw t; // rethrown exception (will be handled in doGet try/catch)
 
-      if (String2.indexOf(plainFileTypes, fileTypeName) >= 0)
+      if (plainFileTypes.indexOf(fileTypeName) >= 0)
         // for plainFileTypes, rethrow the error
         throw t;
 
@@ -15933,28 +15933,25 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // you are here
 
-    String sb =
+    return """
+            <table class="compact" style="width:100%; border-spacing:2px;">
+            <tr>
+            <td class="B" style="width:90%;">"""
+        + leftSide
+        + "</td>\n"
+        + "<td style=\"white-space:nowrap; width:10%;\">"
+        +
+
+        // rightside
+        rightSide
+        +
+
+        // end table
         """
-              <table class="compact" style="width:100%; border-spacing:2px;">
-              <tr>
-              <td class="B" style="width:90%;">"""
-            + leftSide
-            + "</td>\n"
-            + "<td style=\"white-space:nowrap; width:10%;\">"
-            +
-
-            // rightside
-            rightSide
-            +
-
-            // end table
-            """
-                      </td>
-                      </tr>
-                      </table>
-                      """;
-
-    return sb;
+                    </td>
+                    </tr>
+                    </table>
+                    """;
   }
 
   /**
@@ -16348,7 +16345,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String fileTypeName = File2.getExtension(endOfRequestUrl);
-    int whichPlainFileType = String2.indexOf(plainFileTypes, fileTypeName);
+    int whichPlainFileType = plainFileTypes.indexOf(fileTypeName);
 
     // ensure query has simplistically valid page= itemsPerPage=
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
@@ -18875,7 +18872,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.tally.add("Convert (since startup)", endOfRequest);
     EDStatic.tally.add("Convert (since last daily report)", endOfRequest);
     String fileTypeName = File2.getExtension(requestUrl);
-    int pft = String2.indexOf(plainFileTypes, fileTypeName);
+    int pft = plainFileTypes.indexOf(fileTypeName);
 
     if (endOfRequestUrl.equals("index.html")) {
       // fall through
@@ -18915,7 +18912,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // interpolate
     } else if (endOfRequestUrl.equals("interpolate.html")
-        || (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes[pft]))) {
+        || (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes.get(pft)))) {
       doConvertInterpolate(
           language,
           requestNumber,
@@ -20378,7 +20375,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tTLLTable = queryMap.get("TimeLatLonTable");
     String tRequestCSV = queryMap.get("requestCSV");
-    String tFileType = pft >= 0 ? plainFileTypes[pft] : ""; // default pft
+    String tFileType = pft >= 0 ? plainFileTypes.get(pft) : ""; // default pft
     if (tTLLTable == null) tTLLTable = "";
     if (tRequestCSV == null) tRequestCSV = "";
     String sampleTLL =

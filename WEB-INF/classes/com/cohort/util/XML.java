@@ -4,6 +4,7 @@
  */
 package com.cohort.util;
 
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,277 +33,277 @@ public class XML {
    * ) &quot; and &#39; are encoded to be safe (see encodeAsXML comments) and consistent with
    * encodeAsXML.
    */
-  public static final String[] HTML_ENTITIES = {
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "&#9;", // 0..  tab
-    "\n",
-    "",
-    "",
-    "\r",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // 10..
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "", // 20..
-    "",
-    "",
-    " ",
-    "!",
-    "&quot;",
-    "#",
-    "$",
-    "&#37;",
-    "&amp;",
-    "&#39;", // 30..   //% re percent encoding
-    "(",
-    ")",
-    "*",
-    "+",
-    ",",
-    "-",
-    ".",
-    "/",
-    "0",
-    "1", // 40..
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    ":",
-    ";", // 50..
-    "&lt;",
-    "=",
-    "&gt;",
-    "?",
-    "@",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E", // 60..
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O", // 70..
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y", // 80..
-    "Z",
-    "[",
-    "\\",
-    "]",
-    "^",
-    "_",
-    "`",
-    "a",
-    "b",
-    "c", // 90..
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m", // 100..
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w", // 110..
-    "x",
-    "y",
-    "z",
-    "{",
-    "|",
-    "}",
-    "~",
-    "", // 120..
-    // Assume 128-159 are from Windows https://en.wikipedia.org/wiki/Windows-1252
-    // So convert them to ASCII (a few) or HTML character entity.
-    //                                                upArrow  upDownArrow
-    //                          Zcaron
-    "&euro;",
-    "",
-    ",",
-    "&fnof;",
-    ",,",
-    "&hellip;",
-    "&#8224;",
-    "&#8225;",
-    "^",
-    "&permil;",
-    "&Scaron;",
-    "&lsaquo;",
-    "&OElig;",
-    "",
-    "&#381;",
-    "", // 128..
-    "",
-    "'",
-    "'",
-    "&quot;",
-    "&quot;",
-    "&bull;",
-    "&ndash;",
-    "&mdash;",
-    "~",
-    "&trade;",
-    "&scaron;",
-    "&rsaquo;",
-    "&oelig;",
-    "",
-    "&#382;",
-    "&Yuml;", // 144
-    "&nbsp;",
-    "&iexcl;",
-    "&cent;",
-    "&pound;",
-    "&curren;", // 160
-    "&yen;",
-    "&brvbar;",
-    "&sect;",
-    "&uml;",
-    "&copy;", // 165
-    "&ordf;",
-    "&laquo;",
-    "&not;",
-    "&shy;",
-    "&reg;", // 170
-    "&macr;",
-    "&deg;",
-    "&plusmn;",
-    "&sup2;",
-    "&sup3;", // 175..
-    "&acute;",
-    "&micro;",
-    "&para;",
-    "&middot;",
-    "&cedil;", // 180
-    "&sup1;",
-    "&ordm;",
-    "&raquo;",
-    "&frac14;",
-    "&frac12;", // 185..
-    "&frac34;",
-    "&iquest;",
-    "&Agrave;",
-    "&Aacute;",
-    "&Acirc;", // 190
-    "&Atilde;",
-    "&Auml;",
-    "&Aring;",
-    "&AElig;",
-    "&Ccedil;", // 195..
-    "&Egrave;",
-    "&Eacute;",
-    "&Ecirc;",
-    "&Euml;",
-    "&Igrave;", // 200
-    "&Iacute;",
-    "&Icirc;",
-    "&Iuml;",
-    "&ETH;",
-    "&Ntilde;", // 205..
-    "&Ograve;",
-    "&Oacute;",
-    "&Ocirc;",
-    "&Otilde;",
-    "&Ouml;", // 210
-    "&times;",
-    "&Oslash;",
-    "&Ugrave;",
-    "&Uacute;",
-    "&Ucirc;", // 215..
-    "&Uuml;",
-    "&Yacute;",
-    "&THORN;",
-    "&szlig;",
-    "&agrave;", // 220
-    "&aacute;",
-    "&acirc;",
-    "&atilde;",
-    "&auml;",
-    "&aring;", // 225..
-    "&aelig;",
-    "&ccedil;",
-    "&egrave;",
-    "&eacute;",
-    "&ecirc;", // 230
-    "&euml;",
-    "&igrave;",
-    "&iacute;",
-    "&icirc;",
-    "&iuml;", // 235..
-    "&eth;",
-    "&ntilde;",
-    "&ograve;",
-    "&oacute;",
-    "&ocirc;", // 240
-    "&otilde;",
-    "&ouml;",
-    "&divide;",
-    "&oslash;",
-    "&ugrave;", // 245..
-    "&uacute;",
-    "&ucirc;",
-    "&uuml;",
-    "&yacute;",
-    "&thorn;", // 250
-    "&yuml;"
-  }; // 255
+  public static final ImmutableList<String> HTML_ENTITIES =
+      ImmutableList.of(
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "&#9;", // 0..  tab
+          "\n",
+          "",
+          "",
+          "\r",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "", // 10..
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "", // 20..
+          "",
+          "",
+          " ",
+          "!",
+          "&quot;",
+          "#",
+          "$",
+          "&#37;",
+          "&amp;",
+          "&#39;", // 30..   //% re percent encoding
+          "(",
+          ")",
+          "*",
+          "+",
+          ",",
+          "-",
+          ".",
+          "/",
+          "0",
+          "1", // 40..
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          ":",
+          ";", // 50..
+          "&lt;",
+          "=",
+          "&gt;",
+          "?",
+          "@",
+          "A",
+          "B",
+          "C",
+          "D",
+          "E", // 60..
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O", // 70..
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W",
+          "X",
+          "Y", // 80..
+          "Z",
+          "[",
+          "\\",
+          "]",
+          "^",
+          "_",
+          "`",
+          "a",
+          "b",
+          "c", // 90..
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m", // 100..
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w", // 110..
+          "x",
+          "y",
+          "z",
+          "{",
+          "|",
+          "}",
+          "~",
+          "", // 120..
+          // Assume 128-159 are from Windows https://en.wikipedia.org/wiki/Windows-1252
+          // So convert them to ASCII (a few) or HTML character entity.
+          //                                                upArrow  upDownArrow
+          //                          Zcaron
+          "&euro;",
+          "",
+          ",",
+          "&fnof;",
+          ",,",
+          "&hellip;",
+          "&#8224;",
+          "&#8225;",
+          "^",
+          "&permil;",
+          "&Scaron;",
+          "&lsaquo;",
+          "&OElig;",
+          "",
+          "&#381;",
+          "", // 128..
+          "",
+          "'",
+          "'",
+          "&quot;",
+          "&quot;",
+          "&bull;",
+          "&ndash;",
+          "&mdash;",
+          "~",
+          "&trade;",
+          "&scaron;",
+          "&rsaquo;",
+          "&oelig;",
+          "",
+          "&#382;",
+          "&Yuml;", // 144
+          "&nbsp;",
+          "&iexcl;",
+          "&cent;",
+          "&pound;",
+          "&curren;", // 160
+          "&yen;",
+          "&brvbar;",
+          "&sect;",
+          "&uml;",
+          "&copy;", // 165
+          "&ordf;",
+          "&laquo;",
+          "&not;",
+          "&shy;",
+          "&reg;", // 170
+          "&macr;",
+          "&deg;",
+          "&plusmn;",
+          "&sup2;",
+          "&sup3;", // 175..
+          "&acute;",
+          "&micro;",
+          "&para;",
+          "&middot;",
+          "&cedil;", // 180
+          "&sup1;",
+          "&ordm;",
+          "&raquo;",
+          "&frac14;",
+          "&frac12;", // 185..
+          "&frac34;",
+          "&iquest;",
+          "&Agrave;",
+          "&Aacute;",
+          "&Acirc;", // 190
+          "&Atilde;",
+          "&Auml;",
+          "&Aring;",
+          "&AElig;",
+          "&Ccedil;", // 195..
+          "&Egrave;",
+          "&Eacute;",
+          "&Ecirc;",
+          "&Euml;",
+          "&Igrave;", // 200
+          "&Iacute;",
+          "&Icirc;",
+          "&Iuml;",
+          "&ETH;",
+          "&Ntilde;", // 205..
+          "&Ograve;",
+          "&Oacute;",
+          "&Ocirc;",
+          "&Otilde;",
+          "&Ouml;", // 210
+          "&times;",
+          "&Oslash;",
+          "&Ugrave;",
+          "&Uacute;",
+          "&Ucirc;", // 215..
+          "&Uuml;",
+          "&Yacute;",
+          "&THORN;",
+          "&szlig;",
+          "&agrave;", // 220
+          "&aacute;",
+          "&acirc;",
+          "&atilde;",
+          "&auml;",
+          "&aring;", // 225..
+          "&aelig;",
+          "&ccedil;",
+          "&egrave;",
+          "&eacute;",
+          "&ecirc;", // 230
+          "&euml;",
+          "&igrave;",
+          "&iacute;",
+          "&icirc;",
+          "&iuml;", // 235..
+          "&eth;",
+          "&ntilde;",
+          "&ograve;",
+          "&oacute;",
+          "&ocirc;", // 240
+          "&otilde;",
+          "&ouml;",
+          "&divide;",
+          "&oslash;",
+          "&ugrave;", // 245..
+          "&uacute;",
+          "&ucirc;",
+          "&uuml;",
+          "&yacute;",
+          "&thorn;", // 250
+          "&yuml;"); // 255
 
   public static final HashMap<String, Character> ENTITY_TO_CHAR_HASHMAP = new HashMap();
 
   static {
-    Test.ensureEqual(HTML_ENTITIES.length, 256, "HTML_ENTITIES.length");
+    Test.ensureEqual(HTML_ENTITIES.size(), 256, "HTML_ENTITIES.length");
     for (int i = 0; i < 256; i++) {
       if (i >= 128 && i < 160) // but not the Windows-1252 characters
       continue;
-      String ent = HTML_ENTITIES[i];
+      String ent = HTML_ENTITIES.get(i);
       if (ent.length() > 0) ENTITY_TO_CHAR_HASHMAP.put(ent, (char) i);
     }
   }
@@ -360,7 +361,7 @@ public class XML {
 
     for (int i = 0; i < size; i++) {
       int chi = plainText.charAt(i); // note: int
-      if (chi <= 255) output.append(HTML_ENTITIES[chi]);
+      if (chi <= 255) output.append(HTML_ENTITIES.get(chi));
       else output.append("&#x" + Integer.toHexString(chi) + ";");
     }
 
@@ -450,7 +451,7 @@ public class XML {
         // converting " is important to prevent cross site scripting;
         // it prevents attacker from closing href="..." quotes
         // [No. That's in a parameter. It shouldn't be needed for ordinary XML content.]
-        output.append(HTML_ENTITIES[chi]);
+        output.append(HTML_ENTITIES.get(chi));
       else if (encodeHighChar && chi > 255) output.append("&#x" + Integer.toHexString(chi) + ";");
       else output.append((char) chi);
     }

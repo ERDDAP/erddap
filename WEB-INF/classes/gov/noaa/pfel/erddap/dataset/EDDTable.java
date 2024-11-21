@@ -129,32 +129,34 @@ public abstract class EDDTable extends EDD {
    * The orderBy options. The order/positions may change as new ones are added. No codes depends on
    * the specific order/positions, except [0]="".
    */
-  public static final String[] orderByOptions = {
-    "",
-    "orderBy",
-    "orderByDescending",
-    "orderByClosest",
-    "orderByCount",
-    "orderByLimit",
-    "orderByMax",
-    "orderByMin",
-    "orderByMinMax",
-    "orderByMean",
-    "orderBySum"
-  };
+  public static final ImmutableList<String> orderByOptions =
+      ImmutableList.of(
+          "",
+          "orderBy",
+          "orderByDescending",
+          "orderByClosest",
+          "orderByCount",
+          "orderByLimit",
+          "orderByMax",
+          "orderByMin",
+          "orderByMinMax",
+          "orderByMean",
+          "orderBySum");
 
   public static final String DEFAULT_ORDERBYLIMIT = "100";
 
   /** These are used on web pages when a user changes orderBy. They parallel the orderByOptions. */
-  public static final String[] orderByExtraDefaults = {
-    "", "", "", "", "", DEFAULT_ORDERBYLIMIT, "", "", "", "", ""
-  };
+  public static final ImmutableList<String> orderByExtraDefaults =
+      ImmutableList.of("", "", "", "", "", DEFAULT_ORDERBYLIMIT, "", "", "", "", "");
 
   /**
    * This is the minimum number of orderBy variables that must be specified (not counting the
    * orderByExtra item).
    */
-  public static final byte[] minOrderByVariables = {0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0};
+  public static final ImmutableList<Byte> minOrderByVariables =
+      ImmutableList.of(
+          (byte) 0, (byte) 1, (byte) 1, (byte) 1, (byte) 0, (byte) 0, (byte) 1, (byte) 1, (byte) 1,
+          (byte) 0, (byte) 0);
 
   /** This is used in many file types as the row identifier. */
   public static final String ROW_NAME = "row"; // see also Table.ROW_NAME
@@ -643,10 +645,10 @@ public abstract class EDDTable extends EDD {
    * with cf_role=sosCdmCfRoles[t], !!!FOR NOW, cdm_data_type must be TimeSeries and so
    * sosOfferingType must be Station (?Check with Derrick)
    */
-  public static final String[] sosCdmDataTypes = {"TimeSeries"};
+  public static final ImmutableList<String> sosCdmDataTypes = ImmutableList.of("TimeSeries");
 
-  public static final String[] sosCdmOfferingTypes = {"Station"};
-  public static final String[] sosCdmCfRoles = {"timeseries_id"};
+  public static final ImmutableList<String> sosCdmOfferingTypes = ImmutableList.of("Station");
+  public static final ImmutableList<String> sosCdmCfRoles = ImmutableList.of("timeseries_id");
 
   /**
    * This is usually set by setSosOfferingTypeAndIndex(). This will be null if the dataset is not
@@ -704,17 +706,17 @@ public abstract class EDDTable extends EDD {
   public boolean setSosOfferingTypeAndIndex() {
     // Is the cdm_data_type one of the compatible types?
     String cdmType = combinedGlobalAttributes().getString("cdm_data_type");
-    int type = String2.indexOf(sosCdmDataTypes, cdmType);
+    int type = sosCdmDataTypes.indexOf(cdmType);
     if (type < 0) {
       if (debugMode)
         String2.log(
             "setSosOfferingTypeAndIndex=false.  cdm_data_type=" + cdmType + " is incompatible.");
       return false;
     }
-    sosOfferingType = sosCdmOfferingTypes[type];
+    sosOfferingType = sosCdmOfferingTypes.get(type);
 
     // look for the var with the right cf_role
-    String sosCdmCfRole = sosCdmCfRoles[type];
+    String sosCdmCfRole = sosCdmCfRoles.get(type);
     sosOfferingIndex = -1;
     for (int dv = 0; dv < dataVariables.length; dv++) {
       if (sosCdmCfRole.equals(dataVariables[dv].combinedAttributes().getString("cf_role"))) {
@@ -818,8 +820,8 @@ public abstract class EDDTable extends EDD {
     String errorInMethod =
         "datasets.xml/EDDTable.ensureValid error for datasetID=" + datasetID + ":\n ";
 
-    HashSet<String> sourceNamesHS = new HashSet(2 * dataVariables.length);
-    HashSet<String> destNamesHS = new HashSet(2 * dataVariables.length);
+    HashSet<String> sourceNamesHS = new HashSet<>(2 * dataVariables.length);
+    HashSet<String> destNamesHS = new HashSet<>(2 * dataVariables.length);
     for (EDV dataVariable : dataVariables) {
       // ensure unique sourceNames
       String sn = dataVariable.sourceName();
@@ -1075,18 +1077,16 @@ public abstract class EDDTable extends EDD {
   @Override
   public String toString() {
     // make this JSON format?
-    String sb =
-        "//** EDDTable "
-            + super.toString()
-            + "\nsourceCanConstrainNumericData="
-            + sourceCanConstrainNumericData
-            + "\nsourceCanConstrainStringData="
-            + sourceCanConstrainStringData
-            + "\nsourceCanConstrainStringRegex=\""
-            + sourceCanConstrainStringRegex
-            + "\""
-            + "\n\\**\n\n";
-    return sb;
+    return "//** EDDTable "
+        + super.toString()
+        + "\nsourceCanConstrainNumericData="
+        + sourceCanConstrainNumericData
+        + "\nsourceCanConstrainStringData="
+        + sourceCanConstrainStringData
+        + "\nsourceCanConstrainStringRegex=\""
+        + sourceCanConstrainStringRegex
+        + "\""
+        + "\n\\**\n\n";
   }
 
   /**
@@ -8846,8 +8846,8 @@ public abstract class EDDTable extends EDD {
     // find first part that uses orderBy...
     String obPart = null;
     int whichOb = 0;
-    for (int ob = 1; ob < orderByOptions.length; ob++) { // 1 because option[0] is ""
-      obPart = String2.stringStartsWith(queryParts, orderByOptions[ob] + "(\"");
+    for (int ob = 1; ob < orderByOptions.size(); ob++) { // 1 because option[0] is ""
+      obPart = String2.stringStartsWith(queryParts, orderByOptions.get(ob) + "(\"");
       if (obPart != null) {
         if (obPart.endsWith("\")")) {
           whichOb = ob;
@@ -8861,7 +8861,7 @@ public abstract class EDDTable extends EDD {
     StringArray obsa =
         whichOb > 0
             ? StringArray.fromCSV(
-                obPart.substring(orderByOptions[whichOb].length() + 2, obPart.length() - 2))
+                obPart.substring(orderByOptions.get(whichOb).length() + 2, obPart.length() - 2))
             : // the part inside the ""
             new StringArray();
     obsa.trimAll();
@@ -12163,16 +12163,16 @@ public abstract class EDDTable extends EDD {
         graphQueryNoTime.append("&distinct()");
       }
       // find first orderBy in queryParts
-      for (int i = 1; i < orderByOptions.length; i++) { // 1 since [0]=""
-        String start = orderByOptions[i] + "(\"";
+      for (int i = 1; i < orderByOptions.size(); i++) { // 1 since [0]=""
+        String start = orderByOptions.get(i) + "(\"";
         String obPart = String2.stringStartsWith(queryParts, start);
         if (obPart == null || !obPart.endsWith("\")")) continue;
         StringArray names =
             StringArray.fromCSV(obPart.substring(start.length(), obPart.length() - 2));
         StringArray goodNames = new StringArray();
-        boolean usesExtra = orderByExtraDefaults[i].length() > 0; // e.g., orderByLimit
+        boolean usesExtra = orderByExtraDefaults.get(i).length() > 0; // e.g., orderByLimit
         int nNames = names.size() - (usesExtra ? 1 : 0); // if uses extra, don't check last item
-        if (nNames < minOrderByVariables[i]) continue; // too few items in csv
+        if (nNames < minOrderByVariables.get(i)) continue; // too few items in csv
         for (int n = 0; n < nNames; n++) {
           String tName = names.get(n);
           int divPo = tName.indexOf('/');
@@ -12181,7 +12181,7 @@ public abstract class EDDTable extends EDD {
           goodNames.add(names.get(n));
           if (resultsVariables.indexOf(tName) < 0) resultsVariables.add(tName);
         }
-        if (goodNames.size() >= minOrderByVariables[i]) {
+        if (goodNames.size() >= minOrderByVariables.get(i)) {
           // success
           String tq =
               "&"
@@ -12395,8 +12395,7 @@ public abstract class EDDTable extends EDD {
 
         paramName = "pSec";
         pSections =
-            Math.max(
-                0, String2.indexOf(EDStatic.paletteSections, pParts.length > 5 ? pParts[5] : ""));
+            Math.max(0, EDStatic.paletteSections.indexOf(pParts.length > 5 ? pParts[5] : ""));
         writer.write(
             "    <td>&nbsp;"
                 + EDStatic.magGSNSectionsAr[language]
@@ -12426,7 +12425,7 @@ public abstract class EDDTable extends EDD {
                         + "|"
                         + palMax
                         + "|"
-                        + EDStatic.paletteSections[pSections]);
+                        + EDStatic.paletteSections.get(pSections));
         graphQuery.append(tq);
         graphQueryNoLatLon.append(tq);
         graphQueryNoTime.append(tq);
@@ -13179,7 +13178,7 @@ public abstract class EDDTable extends EDD {
           String parts[] = String2.split(partValue.substring(11), ',');
           if (parts.length == 2) {
             idealTimeN = String2.parseInt(parts[0]);
-            idealTimeUnits = String2.indexOf(Calendar2.IDEAL_UNITS_OPTIONS, parts[1]);
+            idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.indexOf(parts[1]);
           }
         }
         // if not set, find closest
@@ -13187,27 +13186,28 @@ public abstract class EDDTable extends EDD {
         //    String2.log("  idealTimeN=" + idealTimeN + " units=" + idealTimeUnits);
         if (idealTimeN < 1 || idealTimeN > 100 || idealTimeUnits < 0) {
 
-          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.length - 1;
-          while (idealTimeUnits > 0 && timeRange < Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]) {
+          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.size() - 1;
+          while (idealTimeUnits > 0
+              && timeRange < Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)) {
             idealTimeUnits--;
           }
           idealTimeN =
               Math2.minMax(
                   1,
                   100,
-                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]));
+                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)));
         }
         if (reallyVerbose)
           String2.log(
               "  idealTimeN+Units="
                   + idealTimeN
                   + " "
-                  + Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]);
+                  + Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits));
 
         // make idealized minTime
         GregorianCalendar idMinGc = Calendar2.roundToIdealGC(timeMin, idealTimeN, idealTimeUnits);
         GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         String gqnt =
             "window.location=\""
@@ -13224,9 +13224,13 @@ public abstract class EDDTable extends EDD {
                 + "</strong>&nbsp;</td>\n"
                 + "<td>");
 
-        String timeRangeString = idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
+        String timeRangeString =
+            idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits);
         String timeRangeParam =
-            "&amp;.timeRange=" + idealTimeN + "," + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
+            "&amp;.timeRange="
+                + idealTimeN
+                + ","
+                + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits);
 
         // n = 1..100
         writer.write(
@@ -13243,7 +13247,7 @@ public abstract class EDDTable extends EDD {
                     + "&amp;time%3C"
                     + Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMax, "")
                     + "&amp;.timeRange=\" + this.options[this.selectedIndex].text + \","
-                    + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits]
+                    + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits)
                     + "\";'"));
 
         // timeUnits
@@ -13274,9 +13278,9 @@ public abstract class EDDTable extends EDD {
               Calendar2.roundToIdealGC(edvTimeMin, idealTimeN, idealTimeUnits);
           // if it rounded to later time period, shift to earlier time period
           if (Math2.divideNoRemainder(tidMinGc.getTimeInMillis(), 1000) > edvTimeMin)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
@@ -13313,8 +13317,8 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMin) || (!Double.isNaN(edvTimeMin) && timeMin > edvTimeMin)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           writer.write(
               HtmlWidgets.htmlTooltipImage(
                       EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif",
@@ -13330,8 +13334,8 @@ public abstract class EDDTable extends EDD {
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -13342,8 +13346,8 @@ public abstract class EDDTable extends EDD {
         if (Double.isNaN(edvTimeMax) || (!Double.isNaN(edvTimeMax) && timeMax < edvTimeMax)) {
 
           // idealized (rounded) time shift
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           String equals =
               (!Double.isNaN(edvTimeMax) && idMaxGc.getTimeInMillis() >= edvTimeMax * 1000)
                   ? "="
@@ -13365,8 +13369,8 @@ public abstract class EDDTable extends EDD {
                           + timeRangeParam
                           + "\";'")
                   + "&nbsp;");
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+          idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
         } else {
           writer.write("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -13380,9 +13384,9 @@ public abstract class EDDTable extends EDD {
               Calendar2.roundToIdealGC(edvTimeMax, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
           if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < edvTimeMax)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // always show button if idealTime is different from current selection
           double idRange =
@@ -15971,7 +15975,7 @@ public abstract class EDDTable extends EDD {
           MessageFormat.format(EDStatic.noXxxBecauseAr[0], "SOS", EDStatic.noXxxNoLLTAr[0]));
 
     String cdt = combinedGlobalAttributes().getString("cdm_data_type");
-    int type = String2.indexOf(sosCdmDataTypes, cdt);
+    int type = sosCdmDataTypes.indexOf(cdt);
     if (type < 0)
       return String2.canonical(
           MessageFormat.format(

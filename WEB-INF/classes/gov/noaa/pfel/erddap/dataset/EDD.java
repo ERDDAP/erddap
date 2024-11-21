@@ -439,38 +439,15 @@ public abstract class EDD {
   }
 
   /** Internal class for storing conrete EDD subclass information. */
-  public static final class EDDClassInfo {
-    private final Class<EDD> eddClass;
-    private final Optional<Method> fromXmlMethod;
-    private final Optional<Class<State>> saxHandlerClass;
-
-    public EDDClassInfo(
-        Class<EDD> eddClass,
-        Optional<Method> fromXmlMethod,
-        Optional<Class<State>> saxHandlerClass) {
-      this.eddClass = eddClass;
-      this.fromXmlMethod = fromXmlMethod;
-      this.saxHandlerClass = saxHandlerClass;
-    }
-
-    public Class<EDD> getEddClass() {
-      return eddClass;
-    }
+  public record EDDClassInfo(
+      Class<EDD> eddClass, Optional<Method> fromXmlMethod, Optional<Class<State>> saxHandlerClass) {
 
     public boolean hasFromXmlMethod() {
       return fromXmlMethod.isPresent();
     }
 
-    public Optional<Method> getFromXmlMethod() {
-      return fromXmlMethod;
-    }
-
     public boolean hasSaxHandlerClass() {
       return saxHandlerClass.isPresent();
-    }
-
-    public Optional<Class<State>> getSaxHandlerClass() {
-      return saxHandlerClass;
     }
   }
 
@@ -565,7 +542,7 @@ public abstract class EDD {
       }
 
       try {
-        return (EDD) eddClassInfo.getFromXmlMethod().get().invoke(null, erddap, xmlReader);
+        return (EDD) eddClassInfo.fromXmlMethod().get().invoke(null, erddap, xmlReader);
       } catch (Throwable t) {
         // unwrap InvocationTargetExceptions
         if (t instanceof InvocationTargetException && t.getCause() != null) {
@@ -4083,7 +4060,7 @@ public abstract class EDD {
           if (isNumeric
               && (units == null
                   || units.length() == 0
-                  || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
+                  || EDV.METERS_VARIANTS.indexOf(units) >= 0)) { // case sensitive
             addTable.setColumnName(col, colNameLC);
             if (!EDV.ALT_UNITS.equals(units))
               addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
@@ -4227,7 +4204,7 @@ public abstract class EDD {
         if (isNumeric
             && (units == null
                 || units.length() == 0
-                || String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { // case sensitive
+                || EDV.METERS_VARIANTS.indexOf(units) >= 0)) { // case sensitive
           addTable.setColumnName(col, colNameLC);
           if (!EDV.ALT_UNITS.equals(units))
             addAtts.set("units", EDV.ALT_UNITS); // EDV.DEPTH_UNITS are also "m"
@@ -4358,7 +4335,7 @@ public abstract class EDD {
         hasLat = true;
       } else if (!hasAltDepth
           && isNumeric
-          && String2.indexOf(EDV.METERS_VARIANTS, units) >= 0
+          && EDV.METERS_VARIANTS.indexOf(units) >= 0
           && // case sensitive
           (colNameLC.indexOf("altitude") >= 0
               || colNameLC.indexOf("elevation") >= 0
@@ -4371,7 +4348,7 @@ public abstract class EDD {
         hasAltDepth = true;
       } else if (!hasAltDepth
           && isNumeric
-          && String2.indexOf(EDV.METERS_VARIANTS, units) >= 0
+          && EDV.METERS_VARIANTS.indexOf(units) >= 0
           && // case sensitive
           (colNameLC.indexOf("depth") >= 0
               || colNameLC.equals("z")
@@ -8880,7 +8857,7 @@ public abstract class EDD {
     testUnits = String2.replaceAll(testUnits, '=', '|');
     testUnits = String2.replaceAll(testUnits, ',', '|');
     testUnits = String2.replaceAll(testUnits, '/', '|');
-    boolean isMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnits) >= 0; // case sensitive
+    boolean isMeters = EDV.METERS_VARIANTS.indexOf(tUnits) >= 0; // case sensitive
 
     // convert feet to meters
     boolean isFeet =
@@ -10671,8 +10648,8 @@ public abstract class EDD {
           || tDestName.equals(EDV.LAT_NAME)
           || tDestName.equals(EDV.ALT_NAME)
           || tDestName.equals(EDV.DEPTH_NAME)
-          || String2.indexOf(EDV.LON_UNITS_VARIANTS, tUnits) >= 0
-          || String2.indexOf(EDV.LAT_UNITS_VARIANTS, tUnits) >= 0) {
+          || EDV.LON_UNITS_VARIANTS.indexOf(tUnits) >= 0
+          || EDV.LAT_UNITS_VARIANTS.indexOf(tUnits) >= 0) {
         addAtts.add("ioos_category", "Location");
 
       } else if (lcu.indexOf("bathym") >= 0
@@ -11561,7 +11538,7 @@ public abstract class EDD {
     po = tUnits.indexOf("???");
     if (po >= 0) tUnits = tUnits.substring(po + 3);
     String tUnitsLC = tUnits.toLowerCase();
-    boolean unitsAreMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnitsLC) >= 0; // case sensitive
+    boolean unitsAreMeters = EDV.METERS_VARIANTS.indexOf(tUnitsLC) >= 0; // case sensitive
 
     if (tPositive == null) tPositive = "";
     tPositive = tPositive.toLowerCase();

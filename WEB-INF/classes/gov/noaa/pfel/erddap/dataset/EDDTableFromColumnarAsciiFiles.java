@@ -827,7 +827,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
     if (!String2.isSomething(localTimeZone)) localTimeZone = "";
     String charset = null; // for the sample data file
     String defaultDatafileCharset = File2.ISO_8859_1; // for the sample data file
-    int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     Table addTable = new Table();
     Attributes addGlobalAtts = addTable.globalAttributes();
     tStandardizeWhat =
@@ -2443,7 +2442,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 ? ""
                 : "    <accessibleTo>" + tAccessibleTo + "</accessibleTo>\n")
             + "    <reloadEveryNMinutes>"
-            + tReloadEveryNMinutes
+            + DEFAULT_RELOAD_EVERY_N_MINUTES
             + "</reloadEveryNMinutes>\n"
             + "    <updateEveryNMillis>-1</updateEveryNMillis>\n"
             + (defaultDataQuery.length() > 0

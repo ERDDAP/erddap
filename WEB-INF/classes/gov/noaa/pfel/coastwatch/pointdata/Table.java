@@ -5819,10 +5819,9 @@ public class Table {
       Group rootGroup = netcdfFile.getRootGroup();
       List<Variable> rootGroupVariables = rootGroup.getVariables();
       for (Variable rootGroupVariable : rootGroupVariables) {
-        Variable var = rootGroupVariable;
-        boolean isChar = var.getDataType() == DataType.CHAR;
-        if (var.getRank() + (isChar ? -1 : 0) == 0) {
-          PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+        boolean isChar = rootGroupVariable.getDataType() == DataType.CHAR;
+        if (rootGroupVariable.getRank() + (isChar ? -1 : 0) == 0) {
+          PrimitiveArray pa = NcHelper.getPrimitiveArray(rootGroupVariable);
           // unpack is done at end of method
           // nc allows strings to be 0-terminated or padded with spaces, so always trimEnd
           if (pa instanceof StringArray) pa.setString(0, String2.trimEnd(pa.getString(0)));
@@ -5832,8 +5831,8 @@ public class Table {
           }
 
           Attributes atts = new Attributes();
-          NcHelper.getVariableAttributes(var, atts);
-          addColumn(insertAt++, var.getShortName(), pa, atts);
+          NcHelper.getVariableAttributes(rootGroupVariable, atts);
+          addColumn(insertAt++, rootGroupVariable.getShortName(), pa, atts);
         }
       }
 

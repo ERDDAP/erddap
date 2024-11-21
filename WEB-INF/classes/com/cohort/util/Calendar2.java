@@ -2298,17 +2298,13 @@ public class Calendar2 {
     for (int i = 0; i < 100; i++) IDEAL_N_OPTIONS[i] = "" + (i + 1);
   }
 
-  public static final String[] IDEAL_UNITS_OPTIONS =
-      new String[] {"second(s)", "minute(s)", "hour(s)", "day(s)", "month(s)", "year(s)"};
-  public static final double[] IDEAL_UNITS_SECONDS =
-      new double[] { // where imprecise, these are on the low end
-        1, 60, SECONDS_PER_HOUR, SECONDS_PER_DAY, 30.0 * SECONDS_PER_DAY, 365.0 * SECONDS_PER_DAY
-      };
-  public static final int[] IDEAL_UNITS_FIELD =
-      new int[] {SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR}; // month is 0..
-
-  public static int YMDHMSM_FIELDS[] =
-      new int[] {YEAR, MONTH, DATE, HOUR_OF_DAY, MINUTE, SECOND, MILLISECOND}; // month is 0
+  public static final ImmutableList<String> IDEAL_UNITS_OPTIONS =
+      ImmutableList.of("second(s)", "minute(s)", "hour(s)", "day(s)", "month(s)", "year(s)");
+  public static final ImmutableList<Integer> IDEAL_UNITS_SECONDS =
+      ImmutableList.of( // where imprecise, these are on the low end
+          1, 60, SECONDS_PER_HOUR, SECONDS_PER_DAY, 30 * SECONDS_PER_DAY, 365 * SECONDS_PER_DAY);
+  public static final ImmutableList<Integer> IDEAL_UNITS_FIELD =
+      ImmutableList.of(SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR); // month is 0..
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -5353,7 +5349,7 @@ public class Calendar2 {
       gc = newGCalendarZulu(ti / 12, (ti % 12) + 1, 1);
 
     } else { // seconds ... days: all have consistent length
-      double chunk = idealN * IDEAL_UNITS_SECONDS[idealUnits]; // e.g., decimal number of days
+      double chunk = idealN * IDEAL_UNITS_SECONDS.get(idealUnits); // e.g., decimal number of days
       double td = Math.rint(epochSeconds / chunk) * chunk; // round to nearest n units
       gc = newGCalendarZulu(Math2.roundToLong(td * 1000));
     }

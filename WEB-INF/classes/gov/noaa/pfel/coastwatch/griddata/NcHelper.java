@@ -886,9 +886,8 @@ public class NcHelper {
     // look for a time variable (units contain " since ")
     if (mainDimension == null) {
       for (Variable rootGroupVariable : rootGroupVariables) {
-        Variable variable = rootGroupVariable;
-        List<Dimension> dimensions = variable.getDimensions();
-        PrimitiveArray units = getVariableAttribute(variable, "units");
+        List<Dimension> dimensions = rootGroupVariable.getDimensions();
+        PrimitiveArray units = getVariableAttribute(rootGroupVariable, "units");
         if (units != null
             && units.size() > 0
             && Calendar2.isNumericTimeUnits(units.getString(0))

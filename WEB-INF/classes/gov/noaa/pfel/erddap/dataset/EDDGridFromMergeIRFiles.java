@@ -580,118 +580,115 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     // sb.append( "<!-- NOTE! The source for " + tDatasetID + " has nGridVariables=" + 2 +".
     // -->\n");
 
-    String sb =
-        "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\""
-            + tDatasetID
-            + "\" active=\"true\">\n"
-            + "    <reloadEveryNMinutes>"
-            + tReloadEveryNMinutes
-            + "</reloadEveryNMinutes>\n"
-            + (String2.isUrl(tCacheFromUrl)
-                ? "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n"
-                : "    <updateEveryNMillis>"
-                    + suggestUpdateEveryNMillis(tFileDir)
-                    + "</updateEveryNMillis>\n")
-            + "    <fileDir>"
-            + XML.encodeAsXML(tFileDir)
-            + "</fileDir>\n"
-            + "    <fileNameRegex>"
-            + XML.encodeAsXML(tFileNameRegex)
-            + "</fileNameRegex>\n"
-            + "    <recursive>true</recursive>\n"
-            + "    <pathRegex>.*</pathRegex>\n"
-            + "    <metadataFrom>last</metadataFrom>\n"
-            + "    <fileTableInMemory>false</fileTableInMemory>\n"
-            + """
-                          <addAttributes>
-                              <att name="cdm_data_type">Grid</att>
-                              <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
-                              <att name="creator_name">Bob Joyce</att>
-                              <att name="creator_email">robert.joyce@noaa.gov</att>
-                              <att name="creator_url">https://www.cpc.ncep.noaa.gov/</att>
-                              <att name="drawLandMask">under</att>
-                              <att name="infoUrl">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>
-                              <att name="institution">NOAA NWS NCEP CPC</att>
-                              <att name="keywords">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>
-                              <att name="keywords_vocabulary">GCMD Science Keywords</att>
-                              <att name="license">[standard]</att>
-                              <att name="summary">\
-                      The Climate Prediction Center/NCEP/NWS is now making available
-                      globally-merged (60N-60S) pixel-resolution IR brightness
-                      temperature data (equivalent blackbody temps), merged from all
-                      available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
-                      GMS).  The availability of data from METEOSAT-7, which is
-                      located at 57E at the present time, yields a unique opportunity
-                      for total global (60N-60S) coverage.</att>
-                              <att name="title">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>
-                          </addAttributes>
-                      """
-            + "    <axisVariable>\n"
-            + "        <sourceName>time</sourceName>\n"
-            + "        <destinationName>time</destinationName>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"axis\">T</att>\n"
-            + "            <att name=\"delta_t\">0000-00-00 00:30:00</att>\n"
-            + "            <att name=\"long_name\">Time</att>\n"
-            + "            <att name=\"standard_name\">time</att>\n"
-            + "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n"
-            + "        </addAttributes>\n"
-            + "    </axisVariable>\n"
-            + "    <axisVariable>\n"
-            + "        <sourceName>latitude</sourceName>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"units\">"
-            + EDV.LAT_UNITS
-            + "</att>\n"
-            + "        </addAttributes>\n"
-            + "    </axisVariable>\n"
-            + "    <axisVariable>\n"
-            + "        <sourceName>longitude</sourceName>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"units\">"
-            + EDV.LON_UNITS
-            + "</att>\n"
-            + "        </addAttributes>\n"
-            + "    </axisVariable>\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>ir</sourceName>\n"
-            + "        <dataType>short</dataType>\n"
-            + "        <!-- sourceAttributes>\n"
-            + "            <att name=\"colorBarMaximum\" type=\"int\">170</att>\n"
-            + "            <att name=\"colorBarMinimum\" type=\"int\">330</att>\n"
-            + "            <att name=\"ioos_cateory\">Heat Flux</att>\n"
-            + "            <att name=\"long_name\">IR Brightness Temperature</att>\n"
-            + "            <att name=\"missing_value\" type=\"short\">"
-            + IR_MV
-            + "</att>\n"
-            + "            <att name=\"standard_name\">brightness_temperature</att>\n"
-            + "            <att name=\"units\">degreeK</att>\n"
-            + "        </sourceAttributes -->\n"
-            + "        <addAttributes>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>flux</sourceName>\n"
-            + "        <dataType>double</dataType>\n"
-            + "        <!-- sourceAttributes>\n"
-            + "            <att name=\"colorBarMaximum\" type=\"double\">500.0</att>\n"
-            + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
-            + "            <att name=\"ioos_cateory\">Heat Flux</att>\n"
-            + "            <att name=\"long_name\">Flux</att>\n"
-            + "            <att name=\"missing_value\" type=\"double\">"
-            + FLUX_MV
-            + "</att>\n"
-            + "            <att name=\"standard_name\">surface_upwelling_shortwave_flux</att>\n"
-            + "            <att name=\"units\">W/m^2</att>\n"
-            + "        </sourceAttributes -->\n"
-            + "        <addAttributes>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + """
-                      </dataset>
+    return "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\""
+        + tDatasetID
+        + "\" active=\"true\">\n"
+        + "    <reloadEveryNMinutes>"
+        + tReloadEveryNMinutes
+        + "</reloadEveryNMinutes>\n"
+        + (String2.isUrl(tCacheFromUrl)
+            ? "    <cacheFromUrl>" + XML.encodeAsXML(tCacheFromUrl) + "</cacheFromUrl>\n"
+            : "    <updateEveryNMillis>"
+                + suggestUpdateEveryNMillis(tFileDir)
+                + "</updateEveryNMillis>\n")
+        + "    <fileDir>"
+        + XML.encodeAsXML(tFileDir)
+        + "</fileDir>\n"
+        + "    <fileNameRegex>"
+        + XML.encodeAsXML(tFileNameRegex)
+        + "</fileNameRegex>\n"
+        + "    <recursive>true</recursive>\n"
+        + "    <pathRegex>.*</pathRegex>\n"
+        + "    <metadataFrom>last</metadataFrom>\n"
+        + "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + """
+                        <addAttributes>
+                            <att name="cdm_data_type">Grid</att>
+                            <att name="Conventions">COARDS, CF-1.10, ACDD-1.3</att>
+                            <att name="creator_name">Bob Joyce</att>
+                            <att name="creator_email">robert.joyce@noaa.gov</att>
+                            <att name="creator_url">https://www.cpc.ncep.noaa.gov/</att>
+                            <att name="drawLandMask">under</att>
+                            <att name="infoUrl">https://www.cpc.ncep.noaa.gov/products/global_precip/html/README</att>
+                            <att name="institution">NOAA NWS NCEP CPC</att>
+                            <att name="keywords">4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature</att>
+                            <att name="keywords_vocabulary">GCMD Science Keywords</att>
+                            <att name="license">[standard]</att>
+                            <att name="summary">\
+                    The Climate Prediction Center/NCEP/NWS is now making available
+                    globally-merged (60N-60S) pixel-resolution IR brightness
+                    temperature data (equivalent blackbody temps), merged from all
+                    available geostationary satellites (GOES-8/10, METEOSAT-7/5 and
+                    GMS).  The availability of data from METEOSAT-7, which is
+                    located at 57E at the present time, yields a unique opportunity
+                    for total global (60N-60S) coverage.</att>
+                            <att name="title">NCEP/CPC 4km Global (60N - 60S) IR Dataset</att>
+                        </addAttributes>
+                    """
+        + "    <axisVariable>\n"
+        + "        <sourceName>time</sourceName>\n"
+        + "        <destinationName>time</destinationName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"axis\">T</att>\n"
+        + "            <att name=\"delta_t\">0000-00-00 00:30:00</att>\n"
+        + "            <att name=\"long_name\">Time</att>\n"
+        + "            <att name=\"standard_name\">time</att>\n"
+        + "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <axisVariable>\n"
+        + "        <sourceName>latitude</sourceName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"units\">"
+        + EDV.LAT_UNITS
+        + "</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <axisVariable>\n"
+        + "        <sourceName>longitude</sourceName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"units\">"
+        + EDV.LON_UNITS
+        + "</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>ir</sourceName>\n"
+        + "        <dataType>short</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"int\">170</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"int\">330</att>\n"
+        + "            <att name=\"ioos_cateory\">Heat Flux</att>\n"
+        + "            <att name=\"long_name\">IR Brightness Temperature</att>\n"
+        + "            <att name=\"missing_value\" type=\"short\">"
+        + IR_MV
+        + "</att>\n"
+        + "            <att name=\"standard_name\">brightness_temperature</att>\n"
+        + "            <att name=\"units\">degreeK</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>flux</sourceName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"double\">500.0</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+        + "            <att name=\"ioos_cateory\">Heat Flux</att>\n"
+        + "            <att name=\"long_name\">Flux</att>\n"
+        + "            <att name=\"missing_value\" type=\"double\">"
+        + FLUX_MV
+        + "</att>\n"
+        + "            <att name=\"standard_name\">surface_upwelling_shortwave_flux</att>\n"
+        + "            <att name=\"units\">W/m^2</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + """
+                    </dataset>
 
-                      """;
-
-    return sb;
+                    """;
   }
 }

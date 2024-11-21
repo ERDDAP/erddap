@@ -202,8 +202,7 @@ public class DoubleArray extends PrimitiveArray {
     // and java docs for Double.hashCode
     int code = 0;
     for (int i = 0; i < size; i++) {
-      long v = Double.doubleToLongBits(array[i]);
-      code = 31 * code + ((int) (v ^ v >>> 32)); // safe (only want low 32 bits)
+      code = 31 * code + Double.hashCode(array[i]);
     }
     return code;
     // return HashDigest.murmur32(array, size);

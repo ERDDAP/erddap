@@ -3951,7 +3951,7 @@ public abstract class EDDGrid extends EDD {
           String parts[] = String2.split(partValue.substring(11), ',');
           if (parts.length == 2) {
             idealTimeN = String2.parseInt(parts[0]);
-            idealTimeUnits = String2.indexOf(Calendar2.IDEAL_UNITS_OPTIONS, parts[1]);
+            idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.indexOf(parts[1]);
           }
         }
         // if not set, find closest
@@ -3965,8 +3965,9 @@ public abstract class EDDGrid extends EDD {
                   + idealTimeUnits);
         if (idealTimeN < 1 || idealTimeN > 100 || idealTimeUnits < 0) {
 
-          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.length - 1;
-          while (idealTimeUnits > 0 && timeRange < Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]) {
+          idealTimeUnits = Calendar2.IDEAL_UNITS_OPTIONS.size() - 1;
+          while (idealTimeUnits > 0
+              && timeRange < Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)) {
             idealTimeUnits--;
             // String2.log("  selecting timeRange=" + timeRange + " timeUnits=" + idealTimeUnits);
           }
@@ -3974,17 +3975,18 @@ public abstract class EDDGrid extends EDD {
               Math2.minMax(
                   1,
                   100,
-                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]));
+                  Math2.roundToInt(timeRange / Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits)));
         }
         if (reallyVerbose)
           String2.log(
               "  idealTimeN+Units="
                   + idealTimeN
                   + " "
-                  + Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]);
+                  + Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits));
 
         // make idealized timeRange
-        timeRange = idealTimeN * Calendar2.IDEAL_UNITS_SECONDS[idealTimeUnits]; // sometimes too low
+        timeRange =
+            idealTimeN * Calendar2.IDEAL_UNITS_SECONDS.get(idealTimeUnits); // sometimes too low
       }
 
       // show Graph Type choice
@@ -4315,7 +4317,7 @@ public abstract class EDDGrid extends EDD {
       if (zoomTime) {
         writer.write(
             widgets.hidden("timeN", "" + idealTimeN)
-                + widgets.hidden("timeUnits", Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits]));
+                + widgets.hidden("timeUnits", Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits)));
       }
 
       // add .draw and .vars to graphQuery
@@ -4503,8 +4505,7 @@ public abstract class EDDGrid extends EDD {
 
         paramName = "pSec";
         int pSections =
-            Math.max(
-                0, String2.indexOf(EDStatic.paletteSections, pParts.length > 5 ? pParts[5] : ""));
+            Math.max(0, EDStatic.paletteSections.indexOf(pParts.length > 5 ? pParts[5] : ""));
         writer.write(
             "    <td>&nbsp;" + EDStatic.magGSNSectionsAr[language] + ":&nbsp;</td>\n" + "    <td>");
         writer.write(
@@ -4534,7 +4535,7 @@ public abstract class EDDGrid extends EDD {
                         + "|"
                         + palMax
                         + "|"
-                        + EDStatic.paletteSections[pSections]));
+                        + EDStatic.paletteSections.get(pSections)));
       }
 
       if (drawVectors) {
@@ -5243,7 +5244,8 @@ public abstract class EDDGrid extends EDD {
 
         writer.write("<strong>" + EDStatic.magTimeRangeAr[language] + "</strong>\n");
 
-        String timeRangeString = idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
+        String timeRangeString =
+            idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS.get(idealTimeUnits);
         String timesVary = "<br>(" + EDStatic.magTimesVaryAr[language] + ")";
         String timeRangeTip =
             EDStatic.magTimeRangeTooltipAr[language] + EDStatic.magTimeRangeTooltip2Ar[language];
@@ -5277,9 +5279,9 @@ public abstract class EDDGrid extends EDD {
         // if it rounded to later time period, shift to earlier time period
         long roundedTime = idMinGc.getTimeInMillis() / 1000;
         if (roundedTime > timeCenter)
-          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
         GregorianCalendar idMaxGc = Calendar2.newGCalendarZulu(idMinGc.getTimeInMillis());
-        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+        idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
         // time back
         {
@@ -5289,9 +5291,9 @@ public abstract class EDDGrid extends EDD {
           // if it rounded to later time period, shift to earlier time period
           long roundedTimeTid = tidMinGc.getTimeInMillis() / 1000;
           if (roundedTimeTid > timeFirst)
-            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           GregorianCalendar tidMaxGc = Calendar2.newGCalendarZulu(tidMinGc.getTimeInMillis());
-          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+          tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           // always show LL button if idealTime is different from current selection
           double idRange =
@@ -5327,8 +5329,8 @@ public abstract class EDDGrid extends EDD {
           // idealized (rounded) time shift to left
           // (show based on more strict circumstances than LL (since relative shift, not absolute))
           if (timeStart > timeFirst) {
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -5349,8 +5351,8 @@ public abstract class EDDGrid extends EDD {
                             + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
 
           } else {
             writer.write(timeGap);
@@ -5363,8 +5365,8 @@ public abstract class EDDGrid extends EDD {
           // (show based on more strict circumstances than RR (since relative shift, not absolute))
           if (timeStop < timeLast) {
             // idealized (rounded) time shift to right
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
             writer.write(
                 "&nbsp;"
                     + HtmlWidgets.htmlTooltipImage(
@@ -5386,8 +5388,8 @@ public abstract class EDDGrid extends EDD {
                             + Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc)
                             + "\"; "
                             + "mySubmit(true);'"));
-            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
-            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+            idMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
+            idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
           } else {
             writer.write(timeGap);
           }
@@ -5397,9 +5399,9 @@ public abstract class EDDGrid extends EDD {
               Calendar2.roundToIdealGC(timeLast, idealTimeN, idealTimeUnits);
           // if it rounded to earlier time period, shift to later time period
           if (Math2.divideNoRemainder(tidMaxGc.getTimeInMillis(), 1000) < timeLast)
-            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);
+            tidMaxGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), idealTimeN);
           GregorianCalendar tidMinGc = Calendar2.newGCalendarZulu(tidMaxGc.getTimeInMillis());
-          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);
+          tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD.get(idealTimeUnits), -idealTimeN);
 
           // end time
           // always show RR button if idealTime is different from current selection

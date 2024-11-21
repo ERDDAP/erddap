@@ -160,8 +160,7 @@ public class SoTDomain implements java.io.Serializable {
 
   @Override
   public String toString() {
-    String buf = "x=" + xRange_ + ",y=" + yRange_ + ", xRev=" + xReversed_ + ", yRev=" + yReversed_;
-    return buf;
+    return "x=" + xRange_ + ",y=" + yRange_ + ", xRev=" + xReversed_ + ", yRev=" + yReversed_;
   }
 
   /**

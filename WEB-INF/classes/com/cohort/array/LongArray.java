@@ -191,8 +191,7 @@ public class LongArray extends PrimitiveArray {
     // https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
     // and java docs for Long.hashCode()
     int code = 0;
-    for (int i = 0; i < size; i++)
-      code = 31 * code + ((int) (array[i] ^ array[i] >>> 32)); // safe, only want low 32 bits
+    for (int i = 0; i < size; i++) code = 31 * code + Long.hashCode(array[i]);
     return code;
     // return HashDigest.murmur32(array, size);
   }

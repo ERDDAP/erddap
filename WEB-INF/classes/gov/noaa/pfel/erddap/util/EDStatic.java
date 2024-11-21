@@ -256,7 +256,7 @@ public class EDStatic {
   public static int[] emailThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
   public static int emailThreadNEmailsDistribution24[] =
       new int[String2.CountDistributionSize]; // count, not time
-  public static final int[] emailThreadNEmailsDistributionTotal =
+  public static int[] emailThreadNEmailsDistributionTotal =
       new int[String2.CountDistributionSize]; // count, not time
   public static int failureTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
   public static int failureTimesDistribution24[] = new int[String2.TimeDistributionSize];
@@ -884,11 +884,11 @@ public class EDStatic {
   public static String legal;
   public static String palettes[]; // an array of palettes
   public static String palettes0[]; // the array of palettes with a blank [0] item inserted
-  public static final String[] paletteSections = {
-    "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17",
-    "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
-    "34", "35", "36", "37", "38", "39", "40"
-  };
+  public static final ImmutableList<String> paletteSections =
+      ImmutableList.of(
+          "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
+          "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31",
+          "32", "33", "34", "35", "36", "37", "38", "39", "40");
   public static final String sparqlP01toP02pre;
   public static final String sparqlP01toP02post;
 
@@ -1819,7 +1819,7 @@ public class EDStatic {
   public static final int[] pdfHeights;
   private static final String[] theLongDescriptionHtmlAr; // see the xxx() methods
   public static final String errorFromDataSource = String2.ERROR + " from data source: ";
-  public static final int nLanguages = TranslateMessages.languageList.length;
+  public static final int nLanguages = TranslateMessages.languageList.size();
 
   /**
    * These are only created/used by GenerateDatasetsXml threads. See the related methods below that
@@ -2446,7 +2446,7 @@ public class EDStatic {
       }
 
       for (int tl = 1; tl < nLanguages; tl++) {
-        String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
+        String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
         URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
         messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
@@ -4559,7 +4559,7 @@ public class EDStatic {
   public static String erddapUrl(String loggedInAs, int language) {
     return (loggedInAs == null ? erddapUrl : erddapHttpsUrl)
         + // works because of loggedInAsHttps
-        (language == 0 ? "" : "/" + TranslateMessages.languageCodeList[language]);
+        (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**
@@ -4570,7 +4570,7 @@ public class EDStatic {
    */
   public static String erddapHttpsUrl(int language) {
     return erddapHttpsUrl
-        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList[language]);
+        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**

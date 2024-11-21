@@ -72,13 +72,12 @@ public class EDV {
       TIME_STANDARD_NAME = "time",
       TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
 
-  public static final String[] LON_UNITS_VARIANTS = {
-    LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E"
-  };
-  public static final String[] LAT_UNITS_VARIANTS = {
-    LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N"
-  };
-  public static final String[] METERS_VARIANTS = {ALT_UNITS, "meter", "meters", "metre", "metres"};
+  public static final ImmutableList<String> LON_UNITS_VARIANTS =
+      ImmutableList.of(LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E");
+  public static final ImmutableList<String> LAT_UNITS_VARIANTS =
+      ImmutableList.of(LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N");
+  public static final ImmutableList<String> METERS_VARIANTS =
+      ImmutableList.of(ALT_UNITS, "meter", "meters", "metre", "metres");
 
   /** */
   public static final String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
@@ -1916,7 +1915,7 @@ public class EDV {
         tUnits.indexOf("degrees west") >= 0
         || // some goofy datasets
         tUnits.startsWith("ddd.d")
-        || String2.indexOf(LON_UNITS_VARIANTS, tUnits) >= 0;
+        || LON_UNITS_VARIANTS.indexOf(tUnits) >= 0;
   }
 
   /**
@@ -1933,6 +1932,6 @@ public class EDV {
         || tUnits.indexOf("decimal degrees") >= 0
         || tUnits.indexOf("degrees north") >= 0
         || tUnits.startsWith("dd.d")
-        || String2.indexOf(LAT_UNITS_VARIANTS, tUnits) >= 0;
+        || LAT_UNITS_VARIANTS.indexOf(tUnits) >= 0;
   }
 }

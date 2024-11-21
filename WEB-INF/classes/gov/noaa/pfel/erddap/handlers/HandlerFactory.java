@@ -47,7 +47,7 @@ public class HandlerFactory {
 
       // TODO using the first constructor here, should we scan through all to find the most
       // appropriate one?
-      Constructor<?> constructor = eddClassInfo.getSaxHandlerClass().get().getConstructors()[0];
+      Constructor<?> constructor = eddClassInfo.saxHandlerClass().get().getConstructors()[0];
 
       // Constructors for handlers don't have uniform signatures so we have to do some investigation
       // TODO: standardize the constructor signatures or change to accept a config object?

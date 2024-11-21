@@ -1374,42 +1374,6 @@ public class HtmlWidgets {
     int nOptions = options.length;
 
     // the cssTooltip approach
-    String sb =
-        "<span class=\"nowrap\">"
-            + textField(name, tooltip, fieldLength, maxLength, initialTextValue, other)
-            + cssTooltip(
-                "<img "
-                    + // imgOther + //there could be additional attributes for the image
-                    " style=\"vertical-align:top;\" "
-                    + completeTooltip(comboBoxAltAr[language])
-                    + "\n  src=\""
-                    + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
-                    + "\"\n"
-                    + "  alt=\""
-                    + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
-                    + "\"\n"
-                    + ">",
-                "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
-                select(
-                    name + "TooltipSelect",
-                    "",
-                    Math.min(nOptions, 10),
-                    options,
-                    -1,
-                    // !!! This javascript is identical to other places (except within popup).
-                    // It works in all browsers except MS Edge (item is selected, but value not
-                    // copied
-                    // to 'name' textfield).
-                    "\n  "
-                        + (onChange == null
-                            ? "onChange=\"document."
-                                + formName
-                                + "."
-                                + name
-                                + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
-                            : onChange)))
-            + "</span>";
-
     /*
             //the <input> widget and the <datalist> approach
             //The problem is that the list only shows options that match the start of the textfield text,
@@ -1439,7 +1403,40 @@ public class HtmlWidgets {
             sb.append("</datalist>");
     */
 
-    return sb;
+    return "<span class=\"nowrap\">"
+        + textField(name, tooltip, fieldLength, maxLength, initialTextValue, other)
+        + cssTooltip(
+            "<img "
+                + // imgOther + //there could be additional attributes for the image
+                " style=\"vertical-align:top;\" "
+                + completeTooltip(comboBoxAltAr[language])
+                + "\n  src=\""
+                + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif")
+                + "\"\n"
+                + "  alt=\""
+                + XML.encodeAsHTMLAttribute(comboBoxAltAr[language])
+                + "\"\n"
+                + ">",
+            "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
+            select(
+                name + "TooltipSelect",
+                "",
+                Math.min(nOptions, 10),
+                options,
+                -1,
+                // !!! This javascript is identical to other places (except within popup).
+                // It works in all browsers except MS Edge (item is selected, but value not
+                // copied
+                // to 'name' textfield).
+                "\n  "
+                    + (onChange == null
+                        ? "onChange=\"document."
+                            + formName
+                            + "."
+                            + name
+                            + ".value=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"\n"
+                        : onChange)))
+        + "</span>";
   }
 
   /**

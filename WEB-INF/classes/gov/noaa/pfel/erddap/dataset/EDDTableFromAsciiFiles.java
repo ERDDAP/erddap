@@ -789,7 +789,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
       }
     }
 
-    int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     String catID = File2.getNameNoExtension(xmlFileName);
     if (!String2.isSomething(tInputXmlDir)) tInputXmlDir = "???";
     if (!String2.isSomething(tDataFileName)) tDataFileName = "???";
@@ -2005,7 +2004,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             + tStandardizeWhat
             + "</standardizeWhat>\n"
             + "    <reloadEveryNMinutes>"
-            + tReloadEveryNMinutes
+            + DEFAULT_RELOAD_EVERY_N_MINUTES
             + "</reloadEveryNMinutes>\n"
             + "    <updateEveryNMillis>-1</updateEveryNMillis>\n"
             + "    <accessibleViaFiles>true</accessibleViaFiles>\n"

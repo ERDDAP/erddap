@@ -97,13 +97,7 @@ public class WatchDirectory implements AutoCloseable {
     EDStatic.cleaner.register(this, new CleanupWatchService(watchService));
   }
 
-  private static class CleanupWatchService implements Runnable {
-
-    private final WatchService watchService;
-
-    private CleanupWatchService(WatchService watchService) {
-      this.watchService = watchService;
-    }
+  private record CleanupWatchService(WatchService watchService) implements Runnable {
 
     @Override
     public void run() {

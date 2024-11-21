@@ -10,6 +10,7 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -27,28 +28,23 @@ import ucar.units.UnitFormat;
 public class Units2 {
 
   /** UDUNITS and UCUM support metric prefixes. */
-  public static final String[] metricName = {
-    "yotta", "zetta", "exa", "peta", "tera",
-    "giga", "mega", "kilo", "hecto", "deka",
-    "deci", "centi", "milli", "micro", "nano",
-    "pico", "femto", "atto", "zepto", "yocto",
-    "µ",
-  };
+  public static final ImmutableList<String> metricName =
+      ImmutableList.of(
+          "yotta", "zetta", "exa", "peta", "tera", "giga", "mega", "kilo", "hecto", "deka", "deci",
+          "centi", "milli", "micro", "nano", "pico", "femto", "atto", "zepto", "yocto", "µ");
 
-  public static final String[] metricAcronym = {
-    "Y", "Z", "E", "P", "T",
-    "G", "M", "k", "h", "da",
-    "d", "c", "m", "u", "n",
-    "p", "f", "a", "z", "y",
-    "u"
-  };
-  public static final int nMetric = metricName.length;
+  public static final ImmutableList<String> metricAcronym =
+      ImmutableList.of(
+          "Y", "Z", "E", "P", "T", "G", "M", "k", "h", "da", "d", "c", "m", "u", "n", "p", "f", "a",
+          "z", "y", "u");
+  public static final int nMetric = metricName.size();
 
   /** UCUM supports power-of-two prefixes, but UDUNITS doesn't. */
-  public static final String[] twoAcronym = {"Ki", "Mi", "Gi", "Ti"};
+  public static final ImmutableList<String> twoAcronym = ImmutableList.of("Ki", "Mi", "Gi", "Ti");
 
-  public static final String[] twoValue = {"1024", "1048576", "1073741824", "1.099511627776e12"};
-  public static final int nTwo = twoAcronym.length;
+  public static final ImmutableList<String> twoValue =
+      ImmutableList.of("1024", "1048576", "1073741824", "1.099511627776e12");
+  public static final int nTwo = twoAcronym.size();
 
   // these don't need to be thread-safe because they are read-only after creation
   private static final Map<String, String> udHashMap =
@@ -59,9 +55,9 @@ public class Units2 {
           Resources.getResource("com/cohort/util/UcumToUdunits.properties"), File2.UTF_8);
 
   // these special cases are usually populated by EDStatic static constructor, but don't have to be
-  public static final Map<String, String> standardizeUdunitsHM = new HashMap();
-  public static final Map<String, String> ucumToUdunitsHM = new HashMap();
-  public static final Map<String, String> udunitsToUcumHM = new HashMap();
+  public static final Map<String, String> standardizeUdunitsHM = new HashMap<>();
+  public static final Map<String, String> ucumToUdunitsHM = new HashMap<>();
+  public static final Map<String, String> udunitsToUcumHM = new HashMap<>();
 
   /**
    * Set this to true (by calling reallyReallyVerbose=true in your program, not by changing the code
@@ -572,15 +568,15 @@ public class Units2 {
 
     // try to separate out a metricName prefix (e.g., "kilo")
     for (int p = 0; p < nMetric; p++) {
-      if (udunits.startsWith(metricName[p])) {
-        String tUd = udunits.substring(metricName[p].length());
+      if (udunits.startsWith(metricName.get(p))) {
+        String tUd = udunits.substring(metricName.get(p).length());
         if (tUd.length() == 0) {
-          ucum.append(metricAcronym[p] + "{count}"); // standardize on acronym
+          ucum.append(metricAcronym.get(p) + "{count}"); // standardize on acronym
           return ucum.toString();
         }
         String newUd = udHashMap.get(tUd);
         if (String2.isSomething(newUd)) {
-          ucum.append(metricAcronym[p] + newUd); // standardize on acronym
+          ucum.append(metricAcronym.get(p) + newUd); // standardize on acronym
           return ucum.toString();
         }
       }
@@ -588,15 +584,15 @@ public class Units2 {
 
     // try to separate out a metricAcronym prefix (e.g., "k")
     for (int p = 0; p < nMetric; p++) {
-      if (udunits.startsWith(metricAcronym[p])) {
-        String tUd = udunits.substring(metricAcronym[p].length());
+      if (udunits.startsWith(metricAcronym.get(p))) {
+        String tUd = udunits.substring(metricAcronym.get(p).length());
         if (tUd.length() == 0) {
-          ucum.append(metricAcronym[p] + "{count}");
+          ucum.append(metricAcronym.get(p) + "{count}");
           return ucum.toString();
         }
         String newUd = udHashMap.get(tUd);
         if (String2.isSomething(newUd)) {
-          ucum.append(metricAcronym[p] + newUd);
+          ucum.append(metricAcronym.get(p) + newUd);
           return ucum.toString();
         }
       }
@@ -918,9 +914,9 @@ public class Units2 {
       // try to separate out one metricAcronym prefix (e.g., "k")
       if (!caughtPrefix) {
         for (int p = 0; p < nMetric; p++) {
-          if (ucum.startsWith(metricAcronym[p])) {
-            ucum = ucum.substring(metricAcronym[p].length());
-            udunits.append(metricAcronym[p]);
+          if (ucum.startsWith(metricAcronym.get(p))) {
+            ucum = ucum.substring(metricAcronym.get(p).length());
+            udunits.append(metricAcronym.get(p));
             if (ucum.length() == 0) {
               udunits.append("{count}");
               return udunits.toString();
@@ -934,15 +930,15 @@ public class Units2 {
       // try to separate out a twoAcronym prefix (e.g., "Ki")
       if (!caughtPrefix) {
         for (int p = 0; p < nTwo; p++) {
-          if (ucum.startsWith(twoAcronym[p])) {
-            ucum = ucum.substring(twoAcronym[p].length());
+          if (ucum.startsWith(twoAcronym.get(p))) {
+            ucum = ucum.substring(twoAcronym.get(p).length());
             char udch = udunits.length() > 0 ? udunits.charAt(udunits.length() - 1) : '\u0000';
             if (udch != '\u0000' && udch != '.' && udch != '/') udunits.append('.');
             if (ucum.length() == 0) {
               udunits.append("{count}");
               return udunits.toString();
             }
-            udunits.append(twoValue[p] + ".");
+            udunits.append(twoValue.get(p) + ".");
             caughtPrefix = true;
             continue MAIN;
           }
@@ -978,7 +974,7 @@ public class Units2 {
   public static Map<String, String> getHashMapStringString(URL resourceFile, String charset)
       throws RuntimeException {
     try {
-      Map ht = new HashMap();
+      Map<String, String> ht = new HashMap<>();
       List<String> sar = Resources.readLines(resourceFile, Charset.forName(charset));
       int n = sar.size();
       int i = 0;
