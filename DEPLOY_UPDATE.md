@@ -6,7 +6,7 @@
 2.  If you are upgrading from ERDDAP™ version 2.18 or below, you need to switch to Java 21 (or newer) and the related Tomcat 10. See the regular ERDDAP™ installation instructions for [Java](#java) and [Tomcat](#tomcat). You'll also have to copy your _tomcat_/content/erddap directory from your old Tomcat installation to your new Tomcat installation.  
      
 3.  Download [erddap.war](https://github.com/ERDDAP/erddap/releases/download/v2.25.1/erddap.war) into _tomcat_/webapps .  
-    (version 2.25_1, 592,292,039 bytes, MD5=0F0C14FD22DF80D0E867A4B96ED7F3FF, dated 2024-11-07)
+    (version 2.25_1, 592,292,039 bytes, MD5=652AFC9D1421F00B5F789DA2C4732D4C, dated 2024-11-07)
      
 4.  [messages.xml](#messages.xml)
     *   Common: If you are upgrading from ERDDAP™ version 1.46 (or above) and you just use the standard messages, the new standard messages.xml will be installed automatically (amongst the .class files via erddap.war).  
