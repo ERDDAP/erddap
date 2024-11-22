@@ -45,9 +45,6 @@ class RegexFilenameFilterTests {
         new String[] {
           coastwatchDir + "griddata/",
           coastwatchDir + "griddata/SaveOpendap.class",
-          coastwatchDir + "hdf/",
-          coastwatchDir + "hdf/SdsReader.class",
-          coastwatchDir + "hdf/SdsWriter.class",
           coastwatchDir + "netcheck/",
           coastwatchDir + "pointdata/",
           coastwatchDir + "pointdata/ScriptRow.class",
@@ -70,8 +67,6 @@ class RegexFilenameFilterTests {
     shouldBe =
         new String[] {
           coastwatchDir + "griddata/SaveOpendap.class",
-          coastwatchDir + "hdf/SdsReader.class",
-          coastwatchDir + "hdf/SdsWriter.class",
           coastwatchDir + "pointdata/ScriptRow.class",
           coastwatchDir + "sgt/SGTPointsVector.class",
           coastwatchDir + "sgt/SgtGraph.class",
@@ -90,7 +85,7 @@ class RegexFilenameFilterTests {
     StringArray lastMod = new StringArray();
     for (int i = 0; i < tn; i++)
       lastMod.add(Calendar2.safeEpochSecondsToIsoStringTZ(info[2].getLong(i) / 1000.0, "ERROR"));
-    Test.ensureEqual(info[0].toString(), "griddata, hdf, netcheck, pointdata, sgt, util", "");
+    Test.ensureEqual(info[0].toString(), "griddata, netcheck, pointdata, sgt, util", "");
     Test.ensureEqual(info[1].toString(), "BrowserDefault.properties", "");
     // The below is flaky. Consider using a dedicated test resource directory
     // instead of a code directory

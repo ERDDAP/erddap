@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -12,9 +13,14 @@ import com.cohort.util.Test;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import tags.TagAWS;
 import tags.TagIncompleteTest;
 import tags.TagPassword;
@@ -122,7 +128,7 @@ public class TestSSR {
     try {
       Test.ensureEqual(
           String2.toNewlineString(
-              SSR.dosShell(
+              dosShell(
                       "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
                           + File2.getWebInfParentDirectory()
                           + // with / separator and / at the end
@@ -141,20 +147,20 @@ public class TestSSR {
 
     // cutChar
     String2.log("test cutChar");
-    Test.ensureEqual(SSR.cutChar("abcd", 2, 3), "bc", "a");
-    Test.ensureEqual(SSR.cutChar("abcd", 1, 4), "abcd", "b");
-    Test.ensureEqual(SSR.cutChar("abcd", 0, 4), "abcd", "c");
-    Test.ensureEqual(SSR.cutChar("abcd", 1, 5), "abcd", "d");
-    Test.ensureEqual(SSR.cutChar("abcd", 3, 3), "c", "e");
-    Test.ensureEqual(SSR.cutChar("abcd", 4, 1), "", "f");
-    Test.ensureEqual(SSR.cutChar("abcd", -2, 0), "", "g");
+    Test.ensureEqual(cutChar("abcd", 2, 3), "bc", "a");
+    Test.ensureEqual(cutChar("abcd", 1, 4), "abcd", "b");
+    Test.ensureEqual(cutChar("abcd", 0, 4), "abcd", "c");
+    Test.ensureEqual(cutChar("abcd", 1, 5), "abcd", "d");
+    Test.ensureEqual(cutChar("abcd", 3, 3), "c", "e");
+    Test.ensureEqual(cutChar("abcd", 4, 1), "", "f");
+    Test.ensureEqual(cutChar("abcd", -2, 0), "", "g");
 
-    Test.ensureEqual(SSR.cutChar("abcd", 1), "abcd", "a");
-    Test.ensureEqual(SSR.cutChar("abcd", 0), "abcd", "b");
-    Test.ensureEqual(SSR.cutChar("abcd", -1), "abcd", "c");
-    Test.ensureEqual(SSR.cutChar("abcd", 2), "bcd", "d");
-    Test.ensureEqual(SSR.cutChar("abcd", 4), "d", "e");
-    Test.ensureEqual(SSR.cutChar("abcd", 5), "", "f");
+    Test.ensureEqual(cutChar("abcd", 1), "abcd", "a");
+    Test.ensureEqual(cutChar("abcd", 0), "abcd", "b");
+    Test.ensureEqual(cutChar("abcd", -1), "abcd", "c");
+    Test.ensureEqual(cutChar("abcd", 2), "bcd", "d");
+    Test.ensureEqual(cutChar("abcd", 4), "d", "e");
+    Test.ensureEqual(cutChar("abcd", 5), "", "f");
 
     // make a big chunk of text
     StringBuilder sb = new StringBuilder();
@@ -231,12 +237,12 @@ public class TestSSR {
       // make the gzip file
       File2.delete(gzipDir + gzipName);
       time1 = System.currentTimeMillis();
-      SSR.gzip(gzipDir + gzipName, new String[] {gzipDir + fileName}); // don't include dir info
+      gzip(gzipDir + gzipName, new String[] {gzipDir + fileName}); // don't include dir info
       time1 = System.currentTimeMillis() - time1;
       File2.delete(gzipDir + fileName);
       // unzip the gzip file
       time2 = System.currentTimeMillis();
-      SSR.unGzip(
+      unGzip(
           gzipDir + gzipName,
           gzipDir, // note: extract to classPath, since doesn't include dir
           true,
@@ -712,5 +718,299 @@ public class TestSSR {
     SSR.verbose = true;
 
     // runUnixTests();
+  }
+
+  /**
+   * This handles the common case of unzipping a zip file (in place) that contains a directory with
+   * subdirectories and files.
+   */
+  public static void unzipADirectory(
+      String fullZipName, int timeOutSeconds, StringArray resultingFullFileNames) throws Exception {
+
+    SSR.unzip(
+        fullZipName,
+        File2.getDirectory(fullZipName),
+        false,
+        timeOutSeconds,
+        resultingFullFileNames);
+  }
+
+  /**
+   * Extract the ONE file from a .gz file to the base directory. An existing file of the same name
+   * will be overwritten.
+   *
+   * @param fullGzName (with .gz at end)
+   * @param baseDir (with slash at end)
+   * @param ignoreGzDirectories if true, the directories (if any) of the files in the .gz file are
+   *     ignored, and all files are stored in baseDir itself. If false, new directories will be
+   *     created as needed. CURRENTLY, ONLY 'TRUE' IS SUPPORTED. THE FILE IS ALWAYS GIVEN THE NAME
+   *     fullGzName.substring(0, fullGzName.length() - 3).
+   * @param timeOutSeconds (use -1 for no time out)
+   * @throws Exception
+   */
+  public static void unGzip(
+      String fullGzName, String baseDir, boolean ignoreGzDirectories, int timeOutSeconds)
+      throws Exception {
+
+    // if Linux, it is faster to use the zip utility
+    long tTime = System.currentTimeMillis();
+    if (!ignoreGzDirectories) {
+      throw new RuntimeException("Currently, SSR.unGzip only supports ignoreGzDirectories=true!");
+    }
+    /*Do this in the future?
+     if (String2.OSIsLinux) {
+        //-d: the directory to put the files in
+        if (verbose) String2.log("Using Linux's ungz");
+        cShell("ungz -o " + //-o overwrites existing files without asking
+            (ignoreGzDirectories? "-j " : "") +
+            fullGzName + " " +
+            "-d " + baseDir.substring(0, baseDir.length() - 1),  //remove trailing slash   necessary?
+            timeOutSeconds);
+    } else */ {
+      // use Java's gzip procedures for all other operating systems
+      GZIPInputStream in =
+          new GZIPInputStream(
+              File2.getBufferedInputStream(
+                  fullGzName)); // not File2.getDecompressedBufferedInputStream(). Read file as is.
+      try {
+        // create a buffer for reading the files
+        byte[] buf = new byte[4096];
+
+        //// unzip the files
+        // ZipEntry entry = in.getNextEntry();
+        // while (entry != null) {
+        String ext = File2.getExtension(fullGzName); // should be .gz
+        String name = fullGzName.substring(0, fullGzName.length() - ext.length());
+        /*
+        //isDirectory?
+        if (entry.isDirectory()) {
+            if (ignoreZipDirectories) {
+            } else {
+                File tDir = new File(baseDir + name);
+                if (!tDir.exists())
+                    tDir.mkdirs();
+            }
+        } else */ {
+          // open an output file
+          // ???do I need to make the directory???
+          /* if (ignoreGzDirectories) */
+          name = File2.getNameAndExtension(name); // remove dir info
+          OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name));
+          try {
+            // transfer bytes from the .zip file to the output file
+            // in.read reads from current zipEntry
+            byte[] buffer = new byte[8192]; // best if smaller than java buffered...Stream size
+            int bytesRead;
+            while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+              out.write(buffer, 0, bytesRead);
+            }
+          } finally {
+            // close the output file
+            out.close();
+          }
+        }
+
+        //// close this entry
+        // in.closeEntry();
+
+        //// get the next entry
+        // entry = in.getNextEntry();
+        // }
+      } finally {
+        // close the input file
+        in.close();
+      }
+    }
+  }
+
+  /**
+   * This runs the specified command with dosShell (if String2.OSISWindows) or cShell (otherwise).
+   *
+   * @param commandLine with file names specified with forward slashes
+   * @param timeOutSeconds (use 0 for no timeout)
+   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
+   *     error)
+   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
+   */
+  public static List<String> dosOrCShell(String commandLine, int timeOutSeconds) throws Exception {
+    if (String2.OSIsWindows) {
+      // commandLine = String2.replaceAll(commandLine, "/", "\\");
+      return dosShell(commandLine, timeOutSeconds);
+    } else {
+      return SSR.cShell(commandLine, timeOutSeconds);
+    }
+  }
+
+  /**
+   * This is a variant of shell() for DOS command lines.
+   *
+   * @param commandLine the command line to be executed (for example, "myprogram <filename>") with
+   *     backslashes
+   * @param timeOutSeconds (use 0 for no timeout)
+   * @return an ArrayList of Strings with the output from the program (or null if there is a fatal
+   *     error)
+   * @throws Exception if exitStatus of cmd is not 0 (or other fatal error)
+   * @see #shell
+   */
+  public static List<String> dosShell(String commandLine, int timeOutSeconds) throws Exception {
+    PipeToStringArray outCatcher = new PipeToStringArray();
+    PipeToStringArray errCatcher = new PipeToStringArray();
+
+    //        int exitValue = shell(String2.tokenize("cmd.exe /C " + commandLine),
+    int exitValue =
+        SSR.shell(
+            new String[] {"cmd.exe", "/C", commandLine}, outCatcher, errCatcher, timeOutSeconds);
+
+    // collect and print results (or throw exception)
+    String err = errCatcher.getString();
+    if (err.length() > 0 || exitValue != 0) {
+      String s =
+          "dosShell       cmd: "
+              + commandLine
+              + "\n"
+              + "dosShell exitValue: "
+              + exitValue
+              + "\n"
+              + "dosShell       err: "
+              + err
+              + (err.length() > 0 ? "" : "\n");
+      // "dosShell       out: " + outCatcher.getString();
+      if (exitValue == 0) String2.log(s);
+      else throw new Exception(String2.ERROR + " in SSR.dosShell:\n" + s);
+    }
+    return outCatcher.getArrayList();
+  }
+
+  /**
+   * Put the specified files in a gz file (without directory info). If a file named gzipDirName
+   * already exists, it is overwritten.
+   *
+   * @param gzipDirName the full name for the .gz file (path + name + ".gz")
+   * @param dirNames the full names of the files to be put in the gz file. These can use forward or
+   *     backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
+   * @param timeOutSeconds (use -1 for no time out)
+   * @throws Exception if trouble
+   */
+  public static void gzip(String gzipDirName, String dirNames[]) throws Exception {
+
+    gzip(gzipDirName, dirNames, false, "");
+  }
+
+  /**
+   * Put the specified files in a gzip file (without directory info). If a file named gzipDirName
+   * already exists, it is overwritten.
+   *
+   * @param gzipDirName the full name for the .zip file (path + name + ".gz")
+   * @param dirNames the full names of the files to be put in the gzip file. These can use forward
+   *     or backslashes as directory separators. CURRENTLY LIMITED TO 1 FILE.
+   * @param includeDirectoryInfo set this to false if you don't want any dir invo stored with the
+   *     files
+   * @param removeDirPrefix if includeDirectoryInfo is true, this is the prefix to be removed from
+   *     the start of each dir name (ending with a slash). If includeDirectoryInfo is false, this is
+   *     removed.
+   * @throws Exception if trouble
+   */
+  private static void gzip(
+      String gzipDirName, String dirNames[], boolean includeDirectoryInfo, String removeDirPrefix)
+      throws Exception {
+
+    // validate
+    if (includeDirectoryInfo) {
+      // ensure slash at end of removeDirPrefix
+      if ("\\/".indexOf(removeDirPrefix.charAt(removeDirPrefix.length() - 1)) < 0)
+        throw new IllegalArgumentException(
+            String2.ERROR + " in SSR.gzip: removeDirPrefix must end with a slash.");
+
+      // ensure dirNames start with removeDirPrefix
+      for (int i = 0; i < dirNames.length; i++)
+        if (!dirNames[i].startsWith(removeDirPrefix))
+          throw new IllegalArgumentException(
+              String2.ERROR
+                  + " in SSR.zip: dirName["
+                  + i
+                  + "] doesn't start with "
+                  + removeDirPrefix
+                  + ".");
+    }
+
+    // if Linux, it is faster to use the zip utility
+    // I don't know how to include just partial dir info with Linux,
+    //  since I can't cd to that directory.
+    /*if (String2.OSIsLinux && !includeDirectoryInfo) {
+        //-j: don't include dir info
+        if (verbose) String2.log("Using Linux's zip");
+        File2.delete(zipDirName); //delete any exiting .zip file of that name
+        cShell("zip -j " + zipDirName + " " + String2.toSSVString(dirNames),
+            timeOutSeconds);
+        return;
+    }*/
+
+    // for all other operating systems...
+    // create the ZIP file
+    long tTime = System.currentTimeMillis();
+    GZIPOutputStream out =
+        new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(gzipDirName)));
+    try {
+      // create a buffer for reading the files
+      byte[] buf = new byte[4096];
+
+      // compress the files
+      for (int i = 0; i < 1; i++) { // i < dirNames.length; i++) {
+        InputStream in =
+            File2.getBufferedInputStream(
+                dirNames[i]); // not File2.getDecompressedBufferedInputStream() Read files as is.
+        try {
+          // add ZIP entry to output stream
+          // String tName =
+          //     includeDirectoryInfo
+          //         ? dirNames[i].substring(removeDirPrefix.length())
+          //         : // already validated above
+          //         File2.getNameAndExtension(dirNames[i]);
+          // out.putNextEntry(new ZipEntry(tName));
+
+          // transfer bytes from the file to the ZIP file
+          int len;
+          while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+          }
+          // complete the entry
+          // out.closeEntry();
+        } finally {
+          in.close();
+        }
+      }
+    } finally {
+      // close the GZIP file
+      out.close();
+    }
+  }
+
+  /**
+   * Returns a String which is a substring of the current string. This checks for and deals with bad
+   * first and last values.
+   *
+   * @param s the string
+   * @param first the first character to be extracted (1..)
+   * @param last the last character to be extracted (1..)
+   * @return the extracted String (or "")
+   */
+  public static String cutChar(String s, int first, int last) {
+    int size = s.length();
+
+    if (first < 1) first = 1;
+    if (last > size) last = size;
+    return first > last ? "" : s.substring(first - 1, last); // last is exclusive
+  }
+
+  /**
+   * Returns a String which is a substring at the end of the current string, starting at
+   * <tt>first</tt>. This checks for and deals with a bad first values.
+   *
+   * @param s the string
+   * @param first the first character to be extracted (1..)
+   * @return the extracted String (or "")
+   */
+  public static String cutChar(String s, int first) {
+    return cutChar(s, first, s.length());
   }
 }

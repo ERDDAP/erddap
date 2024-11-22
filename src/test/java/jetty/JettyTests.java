@@ -26,6 +26,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableTests;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.dataset.EDD;
@@ -5274,7 +5275,7 @@ class JettyTests {
     // and read the header to see the mime type
     results =
         String2.toNewlineString(
-            SSR.dosOrCShell(
+            TestSSR.dosOrCShell(
                     "curl -i \""
                         + EDStatic.erddapUrl
                         + "/search/index.json?"

@@ -5,7 +5,7 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -588,7 +588,7 @@ class EDDGridFromAudioFilesTests {
     // response
 
     // * request no byte range
-    al = SSR.dosShell(req, timeOutSeconds);
+    al = TestSSR.dosShell(req, timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     expected =
@@ -608,7 +608,7 @@ class EDDGridFromAudioFilesTests {
     Test.ensureEqual(results2, expected, "results2=\n" + results2);
 
     // * request short byte range
-    al = SSR.dosShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-30\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     expected =
@@ -623,7 +623,7 @@ class EDDGridFromAudioFilesTests {
     Test.ensureEqual(results2, expected, "results2=\n" + results2);
 
     // * request bytes=0- which is what <audio> seems to do
-    al = SSR.dosShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=0-\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     expected =
@@ -638,7 +638,7 @@ class EDDGridFromAudioFilesTests {
     Test.ensureEqual(results2, expected, "results2=\n" + results2);
 
     // * request bytes=[start]- which is what <audio> seems to do
-    al = SSR.dosShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
+    al = TestSSR.dosShell(req + "-H \"Range: bytes=50000000-\"", timeOutSeconds);
     list = al.subList(0, 8);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     expected =
@@ -653,7 +653,7 @@ class EDDGridFromAudioFilesTests {
     Test.ensureEqual(results2, expected, "results2=\n" + results2);
 
     // * request images/wz_tooltip.js
-    al = SSR.dosShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
+    al = TestSSR.dosShell(reqBase + "images/wz_tooltip.js -i", timeOutSeconds);
     list = al.subList(0, 5);
     results = String2.annotatedString(String2.toNewlineString(list.toArray()));
     expected =

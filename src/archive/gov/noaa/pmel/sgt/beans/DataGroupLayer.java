@@ -161,7 +161,7 @@ public class DataGroupLayer extends Layer {
    */
   public void addData(SGTData data, Attribute attr, DataKey key)
       throws DataTargetMismatchException {
-    if (Page.DEBUG) {
+    if (false) {
       System.out.println("DataGroupLayer.addData: data = " + data.toString());
       System.out.println(
           "DataGroupLayer.addData: xTime = " + data.isXTime() + ", yTime = " + data.isYTime());
@@ -358,7 +358,7 @@ public class DataGroupLayer extends Layer {
 
     getPane().setBatch(batch);
 
-    if (Page.DEBUG) {
+    if (false) {
       System.out.println("layer: " + getSize() + ", " + getSizeP());
       System.out.println(
           "xTrans: " + gr.getXTransform().getRangeP() + ", " + gr.getXTransform().getSoTRangeU());
@@ -655,7 +655,7 @@ public class DataGroupLayer extends Layer {
    */
   public void setClipping(boolean clip) {
     if (!dg_.isZoomable()) return;
-    if (Page.DEBUG) System.out.println("DataGroupLayer: " + getId() + ": clip = " + clip);
+    if (false) System.out.println("DataGroupLayer: " + getId() + ": clip = " + clip);
     clipping_ = clip;
     setAllClipping(clipping_);
   }
@@ -703,7 +703,7 @@ public class DataGroupLayer extends Layer {
     if (!dg_.isZoomable()) return;
     Rectangle bnds = getGraphBounds();
     if (!bnds.contains(x, y)) return;
-    if (Page.DEBUG) System.out.println("DataGroupLayer: " + getId() + ": " + x + ", " + y);
+    if (false) System.out.println("DataGroupLayer: " + getId() + ": " + x + ", " + y);
     inZoom_ = false;
     xZoomRange_ = null;
     yZoomRange_ = null;
@@ -736,7 +736,7 @@ public class DataGroupLayer extends Layer {
       setAllClipping(false);
     }
     update();
-    if (Page.DEBUG) {
+    if (false) {
       System.out.println("DataGroupLayer().setDomain: " + getId());
       System.out.println("        domain.XRange = " + domain.getXRange());
       System.out.println("        domain.YRange = " + domain.getYRange());
