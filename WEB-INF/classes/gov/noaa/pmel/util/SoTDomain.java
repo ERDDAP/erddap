@@ -146,8 +146,7 @@ public class SoTDomain implements java.io.Serializable {
     if (!xRange_.equals(d.getXRange())) return false;
     if (!yRange_.equals(d.getYRange())) return false;
     if (xReversed_ != d.isXReversed()) return false;
-    if (yReversed_ != d.isYReversed()) return false;
-    return true;
+    return yReversed_ == d.isYReversed();
   }
 
   @Override

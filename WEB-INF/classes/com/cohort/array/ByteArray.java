@@ -166,7 +166,7 @@ public class ByteArray extends PrimitiveArray {
    */
   public static ByteArray fromFile(final String fileName) throws Exception {
     ByteArray ba = new ByteArray();
-    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName); ) {
+    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName)) {
       int available = stream.available();
       while (available > 0) {
         ba.ensureCapacity(ba.size + (long) available);

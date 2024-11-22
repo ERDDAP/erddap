@@ -3376,7 +3376,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             cdmDataTypes[
                 tCdmDataType]; // Grid, Point, Profile, TimeSeries, TimeSeriesProfile, Trajectory,
         // TrajectoryProfile, Other
-        HashSet<String> keywordHS = new HashSet();
+        HashSet<String> keywordHS = new HashSet<>();
         EDD.chopUpAndAdd(String2.replaceAll(tInstitution, '/', ' '), keywordHS);
         EDD.chopUpAndAdd(String2.replaceAll(tTitle, '/', ' '), keywordHS);
         EDD.cleanSuggestedKeywords(keywordHS);
@@ -6117,8 +6117,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (dataset instanceof FromErddap fromErddap) {
       int sourceVersion = fromErddap.intSourceErddapVersion();
       // some requests are handled locally...
-      boolean newOrderBy = false;
-      if (sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0) newOrderBy = true;
+      boolean newOrderBy = sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0;
       if (sourceVersion < 200 && queryString.indexOf("orderBy") >= 0) {
         // more complicated test for new v2.00 orderBy features
         String parts[] = String2.splitNoTrim(queryString, '&');
@@ -6135,7 +6134,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (sourceVersion < 216 && queryString.indexOf("orderBySum(") >= 0) newOrderBy = true;
       if (sourceVersion < 219 && queryString.indexOf("orderByDescending(") >= 0) newOrderBy = true;
       if (newOrderBy
-          || fromErddap.redirect() == false
+          || !fromErddap.redirect()
           || fileTypeName.equals(".das")
           || fileTypeName.equals(".dds")
           || fileTypeName.equals(".html")
@@ -9287,8 +9286,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // + dimensions   time=, elevation=, ...=  handled below
 
       // *** validate parameters
-      transparent =
-          tTransparent == null ? false : String2.parseBoolean(tTransparent); // e.g., "false"
+      transparent = tTransparent != null && String2.parseBoolean(tTransparent); // e.g., "false"
 
       bgColori =
           tBgColor == null || tBgColor.length() != 8 || !tBgColor.startsWith("0x")
@@ -13721,8 +13719,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             // everything else is html content
             // sizes: small, wide, wide&high
             contentWidth = EDStatic.imageWidths[tSize == 0 ? 1 : 2];
-            contentHeight =
-                EDStatic.imageWidths[tSize == 2 ? 2 : tSize] * 3 / 4; // yes, widths; make wide
+            contentHeight = EDStatic.imageWidths[tSize] * 3 / 4; // yes, widths; make wide
           }
           content =
               "<iframe src=\""
@@ -16139,7 +16136,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (reallyVerbose) String2.log("booleanQuery=" + booleanQuery.toString());
 
         // make a hashSet of tDatasetIDs (so seachable quickly)
-        HashSet<String> hashSet = new HashSet(Math2.roundToInt(1.4 * tDatasetIDs.size()));
+        HashSet<String> hashSet = new HashSet<>(Math2.roundToInt(1.4 * tDatasetIDs.size()));
         for (int i = 0; i < tDatasetIDs.size(); i++) hashSet.add(tDatasetIDs.get(i));
 
         // Finally, do the lucene search
@@ -17526,7 +17523,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // variableMeasured
     String temporalCoverage = "";
-    ArrayList<EDV> edv = new ArrayList();
+    ArrayList<EDV> edv = new ArrayList<>();
     EDV arr[];
     int nAxisVariables = 0;
     if (edd instanceof EDDGrid eddGrid) { // axisVars first so lat/lon/timeIndex are correct
@@ -17963,9 +17960,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     boolean tEmailIfAlreadyValid =
         String2.parseBoolean(queryMap.get("emailifalreadyvalid")); // default=true
     boolean tShowErrors =
-        (queryString == null || queryString.length() == 0)
-            ? false
-            : String2.parseBoolean(queryMap.get("showerrors")); // default=true
+        queryString != null
+            && queryString.length() != 0
+            && String2.parseBoolean(queryMap.get("showerrors")); // default=true
 
     // validate params
     String trouble = "";
@@ -23703,7 +23700,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // update the datasetIDs
         long tTime = System.currentTimeMillis();
-        HashSet<String> deletedSet = new HashSet();
+        HashSet<String> deletedSet = new HashSet<>();
         for (int idi = 0; idi < nDatasetIDs; idi++) {
           String tDatasetID = String2.canonical(datasetIDs.get(idi));
           EDD edd = this.gridDatasetHashMap.get(tDatasetID);

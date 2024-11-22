@@ -3868,7 +3868,7 @@ public abstract class EDD {
     // get the readyToUseAddGlobalAttributes for suggestions
     Attributes addAtts =
         makeReadyToUseAddGlobalAttributesForDatasetsXml(
-            sourceAtts, tCdmDataType, tLocalSourceUrl, null, new HashSet());
+            sourceAtts, tCdmDataType, tLocalSourceUrl, null, new HashSet<>());
     String aConventions = addAtts.getString("Conventions");
     String aInfo = addAtts.getString("infoUrl");
     String aIns = addAtts.getString("institution");
@@ -5317,7 +5317,7 @@ public abstract class EDD {
               + "\n"
               + "  externalAtts="
               + (externalAtts == null ? "null" : "\n" + externalAtts.toString()));
-    if (suggestedKeywords == null) suggestedKeywords = new HashSet(128);
+    if (suggestedKeywords == null) suggestedKeywords = new HashSet<>(128);
     // String2.log("initial suggestedKeywords: " + String2.toCSSVString(suggestedKeywords));
 
     String name, value;
@@ -5375,7 +5375,7 @@ public abstract class EDD {
     // fgdc_metadata_url is fgdc metadata, so not so useful as infoUrl
     String infoUrl = null;
     HashSet<String> toRemove =
-        new HashSet(
+        new HashSet<>(
             Arrays.asList(
                 // Enter them lowercase here. The search for them is case-insensitive.
                 "_ncproperties", // If I write this, netcdf nc4 code later throws Exception when it
@@ -7153,14 +7153,13 @@ public abstract class EDD {
             if (!String2.isSomething2(creator_name)) creator_name = "NOAA ESRL PSD";
             if (!String2.isSomething2(tInstitution)) tInstitution = "NOAA ESRL PSD";
             if (!String2.isSomething2(creator_url)) creator_url = "https://www.esrl.noaa.gov/psd/";
-            break;
           } else {
             if (!String2.isSomething2(creator_email)) creator_email = "webmaster.esrl@noaa.gov";
             if (!String2.isSomething2(creator_name)) creator_name = "NOAA ESRL";
             if (!String2.isSomething2(tInstitution)) tInstitution = "NOAA ESRL";
             if (!String2.isSomething2(creator_url)) creator_url = "https://www.esrl.noaa.gov/";
-            break;
           }
+          break;
         }
         if (lc.indexOf("gfdl") >= 0) {
           if (!String2.isSomething2(creator_email))
@@ -13685,7 +13684,7 @@ public abstract class EDD {
     int nLines = lines.size();
 
     // make HashSet with datasetIDs
-    HashSet<String> hashset = new HashSet();
+    HashSet<String> hashset = new HashSet<>();
     for (String s : lines) hashset.add(String2.split(s, ',')[0]);
 
     // consider making InPort Xml for these datasets

@@ -1820,7 +1820,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       // remove "badFiles" if they no longer exist (in tFileNames)
       if (badFileMap.size() > 0) {
         // make hashset with all tFileNames
-        HashSet<String> tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+        HashSet<String> tFileSet = new HashSet<>(Math2.roundToInt(1.4 * ntft));
         for (int i = 0; i < ntft; i++) {
           tFileSet.add(tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));
           // String2.log("tFileSet add: " + tFileDirIndexPA.get(i) + "/" +
@@ -2865,7 +2865,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         || // be safe, avoid trickery
         tHttpGetKeys.indexOf('\'') >= 0) // be safe, avoid trickery
     throw new RuntimeException(msg + inForm);
-    httpGetKeys = new HashSet();
+    httpGetKeys = new HashSet<>();
     String keyAr[] = StringArray.arrayFromCSV(tHttpGetKeys);
     for (int i = 0; i < keyAr.length; i++) {
       if (String2.isSomething(keyAr[i])) {
@@ -5153,8 +5153,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // file has just NaN
     if (Double.isNaN(min) && Double.isNaN(max)) { // and we know conValue isn't NaN
-      if (conOp.equals("!=")) return true; // always: NaN != 5
-      else return false; // never: NaN = 5 and other ops, too
+      // never: NaN = 5 and other ops, too
+      return conOp.equals("!="); // always: NaN != 5
     }
 
     // 0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};

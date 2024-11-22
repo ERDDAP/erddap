@@ -192,13 +192,6 @@ public class VectorPointsRenderer extends CartesianRenderer {
           if (attr_.getVectorStyle() == VectorAttribute2.HEAD) {
             // unscaled head
             tScale = fixedScale / vclen;
-            hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
-            hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
-            hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
-            hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
-            gp.moveTo(hx1, hy1);
-            gp.lineTo(headX, headY);
-            gp.lineTo(hx2, hy2);
           } else {
             // scaled head
             if (vclen >= maxSize) {
@@ -208,14 +201,14 @@ public class VectorPointsRenderer extends CartesianRenderer {
             } else {
               tScale = headScale;
             }
-            hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
-            hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
-            hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
-            hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
-            gp.moveTo(hx1, hy1);
-            gp.lineTo(headX, headY);
-            gp.lineTo(hx2, hy2);
           }
+          hx1 = xPtoD(xphead + (-vx - 0.35f * vy) * tScale);
+          hy1 = yPtoD(yphead + (-vy + 0.35f * vx) * tScale);
+          hx2 = xPtoD(xphead + (-vx + 0.35f * vy) * tScale);
+          hy2 = yPtoD(yphead + (-vy - 0.35f * vx) * tScale);
+          gp.moveTo(hx1, hy1);
+          gp.lineTo(headX, headY);
+          gp.lineTo(hx2, hy2);
           gp.closePath(); // bob added
           g2.draw(gp); // bob added
           g2.fill(gp); // bob added

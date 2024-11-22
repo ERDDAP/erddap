@@ -524,9 +524,7 @@ public class DSequence extends DConstructor implements ClientIO {
       //            if (getLevel() == 0)
       writeMarker(sink, START_OF_INSTANCE);
 
-      List<BaseType> rowVec = allValue;
-
-      for (BaseType baseType : rowVec) {
+      for (BaseType baseType : allValue) {
         ClientIO bt = (ClientIO) baseType;
         bt.externalize(sink);
       }

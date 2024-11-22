@@ -347,7 +347,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // make the dataVariables
-    ArrayList<EDV> tDataVariables = new ArrayList();
+    ArrayList<EDV> tDataVariables = new ArrayList<>();
     knowsActualRange = false;
     for (int col = 0; col < sourceTable.nColumns(); col++) {
 

@@ -479,9 +479,9 @@ public class EDDTableFromFileNames extends EDDTable {
             FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
                 fileDir,
                 fileNameRegex,
-                from == fromOnTheFly ? false : recursive,
+                from != fromOnTheFly && recursive,
                 pathRegex,
-                from == fromOnTheFly ? true : false); // tDirectoriesToo
+                from == fromOnTheFly); // tDirectoriesToo
         tCachedDNLSTable.setColumn(
             2, new DoubleArray(tCachedDNLSTable.getColumn(2))); // long -> double
         tCachedDNLSTable.setColumn(

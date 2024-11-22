@@ -6,6 +6,7 @@ package com.cohort.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +67,7 @@ public class MustBe {
       new Exception().printStackTrace(ps);
     }
     // it flushes first
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -133,7 +134,8 @@ public class MustBe {
     for (i = 0; i < n; i++) if (ba[i] == '\t') ba[i] = (byte) 32;
 
     // convert to ArrayList of Strings
-    List<String> arrayList = String2.multiLineStringToArrayList(new String(ba));
+    List<String> arrayList =
+        String2.multiLineStringToArrayList(new String(ba, StandardCharsets.UTF_8));
 
     // remove the first nRemoveLines lines; trim strings; store results in ca
     if (nRemoveLines < 0) nRemoveLines = 0;

@@ -345,7 +345,7 @@ public class EDDGridFromEtopo extends EDDGrid {
           // this dataset doesn't change, so keep files that are recently used
           File2.touch(cacheName);
           try (DataInputStream dis =
-              new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName)); ) {
+              new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName))) {
             for (int i = 0; i < nLatsLons; i++) {
               data[i] = dis.readShort();
               // if (i < 10) String2.log(i + "=" + data[i]);

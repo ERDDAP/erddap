@@ -1498,11 +1498,11 @@ class TestUtil {
     Test.ensureEqual(String2.findWholeWord(" a", "a"), 1, "");
 
     // removeValues(Map map, Set set)
-    Map map = new HashMap();
+    Map<String, String> map = new HashMap<>();
     map.put("0", "00");
     map.put("1", "11");
     map.put("2", "22");
-    Set set = new HashSet();
+    Set<String> set = new HashSet<String>();
     set.add("11");
     set.add("zz");
     String2.removeValues(map, set);
@@ -2302,7 +2302,7 @@ class TestUtil {
     String2.log("test toCSVString");
     Test.ensureEqual(String2.toCSSVString(new String[] {}), "", "a");
     Test.ensureEqual(String2.toCSSVString(new String[] {"a", null, "ccc"}), "a, [null], ccc", "b");
-    ArrayList al = new ArrayList(); // this is also used in the next few tests
+    ArrayList<String> al = new ArrayList<>(); // this is also used in the next few tests
     al.add("1");
     al.add(null);
     al.add("333");
@@ -2383,7 +2383,7 @@ class TestUtil {
 
     // toString(map)
     String2.log("test toString(map)");
-    map = new HashMap();
+    map = new HashMap<>();
     map.put("key a", "value a");
     map.put("Bob", "Simons");
     // order of elements is not specified and may change
@@ -2496,24 +2496,24 @@ class TestUtil {
 
     // toIntArray(arrayList)
     String2.log("test toIntArray(arrayList)");
-    al = new ArrayList();
-    al.add(Integer.valueOf(1));
-    al.add(Integer.valueOf(333));
-    Test.ensureEqual(String2.toCSSVString(String2.toIntArray(al)), "1, 333", "a");
+    ArrayList<Integer> alInt = new ArrayList<>();
+    alInt.add(Integer.valueOf(1));
+    alInt.add(Integer.valueOf(333));
+    Test.ensureEqual(String2.toCSSVString(String2.toIntArray(alInt)), "1, 333", "a");
 
     // toFloatArray(arrayList)
     String2.log("test toFloatArray(arrayList)");
-    al = new ArrayList();
-    al.add(Float.valueOf(1.1f));
-    al.add(Float.valueOf(333.3f));
-    Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(al)), "1.1, 333.3", "a");
+    ArrayList<Float> alFloat = new ArrayList<>();
+    alFloat.add(Float.valueOf(1.1f));
+    alFloat.add(Float.valueOf(333.3f));
+    Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(alFloat)), "1.1, 333.3", "a");
 
     // toDoubleArray(arrayList)
     String2.log("test toDoubleArray(arrayList)");
-    al = new ArrayList();
-    al.add(Double.valueOf(1.1));
-    al.add(Double.valueOf(333.3));
-    Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(al)), "1.1, 333.3", "a");
+    ArrayList<Double> alDouble = new ArrayList<>();
+    alDouble.add(Double.valueOf(1.1));
+    alDouble.add(Double.valueOf(333.3));
+    Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(alDouble)), "1.1, 333.3", "a");
 
     // justFiniteValues(int[])
     String2.log("test justFiniteValues(int[])");
@@ -2811,7 +2811,7 @@ class TestUtil {
 
     // getKeysAndValuesString
     String2.log("test getKeysAndValuesString");
-    HashMap hm = new HashMap();
+    HashMap<String, String> hm = new HashMap<>();
     hm.put("key3", "value3");
     hm.put("key2", "value2");
     hm.put("key1", "value1");
@@ -2962,7 +2962,7 @@ class TestUtil {
     Test.ensureEqual(String2.alternateToString(null), "    [null]\n", "test a");
     Test.ensureEqual(
         String2.alternateGetValue(null, "a"), null, "test b"); // 'get' when arraylist is null
-    ArrayList alternate = new ArrayList();
+    ArrayList<Object> alternate = new ArrayList<>();
     String2.alternateSetValue(alternate, "a", "able"); // "add 'a'");
     Test.ensureEqual(String2.alternateSetValue(alternate, "b", "bob"), null, "set 'b' bob");
     Test.ensureEqual(

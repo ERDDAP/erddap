@@ -24,7 +24,6 @@ public class ErrorParser implements ErrorParserConstants {
         break;
       default:
         jj_la1[0] = jj_gen;
-        ;
     }
   }
 
@@ -36,7 +35,6 @@ public class ErrorParser implements ErrorParserConstants {
         break;
       default:
         jj_la1[1] = jj_gen;
-        ;
     }
   }
 

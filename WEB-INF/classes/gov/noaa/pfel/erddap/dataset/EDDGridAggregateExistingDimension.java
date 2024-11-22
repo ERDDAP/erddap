@@ -155,7 +155,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
           tSURegex = xmlReader.attributeValue("regex");
           String tr = xmlReader.attributeValue("recursive");
           tSUPathRegex = xmlReader.attributeValue("pathRegex");
-          tSURecursive = tr == null ? true : String2.parseBoolean(tr);
+          tSURecursive = tr == null || String2.parseBoolean(tr);
         }
         case "</sourceUrls>" -> tSU = content;
         case "</matchAxisNDigits>" ->

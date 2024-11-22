@@ -1767,8 +1767,7 @@ public class File2 {
 
     for (int i = 0; i < maxAttempt; i++) {
       try (InputStream is = getDecompressedBufferedInputStream(resourceFile);
-          BufferedReader bufferedReader =
-              new BufferedReader(new InputStreamReader(is, charset)); ) {
+          BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, charset))) {
         ArrayList<String> al = new ArrayList<>();
         String s = bufferedReader.readLine();
         while (s != null) { // null = end-of-file
@@ -2007,7 +2006,7 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String hexDump(String fullFileName, int nBytes) throws Exception {
-    try (InputStream fis = getDecompressedBufferedInputStream(fullFileName); ) {
+    try (InputStream fis = getDecompressedBufferedInputStream(fullFileName)) {
       nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); // max 2GB
       byte ba[] = new byte[nBytes];
       int bytesRead = 0;

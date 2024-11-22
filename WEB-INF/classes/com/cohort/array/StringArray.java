@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -333,7 +334,7 @@ public class StringArray extends PrimitiveArray {
         File2.length(fileName), "StringArray.fromFile"); // canonical may lessen memory requirement
     final StringArray sa = new StringArray();
     try (final BufferedReader bufferedReader =
-        File2.getDecompressedBufferedFileReader(fileName, charset); ) {
+        File2.getDecompressedBufferedFileReader(fileName, charset)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         sa.addNotCanonical(s);
@@ -1776,7 +1777,7 @@ public class StringArray extends PrimitiveArray {
       int nChar = dis.readInt();
       if (buffer.length < nChar) buffer = new byte[nChar + 10];
       dis.readFully(buffer, 0, nChar);
-      add(new String(buffer, 0, nChar));
+      add(new String(buffer, 0, nChar, StandardCharsets.UTF_8));
 
       // pad to 4 bytes boundary at end
       while (nChar++ % 4 != 0) dis.readByte();
@@ -1826,7 +1827,7 @@ public class StringArray extends PrimitiveArray {
     raf.readFully(bar);
     int po = 0;
     while (po < nBytesPer && bar[po] != 0) po++;
-    return new String(bar, 0, po);
+    return new String(bar, 0, po, StandardCharsets.UTF_8);
   }
 
   /**
@@ -2008,7 +2009,7 @@ public class StringArray extends PrimitiveArray {
    *     phrase"). The resulting parts are all trim'd.
    */
   public static StringArray wordsAndQuotedPhrases(final String searchFor) {
-    ArrayList<String> sa = new ArrayList(16);
+    ArrayList<String> sa = new ArrayList<>(16);
     wordsAndQuotedPhrases(searchFor, sa);
     return new StringArray(sa.iterator());
   }

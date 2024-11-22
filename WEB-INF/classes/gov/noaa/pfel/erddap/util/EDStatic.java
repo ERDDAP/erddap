@@ -2101,8 +2101,7 @@ public class EDStatic {
       variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
 
       String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-      wmsActive =
-          String2.isSomething(wmsActiveString) ? String2.parseBoolean(wmsActiveString) : true;
+      wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
       wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
       wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
       wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);

@@ -938,7 +938,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     toTable.addColumn("shefID", toShef);
     toTable.addColumn("deployment", toDeployment);
 
-    HashMap datumsHash = new HashMap();
+    HashMap<String, String> datumsHash = new HashMap<>();
     int nStations = fromID.size();
     int noName = 0,
         wrongName = 0,

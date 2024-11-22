@@ -73,7 +73,7 @@ class Units2Tests {
    */
   private static StringArray getTestUdunits() throws Exception {
 
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     // add some additional tests
     set.add("degree_true");
     set.add("degrees_true");

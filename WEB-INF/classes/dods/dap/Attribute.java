@@ -399,8 +399,7 @@ public class Attribute implements Cloneable {
     try {
       // Byte.parseByte() can't be used because values > 127 are allowed
       short val = Short.parseShort(s);
-      if (val > 0xFF) return false;
-      else return true;
+      return val <= 0xFF;
     } catch (NumberFormatException e) {
       throw new AttributeBadValueException("`" + s + "' is not a Byte value.");
     }
@@ -431,8 +430,7 @@ public class Attribute implements Cloneable {
     // Note: Because there is no Unsigned class in Java, use Long instead.
     try {
       long val = Long.parseLong(s);
-      if (val > 0xFFFFL) return false;
-      else return true;
+      return val <= 0xFFFFL;
     } catch (NumberFormatException e) {
       return false;
     }
@@ -463,8 +461,7 @@ public class Attribute implements Cloneable {
     // Note: Because there is no Unsigned class in Java, use Long instead.
     try {
       long val = Long.parseLong(s);
-      if (val > 0xFFFFFFFFL) return false;
-      else return true;
+      return val <= 0xFFFFFFFFL;
     } catch (NumberFormatException e) {
       return false;
     }
@@ -481,9 +478,7 @@ public class Attribute implements Cloneable {
       Float.valueOf(s);
       return true;
     } catch (NumberFormatException e) {
-      if (s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf")) return true;
-
-      return false;
+      return s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf");
     }
   }
 
@@ -501,8 +496,7 @@ public class Attribute implements Cloneable {
       Double.valueOf(s);
       return true;
     } catch (NumberFormatException e) {
-      if (s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf")) return true;
-      return false;
+      return s.equalsIgnoreCase("nan") || s.equalsIgnoreCase("inf");
     }
   }
 

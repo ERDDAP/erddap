@@ -332,7 +332,7 @@ public class GSHHS {
     // String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
     try (DataInputStream dis =
         new DataInputStream(
-            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b")); ) {
+            File2.getDecompressedBufferedInputStream(gshhsDir + "gshhs_" + resolution + ".b"))) {
       while (dis.available() > 0) {
         // read the header
         /* old GSHHS v 1.x

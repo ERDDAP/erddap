@@ -1197,8 +1197,7 @@ public class HtmlWidgets {
             + other
             + " >\n");
 
-    String spacer =
-        nOptions < 20 ? "" : ""; // save space if lots of options //was 6 spaces if few options
+    String spacer = ""; // save space if lots of options //was 6 spaces if few options
     for (int i = 0; i < nOptions; i++) {
       // Security issue: the options are not user-specified.  And they are not HTML attributes.
       // I don't think encodeAsHTMLAttributes is warranted and I know it will cause problems with

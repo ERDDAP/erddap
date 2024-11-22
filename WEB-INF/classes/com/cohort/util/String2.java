@@ -576,7 +576,7 @@ public class String2 {
   }
 
   public static String[] extractAllRegexes(final String s, final Pattern pattern) {
-    final ArrayList<String> al = new ArrayList();
+    final ArrayList<String> al = new ArrayList<>();
     final Matcher m = pattern.matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
@@ -625,7 +625,7 @@ public class String2 {
    */
   public static String[] extractAllCaptureGroupsAsStringArray(
       final String s, final String regex, final int captureGroupNumber) {
-    final ArrayList<String> al = new ArrayList();
+    final ArrayList<String> al = new ArrayList<>();
     final Matcher m = Pattern.compile(regex).matcher(s);
     int fromIndex = 0;
     while (m.find(fromIndex)) {
@@ -868,8 +868,7 @@ public class String2 {
     if (c < 'A') return false;
     if (c <= 'Z') return true;
     if (c < 'a') return false;
-    if (c <= 'z') return true;
-    return false;
+    return c <= 'z';
   }
 
   /**
@@ -890,8 +889,7 @@ public class String2 {
     if (c <= 'z') return true;
     if (c < '\u00c0') return false;
     if (c == '\u00d7') return false;
-    if (c <= '\u00FF') return true;
-    return false;
+    return c <= '\u00FF';
   }
 
   /**
@@ -921,8 +919,7 @@ public class String2 {
     if (c < 'A') return false;
     if (c <= 'F') return true;
     if (c < 'a') return false;
-    if (c <= 'f') return true;
-    return false;
+    return c <= 'f';
   }
 
   /** Returns true if all of the characters in s are hex digits. A 0-length string returns false. */
@@ -1100,8 +1097,7 @@ public class String2 {
     if (ch < 32) return false;
     if (ch <= 126) return true; // was 127
     if (ch < 161) return false; // was 160
-    if (ch <= 255) return true;
-    return false;
+    return ch <= 255;
   }
 
   /** Returns true if all of the characters in s are printable */
@@ -1115,8 +1111,7 @@ public class String2 {
   /** returns true if ch is 32..126. */
   public static final boolean isAsciiPrintable(final int ch) {
     if (ch < 32) return false;
-    if (ch <= 126) return true;
-    return false;
+    return ch <= 126;
   }
 
   /** Returns true if all of the characters in s are 32..126 */
@@ -1202,8 +1197,7 @@ public class String2 {
     if (ch <= 'Z') return true;
     if (ch == '_') return true;
     if (ch < 'a') return false;
-    if (ch <= 'z') return true;
-    return false;
+    return ch <= 'z';
   }
 
   /**
@@ -1277,7 +1271,7 @@ public class String2 {
    *     dir is null or "", this returns false.
    */
   public static boolean isRemote(final String dir) {
-    if (isUrl(dir)) return dir.startsWith("file://") ? false : true;
+    if (isUrl(dir)) return !dir.startsWith("file://");
     return false;
   }
 
@@ -1290,7 +1284,7 @@ public class String2 {
    *     returns false.
    */
   public static boolean isTrulyRemote(final String dir) {
-    if (isUrl(dir)) return dir.startsWith("file://") ? false : isAwsS3Url(dir) ? false : true;
+    if (isUrl(dir)) return !dir.startsWith("file://") && !isAwsS3Url(dir);
     return false;
   }
 
@@ -3075,13 +3069,13 @@ public class String2 {
     }
 
     // attributeName not found?
-    if (value == null) return null;
-    else {
+    if (value == null) {
+    } else {
       // add it
       arrayList.add(attributeName);
       arrayList.add(value);
-      return null;
     }
+    return null;
   }
 
   /**
@@ -4362,7 +4356,7 @@ public class String2 {
   public static String[] tokenize(String s) {
     if (s == null) return null;
 
-    ArrayList<String> arrayList = new ArrayList();
+    ArrayList<String> arrayList = new ArrayList<>();
     int sLength = s.length();
     int index = 0; // next char to be read
     // eat spaces
@@ -4849,12 +4843,12 @@ public class String2 {
    * @return a string with the sorted (ignoreCase) keys and their values ("key1: value1\nkey2:
    *     value2\n")
    */
-  public static String getKeysAndValuesString(Map map) {
-    ArrayList<String> al = new ArrayList();
+  public static String getKeysAndValuesString(Map<String, String> map) {
+    ArrayList<String> al = new ArrayList<>();
 
     // synchronize so protected from changes in other threads
-    for (Object key : map.keySet()) {
-      al.add(key.toString() + ": " + map.get(key).toString());
+    for (String key : map.keySet()) {
+      al.add(key + ": " + map.get(key));
     }
     al.sort(STRING_COMPARATOR_IGNORE_CASE);
     return toNewlineString(al.toArray(new String[0]));
@@ -5055,7 +5049,8 @@ public class String2 {
     try {
       flushLog();
       System.out.print(prompt);
-      BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+      BufferedReader inReader =
+          new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
       return inReader.readLine();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -5603,7 +5598,7 @@ public class String2 {
     }
     byte bytes[] = md.digest();
     if (useBase64) {
-      return new String(Base64.encodeBase64(bytes));
+      return new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
     } else {
       int nBytes = bytes.length;
       StringBuilder sb = new StringBuilder(nBytes * 2);
@@ -6022,7 +6017,7 @@ public class String2 {
         // For proof that new String(s.substring(,)) is just storing relevant chars,
         // not a reference to the parent string, see TestUtil.testString2canonical2()
         canonical = s; // in case s is from s2.substring, copy to be just the characters
-        tCanonicalMap.put(canonical, new WeakReference(canonical));
+        tCanonicalMap.put(canonical, new WeakReference<>(canonical));
         // log("new canonical string: " + canonical);
       }
       return canonical;
@@ -6065,7 +6060,7 @@ public class String2 {
       StringHolder canonical = wr == null ? null : wr.get();
       if (canonical == null) {
         canonical = sh; // use this object
-        tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
+        tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
         // log("new canonical string: " + canonical);
       }
       return canonical;

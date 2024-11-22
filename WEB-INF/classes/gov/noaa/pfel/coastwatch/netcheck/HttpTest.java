@@ -19,8 +19,8 @@ import java.util.ArrayList;
 public class HttpTest extends NetCheckTest {
 
   private String url;
-  private final ArrayList<String> responseMustInclude = new ArrayList();
-  private final ArrayList<String> responseMustNotInclude = new ArrayList();
+  private final ArrayList<String> responseMustInclude = new ArrayList<>();
+  private final ArrayList<String> responseMustNotInclude = new ArrayList<>();
 
   /**
    * This constructor loads the information for a test with information from the xmlReader. The

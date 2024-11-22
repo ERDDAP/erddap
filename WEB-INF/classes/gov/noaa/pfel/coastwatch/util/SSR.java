@@ -35,6 +35,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
@@ -466,7 +467,7 @@ public class SSR {
       // compress the files
       for (String dirName : dirNames) {
         // if directory, get all file names
-        ArrayList<String> al = new ArrayList();
+        ArrayList<String> al = new ArrayList<>();
         if (File2.isDirectory(dirName)) {
           RegexFilenameFilter.recursiveFullNameList(al, dirName, ".*", false); // directoriesToo
         } else {
@@ -925,7 +926,7 @@ public class SSR {
    */
   public static String percentEncode(String query) throws Exception {
     if (query == null) return "";
-    return String2.replaceAll(URLEncoder.encode(query, File2.UTF_8), "+", "%20");
+    return String2.replaceAll(URLEncoder.encode(query, StandardCharsets.UTF_8), "+", "%20");
   }
 
   /**
@@ -939,7 +940,7 @@ public class SSR {
    */
   public static String percentDecode(String query) throws Exception {
     if (query == null) return "";
-    return URLDecoder.decode(query, File2.UTF_8);
+    return URLDecoder.decode(query, StandardCharsets.UTF_8);
   }
 
   /**
@@ -1770,7 +1771,7 @@ public class SSR {
    * @throws Exception if error occurs
    */
   public static byte[] getFileBytes(String fileName) throws Exception {
-    try (InputStream is = File2.getDecompressedBufferedInputStream(fileName); ) {
+    try (InputStream is = File2.getDecompressedBufferedInputStream(fileName)) {
       long time = System.currentTimeMillis();
       byte buffer[] = new byte[1024];
       ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -483,8 +483,7 @@ public class NcHelper {
     if (!dt.isIntegral()) return false;
     if (dt.isUnsigned()) return true; // vars in nc4 files return correct isUnsigned status
     PrimitiveArray pa = getVariableAttribute(variable, "_Unsigned");
-    if (pa != null && "true".equals(pa.toString())) return true;
-    return false;
+    return pa != null && "true".equals(pa.toString());
   }
 
   /**
@@ -1376,9 +1375,9 @@ public class NcHelper {
     String[] attNames = sourceAtts.getNames();
     if (attNames.length == 0) return null;
     for (String attName : attNames) {
-      boolean keep = true;
-      if ("comment".equals(attName)
-          && sourceAtts.getString(attName).startsWith("This is a container variable")) keep = false;
+      boolean keep =
+          !"comment".equals(attName)
+              || !sourceAtts.getString(attName).startsWith("This is a container variable");
       if (!"DODS_strlen".equals(attName) && keep)
         gridMappingAtts.add(
             "grid_mapping_name".equals(attName) ? attName : "grid_mapping_" + attName,

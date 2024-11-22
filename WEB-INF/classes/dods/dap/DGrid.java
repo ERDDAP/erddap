@@ -230,7 +230,7 @@ public class DGrid extends DConstructor implements ClientIO {
 
     @Override
     public boolean hasNext() {
-      return (array == false) || e.hasNext();
+      return !array || e.hasNext();
     }
 
     @Override

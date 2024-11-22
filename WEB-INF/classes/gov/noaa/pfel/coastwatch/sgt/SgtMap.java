@@ -1815,10 +1815,9 @@ public class SgtMap {
       if (thrownException != null) throw thrownException;
 
       if (reallyVerbose) {
-        if (reallyVerbose && colorMap != null) String2.log(colorMap.getStats());
-        if (reallyVerbose)
-          String2.log(
-              "  SgtMap.makeMap draw the graph time=" + (System.currentTimeMillis() - time) + "ms");
+        if (colorMap != null) String2.log(colorMap.getStats());
+        String2.log(
+            "  SgtMap.makeMap draw the graph time=" + (System.currentTimeMillis() - time) + "ms");
         // Math2.gcAndWait("SgtGraph (debugMode)"); //Part of debug.  Before getMemoryString().
         // Outside of timing system.
         // String2.log("  SgtMap.makeMap after jPane.draw: " + Math2.memoryString());

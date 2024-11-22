@@ -966,7 +966,7 @@ class SgtMapTests {
           "",
           "",
           "", // plot contour
-          new ArrayList(), // graphDataLayers
+          new ArrayList<>(), // graphDataLayers
           (Graphics2D) bufferedImage.getGraphics(),
           0,
           0,
@@ -1238,7 +1238,7 @@ class SgtMapTests {
         "",
         "", // contourDateTime,
         "", // Contour data
-        new ArrayList(), // pointDataList
+        new ArrayList<>(), // pointDataList
         g2,
         baseULXPixel,
         baseULYPixel,

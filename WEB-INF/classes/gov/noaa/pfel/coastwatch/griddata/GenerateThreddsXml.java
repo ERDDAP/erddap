@@ -378,7 +378,7 @@ public class GenerateThreddsXml {
           }
 
           // sort based on 'n'days
-          ArrayList<PrimitiveArray> al = new ArrayList();
+          ArrayList<PrimitiveArray> al = new ArrayList<>();
           al.add(timePeriodsSA);
           al.add(timePeriodsIA);
           PrimitiveArray.sort(al, new int[] {1}, new boolean[] {true});
@@ -787,7 +787,7 @@ public class GenerateThreddsXml {
       if (categoryShortTitles[cat].size() > 0) {
 
         // add the dataset tags for the datasets in the category
-        ArrayList<PrimitiveArray> table = new ArrayList();
+        ArrayList<PrimitiveArray> table = new ArrayList<>();
         table.add(categoryShortTitles[cat]);
         table.add(categoryTwoFours[cat]);
         table.add(categoryCourtesies[cat]);
@@ -822,7 +822,7 @@ public class GenerateThreddsXml {
       catalog.append("    <dataset name=\"HF Radio-derived Currents Datasets\">\n");
 
       // add the dataset tags for the datasets in the category
-      ArrayList<PrimitiveArray> table = new ArrayList();
+      ArrayList<PrimitiveArray> table = new ArrayList<>();
       table.add(categoryShortTitles[cat]);
       table.add(categoryTwoFours[cat]);
       table.add(categoryCourtesies[cat]);

@@ -630,11 +630,7 @@ public class PaneProxy { // Bob Simons made public
             } else {
               moveable_ = false;
             }
-            if (moveable_ || draggable_) {
-              in_move_ = true;
-            } else {
-              in_move_ = false;
-            }
+            in_move_ = moveable_ || draggable_;
             moved_ = false;
             if (Debug.DEBUG) System.out.println("MouseDown (isDraggable) " + draggable_);
             ((Selectable) selectedobject_).setSelected(false);

@@ -60,7 +60,7 @@ public class TableXmlHandler extends DefaultHandler {
   private boolean inRow;
   private StringArray nameStack;
   private StringArray uniqueNameStack;
-  private ArrayList<HashSet> hashsetStack;
+  private ArrayList<HashSet<String>> hashsetStack;
   private StringBuilder characters;
 
   /**
@@ -111,7 +111,7 @@ public class TableXmlHandler extends DefaultHandler {
     // recreating the objects frees memory if the objects were previously huge
     nameStack = new StringArray();
     uniqueNameStack = new StringArray();
-    hashsetStack = new ArrayList();
+    hashsetStack = new ArrayList<>();
     characters = new StringBuilder();
   }
 
@@ -142,7 +142,7 @@ public class TableXmlHandler extends DefaultHandler {
     if (verbose) String2.log("Start element: " + qName);
 
     // create the hashset for this element's children
-    hashsetStack.add(new HashSet());
+    hashsetStack.add(new HashSet<>());
 
     // is this the start of a row?
     if (nameStack.size() == rowStackSize) {

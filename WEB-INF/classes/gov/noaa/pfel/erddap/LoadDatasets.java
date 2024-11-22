@@ -909,8 +909,7 @@ public class LoadDatasets extends Thread {
           case "<erddapDatasets></emailDiagnosticsToErdData>":
             {
               String ts = xmlReader.content();
-              boolean ted =
-                  String2.isSomething(ts) ? String2.parseBoolean(ts) : true; // the default
+              boolean ted = !String2.isSomething(ts) || String2.parseBoolean(ts); // the default
 
               EDStatic.emailDiagnosticsToErdData = ted;
               String2.log("emailDiagnosticsToErdData=" + ted);
@@ -1528,7 +1527,7 @@ public class LoadDatasets extends Thread {
               + Calendar2.getCompactCurrentISODateTimeStringLocal()
               + ".csv";
       String contents =
-          "datasetID,variableSourceName,attribute\n" + EDStatic.suggestAddFillValueCSV.toString();
+          "datasetID,variableSourceName,attribute\n" + EDStatic.suggestAddFillValueCSV;
       File2.writeToFileUtf8(tFileName, contents);
       String afva =
           "ADD _FillValue ATTRIBUTES?\n"

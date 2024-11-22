@@ -136,8 +136,8 @@ public class PointAttribute implements Attribute, Cloneable {
         if (attr.getLabelColor() == null) return false;
         if (!labelColor_.equals(attr.getLabelColor())) return false;
       }
-      if ((labelPosition_ != attr.getLabelPosition()) || (labelHeightP_ != attr.getLabelHeightP()))
-        return false;
+      return (labelPosition_ == attr.getLabelPosition())
+          && (labelHeightP_ == attr.getLabelHeightP());
     }
     return true;
   }

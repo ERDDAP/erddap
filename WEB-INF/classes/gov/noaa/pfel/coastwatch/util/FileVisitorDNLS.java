@@ -137,7 +137,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
   /** ConcurrentHashMap handles multi-threaded access well. */
   public static final ConcurrentHashMap<String, Long> pruneCacheDirSize =
-      new ConcurrentHashMap(); /* dirName, bytes */
+      new ConcurrentHashMap<>(); /* dirName, bytes */
 
   /** Max allowed is 1000. Only use smaller number for testing. */
   public static int S3_MAX_KEYS = 1000;
@@ -422,7 +422,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           // https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html says v2 is the
           // recommended approach.
           // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/services/s3/model/ListObjectsV2Request.html
-          HashSet<String> dirHashSet = new HashSet();
+          HashSet<String> dirHashSet = new HashSet<>();
           ListObjectsV2Request.Builder reqBuilder =
               ListObjectsV2Request.builder()
                   .bucket(bucketName)
@@ -509,7 +509,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                   (!response.isTruncated() && writtenToFile)) { // write final chunk
                 if (!writtenToFile)
                   File2.makeDirectory(File2.getDirectory(dnlsFileName)); // ensure dir exists
-                table.writeJsonlCSV(dnlsFileName, writtenToFile ? true : false); // append
+                table.writeJsonlCSV(dnlsFileName, writtenToFile); // append
                 table.removeAllRows();
                 writtenToFile = true;
               }

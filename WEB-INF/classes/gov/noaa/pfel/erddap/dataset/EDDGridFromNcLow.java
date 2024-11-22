@@ -559,7 +559,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       tDimensionsCSV =
           String2.isSomething(tDimensionsCSV) ? String2.replaceAll(tDimensionsCSV, " ", "") : "";
       // find axisVariables
-      List<Dimension> useDims = new ArrayList();
+      List<Dimension> useDims = new ArrayList<>();
       if (String2.isSomething(tDimensionsCSV)) {
         StringArray tDimNames = StringArray.fromCSVNoBlanks(tDimensionsCSV);
         for (int i = 0; i < tDimNames.size(); i++) {

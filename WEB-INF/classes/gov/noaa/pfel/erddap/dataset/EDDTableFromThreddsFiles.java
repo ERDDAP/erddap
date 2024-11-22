@@ -273,7 +273,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         int n = sourceFileName.size();
         if (n > 1) {
           // 1) sort by sourceFileName
-          ArrayList<PrimitiveArray> tfTable = new ArrayList();
+          ArrayList<PrimitiveArray> tfTable = new ArrayList<>();
           tfTable.add(sourceFileDir);
           tfTable.add(sourceFileName);
           tfTable.add(sourceFileLastMod);
@@ -314,7 +314,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       if (completelySuccessful && sourceFileName.size() > 0) {
         // make a hashset of theoretical local fileNames that will exist
         //  after copying based on getThreddsFileInfo
-        HashSet<String> hashset = new HashSet();
+        HashSet<String> hashset = new HashSet<>();
         int nFiles = sourceFileName.size();
         for (int f = 0; f < nFiles; f++) {
           String sourceDir = sourceFileDir.get(f);

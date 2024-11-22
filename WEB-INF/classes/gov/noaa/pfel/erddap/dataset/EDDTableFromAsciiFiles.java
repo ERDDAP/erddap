@@ -801,7 +801,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     String creatorEmail2 = null, creatorEmail3 = null;
     String creatorOrg2 = null, creatorOrg3 = null;
     String creatorUrl2 = null, creatorUrl3 = null;
-    ;
     String metaCreatedBy = "???";
     String metaCreated = "???";
     String metaLastModBy = "???";

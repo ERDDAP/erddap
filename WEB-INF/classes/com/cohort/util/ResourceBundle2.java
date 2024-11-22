@@ -107,7 +107,7 @@ public class ResourceBundle2 {
         XML.getNodeList(doc, xPath, "/*/*"); // all elements directly under root element
     int n = nodeList.getLength();
     ConcurrentHashMap<String, String> tHash =
-        new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
+        new ConcurrentHashMap<>(Math2.roundToInt(1.4 * 16), 0.75f, 4);
     // String2.log("ResourceBundle2.fromXml  nNodes=" + n);
     for (int i = 0; i < n; i++) {
       Element element = (Element) nodeList.item(i);

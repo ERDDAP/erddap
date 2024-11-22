@@ -132,7 +132,6 @@ public class DDSParser implements DDSParserConstants {
         case FLOAT64:
         case STRING:
         case URL:
-          ;
           break;
         default:
           jj_la1[1] = jj_gen;
@@ -192,10 +191,7 @@ public class DDSParser implements DDSParserConstants {
           s2 = Var();
           jj_consume_token(23);
           checkAdd(s1, s2);
-          {
-            if (true) return s2;
-          }
-          break;
+          return s2;
         case STRUCTURE:
           Structure();
           jj_consume_token(21);
@@ -205,10 +201,7 @@ public class DDSParser implements DDSParserConstants {
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
-          {
-            if (true) return s1;
-          }
-          break;
+          return s1;
         case SEQUENCE:
           Sequence();
           jj_consume_token(21);
@@ -218,10 +211,7 @@ public class DDSParser implements DDSParserConstants {
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
-          {
-            if (true) return s1;
-          }
-          break;
+          return s1;
         case GRID:
           Grid();
           jj_consume_token(21);
@@ -250,10 +240,7 @@ public class DDSParser implements DDSParserConstants {
           s1 = Var();
           jj_consume_token(23);
           checkAdd(s1);
-          {
-            if (true) return s1;
-          }
-          break;
+          return s1;
         default:
           jj_la1[3] = jj_gen;
           jj_consume_token(-1);
@@ -276,40 +263,28 @@ public class DDSParser implements DDSParserConstants {
     Token t;
     t = jj_consume_token(LIST);
     ctor.push(factory.newDList());
-    {
-      if (true) return t.image;
-    }
-    throw new Error("Missing return statement in function");
+    return t.image;
   }
 
   public final String Structure() throws ParseException {
     Token t;
     t = jj_consume_token(STRUCTURE);
     ctor.push(factory.newDStructure());
-    {
-      if (true) return t.image;
-    }
-    throw new Error("Missing return statement in function");
+    return t.image;
   }
 
   public final String Sequence() throws ParseException {
     Token t;
     t = jj_consume_token(SEQUENCE);
     ctor.push(factory.newDSequence());
-    {
-      if (true) return t.image;
-    }
-    throw new Error("Missing return statement in function");
+    return t.image;
   }
 
   public final String Grid() throws ParseException {
     Token t;
     t = jj_consume_token(GRID);
     ctor.push(factory.newDGrid());
-    {
-      if (true) return t.image;
-    }
-    throw new Error("Missing return statement in function");
+    return t.image;
   }
 
   public final String BaseType() throws ParseException {
@@ -318,72 +293,44 @@ public class DDSParser implements DDSParserConstants {
       case BYTE:
         t = jj_consume_token(BYTE);
         current = factory.newDByte();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case INT16:
         t = jj_consume_token(INT16);
         current = factory.newDInt16();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case UINT16:
         t = jj_consume_token(UINT16);
         current = factory.newDUInt16();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case INT32:
         t = jj_consume_token(INT32);
         current = factory.newDInt32();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case UINT32:
         t = jj_consume_token(UINT32);
         current = factory.newDUInt32();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case FLOAT32:
         t = jj_consume_token(FLOAT32);
         current = factory.newDFloat32();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case FLOAT64:
         t = jj_consume_token(FLOAT64);
         current = factory.newDFloat64();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case STRING:
         t = jj_consume_token(STRING);
         current = factory.newDString();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case URL:
         t = jj_consume_token(URL);
         current = factory.newDURL();
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       default:
         jj_la1[4] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
     }
-    throw new Error("Missing return statement in function");
   }
 
   // What's going on here!? A variable's name can be either a WORD or one of
@@ -399,7 +346,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[5] = jj_gen;
@@ -407,10 +353,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case BYTE:
         t = jj_consume_token(BYTE);
         current.setName(t.image);
@@ -418,7 +361,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[6] = jj_gen;
@@ -426,10 +368,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case INT16:
         t = jj_consume_token(INT16);
         current.setName(t.image);
@@ -437,7 +376,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[7] = jj_gen;
@@ -445,10 +383,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case UINT16:
         t = jj_consume_token(UINT16);
         current.setName(t.image);
@@ -456,7 +391,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[8] = jj_gen;
@@ -464,10 +398,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case INT32:
         t = jj_consume_token(INT32);
         current.setName(t.image);
@@ -475,7 +406,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[9] = jj_gen;
@@ -483,10 +413,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case UINT32:
         t = jj_consume_token(UINT32);
         current.setName(t.image);
@@ -494,7 +421,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[10] = jj_gen;
@@ -502,10 +428,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case FLOAT32:
         t = jj_consume_token(FLOAT32);
         current.setName(t.image);
@@ -513,7 +436,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[11] = jj_gen;
@@ -521,10 +443,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case FLOAT64:
         t = jj_consume_token(FLOAT64);
         current.setName(t.image);
@@ -532,7 +451,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[12] = jj_gen;
@@ -540,10 +458,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case STRING:
         t = jj_consume_token(STRING);
         current.setName(t.image);
@@ -551,7 +466,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[13] = jj_gen;
@@ -559,10 +473,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case URL:
         t = jj_consume_token(URL);
         current.setName(t.image);
@@ -570,7 +481,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[14] = jj_gen;
@@ -578,10 +488,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case STRUCTURE:
         t = jj_consume_token(STRUCTURE);
         current.setName(t.image);
@@ -589,7 +496,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[15] = jj_gen;
@@ -597,10 +503,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case SEQUENCE:
         t = jj_consume_token(SEQUENCE);
         current.setName(t.image);
@@ -608,7 +511,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[16] = jj_gen;
@@ -616,10 +518,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case GRID:
         t = jj_consume_token(GRID);
         current.setName(t.image);
@@ -627,7 +526,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[17] = jj_gen;
@@ -635,10 +533,7 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       case LIST:
         t = jj_consume_token(LIST);
         current.setName(t.image);
@@ -646,7 +541,6 @@ public class DDSParser implements DDSParserConstants {
         while (true) {
           switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 25:
-              ;
               break;
             default:
               jj_la1[18] = jj_gen;
@@ -654,16 +548,12 @@ public class DDSParser implements DDSParserConstants {
           }
           ArrayDecl();
         }
-        {
-          if (true) return t.image;
-        }
-        break;
+        return t.image;
       default:
         jj_la1[19] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
     }
-    throw new Error("Missing return statement in function");
   }
 
   public final void ArrayDecl() throws ParseException, DDSException {
@@ -817,9 +707,7 @@ public class DDSParser implements DDSParserConstants {
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_scan_token(WORD)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(26)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
+    return jj_scan_token(26);
   }
 
   public DDSParserTokenManager token_source;

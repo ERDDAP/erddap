@@ -1417,7 +1417,7 @@ public abstract class PrimitiveArray {
 
       for (int i = 0; i < size; i++) {
         BigInteger d = getULong(i);
-        if (d == null || d.equals(fv) || d.equals(fv)) {
+        if (d == null || d.equals(fv)) {
         } else {
           n++;
           tMin = tMin.min(d);
@@ -2963,11 +2963,10 @@ public abstract class PrimitiveArray {
             keep1.set(po1);
             po1++;
             po2++;
-            continue;
           } else {
             po1++;
-            continue;
           }
+          continue;
         }
       }
       if (isNumeric2) {
@@ -3048,7 +3047,7 @@ public abstract class PrimitiveArray {
    *     table2.
    * @param table2 a List of PrimitiveArrays
    */
-  public static void append(List table1, List table2) {
+  public static void append(List<PrimitiveArray> table1, List<PrimitiveArray> table2) {
 
     if (table1.size() != table2.size())
       throw new RuntimeException(
@@ -3057,8 +3056,8 @@ public abstract class PrimitiveArray {
     // append table2 to the end of table1
     for (int col = 0; col < table1.size(); col++) {
       // if needed, make a new wider PrimitiveArray in table1
-      PrimitiveArray pa1 = (PrimitiveArray) table1.get(col);
-      PrimitiveArray pa2 = (PrimitiveArray) table2.get(col);
+      PrimitiveArray pa1 = table1.get(col);
+      PrimitiveArray pa2 = table2.get(col);
 
       PAType needPAType = pa1.needPAType(pa2.elementType());
       if (pa1.elementType() != needPAType) {
@@ -3091,7 +3090,11 @@ public abstract class PrimitiveArray {
    * @param removeDuplicates specifies if completely identical rows should be removed.
    */
   public static void merge(
-      List table1, List table2, int[] keys, boolean ascending[], boolean removeDuplicates) {
+      List<PrimitiveArray> table1,
+      List<PrimitiveArray> table2,
+      int[] keys,
+      boolean ascending[],
+      boolean removeDuplicates) {
     // the current approach is quick, fun, and easy, but uses lots of memory
     // FUTURE: if needed, this could be done in a more space-saving way:
     //   sort each table, then merge table2 into table1,
@@ -3670,7 +3673,7 @@ public abstract class PrimitiveArray {
           (Float.isNaN(value1) && Float.isNaN(value2)) || Math2.almostEqual(6, value1, value2);
       case "<" -> value1 < value2;
       case ">" -> value1 > value2;
-      case "!=" -> (Float.isNaN(value1) && Float.isNaN(value2)) ? false : value1 != value2;
+      case "!=" -> (!Float.isNaN(value1) || !Float.isNaN(value2)) && value1 != value2;
       default ->
           // Regex test has to be handled via String testValueOpValue
           //  if (op.equals(PrimitiveArray.REGEX_OP))
@@ -3704,7 +3707,7 @@ public abstract class PrimitiveArray {
           (Double.isNaN(value1) && Double.isNaN(value2)) || Math2.almostEqual(9, value1, value2);
       case "<" -> value1 < value2;
       case ">" -> value1 > value2;
-      case "!=" -> (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
       default ->
           // Regex test has to be handled via String testValueOpValue
           //  if (op.equals(PrimitiveArray.REGEX_OP))
@@ -3739,7 +3742,7 @@ public abstract class PrimitiveArray {
           (Double.isNaN(value1) && Double.isNaN(value2)) || Math2.almostEqual(12, value1, value2);
       case "<" -> value1 < value2;
       case ">" -> value1 > value2;
-      case "!=" -> (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
       default ->
           // Regex test has to be handled via String testValueOpValue
           //  if (op.equals(PrimitiveArray.REGEX_OP))
@@ -3772,7 +3775,7 @@ public abstract class PrimitiveArray {
       case "=" -> (Double.isNaN(value1) && Double.isNaN(value2)) || value1 == value2;
       case "<" -> value1 < value2;
       case ">" -> value1 > value2;
-      case "!=" -> (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
       default ->
           // Regex test has to be handled via String testValueOpValue
           //  if (op.equals(PrimitiveArray.REGEX_OP))
@@ -4165,7 +4168,7 @@ public abstract class PrimitiveArray {
    * @return int[2] with the indices of the first 2 duplicate values, or null if no duplicates.
    */
   public int[] firstDuplicates() {
-    HashSet<String> hs = new HashSet();
+    HashSet<String> hs = new HashSet<>();
     for (int i = 0; i < size(); i++) {
       String s = getString(i);
       if (!hs.add(s)) return new int[] {indexOf(s), i};

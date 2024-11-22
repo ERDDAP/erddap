@@ -488,10 +488,8 @@ public class CartesianGraph extends Graph {
       for (Axis ax : xAxis_) {
         if (ax.getId().equals(id)) return ax;
       }
-      throw new AxisNotFoundException();
-    } else {
-      throw new AxisNotFoundException();
     }
+    throw new AxisNotFoundException();
   }
 
   /** Remove all X axes from the graph. */
@@ -559,10 +557,8 @@ public class CartesianGraph extends Graph {
       for (Axis ax : yAxis_) {
         if (ax.getId().equals(id)) return ax;
       }
-      throw new AxisNotFoundException();
-    } else {
-      throw new AxisNotFoundException();
     }
+    throw new AxisNotFoundException();
   }
 
   /** Remove all Y axes from the graph. */

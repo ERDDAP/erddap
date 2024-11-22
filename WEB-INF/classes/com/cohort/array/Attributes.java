@@ -825,7 +825,7 @@ public class Attributes {
     if (otherAtts == null) return;
 
     // go through all atts in this or otherAtts
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     set.addAll(otherAtts.hashmap.keySet());
     set.addAll(hashmap.keySet());
     for (String name : set) {

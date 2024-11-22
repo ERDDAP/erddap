@@ -15,6 +15,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -338,7 +339,9 @@ public class AttributeTable implements Cloneable {
    * @param pad the number of spaces to indent each line.
    */
   public final void print(OutputStream os, String pad) {
-    print(new PrintWriter(new BufferedWriter(new OutputStreamWriter(os))), pad);
+    print(
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))),
+        pad);
   }
 
   /**

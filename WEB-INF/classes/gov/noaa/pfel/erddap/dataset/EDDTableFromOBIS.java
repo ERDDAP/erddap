@@ -605,7 +605,6 @@ public class EDDTableFromOBIS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
-        tv++;
       } else {
         dataVariables[tv] =
             new EDV(
@@ -616,8 +615,8 @@ public class EDDTableFromOBIS extends EDDTable {
                 tAddAtt,
                 tSourceType); // the constructor that reads source actual_range
         dataVariables[tv].setActualRangeFromDestinationMinMax();
-        tv++;
       }
+      tv++;
     }
 
     // make addVariablesWhereAttNames and addVariablesWhereAttValues
@@ -855,7 +854,7 @@ public class EDDTableFromOBIS extends EDDTable {
             "Point",
             tLocalSourceUrl,
             externalAddGlobalAttributes,
-            new HashSet());
+            new HashSet<>());
 
     // don't use suggestSubsetVariables since sourceTable not really available
 

@@ -94,11 +94,10 @@ public class TimeRange implements java.io.Serializable {
       return false;
     }
     if (delta != null && tr.delta != null) {
-      if (!delta.equals(tr.delta)) return false;
+      return delta.equals(tr.delta);
     } else {
       return false;
     }
-    return true;
   }
 
   @Override

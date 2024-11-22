@@ -17,6 +17,7 @@ import dods.dap.*;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -72,7 +73,7 @@ public class OpendapHelper {
   public static String getDasString(DAS das) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     das.print(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -84,7 +85,7 @@ public class OpendapHelper {
   public static String getDdsString(DDS dds) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     dds.print(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -805,7 +806,7 @@ public class OpendapHelper {
     StringBuilder sb = new StringBuilder();
     // String2.log(">> dasToString " + varName + " attributes:\n" + attributes.toString());
     // see EOL definition for comments about it
-    int firstUEncodedChar = encodeAsHTML ? 65536 : 65536;
+    int firstUEncodedChar = 65536;
     sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL);
     StringArray names = new StringArray(attributes.getNames());
     boolean addedUnsigned = false;
@@ -1645,14 +1646,14 @@ public class OpendapHelper {
 
       boolean firstValidVar = true;
       int nDims = sss.length / 3;
-      ArrayList<Dimension> dims = new ArrayList();
+      ArrayList<Dimension> dims = new ArrayList<>();
       int shape[] = new int[nDims];
       boolean isDGrid = true; // change if false
 
       PAType dataPAType[] = new PAType[nVars];
       boolean isStringVar[] = new boolean[nVars]; // all false
-      Variable.Builder newVars[] = new Variable.Builder[nVars];
-      Variable.Builder newDimVars[] = new Variable.Builder[nDims];
+      Variable.Builder<?> newVars[] = new Variable.Builder[nVars];
+      Variable.Builder<?> newDimVars[] = new Variable.Builder[nDims];
       PAType dimPATypes[] = new PAType[nDims];
       for (int v = 0; v < nVars; v++) {
         // String2.log("  create var=" + varNames[v]);
@@ -1769,7 +1770,7 @@ public class OpendapHelper {
           if (dataPAType[v] == PAType.STRING) {
             // a String variable.  Add a dim for nchars
             isStringVar[v] = true;
-            ArrayList<Dimension> tDims = new ArrayList(dims);
+            ArrayList<Dimension> tDims = new ArrayList<>(dims);
             int nChars = varAtts[v].getInt("DODS_strlen");
             if (nChars == Integer.MAX_VALUE) {
               if (verbose)

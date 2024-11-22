@@ -1755,9 +1755,6 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           colStart.toArray(),
           colStop.toArray(),
           null); // null = dest classes
-      sourceTable.convertIsSomething2();
-      sourceTable.simplify();
-      sourceTable.standardize(tStandardizeWhat);
 
     } else {
       // read comma, space, or tab separated
@@ -1774,10 +1771,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
           null,
           null,
           false); // simplify
-      sourceTable.convertIsSomething2();
-      sourceTable.simplify();
-      sourceTable.standardize(tStandardizeWhat);
     }
+    sourceTable.convertIsSomething2();
+    sourceTable.simplify();
+    sourceTable.standardize(tStandardizeWhat);
     if (verbose)
       String2.log(
           "\nlocal data file="

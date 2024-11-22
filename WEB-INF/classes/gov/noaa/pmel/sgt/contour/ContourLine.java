@@ -326,10 +326,10 @@ public class ContourLine {
       case LineAttribute.STROKE:
         stroke_.drawStroke(g, xp, yp, size, defaultAttr_);
         break;
-      default:
       case LineAttribute.MARK:
       case LineAttribute.MARK_LINE:
       case LineAttribute.SOLID:
+      default:
         g.drawPolyline(xp, yp, size);
     }
   }
@@ -356,10 +356,10 @@ public class ContourLine {
       case LineAttribute.STROKE:
         stroke_.drawStroke(g, xp, yp, size, defaultAttr_);
         break;
-      default:
       case LineAttribute.MARK:
       case LineAttribute.MARK_LINE:
       case LineAttribute.SOLID:
+      default:
         g.drawPolyline(xp, yp, size);
     }
   }

@@ -436,7 +436,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
               + total);
     int indexOut = 0; // index in data array
 
-    try (InputStream inStream = File2.getDecompressedBufferedInputStream(tFullName); ) {
+    try (InputStream inStream = File2.getDecompressedBufferedInputStream(tFullName)) {
 
       byte[] in = new byte[NLON * NLAT * 2];
       short[] out1 = new short[total];

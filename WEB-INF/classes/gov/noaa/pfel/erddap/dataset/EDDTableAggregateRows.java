@@ -58,7 +58,7 @@ public class EDDTableAggregateRows extends EDDTable {
     // data to be obtained (or not)
     if (verbose) String2.log("\n*** constructing EDDTableAggregateRows(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
-    ArrayList<EDDTable> tChildren = new ArrayList();
+    ArrayList<EDDTable> tChildren = new ArrayList<>();
     Attributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;

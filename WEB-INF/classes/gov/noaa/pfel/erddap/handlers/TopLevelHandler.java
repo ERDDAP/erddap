@@ -218,7 +218,7 @@ public class TopLevelHandler extends State {
       }
       case "emailDiagnosticsToErdData" -> {
         String ts = data.toString();
-        boolean ted = String2.isSomething(ts) ? String2.parseBoolean(ts) : true; // the default
+        boolean ted = !String2.isSomething(ts) || String2.parseBoolean(ts); // the default
 
         EDStatic.emailDiagnosticsToErdData = ted;
 

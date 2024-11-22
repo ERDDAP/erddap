@@ -1017,7 +1017,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       // remove "badFiles" if they no longer exist (in tAvailableFiles)
       if (badFileMap.size() > 0) {
         // make hashset with all tAvailableFiles as dirIndex/fileName
-        HashSet<String> tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+        HashSet<String> tFileSet = new HashSet<>(Math2.roundToInt(1.4 * ntft));
         for (int i = 0; i < ntft; i++) {
           tFileSet.add(tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i)); // dirIndex/fileName
           // String2.log("tFileSet add: " +   tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));

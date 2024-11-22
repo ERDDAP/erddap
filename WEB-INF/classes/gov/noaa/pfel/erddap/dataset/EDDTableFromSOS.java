@@ -1453,7 +1453,8 @@ public class EDDTableFromSOS extends EDDTable {
 
     // makeTable
     Table table = makeEmptySourceTable(tableDVI.toArray(), 128);
-    HashMap llatHash = new HashMap(); // llat info -> table row number (as a String)
+    HashMap<String, String> llatHash =
+        new HashMap<>(); // llat info -> table row number (as a String)
     // IntArray fixedColumnsInTable = new IntArray();
     // for (int col = 0; col < tableDVI.size(); col++)
     //    if (tableDVI.get(col) < nFixedVariables)
@@ -3294,7 +3295,7 @@ public class EDDTableFromSOS extends EDDTable {
             "TimeSeries",
             tLocalSourceUrl,
             new Attributes(), // externalAtts
-            new HashSet()); // suggestedKeywords
+            new HashSet<>()); // suggestedKeywords
     Attributes gAtts = table.globalAttributes();
     gAtts.add(sgAtts); // since only addAtts will be printed
     gAtts.add(gAddAtts);
@@ -3823,7 +3824,7 @@ public class EDDTableFromSOS extends EDDTable {
     } else {
 
       // read the file
-      try (BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null); ) {
+      try (BufferedReader br = File2.getDecompressedBufferedFileReader(safeFileName, null)) {
         /* needs fix to work with BufferedReader
         if (reallyVerbose) {
             String2.log("ASCII response=");

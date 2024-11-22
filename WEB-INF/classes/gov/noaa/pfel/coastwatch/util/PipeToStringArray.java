@@ -8,6 +8,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,9 @@ public class PipeToStringArray extends PipeTo {
   @Override
   public void run() {
     BufferedReader bufferedReader =
-        new BufferedReader(new InputStreamReader(inputStream)); // uses default charset for this OS
+        new BufferedReader(
+            new InputStreamReader(
+                inputStream, StandardCharsets.UTF_8)); // uses default charset for this OS
     try {
       String s;
       while ((s = bufferedReader.readLine()) != null) {

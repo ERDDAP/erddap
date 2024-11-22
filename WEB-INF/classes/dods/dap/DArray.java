@@ -199,8 +199,6 @@ public class DArray extends DVector implements Cloneable {
         os.print(", ");
       }
       getPrimitiveVector().printSingleVal(os, index++);
-      os.print("}");
-      return index;
     } else {
       os.print("{");
       for (int i = 0; i < shape[offset] - 1; i++) {
@@ -208,9 +206,9 @@ public class DArray extends DVector implements Cloneable {
         os.print(",");
       }
       index = printArray(os, index, dims - 1, shape, offset + 1);
-      os.print("}");
-      return index;
     }
+    os.print("}");
+    return index;
   }
 
   /**

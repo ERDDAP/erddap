@@ -2341,7 +2341,7 @@ public class EDDGridFromDap extends EDDGrid {
     // process the catalog's datasets
     // ???getDatasets or getDatasetsLogical()?
     List<Dataset> datasets = catalog.getDatasets(); // getDatasetsLogical();
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<>();
     if (datasets != null) {
       if (verbose) String2.log("crawlThreddsCatalog will process " + datasets.size() + " datasets");
       // usually just 1

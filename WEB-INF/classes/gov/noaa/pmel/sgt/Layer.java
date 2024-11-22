@@ -634,10 +634,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
       for (LayerChild child : children_) {
         if (child.getId().equals(labid)) return child;
       }
-      throw new ChildNotFoundException();
-    } else {
-      throw new ChildNotFoundException();
     }
+    throw new ChildNotFoundException();
   }
 
   /**
@@ -810,7 +808,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     }
     if (graph_ != null) {
       obj = graph_.getObjectAt(pt);
-      if (obj != null) return obj;
+      return obj;
     }
     return null;
   }

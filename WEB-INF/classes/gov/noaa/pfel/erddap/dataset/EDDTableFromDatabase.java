@@ -763,7 +763,7 @@ public class EDDTableFromDatabase extends EDDTable {
     // String2.log(">>resultsVars=" + resultsVariables.toString());
 
     // pull script variables out of resultsVariables
-    HashSet<String> sourceNamesSet = new HashSet();
+    HashSet<String> sourceNamesSet = new HashSet<>();
     BitSet keep = new BitSet();
     StringArray scriptNames = null;
     StringArray scriptTypes = null;
@@ -777,7 +777,7 @@ public class EDDTableFromDatabase extends EDDTable {
         if (scriptNames == null) {
           scriptNames = new StringArray();
           scriptTypes = new StringArray();
-          needOtherSourceNames = new HashSet();
+          needOtherSourceNames = new HashSet<>();
         }
         scriptNames.add(sourceName);
         scriptTypes.add(edv.sourceDataType());

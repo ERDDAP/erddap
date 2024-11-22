@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -473,7 +474,8 @@ public class DDS implements Cloneable {
    * @see DDS#print(PrintWriter)
    */
   public final void print(OutputStream os) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     print(pw);
     pw.flush();
   }

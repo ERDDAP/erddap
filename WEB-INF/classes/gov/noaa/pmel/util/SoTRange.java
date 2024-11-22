@@ -180,7 +180,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
         if (end != rend) return false;
       }
       if (!(delta == java.lang.Long.MAX_VALUE) && !(rdelta == java.lang.Long.MAX_VALUE)) {
-        if (delta != rdelta) return false;
+        return delta == rdelta;
       }
       return true;
     }
@@ -372,7 +372,7 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       }
       if (!java.lang.Double.isNaN(delta) && !java.lang.Double.isNaN(rdelta)) {
         if (java.lang.Double.isNaN(delta) || java.lang.Double.isNaN(rdelta)) return false;
-        if (delta != rdelta) return false;
+        return delta == rdelta;
       }
       return true;
     }

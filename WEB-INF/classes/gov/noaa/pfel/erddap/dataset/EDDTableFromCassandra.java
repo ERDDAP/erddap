@@ -266,9 +266,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EDDTableFromCassandra extends EDDTable {
 
   // see getSession
-  private static ConcurrentHashMap<String, Session> sessionsMap = new ConcurrentHashMap();
+  private static ConcurrentHashMap<String, Session> sessionsMap = new ConcurrentHashMap<>();
   private static final ConcurrentHashMap<String, PreparedStatement> statementMap =
-      new ConcurrentHashMap();
+      new ConcurrentHashMap<>();
   public static final String LIST = "!!!LIST!!!";
 
   /** set by the constructor */
@@ -508,7 +508,7 @@ public class EDDTableFromCassandra extends EDDTable {
     Test.ensureTrue(
         !Math2.odd(tConnectionProperties.length),
         "connectionProperties.length must be an even number.");
-    ConcurrentHashMap<String, String> connectionProperties = new ConcurrentHashMap();
+    ConcurrentHashMap<String, String> connectionProperties = new ConcurrentHashMap<>();
     for (int i = 0; i < tConnectionProperties.length; i += 2) {
       String tKey = tConnectionProperties[i];
       String tValue = tConnectionProperties[i + 1];
@@ -551,13 +551,13 @@ public class EDDTableFromCassandra extends EDDTable {
       }
     }
 
-    clusterColumnSourceNames = new HashSet();
+    clusterColumnSourceNames = new HashSet<>();
     if (String2.isSomething(tClusterColumnSourceNames)) {
       String sar[] = String2.split(tClusterColumnSourceNames, ','); // they are trimmed
       for (String s : sar) clusterColumnSourceNames.add(String2.canonical(s));
     }
 
-    indexColumnSourceNames = new HashSet();
+    indexColumnSourceNames = new HashSet<>();
     if (String2.isSomething(tIndexColumnSourceNames)) {
       String sar[] = String2.split(tIndexColumnSourceNames, ','); // they are trimmed
       for (String s : sar) indexColumnSourceNames.add(String2.canonical(s));
@@ -1849,7 +1849,7 @@ public class EDDTableFromCassandra extends EDDTable {
     Test.ensureTrue(
         !Math2.odd(tConnectionProperties.length),
         "connectionProperties.length must be an even number.");
-    ConcurrentHashMap<String, String> conProp = new ConcurrentHashMap();
+    ConcurrentHashMap<String, String> conProp = new ConcurrentHashMap<>();
     for (int i = 0; i < tConnectionProperties.length; i += 2) {
       String tKey = tConnectionProperties[i];
       String tValue = tConnectionProperties[i + 1];

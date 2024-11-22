@@ -12,6 +12,7 @@
 package dods.dap;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 
@@ -97,7 +98,8 @@ public class DataDDS extends DDS {
    * @param os the <code>OutputStream</code> to use.
    */
   public final void printVal(OutputStream os) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printVal(pw);
     pw.flush();
   }
@@ -115,7 +117,7 @@ public class DataDDS extends DDS {
       throws IOException {
     // First, print headers
     if (headers) {
-      PrintWriter pw = new PrintWriter(new OutputStreamWriter(os));
+      PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
       pw.println("HTTP/1.0 200 OK");
       pw.println("Server: " + ServerVersion.getCurrentVersion());
       pw.println("Content-type: application/octet-stream");
@@ -138,11 +140,12 @@ public class DataDDS extends DDS {
     try { // 2018-05-22 Bob Simons added try/finally
 
       // Redefine PrintWriter here, so the DDS is also compressed if necessary
-      try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(bufferedOS))) {
+      try (PrintWriter pw =
+          new PrintWriter(new OutputStreamWriter(bufferedOS, StandardCharsets.UTF_8))) {
         print(pw);
         // pw.println("Data:");  // JCARON CHANGED
         pw.flush();
-        bufferedOS.write("\nData:\n".getBytes()); // JCARON CHANGED
+        bufferedOS.write("\nData:\n".getBytes(StandardCharsets.UTF_8)); // JCARON CHANGED
         bufferedOS.flush();
 
         // Use a DataOutputStream for serialize

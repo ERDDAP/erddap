@@ -27,7 +27,7 @@ class ErddapTests {
     String results, expected;
     int language = 0;
     long time;
-    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = new ConcurrentHashMap();
+    ConcurrentHashMap<String, EDDGrid> tGridDatasetHashMap = new ConcurrentHashMap<>();
     tGridDatasetHashMap.put("testGriddedNcFiles", (EDDGrid) EDDTestDataset.gettestGriddedNcFiles());
     // boolean oDebugMode = debugMode;
     // debugMode = true;

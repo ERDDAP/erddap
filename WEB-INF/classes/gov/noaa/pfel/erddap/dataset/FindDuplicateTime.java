@@ -36,11 +36,11 @@ public class FindDuplicateTime {
     directory = File2.addSlash(directory);
     int nErrors = 0;
     int nDup = 0;
-    ArrayList<String> fileNames = new ArrayList();
+    ArrayList<String> fileNames = new ArrayList<>();
     RegexFilenameFilter.recursiveFullNameList(
         fileNames, directory, fileNameRegex, false); // directoriesToo
     StringBuilder results = new StringBuilder();
-    HashMap<String, StringArray> hashMap = new HashMap();
+    HashMap<String, StringArray> hashMap = new HashMap<>();
 
     int n = fileNames.size();
     results.append(

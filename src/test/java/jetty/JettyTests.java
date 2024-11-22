@@ -4795,7 +4795,7 @@ class JettyTests {
       }
 
       // Look for ZsomethingZ
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1)
@@ -4811,7 +4811,7 @@ class JettyTests {
       // replaceAll().
       // There are some legit uses in changes.html, setup.html, and
       // setupDatasetsXml.html.
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(&amp;[a-zA-Z]+?;)", 1)
@@ -4827,7 +4827,7 @@ class JettyTests {
       // Look for {0}, {1}, etc that should have been replaced by replaceAll().
       // There are some legit values on setupDatasetsXml.html in regexes ({nChar}:
       // 12,14,4,6,7,8).
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(\\{\\d+\\})", 1)
@@ -6849,7 +6849,7 @@ class JettyTests {
     String lines[] = SSR.getUrlResponseLines(tUrl);
     StringBuilder log = new StringBuilder();
     int errorCount = 0;
-    HashSet<String> tried = new HashSet();
+    HashSet<String> tried = new HashSet<>();
     String skip[] =
         new String[] {
           "http://",

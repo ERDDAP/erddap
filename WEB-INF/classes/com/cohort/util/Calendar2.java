@@ -2244,10 +2244,11 @@ public class Calendar2 {
           "EEEE MMMM d HH:mm:ss yyyy");
 
   /** This makes a hashMap of the dateTimeFormat pointing to a compiled regex. */
-  public static final HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap();
+  public static final HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap<>();
 
   /** This makes a hashMap of the dateTimeFormat pointing to a parsed formatter. */
-  public static final HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM = new HashMap();
+  public static final HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM =
+      new HashMap<>();
 
   // can't test hasComma because of e.g., {1,6}
   public static char[] digitRegexTimeFormatLastChar =
@@ -4178,11 +4179,11 @@ public class Calendar2 {
       } else if (ch == '[') {
         if (nCh > 1)
           throw new RuntimeException(parseErrorUnexpectedCount(s, format, nCh, ch, formatPo - nCh));
-        else if (optionalMode == true)
+        else if (optionalMode)
           throw new RuntimeException(parseError(s, format) + "'[' inside [] isn't allowed.");
         optionalMode = true;
       } else if (ch == ']') {
-        if (optionalMode == false || nCh > 1)
+        if (!optionalMode || nCh > 1)
           throw new RuntimeException(parseError(s, format) + "']' found without matching '['.");
         optionalMode = false;
 
@@ -5502,7 +5503,7 @@ public class Calendar2 {
     // restrict search to allDigits formats?
     boolean allDigits =
         startWithDigit != null && (isIntegerArray || String2.allDigits(sa.getString(first).trim()));
-    if (allDigits && evenIfPurelyNumeric == false) {
+    if (allDigits && !evenIfPurelyNumeric) {
       if (debugMode)
         String2.log(noMatch + "some strings are purely numeric but evenIfPurelyNumeric=false.");
       return "";

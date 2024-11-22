@@ -100,7 +100,7 @@ class EDDTableFromHttpGetTests {
       File2.deleteAllFiles(startDir, true, true); // recursive, deleteEmptySubdirectories
     EDDTableFromHttpGet.parseHttpGetDirectoryStructure(
         "stationID/2months", dsColumnName, dsN, dsCalendar);
-    HashSet<String> keys = new HashSet();
+    HashSet<String> keys = new HashSet<>();
     keys.add("bsimons_aSecret");
     Attributes tGlobalAttributes =
         new Attributes()

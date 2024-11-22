@@ -73,7 +73,8 @@ public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
             recordConsumer.addBinary(stringToBinary(val.getString()));
             break;
           default:
-            throw new ParquetEncodingException("Unsupported column type: " + cols.get(i).getType());
+            throw new ParquetEncodingException(
+                "Unsupported column type: " + cols.get(i).getPrimitiveType());
         }
         recordConsumer.endField(cols.get(i).getPath()[0], i);
       }

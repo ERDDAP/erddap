@@ -77,7 +77,6 @@ public class EDDGridFromEDDTable extends EDDGrid {
     ArrayList<Object[]> tDataVariables = new ArrayList<>();
     int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     int tUpdateEveryNMillis = 0;
-    ;
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads

@@ -119,11 +119,7 @@ public class CfToFromGcmd {
         }
         prevCFsar.add(s);
 
-        HashSet<String> gcmdHashSet = gcmdHashMap.get(s);
-        if (gcmdHashSet == null) {
-          gcmdHashSet = new HashSet<>();
-          gcmdHashMap.put(s, gcmdHashSet);
-        }
+        HashSet<String> gcmdHashSet = gcmdHashMap.computeIfAbsent(s, k -> new HashSet<>());
         gcmdHashSet.add(prevCFs);
       }
     }

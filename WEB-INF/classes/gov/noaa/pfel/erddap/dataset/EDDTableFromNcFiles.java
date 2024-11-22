@@ -954,7 +954,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
   /** For WOD, get all source variable names and file they are in. */
   public static void getAllSourceVariableNames(String dir, String fileNameRegex) {
-    HashSet<String> hashset = new HashSet();
+    HashSet<String> hashset = new HashSet<>();
     String2.log(
         "\n*** EDDTableFromNcFiles.getAllsourceVariableNames from " + dir + " " + fileNameRegex);
     Table.verbose = false;
@@ -1053,15 +1053,15 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
    */
   public static void displayAttributeFromFiles(
       String dir, String regex, String vars[], String attribute) {
-    ArrayList arrayList = new ArrayList();
+    ArrayList<String> arrayList = new ArrayList<>();
     RegexFilenameFilter.recursiveFullNameList(arrayList, dir, regex, true); // recursive?
     Table table = new Table();
     Tally tally = new Tally();
-    for (Object o : arrayList) {
+    for (String o : arrayList) {
       table.clear();
       try {
         table.readNDNc(
-            (String) o,
+            o,
             vars,
             0, // standardizeWhat=0
             null,

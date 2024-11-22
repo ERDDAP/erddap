@@ -18,6 +18,7 @@ import gov.noaa.pfel.coastwatch.util.DataStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -634,13 +635,13 @@ public class Matlab {
     if (verbose) String2.log("readMatlabFile: " + fullFileName);
 
     try (DataInputStream stream =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName))) {
       if (verbose) String2.log("bytes available=" + stream.available());
 
       // read the header
       byte buffer[] = new byte[256];
       stream.readFully(buffer, 0, 116);
-      String headerText = new String(buffer, 0, 116);
+      String headerText = new String(buffer, 0, 116, StandardCharsets.UTF_8);
       if (verbose) String2.log("headerText=" + headerText);
 
       // skip the 8 byte subsystem-specific offset
@@ -728,7 +729,8 @@ public class Matlab {
           else subNBytes = DataStream.readInt(littleEndian, stream, buffer);
           Test.ensureEqual(
               subMIDataType, miINT8, methodName + "miMATRIX array name subMIDataType != miINT8.");
-          String arrayName = new String(DataStream.readByteArray(stream, subNBytes));
+          String arrayName =
+              new String(DataStream.readByteArray(stream, subNBytes), StandardCharsets.UTF_8);
           if (subSmallDataFormat)
             DataStream.fullySkip(stream, 4 - subNBytes); // read to 8 byte boundary
           else DataStream.fullySkip(stream, (8 - (subNBytes % 8)) % 8); // read to 8 byte boundary

@@ -192,7 +192,7 @@ public class Test {
   public static boolean equal(float f1, float f2) {
     // special check if both are the same special value
     if (Float.isNaN(f1) && Float.isNaN(f2)) return true;
-    if (Float.isInfinite(f1) && Float.isInfinite(f2)) return !(f1 > 0 ^ f2 > 0);
+    if (Float.isInfinite(f1) && Float.isInfinite(f2)) return f1 > 0 == f2 > 0;
     return Math2.almostEqual(5, f1, f2);
   }
 
@@ -206,7 +206,7 @@ public class Test {
   public static boolean equal(double d1, double d2) {
     // special check if both are the same special value
     if (Double.isNaN(d1) && Double.isNaN(d2)) return true;
-    if (Double.isInfinite(d1) && Double.isInfinite(d2)) return !(d1 > 0 ^ d2 > 0);
+    if (Double.isInfinite(d1) && Double.isInfinite(d2)) return d1 > 0 == d2 > 0;
     return Math2.almostEqual(9, d1, d2);
   }
 

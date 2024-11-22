@@ -701,9 +701,8 @@ public class Math2 {
     final double eps = nSignificantDigits >= 6 ? dEps : fEps;
     if (Math.abs(d2) < eps) {
       // This won't overflow, since d1 can't be <eps.
-      return (Math.abs(d1) < eps)
-          ? true
-          : Math.rint(d2 / d1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
+      return Math.abs(d1) < eps
+          || Math.rint(d2 / d1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since d2 can't be <eps.
@@ -724,9 +723,8 @@ public class Math2 {
     // Ten[nSignificantDigits]);
     if (Math.abs(f2) < fEps) {
       // This won't overflow, since f1 can't be <eps.
-      return (Math.abs(f1) < fEps)
-          ? true
-          : Math.rint(f2 / f1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
+      return Math.abs(f1) < fEps
+          || Math.rint(f2 / f1 * Ten.get(nSignificantDigits)) == Ten.get(nSignificantDigits);
     }
 
     // This won't overflow, since f2 can't be <eps.

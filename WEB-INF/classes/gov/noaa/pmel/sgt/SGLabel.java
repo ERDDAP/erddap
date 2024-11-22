@@ -206,7 +206,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
         || ((proxy_.getFont() != null) && !proxy_.getFont().equals(sg.getFont()))
         || (proxy_.getOrientation() != sg.getOrientation())) return false;
     if (proxy_.getOrientation() == ANGLE) {
-      if (proxy_.getAngle() != sg.getAngle()) return false;
+      return proxy_.getAngle() == sg.getAngle();
     }
     return true;
   }

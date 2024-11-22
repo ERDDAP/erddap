@@ -197,8 +197,7 @@ public class Domain implements java.io.Serializable {
       if (!yRange_.equals(d.getYRange())) return false;
     }
     if (xReversed_ != d.isXReversed()) return false;
-    if (yReversed_ != d.isYReversed()) return false;
-    return true;
+    return yReversed_ == d.isYReversed();
   }
 
   @Override

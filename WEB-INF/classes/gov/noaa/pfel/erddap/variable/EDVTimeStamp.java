@@ -219,12 +219,10 @@ public class EDVTimeStamp extends EDV {
         dateTimeFormat = String2.replaceAll(dateTimeFormat, "Z", "'Z'");
 
       if (time_zone.equals("Zulu")) { // UTC -> Zulu above
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
       } else {
         timeZone =
             TimeZone.getTimeZone(
                 time_zone); // VERY BAD: if failure, no exception and it returns GMT timeZone!!!
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
 
         // NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
         // verify that timeZone matches zoneId  (to deal with VERY BAD above)
@@ -234,6 +232,7 @@ public class EDVTimeStamp extends EDV {
         //    "The Java and Joda time_zone objects have different standard offsets, " +
         //    "probably because the time_zone is supported by Joda but not Java.");
       }
+      dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
     }
 
     // then set missing_value  (as PAType.DOUBLE)

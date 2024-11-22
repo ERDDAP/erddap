@@ -166,10 +166,10 @@ public class LineAttribute implements Attribute, Cloneable {
           if (dashes_[i] != dar[i]) return false;
         }
       }
-      if ((dashPhase_ != attr.getDashPhase())
-          || (cap_style_ != attr.getCapStyle())
-          || (miter_style_ != attr.getMiterStyle())
-          || (miter_limit_ != attr.getMiterLimit())) return false;
+      return (dashPhase_ == attr.getDashPhase())
+          && (cap_style_ == attr.getCapStyle())
+          && (miter_style_ == attr.getMiterStyle())
+          && (miter_limit_ == attr.getMiterLimit());
     }
     return true;
   }

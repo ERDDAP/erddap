@@ -201,7 +201,7 @@ public class UByteArray extends PrimitiveArray {
    */
   public static UByteArray fromFile(final String fileName) throws Exception {
     UByteArray uba = new UByteArray();
-    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName); ) {
+    try (final InputStream stream = File2.getDecompressedBufferedInputStream(fileName)) {
       int available = stream.available();
       while (available > 0) {
         uba.ensureCapacity(uba.size + (long) available);

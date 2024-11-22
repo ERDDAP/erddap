@@ -5575,7 +5575,7 @@ public abstract class EDDTable extends EDD {
               markerSize,
               vectorStandard,
               GraphDataLayer.REGRESS_NONE);
-      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList();
+      ArrayList<GraphDataLayer> graphDataLayers = new ArrayList<>();
       graphDataLayers.add(graphDataLayer);
 
       // setup graphics2D
@@ -6233,7 +6233,7 @@ public abstract class EDDTable extends EDD {
                 + "\",\n");
         writer.write(atts.toNcoJsonString("      "));
         writer.write("      \"data\": [");
-        try (DataInputStream dis = twawm.dataInputStream(col); ) {
+        try (DataInputStream dis = twawm.dataInputStream(col)) {
           // create the bufferPA
           PrimitiveArray pa = null;
           long nRowsRead = 0;
@@ -6427,7 +6427,7 @@ public abstract class EDDTable extends EDD {
         int ncOffset = 0;
         int bufferSize = EDStatic.partialRequestMaxCells;
         PrimitiveArray pa = null;
-        try (DataInputStream dis = twawm.dataInputStream(col); ) {
+        try (DataInputStream dis = twawm.dataInputStream(col)) {
           PAType colType = twawm.columnType(col);
           Array array;
 
@@ -7192,9 +7192,9 @@ public abstract class EDDTable extends EDD {
           NcHelper.addDimension(rootGroup, "obs", nodcMode ? maxObsPerProfile : tTableNRows);
 
       // add the feature variables, then profile variables, then obs variables
-      Variable.Builder newVars[] = new Variable.Builder[ncNCols];
-      Variable.Builder indexVar = null;
-      Variable.Builder rowSizeVar = null;
+      Variable.Builder<?> newVars[] = new Variable.Builder[ncNCols];
+      Variable.Builder<?> indexVar = null;
+      Variable.Builder<?> rowSizeVar = null;
       for (int opo = 0; opo < 3; opo++) { // 0=feature 1=profile 2=obs
         for (int col = 0; col < ncNCols; col++) {
           if ((isFeatureVar[col] && opo == 0)
@@ -7207,7 +7207,7 @@ public abstract class EDDTable extends EDD {
           }
           String tColName = ncColNames[col];
           // String2.log(" opo=" + opo + " col=" + col + " name=" + tColName);
-          ArrayList<Dimension> tDimsList = new ArrayList();
+          ArrayList<Dimension> tDimsList = new ArrayList<>();
           if (nodcMode) {
             if (isFeatureVar[col]) {
               // featureVar[feature]
@@ -7536,7 +7536,7 @@ public abstract class EDDTable extends EDD {
         writer.write("IGOR" + Table.IgorEndOfLine);
 
         // write each col as a wave separately, so data type is preserved
-        HashSet<String> colNamesHashset = new HashSet();
+        HashSet<String> colNamesHashset = new HashSet<>();
         int nCols = twawm.nColumns();
         for (int col = 0; col < nCols; col++) {
           Attributes atts = twawm.columnAttributes(col);
@@ -8278,9 +8278,7 @@ public abstract class EDDTable extends EDD {
           widgets.checkbox(
               "varch" + dv,
               EDStatic.EDDTableCheckTheVariablesAr[language],
-              userDapQuery.length() == 0
-                  ? true
-                  : (resultsVariables.indexOf(edv.destinationName()) >= 0),
+              userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
               edv.destinationName(),
               edv.destinationName()
                   + extra

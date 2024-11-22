@@ -35,6 +35,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -2548,7 +2549,7 @@ public class Table {
    * @param keysName
    * @param valuesName
    */
-  public void readMap(Map map, String keysName, String valuesName) {
+  public void readMap(Map<String, String> map, String keysName, String valuesName) {
     // create the empty table
     clear();
     StringArray keys = new StringArray();
@@ -2557,11 +2558,10 @@ public class Table {
     addColumn(valuesName, values);
 
     // get the keys and values
-    Set entrySet = map.entrySet();
-    for (Object o : entrySet) {
-      Map.Entry me = (Map.Entry) o;
-      keys.add(me.getKey().toString());
-      values.add(me.getValue().toString());
+    Set<Map.Entry<String, String>> entrySet = map.entrySet();
+    for (Map.Entry<String, String> me : entrySet) {
+      keys.add(me.getKey());
+      values.add(me.getValue());
     }
     leftToRightSort(1);
   }
@@ -2741,7 +2741,7 @@ public class Table {
 
       // try to read up to 3rd row of data (ignoring skipLines)
       // this method caches initial lines read to enable re-reading some lines near the start
-      ArrayList<String> linesCache = new ArrayList();
+      ArrayList<String> linesCache = new ArrayList<>();
       int nonSkipLines = 0;
       while (true) {
         String s = linesReader.readLine(); // null if end. exception if trouble
@@ -2839,7 +2839,7 @@ public class Table {
       StringArray loadColumnSA[] = null;
       boolean missingItemNoted = false;
       StringBuilder warnings = new StringBuilder();
-      ArrayList<String> items = new ArrayList(16);
+      ArrayList<String> items = new ArrayList<>(16);
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -3451,7 +3451,8 @@ public class Table {
         String2.isRemote(fullName)
             ? SSR.getBufferedUrlReader(fullName)
             : // handles AWS S3.  It assumes UTF-8.
-            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), File2.UTF_8))) {
+            new BufferedReader(
+                new InputStreamReader(new FileInputStream(fullName), StandardCharsets.UTF_8))) {
       lowReadNccsv(fullName, readData, bufferedReader);
     }
   }
@@ -3475,8 +3476,8 @@ public class Table {
 
       // read the header
       String s;
-      HashMap<String, Attributes> varNameAtts = new HashMap();
-      HashSet<String> expectedDCols = new HashSet();
+      HashMap<String, Attributes> varNameAtts = new HashMap<>();
+      HashSet<String> expectedDCols = new HashSet<>();
 
       while ((s = reader.readLine()) != null) {
         lineNumber++;
@@ -4817,7 +4818,8 @@ public class Table {
 
     // write the connector  //DAP 2.0, 7.2.3
     // see EOL definition for comments
-    outputStream.write((OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes());
+    outputStream.write(
+        (OpendapHelper.EOL + "Data:" + OpendapHelper.EOL).getBytes(StandardCharsets.UTF_8));
 
     // write the data  //DAP 2.0, 7.3.2.3
     // write elements of the sequence, in dds order
@@ -5919,7 +5921,7 @@ public class Table {
         if (needToSetUpAxes) {
           // get axes
           needToSetUpAxes = false;
-          List dimList = variable.getDimensions();
+          List<Dimension> dimList = variable.getDimensions();
           if (variable.getDataType() != DataType.CHAR && dimList.size() != 4)
             throw new SimpleException(
                 errorInMethod
@@ -5931,7 +5933,7 @@ public class Table {
                 errorInMethod + "nDimensions not 5 for char variable: " + variable.getFullName());
 
           for (int i = 0; i < 4; i++) {
-            dimensions[i] = (Dimension) dimList.get(i);
+            dimensions[i] = dimList.get(i);
             dimensionNames[i] = dimensions[i].getName();
             axisVariables[i] = ncFile.findVariable(dimensionNames[i]);
             if (axisVariables[i] == null)
@@ -6116,8 +6118,8 @@ public class Table {
         loadVariables =
             NcHelper.findMaxDVariables(ncFile, ""); // throws exception if no vars with dimensions
       } else {
-        ArrayList<Variable> varList = new ArrayList();
-        ArrayList<Dimension> dimList = new ArrayList(); // just dims that aren't also variables
+        ArrayList<Variable> varList = new ArrayList<>();
+        ArrayList<Dimension> dimList = new ArrayList<>(); // just dims that aren't also variables
         for (String loadVariableName : loadVariableNames) {
           Variable variable = ncFile.findVariable(loadVariableName);
           if (variable == null) {
@@ -6196,9 +6198,9 @@ public class Table {
           PrimitiveArray columnPAs[] = new PrimitiveArray[nAxes];
           axisLengths = new int[nAxes];
 
-          List axisList = variable.getDimensions();
+          List<Dimension> axisList = variable.getDimensions();
           for (int a = 0; a < nAxes; a++) {
-            Dimension dimension = (Dimension) axisList.get(a);
+            Dimension dimension = axisList.get(a);
             String axisName = dimension.getName();
             axisLengths[a] = dimension.getLength();
             if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
@@ -6340,7 +6342,7 @@ public class Table {
 
         // ensure names are available dimensions
         //  !!they could be nDimensional vars that aren't in this file
-        ArrayList<Dimension> dimensions = new ArrayList();
+        ArrayList<Dimension> dimensions = new ArrayList<>();
         for (String axisName : loadVariableNames) {
           Dimension dimension = ncFile.findDimension(axisName);
           if (dimension != null) dimensions.add(dimension);
@@ -6436,10 +6438,9 @@ public class Table {
 
       // load the 0D variables
       Group rootGroup = ncFile.getRootGroup();
-      List rootGroupVariables = rootGroup.getVariables();
+      List<Variable> rootGroupVariables = rootGroup.getVariables();
       int tnRows = nRows();
-      for (Object rootGroupVariable : rootGroupVariables) {
-        Variable var = (Variable) rootGroupVariable;
+      for (Variable var : rootGroupVariables) {
         boolean isChar = var.getDataType() == DataType.CHAR;
         if (var.getRank() + (isChar ? -1 : 0) == 0) {
           // if loadVariableNames specified, skip var because not explicitly requested?
@@ -6978,18 +6979,18 @@ public class Table {
       }
 
       // find all dimensions
-      List dimsList = rootGroup.getDimensions();
+      List<Dimension> dimsList = rootGroup.getDimensions();
       int nDims = dimsList.size();
       String dimNames[] = new String[nDims];
       for (int d = 0; d < nDims; d++) {
-        dimNames[d] = ((Dimension) dimsList.get(d)).getName(); // may be null
+        dimNames[d] = dimsList.get(d).getName(); // may be null
         if (dimNames[d] == null) dimNames[d] = "";
       }
       // outerDim and obsDim are always used.  innerDim only used for nLevels=2
       int outerDim = -1, innerDim = -1, obsDim = -1;
 
       // find out about all vars
-      List varsList = ncFile.getVariables(); // all vars in all groups
+      List<Variable> varsList = ncFile.getVariables(); // all vars in all groups
       int nVars = varsList.size();
       Variable vars[] = new Variable[nVars];
       String varNames[] = new String[nVars];
@@ -7008,7 +7009,7 @@ public class Table {
       // if (debugMode) String2.log("Debug: nVars=" + nVars);
       for (int v = 0; v < nVars; v++) {
         if (ncCFcc != null) ncCFcc.set(2);
-        vars[v] = (Variable) varsList.get(v);
+        vars[v] = varsList.get(v);
         varNames[v] = vars[v].getFullName();
         varIsChar[v] = vars[v].getDataType() == DataType.CHAR;
         int rank = vars[v].getRank();
@@ -9030,7 +9031,7 @@ public class Table {
       String varMissingValues[] = new String[nVars];
       boolean varHasSampleDimensionAtt[] = new boolean[nVars];
       HashMap<String, PrimitiveArray> rowSizesHM =
-          new HashMap(); // e.g., sample_dimension="z_obs" -> z_row_size PA
+          new HashMap<>(); // e.g., sample_dimension="z_obs" -> z_row_size PA
       for (int v = 0; v < nVars; v++) {
         Variable var = varList.get(v);
         vNames[v] = var.getFullName();
@@ -9941,7 +9942,7 @@ public class Table {
     float frameRate = Float.NaN;
     float sampleRate = Float.NaN;
     String keys[] = globalAtts.getNames();
-    HashMap<String, Object> props = new HashMap();
+    HashMap<String, Object> props = new HashMap<>();
     for (String k : keys) {
       switch (k) {
         case "audioBigEndian",
@@ -9992,7 +9993,7 @@ public class Table {
             props);
 
     try (DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName)); ) {
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullInName))) {
 
       // create the .wav
       AudioInputStream ais = new AudioInputStream(dis, af, nRow); // nFrames
@@ -10531,7 +10532,7 @@ public class Table {
     }
 
     // make hashmap of this table's key values to row#
-    HashMap rowHash = new HashMap(Math2.roundToInt(1.4 * nRows));
+    HashMap<String, Integer> rowHash = new HashMap<>(Math2.roundToInt(1.4 * nRows));
     for (int row = 0; row < nRows; row++) {
       StringBuilder sb = new StringBuilder();
       for (int key = 0; key < nKeyCols; key++) sb.append(keyPAs[key].getString(row) + "\n");
@@ -10570,7 +10571,7 @@ public class Table {
       for (int key = 0; key < nKeyCols; key++)
         sb.append(otherKeyPAs[key].getString(otherRow) + "\n");
       String sbString = sb.toString();
-      Object thisRowI = rowHash.get(sbString);
+      Integer thisRowI = rowHash.get(sbString);
       if (thisRowI == null) {
         // add blank row at end
         nNewRows++;
@@ -10584,8 +10585,7 @@ public class Table {
         nRowsMatched++;
         for (int col = 0; col < nCols; col++) {
           // if otherTable doesn't have matching column, current value isn't changed
-          if (otherPAs[col] != null)
-            getColumn(col).setFromPA((Integer) thisRowI, otherPAs[col], otherRow);
+          if (otherPAs[col] != null) getColumn(col).setFromPA(thisRowI, otherPAs[col], otherRow);
         }
       }
     }
@@ -13642,7 +13642,7 @@ public class Table {
       // String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
       // add the variables
-      Variable.Builder colVars[] = new Variable.Builder[nColumns];
+      Variable.Builder<?> colVars[] = new Variable.Builder[nColumns];
       for (int col = 0; col < nColumns; col++) {
         String tColName = getColumnNameWithoutSpaces(col);
         PrimitiveArray pa = getColumn(col);
@@ -14091,7 +14091,7 @@ public class Table {
       // String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
       // add the variables
-      Variable.Builder colVars[] = new Variable.Builder[nColumns];
+      Variable.Builder<?> colVars[] = new Variable.Builder[nColumns];
       for (int col = 0; col < nColumns; col++) {
 
         // for x/y/z/t make a 1D variable
@@ -14192,7 +14192,7 @@ public class Table {
       }
 
       // create the stringVariable
-      Variable.Builder stringVar = null;
+      Variable.Builder<?> stringVar = null;
       if (stringVariableName != null) {
         stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
@@ -15078,7 +15078,7 @@ public class Table {
   public String saveAsCsvASCIIString() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     saveAsCsvASCII(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -15384,7 +15384,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnNames line should have ended with '],'.\nline=" + line);
-          cNames = new ArrayList();
+          cNames = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cNames); // trim, keepNothing
 
@@ -15392,7 +15392,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnTypes line should have ended with '],'.\nline=" + line);
-          cTypes = new ArrayList();
+          cTypes = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cTypes); // trim, keepNothing
 
@@ -15400,7 +15400,7 @@ public class Table {
           if (!line.endsWith("],"))
             throw new IOException(
                 errorInMethod + "columnUnits line should have ended with '],'.\nline=" + line);
-          cUnits = new ArrayList();
+          cUnits = new ArrayList<>();
           StringArray.arrayListFromCSV(
               line.substring(16, line.length() - 2), ",", true, true, cUnits); // trim, keepNothing
           for (int i = 0; i < cUnits.size(); i++)
@@ -15425,7 +15425,7 @@ public class Table {
           boolean isString[] =
               new boolean[nCol]; // all false  (includes UTC times -- initially Strings)
           boolean isUTC[] = new boolean[nCol]; // all false
-          ArrayList<String> sal = new ArrayList(nCol);
+          ArrayList<String> sal = new ArrayList<>(nCol);
           for (int col = 0; col < nCol; col++) {
             PAType elementPAType =
                 cTypes == null ? PAType.STRING : PAType.fromCohortString(cTypes.get(col));
@@ -15578,7 +15578,7 @@ public class Table {
       throws Exception {
     clear();
     try (BufferedReader reader =
-        File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8); ) {
+        File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8)) {
       readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
     }
   }
@@ -16081,7 +16081,7 @@ public class Table {
                 new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)),
                 metadata)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
-            .withRowGroupSize(ParquetWriter.DEFAULT_BLOCK_SIZE)
+            .withRowGroupSize((long) ParquetWriter.DEFAULT_BLOCK_SIZE)
             .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)
             .withConf(new Configuration())
             .withValidation(false)
@@ -16199,9 +16199,7 @@ public class Table {
                                             : paType == PAType.ULONG
                                                 ? "T"
                                                 : // -> text. Not good, but no loss of precision.
-                                                paType == PAType.CHAR
-                                                    ? "T"
-                                                    : "T"; // String and unexpected
+                                                "T"; // String and unexpected
     boolean asString = it.equals("T");
 
     writer.write(
@@ -16307,7 +16305,7 @@ public class Table {
       writer.write("IGOR" + IgorEndOfLine);
 
       // write each col as a wave separately, so data type is preserved
-      HashSet<String> colNamesHashset = new HashSet();
+      HashSet<String> colNamesHashset = new HashSet<>();
       int nCols = nColumns();
       for (int col = 0; col < nCols; col++) {
         Attributes atts = columnAttributes(col);
@@ -16345,7 +16343,6 @@ public class Table {
           writer.close();
         } catch (Throwable t9) {
         }
-      ;
 
       throw t;
     }

@@ -1836,7 +1836,6 @@ public class EDV {
       factor = -1;
       location = location.substring(0, location.length() - 1);
     }
-    ;
     int len = location.length();
 
     // just degrees?

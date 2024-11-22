@@ -7,6 +7,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -641,7 +642,7 @@ class PrimitiveArrayTests {
     FloatArray arFloat2 = new FloatArray(new float[] {4, 14, 3, 24});
     IntArray arInt2 = new IntArray(new int[] {3, 13, 3, 1}); // test: narrower than arDouble
     StringArray arString2 = new StringArray(new String[] {"b", "aa", "A", "c"});
-    List<Object> table2 = String2.toArrayList(new Object[] {arByte2, arFloat2, arInt2, arString2});
+    List<PrimitiveArray> table2 = Arrays.asList(arByte2, arFloat2, arInt2, arString2);
     PrimitiveArray.merge(table2, table, new int[] {1, 0}, new boolean[] {true, true}, false);
     Test.ensureEqual(
         ((PrimitiveArray) table2.get(0)).toDoubleArray(),

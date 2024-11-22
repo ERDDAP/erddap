@@ -3502,8 +3502,7 @@ public abstract class EDDGrid extends EDD {
         if (draw >= 0) { // valid .draw was specified
           preferDefaultVars = false;
           // but check that it is possible
-          boolean trouble = false;
-          if (draws[draw].equals("surface") && nAvNames < 2) trouble = true;
+          boolean trouble = draws[draw].equals("surface") && nAvNames < 2;
           if (draws[draw].equals("vectors") && (lonIndex < 0 || latIndex < 0)) trouble = true;
           if ((draws[draw].equals("sticks") || draws[draw].equals("vectors")) && dvNames.length < 2)
             trouble = true;
@@ -7816,16 +7815,15 @@ public abstract class EDDGrid extends EDD {
       GraphDataLayer graphDataLayer = null;
       ArrayList<GraphDataLayer> graphDataLayers = new ArrayList<>();
       String cptFullName = null;
-      try (GridDataAccessor gda =
+      try ( // Table needs row-major order
+      GridDataAccessor gda =
           new GridDataAccessor(
               language,
               this,
               requestUrl,
               newQuery,
               yAxisVar == null
-                  ? true
-                  : // Table needs row-major order
-                  yAxisIndex
+                  || yAxisIndex
                       > xAxisIndex, // Grid needs column-major order (so depends on axis order)
               // //??? what if xAxisIndex < 0???
               true)) { // convertToNaN
@@ -7998,7 +7996,7 @@ public abstract class EDDGrid extends EDD {
           if (String2.indexOf(EDStatic.palettes, palette) < 0) palette = "";
           if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
           if (nSections < 0 || nSections >= 100) nSections = -1;
-          boolean continuous = continuousS.startsWith("d") ? false : true;
+          boolean continuous = !continuousS.startsWith("d");
 
           // put the data in a Grid, data in column-major order
           grid = new Grid();
@@ -8194,7 +8192,7 @@ public abstract class EDDGrid extends EDD {
           // make the colorbar
           CompoundColorMap colorMap = null;
           if (vars[2] != null) {
-            boolean continuous = continuousS.startsWith("d") ? false : true;
+            boolean continuous = !continuousS.startsWith("d");
 
             if (palette.length() == 0 || Double.isNaN(paletteMin) || Double.isNaN(paletteMax)) {
               // set missing items based on z data
@@ -10829,7 +10827,7 @@ public abstract class EDDGrid extends EDD {
     try (GridDataAccessor gda =
             new GridDataAccessor(
                 language, this, requestUrl, userDapQuery, true, false); // tRowMajor, tConvertToNaN
-        GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); ) {
+        GridDataAllAccessor gdaa = new GridDataAllAccessor(gda)) {
 
       int nAV = axisVariables.length;
       int nRDV = gda.dataVariables().length;
@@ -10867,7 +10865,7 @@ public abstract class EDDGrid extends EDD {
           if (dv.destinationDataPAType() == PAType.STRING) {
             int max = 1;
             long n = gda.totalIndex().size();
-            try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
+            try (DataInputStream dis = gdaa.getDataInputStream(dvi)) {
               for (int i = 0; i < n; i++) max = Math.max(max, dis.readUTF().length());
             }
             writer.write(
@@ -10969,7 +10967,7 @@ public abstract class EDDGrid extends EDD {
 
         writer.write("      \"data\":\n");
         for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
-        try (DataInputStream dis = gdaa.getDataInputStream(dvi); ) {
+        try (DataInputStream dis = gdaa.getDataInputStream(dvi)) {
 
           // create the bufferPA
           PrimitiveArray pa =
@@ -11621,9 +11619,9 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "avar" + av,
               downloadTooltip,
-              (userDapQuery.length() > 0 && isAxisDapQuery)
-                  ? destinationNames.indexOf(edvga.destinationName()) >= 0
-                  : true,
+              userDapQuery.length() <= 0
+                  || !isAxisDapQuery
+                  || destinationNames.indexOf(edvga.destinationName()) >= 0,
               edvga.destinationName(),
               edvga.destinationName(),
               ""));
@@ -11768,11 +11766,9 @@ public abstract class EDDGrid extends EDD {
           widgets.checkbox(
               "dvar" + dv,
               downloadTooltip,
-              (userDapQuery.length() > 0 && isAxisDapQuery)
-                  ? false
-                  : userDapQuery.length() > 0
-                      ? destinationNames.indexOf(edv.destinationName()) >= 0
-                      : true,
+              (userDapQuery.length() <= 0 || !isAxisDapQuery)
+                  && (userDapQuery.length() <= 0
+                      || destinationNames.indexOf(edv.destinationName()) >= 0),
               edv.destinationName(),
               edv.destinationName(),
               ""));

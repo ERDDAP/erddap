@@ -18,6 +18,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class represents a table of data from a file downloaded from a WFS server.
@@ -171,7 +172,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
       // read the table
       Table table = new Table();
       InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl);
-      BufferedReader in = new BufferedReader(new InputStreamReader(is, File2.UTF_8));
+      BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
       table.readXml(
           in,
           false, // no validate since no .dtd

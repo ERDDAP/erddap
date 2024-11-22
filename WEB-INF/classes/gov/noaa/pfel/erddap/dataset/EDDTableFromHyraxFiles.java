@@ -246,7 +246,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       if (errorMessages.length() == 0 && sourceFileName.size() > 0) {
         // make a hashset of theoretical local fileNames that will exist
         //  after copying based on getHyraxFileInfo
-        HashSet<String> hashset = new HashSet();
+        HashSet<String> hashset = new HashSet<>();
         int nFiles = sourceFileName.size();
         for (int f = 0; f < nFiles; f++) {
           String sourceName = sourceFileName.get(f);
@@ -555,7 +555,6 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     Table dataAddTable = new Table();
     DConnect dConnect = new DConnect(oneFileDapUrl, acceptDeflate, 1, 1);
     DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    ;
     DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
 
     // get source global attributes
