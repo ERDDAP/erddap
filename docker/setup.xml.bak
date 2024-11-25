@@ -19,7 +19,7 @@ Settings that you MUST change are in this top section.
     The ERDDAP log file (log.txt) will be put in this directory.
     At ERD, we use '/u00/cwatch/erddap/' for releases.
     -->
-    <bigParentDirectory>/usr/local/erddap_data/</bigParentDirectory>
+    <bigParentDirectory>/erddapData/</bigParentDirectory>
 
     <!-- baseUrl is the start of the public url, to which "/erddap"
     is appended. For example:
@@ -387,7 +387,4 @@ Settings that you MUST change are in this top section.
     "variableName" is a special case: it categorizes the dataVariable destinationNames.
     -->
     <categoryAttributes>global:cdm_data_type, global:institution, ioos_category, global:keywords, long_name, standard_name, variableName</categoryAttributes>
-
-
-
 </erddapSetup>

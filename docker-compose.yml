@@ -1,0 +1,23 @@
+services:
+  erddap:
+    build: .
+    ports:
+      - "${ERDDAP_PORT:-8080}:8080"
+      - "${ERDDAP_DEBUG_PORT:-8000}:8000"
+    volumes:
+      - data:/erddapData
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      ERDDAP_MEMORY: "${ERDDAP_MEMORY:-4g}"
+      ERDDAP_baseUrl: "http://${ERDDAP_HOST:-localhost}:${ERDDAP_PORT:-8080}"
+      ERDDAP_enableCors: "true"
+    mem_limit: "${ERDDAP_CONTAINER_MEM_LIMIT:-6g}"
+  logs:
+    image: debian:bookworm-slim
+    volumes:
+      - data:/erddapData:ro
+    mem_limit: 256m
+    command: tail -F /erddapData/logs/log.txt
+
+volumes:
+  data:

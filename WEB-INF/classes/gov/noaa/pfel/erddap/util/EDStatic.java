@@ -797,7 +797,8 @@ public class EDStatic {
       variablesMustHaveIoosCategory,
       verbose,
       useSaxParser,
-      useEddReflection;
+      useEddReflection,
+      enableCors;
   public static String categoryAttributes[]; // as it appears in metadata (and used for hashmap)
   public static String categoryAttributesInURLs[]; // fileNameSafe (as used in URLs)
   public static boolean categoryIsGlobal[];
@@ -2278,6 +2279,7 @@ public class EDStatic {
       convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
       useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
+      enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
       slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
       variablesMustHaveIoosCategory =
           getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);

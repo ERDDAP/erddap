@@ -1,6 +1,8 @@
 package jetty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.LongArray;
@@ -52,6 +54,10 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
@@ -117,6 +123,48 @@ class JettyTests {
   @AfterAll
   public static void tearDown() throws Exception {
     server.stop();
+  }
+
+  /** Test Cors Filter */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  @TagJetty
+  void testCorsFilter(boolean enableCors) throws Exception {
+    EDStatic.enableCors = enableCors;
+
+    HttpClient client = HttpClient.newHttpClient();
+    URI uri = server.getURI().resolve("/erddap/index.html");
+
+    HttpRequest optionsRequest =
+        HttpRequest.newBuilder(uri).method("OPTIONS", HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(optionsRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest getRequest = HttpRequest.newBuilder(uri).GET().build();
+    validateCorsHeaders(client.send(getRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest postRequest =
+        HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(postRequest, HttpResponse.BodyHandlers.discarding()));
+  }
+
+  private void validateCorsHeaders(HttpResponse<?> response) {
+    assertEquals(200, response.statusCode());
+    if (EDStatic.enableCors) {
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertEquals(
+          "GET, POST, OPTIONS",
+          response.headers().firstValue("Access-Control-Allow-Methods").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+      assertEquals(
+          "Content-Type, Authorization",
+          response.headers().firstValue("Access-Control-Allow-Headers").get());
+    } else {
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+    }
   }
 
   /** Test the metadata */

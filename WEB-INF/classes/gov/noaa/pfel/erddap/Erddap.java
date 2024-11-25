@@ -4,7 +4,8 @@
  */
 package gov.noaa.pfel.erddap;
 
-import static gov.noaa.pfel.erddap.LoadDatasets.*;
+import static gov.noaa.pfel.erddap.LoadDatasets.categorizeGlobalAtts;
+import static gov.noaa.pfel.erddap.LoadDatasets.categorizeVariableAtts;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.CharArray;
@@ -35,10 +36,35 @@ import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDGridFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromFileNames;
+import gov.noaa.pfel.erddap.dataset.FromErddap;
+import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
+import gov.noaa.pfel.erddap.dataset.GridDataRandomAccessorInMemory;
+import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
+import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponseViaAwsS3;
+import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
+import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
+import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.dataset.TableWriterJson;
+import gov.noaa.pfel.erddap.dataset.TableWriterJsonl;
+import gov.noaa.pfel.erddap.dataset.TableWriterNccsv;
+import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
+import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
-import gov.noaa.pfel.erddap.util.*;
-import gov.noaa.pfel.erddap.variable.*;
+import gov.noaa.pfel.erddap.util.CfToFromGcmd;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Subscriptions;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
+import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
+import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
