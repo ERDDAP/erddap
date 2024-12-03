@@ -2363,7 +2363,7 @@ public class Grid {
     long time = System.currentTimeMillis();
 
     // delete any existing file
-    String ext = SAVE_AS_EXTENSIONS.getFirst();
+    String ext = SAVE_AS_EXTENSIONS.get(SAVE_AS_GRD);
     File2.delete(directory + name + ext);
 
     // make sure there is data
