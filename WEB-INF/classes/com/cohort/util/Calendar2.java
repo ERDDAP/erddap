@@ -2244,20 +2244,21 @@ public class Calendar2 {
           "EEEE MMMM d HH:mm:ss yyyy");
 
   /** This makes a hashMap of the dateTimeFormat pointing to a compiled regex. */
-  public static HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap();
+  public static final HashMap<String, Pattern> dateTimeFormatPatternHM = new HashMap<>();
 
   /** This makes a hashMap of the dateTimeFormat pointing to a parsed formatter. */
-  public static HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM = new HashMap();
+  public static final HashMap<String, DateTimeFormatter> dateTimeFormatFormatterHM =
+      new HashMap<>();
 
   // can't test hasComma because of e.g., {1,6}
-  public static char digitRegexTimeFormatLastChar[] =
+  public static char[] digitRegexTimeFormatLastChar =
       new char[digitRegexTimeFormat.size()]; // to catch/match C|T|Z
-  public static BitSet digitRegexTimeFormatHasColon = new BitSet(digitRegexTimeFormat.size());
-  public static BitSet digitRegexTimeFormatHasPeriod =
+  public static final BitSet digitRegexTimeFormatHasColon = new BitSet(digitRegexTimeFormat.size());
+  public static final BitSet digitRegexTimeFormatHasPeriod =
       new BitSet(digitRegexTimeFormat.size()); // all periods in regexes are literals
-  public static BitSet digitRegexTimeFormatHasSlash = new BitSet(digitRegexTimeFormat.size());
+  public static final BitSet digitRegexTimeFormatHasSlash = new BitSet(digitRegexTimeFormat.size());
   // not hasT because of 'T'hursday
-  public static char letterRegexTimeFormatLastChar[] = new char[letterRegexTimeFormat.size()];
+  public static char[] letterRegexTimeFormatLastChar = new char[letterRegexTimeFormat.size()];
 
   static {
     for (int i = 0; i < digitRegexTimeFormat.size(); i += 2) {
@@ -2292,23 +2293,19 @@ public class Calendar2 {
   }
 
   /** The IDEAL values are used for makeIdealGC. */
-  public static String IDEAL_N_OPTIONS[] = new String[100];
+  public static String[] IDEAL_N_OPTIONS = new String[100];
 
   static {
     for (int i = 0; i < 100; i++) IDEAL_N_OPTIONS[i] = "" + (i + 1);
   }
 
-  public static String IDEAL_UNITS_OPTIONS[] =
-      new String[] {"second(s)", "minute(s)", "hour(s)", "day(s)", "month(s)", "year(s)"};
-  public static double IDEAL_UNITS_SECONDS[] =
-      new double[] { // where imprecise, these are on the low end
-        1, 60, SECONDS_PER_HOUR, SECONDS_PER_DAY, 30.0 * SECONDS_PER_DAY, 365.0 * SECONDS_PER_DAY
-      };
-  public static int IDEAL_UNITS_FIELD[] =
-      new int[] {SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR}; // month is 0..
-
-  public static int YMDHMSM_FIELDS[] =
-      new int[] {YEAR, MONTH, DATE, HOUR_OF_DAY, MINUTE, SECOND, MILLISECOND}; // month is 0
+  public static final ImmutableList<String> IDEAL_UNITS_OPTIONS =
+      ImmutableList.of("second(s)", "minute(s)", "hour(s)", "day(s)", "month(s)", "year(s)");
+  public static final ImmutableList<Integer> IDEAL_UNITS_SECONDS =
+      ImmutableList.of( // where imprecise, these are on the low end
+          1, 60, SECONDS_PER_HOUR, SECONDS_PER_DAY, 30 * SECONDS_PER_DAY, 365 * SECONDS_PER_DAY);
+  public static final ImmutableList<Integer> IDEAL_UNITS_FIELD =
+      ImmutableList.of(SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR); // month is 0..
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -2326,7 +2323,7 @@ public class Calendar2 {
    * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * For diagnostic purposes, this returns the name of one of the fields defined above (or
@@ -2560,42 +2557,39 @@ public class Calendar2 {
    */
   public static double factorToGetSeconds(String units) {
     units = units.trim().toLowerCase();
-    if (units.equals("ms")
-        || units.equals("msec")
-        || units.equals("msecs")
-        || units.equals("millis")
-        || units.equals("millisec")
-        || units.equals("millisecs")
-        || units.equals("millisecond")
-        || units.equals("milliseconds")) return 0.001;
-    if (units.equals("s")
-        || units.equals("sec")
-        || units.equals("secs")
-        || units.equals("second")
-        || units.equals("seconds")) return 1;
-    if (units.equals("m")
-        || // lenient
-        units.equals("min")
-        || units.equals("mins")
-        || units.equals("minute")
-        || units.equals("minutes")) return SECONDS_PER_MINUTE;
-    if (units.equals("h")
-        || // lenient
-        units.equals("hr")
-        || units.equals("hrs")
-        || units.equals("hour")
-        || units.equals("hours")) return SECONDS_PER_HOUR;
-    if (units.equals("d")
-        || // lenient
-        units.equals("day")
-        || units.equals("days")) return SECONDS_PER_DAY;
-    if (units.equals("week") || units.equals("weeks")) return 7 * SECONDS_PER_DAY;
-    if (units.equals("mon")
-        || units.equals("mons")
-        || units.equals("month")
-        || units.equals("months")) return 30 * SECONDS_PER_DAY;
-    if (units.equals("yr") || units.equals("yrs") || units.equals("year") || units.equals("years"))
-      return 360 * SECONDS_PER_DAY;
+    switch (units) {
+      case "ms",
+          "msec",
+          "msecs",
+          "millis",
+          "millisec",
+          "millisecs",
+          "millisecond",
+          "milliseconds" -> {
+        return 0.001;
+      }
+      case "s", "sec", "secs", "second", "seconds" -> {
+        return 1;
+      }
+      case "m", "min", "mins", "minute", "minutes" -> {
+        return SECONDS_PER_MINUTE;
+      }
+      case "h", "hr", "hrs", "hour", "hours" -> {
+        return SECONDS_PER_HOUR;
+      }
+      case "d", "day", "days" -> {
+        return SECONDS_PER_DAY;
+      }
+      case "week", "weeks" -> {
+        return 7 * SECONDS_PER_DAY;
+      }
+      case "mon", "mons", "month", "months" -> {
+        return 30 * SECONDS_PER_DAY;
+      }
+      case "yr", "yrs", "year", "years" -> {
+        return 360 * SECONDS_PER_DAY;
+      }
+    }
     Test.error(
         String2.ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
     return Double.NaN; // won't happen, but method needs return statement
@@ -3102,12 +3096,11 @@ public class Calendar2 {
    * @return a new GregorianCalendar object (local time zone)
    */
   public static GregorianCalendar newGCalendarLocal() {
-    GregorianCalendar gc = new GregorianCalendar();
     // TimeZone tz = gc.getTimeZone();
     // String2.log("getGCalendar inDaylightTime="+ tz.inDaylightTime(gc.getTime()) +
     //    " useDaylightTime=" + tz.useDaylightTime() +
     //    " timeZone=" + tz);
-    return gc;
+    return new GregorianCalendar();
   }
 
   /**
@@ -3637,7 +3630,7 @@ public class Calendar2 {
         || !String2.isDigit(cdt.charAt(1))
         || !String2.isDigit(cdt.charAt(2))
         || !String2.isDigit(cdt.charAt(3))) return cdt; // unchanged
-    sb.append(cdt.substring(0, 4));
+    sb.append(cdt, 0, 4);
     if (len < 6 || !String2.isDigit(cdt.charAt(4)) || !String2.isDigit(cdt.charAt(5)))
       return sb.toString();
     sb.append("-" + cdt.substring(4, 6));
@@ -4186,11 +4179,11 @@ public class Calendar2 {
       } else if (ch == '[') {
         if (nCh > 1)
           throw new RuntimeException(parseErrorUnexpectedCount(s, format, nCh, ch, formatPo - nCh));
-        else if (optionalMode == true)
+        else if (optionalMode)
           throw new RuntimeException(parseError(s, format) + "'[' inside [] isn't allowed.");
         optionalMode = true;
       } else if (ch == ']') {
-        if (optionalMode == false || nCh > 1)
+        if (!optionalMode || nCh > 1)
           throw new RuntimeException(parseError(s, format) + "']' found without matching '['.");
         optionalMode = false;
 
@@ -4691,9 +4684,8 @@ public class Calendar2 {
    * @return an error string
    */
   public static String getParseErrorString(String s, Exception e) {
-    String error = MustBe.throwable(String2.ERROR + " while parsing \"" + s + "\".", e);
     // String2.log(error);
-    return error;
+    return MustBe.throwable(String2.ERROR + " while parsing \"" + s + "\".", e);
   }
 
   /**
@@ -5327,8 +5319,8 @@ public class Calendar2 {
    */
   public static int nextNice(double d, int nice[]) {
     int n = nice.length;
-    for (int i = 0; i < n; i++) {
-      if (d <= nice[i]) return nice[i];
+    for (int j : nice) {
+      if (d <= j) return j;
     }
     return Math2.roundToInt(Math.ceil(d / nice[n - 1]));
   }
@@ -5358,7 +5350,7 @@ public class Calendar2 {
       gc = newGCalendarZulu(ti / 12, (ti % 12) + 1, 1);
 
     } else { // seconds ... days: all have consistent length
-      double chunk = idealN * IDEAL_UNITS_SECONDS[idealUnits]; // e.g., decimal number of days
+      double chunk = idealN * IDEAL_UNITS_SECONDS.get(idealUnits); // e.g., decimal number of days
       double td = Math.rint(epochSeconds / chunk) * chunk; // round to nearest n units
       gc = newGCalendarZulu(Math2.roundToLong(td * 1000));
     }
@@ -5511,7 +5503,7 @@ public class Calendar2 {
     // restrict search to allDigits formats?
     boolean allDigits =
         startWithDigit != null && (isIntegerArray || String2.allDigits(sa.getString(first).trim()));
-    if (allDigits && evenIfPurelyNumeric == false) {
+    if (allDigits && !evenIfPurelyNumeric) {
       if (debugMode)
         String2.log(noMatch + "some strings are purely numeric but evenIfPurelyNumeric=false.");
       return "";
@@ -6073,7 +6065,7 @@ public class Calendar2 {
                         + " with format="
                         + dateTimeFormat
                         + "\n"
-                        + t2.toString());
+                        + t2);
                 printError = false;
               }
             }
@@ -6083,8 +6075,7 @@ public class Calendar2 {
 
     } catch (Throwable t) {
       if (verbose)
-        String2.log(
-            "  Calendar2.toEpochSeconds: format=" + dateTimeFormat + ", error=" + t.toString());
+        String2.log("  Calendar2.toEpochSeconds: format=" + dateTimeFormat + ", error=" + t);
     }
     return da;
   }

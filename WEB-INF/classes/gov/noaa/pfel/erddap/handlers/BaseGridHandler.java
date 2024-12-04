@@ -8,7 +8,7 @@ public abstract class BaseGridHandler extends BaseDatasetHandler {
   protected int tnThreads = -1;
   protected boolean tAccessibleViaWMS = true;
   protected boolean tDimensionValuesInMemory = true;
-  protected ArrayList<Object[]> tAxisVariables = new ArrayList<>();
+  protected final ArrayList<Object[]> tAxisVariables = new ArrayList<>();
 
   public BaseGridHandler(SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler, datasetID, completeState);

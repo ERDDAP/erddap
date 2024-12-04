@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridCopyHandler extends BaseGridHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDGridCopyHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {

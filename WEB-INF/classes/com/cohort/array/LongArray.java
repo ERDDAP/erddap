@@ -191,8 +191,7 @@ public class LongArray extends PrimitiveArray {
     // https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
     // and java docs for Long.hashCode()
     int code = 0;
-    for (int i = 0; i < size; i++)
-      code = 31 * code + ((int) (array[i] ^ array[i] >>> 32)); // safe, only want low 32 bits
+    for (int i = 0; i < size; i++) code = 31 * code + Long.hashCode(array[i]);
     return code;
     // return HashDigest.murmur32(array, size);
   }
@@ -290,7 +289,7 @@ public class LongArray extends PrimitiveArray {
    */
   @Override
   public final void addObject(final Object value) {
-    if (value != null && value instanceof Number num) {
+    if (value instanceof Number num) {
       if (value instanceof Double) addDouble(num.doubleValue()); // supports NaN
       else if (value instanceof Float) addFloat(num.floatValue()); // supports NaN
       else add(num.longValue());
@@ -1310,17 +1309,17 @@ public class LongArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     long lastValue = array[0]; // since lastValue often equals currentValue, cache it
-    hashMap.put(Long.valueOf(lastValue), dummy);
+    hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       long currentValue = array[i];
       if (currentValue != lastValue) {
         if (currentValue < lastValue) alreadySorted = false;
         lastValue = currentValue;
-        hashMap.put(Long.valueOf(lastValue), dummy);
+        hashMap.put(lastValue, dummy);
       }
     }
 
@@ -1349,21 +1348,21 @@ public class LongArray extends PrimitiveArray {
     // and make tUnique
     final long tUnique[] = new long[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
-      tUnique[i] = ((Long) unique[i]).longValue();
+      hashMap.put(unique[i], i);
+      tUnique[i] = (Long) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = array[0];
-    ranks[0] = ((Integer) hashMap.get(Long.valueOf(lastValue))).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = array[i];
-        ranks[i] = ((Integer) hashMap.get(Long.valueOf(lastValue))).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }
@@ -1385,7 +1384,7 @@ public class LongArray extends PrimitiveArray {
   public int switchFromTo(final String tFrom, final String tTo) {
     final long from = String2.parseLong(tFrom);
     final Long tl = String2.parseLongObject(tTo);
-    final long to = tl == null ? Long.MAX_VALUE : tl.longValue();
+    final long to = tl == null ? Long.MAX_VALUE : tl;
     if (from == to) return 0;
     int count = 0;
     for (int i = 0; i < size; i++) {

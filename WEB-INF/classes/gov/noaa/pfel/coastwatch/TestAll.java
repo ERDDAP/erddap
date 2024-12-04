@@ -1201,9 +1201,11 @@ public class TestAll {
     // MakeEmaWar.main(null);
 
     String2.log(
-        "\n"
-            + "*** Before a release, spell check (copy to EditPlus, then spellcheck)\n"
-            + "and validate HTML the main web pages!\n");
+        """
+
+                    *** Before a release, spell check (copy to EditPlus, then spellcheck)
+                    and validate HTML the main web pages!
+                    """);
 
     // */
     // AFTER deploying browsers: test the experimental browser
@@ -1220,7 +1222,7 @@ public class TestAll {
               "errorSB from TestAll which finished at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ()
                   + "\n"
-                  + errorSB.toString()));
+                  + errorSB));
       Test.displayInBrowser("file://" + fileName); // .txt
     }
 

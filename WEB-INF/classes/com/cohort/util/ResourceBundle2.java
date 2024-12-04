@@ -27,7 +27,7 @@ public class ResourceBundle2 {
    * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
    * if you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean reallyVerbose = false;
+  public static final boolean reallyVerbose = false;
 
   protected ResourceBundle primaryRB, secondaryRB; // both or just secondary may be null
   protected ConcurrentHashMap<String, String>
@@ -107,7 +107,7 @@ public class ResourceBundle2 {
         XML.getNodeList(doc, xPath, "/*/*"); // all elements directly under root element
     int n = nodeList.getLength();
     ConcurrentHashMap<String, String> tHash =
-        new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
+        new ConcurrentHashMap<>(Math2.roundToInt(1.4 * 16), 0.75f, 4);
     // String2.log("ResourceBundle2.fromXml  nNodes=" + n);
     for (int i = 0; i < n; i++) {
       Element element = (Element) nodeList.item(i);
@@ -133,7 +133,7 @@ public class ResourceBundle2 {
       String s = getString(key, null);
 
       // what does Boolean.getBoolean want? just forget it and do my own
-      return s.toLowerCase().equals("true");
+      return s.equalsIgnoreCase("true");
     } catch (Exception e) {
       return theDefault;
     }
@@ -227,7 +227,7 @@ public class ResourceBundle2 {
             "  ResourceBundle2.getString("
                 + key
                 + ") exception: \""
-                + e.toString()
+                + e
                 + "\"; so using default=\""
                 + theDefault
                 + "\".");

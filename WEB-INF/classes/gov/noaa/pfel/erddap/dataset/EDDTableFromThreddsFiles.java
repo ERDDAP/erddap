@@ -64,7 +64,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -201,7 +201,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
       Integer lastAssignedTask = EDStatic.lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask.intValue();
+          lastAssignedTask != null && EDStatic.lastFinishedTask.get() < lastAssignedTask;
       if (verbose)
         String2.log(
             "  lastFinishedTask="
@@ -273,7 +273,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         int n = sourceFileName.size();
         if (n > 1) {
           // 1) sort by sourceFileName
-          ArrayList<PrimitiveArray> tfTable = new ArrayList();
+          ArrayList<PrimitiveArray> tfTable = new ArrayList<>();
           tfTable.add(sourceFileDir);
           tfTable.add(sourceFileName);
           tfTable.add(sourceFileLastMod);
@@ -314,7 +314,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       if (completelySuccessful && sourceFileName.size() > 0) {
         // make a hashset of theoretical local fileNames that will exist
         //  after copying based on getThreddsFileInfo
-        HashSet<String> hashset = new HashSet();
+        HashSet<String> hashset = new HashSet<>();
         int nFiles = sourceFileName.size();
         for (int f = 0; f < nFiles; f++) {
           String sourceDir = sourceFileDir.get(f);
@@ -417,7 +417,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
         taskOA[1] = sourceDir + sourceName;
         taskOA[2] = localFile;
-        taskOA[3] = Long.valueOf(sourceFileLastMod.get(f));
+        taskOA[3] = sourceFileLastMod.get(f);
         int tTaskNumber = EDStatic.addTask(taskOA);
         if (tTaskNumber >= 0) {
           nTasksCreated++;
@@ -466,7 +466,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 + MustBe.throwableToString(t));
     }
     if (taskNumber > -1) {
-      EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
+      EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
       if (EDStatic.forceSynchronousLoading) {
@@ -1013,7 +1013,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

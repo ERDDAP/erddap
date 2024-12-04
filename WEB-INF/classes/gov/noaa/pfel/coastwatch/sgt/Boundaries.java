@@ -38,7 +38,7 @@ public class Boundaries {
    * Set this to true (by calling debug=true in your program, not by changing the code here) if you
    * want lots and lots and lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debug = false;
+  public static final boolean debug = false;
 
   public static final String REF_DIRECTORY =
       File2.getWebInfParentDirectory()
@@ -66,8 +66,8 @@ public class Boundaries {
    */
   public static final int CACHE_SIZE = 100;
 
-  private Map<String, SGTLine> cache =
-      Collections.synchronizedMap(new LRUCache<String, SGTLine>(CACHE_SIZE));
+  private final Map<String, SGTLine> cache =
+      Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
   private int nCoarse = 0;
   private int nSuccesses = 0;
   private int nTossed = 0;
@@ -101,7 +101,7 @@ public class Boundaries {
   // !!!EEK!!! no Sacramento River! gshhs is based on 2 datasets:
   //  World Vector Shorelines (WVS) and CIA World Data Bank II (WDBII).
   //  Perhaps each thinks the other is responsible for it.
-  private ImmutableList<String> fileNames;
+  private final ImmutableList<String> fileNames;
 
   public static final ImmutableList<String> NATIONAL_FILE_NAMES =
       ImmutableList.of(
@@ -284,7 +284,7 @@ public class Boundaries {
     int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
 
     try (DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName)); ) {
+        new DataInputStream(File2.getDecompressedBufferedInputStream(fullFileName))) {
       // double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4
       // maxMaxLon=359.99969482
       while (true) {
@@ -501,8 +501,8 @@ public class Boundaries {
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(fullFileName);
-    try {
+    try (BufferedReader bufferedReader =
+        File2.getDecompressedBufferedFileReader88591(fullFileName)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         if (s.startsWith(startGapLine1) || s.startsWith(startGapLine2)) {
@@ -570,8 +570,6 @@ public class Boundaries {
         }
         s = bufferedReader.readLine();
       }
-    } finally {
-      bufferedReader.close();
     }
     if (reallyVerbose) String2.log("    Boundaries.readSgtLine nObjects=" + nObjects);
 
@@ -607,11 +605,9 @@ public class Boundaries {
     String startGapLine2 = format == MATLAB_FORMAT ? "nan nan" : "#";
     int nObjects = 0;
 
-    BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName);
-    try {
-      DataOutputStream dos =
-          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)));
-      try {
+    try (BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName)) {
+      try (DataOutputStream dos =
+          new DataOutputStream(new BufferedOutputStream(new FileOutputStream(destName)))) {
         String s = bufferedReader.readLine();
         while (true) {
           if (s == null
@@ -657,11 +653,7 @@ public class Boundaries {
         // mark of file
         dos.writeDouble(Double.NaN);
         dos.writeDouble(Double.NaN);
-      } finally {
-        dos.close();
       }
-    } finally {
-      bufferedReader.close();
     }
     String2.log("    Boundaries.convertSgtLine nObjects=" + nObjects);
   }
@@ -671,10 +663,9 @@ public class Boundaries {
     String dir = "c:/programs/boundaries/";
     String types[] = {"nationalBoundaries", "stateBoundaries", "rivers"};
     String ress[] = {"c", "f", "h", "i", "l"};
-    for (int type = 0; type < types.length; type++) {
-      for (int res = 0; res < ress.length; res++) {
-        convertSgtLine(
-            dir + types[type] + ress[res] + ".asc", dir + types[type] + ress[res] + ".double");
+    for (String string : types) {
+      for (String s : ress) {
+        convertSgtLine(dir + string + s + ".asc", dir + string + s + ".double");
       }
     }
   }

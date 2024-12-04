@@ -29,13 +29,13 @@ import java.io.FileOutputStream;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public class TableWriterAll extends TableWriter {
-  public static String attributeTo = "gathering data in TableWriterAll";
+  public static final String attributeTo = "gathering data in TableWriterAll";
 
-  protected int randomInt = Math2.random(Integer.MAX_VALUE);
+  protected final int randomInt = Math2.random(Integer.MAX_VALUE);
 
   // set by constructor
-  protected String dir;
-  protected String fileNameNoExt;
+  protected final String dir;
+  protected final String fileNameNoExt;
 
   // set firstTime
   // POLICY: because this class may be used in more than one thread,
@@ -44,7 +44,7 @@ public class TableWriterAll extends TableWriter {
   protected volatile long totalNRows = 0;
 
   protected Table cumulativeTable; // set by writeAllAndFinish, if used
-  private CleanupTableWriterAction cleanupAction;
+  private final CleanupTableWriterAction cleanupAction;
 
   /**
    * The constructor. TableWriterAll will create several temporary files using the dir+name as the
@@ -73,9 +73,9 @@ public class TableWriterAll extends TableWriter {
 
     private DataOutputStream[] columnStreams;
     private String[] columnNames;
-    private String dir;
-    private String fileNameNoExt;
-    private int randomInt;
+    private final String dir;
+    private final String fileNameNoExt;
+    private final int randomInt;
 
     private CleanupTableWriterAction(String dir, String fileNameNoExt, int randomInt) {
       this.dir = dir;
@@ -106,8 +106,7 @@ public class TableWriterAll extends TableWriter {
 
         // delete the files
         if (columnNames == null) return;
-        int nColumns = columnNames.length;
-        for (int col = 0; col < nColumns; col++) {
+        for (String columnName : columnNames) {
           // deletion isn't essential or urgent.
           // We don't want to tie up the garbage collector thread.
           File2.simpleDelete(
@@ -116,7 +115,7 @@ public class TableWriterAll extends TableWriter {
                   + "."
                   + randomInt
                   + "."
-                  + String2.encodeFileNameSafe(columnNames[col])
+                  + String2.encodeFileNameSafe(columnName)
                   + ".temp");
         }
       } catch (Throwable t) {
@@ -236,11 +235,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, (int) totalNRows); // safe since checked above
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -273,11 +269,8 @@ public class TableWriterAll extends TableWriter {
         PrimitiveArray.factory(
             columnType(col), (int) totalNRows, false); // safe since checked above
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    DataInputStream dis = dataInputStream(col);
-    try {
+    try (DataInputStream dis = dataInputStream(col)) {
       pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
-    } finally {
-      dis.close();
     }
     return pa;
   }
@@ -294,9 +287,7 @@ public class TableWriterAll extends TableWriter {
    * @throws Throwable if trouble (e.g., totalNRows > Integer.MAX_VALUE)
    */
   public DataInputStream dataInputStream(int col) throws Throwable {
-    DataInputStream dis =
-        new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
-    return dis;
+    return new DataInputStream(File2.getDecompressedBufferedInputStream(columnFileName(col)));
   }
 
   public String columnFileName(int col) {

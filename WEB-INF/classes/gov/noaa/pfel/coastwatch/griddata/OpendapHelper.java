@@ -17,10 +17,11 @@ import dods.dap.*;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayObject;
 import ucar.ma2.DataType;
@@ -46,7 +47,7 @@ public class OpendapHelper {
    * Set this to true (by calling debug=true in your program, not by changing the code here) if you
    * want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean debug = false;
+  public static final boolean debug = false;
 
   /**
    * This defines the end-of-line characters to use when writing dap responses. <br>
@@ -61,7 +62,7 @@ public class OpendapHelper {
    */
   public static final String EOL = "\n";
 
-  public static int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
+  public static final int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
 
   /**
    * This converts a das to a string.
@@ -72,7 +73,7 @@ public class OpendapHelper {
   public static String getDasString(DAS das) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     das.print(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -84,7 +85,7 @@ public class OpendapHelper {
   public static String getDdsString(DDS dds) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     dds.print(baos);
-    return baos.toString();
+    return baos.toString(StandardCharsets.UTF_8);
   }
 
   /**
@@ -102,7 +103,7 @@ public class OpendapHelper {
       // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
       Iterator<String> names = das.getNames();
       while (names.hasNext()) {
-        String s = (String) names.next();
+        String s = names.next();
         if (s.indexOf("GLOBAL") >= 0) {
           return das.getAttributeTable(s);
         }
@@ -179,7 +180,7 @@ public class OpendapHelper {
     // get the attributes
     Iterator<String> names = attributeTable.getNames();
     while (names.hasNext()) {
-      String name = (String) names.next();
+      String name = names.next();
       Attribute attribute = attributeTable.getAttribute(name);
       if (attribute.isContainer()) {
         // process an attribute that isContainer by flattening it (name_subname=...)
@@ -189,21 +190,25 @@ public class OpendapHelper {
         getAttributes(attribute.getContainer(), tAttributes);
         String tNames[] = tAttributes.getNames();
         String startName = name.trim() + "_";
-        int ntNames = tNames.length;
-        for (int tni = 0; tni < ntNames; tni++)
-          attributes.add(startName + tNames[tni].trim(), tAttributes.get(tNames[tni]));
+        for (String tName : tNames)
+          attributes.add(startName + tName.trim(), tAttributes.get(tName));
 
       } else {
         // process a simple attribute
-        String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
+        List<String> sar = new ArrayList<>();
+        Iterator<String> elems = attribute.getValues();
+        while (elems.hasNext()) {
+          sar.add(elems.next());
+        }
 
         // remove enclosing quotes from strings
-        for (int i = 0; i < sar.length; i++) {
-          int sariLength = sar[i].length();
-          if (sariLength >= 2 && sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-            sar[i] = String2.fromJson(sar[i]);
+        for (int i = 0; i < sar.size(); i++) {
+          int sariLength = sar.get(i).length();
+          if (sariLength >= 2
+              && sar.get(i).charAt(0) == '"'
+              && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
         }
-        StringArray sa = new StringArray(sar);
+        StringArray sa = new StringArray(sar.toArray());
 
         // store values in the appropriate type of PrimitiveArray
         PrimitiveArray pa = null;
@@ -286,14 +291,19 @@ public class OpendapHelper {
         return new String[] {};
       }
 
-      String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
-      // remove enclosing quotes from strings
-      for (int i = 0; i < sar.length; i++) {
-        int sariLength = sar[i].length();
-        if (sariLength >= 2 && sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-          sar[i] = String2.fromJson(sar[i]);
+      List<String> sar = new ArrayList<>();
+      Iterator<String> elems = attribute.getValues();
+      while (elems.hasNext()) {
+        sar.add(elems.next());
       }
-      return sar;
+      // remove enclosing quotes from strings
+      for (int i = 0; i < sar.size(); i++) {
+        int sariLength = sar.get(i).length();
+        if (sariLength >= 2
+            && sar.get(i).charAt(0) == '"'
+            && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
+      }
+      return String2.toStringArray(sar.toArray());
     } catch (Exception e) {
       String2.log(
           "WARNING: OpendapHelper.getAttributeValues(\nvarName="
@@ -442,8 +452,7 @@ public class OpendapHelper {
       throws Exception {
     long time = System.currentTimeMillis();
     DataDDS dataDds = dConnect.getData(query, null);
-    BaseType bt =
-        (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
+    BaseType bt = dataDds.getVariables().next(); // first element is always main array
     // bt.printVal(System.out, " ");
     DArray da = (DArray) bt;
     if (verbose)
@@ -487,8 +496,7 @@ public class OpendapHelper {
             "    OpendapHelper.getPrimitiveArrays done. TIME="
                 + (System.currentTimeMillis() - time)
                 + "ms");
-      BaseType bt =
-          (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
+      BaseType bt = dataDds.getVariables().next(); // first element is always main array
       return getPrimitiveArrays(bt);
     } catch (Exception e) {
       throw new RuntimeException(
@@ -505,43 +513,58 @@ public class OpendapHelper {
    */
   public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
     // String2.log(">>    baseType=" + baseType.getTypeName());
-    if (baseType instanceof DGrid dgrid) {
-      ArrayList<DArray> al = new ArrayList<>();
-      Enumeration<DArray> e = dgrid.getVariables();
-      while (e.hasMoreElements()) al.add(e.nextElement());
-      PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
-      for (int i = 0; i < al.size(); i++)
-        paAr[i] = getPrimitiveArray(((DArray) al.get(i)).getPrimitiveVector());
-      return paAr;
-    } else if (baseType instanceof DArray da) {
-      return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
-    } else if (baseType instanceof DVector) {
-      return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
-    } else if (baseType instanceof DFloat64 dfloat64) {
-      return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
-    } else if (baseType instanceof DFloat32 dfloat32) {
-      return new PrimitiveArray[] {new FloatArray(new float[] {dfloat32.getValue()})};
-    } else if (baseType instanceof DInt32 dint32) {
-      return new PrimitiveArray[] {new IntArray(new int[] {dint32.getValue()})};
-    } else if (baseType instanceof DUInt32 duint32) {
-      return new PrimitiveArray[] {new UIntArray(new int[] {duint32.getValue()})};
-    } else if (baseType instanceof DInt16 dint16) {
-      return new PrimitiveArray[] {new ShortArray(new short[] {dint16.getValue()})};
-    } else if (baseType instanceof DUInt16 duint16) {
-      return new PrimitiveArray[] {new UShortArray(new short[] {duint16.getValue()})};
-    } else if (baseType instanceof DByte dbyte) {
-      return new PrimitiveArray[] {new ByteArray(new byte[] {dbyte.getValue()})};
-    } else if (baseType instanceof DBoolean dboolean) {
-      return new PrimitiveArray[] {
-        new ByteArray(new byte[] {dboolean.getValue() ? (byte) 1 : (byte) 0})
-      };
-    } else if (baseType instanceof DString dstring) {
-      // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
-      return new PrimitiveArray[] {new StringArray(new String[] {dstring.getValue()})};
-    } else {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baseType.printVal(baos, " ");
-      throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
+    switch (baseType) {
+      case DGrid dgrid -> {
+        ArrayList<DArray> al = new ArrayList<>();
+        Iterator<BaseType> e = dgrid.getVariables();
+        while (e.hasNext()) al.add((DArray) e.next());
+        PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
+        for (int i = 0; i < al.size(); i++)
+          paAr[i] = getPrimitiveArray(al.get(i).getPrimitiveVector());
+        return paAr;
+      }
+      case DArray da -> {
+        return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
+      }
+      case DVector dVector -> {
+        return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
+      }
+      case DFloat64 dfloat64 -> {
+        return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
+      }
+      case DFloat32 dfloat32 -> {
+        return new PrimitiveArray[] {new FloatArray(new float[] {dfloat32.getValue()})};
+      }
+      case DUInt32 duint32 -> {
+        return new PrimitiveArray[] {new UIntArray(new int[] {duint32.getValue()})};
+      }
+      case DInt32 dint32 -> {
+        return new PrimitiveArray[] {new IntArray(new int[] {dint32.getValue()})};
+      }
+      case DUInt16 duint16 -> {
+        return new PrimitiveArray[] {new UShortArray(new short[] {duint16.getValue()})};
+      }
+      case DInt16 dint16 -> {
+        return new PrimitiveArray[] {new ShortArray(new short[] {dint16.getValue()})};
+      }
+      case DByte dbyte -> {
+        return new PrimitiveArray[] {new ByteArray(new byte[] {dbyte.getValue()})};
+      }
+      case DBoolean dboolean -> {
+        return new PrimitiveArray[] {
+          new ByteArray(new byte[] {dboolean.getValue() ? (byte) 1 : (byte) 0})
+        };
+      }
+      case DString dstring -> {
+        // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
+        return new PrimitiveArray[] {new StringArray(new String[] {dstring.getValue()})};
+        // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
+      }
+      case null, default -> {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baseType.printVal(baos, " ");
+        throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
+      }
     }
   }
 
@@ -783,7 +806,7 @@ public class OpendapHelper {
     StringBuilder sb = new StringBuilder();
     // String2.log(">> dasToString " + varName + " attributes:\n" + attributes.toString());
     // see EOL definition for comments about it
-    int firstUEncodedChar = encodeAsHTML ? 65536 : 65536;
+    int firstUEncodedChar = 65536;
     sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL);
     StringArray names = new StringArray(attributes.getNames());
     boolean addedUnsigned = false;
@@ -861,7 +884,7 @@ public class OpendapHelper {
           sb.append(ts + (pai < paSize - 1 ? ", " : ""));
         }
       } else {
-        sb.append(pa.toString());
+        sb.append(pa);
       }
       sb.append(";" + EOL);
     }
@@ -880,26 +903,30 @@ public class OpendapHelper {
     Test.ensureNotNull(pv, "pv is null");
     int n = pv.getLength();
     double da[] = new double[n];
-    if (pv instanceof Float32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
-    } else if (pv instanceof Float64PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof BytePrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt16PrimitiveVector tpv) { // uint16 is instanceof int16! so must test uint16 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int16PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt32PrimitiveVector tpv) { // uint32 is instanceof int32! so must test uint32 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else {
-      throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
+    switch (pv) {
+      case Float32PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
+      }
+      case Float64PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      case BytePrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      case UInt16PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      case Int16PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      case UInt32PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      case Int32PrimitiveVector tpv -> {
+        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+      }
+      default ->
+          throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
     }
 
     return da;
@@ -1090,11 +1117,11 @@ public class OpendapHelper {
    */
   public static String[] findVarsWithSharedDimensions(DDS dds) throws Exception {
 
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     StringArray dimNames = new StringArray();
     StringArray varNames = new StringArray(); // vars with same dimNames
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       DArray dArray;
       if (baseType instanceof DGrid) {
         // dGrid has main dArray + dimensions
@@ -1167,10 +1194,10 @@ public class OpendapHelper {
    */
   public static String[] findAllScalarOrMultiDimVars(DDS dds) throws Exception {
 
-    Enumeration en = dds.getVariables();
+    Iterator<BaseType> en = dds.getVariables();
     StringArray varNames = new StringArray(); // vars with same dimNames
-    while (en.hasMoreElements()) {
-      BaseType baseType = (BaseType) en.nextElement();
+    while (en.hasNext()) {
+      BaseType baseType = en.next();
       if (instanceofScalarOrMultiDimVar(baseType)) varNames.add(baseType.getName());
     }
     return varNames.toArray();
@@ -1535,7 +1562,7 @@ public class OpendapHelper {
 
         } catch (Throwable t) {
           varNames[v] = null;
-          if (verbose) String2.log("  removing variable: " + t.toString());
+          if (verbose) String2.log("  removing variable: " + t);
           continue;
         }
       }
@@ -1546,8 +1573,8 @@ public class OpendapHelper {
 
       // are there validVars remaining?
       boolean someValidVars = false;
-      for (int v = 0; v < varNames.length; v++) {
-        if (varNames[v] != null) {
+      for (String varName : varNames) {
+        if (varName != null) {
           someValidVars = true;
           break;
         }
@@ -1559,9 +1586,9 @@ public class OpendapHelper {
     // if projection is null or "", figure out the projection
     if (projection == null || projection.length() == 0) {
       StringBuilder sb = new StringBuilder();
-      for (int v = 0; v < varNames.length; v++) {
-        if (varNames[v] == null) continue;
-        BaseType baseType = dds.getVariable(varNames[v]);
+      for (String varName : varNames) {
+        if (varName == null) continue;
+        BaseType baseType = dds.getVariable(varName);
         DArray dArray;
         if (baseType instanceof DGrid dGrid) {
           // dGrid has main dArray + dimensions
@@ -1573,14 +1600,14 @@ public class OpendapHelper {
           throw new RuntimeException(
               beginError
                   + "var="
-                  + varNames[v]
+                  + varName
                   + " has unexpected baseType="
                   + baseType.getClass().getName());
         }
         int nDim = dArray.numDimensions();
         if (nDim == 0)
           throw new RuntimeException(
-              beginError + "var=" + varNames[v] + " is a DArray with 0 dimensions.");
+              beginError + "var=" + varName + " is a DArray with 0 dimensions.");
         for (int d = 0; d < nDim; d++) { // 0..
           sb.append("[0:" + (dArray.getDimension(d).getSize() - 1) + "]");
         }
@@ -1619,14 +1646,14 @@ public class OpendapHelper {
 
       boolean firstValidVar = true;
       int nDims = sss.length / 3;
-      ArrayList<Dimension> dims = new ArrayList();
+      ArrayList<Dimension> dims = new ArrayList<>();
       int shape[] = new int[nDims];
       boolean isDGrid = true; // change if false
 
       PAType dataPAType[] = new PAType[nVars];
       boolean isStringVar[] = new boolean[nVars]; // all false
-      Variable.Builder newVars[] = new Variable.Builder[nVars];
-      Variable.Builder newDimVars[] = new Variable.Builder[nDims];
+      Variable.Builder<?> newVars[] = new Variable.Builder[nVars];
+      Variable.Builder<?> newDimVars[] = new Variable.Builder[nDims];
       PAType dimPATypes[] = new PAType[nDims];
       for (int v = 0; v < nVars; v++) {
         // String2.log("  create var=" + varNames[v]);
@@ -1671,7 +1698,7 @@ public class OpendapHelper {
                       rootGroup,
                       dimName,
                       NcHelper.getNc3DataType(dimPATypes[d]),
-                      Arrays.asList(dims.get(d)));
+                      Collections.singletonList(dims.get(d)));
             } else {
               // check that dimension names are the same
               if (!dimName.equals(dims.get(d).getName())) // the full name
@@ -1743,7 +1770,7 @@ public class OpendapHelper {
           if (dataPAType[v] == PAType.STRING) {
             // a String variable.  Add a dim for nchars
             isStringVar[v] = true;
-            ArrayList<Dimension> tDims = new ArrayList(dims);
+            ArrayList<Dimension> tDims = new ArrayList<>(dims);
             int nChars = varAtts[v].getInt("DODS_strlen");
             if (nChars == Integer.MAX_VALUE) {
               if (verbose)

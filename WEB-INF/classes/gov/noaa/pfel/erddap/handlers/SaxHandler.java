@@ -20,7 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class SaxHandler extends DefaultHandler {
   private State state;
-  SaxParsingContext context;
+  final SaxParsingContext context;
 
   public SaxHandler(SaxParsingContext context) {
     this.context = context;
@@ -97,7 +97,7 @@ public class SaxHandler extends DefaultHandler {
     context.setDatasetsThatFailedToLoadSB(new StringBuilder());
     context.setFailedDatasetsWithErrorsSB(new StringBuilder());
     context.setWarningsFromLoadDatasets(new StringBuilder());
-    context.settUserHashMap(new HashMap<String, Object[]>());
+    context.settUserHashMap(new HashMap<>());
     context.setMajorLoad(false);
     context.setErddap(erddap);
     context.setLastLuceneUpdate(System.currentTimeMillis());

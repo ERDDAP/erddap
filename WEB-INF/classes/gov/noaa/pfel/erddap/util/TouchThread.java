@@ -25,8 +25,8 @@ public class TouchThread extends Thread {
 
   public static boolean reallyVerbose = false;
 
-  public static int TIMEOUT_MILLIS = 60 * 1000;
-  public static int sleepMillis = 500;
+  public static final int TIMEOUT_MILLIS = 60 * 1000;
+  public static final int sleepMillis = 500;
 
   // set while running
   private long lastStartTime = -1; // for 1 touch

@@ -115,7 +115,7 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof PointAttribute)) return false;
+    if (!(obj instanceof PointAttribute)) return false;
     PointAttribute attr = (PointAttribute) obj;
     if (!id_.equals(attr.getId())
         || !color_.equals(attr.getColor())
@@ -136,8 +136,8 @@ public class PointAttribute implements Attribute, Cloneable {
         if (attr.getLabelColor() == null) return false;
         if (!labelColor_.equals(attr.getLabelColor())) return false;
       }
-      if ((labelPosition_ != attr.getLabelPosition()) || (labelHeightP_ != attr.getLabelHeightP()))
-        return false;
+      return (labelPosition_ == attr.getLabelPosition())
+          && (labelHeightP_ == attr.getLabelHeightP());
     }
     return true;
   }
@@ -155,9 +155,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setMarkHeightP(double markh) {
     if (markHeightP_ != markh) {
-      Double tempOld = Double.valueOf(markHeightP_);
+      Double tempOld = markHeightP_;
       markHeightP_ = markh;
-      firePropertyChange("markHeightP", tempOld, Double.valueOf(markHeightP_));
+      firePropertyChange("markHeightP", tempOld, markHeightP_);
     }
   }
 
@@ -192,9 +192,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setWidthP(double t) {
     if (pwidth_ != t) {
-      Double tempOld = Double.valueOf(pwidth_);
+      Double tempOld = pwidth_;
       pwidth_ = t;
-      firePropertyChange("widthP", tempOld, Double.valueOf(pwidth_));
+      firePropertyChange("widthP", tempOld, pwidth_);
     }
   }
 
@@ -225,9 +225,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setMark(int mark) {
     if (mark_ != mark) {
-      Integer tempOld = Integer.valueOf(mark_);
+      Integer tempOld = mark_;
       mark_ = mark;
-      firePropertyChange("mark", tempOld, Integer.valueOf(mark_));
+      firePropertyChange("mark", tempOld, mark_);
     }
   }
 
@@ -247,9 +247,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setLabelPosition(int pos) {
     if (labelPosition_ != pos) {
-      Integer tempOld = Integer.valueOf(labelPosition_);
+      Integer tempOld = labelPosition_;
       labelPosition_ = pos;
-      firePropertyChange("labelPosition", tempOld, Integer.valueOf(labelPosition_));
+      firePropertyChange("labelPosition", tempOld, labelPosition_);
     }
   }
 
@@ -298,9 +298,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setLabelHeightP(double h) {
     if (labelHeightP_ != h) {
-      Double tempOld = Double.valueOf(labelHeightP_);
+      Double tempOld = labelHeightP_;
       labelHeightP_ = h;
-      firePropertyChange("labelHeightP", tempOld, Double.valueOf(labelHeightP_));
+      firePropertyChange("labelHeightP", tempOld, labelHeightP_);
     }
   }
 
@@ -315,9 +315,9 @@ public class PointAttribute implements Attribute, Cloneable {
    */
   public void setDrawLabel(boolean dl) {
     if (drawLabel_ != dl) {
-      Boolean tempOld = Boolean.valueOf(drawLabel_);
+      Boolean tempOld = drawLabel_;
       drawLabel_ = dl;
-      firePropertyChange("drawLabel", tempOld, Boolean.valueOf(drawLabel_));
+      firePropertyChange("drawLabel", tempOld, drawLabel_);
     }
   }
 

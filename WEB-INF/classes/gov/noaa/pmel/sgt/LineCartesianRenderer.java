@@ -151,8 +151,8 @@ public class LineCartesianRenderer extends CartesianRenderer {
         case LineAttribute.MARK_LINE:
           drawMark(g, xout, yout, lsize, attr);
           // fall through
-        default:
         case LineAttribute.SOLID:
+        default:
           g.drawPolyline(xout, yout, lsize);
       }
     }
@@ -183,7 +183,7 @@ public class LineCartesianRenderer extends CartesianRenderer {
    * @see Graph
    */
   public LineCartesianRenderer(CartesianGraph cg) {
-    this(cg, (SGTLine) null, null);
+    this(cg, null, null);
   }
 
   /**

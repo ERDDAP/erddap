@@ -43,11 +43,11 @@ public abstract class TableWriter implements AutoCloseable {
   public boolean ignoreFinish = false;
 
   // these are set by the constructor
-  protected long time;
-  protected int language;
-  protected EDD edd;
-  protected String newHistory;
-  protected OutputStreamSource outputStreamSource;
+  protected final long time;
+  protected final int language;
+  protected final EDD edd;
+  protected final String newHistory;
+  protected final OutputStreamSource outputStreamSource;
 
   // these are set the first time ensureCompatible is called
   protected String[] columnNames;

@@ -84,7 +84,7 @@ public class Range2D implements java.io.Serializable, Cloneable {
     }
     if (!Double.isNaN(delta) && !Double.isNaN(r.delta)) {
       if (Double.isNaN(delta) || Double.isNaN(r.delta)) return false;
-      if (delta != r.delta) return false;
+      return delta == r.delta;
     }
     return true;
   }

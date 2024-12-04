@@ -6,7 +6,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotSupportedException;
 
 public abstract class State {
-  protected SaxHandler saxHandler;
+  protected final SaxHandler saxHandler;
 
   public State(SaxHandler saxHandler) {
     this.saxHandler = saxHandler;

@@ -100,44 +100,45 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
+      switch (localTags) {
+        case "<reloadEveryNMinutes>",
+            "<redirect>",
+            "<subscribeToRemoteErddapDataset>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceUrl>",
+            "<accessibleViaFiles>",
+            "<graphsAccessibleTo>" -> {}
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
-      // Since this erddap can never be logged in to the remote ERDDAP,
-      // it can never get dataset info from the remote erddap dataset (which should have restricted
-      // access).
-      // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
-      // So there is currently no way to make this work.
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<subscribeToRemoteErddapDataset>")) {
-      } else if (localTags.equals("</subscribeToRemoteErddapDataset>"))
-        tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
-      else if (localTags.equals("<redirect>")) {
-      } else if (localTags.equals("</redirect>")) tRedirect = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+          // Since this erddap can never be logged in to the remote ERDDAP,
+          // it can never get dataset info from the remote erddap dataset (which should have
+          // restricted
+          // access).
+          // Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
+          // So there is currently no way to make this work.
+        case "<accessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "</subscribeToRemoteErddapDataset>" ->
+            tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
+        case "</redirect>" -> tRedirect = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDTableFromErddap(
@@ -295,7 +296,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
 
         // delve into the outerSequence
-        BaseType outerVariable = (BaseType) dds.getVariable(SEQUENCE_NAME);
+        BaseType outerVariable = dds.getVariable(SEQUENCE_NAME);
         if (!(outerVariable instanceof DSequence))
           throw new IllegalArgumentException(
               errorInMethod
@@ -309,7 +310,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
 
           // look at the variables in the outer sequence
-          BaseType obt = (BaseType) outerSequence.getVar(outerCol);
+          BaseType obt = outerSequence.getVar(outerCol);
           String tSourceName = obt.getName();
 
           // get the data sourcePAType
@@ -346,7 +347,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // make the dataVariables
-    ArrayList<EDV> tDataVariables = new ArrayList();
+    ArrayList<EDV> tDataVariables = new ArrayList<>();
     knowsActualRange = false;
     for (int col = 0; col < sourceTable.nColumns(); col++) {
 
@@ -516,7 +517,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromErddap "
               + datasetID
               + " constructor finished. TIME="
@@ -775,10 +776,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       datasetIdCol = table.findColumn("Dataset ID"); // throws exception if trouble
 
       sb.append(
-          "\n<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n"
-              + "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n"
-              + "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n"
-              + "The remote EDDTableFromErddap datasets are:\n");
+          """
+
+                      <!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.
+                      It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML
+                      that is being using for these datasets so your ERDDAP can access the original ERDDAP source.
+                      The remote EDDTableFromErddap datasets are:
+                      """);
       if (datasetIdCol.size() == 0) sb.append("(none)");
       else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
       sb.append("\n-->\n");

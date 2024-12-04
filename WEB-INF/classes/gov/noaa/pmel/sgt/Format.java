@@ -130,19 +130,17 @@ public class Format {
 
   private static String repeat(char c, int n) {
     if (n <= 0) return "";
-    StringBuilder s = new StringBuilder(n);
-    for (int i = 0; i < n; i++) s.append(c);
-    return s.toString();
+    return String.valueOf(c).repeat(n);
   }
 
   private static String convert(long x, int n, int m, String d) {
     if (x == 0) return "0";
-    String r = "";
+    StringBuilder r = new StringBuilder();
     while (x != 0) {
-      r = d.charAt((int) (x & m)) + r;
+      r.insert(0, d.charAt((int) (x & m)));
       x = x >>> n;
     }
-    return r;
+    return r.toString();
   }
 
   private String pad(String r) {
@@ -188,16 +186,16 @@ public class Format {
     String z = "";
     if (precision > 0) {
       double factor = 1;
-      String leading_zeroes = "";
+      StringBuilder leading_zeroes = new StringBuilder();
       for (int i = 1; i <= precision && factor <= Double.MAX_VALUE; i++) {
         factor *= 10;
-        leading_zeroes = leading_zeroes + "0";
+        leading_zeroes.append("0");
       }
       // here is the second change to the code (04/03/02)
       long l = (long) (factor * fr);
       // long l = (long) (factor * fr + 0.5);
-      z = leading_zeroes + l;
-      z = z.substring(z.length() - precision, z.length());
+      z = leading_zeroes.toString() + l;
+      z = z.substring(z.length() - precision);
     }
 
     if (precision > 0 || alternate) z = "." + z;
@@ -245,7 +243,7 @@ public class Format {
       p = p + -e;
     }
 
-    return f + p.substring(p.length() - 3, p.length());
+    return f + p.substring(p.length() - 3);
   }
 
   /**
@@ -320,18 +318,20 @@ public class Format {
     // 4 = format, 5 = end
     int i = 0;
 
+    StringBuilder preBuild = new StringBuilder();
     while (parse_state == 0) {
       if (i >= length) parse_state = 5;
       else if (s.charAt(i) == '%') {
         if (i < length - 1) {
           if (s.charAt(i + 1) == '%') {
-            pre = pre + '%';
+            preBuild.append('%');
             i++;
           } else parse_state = 1;
         } else throw new IllegalArgumentException();
-      } else pre = pre + s.charAt(i);
+      } else preBuild.append(s.charAt(i));
       i++;
     }
+    pre = preBuild.toString();
     while (parse_state == 1) {
       if (i >= length) parse_state = 5;
       else if (s.charAt(i) == ' ') show_space = true;

@@ -149,6 +149,6 @@ public class DInt16 extends BaseType implements ClientIO {
     // Write this value out as a 32bit int, since the smallest thing
     // we write to the network is 32bits. The cast automagically
     // pads it out with zero's
-    sink.writeInt((int) val);
+    sink.writeInt(val);
   }
 }

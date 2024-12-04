@@ -33,7 +33,7 @@ import java.util.ArrayList;
 @SaxHandlerClass(EDDTableFromAsciiServiceHandler.class)
 public abstract class EDDTableFromAsciiService extends EDDTable {
 
-  protected String beforeData[];
+  protected final String[] beforeData;
   protected String afterData = null; // inactive if null or ""
   protected String noData = null; // inactive if null or ""
   protected int responseSubstringStart[] =
@@ -91,60 +91,61 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<beforeData1>")
-          || localTags.equals("<beforeData2>")
-          || localTags.equals("<beforeData3>")
-          || localTags.equals("<beforeData4>")
-          || localTags.equals("<beforeData5>")
-          || localTags.equals("<beforeData6>")
-          || localTags.equals("<beforeData7>")
-          || localTags.equals("<beforeData8>")
-          || localTags.equals("<beforeData9>")
-          || localTags.equals("<beforeData10>")) {
-      } else if (localTags.equals("</beforeData1>")
-          || localTags.equals("</beforeData2>")
-          || localTags.equals("</beforeData3>")
-          || localTags.equals("</beforeData4>")
-          || localTags.equals("</beforeData5>")
-          || localTags.equals("</beforeData6>")
-          || localTags.equals("</beforeData7>")
-          || localTags.equals("</beforeData8>")
-          || localTags.equals("</beforeData9>")
-          || localTags.equals("</beforeData10>"))
-        tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] = content;
-      else if (localTags.equals("<afterData>")) {
-      } else if (localTags.equals("</afterData>")) tAfterData = content;
-      else if (localTags.equals("<noData>")) {
-      } else if (localTags.equals("</noData>")) tNoData = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<noData>",
+            "<afterData>",
+            "<beforeData1>",
+            "<beforeData2>",
+            "<beforeData3>",
+            "<beforeData4>",
+            "<beforeData5>",
+            "<beforeData6>",
+            "<beforeData7>",
+            "<beforeData8>",
+            "<beforeData9>",
+            "<beforeData10>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</beforeData1>",
+                "</beforeData2>",
+                "</beforeData3>",
+                "</beforeData4>",
+                "</beforeData5>",
+                "</beforeData6>",
+                "</beforeData7>",
+                "</beforeData8>",
+                "</beforeData9>",
+                "</beforeData10>" ->
+            tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] =
+                content;
+        case "</afterData>" -> tAfterData = content;
+        case "</noData>" -> tNoData = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -345,7 +346,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         int i2 = String2.parseInt(resSub[1]);
         responseSubstringStart[dv] = i1;
         responseSubstringEnd[dv] = i2;
-        if (i1 < 0 || i1 > 100000 || i2 <= i1 || i2 > 100000)
+        if (i1 < 0 || i2 <= i1 || i2 > 100000)
           throw new SimpleException(
               errorInMethod
                   + "For destinationName="
@@ -461,7 +462,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** "
               + tDatasetType
               + " "
@@ -502,13 +503,10 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    * @return a table where some of the PrimitiveArrays have data, some don't
    */
   public Table getTable(String encodedSourceUrl) throws Throwable {
-    BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
-    try {
+    try (BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl)) {
       String s = in.readLine();
       s = findBeforeData(in, s);
       return getTable(in, s);
-    } finally {
-      in.close();
     }
   }
 

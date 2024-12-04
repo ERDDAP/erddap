@@ -47,22 +47,22 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDDGridFromEtopo extends EDDGrid {
 
   /** Properties of the datafile */
-  protected static String fileName =
+  protected static final String fileName =
       File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
 
   protected static final double fileMinLon = -180, fileMaxLon = 180;
   protected static final double fileMinLat = -90, fileMaxLat = 90;
   protected static final int fileNLons = 21601, fileNLats = 10801;
   protected static final int bytesPerValue = 2;
-  protected static double fileLonSpacing = (fileMaxLon - fileMinLon) / (fileNLons - 1);
-  protected static double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLats - 1);
-  protected static double fileLons[] =
+  protected static final double fileLonSpacing = (fileMaxLon - fileMinLon) / (fileNLons - 1);
+  protected static final double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLats - 1);
+  protected static final double[] fileLons =
       DataHelper.getRegularArray(fileNLons, fileMinLon, fileLonSpacing);
-  protected static double fileLats[] =
+  protected static final double[] fileLats =
       DataHelper.getRegularArray(fileNLats, fileMinLat, fileLatSpacing);
 
   /** Set by the constructor */
-  protected boolean is180;
+  protected final boolean is180;
 
   private int nCoarse = 0, nReadFromCache = 0, nWrittenToCache = 0, nFailed = 0;
 
@@ -103,18 +103,18 @@ public class EDDGridFromEtopo extends EDDGrid {
       // no support for active, since always active
       // no support for accessibleTo, since accessible to all
       // no support for onChange since dataset never changes
-      if (localTags.equals("<accessibleViaWMS>")) {
-      } else if (localTags.equals("</accessibleViaWMS>"))
-        tAccessibleViaWMS = String2.parseBoolean(content);
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<nThreads>")) {
-      } else if (localTags.equals("</nThreads>")) tnThreads = String2.parseInt(content);
-      else if (localTags.equals("<dimensionValuesInMemory>")) {
-      } else if (localTags.equals("</dimensionValuesInMemory>"))
-        tDimensionValuesInMemory = String2.parseBoolean(content);
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<accessibleViaWMS>",
+            "<dimensionValuesInMemory>",
+            "<nThreads>",
+            "<accessibleViaFiles>" -> {}
+        case "</accessibleViaWMS>" -> tAccessibleViaWMS = String2.parseBoolean(content);
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</nThreads>" -> tnThreads = String2.parseInt(content);
+        case "</dimensionValuesInMemory>" ->
+            tDimensionValuesInMemory = String2.parseBoolean(content);
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDGridFromEtopo(
@@ -241,7 +241,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDGridFromEtopo "
               + datasetID
               + " constructor finished. TIME="
@@ -345,7 +345,7 @@ public class EDDGridFromEtopo extends EDDGrid {
           // this dataset doesn't change, so keep files that are recently used
           File2.touch(cacheName);
           try (DataInputStream dis =
-              new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName)); ) {
+              new DataInputStream(File2.getDecompressedBufferedInputStream(cacheName))) {
             for (int i = 0; i < nLatsLons; i++) {
               data[i] = dis.readShort();
               // if (i < 10) String2.log(i + "=" + data[i]);
@@ -483,8 +483,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     }
 
     // open the file  (reading is thread safe)
-    RandomAccessFile raf = new RandomAccessFile(fileName, "r");
-    try {
+    try (RandomAccessFile raf = new RandomAccessFile(fileName, "r")) {
       // fill data array
       // lat is outer loop because file is lat major
       // and loop is backwards since stored top to bottom
@@ -497,8 +496,6 @@ public class EDDGridFromEtopo extends EDDGrid {
           data[po++] = Short.reverseBytes(raf.readShort());
         }
       }
-    } finally {
-      raf.close();
     }
   }
 

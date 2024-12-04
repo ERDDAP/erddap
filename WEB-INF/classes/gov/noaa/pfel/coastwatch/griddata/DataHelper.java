@@ -28,31 +28,31 @@ public class DataHelper {
   /**
    * The string for no units. There doesn't seem to be a udUnits standard. But LAS uses "unitless".
    */
-  public static String UNITLESS = "unitless";
+  public static final String UNITLESS = "unitless";
 
   /** The creatorEmail for CoastWatch */
-  public static String CW_CREATOR_EMAIL = "erd.data@noaa.gov";
+  public static final String CW_CREATOR_EMAIL = "erd.data@noaa.gov";
 
   /** The creatorName for CoastWatch */
-  public static String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node";
+  public static final String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node";
 
   /** The creatorUrl for CoastWatch */
-  public static String CW_CREATOR_URL = "https://coastwatch.pfeg.noaa.gov";
+  public static final String CW_CREATOR_URL = "https://coastwatch.pfeg.noaa.gov";
 
   /** The project for CoastWatch */
-  public static String CW_PROJECT = "CoastWatch (https://coastwatch.noaa.gov/)";
+  public static final String CW_PROJECT = "CoastWatch (https://coastwatch.noaa.gov/)";
 
   /** The creatorEmail for ERD */
-  public static String ERD_CREATOR_EMAIL = "erd.data@noaa.gov";
+  public static final String ERD_CREATOR_EMAIL = "erd.data@noaa.gov";
 
   /** The creatorName for ERD */
-  public static String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
+  public static final String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
 
   /** The creatorUrl for ERD */
-  public static String ERD_CREATOR_URL = "https://www.pfeg.noaa.gov";
+  public static final String ERD_CREATOR_URL = "https://www.pfeg.noaa.gov";
 
   /** The project for ERD */
-  public static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)";
+  public static final String ERD_PROJECT = "NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)";
 
   /**
    * The standard variable names of the first 5 columns in the TableDataSet.makeSubset and

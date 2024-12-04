@@ -10,7 +10,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDTableAggregateRowsHandler extends BaseTableHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDTableAggregateRowsHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {
@@ -18,7 +18,7 @@ public class EDDTableAggregateRowsHandler extends BaseTableHandler {
     this.context = context;
   }
 
-  private ArrayList<EDDTable> tChildren = new ArrayList<>();
+  private final ArrayList<EDDTable> tChildren = new ArrayList<>();
   private int tUpdateEveryNMillis = 0;
 
   @Override

@@ -123,30 +123,30 @@ public class Erddap extends HttpServlet {
    * Set this to true (by calling debugMod=true in your program, not by changing the code here) if
    * you want debug-level diagnostic messages sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * The programmatic/computer access to Erddap services are available as all of the plainFileTypes.
    * All plainFileTypes must be valid EDDTable.dataFileTypeNames. If added a new type, also add to
    * sendPlainTable below and "//list of plainFileTypes" for rest.html.
    */
-  public static String plainFileTypes[] = {
-    // no need for .csvp or .tsvp, because plainFileTypes never write units
-    ".csv",
-    ".htmlTable",
-    ".itx",
-    ".json",
-    ".jsonlCSV1",
-    ".jsonlCSV",
-    ".jsonlKVP",
-    ".mat",
-    ".nc",
-    ".nccsv",
-    ".tsv",
-    ".xhtml"
-  };
+  public static final ImmutableList<String> plainFileTypes =
+      ImmutableList.of(
+          // no need for .csvp or .tsvp, because plainFileTypes never write units
+          ".csv",
+          ".htmlTable",
+          ".itx",
+          ".json",
+          ".jsonlCSV1",
+          ".jsonlCSV",
+          ".jsonlKVP",
+          ".mat",
+          ".nc",
+          ".nccsv",
+          ".tsv",
+          ".xhtml");
 
-  public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
+  public static final String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
   // version when new file types added
   public static final ImmutableList<String> FILE_TYPES_124 =
@@ -169,7 +169,7 @@ public class Erddap extends HttpServlet {
   // ************** END OF STATIC VARIABLES *****************************
 
   protected RunLoadDatasets runLoadDatasets;
-  public AtomicInteger totalNRequests = new AtomicInteger();
+  public final AtomicInteger totalNRequests = new AtomicInteger();
   public String lastReportDate = "";
 
   /** Set by loadDatasets. */
@@ -179,17 +179,18 @@ public class Erddap extends HttpServlet {
    * Projects.testHashMaps() which shows that ConcurrentHashMap gives me a thread-safe class without
    * the time penalty of Collections.synchronizedMap(new HashMap()).]
    */
-  public ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
+  public final ConcurrentHashMap<String, EDDGrid> gridDatasetHashMap =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
+  public final ConcurrentHashMap<String, EDDTable> tableDatasetHashMap =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-  public ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
+  public final ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
 
-  public ConcurrentHashMap<String, int[]> failedLogins = new ConcurrentHashMap<>(16, 0.75f, 4);
-  public ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
+  public final ConcurrentHashMap<String, int[]> failedLogins =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
+  public final ConcurrentHashMap<String, ConcurrentHashMap> categoryInfo =
       new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
@@ -290,8 +291,7 @@ public class Erddap extends HttpServlet {
     // delete cache subdirs other than starting with "_" (i.e., the dataset dirs, not _test)
     String tFD[] = new File(EDStatic.fullCacheDirectory).list();
     StringBuilder rdErrors = new StringBuilder();
-    for (int i = 0; i < tFD.length; i++) {
-      String fd = tFD[i];
+    for (String fd : tFD) {
       if (fd != null
           && fd.length() > 0
           && !fd.startsWith("_")
@@ -455,7 +455,7 @@ public class Erddap extends HttpServlet {
       // there is nothing after hostURL/erddap, no changes needed
       return requestUrl;
     String langCode = requestUrl.substring(protocolStart, langCodeEnd);
-    int langIndex = Arrays.asList(TranslateMessages.languageCodeList).indexOf(langCode);
+    int langIndex = TranslateMessages.languageCodeList.indexOf(langCode);
     if (langIndex == -1) {
       // the content between the "/" after hostURL/erddap and the "/" that follows is not recognized
       // so assume there is no language and that it's a protocol.
@@ -642,7 +642,7 @@ public class Erddap extends HttpServlet {
       int langCodeEnd = requestUrl.indexOf("/", protocolStart);
       if (langCodeEnd < 0) langCodeEnd = requestUrl.length();
       String langCode = requestUrl.substring(protocolStart, langCodeEnd);
-      language = String2.indexOf(TranslateMessages.languageCodeList, langCode);
+      language = TranslateMessages.languageCodeList.indexOf(langCode);
       if (language == -1) {
         // langCode not found in our list, use default(0)
         // assume first thing is a protocol
@@ -725,7 +725,7 @@ public class Erddap extends HttpServlet {
             protocolEnd + 1,
             endOfRequest,
             queryString);
-      } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
+      } else if (endOfRequest.isEmpty() || endOfRequest.equals("index.htm")) {
         sendRedirect(response, tErddapUrl + "/index.html");
       } else if (protocol.startsWith("index.")) {
         doIndex(language, requestNumber, request, response, loggedInAs, endOfRequest, queryString);
@@ -948,8 +948,7 @@ public class Erddap extends HttpServlet {
                   + "ms"
                   + (responseTime >= 600000
                       ? "  (>10m!)"
-                      : responseTime >= 10000 ? "  (>10s!)" : "")
-                  + "");
+                      : responseTime >= 10000 ? "  (>10s!)" : ""));
 
         // if sendErrorCode fails because response.isCommitted(), it throws ServletException
         try {
@@ -1019,10 +1018,10 @@ public class Erddap extends HttpServlet {
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String requestUrl = getUrlWithoutLang(request); // post EDD.baseUrl, pre "?"
     // plain file types
-    for (int pft = 0; pft < plainFileTypes.length; pft++) {
+    for (String plainFileType : plainFileTypes) {
 
       // index.pft  - return a list of resources
-      if (requestUrl.equals("/" + EDStatic.warName + "/index" + plainFileTypes[pft])) {
+      if (requestUrl.equals("/" + EDStatic.warName + "/index" + plainFileType)) {
 
         String fileTypeName = File2.getExtension(requestUrl);
         EDStatic.tally.add("Main Resources List (since startup)", fileTypeName);
@@ -1303,7 +1302,11 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      writer.write("</table>\n" + "&nbsp;\n" + "\n");
+      writer.write("""
+              </table>
+              &nbsp;
+
+              """);
 
       // connections to OpenSearch and SRU
       writer.write(
@@ -1339,7 +1342,11 @@ public class Erddap extends HttpServlet {
               + "\n");
 
       // end of search/protocol options list
-      writer.write("\n</ul>\n" + "<p>&nbsp;<hr>\n");
+      writer.write("""
+
+              </ul>
+              <p>&nbsp;<hr>
+              """);
 
       // converters
       if (EDStatic.convertersActive)
@@ -2292,7 +2299,7 @@ public class Erddap extends HttpServlet {
             || // shouldn't happen
             System.currentTimeMillis() > String2.parseLong(parts[1])
             || // waited too long?
-            !nonce.toLowerCase().equals(parts[2].toLowerCase())) { // wrong nonce?
+            !nonce.equalsIgnoreCase(parts[2])) { // wrong nonce?
           // failure
           if (session != null) {
             session.removeAttribute("loggingInAs:" + EDStatic.warName);
@@ -3056,8 +3063,7 @@ public class Erddap extends HttpServlet {
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Contact Info
       String dataProviderContactInfo =
@@ -3370,7 +3376,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             cdmDataTypes[
                 tCdmDataType]; // Grid, Point, Profile, TimeSeries, TimeSeriesProfile, Trajectory,
         // TrajectoryProfile, Other
-        HashSet<String> keywordHS = new HashSet();
+        HashSet<String> keywordHS = new HashSet<>();
         EDD.chopUpAndAdd(String2.replaceAll(tInstitution, '/', ' '), keywordHS);
         EDD.chopUpAndAdd(String2.replaceAll(tTitle, '/', ' '), keywordHS);
         EDD.cleanSuggestedKeywords(keywordHS);
@@ -3538,8 +3544,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Global Metadata
       writer.write(EDStatic.dataProviderFormPart2GlobalMetadataAr[language] /*
@@ -4086,12 +4091,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "</att>\n"
                   + "        </addAttributes>\n"
                   + "    </dataVariable>\n");
-        content.append("</dataset>\n" + "\n");
+        content.append("""
+                </dataset>
+
+                """);
 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content.toString());
+                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
@@ -4170,8 +4178,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // Variable Metadata
       writer.write(
@@ -4576,8 +4583,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // error message?
       if (isSubmission && errorMsgSB.length() > 0)
-        writer.write(
-            "<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> " + "<br>&nbsp;\n");
+        writer.write("<span class=\"warningColor\">" + errorMsgSB + "</span> " + "<br>&nbsp;\n");
 
       // other comments
       writer.write(
@@ -4753,7 +4759,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
       int po = traces.indexOf('\n');
-      if (po > 0) sb.append(traces.substring(0, po + 1));
+      if (po > 0) sb.append(traces, 0, po + 1);
       sb.append(
           Math2.gcCallCount
               + " gc calls, "
@@ -5296,7 +5302,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "/wms/documentation.html\">"
                   + EDStatic.WMSDocumentationAr[language]
                   + "</a>\n");
-        writer.write("    <br>&nbsp;\n" + "    </ul>\n");
+        writer.write(
+            """
+                    <br>&nbsp;
+                    </ul>
+                """);
       }
       String subscriptionOfferRss =
           EDStatic.subscriptionOfferRssAr[language].replace("&tErddapUrl;", tErddapUrl);
@@ -5475,8 +5485,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // beginning
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(request, response, "sitemap", ".xml", ".xml");
-    Writer writer = File2.getBufferedWriterUtf8(outSource.outputStream(File2.UTF_8));
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(outSource.outputStream(File2.UTF_8))) {
       writer.write(
           "<?xml version='1.0' encoding='UTF-8'?>\n"
               +
@@ -5748,9 +5757,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // end
       writer.write("</urlset>\n");
-    } finally {
-      writer.close(); // it flushes
     }
+    // it flushes
   }
 
   /**
@@ -5766,16 +5774,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     StringBuilder sb = new StringBuilder();
-    int n = plainFileTypes.length;
+    int n = plainFileTypes.size();
     for (int pft = 0; pft < n; pft++) {
       sb.append(
           "    <a href=\""
               + tErddapUrl
               + relativeUrl
-              + plainFileTypes[pft]
+              + plainFileTypes.get(pft)
               + EDStatic.questionQuery(query)
               + "\">"
-              + plainFileTypes[pft]
+              + plainFileTypes.get(pft)
               + "</a>");
       if (pft <= n - 3) sb.append(",\n");
       if (pft == n - 2) sb.append(", or\n");
@@ -5856,7 +5864,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.standardDapHeader(response);
 
     // redirect to index.html
-    if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
+    if (endOfRequestUrl.isEmpty() || endOfRequestUrl.equals("index.htm")) {
       sendRedirect(
           response,
           tErddapUrl
@@ -5879,8 +5887,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               request, response, "version", // fileName is not used
               ".txt", ".txt");
       OutputStream out = outSource.outputStream(File2.ISO_8859_1);
-      Writer writer = File2.getBufferedWriter88591(out);
-      try {
+      try (Writer writer = File2.getBufferedWriter88591(out)) {
         writer.write(
             "Core Version: "
                 + EDStatic.dapVersion
@@ -5896,8 +5903,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // essential
         writer.flush();
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
 
       return;
@@ -5979,7 +5984,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int dotPo = endOfRequestUrl.lastIndexOf('.');
     if (dotPo < 0) {
       // no fileType
-      if (endOfRequestUrl.equals("")) endOfRequestUrl = "index";
+      if (endOfRequestUrl.isEmpty()) endOfRequestUrl = "index";
       sendRedirect(
           response,
           tErddapUrl
@@ -6112,8 +6117,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (dataset instanceof FromErddap fromErddap) {
       int sourceVersion = fromErddap.intSourceErddapVersion();
       // some requests are handled locally...
-      boolean newOrderBy = false;
-      if (sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0) newOrderBy = true;
+      boolean newOrderBy = sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0;
       if (sourceVersion < 200 && queryString.indexOf("orderBy") >= 0) {
         // more complicated test for new v2.00 orderBy features
         String parts[] = String2.splitNoTrim(queryString, '&');
@@ -6130,7 +6134,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (sourceVersion < 216 && queryString.indexOf("orderBySum(") >= 0) newOrderBy = true;
       if (sourceVersion < 219 && queryString.indexOf("orderByDescending(") >= 0) newOrderBy = true;
       if (newOrderBy
-          || fromErddap.redirect() == false
+          || !fromErddap.redirect()
           || fileTypeName.equals(".das")
           || fileTypeName.equals(".dds")
           || fileTypeName.equals(".html")
@@ -6342,12 +6346,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.EDDFilesAr,
                 EDStatic.documentationAr[language]));
         writer.write(EDStatic.filesDocumentation(language, tErddapUrl));
-        writer.write("\n" + "</div>\n");
+        writer.write("""
+
+                </div>
+                """);
         endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
       } catch (Exception e) {
         EDStatic.rethrowClientAbortException(e); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, e));
-        writer.write("\n" + "</div>\n");
+        writer.write("""
+
+                </div>
+                """);
         endHtmlWriter(language, out, writer, tErddapUrl, loggedInAs, false);
         throw e;
       }
@@ -6388,7 +6398,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // catch pseudo filename that is just an extension
     String justExtension = "";
     if (nextPath == null && nameAndExt == null) {
-      int tWhich = String2.indexOf(plainFileTypes, id);
+      int tWhich = plainFileTypes.indexOf(id);
       if (tWhich >= 0) {
         justExtension = id;
         id = "";
@@ -6399,7 +6409,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         return;
       }
     } else {
-      int tWhich = String2.indexOf(plainFileTypes, nameAndExt);
+      int tWhich = plainFileTypes.indexOf(nameAndExt);
       if (tWhich >= 0) {
         // The "fileName" is just one of the plainFileType extensions, e.g., .csv.
         // Remove justExtension from localFullName and nextPath.
@@ -6836,7 +6846,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl(), pre "?"
 
     // ensure valid fileTypeName
-    int pft = String2.indexOf(plainFileTypes, fileTypeName);
+    int pft = plainFileTypes.indexOf(fileTypeName);
     if (pft < 0 && !fileTypeName.equals(".html")) {
       sendResourceNotFoundError(
           requestNumber,
@@ -7196,7 +7206,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
     // catch other responses outside of try/catch  (so errors handled in doGet)
-    if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
+    if (endOfRequestUrl.isEmpty() || endOfRequestUrl.equals("index.htm")) {
       sendRedirect(
           response, tErddapUrl + "/sos/index.html?" + EDStatic.passThroughPIppQueryPage1(request));
       return;
@@ -7312,12 +7322,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ".xml",
               ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         eddTable.sosPhenomenaDictionary(writer);
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
       return;
     }
@@ -7365,166 +7372,181 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String tRequest = queryMap.get("request");
       if (tRequest == null) tRequest = "";
 
-      if (tRequest.equals("GetCapabilities")) {
-        // e.g., ?service=SOS&request=GetCapabilities
-        OutputStreamSource outSource =
-            new OutputStreamFromHttpResponse(
-                request, response, "sos_" + eddTable.datasetID() + "_capabilities", ".xml", ".xml");
-        OutputStream out = outSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          eddTable.sosGetCapabilities(language, queryMap, writer, loggedInAs);
-          writer.flush();
-          if (out instanceof ZipOutputStream zos) zos.closeEntry();
-        } finally {
-          writer.close();
-        }
-        return;
-
-      } else if (tRequest.equals("DescribeSensor")) {
-        // The url might be something like
-        // https://sdf.ndbc.noaa.gov/sos/server.php?request=DescribeSensor&service=SOS
-        //  &version=1.0.0&outputformat=text/xml;subtype=%22sensorML/1.0.0%22
-        //  &procedure=urn:ioos:sensor:noaa.nws.ndbc:41012:adcp0
-
-        // version is not required. If present, it must be valid.
-        String version = queryMap.get("version"); // map keys are lowercase
-        if (version == null || !version.equals(EDDTable.sosVersion))
-          // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-          // with SOS error"
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "version='"
-                  + version
-                  + "' must be '"
-                  + EDDTable.sosVersion
-                  + "'.");
-
-        // outputFormat is not required. If present, it must be valid.
-        // not different name and values than GetObservation responseFormat
-        String outputFormat = queryMap.get("outputformat"); // map keys are lowercase
-        if (outputFormat == null || !outputFormat.equals(EDDTable.sosDSOutputFormat))
-          // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-          // with SOS error"
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "outputFormat='"
-                  + outputFormat
-                  + "' must be '"
-                  + SSR.minimalPercentEncode(EDDTable.sosDSOutputFormat)
-                  + "'.");
-
-        // procedure=fullSensorID is required   (in getCapabilities, procedures are sensors)
-        String procedure = queryMap.get("procedure"); // map keys are lowercase
-        if (procedure == null)
-          // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-          // with SOS error"
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "procedure=''.  Please specify a procedure.");
-        String sensorGmlNameStart = eddTable.getSosGmlNameStart("sensor");
-        String shortName =
-            procedure.startsWith(sensorGmlNameStart)
-                ? procedure.substring(sensorGmlNameStart.length())
-                : procedure;
-        // int cpo = platform.indexOf(":");  //now platform  or platform:sensor
-        // String sensor = "";
-        // if (cpo >= 0) {
-        //    sensor = platform.substring(cpo + 1);
-        //    platform = platform.substring(0, cpo);
-        // }
-        if (!shortName.equals(eddTable.datasetID())
-            && // all
-            eddTable.sosOfferings.indexOf(shortName) < 0) // 1 station
-          // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-          // with SOS error"
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "procedure="
-                  + procedure
-                  + " isn't a valid long or short sensor name.");
-        // if ((!sensor.equals(eddTable.datasetID()) &&    //all
-        //     String2.indexOf(eddTable.dataVariableDestinationNames(), sensor) < 0) || //1 variable
-        //        sensor.equals(EDV.LON_NAME) ||
-        //        sensor.equals(EDV.LAT_NAME) ||
-        //        sensor.equals(EDV.ALT_NAME) ||
-        //        sensor.equals(EDV.TIME_NAME) ||
-        //        sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.sosOfferingIndex]))
-        //    this format EDStatic.queryErrorAr[0] + "xxx=" is parsed by Erddap section "deal with
-        // SOS error"
-        //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
-        //        "procedure=" + procedure + " isn't valid because \"" + sensor + "\" isn't valid
-        // sensor name.");
-
-        // all is well. do it.
-        String fileName = "sosSensor_" + eddTable.datasetID() + "_" + shortName;
-        OutputStreamSource outSource =
-            new OutputStreamFromHttpResponse(request, response, fileName, ".xml", ".xml");
-        OutputStream out = outSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          eddTable.sosDescribeSensor(language, loggedInAs, shortName, writer);
-          writer.flush();
-          if (out instanceof ZipOutputStream zos) zos.closeEntry();
-        } finally {
-          writer.close();
-        }
-        return;
-
-      } else if (tRequest.equals("GetObservation")) {
-        String responseFormat = queryMap.get("responseformat"); // map keys are lowercase
-        String fileTypeName = EDDTable.sosResponseFormatToFileTypeName(responseFormat);
-        if (fileTypeName == null)
-          // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-          // with SOS error"
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "responseFormat="
-                  + responseFormat
-                  + " is invalid.");
-
-        String responseMode = queryMap.get("responsemode"); // map keys are lowercase
-        if (responseMode == null) responseMode = "inline";
-        String extension = null;
-        if (EDDTable.isIoosSosXmlResponseFormat(language, responseFormat)
-            || // throws exception if invalid format
-            EDDTable.isOostethysSosXmlResponseFormat(language, responseFormat)
-            || responseMode.equals("out-of-band")) { // xml response with link to tabledap
-
-          extension = ".xml";
-        } else {
-          int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
-          if (po >= 0) extension = EDDTable.dataFileTypeExtensions.get(po);
-          else {
-            po = EDDTable.imageFileTypeNames.indexOf(fileTypeName);
-            extension = EDDTable.imageFileTypeExtensions.get(po);
+      switch (tRequest) {
+        case "GetCapabilities" -> {
+          // e.g., ?service=SOS&request=GetCapabilities
+          OutputStreamSource outSource =
+              new OutputStreamFromHttpResponse(
+                  request,
+                  response,
+                  "sos_" + eddTable.datasetID() + "_capabilities",
+                  ".xml",
+                  ".xml");
+          OutputStream out = outSource.outputStream(File2.UTF_8);
+          try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+            eddTable.sosGetCapabilities(language, queryMap, writer, loggedInAs);
+            writer.flush();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
           }
+          return;
         }
+        case "DescribeSensor" -> {
+          // The url might be something like
+          // https://sdf.ndbc.noaa.gov/sos/server.php?request=DescribeSensor&service=SOS
+          //  &version=1.0.0&outputformat=text/xml;subtype=%22sensorML/1.0.0%22
+          //  &procedure=urn:ioos:sensor:noaa.nws.ndbc:41012:adcp0
 
-        String dir = eddTable.cacheDirectory();
-        String fileName =
-            "sos_" + eddTable.suggestFileName(loggedInAs, queryString, responseFormat);
-        OutputStreamSource oss =
-            new OutputStreamFromHttpResponse(request, response, fileName, fileTypeName, extension);
-        eddTable.sosGetObservation(
-            language,
-            endOfRequest,
-            queryString,
-            ipAddress,
-            loggedInAs,
-            oss,
-            dir,
-            fileName); // it calls out.close()
-        return;
+          // version is not required. If present, it must be valid.
+          String version = queryMap.get("version"); // map keys are lowercase
 
-      } else {
-        // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section "deal
-        // with SOS error"
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "request="
-                + tRequest
-                + " is not supported.");
+          if (version == null || !version.equals(EDDTable.sosVersion))
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "version='"
+                    + version
+                    + "' must be '"
+                    + EDDTable.sosVersion
+                    + "'.");
+
+          // outputFormat is not required. If present, it must be valid.
+          // not different name and values than GetObservation responseFormat
+          String outputFormat = queryMap.get("outputformat"); // map keys are lowercase
+
+          if (outputFormat == null || !outputFormat.equals(EDDTable.sosDSOutputFormat))
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "outputFormat='"
+                    + outputFormat
+                    + "' must be '"
+                    + SSR.minimalPercentEncode(EDDTable.sosDSOutputFormat)
+                    + "'.");
+
+          // procedure=fullSensorID is required   (in getCapabilities, procedures are sensors)
+          String procedure = queryMap.get("procedure"); // map keys are lowercase
+
+          if (procedure == null)
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "procedure=''.  Please specify a procedure.");
+          String sensorGmlNameStart = eddTable.getSosGmlNameStart("sensor");
+          String shortName =
+              procedure.startsWith(sensorGmlNameStart)
+                  ? procedure.substring(sensorGmlNameStart.length())
+                  : procedure;
+          // int cpo = platform.indexOf(":");  //now platform  or platform:sensor
+          // String sensor = "";
+          // if (cpo >= 0) {
+          //    sensor = platform.substring(cpo + 1);
+          //    platform = platform.substring(0, cpo);
+          // }
+          if (!shortName.equals(eddTable.datasetID())
+              && // all
+              eddTable.sosOfferings.indexOf(shortName) < 0) // 1 station
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "procedure="
+                    + procedure
+                    + " isn't a valid long or short sensor name.");
+          // if ((!sensor.equals(eddTable.datasetID()) &&    //all
+          //     String2.indexOf(eddTable.dataVariableDestinationNames(), sensor) < 0) || //1
+          // variable
+          //        sensor.equals(EDV.LON_NAME) ||
+          //        sensor.equals(EDV.LAT_NAME) ||
+          //        sensor.equals(EDV.ALT_NAME) ||
+          //        sensor.equals(EDV.TIME_NAME) ||
+          //
+          // sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.sosOfferingIndex]))
+          //    this format EDStatic.queryErrorAr[0] + "xxx=" is parsed by Erddap section "deal with
+          // SOS error"
+          //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+          // +
+          //        "procedure=" + procedure + " isn't valid because \"" + sensor + "\" isn't valid
+          // sensor name.");
+
+          // all is well. do it.
+          String fileName = "sosSensor_" + eddTable.datasetID() + "_" + shortName;
+          OutputStreamSource outSource =
+              new OutputStreamFromHttpResponse(request, response, fileName, ".xml", ".xml");
+          OutputStream out = outSource.outputStream(File2.UTF_8);
+          try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+            eddTable.sosDescribeSensor(language, loggedInAs, shortName, writer);
+            writer.flush();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
+          }
+          return;
+        }
+        case "GetObservation" -> {
+          String responseFormat = queryMap.get("responseformat"); // map keys are lowercase
+
+          String fileTypeName = EDDTable.sosResponseFormatToFileTypeName(responseFormat);
+          if (fileTypeName == null)
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "responseFormat="
+                    + responseFormat
+                    + " is invalid.");
+
+          String responseMode = queryMap.get("responsemode"); // map keys are lowercase
+
+          if (responseMode == null) responseMode = "inline";
+          String extension = null;
+          if (EDDTable.isIoosSosXmlResponseFormat(language, responseFormat)
+              || // throws exception if invalid format
+              EDDTable.isOostethysSosXmlResponseFormat(language, responseFormat)
+              || responseMode.equals("out-of-band")) { // xml response with link to tabledap
+
+            extension = ".xml";
+          } else {
+            int po = EDDTable.dataFileTypeNames.indexOf(fileTypeName);
+            if (po >= 0) extension = EDDTable.dataFileTypeExtensions.get(po);
+            else {
+              po = EDDTable.imageFileTypeNames.indexOf(fileTypeName);
+              extension = EDDTable.imageFileTypeExtensions.get(po);
+            }
+          }
+
+          String dir = eddTable.cacheDirectory();
+          String fileName =
+              "sos_" + eddTable.suggestFileName(loggedInAs, queryString, responseFormat);
+          OutputStreamSource oss =
+              new OutputStreamFromHttpResponse(
+                  request, response, fileName, fileTypeName, extension);
+          eddTable.sosGetObservation(
+              language,
+              endOfRequest,
+              queryString,
+              ipAddress,
+              loggedInAs,
+              oss,
+              dir,
+              fileName); // it calls out.close()
+
+          return;
+        }
+        default ->
+            // this format EDStatic.queryErrorAr[language] + "xxx=" is parsed by Erddap section
+            // "deal
+            // with SOS error"
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "request="
+                    + tRequest
+                    + " is not supported.");
       }
 
     } catch (Throwable t) {
@@ -7544,8 +7566,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ".xml",
               ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         // for now, mimic oostethys  (ndbcSOS often doesn't throw exceptions)
         // exceptionCode options are from OGC 06-121r3  section 8
         //  the locator is the name of the relevant request parameter
@@ -7596,8 +7617,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // essential
         writer.flush();
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
     }
   }
@@ -7739,7 +7758,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
     // catch other responses outside of try/catch  (so errors handled in doGet)
-    if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
+    if (endOfRequestUrl.isEmpty() || endOfRequestUrl.equals("index.htm")) {
       sendRedirect(
           response, tErddapUrl + "/wcs/index.html?" + EDStatic.passThroughPIppQueryPage1(request));
       return;
@@ -7888,90 +7907,93 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String tVersion = queryMap.get("version"); // test .toLowerCase()
       String tCoverage = queryMap.get("coverage"); // test .toLowerCase()
 
-      if (tRequest.equals("GetCapabilities")) {
-        // e.g., ?service=WCS&request=GetCapabilities
-        OutputStreamSource outSource =
-            new OutputStreamFromHttpResponse(
-                request, response, "wcs_" + eddGrid.datasetID() + "_capabilities", ".xml", ".xml");
-        OutputStream out = outSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          eddGrid.wcsGetCapabilities(language, loggedInAs, tVersion, writer);
-          writer.flush();
-          if (out instanceof ZipOutputStream zos) zos.closeEntry();
-        } finally {
-          writer.close();
+      switch (tRequest) {
+        case "GetCapabilities" -> {
+          // e.g., ?service=WCS&request=GetCapabilities
+          OutputStreamSource outSource =
+              new OutputStreamFromHttpResponse(
+                  request,
+                  response,
+                  "wcs_" + eddGrid.datasetID() + "_capabilities",
+                  ".xml",
+                  ".xml");
+          OutputStream out = outSource.outputStream(File2.UTF_8);
+          try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+            eddGrid.wcsGetCapabilities(language, loggedInAs, tVersion, writer);
+            writer.flush();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
+          }
+          return;
         }
-        return;
-
-      } else if (tRequest.equals("DescribeCoverage")) {
-        // e.g., ?service=WCS&request=DescribeCoverage
-        OutputStreamSource outSource =
-            new OutputStreamFromHttpResponse(
-                request, response, "wcs_" + eddGrid.datasetID() + "_" + tCoverage, ".xml", ".xml");
-        OutputStream out = outSource.outputStream(File2.UTF_8);
-        Writer writer = File2.getBufferedWriterUtf8(out);
-        try {
-          eddGrid.wcsDescribeCoverage(language, loggedInAs, tVersion, tCoverage, writer);
-          writer.flush();
-          if (out instanceof ZipOutputStream zos) zos.closeEntry();
-        } finally {
-          writer.close();
+        case "DescribeCoverage" -> {
+          // e.g., ?service=WCS&request=DescribeCoverage
+          OutputStreamSource outSource =
+              new OutputStreamFromHttpResponse(
+                  request,
+                  response,
+                  "wcs_" + eddGrid.datasetID() + "_" + tCoverage,
+                  ".xml",
+                  ".xml");
+          OutputStream out = outSource.outputStream(File2.UTF_8);
+          try (Writer writer = File2.getBufferedWriterUtf8(out)) {
+            eddGrid.wcsDescribeCoverage(language, loggedInAs, tVersion, tCoverage, writer);
+            writer.flush();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
+          }
+          return;
         }
-        return;
+        case "GetCoverage" -> {
+          // e.g., ?service=WCS&request=GetCoverage
+          // format
+          String requestFormat = queryMap.get("format"); // test name.toLowerCase()
 
-      } else if (tRequest.equals("GetCoverage")) {
-        // e.g., ?service=WCS&request=GetCoverage
-        // format
-        String requestFormat = queryMap.get("format"); // test name.toLowerCase()
-
-        int fi = String2.caseInsensitiveIndexOf(EDDGrid.wcsRequestFormats100, requestFormat);
-        if (fi < 0)
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                  + "format="
-                  + requestFormat
-                  + " isn't supported.");
-        String erddapFormat = EDDGrid.wcsResponseFormats100.get(fi);
-        int efe = EDDGrid.dataFileTypeNames.indexOf(erddapFormat);
-        String fileExtension;
-        if (efe >= 0) {
-          fileExtension = EDDGrid.dataFileTypeExtensions.get(efe);
-        } else {
-          efe = EDDGrid.imageFileTypeNames.indexOf(erddapFormat);
-          if (efe >= 0) {
-            fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
-          } else {
+          int fi = String2.caseInsensitiveIndexOf(EDDGrid.wcsRequestFormats100, requestFormat);
+          if (fi < 0)
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                     + "format="
                     + requestFormat
-                    + " isn't supported!");
+                    + " isn't supported.");
+          String erddapFormat = EDDGrid.wcsResponseFormats100.get(fi);
+          int efe = EDDGrid.dataFileTypeNames.indexOf(erddapFormat);
+          String fileExtension;
+          if (efe >= 0) {
+            fileExtension = EDDGrid.dataFileTypeExtensions.get(efe);
+          } else {
+            efe = EDDGrid.imageFileTypeNames.indexOf(erddapFormat);
+            if (efe >= 0) {
+              fileExtension = EDDGrid.imageFileTypeExtensions.get(efe);
+            } else {
+              throw new SimpleException(
+                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                      + "format="
+                      + requestFormat
+                      + " isn't supported!");
+            }
           }
+
+          OutputStreamSource outSource =
+              new OutputStreamFromHttpResponse(
+                  request,
+                  response,
+                  "wcs_"
+                      + eddGrid.datasetID()
+                      + "_"
+                      + tCoverage
+                      + "_"
+                      + String2.md5Hex12(queryString), // datasetID is already in file name
+                  erddapFormat,
+                  fileExtension);
+          eddGrid.wcsGetCoverage(
+              language, ipAddress, loggedInAs, endOfRequest, queryString, outSource);
+          return;
         }
-
-        OutputStreamSource outSource =
-            new OutputStreamFromHttpResponse(
-                request,
-                response,
-                "wcs_"
-                    + eddGrid.datasetID()
-                    + "_"
-                    + tCoverage
-                    + "_"
-                    + String2.md5Hex12(queryString), // datasetID is already in file name
-                erddapFormat,
-                fileExtension);
-        eddGrid.wcsGetCoverage(
-            language, ipAddress, loggedInAs, endOfRequest, queryString, outSource);
-        return;
-
-      } else {
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                + "request='"
-                + tRequest
-                + "' is not supported.");
+        default ->
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+                    + "request='"
+                    + tRequest
+                    + "' is not supported.");
       }
 
     } catch (Throwable t) {
@@ -7988,8 +8010,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               request, response, "error", // fileName is not used
               ".xml", ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         // ???needs work, see Annex A of 1.0.0 specification
         // this is based on mapserver's exception  (thredds doesn't have xmlns...)
         String error = MustBe.getShortErrorMessage(t);
@@ -8012,8 +8033,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // essential
         writer.flush();
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
     }
   }
@@ -8160,7 +8179,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         slashPo >= endOfRequestUrl.length() ? "" : endOfRequestUrl.substring(slashPo + 1);
 
     // catch other responses outside of try/catch  (so errors handled in doGet)
-    if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
+    if (endOfRequestUrl.isEmpty() || endOfRequestUrl.equals("index.htm")) {
       sendRedirect(
           response,
           tErddapUrl + "/wms/index.html?" + EDStatic.encodedPassThroughPIppQueryPage1(request));
@@ -8179,51 +8198,53 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           queryString);
       return;
     }
-    if (endOfRequestUrl.equals("documentation.html")) {
-      doWmsDocumentation(
-          language, requestNumber, request, response, loggedInAs, endOfRequest, queryString);
-      return;
-    }
+    switch (endOfRequestUrl) {
+      case "documentation.html" -> {
+        doWmsDocumentation(
+            language, requestNumber, request, response, loggedInAs, endOfRequest, queryString);
+        return;
+      }
 
-    // these 3 are demos.  Remove them (and links to them)?  add update(language)?
-    if (endOfRequestUrl.equals("demo110.html")) {
-      doWmsDemo(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          "1.1.0",
-          EDStatic.wmsSampleDatasetID,
-          endOfRequest,
-          queryString);
-      return;
-    }
-    if (endOfRequestUrl.equals("demo111.html")) {
-      doWmsDemo(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          "1.1.1",
-          EDStatic.wmsSampleDatasetID,
-          endOfRequest,
-          queryString);
-      return;
-    }
-    if (endOfRequestUrl.equals("demo130.html")) {
-      doWmsDemo(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          "1.3.0",
-          EDStatic.wmsSampleDatasetID,
-          endOfRequest,
-          queryString);
-      return;
+        // these 3 are demos.  Remove them (and links to them)?  add update(language)?
+      case "demo110.html" -> {
+        doWmsDemo(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            "1.1.0",
+            EDStatic.wmsSampleDatasetID,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      case "demo111.html" -> {
+        doWmsDemo(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            "1.1.1",
+            EDStatic.wmsSampleDatasetID,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      case "demo130.html" -> {
+        doWmsDemo(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            "1.3.0",
+            EDStatic.wmsSampleDatasetID,
+            endOfRequest,
+            queryString);
+        return;
+      }
     }
 
     // if (endOfRequestUrl.equals(EDD.WMS_SERVER)) {
@@ -8255,7 +8276,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // request is for /wms/datasetID/
-    if (endEnd.equals("") || endEnd.equals("index.htm")) {
+    if (endEnd.isEmpty() || endEnd.equals("index.htm")) {
       sendRedirect(
           response, tErddapUrl + "/wms/index.html?" + EDStatic.passThroughPIppQueryPage1(request));
       return;
@@ -8414,8 +8435,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               request, response, "error", // fileName is not used
               ".xml", ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         // see WMS 1.3.0 spec, section H.2
         String error = MustBe.getShortErrorMessage(t);
         writer.write(
@@ -8437,8 +8457,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // essential
         writer.flush();
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
     }
   }
@@ -9268,8 +9286,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // + dimensions   time=, elevation=, ...=  handled below
 
       // *** validate parameters
-      transparent =
-          tTransparent == null ? false : String2.parseBoolean(tTransparent); // e.g., "false"
+      transparent = tTransparent != null && String2.parseBoolean(tTransparent); // e.g., "false"
 
       bgColori =
           tBgColor == null || tBgColor.length() != 8 || !tBgColor.startsWith("0x")
@@ -9283,9 +9300,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // convert exceptions to latest format
       String oExceptions = exceptions;
       if (exceptions == null) exceptions = "XML";
-      if (exceptions.equals("application/vnd.ogc.se_xml")) exceptions = "XML";
-      else if (exceptions.equals("application/vnd.ogc.se_blank")) exceptions = "BLANK";
-      else if (exceptions.equals("application/vnd.ogc.se_inimage")) exceptions = "INIMAGE";
+      exceptions =
+          switch (exceptions) {
+            case "application/vnd.ogc.se_xml" -> "XML";
+            case "application/vnd.ogc.se_blank" -> "BLANK";
+            case "application/vnd.ogc.se_inimage" -> "INIMAGE";
+            default -> exceptions;
+          };
       if (!exceptions.equals("XML")
           && !exceptions.equals("BLANK")
           && !exceptions.equals("INIMAGE")) {
@@ -9324,7 +9345,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDD.WMS_MAX_HEIGHT
                 + ".");
       }
-      if (format == null || !format.toLowerCase().equals("image/png")) {
+      if (format == null || !format.equalsIgnoreCase("image/png")) {
         exceptions = "XML"; // fall back
         throw new SimpleException(
             EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
@@ -9494,7 +9515,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       for (int layeri = 0; layeri < layers.length; layeri++) {
 
         // ***deal with non-data layers
-        if (layers[layeri].equals("")) continue;
+        if (layers[layeri].isEmpty()) continue;
         if (layers[layeri].equals("Land")
             || layers[layeri].equals("LandMask")
             || layers[layeri].equals("Coastlines")
@@ -9580,8 +9601,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + " is invalid (variable doesn't have valid colorBarMinimum/Maximum).");
 
         // style  (currently just the default)
-        if (!styles[layeri].equals("")
-            && !styles[layeri].toLowerCase().equals("default")) { // nonstandard?  but allow it
+        if (!styles[layeri].isEmpty()
+            && !styles[layeri].equalsIgnoreCase("default")) { // nonstandard?  but allow it
           throw new SimpleException(
               EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                   + "For LAYER="
@@ -9647,7 +9668,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                                   .toLowerCase(); // make it case-insensitive for queryMap.get
           String tValueS = queryMap.get(tAvName);
           if (tValueS == null
-              || (avi == eddGrid.timeIndex() && tValueS.toLowerCase().equals("current")))
+              || (avi == eddGrid.timeIndex() && tValueS.equalsIgnoreCase("current")))
             // default is always the last value
             tQuery.append("[" + (ava[avi].sourceValues().size() - 1) + "]");
           else {
@@ -9812,8 +9833,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           g.setColor(Color.black);
           g.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
           int ty = tHeight * 2;
-          for (int i = 0; i < lines.length; i++) {
-            g.drawString(lines[i], tHeight, ty);
+          for (String line : lines) {
+            g.drawString(line, tHeight, ty);
             ty += tHeight + 2;
           }
         } // else BLANK
@@ -9926,44 +9947,49 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(request, response, "Capabilities", ".xml", ".xml");
     OutputStream out = outSource.outputStream(File2.UTF_8);
-    Writer writer = File2.getBufferedWriterUtf8(out);
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + EDD.WMS_SERVER;
       // see the WMS 1.1.0, 1.1.1, and 1.3.0 specification for details
       // This based example in Annex H.
-      if (tVersion.equals("1.1.0"))
-        writer.write(
-            "<?xml version='1.0' encoding=\"UTF-8\" standalone=\"no\" ?>\n"
-                + "<!DOCTYPE WMT_MS_Capabilities SYSTEM\n"
-                + "  \"http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd\" \n"
-                + " [\n"
-                + " <!ELEMENT VendorSpecificCapabilities EMPTY>\n"
-                + " ]>  <!-- end of DOCTYPE declaration -->\n"
-                + "<WMT_MS_Capabilities version=\"1.1.0\">\n"
-                + "  <Service>\n"
-                + "    <Name>GetMap</Name>\n");
-      else if (tVersion.equals("1.1.1"))
-        writer.write(
-            "<?xml version='1.0' encoding=\"UTF-8\" standalone=\"no\" ?>\n"
-                + "<!DOCTYPE WMT_MS_Capabilities SYSTEM\n"
-                + "  \"http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd\" \n"
-                + " [\n"
-                + " <!ELEMENT VendorSpecificCapabilities EMPTY>\n"
-                + " ]>  <!-- end of DOCTYPE declaration -->\n"
-                + "<WMT_MS_Capabilities version=\"1.1.1\">\n"
-                + "  <Service>\n"
-                + "    <Name>OGC:WMS</Name>\n");
-      else if (tVersion.equals("1.3.0"))
-        writer.write(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                +
-                // not yet supported: optional updatesequence parameter
-                "<WMS_Capabilities version=\"1.3.0\" xmlns=\"http://www.opengis.net/wms\"\n"
-                + "    xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n"
-                + "    xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n"
-                + "    xsi:schemaLocation=\"http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd\">\n"
-                + "  <Service>\n"
-                + "    <Name>WMS</Name>\n");
+      switch (tVersion) {
+        case "1.1.0" ->
+            writer.write(
+                """
+                              <?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+                              <!DOCTYPE WMT_MS_Capabilities SYSTEM
+                                "http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd"\s
+                               [
+                               <!ELEMENT VendorSpecificCapabilities EMPTY>
+                               ]>  <!-- end of DOCTYPE declaration -->
+                              <WMT_MS_Capabilities version="1.1.0">
+                                <Service>
+                                  <Name>GetMap</Name>
+                              """);
+        case "1.1.1" ->
+            writer.write(
+                """
+                              <?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+                              <!DOCTYPE WMT_MS_Capabilities SYSTEM
+                                "http://schemas.opengis.net/wms/1.1.1/capabilities_1_1_1.dtd"\s
+                               [
+                               <!ELEMENT VendorSpecificCapabilities EMPTY>
+                               ]>  <!-- end of DOCTYPE declaration -->
+                              <WMT_MS_Capabilities version="1.1.1">
+                                <Service>
+                                  <Name>OGC:WMS</Name>
+                              """);
+        case "1.3.0" ->
+            writer.write(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    +
+                    // not yet supported: optional updatesequence parameter
+                    "<WMS_Capabilities version=\"1.3.0\" xmlns=\"http://www.opengis.net/wms\"\n"
+                    + "    xmlns:xlink=\"https://www.w3.org/1999/xlink\"\n"
+                    + "    xmlns:xsi=\"https://www.w3.org/2001/XMLSchema-instance\"\n"
+                    + "    xsi:schemaLocation=\"http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd\">\n"
+                    + "  <Service>\n"
+                    + "    <Name>WMS</Name>\n");
+      }
 
       writer.write(
           "    <Title>"
@@ -9974,8 +10000,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "</Abstract>\n"
               + "    <KeywordList>\n");
       String keywords[] = eddGrid.keywords();
-      for (int i = 0; i < keywords.length; i++)
-        writer.write("      <Keyword>" + XML.encodeAsXML(keywords[i]) + "</Keyword>\n");
+      for (String keyword : keywords)
+        writer.write("      <Keyword>" + XML.encodeAsXML(keyword) + "</Keyword>\n");
       writer.write(
           "    </KeywordList>\n"
               + "    <!-- Top-level address of service -->\n"
@@ -10102,16 +10128,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "    <Exception>\n");
       if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
         writer.write(
-            "      <Format>application/vnd.ogc.se_xml</Format>\n"
-                + "      <Format>application/vnd.ogc.se_inimage</Format>\n"
-                + "      <Format>application/vnd.ogc.se_blank</Format>\n"
-                + "    </Exception>\n");
+            """
+                                    <Format>application/vnd.ogc.se_xml</Format>
+                                    <Format>application/vnd.ogc.se_inimage</Format>
+                                    <Format>application/vnd.ogc.se_blank</Format>
+                                  </Exception>
+                              """);
       else
         writer.write(
-            "      <Format>XML</Format>\n"
-                + "      <Format>INIMAGE</Format>\n"
-                + "      <Format>BLANK</Format>\n"
-                + "    </Exception>\n");
+            """
+                                    <Format>XML</Format>
+                                    <Format>INIMAGE</Format>
+                                    <Format>BLANK</Format>
+                                  </Exception>
+                              """);
 
       if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
         writer.write("    <VendorSpecificCapabilities />\n");
@@ -10172,7 +10202,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   tVersion.equals("1.1.1")
                       ? "        <SRS>EPSG:4326</SRS>\n"
                       : // >1? use separate tags
-                      "        <CRS>CRS:84</CRS>\n" + "        <CRS>EPSG:4326</CRS>\n")
+                      """
+                                                          <CRS>CRS:84</CRS>
+                                                          <CRS>EPSG:4326</CRS>
+                                                  """)
               + // 1.3.0
               (tVersion.equals("1.1.0") || tVersion.equals("1.1.1")
                   ? "        <LatLonBoundingBox "
@@ -10467,8 +10500,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // essential
       writer.flush();
       if (out instanceof ZipOutputStream zos) zos.closeEntry();
-    } finally {
-      writer.close();
     }
   }
 
@@ -10515,7 +10546,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   tVersion.equals("1.1.1")
                       ? "        <SRS>EPSG:4326</SRS>\n"
                       : // >1? use separate tags
-                      "        <CRS>CRS:84</CRS>\n" + "        <CRS>EPSG:4326</CRS>\n")
+                      """
+                                          <CRS>CRS:84</CRS>
+                                          <CRS>EPSG:4326</CRS>
+                                  """)
               + (tVersion.equals("1.1.0") || tVersion.equals("1.1.1")
                   ? "        <LatLonBoundingBox minx=\""
                       + safeMinX
@@ -10767,7 +10801,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\n");
       }
 
-      scripts.append("  }\n" + "\n" + "  var overlays = {\n");
+      scripts.append("""
+                }
+
+                var overlays = {
+              """);
 
       StringArray olNames =
           StringArray.fromCSV(
@@ -10918,11 +10956,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + options[gai][options[gai].length - 1]
                     + ")]"); // this works with depthi and all other axes
 
-            writer.write("    </td>\n" + "  </tr>\n");
+            writer.write(
+                """
+                        </td>
+                      </tr>
+                    """);
           } // end of gai loop
           // System.out.println(">> tAxisConstraints=" + tAxisConstraintsSB.toString());
 
-          writer.write("</table>\n" + "</form>\n");
+          writer.write(
+              """
+                  </table>
+                  </form>
+                  """);
         } else {
           writer.write("&nbsp;(none for this dataset)\n<br>");
         }
@@ -11436,8 +11482,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // json
     if (fParamIsJson) {
 
-      Writer writer = getJsonWriter(request, response, "error", ".jsonText");
-      try {
+      try (Writer writer = getJsonWriter(request, response, "error", ".jsonText")) {
         writer.write(
             "{\n"
                 + "  \"error\" :\n"
@@ -11453,9 +11498,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "]\n"
                 + "  }\n"
                 + "}\n");
-      } finally {
-        writer.close(); // it calls writer.flush then out.close();
       }
+      // it calls writer.flush then out.close();
       return;
     }
 
@@ -11625,8 +11669,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       int nids = ids.size();
 
       if (fParamIsJson) {
-        Writer writer = getJsonWriter(request, response, "rest_services", ".jsonText");
-        try {
+        try (Writer writer = getJsonWriter(request, response, "rest_services", ".jsonText")) {
           writer.write(
               "{ \"specVersion\" : 1.0,\n"
                   + "  \"currentVersion\" : "
@@ -11642,9 +11685,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   // "    {\"name\" : \"Geometry\", \"type\" : \"GeometryServer\"}\n" +
                   "  ]\n"
                   + "}\n");
-        } finally {
-          writer.close(); // it calls writer.flush then out.close();
         }
+        // it calls writer.flush then out.close();
 
       } else if (fParamIsHtml) {
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
@@ -11783,9 +11825,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (nUrlParts == 3) {
 
       if (fParamIsJson) {
-        Writer writer =
-            getJsonWriter(request, response, "rest_services_" + tDatasetID, ".jsonText");
-        try {
+        try (Writer writer =
+            getJsonWriter(request, response, "rest_services_" + tDatasetID, ".jsonText")) {
           writer.write(
               "{ \"currentVersion\" : "
                   + esriCurrentVersion
@@ -11803,10 +11844,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + "\", \"type\" : \"ImageServer\"}"
                     + (dv < tDataVariables.length - 1 ? "," : "")
                     + "\n");
-          writer.write("  ]\n" + "}\n");
-        } finally {
-          writer.close(); // it calls writer.flush then out.close();
+          writer.write(
+              """
+                        ]
+                      }
+                      """);
         }
+        // it calls writer.flush then out.close();
 
       } else if (fParamIsHtml) {
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
@@ -11842,17 +11886,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   +
                   // "<br/>\n" +
                   "<ul id='serviceList'>\n");
-          for (int dv = 0; dv < tDataVariables.length; dv++) {
-            if (tDataVariables[dv].hasColorBarMinMax())
+          for (EDV tDataVariable : tDataVariables) {
+            if (tDataVariable.hasColorBarMinMax())
               writer.write(
                   "<li><a rel=\"contents\" href=\""
                       + relativeUrl
                       + "/"
-                      + tDataVariables[dv].destinationName()
+                      + tDataVariable.destinationName()
                       + "/ImageServer\">"
                       + tDatasetID
                       + "/"
-                      + tDataVariables[dv].destinationName()
+                      + tDataVariable.destinationName()
                       + "</a> (ImageServer)</li>\n");
           }
           writer.write(
@@ -11949,10 +11993,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (nUrlParts == 5) {
 
       if (fParamIsJson) {
-        Writer writer =
+        try (Writer writer =
             getJsonWriter(
-                request, response, "rest_services_" + tDatasetID + "_" + tDestName, ".jsonText");
-        try {
+                request, response, "rest_services_" + tDatasetID + "_" + tDestName, ".jsonText")) {
           writer.write(
               "{\n"
                   + "  \"serviceDescription\" : "
@@ -12114,9 +12157,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "      \"alias\" : \"Shape_Area\"}\n"
                   + "  ]\n"
                   + "}\n");
-        } finally {
-          writer.close(); // it calls writer.flush then out.close();
         }
+        // it calls writer.flush then out.close();
 
       } else if (fParamIsHtml) {
 
@@ -12343,114 +12385,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // *** urlParts[5]=(exportImage|query|identify)
 
     // ensure urlParts[5]=exportImage
-    if (urlParts[5].equals("exportImage")) {
-      String actualDir = tEddGrid.cacheDirectory();
+    switch (urlParts[5]) {
+      case "exportImage" -> {
+        String actualDir = tEddGrid.cacheDirectory();
 
-      if (nUrlParts == 6) {
+        if (nUrlParts == 6) {
 
-        // bbox
-        String bboxParam = queryMap.get("bbox");
-        double xMin = tEdvLon.destinationMinDouble();
-        double yMin = tEdvLat.destinationMinDouble();
-        double xMax = tEdvLon.destinationMaxDouble();
-        double yMax = tEdvLat.destinationMaxDouble();
-        if (bboxParam != null && bboxParam.length() > 0) {
-          // use specified bbox and ensure all valid
-          String bboxParts[] = String2.split(bboxParam, ',');
-          if (bboxParts.length != 4) {
-            sendGeoServicesRestError(
-                requestNumber,
-                request,
-                response,
-                fParamIsJson,
-                HttpServletResponse.SC_BAD_REQUEST,
-                InvalidParam,
-                "bbox must be bbox=<xmin>,<ymin>,<xmax>,<ymax>");
-            return;
-          }
-          xMin = String2.parseDouble(bboxParts[0]);
-          yMin = String2.parseDouble(bboxParts[1]);
-          xMax = String2.parseDouble(bboxParts[2]);
-          yMax = String2.parseDouble(bboxParts[3]);
-          if (!Double.isFinite(xMin)
-              || !Double.isFinite(yMin)
-              || !Double.isFinite(xMax)
-              || !Double.isFinite(yMax)
-              || xMin >= xMax
-              || yMin >= yMax) { // allow "=" ?
-            sendGeoServicesRestError(
-                requestNumber,
-                request,
-                response,
-                fParamIsJson,
-                HttpServletResponse.SC_BAD_REQUEST,
-                InvalidParam,
-                "Invalid bbox value(s)");
-            return;
-          }
-        }
-
-        // size
-        String sizeParam = queryMap.get("size");
-        double xSize = 400; // default in specification
-        double ySize = 400;
-        if (sizeParam != null && sizeParam.length() > 0) {
-          // use specified size and ensure all valid
-          String sizeParts[] = String2.split(sizeParam, ',');
-          if (sizeParts.length != 2) {
-            sendGeoServicesRestError(
-                requestNumber,
-                request,
-                response,
-                fParamIsJson,
-                HttpServletResponse.SC_BAD_REQUEST,
-                InvalidParam,
-                "size must be size=<width>,<height>");
-            return;
-          }
-          xSize = String2.parseInt(sizeParts[0]);
-          ySize = String2.parseInt(sizeParts[1]);
-          if (xSize == Integer.MAX_VALUE
-              || ySize == Integer.MAX_VALUE
-              || xSize <= 0
-              || ySize <= 0) {
-            sendGeoServicesRestError(
-                requestNumber,
-                request,
-                response,
-                fParamIsJson,
-                HttpServletResponse.SC_BAD_REQUEST,
-                InvalidParam,
-                "Invalid size value(s)");
-            return;
-          }
-        }
-
-        // imageSR
-        // bboxSR
-
-        // time
-        String centeredIsoTime = null;
-        if (tEdvTime == null) {
-          // no time variable, so ignore user-specified time= (if any)
-        } else {
-          String timeParam = queryMap.get("time");
-          double tEpochSeconds = tEdvTime.destinationMaxDouble(); // spec doesn't say default
-          if (timeParam != null && timeParam.length() > 0) {
-            // use specified time and ensure all valid
-            String timeParts[] = String2.split(timeParam, ',');
-            if (timeParts.length == 1) {
-              tEpochSeconds = String2.parseDouble(timeParts[0]) / 1000.0; // millis -> seconds
-            } else if (timeParts.length == 2) {
-              double tMinTime = String2.parseDouble(timeParts[0]);
-              double tMaxTime = String2.parseDouble(timeParts[1]);
-              if (!Double.isFinite(tMinTime))
-                tMinTime =
-                    tEdvTime
-                        .destinationMinDouble(); // spec says "infinity"; I interpret as destMin/Max
-              if (!Double.isFinite(tMaxTime)) tMaxTime = tEdvTime.destinationMaxDouble();
-              tEpochSeconds = (tMinTime + tMaxTime) / 2000.0; // 2 to average
-            } else {
+          // bbox
+          String bboxParam = queryMap.get("bbox");
+          double xMin = tEdvLon.destinationMinDouble();
+          double yMin = tEdvLat.destinationMinDouble();
+          double xMax = tEdvLon.destinationMaxDouble();
+          double yMax = tEdvLat.destinationMaxDouble();
+          if (bboxParam != null && bboxParam.length() > 0) {
+            // use specified bbox and ensure all valid
+            String bboxParts[] = String2.split(bboxParam, ',');
+            if (bboxParts.length != 4) {
               sendGeoServicesRestError(
                   requestNumber,
                   request,
@@ -12458,12 +12408,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   fParamIsJson,
                   HttpServletResponse.SC_BAD_REQUEST,
                   InvalidParam,
-                  "time must be time=<timeInstant> or time=<startTime>,<endTime>");
+                  "bbox must be bbox=<xmin>,<ymin>,<xmax>,<ymax>");
               return;
             }
-            if (!Double.isFinite(tEpochSeconds)
-                || tEpochSeconds <= tEdvTime.destinationCoarseMin()
-                || tEpochSeconds >= tEdvTime.destinationCoarseMax()) {
+            xMin = String2.parseDouble(bboxParts[0]);
+            yMin = String2.parseDouble(bboxParts[1]);
+            xMax = String2.parseDouble(bboxParts[2]);
+            yMax = String2.parseDouble(bboxParts[3]);
+            if (!Double.isFinite(xMin)
+                || !Double.isFinite(yMin)
+                || !Double.isFinite(xMax)
+                || !Double.isFinite(yMax)
+                || xMin >= xMax
+                || yMin >= yMax) { // allow "=" ?
               sendGeoServicesRestError(
                   requestNumber,
                   request,
@@ -12471,274 +12428,367 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   fParamIsJson,
                   HttpServletResponse.SC_BAD_REQUEST,
                   InvalidParam,
-                  "Invalid time value(s)");
+                  "Invalid bbox value(s)");
               return;
             }
           }
 
-          // find closest index (so canonical request), then epochSeconds, then ISO (so readable)
-          centeredIsoTime =
-              tEdvTime.destinationToString(
-                  tEdvTime.destinationDouble(tEdvTime.destinationToClosestIndex(tEpochSeconds)));
-        }
-
-        // format
-        String formatParam = queryMap.get("format");
-        String fileTypeName = ".transparentPng";
-        String fileExtension = ".png";
-        if (formatParam == null
-            || // spec-defined default is jpgpng
-            "||jpgpng|png|png8|png24|jpg|bmp|gif|".indexOf("|" + formatParam + "|") >= 0) {
-          // already fileExtension = ".png";   //valid but unsupported -> png  ???
-        } else if (formatParam.equals("tiff")) {
-          fileTypeName = ".geotif";
-          fileExtension = ".tif";
-
-          // ERDDAP geotif requirement: lon must be all below or all above 180
-          if (xMin < 180 && xMax > 180) {
-            sendGeoServicesRestError(
-                requestNumber,
-                request,
-                response,
-                fParamIsJson,
-                HttpServletResponse.SC_BAD_REQUEST,
-                InvalidParam,
-                "For format=tiff, the bbox longitude min and max can't span longitude=180.");
-            return;
-          }
-        } else {
-          sendGeoServicesRestError(
-              requestNumber,
-              request,
-              response,
-              fParamIsJson,
-              HttpServletResponse.SC_BAD_REQUEST,
-              InvalidParam,
-              "Format must be format=(jpgpng|png|png8|png24|jpg|bmp|gif|tiff)");
-          return;
-        }
-
-        // pixelType
-
-        // noData
-
-        // interpolation
-
-        // compressionQuality
-
-        // bandIds
-        String bandIdsParam = queryMap.get("bandIds");
-        if (bandIdsParam != null && !bandIdsParam.equals("0")) {
-          // ERDDAP is set up for 1 band per dataset/destName, so only "0" is valid request
-          sendGeoServicesRestError(
-              requestNumber,
-              request,
-              response,
-              fParamIsJson,
-              HttpServletResponse.SC_BAD_REQUEST,
-              InvalidParam,
-              "BandIds must be bandIds=0");
-          return;
-        }
-
-        // mosaicRule
-        // renderingRule
-
-        // make the image
-        String virtualFileName = null;
-        if (fParam.length() == 0 || fParamIsJson || fParam.equals("image")) {
-
-          // generate the queryString          %7C=|
-          StringBuilder iQuery = new StringBuilder(tDestName);
-          EDVGridAxis tAxisVariables[] = tEddGrid.axisVariables();
-          int nav = tAxisVariables.length;
-          for (int avi = 0; avi < nav; avi++) {
-            iQuery.append('[');
-            // EDVGridAxis ega = tAxisVariables[avi];
-            if (avi == tEddGrid.lonIndex()) {
-              iQuery.append("(" + xMin + "):(" + xMax + ")");
-            } else if (avi == tEddGrid.latIndex()) {
-              if (tAxisVariables[avi].isAscending()) iQuery.append("(" + yMin + "):(" + yMax + ")");
-              else iQuery.append("(" + yMax + "):(" + yMin + ")");
-            } else if (avi == tEddGrid.timeIndex()) {
-              iQuery.append("(" + centeredIsoTime + ")");
-            } else {
-              iQuery.append("[0]"); // ??? temporary lame cop out!
+          // size
+          String sizeParam = queryMap.get("size");
+          double xSize = 400; // default in specification
+          double ySize = 400;
+          if (sizeParam != null && sizeParam.length() > 0) {
+            // use specified size and ensure all valid
+            String sizeParts[] = String2.split(sizeParam, ',');
+            if (sizeParts.length != 2) {
+              sendGeoServicesRestError(
+                  requestNumber,
+                  request,
+                  response,
+                  fParamIsJson,
+                  HttpServletResponse.SC_BAD_REQUEST,
+                  InvalidParam,
+                  "size must be size=<width>,<height>");
+              return;
             }
-            iQuery.append(']');
+            xSize = String2.parseInt(sizeParts[0]);
+            ySize = String2.parseInt(sizeParts[1]);
+            if (xSize == Integer.MAX_VALUE
+                || ySize == Integer.MAX_VALUE
+                || xSize <= 0
+                || ySize <= 0) {
+              sendGeoServicesRestError(
+                  requestNumber,
+                  request,
+                  response,
+                  fParamIsJson,
+                  HttpServletResponse.SC_BAD_REQUEST,
+                  InvalidParam,
+                  "Invalid size value(s)");
+              return;
+            }
           }
-          iQuery.append("&.draw=surface&.vars=longitude%7Clatitude%7C" + tDestName);
-          iQuery.append("&.size=" + xSize + "%7C" + ySize); // |
-          String imageQuery = iQuery.toString();
-          if (verbose) String2.log("  exportImage query=" + imageQuery);
 
-          // generate the file name (no extension)
-          virtualFileName = tEddGrid.suggestFileName(loggedInAs, imageQuery, fileTypeName);
+          // imageSR
+          // bboxSR
 
-          // create the image file if it doesn't exist
-          if (File2.isFile(actualDir + virtualFileName + fileExtension)) {
-            if (verbose)
-              String2.log("  reusing imageFile=" + actualDir + virtualFileName + fileExtension);
+          // time
+          String centeredIsoTime = null;
+          if (tEdvTime == null) {
+            // no time variable, so ignore user-specified time= (if any)
           } else {
-            OutputStream out =
-                new BufferedOutputStream(
-                    new FileOutputStream(actualDir + virtualFileName + fileExtension));
-            OutputStreamSource oss = new OutputStreamSourceSimple(out);
+            String timeParam = queryMap.get("time");
+            double tEpochSeconds = tEdvTime.destinationMaxDouble(); // spec doesn't say default
+            if (timeParam != null && timeParam.length() > 0) {
+              // use specified time and ensure all valid
+              String timeParts[] = String2.split(timeParam, ',');
+              if (timeParts.length == 1) {
+                tEpochSeconds = String2.parseDouble(timeParts[0]) / 1000.0; // millis -> seconds
+              } else if (timeParts.length == 2) {
+                double tMinTime = String2.parseDouble(timeParts[0]);
+                double tMaxTime = String2.parseDouble(timeParts[1]);
+                if (!Double.isFinite(tMinTime))
+                  tMinTime =
+                      tEdvTime.destinationMinDouble(); // spec says "infinity"; I interpret as
+                // destMin/Max
+                if (!Double.isFinite(tMaxTime)) tMaxTime = tEdvTime.destinationMaxDouble();
+                tEpochSeconds = (tMinTime + tMaxTime) / 2000.0; // 2 to average
+              } else {
+                sendGeoServicesRestError(
+                    requestNumber,
+                    request,
+                    response,
+                    fParamIsJson,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    InvalidParam,
+                    "time must be time=<timeInstant> or time=<startTime>,<endTime>");
+                return;
+              }
+              if (!Double.isFinite(tEpochSeconds)
+                  || tEpochSeconds <= tEdvTime.destinationCoarseMin()
+                  || tEpochSeconds >= tEdvTime.destinationCoarseMax()) {
+                sendGeoServicesRestError(
+                    requestNumber,
+                    request,
+                    response,
+                    fParamIsJson,
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    InvalidParam,
+                    "Invalid time value(s)");
+                return;
+              }
+            }
 
-            try { // most exceptions written to image.  some throw throwable.
-              tEddGrid.saveAsImage(
-                  language,
-                  loggedInAs,
-                  relativeUrl,
-                  imageQuery,
-                  actualDir,
-                  virtualFileName,
-                  oss,
-                  fileTypeName);
-              out.close();
-            } catch (Throwable t) {
+            // find closest index (so canonical request), then epochSeconds, then ISO (so readable)
+            centeredIsoTime =
+                tEdvTime.destinationToString(
+                    tEdvTime.destinationDouble(tEdvTime.destinationToClosestIndex(tEpochSeconds)));
+          }
+
+          // format
+          String formatParam = queryMap.get("format");
+          String fileTypeName = ".transparentPng";
+          String fileExtension = ".png";
+          if (formatParam == null
+              || // spec-defined default is jpgpng
+              "||jpgpng|png|png8|png24|jpg|bmp|gif|".indexOf("|" + formatParam + "|") >= 0) {
+            // already fileExtension = ".png";   //valid but unsupported -> png  ???
+          } else if (formatParam.equals("tiff")) {
+            fileTypeName = ".geotif";
+            fileExtension = ".tif";
+
+            // ERDDAP geotif requirement: lon must be all below or all above 180
+            if (xMin < 180 && xMax > 180) {
               sendGeoServicesRestError(
                   requestNumber,
                   request,
                   response,
                   fParamIsJson,
-                  HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                  UnableToCompleteOperation,
-                  t.toString());
+                  HttpServletResponse.SC_BAD_REQUEST,
+                  InvalidParam,
+                  "For format=tiff, the bbox longitude min and max can't span longitude=180.");
               return;
             }
-          }
-        }
-
-        // f
-        if (fParam.length() == 0 || fParamIsJson) { // default
-          Writer writer =
-              getJsonWriter(
-                  request, response, "rest_services_" + tDatasetID + "_" + tDestName, ".jsonText");
-          try {
-            writer.write(
-                "{\n"
-                    + "  \"href\" : \""
-                    + tErddapUrl
-                    + relativeUrl.substring(EDStatic.warName.length() + 1)
-                    + "/exportImage/"
-                    + virtualFileName
-                    + fileExtension
-                    + "\"\n"
-                    + "  \"width\" : \""
-                    + xSize
-                    + "\"\n"
-                    + "  \"height\" : \""
-                    + ySize
-                    + "\"\n"
-                    + "  \"extent\" : {\n"
-                    + "    \"xmin\" : "
-                    + xMin
-                    + ", \"ymin\" : "
-                    + yMin
-                    + ", "
-                    + "\"xmax\" : "
-                    + xMax
-                    + ", \"ymax\" : "
-                    + yMax
-                    + ",\n"
-                    + "    \"spatialReference\" : {\"wkid\" : 4326}\n"
-                    + "  }\n"
-                    + "}\n");
-          } finally {
-            writer.close(); // it calls writer.flush then out.close();
+          } else {
+            sendGeoServicesRestError(
+                requestNumber,
+                request,
+                response,
+                fParamIsJson,
+                HttpServletResponse.SC_BAD_REQUEST,
+                InvalidParam,
+                "Format must be format=(jpgpng|png|png8|png24|jpg|bmp|gif|tiff)");
+            return;
           }
 
-        } else if (fParam.equals("image")) {
-          OutputStreamSource outSource =
-              new OutputStreamFromHttpResponse(
-                  request, response, virtualFileName, fileTypeName, fileExtension);
-          OutputStream out = outSource.outputStream("");
-          doTransfer(
-              language,
-              requestNumber,
-              request,
-              response,
-              actualDir,
-              relativeUrl,
-              virtualFileName + fileExtension,
-              out,
-              outSource.usingCompression());
+          // pixelType
 
-          // } else if (fParam.equals("kmz")) {
-          //    ...
+          // noData
 
-        } else {
-          sendGeoServicesRestError(
-              requestNumber,
-              request,
-              response,
-              fParamIsJson,
-              HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
-              UnsupportedMediaType,
-              InvalidFParam);
-        }
-        return;
-        // end of nUrlParts == 6;
+          // interpolation
 
-      } else if (nUrlParts == 7) {
-        // it's a request for an image file
-        String tFileName = urlParts[6];
-        if (File2.isFile(actualDir + tFileName)) {
-          // transfer
-          String fileExtension = File2.getExtension(tFileName);
-          String fileTypeName =
-              fileExtension.equals(".tif")
-                  ? ".geoTif"
-                  : fileExtension.equals(".png") ? ".transparentPng" : fileExtension;
-          OutputStreamSource outSource =
-              new OutputStreamFromHttpResponse(
-                  request,
-                  response,
-                  File2.getNameNoExtension(tFileName),
-                  fileTypeName,
-                  fileExtension);
-          OutputStream out = outSource.outputStream("");
-          doTransfer(
-              language,
-              requestNumber,
-              request,
-              response,
-              actualDir,
-              relativeUrl,
-              tFileName,
-              out,
-              outSource.usingCompression());
+          // compressionQuality
+
+          // bandIds
+          String bandIdsParam = queryMap.get("bandIds");
+          if (bandIdsParam != null && !bandIdsParam.equals("0")) {
+            // ERDDAP is set up for 1 band per dataset/destName, so only "0" is valid request
+            sendGeoServicesRestError(
+                requestNumber,
+                request,
+                response,
+                fParamIsJson,
+                HttpServletResponse.SC_BAD_REQUEST,
+                InvalidParam,
+                "BandIds must be bandIds=0");
+            return;
+          }
+
+          // mosaicRule
+          // renderingRule
+
+          // make the image
+          String virtualFileName = null;
+          if (fParam.length() == 0 || fParamIsJson || fParam.equals("image")) {
+
+            // generate the queryString          %7C=|
+            StringBuilder iQuery = new StringBuilder(tDestName);
+            EDVGridAxis tAxisVariables[] = tEddGrid.axisVariables();
+            int nav = tAxisVariables.length;
+            for (int avi = 0; avi < nav; avi++) {
+              iQuery.append('[');
+              // EDVGridAxis ega = tAxisVariables[avi];
+              if (avi == tEddGrid.lonIndex()) {
+                iQuery.append("(" + xMin + "):(" + xMax + ")");
+              } else if (avi == tEddGrid.latIndex()) {
+                if (tAxisVariables[avi].isAscending())
+                  iQuery.append("(" + yMin + "):(" + yMax + ")");
+                else iQuery.append("(" + yMax + "):(" + yMin + ")");
+              } else if (avi == tEddGrid.timeIndex()) {
+                iQuery.append("(" + centeredIsoTime + ")");
+              } else {
+                iQuery.append("[0]"); // ??? temporary lame cop out!
+              }
+              iQuery.append(']');
+            }
+            iQuery.append("&.draw=surface&.vars=longitude%7Clatitude%7C" + tDestName);
+            iQuery.append("&.size=" + xSize + "%7C" + ySize); // |
+            String imageQuery = iQuery.toString();
+            if (verbose) String2.log("  exportImage query=" + imageQuery);
+
+            // generate the file name (no extension)
+            virtualFileName = tEddGrid.suggestFileName(loggedInAs, imageQuery, fileTypeName);
+
+            // create the image file if it doesn't exist
+            if (File2.isFile(actualDir + virtualFileName + fileExtension)) {
+              if (verbose)
+                String2.log("  reusing imageFile=" + actualDir + virtualFileName + fileExtension);
+            } else {
+              OutputStream out =
+                  new BufferedOutputStream(
+                      new FileOutputStream(actualDir + virtualFileName + fileExtension));
+              OutputStreamSource oss = new OutputStreamSourceSimple(out);
+
+              try { // most exceptions written to image.  some throw throwable.
+                tEddGrid.saveAsImage(
+                    language,
+                    loggedInAs,
+                    relativeUrl,
+                    imageQuery,
+                    actualDir,
+                    virtualFileName,
+                    oss,
+                    fileTypeName);
+                out.close();
+              } catch (Throwable t) {
+                sendGeoServicesRestError(
+                    requestNumber,
+                    request,
+                    response,
+                    fParamIsJson,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    UnableToCompleteOperation,
+                    t.toString());
+                return;
+              }
+            }
+          }
+
+          // f
+          if (fParam.length() == 0 || fParamIsJson) { // default
+            try (Writer writer =
+                getJsonWriter(
+                    request,
+                    response,
+                    "rest_services_" + tDatasetID + "_" + tDestName,
+                    ".jsonText")) {
+              writer.write(
+                  "{\n"
+                      + "  \"href\" : \""
+                      + tErddapUrl
+                      + relativeUrl.substring(EDStatic.warName.length() + 1)
+                      + "/exportImage/"
+                      + virtualFileName
+                      + fileExtension
+                      + "\"\n"
+                      + "  \"width\" : \""
+                      + xSize
+                      + "\"\n"
+                      + "  \"height\" : \""
+                      + ySize
+                      + "\"\n"
+                      + "  \"extent\" : {\n"
+                      + "    \"xmin\" : "
+                      + xMin
+                      + ", \"ymin\" : "
+                      + yMin
+                      + ", "
+                      + "\"xmax\" : "
+                      + xMax
+                      + ", \"ymax\" : "
+                      + yMax
+                      + ",\n"
+                      + "    \"spatialReference\" : {\"wkid\" : 4326}\n"
+                      + "  }\n"
+                      + "}\n");
+            }
+            // it calls writer.flush then out.close();
+
+          } else if (fParam.equals("image")) {
+            OutputStreamSource outSource =
+                new OutputStreamFromHttpResponse(
+                    request, response, virtualFileName, fileTypeName, fileExtension);
+            OutputStream out = outSource.outputStream("");
+            doTransfer(
+                language,
+                requestNumber,
+                request,
+                response,
+                actualDir,
+                relativeUrl,
+                virtualFileName + fileExtension,
+                out,
+                outSource.usingCompression());
+
+            // } else if (fParam.equals("kmz")) {
+            //    ...
+
+          } else {
+            sendGeoServicesRestError(
+                requestNumber,
+                request,
+                response,
+                fParamIsJson,
+                HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+                UnsupportedMediaType,
+                InvalidFParam);
+          }
+          return;
+          // end of nUrlParts == 6;
+
+        } else if (nUrlParts == 7) {
+          // it's a request for an image file
+          String tFileName = urlParts[6];
+          if (File2.isFile(actualDir + tFileName)) {
+            // transfer
+            String fileExtension = File2.getExtension(tFileName);
+            String fileTypeName =
+                fileExtension.equals(".tif")
+                    ? ".geoTif"
+                    : fileExtension.equals(".png") ? ".transparentPng" : fileExtension;
+            OutputStreamSource outSource =
+                new OutputStreamFromHttpResponse(
+                    request,
+                    response,
+                    File2.getNameNoExtension(tFileName),
+                    fileTypeName,
+                    fileExtension);
+            OutputStream out = outSource.outputStream("");
+            doTransfer(
+                language,
+                requestNumber,
+                request,
+                response,
+                actualDir,
+                relativeUrl,
+                tFileName,
+                out,
+                outSource.usingCompression());
+
+          } else {
+            if (verbose)
+              String2.log(
+                  EDStatic.resourceNotFoundAr[language] + "!isFile " + actualDir + tFileName);
+            sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
+            return;
+          }
+          return;
 
         } else {
           if (verbose)
-            String2.log(EDStatic.resourceNotFoundAr[language] + "!isFile " + actualDir + tFileName);
-          sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
+            String2.log(EDStatic.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=7");
+          sendResourceNotFoundError(requestNumber, request, response, "incorrect nParts");
           return;
         }
-        return;
+      }
+        // end of /exportImage[/fileName]
 
-      } else {
+      case "query" -> {
+        // ...
+        return;
+        // ...
+      }
+      case "identify" -> {
+        // ...
+        return;
+        // ...
+      }
+      default -> {
         if (verbose)
-          String2.log(EDStatic.resourceNotFoundAr[language] + "nParts=" + nUrlParts + " !=7");
-        sendResourceNotFoundError(requestNumber, request, response, "incorrect nParts");
+          String2.log(EDStatic.resourceNotFoundAr[language] + "unknown [5]=" + urlParts[5]);
+        sendResourceNotFoundError(requestNumber, request, response, "");
         return;
       }
-      // end of /exportImage[/fileName]
-
-    } else if (urlParts[5].equals("query")) {
-      // ...
-      return;
-
-    } else if (urlParts[5].equals("identify")) {
-      // ...
-      return;
-
-    } else { // unsupported parts[5]
-      if (verbose)
-        String2.log(EDStatic.resourceNotFoundAr[language] + "unknown [5]=" + urlParts[5]);
-      sendResourceNotFoundError(requestNumber, request, response, "");
-      return;
     }
   }
 
@@ -12919,7 +12969,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Matcher m = p.matcher(range);
       if (m.matches()) {
         first = String2.parseLong(m.group(1));
-        if (m.group(2).equals("")) // <audio> makes requests like this
+        if (m.group(2).isEmpty()) // <audio> makes requests like this
         last = fileSize >= 0 ? fileSize - 1 : -1;
         else last = String2.parseLong(m.group(2));
       } else {
@@ -12986,7 +13036,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (verbose) String2.log(msg);
 
     // it's good that result is boolean: for security, don't return localDir name in error message
-    try {
+    try (outputStream) {
       // SSR.copy handles file or public or private AWS source (by routing data through ERDDAP), and
       // file or URL destination
       boolean ok =
@@ -13000,12 +13050,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 String2.ERROR
                 + " during transfer.");
       }
-    } finally {
-      try {
-        outputStream.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
   }
 
   /**
@@ -13095,11 +13141,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(
             request, response, tDatasetID, "custom:application/rss+xml", ".rss");
-    OutputStream outputStream = outSource.outputStream(File2.UTF_8);
-    try {
+    try (OutputStream outputStream = outSource.outputStream(File2.UTF_8)) {
       outputStream.write(rssAr);
-    } finally {
-      outputStream.close();
     }
   }
 
@@ -13121,8 +13164,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(request, response, "setDatasetFlag", ".txt", ".txt");
     OutputStream out = outSource.outputStream(File2.UTF_8);
-    Writer writer = File2.getBufferedWriterUtf8(out);
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       // look at the request
       Map<String, String> queryMap =
           EDD.userQueryHashMap(queryString, true); // false so names are case insensitive
@@ -13159,10 +13201,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Math2.sleep(delaySeconds * 1000L);
       writer.write(message);
       if (verbose) String2.log(message + " setDatasetFlag(" + ipAddress + ")");
-
-    } finally {
-      writer.close(); // it calls writer.flush then out.close();
     }
+    // it calls writer.flush then out.close();
   }
 
   /**
@@ -13177,15 +13217,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(request, response, "version", ".txt", ".txt");
     OutputStream out = outSource.outputStream(File2.UTF_8);
-    Writer writer = File2.getBufferedWriterUtf8(out);
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       String ev = EDStatic.erddapVersion;
       int po = ev.indexOf('_');
       if (po >= 0) ev = ev.substring(0, po);
       writer.write("ERDDAP_version=" + ev + "\n");
-    } finally {
-      writer.close(); // it calls writer.flush then out.close();
     }
+    // it calls writer.flush then out.close();
   }
 
   /**
@@ -13201,12 +13239,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     OutputStreamSource outSource =
         new OutputStreamFromHttpResponse(request, response, "version_string", ".txt", ".txt");
     OutputStream out = outSource.outputStream(File2.UTF_8);
-    Writer writer = File2.getBufferedWriterUtf8(out);
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       writer.write("ERDDAP_version_string=" + EDStatic.erddapVersion + "\n");
-    } finally {
-      writer.close(); // it calls writer.flush then out.close();
     }
+    // it calls writer.flush then out.close();
   }
 
   /**
@@ -13258,7 +13294,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String fileType = endOfRequest.substring(start.length() - 1);
     boolean isPlainType = false;
     if (fileType.equals(".html")) {
-    } else if (String2.indexOf(plainFileTypes, fileType) >= 0) {
+    } else if (plainFileTypes.indexOf(fileType) >= 0) {
       isPlainType = true;
     } else {
       throw new SimpleException(
@@ -13563,8 +13599,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // gather slide title, url, x, y
       int newSlide = 0;
       int maxY = 150; // guess at header height
-      StringBuilder addToJavaScript = new StringBuilder();
-      StringBuilder otherSetDhtml = new StringBuilder();
+      String addToJavaScript = "";
+      String otherSetDhtml = "";
       for (int oldSlide = 0; oldSlide <= nSlides; oldSlide++) { // yes <=
         String tTitle = oldSlide == nSlides ? "" : request.getParameter("title" + oldSlide);
         String tUrl = oldSlide == nSlides ? "" : request.getParameter("url" + oldSlide);
@@ -13683,8 +13719,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             // everything else is html content
             // sizes: small, wide, wide&high
             contentWidth = EDStatic.imageWidths[tSize == 0 ? 1 : 2];
-            contentHeight =
-                EDStatic.imageWidths[tSize == 2 ? 2 : tSize] * 3 / 4; // yes, widths; make wide
+            contentHeight = EDStatic.imageWidths[tSize] * 3 / 4; // yes, widths; make wide
           }
           content =
               "<iframe src=\""
@@ -13738,7 +13773,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (oldSlide < nSlides) {
           // table for buttons
           writer.write( // width=20 makes it as narrow as possible
-              "  <table class=\"compact\" style=\"width:20px;\">\n" + "  <tr>\n\n");
+              """
+                            <table class="compact" style="width:20px;">
+                            <tr>
+
+                          """);
 
           // data button
           if (dataUrl != null)
@@ -13772,7 +13811,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + ".submit();\"></td>\n\n");
 
           // end button's table
-          writer.write("  </tr>\n" + "  </table>\n\n");
+          writer.write(
+              """
+                    </tr>
+                    </table>
+
+                  """);
 
           // end slide top/center cell; start top/right
           writer.write(
@@ -13809,14 +13853,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "        setHidden(); "
                   + dFormName
                   + ".submit();}\">\n\n");
-        writer.write("  </td>\n" + "</tr>\n\n");
+        writer.write("""
+                  </td>
+                </tr>
+
+                """);
 
         // Add a Slide
         if (oldSlide == nSlides)
           writer.write(
-              "<tr><td>&nbsp;</td>\n"
-                  + "  <td class=\"N\"><strong>Add a Slide</strong></td>\n"
-                  + "</tr>\n\n");
+              """
+                          <tr><td>&nbsp;</td>
+                            <td class="N"><strong>Add a Slide</strong></td>
+                          </tr>
+
+                          """);
 
         // gap
         writer.write(
@@ -13937,7 +13988,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // JavaScript
       // setHidden is called by widgets before submit() so position info is stored
       writer.write(
-          "<script>\n" + "<!--\n" + "function setHidden() { \n"
+          """
+                      <script>
+                      <!--
+                      function setHidden() {\s
+                      """
           // + "alert('x0='+ dd.elements.div0.x);"
           );
       for (int i = 0; i < newSlide; i++)
@@ -13972,7 +14027,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ".scrollY.value=dd.getScrollY(); "
               + "\n} catch (ex) {if (typeof(console) != 'undefined') console.log(ex.toString());}\n"
               + "}\n");
-      writer.write("//-->\n" + "</script> \n");
+      writer.write("""
+              //-->
+              </script>\s
+              """);
 
       // make space in document for slides, before end matter
       int nP = (maxY + 30) / 30; // /30px = avg height of <p>&nbsp;  +30=round up
@@ -13997,9 +14055,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // write the end stuff / set up drag'n'drop
       writer.write(
-          "<script>\n" + "<!--\n" + "SET_DHTML(CURSOR_MOVE"); // the default cursor for the div's
+          """
+                      <script>
+                      <!--
+                      SET_DHTML(CURSOR_MOVE"""); // the default cursor for the div's
       for (int i = 0; i < newSlide; i++) writer.write(",\"div" + i + "\"");
-      writer.write(otherSetDhtml.toString() + ");\n");
+      writer.write(otherSetDhtml + ");\n");
       for (int i = 0; i < newSlide; i++)
         writer.write("dd.elements.div" + i + ".setZ(" + i + "); \n");
       writer.write(
@@ -14008,7 +14069,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ","
               + scrollY
               + ");\n"
-              + addToJavaScript.toString()
+              + addToJavaScript
               + "//-->\n"
               + "</script>\n");
 
@@ -14319,7 +14380,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (response.isCommitted())
         throw t; // rethrown exception (will be handled in doGet try/catch)
 
-      if (String2.indexOf(plainFileTypes, fileTypeName) >= 0)
+      if (plainFileTypes.indexOf(fileTypeName) >= 0)
         // for plainFileTypes, rethrow the error
         throw t;
 
@@ -14426,10 +14487,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         "air"
       };
       StringArray sNames = categoryInfo("standard_name");
-      for (int tt = 0; tt < tryTerms.length; tt++) {
+      for (String tryTerm : tryTerms) {
         int ttpo[] = {0, 0}; // start/result   [0]=index, [1]=po
-        if (sNames.indexWith(tryTerms[tt], ttpo)[0] >= 0) {
-          exampleSearchTerm = tryTerms[tt];
+        if (sNames.indexWith(tryTerm, ttpo)[0] >= 0) {
+          exampleSearchTerm = tryTerm;
           break;
         }
       }
@@ -14523,8 +14584,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "custom:application/opensearchdescription+xml",
                   ".xml")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         String template =
             "?searchTerms={searchTerms}&#x26;page={startPage?}" + "&#x26;itemsPerPage={count?}";
         writer.write(
@@ -14612,9 +14672,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "  <InputEncoding>UTF-8</InputEncoding>\n"
                 + "  <OutputEncoding>UTF-8</OutputEncoding>\n"
                 + "</OpenSearchDescription>\n");
-      } finally {
-        writer.close(); // it calls writer.flush then out.close();
       }
+      // it calls writer.flush then out.close();
       return;
     }
 
@@ -14688,8 +14747,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           new OutputStreamFromHttpResponse(
               request, response, "OpenSearchResults", "custom:application/atom+xml", ".xml");
       OutputStream out = outSource.outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         long lastMajorLoadMillis = runLoadDatasets.lastMajorLoadDatasetsStopTimeMillis;
         if (lastMajorLoadMillis == 0)
           lastMajorLoadMillis = runLoadDatasets.lastMajorLoadDatasetsStartTimeMillis;
@@ -14843,9 +14901,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
 
         writer.write("</feed>\n");
-      } finally {
-        writer.close(); // it calls writer.flush then out.close();
       }
+      // it calls writer.flush then out.close();
       return;
     }
 
@@ -14854,8 +14911,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         new OutputStreamFromHttpResponse(
             request, response, "OpenSearchResults", "custom:application/rss+xml", ".xml");
     OutputStream out = outSource.outputStream(File2.UTF_8);
-    Writer writer = File2.getBufferedWriterUtf8(out);
-    try {
+    try (Writer writer = File2.getBufferedWriterUtf8(out)) {
       writer.write(
           // see https://cyber.harvard.edu/rss/examples/rss2sample.xml which is simpler
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -14941,10 +14997,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "    </item>\n");
       }
 
-      writer.write("  </channel>\n" + "</rss>\n");
-    } finally {
-      writer.close(); // it calls writer.flush then out.close();
+      writer.write(
+          """
+                    </channel>
+                  </rss>
+                  """);
     }
+    // it calls writer.flush then out.close();
   }
 
   /**
@@ -15158,7 +15217,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       catSAs[ca] = tsa.toArray();
       String tParam = request.getParameter(catAttsInURLs[ca]);
       whichCatSAIndex[ca] =
-          (tParam == null || tParam.equals(""))
+          (tParam == null || tParam.isEmpty())
               ? 0
               : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
       if (whichCatSAIndex[ca] < 0) {
@@ -15322,7 +15381,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDStatic.htmlTooltipImage(
                     language,
                     loggedInAs,
-                    "<div class=\"standard_max_width\">" + protocolTooltip.toString() + "</div>")
+                    "<div class=\"standard_max_width\">" + protocolTooltip + "</div>")
                 + "\n"
                 + "  </td>\n"
                 + "  <td style=\"width:80%;\">&nbsp;=&nbsp;"
@@ -15868,23 +15927,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   public static String getYouAreHereTable(String leftSide, String rightSide) throws Throwable {
 
     // begin table
-    StringBuilder sb =
-        new StringBuilder(
-            "<table class=\"compact\" style=\"width:100%; border-spacing:2px;\">\n"
-                + "<tr>\n"
-                + "<td class=\"B\" style=\"width:90%;\">");
 
     // you are here
-    sb.append(leftSide);
-    sb.append("</td>\n" + "<td style=\"white-space:nowrap; width:10%;\">");
 
-    // rightside
-    sb.append(rightSide);
+    return """
+            <table class="compact" style="width:100%; border-spacing:2px;">
+            <tr>
+            <td class="B" style="width:90%;">"""
+        + leftSide
+        + "</td>\n"
+        + "<td style=\"white-space:nowrap; width:10%;\">"
+        +
 
-    // end table
-    sb.append("</td>\n" + "</tr>\n" + "</table>\n");
+        // rightside
+        rightSide
+        +
 
-    return sb.toString();
+        // end table
+        """
+                    </td>
+                    </tr>
+                    </table>
+                    """;
   }
 
   /**
@@ -16072,7 +16136,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (reallyVerbose) String2.log("booleanQuery=" + booleanQuery.toString());
 
         // make a hashSet of tDatasetIDs (so seachable quickly)
-        HashSet<String> hashSet = new HashSet(Math2.roundToInt(1.4 * tDatasetIDs.size()));
+        HashSet<String> hashSet = new HashSet<>(Math2.roundToInt(1.4 * tDatasetIDs.size()));
         for (int i = 0; i < tDatasetIDs.size(); i++) hashSet.add(tDatasetIDs.get(i));
 
         // Finally, do the lucene search
@@ -16103,7 +16167,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           // with EDStatic.luceneDocNToDatasetID
           // (lazy population of luceneDocNToDatasetID);
           int docN = hits.scoreDocs[i].doc;
-          Integer docNI = Integer.valueOf(docN);
+          Integer docNI = docN;
           String tDatasetID = EDStatic.luceneDocNToDatasetID.get(docNI);
           if (tDatasetID == null) { // not yet in luceneDocNToDatasetID
             Document doc = storedFields.document(docN);
@@ -16278,7 +16342,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String fileTypeName = File2.getExtension(endOfRequestUrl);
-    int whichPlainFileType = String2.indexOf(plainFileTypes, fileTypeName);
+    int whichPlainFileType = plainFileTypes.indexOf(fileTypeName);
 
     // ensure query has simplistically valid page= itemsPerPage=
     if (!Arrays.equals(EDStatic.getRawRequestedPIpp(request), EDStatic.getRequestedPIpp(request))) {
@@ -16358,7 +16422,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // *** deal with invalid attribute string
 
       // redirect to index.html
-      if (attributeInURL.equals("") || attributeInURL.equals("index.htm")) {
+      if (attributeInURL.isEmpty() || attributeInURL.equals("index.htm")) {
         sendRedirect(
             response,
             tErddapUrl
@@ -16440,7 +16504,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (catDats.size() == 0) {
 
       // redirect to index.html
-      if (categoryName.equals("") || categoryName.equals("index.htm")) {
+      if (categoryName.isEmpty() || categoryName.equals("index.htm")) {
         sendRedirect(
             response,
             tErddapUrl
@@ -16560,7 +16624,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String part2 = parts.length < 3 ? "" : parts[2];
 
     // redirect categorize/{attribute}/{categoryName}/index.htm request index.html
-    if (part2.equals("") || part2.equals("index.htm")) {
+    if (part2.isEmpty() || part2.equals("index.htm")) {
       sendRedirect(
           response,
           tErddapUrl
@@ -16942,7 +17006,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             try {
               writer.flush(); // so content above is sent to user ASAP while this content is created
               String roles[] = EDStatic.getRoles(loggedInAs);
-              ArrayList<EDD> datasets = new ArrayList<EDD>();
+              ArrayList<EDD> datasets = new ArrayList<>();
               for (int i = 0; i < tIDs.size(); i++) {
                 String tId = tIDs.get(i);
                 boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
@@ -16960,7 +17024,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               // writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new
               // EDD[datasets.size()])));
               // java version:
-              theSchemaDotOrgDataCatalog(writer, datasets.toArray(new EDD[datasets.size()]));
+              theSchemaDotOrgDataCatalog(writer, datasets.toArray(new EDD[0]));
             } catch (Exception e) {
               EDStatic.rethrowClientAbortException(e); // first thing in catch{}
               String2.log(
@@ -17347,7 +17411,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n");
     }
 
-    writer.write("  ]\n" + "}\n" + "</script>\n");
+    writer.write("""
+              ]
+            }
+            </script>
+            """);
   }
 
   /**
@@ -17407,8 +17475,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // add everything not used elsewhere into description
     String names[] = gatts.getNames();
     StringBuilder sb = new StringBuilder(edd.summary());
-    for (int j = 0; j < names.length; j++) {
-      String tName = names[j];
+    for (String tName : names) {
       if (tName.startsWith("creator_")
           || tName.startsWith("publisher_")
           || tName.equals("date_created")
@@ -17456,16 +17523,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // variableMeasured
     String temporalCoverage = "";
-    ArrayList<EDV> edv = new ArrayList();
+    ArrayList<EDV> edv = new ArrayList<>();
     EDV arr[];
     int nAxisVariables = 0;
     if (edd instanceof EDDGrid eddGrid) { // axisVars first so lat/lon/timeIndex are correct
       arr = eddGrid.axisVariables();
       nAxisVariables = arr.length;
-      for (int j = 0; j < arr.length; j++) edv.add(arr[j]);
+      edv.addAll(Arrays.asList(arr));
     }
     arr = edd.dataVariables();
-    for (int j = 0; j < arr.length; j++) edv.add(arr[j]);
+    edv.addAll(Arrays.asList(arr));
     writer.write("  \"variableMeasured\": [\n");
     for (int i = 0; i < edv.size(); i++) {
       Attributes atts = edv.get(i).combinedAttributes();
@@ -17494,8 +17561,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // add everything not used into valueReference
       names = atts.getNames();
-      for (int j = 0; j < names.length; j++) {
-        String tName = names[j];
+      for (String tName : names) {
         if (tName.equals("actual_range") || tName.equals("units")) continue;
         PrimitiveArray pa = atts.get(tName);
         writer.write(
@@ -17634,7 +17700,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
     }
 
-    writer.write("\n" + "}\n" + "</script>\n");
+    writer.write("""
+
+            }
+            </script>
+            """);
   }
 
   /**
@@ -17688,62 +17758,69 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.tally.add("Subscriptions (since startup)", endOfRequest);
     EDStatic.tally.add("Subscriptions (since last daily report)", endOfRequest);
 
-    if (endOfRequest.equals(Subscriptions.INDEX_HTML)) {
-      // fall through
-    } else if (endOfRequest.equals(Subscriptions.ADD_HTML)) {
-      doAddSubscription(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          ipAddress,
-          protocol,
-          datasetIDStartsAt,
-          endOfRequest,
-          queryString);
-      return;
-    } else if (endOfRequest.equals(Subscriptions.LIST_HTML)) {
-      doListSubscriptions(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          ipAddress,
-          protocol,
-          datasetIDStartsAt,
-          endOfRequest,
-          queryString);
-      return;
-    } else if (endOfRequest.equals(Subscriptions.REMOVE_HTML)) {
-      doRemoveSubscription(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          protocol,
-          datasetIDStartsAt,
-          endOfRequest,
-          queryString);
-      return;
-    } else if (endOfRequest.equals(Subscriptions.VALIDATE_HTML)) {
-      doValidateSubscription(
-          language,
-          requestNumber,
-          request,
-          response,
-          loggedInAs,
-          protocol,
-          datasetIDStartsAt,
-          endOfRequest,
-          queryString);
-      return;
-    } else {
-      if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of Subscriptions");
-      sendResourceNotFoundError(requestNumber, request, response, "");
-      return;
+    switch (endOfRequest) {
+      case Subscriptions.INDEX_HTML -> {
+        // fall through
+      }
+      case Subscriptions.ADD_HTML -> {
+        doAddSubscription(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            ipAddress,
+            protocol,
+            datasetIDStartsAt,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      case Subscriptions.LIST_HTML -> {
+        doListSubscriptions(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            ipAddress,
+            protocol,
+            datasetIDStartsAt,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      case Subscriptions.REMOVE_HTML -> {
+        doRemoveSubscription(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            protocol,
+            datasetIDStartsAt,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      case Subscriptions.VALIDATE_HTML -> {
+        doValidateSubscription(
+            language,
+            requestNumber,
+            request,
+            response,
+            loggedInAs,
+            protocol,
+            datasetIDStartsAt,
+            endOfRequest,
+            queryString);
+        return;
+      }
+      default -> {
+        if (verbose) String2.log(EDStatic.resourceNotFoundAr[language] + "end of Subscriptions");
+        sendResourceNotFoundError(requestNumber, request, response, "");
+        return;
+      }
     }
 
     // display start of web page
@@ -17883,9 +17960,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     boolean tEmailIfAlreadyValid =
         String2.parseBoolean(queryMap.get("emailifalreadyvalid")); // default=true
     boolean tShowErrors =
-        (queryString == null || queryString.length() == 0)
-            ? false
-            : String2.parseBoolean(queryMap.get("showerrors")); // default=true
+        queryString != null
+            && queryString.length() != 0
+            && String2.parseBoolean(queryMap.get("showerrors")); // default=true
 
     // validate params
     String trouble = "";
@@ -18792,7 +18869,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.tally.add("Convert (since startup)", endOfRequest);
     EDStatic.tally.add("Convert (since last daily report)", endOfRequest);
     String fileTypeName = File2.getExtension(requestUrl);
-    int pft = String2.indexOf(plainFileTypes, fileTypeName);
+    int pft = plainFileTypes.indexOf(fileTypeName);
 
     if (endOfRequestUrl.equals("index.html")) {
       // fall through
@@ -18826,14 +18903,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
       // interpolate
     } else if (endOfRequestUrl.equals("interpolate.html")
-        || (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes[pft]))) {
+        || (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes.get(pft)))) {
       doConvertInterpolate(
           language,
           requestNumber,
@@ -18875,8 +18951,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
@@ -18909,8 +18984,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         String2.log(MustBe.throwableToString(t));
-        throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
       }
       return;
 
@@ -19156,12 +19230,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     if (toCode) {
       // process code=,   a toCode query
-      int po = ((StringArray) fipsTable.getColumn(1)).indexOf(queryCounty);
+      int po = fipsTable.getColumn(1).indexOf(queryCounty);
       if (po < 0) {
         tError = "county=\"" + queryCounty + "\" isn't an exact match of a FIPS county name.";
       } else {
@@ -19172,7 +19245,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     } else if (toCounty) {
       // process county=,   a toCounty query
-      int po = ((StringArray) fipsTable.getColumn(0)).indexOf(queryCode);
+      int po = fipsTable.getColumn(0).indexOf(queryCode);
       if (po < 0) {
         tError = "code=\"" + queryCode + "\" isn't an exact match of a 5-digit, FIPS county code.";
       } else {
@@ -19202,15 +19275,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "ConvertFipsCounty", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         if (toCode) writer.write(answerCode);
         else if (toCounty) writer.write(answerCounty);
 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
-      } finally {
-        writer.close();
       }
       return;
     }
@@ -19439,8 +19509,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     StringArray acronymSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -19493,8 +19562,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "convertOAAcronym", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
 
         if (toAcronym) writer.write(answerAcronym);
         else if (toFullName) writer.write(answerFullName);
@@ -19502,8 +19570,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -19733,8 +19799,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       String2.log(MustBe.throwableToString(t));
-      throw new SimpleException(
-          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t.toString());
+      throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + t);
     }
     StringArray variableNameSA = (StringArray) oaTable.getColumn(0);
     StringArray fullNameSA = (StringArray) oaTable.getColumn(1);
@@ -19788,16 +19853,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           new OutputStreamFromHttpResponse(
                   request, response, "convertOAVariableName", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         if (toVariableName) writer.write(answerVariableName);
         else if (toFullName) writer.write(answerFullName);
 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -20071,16 +20133,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "ConvertKeywords", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         if (toCF) writer.write(answerCF);
         else if (toGCMD) writer.write(answerGCMD);
 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -20313,15 +20372,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tTLLTable = queryMap.get("TimeLatLonTable");
     String tRequestCSV = queryMap.get("requestCSV");
-    String tFileType = pft >= 0 ? plainFileTypes[pft] : ""; // default pft
+    String tFileType = pft >= 0 ? plainFileTypes.get(pft) : ""; // default pft
     if (tTLLTable == null) tTLLTable = "";
     if (tRequestCSV == null) tRequestCSV = "";
     String sampleTLL =
-        "time,latitude,longitude\n"
-            + "2020-01-01T06:00:00Z,35.580,-122.550\n"
-            + "2020-01-01T12:00:00Z,35.576,-122.553\n"
-            + "2020-01-01T18:00:00Z,35.572,-122.568\n"
-            + "2020-01-02T00:00:00Z,35.569,-122.571\n";
+        """
+                    time,latitude,longitude
+                    2020-01-01T06:00:00Z,35.580,-122.550
+                    2020-01-01T12:00:00Z,35.576,-122.553
+                    2020-01-01T18:00:00Z,35.572,-122.568
+                    2020-01-02T00:00:00Z,35.569,-122.571
+                    """;
 
     // do the .plainFileType response
 
@@ -20527,16 +20588,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(
           MessageFormat.format(
                   EDStatic.convertInterpolateServiceAr[language],
-                  "<pre><a rel=\"help\" "
-                      + "href=\"https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4\""
-                      + ">https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=\n"
-                      + "time%2Clatitude%2Clongitude%0A\n"
-                      + "2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A\n"
-                      + "2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A\n"
-                      + "2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A\n"
-                      + "2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A\n"
-                      + "&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a> \n"
-                      + "</pre>")
+                  """
+                          <pre><a rel="help" \
+                          href="https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"\
+                          >https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=
+                          time%2Clatitude%2Clongitude%0A
+                          2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A
+                          2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A
+                          2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A
+                          2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A
+                          &amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a>\s
+                          </pre>""")
               + "\n");
       writer.write('\n');
 
@@ -20878,9 +20940,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         lonDIndexPA.add(lonDIndex);
         isValidPA.add(timeDIndex < 0 || latDIndex < 0 || lonDIndex < 0 ? 0 : 1);
       }
-      if (debugMode)
-        String2.log(
-            ">> timePA=" + timePA.toString() + "\n>> timeDIndexPA=" + timeDIndexPA.toString());
+      if (debugMode) String2.log(">> timePA=" + timePA + "\n>> timeDIndexPA=" + timeDIndexPA);
 
       // rank table by isValid, time, lat, lon
       int rank[] =
@@ -21147,10 +21207,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 gdraim.getDataValueAsPAOne(current, 0, paOne);
                 if (debugMode)
                   String2.log(
-                      ">> b current="
-                          + String2.toCSSVString(current)
-                          + " datasetValue="
-                          + paOne.toString());
+                      ">> b current=" + String2.toCSSVString(current) + " datasetValue=" + paOne);
                 if (!isBilinear && Double.isNaN(paOne.getDouble())) continue;
 
                 // calculate distance
@@ -21340,7 +21397,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "/"
                 + variable[dv]
                 + " howGrouped:"
-                + howGrouped.toString());
+                + howGrouped);
     }
 
     return sourceTable;
@@ -21547,8 +21604,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "ConvertTime", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         if (cleanString) writer.write(answerIsoTime);
         else if (cleanUnits) writer.write(answerUnits);
         else if (toNumeric) writer.write(answerN);
@@ -21557,8 +21613,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -21876,8 +21930,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "ConvertUnits", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         writer.write(
             tStandardizeUdunits.length() > 0
                 ? rStandardizeUdunits
@@ -21886,8 +21939,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -22132,15 +22183,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       OutputStream out =
           new OutputStreamFromHttpResponse(request, response, "ConvertURLs", ".txt", ".txt")
               .outputStream(File2.UTF_8);
-      Writer writer = File2.getBufferedWriterUtf8(out);
-      try {
+      try (Writer writer = File2.getBufferedWriterUtf8(out)) {
         writer.write(rText);
 
         writer.flush(); // essential
         if (out instanceof ZipOutputStream zos) zos.closeEntry();
         return;
-      } finally {
-        writer.close();
       }
     }
 
@@ -22231,8 +22279,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * types.
    */
   protected static boolean endsWithPlainFileType(String s, String start) {
-    for (int pft = 0; pft < plainFileTypes.length; pft++) {
-      if (s.equals(start + plainFileTypes[pft])) return true;
+    for (String plainFileType : plainFileTypes) {
+      if (s.equals(start + plainFileType)) return true;
     }
     return false;
   }
@@ -22359,7 +22407,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       boolean forceWriteDiagnostics)
       throws Throwable {
 
-    try {
+    try (writer) {
       // end of document
       writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
       writer.write("\n</html>\n");
@@ -22367,8 +22415,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // essential
       writer.flush();
       if (out instanceof ZipOutputStream zos) zos.closeEntry();
-    } finally {
-      writer.close();
     }
   }
 
@@ -23279,126 +23325,121 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             fileTypeExtension);
 
     // different fileTypes
-    if (fileTypeName.equals(".htmlTable")) {
-      TableWriterHtmlTable.writeAllAndFinish(
-          language,
-          null,
-          null,
-          loggedInAs,
-          table,
-          endOfRequest,
-          queryString,
-          outSource,
-          true,
-          fileName,
-          false,
-          "",
-          "",
-          true,
-          false,
-          -1); // pre, post, encodeAsHTML, writeUnits
-
-    } else if (fileTypeName.equals(".json")) {
-      TableWriterJson.writeAllAndFinish(
-          language, null, null, table, outSource, jsonp, false); // writeUnits
-
-    } else if (fileTypeName.equals(".jsonlCSV1")) {
-      TableWriterJsonl.writeAllAndFinish(
-          language, null, null, table, outSource, true, false, jsonp); // writeColNames, writeKVP
-
-    } else if (fileTypeName.equals(".jsonlCSV")) {
-      TableWriterJsonl.writeAllAndFinish(
-          language, null, null, table, outSource, false, false, jsonp); // writeColNames, writeKVP
-
-    } else if (fileTypeName.equals(".jsonlKVP")) {
-      TableWriterJsonl.writeAllAndFinish(
-          language, null, null, table, outSource, false, true, jsonp); // writeColNames, writeKVP
-
-    } else if (fileTypeName.equals(".csv")) {
-      TableWriterSeparatedValue.writeAllAndFinish(
-          language, null, null, table, outSource, ",", true, true, '0',
-          "NaN"); // separator, quoted, writeColumnNames, writeUnits
-
-    } else if (fileTypeName.equals(".itx")) {
-
-      table.saveAsIgor(
-          File2.getBufferedWriter(outSource.outputStream(Table.IgorCharset), Table.IgorCharset));
-
-    } else if (fileTypeName.equals(".mat")) {
-      // avoid troublesome var names (e.g., with spaces)
-      int nColumns = table.nColumns();
-      for (int col = 0; col < nColumns; col++)
-        table.setColumnName(col, String2.modifyToBeFileNameSafe(table.getColumnName(col)));
-
-      // ??? use goofy standard structure name (nice that it's always the same);
-      //  could use fileName but often long
-      table.saveAsMatlab(outSource.outputStream(""), "response");
-
-    } else if (fileTypeName.equals(".nc")) {
-      // avoid troublesome var names (e.g., with spaces)
-      int nColumns = table.nColumns();
-      for (int col = 0; col < nColumns; col++)
-        table.setColumnName(col, String2.modifyToBeFileNameSafe(table.getColumnName(col)));
-
-      // This is different from other formats (which stream the results to the user),
-      // since a file must be created before it can be sent.
-      // Append a random# to fileName to deal with different responses
-      // for almost simultaneous requests
-      // (e.g., all Advanced Search requests have fileName=AdvancedSearch)
-      String ncFileName = fileName + "_" + Math2.random(Integer.MAX_VALUE) + ".nc";
-      table.saveAsFlatNc(
-          EDStatic.fullPlainFileNcCacheDirectory + ncFileName,
-          "row",
-          false); // convertToFakeMissingValues
-      OutputStream out = outSource.outputStream("");
-      doTransfer(
-          language,
-          requestNumber,
-          request,
-          response,
-          EDStatic.fullPlainFileNcCacheDirectory,
-          "_plainFileNc/", // dir that appears to users (but it doesn't normally)
-          ncFileName,
-          out,
-          outSource.usingCompression());
-      // if simpleDelete fails, cache cleaning will delete it later
-      File2.simpleDelete(EDStatic.fullPlainFileNcCacheDirectory + ncFileName);
-
-    } else if (fileTypeName.equals(".nccsv")) {
-      TableWriterNccsv.writeAllAndFinish(language, null, null, table, outSource);
-
-    } else if (fileTypeName.equals(".tsv")) {
-      TableWriterSeparatedValue.writeAllAndFinish(
-          language, null, null, table, outSource, "\t", false, true, '0',
-          "NaN"); // separator, quoted, writeColumnNames, writeUnits
-
-    } else if (fileTypeName.equals(".xhtml")) {
-      TableWriterHtmlTable.writeAllAndFinish(
-          language,
-          null,
-          null,
-          loggedInAs,
-          table,
-          endOfRequest,
-          queryString,
-          outSource,
-          true,
-          fileName,
-          true,
-          "",
-          "",
-          true,
-          false,
-          -1); // pre, post, encodeAsHTML, writeUnits
-
-    } else {
-      throw new SimpleException(
-          EDStatic.bilingual(
+    switch (fileTypeName) {
+      case ".htmlTable" ->
+          TableWriterHtmlTable.writeAllAndFinish(
               language,
-              EDStatic.queryErrorAr[0]
-                  + MessageFormat.format(EDStatic.unsupportedFileTypeAr[0], fileTypeName),
-              EDStatic.queryErrorAr[language]
-                  + MessageFormat.format(EDStatic.unsupportedFileTypeAr[language], fileTypeName)));
+              null,
+              null,
+              loggedInAs,
+              table,
+              endOfRequest,
+              queryString,
+              outSource,
+              true,
+              fileName,
+              false,
+              "",
+              "",
+              true,
+              false,
+              -1); // pre, post, encodeAsHTML, writeUnits
+      case ".json" ->
+          TableWriterJson.writeAllAndFinish(
+              language, null, null, table, outSource, jsonp, false); // writeUnits
+      case ".jsonlCSV1" ->
+          TableWriterJsonl.writeAllAndFinish(
+              language, null, null, table, outSource, true, false,
+              jsonp); // writeColNames, writeKVP
+      case ".jsonlCSV" ->
+          TableWriterJsonl.writeAllAndFinish(
+              language, null, null, table, outSource, false, false,
+              jsonp); // writeColNames, writeKVP
+      case ".jsonlKVP" ->
+          TableWriterJsonl.writeAllAndFinish(
+              language, null, null, table, outSource, false, true,
+              jsonp); // writeColNames, writeKVP
+      case ".csv" ->
+          TableWriterSeparatedValue.writeAllAndFinish(
+              language, null, null, table, outSource, ",", true, true, '0',
+              "NaN"); // separator, quoted, writeColumnNames, writeUnits
+      case ".itx" ->
+          table.saveAsIgor(
+              File2.getBufferedWriter(
+                  outSource.outputStream(Table.IgorCharset), Table.IgorCharset));
+      case ".mat" -> {
+        // avoid troublesome var names (e.g., with spaces)
+        int nColumns = table.nColumns();
+        for (int col = 0; col < nColumns; col++)
+          table.setColumnName(col, String2.modifyToBeFileNameSafe(table.getColumnName(col)));
+
+        // ??? use goofy standard structure name (nice that it's always the same);
+        //  could use fileName but often long
+        table.saveAsMatlab(outSource.outputStream(""), "response");
+      }
+      case ".nc" -> {
+        // avoid troublesome var names (e.g., with spaces)
+        int nColumns = table.nColumns();
+        for (int col = 0; col < nColumns; col++)
+          table.setColumnName(col, String2.modifyToBeFileNameSafe(table.getColumnName(col)));
+
+        // This is different from other formats (which stream the results to the user),
+        // since a file must be created before it can be sent.
+        // Append a random# to fileName to deal with different responses
+        // for almost simultaneous requests
+        // (e.g., all Advanced Search requests have fileName=AdvancedSearch)
+        String ncFileName = fileName + "_" + Math2.random(Integer.MAX_VALUE) + ".nc";
+        table.saveAsFlatNc(
+            EDStatic.fullPlainFileNcCacheDirectory + ncFileName,
+            "row",
+            false); // convertToFakeMissingValues
+
+        OutputStream out = outSource.outputStream("");
+        doTransfer(
+            language,
+            requestNumber,
+            request,
+            response,
+            EDStatic.fullPlainFileNcCacheDirectory,
+            "_plainFileNc/", // dir that appears to users (but it doesn't normally)
+            ncFileName,
+            out,
+            outSource.usingCompression());
+        // if simpleDelete fails, cache cleaning will delete it later
+        File2.simpleDelete(EDStatic.fullPlainFileNcCacheDirectory + ncFileName);
+      }
+      case ".nccsv" -> TableWriterNccsv.writeAllAndFinish(language, null, null, table, outSource);
+      case ".tsv" ->
+          TableWriterSeparatedValue.writeAllAndFinish(
+              language, null, null, table, outSource, "\t", false, true, '0',
+              "NaN"); // separator, quoted, writeColumnNames, writeUnits
+      case ".xhtml" ->
+          TableWriterHtmlTable.writeAllAndFinish(
+              language,
+              null,
+              null,
+              loggedInAs,
+              table,
+              endOfRequest,
+              queryString,
+              outSource,
+              true,
+              fileName,
+              true,
+              "",
+              "",
+              true,
+              false,
+              -1); // pre, post, encodeAsHTML, writeUnits
+      default ->
+          throw new SimpleException(
+              EDStatic.bilingual(
+                  language,
+                  EDStatic.queryErrorAr[0]
+                      + MessageFormat.format(EDStatic.unsupportedFileTypeAr[0], fileTypeName),
+                  EDStatic.queryErrorAr[language]
+                      + MessageFormat.format(
+                          EDStatic.unsupportedFileTypeAr[language], fileTypeName)));
     }
 
     // essential
@@ -23659,7 +23700,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // update the datasetIDs
         long tTime = System.currentTimeMillis();
-        HashSet<String> deletedSet = new HashSet();
+        HashSet<String> deletedSet = new HashSet<>();
         for (int idi = 0; idi < nDatasetIDs; idi++) {
           String tDatasetID = String2.canonical(datasetIDs.get(idi));
           EDD edd = this.gridDatasetHashMap.get(tDatasetID);

@@ -229,7 +229,6 @@ public class ArchiveADataset {
       String2.log("Creating the dataset...");
       EDD edd = EDD.oneFromDatasetsXml(null, datasetID);
       EDV dataVars[] = edd.dataVariables();
-      int ndv = dataVars.length;
 
       tgzName = aadDir + datasetID + "_" + compactTime + "." + compression;
       String archiveDir = aadDir + datasetID + "_" + compactTime + "/";
@@ -346,7 +345,11 @@ public class ArchiveADataset {
 
         // *** write info about this archiving to archiveDir
         String2.log(
-            "\n*** Creating the files to be archived...\n" + "    This may take a long time.\n");
+            """
+
+                        *** Creating the files to be archived...
+                            This may take a long time.
+                        """);
         Math2.sleep(5000);
 
         if (bagitMode) {
@@ -528,12 +531,13 @@ public class ArchiveADataset {
                 args,
                 whichArg++,
                 "", // default
-                "For all but the largest tabular datasets, you can archive the dataset\n"
-                    + "all at once.\n"
-                    + "If you want to archive a subset of the dataset,\n"
-                    + "enter an ERDDAP constraint expression to specify the subset,\n"
-                    + "for example, &time>=2015-01-01&time<2015-02-01\n"
-                    + "or press Enter for no constraints");
+                """
+                            For all but the largest tabular datasets, you can archive the dataset
+                            all at once.
+                            If you want to archive a subset of the dataset,
+                            enter an ERDDAP constraint expression to specify the subset,
+                            for example, &time>=2015-01-01&time<2015-02-01
+                            or press Enter for no constraints""");
         // parse dataVars+constraints to ensure valid
         eddTable.parseUserDapQuery(
             language,
@@ -547,23 +551,24 @@ public class ArchiveADataset {
         // subset by which variables?
         // default is cf_role variables
         StringArray cfRoleVars = new StringArray();
-        for (int dv = 0; dv < ndv; dv++) {
-          String tRole = dataVars[dv].combinedAttributes().getString("cf_role");
+        for (EDV dataVar : dataVars) {
+          String tRole = dataVar.combinedAttributes().getString("cf_role");
           if (tRole == null
               || tRole.equals("profile_id")) // put all profiles for a (trajectory) in one file
           continue;
-          cfRoleVars.add(dataVars[dv].destinationName());
+          cfRoleVars.add(dataVar.destinationName());
         }
         String subsetByCSV =
             get(
                 args,
                 whichArg++,
                 cfRoleVars.toString(), // default
-                "Separate files will be made for each unique combination of values of some\n"
-                    + "variables. Each of those files must be <2GB.\n"
-                    + "If you don't specify any variables, everything will be put into one file --\n"
-                    + "for some datasets, this will be >2GB and will fail.\n"
-                    + "Which variables will be used for this");
+                """
+                            Separate files will be made for each unique combination of values of some
+                            variables. Each of those files must be <2GB.
+                            If you don't specify any variables, everything will be put into one file --
+                            for some datasets, this will be >2GB and will fail.
+                            Which variables will be used for this""");
         subsetByCSV = String2.replaceAll(subsetByCSV, " ", ""); // remove any spaces
         StringArray subsetBySA = StringArray.fromCSV(subsetByCSV);
 
@@ -586,7 +591,7 @@ public class ArchiveADataset {
                   whichArg,
                   def,
                   "Create which file type ("
-                      + fileTypeOptions.toString()
+                      + fileTypeOptions
                       + ")\n"
                       + "(NCEI prefers .ncCFMA if it is an option)");
           if (fileTypeOptions.indexOf(fileType) < 0) {
@@ -615,7 +620,11 @@ public class ArchiveADataset {
 
         // *** write info about this archiving to archiveDir
         String2.log(
-            "\n*** Creating the files to be archived...\n" + "    This may take a long time.\n");
+            """
+
+                        *** Creating the files to be archived...
+                            This may take a long time.
+                        """);
         Math2.sleep(5000);
 
         if (bagitMode) {
@@ -837,7 +846,11 @@ public class ArchiveADataset {
         // create required bagit.txt
         Writer tw = File2.getBufferedFileWriterUtf8(archiveDir + "bagit.txt");
         try {
-          tw.write("BagIt-Version: 0.97\n" + "Tag-File-Character-Encoding: UTF-8\n");
+          tw.write(
+              """
+                  BagIt-Version: 0.97
+                  Tag-File-Character-Encoding: UTF-8
+                  """);
         } finally {
           tw.close();
         }

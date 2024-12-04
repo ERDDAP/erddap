@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -194,6 +195,6 @@ public class DAS implements Cloneable {
    * @see DAS#print(PrintWriter)
    */
   public final void print(OutputStream os) {
-    print(new PrintWriter(new BufferedWriter(new OutputStreamWriter(os))));
+    print(new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))));
   }
 }

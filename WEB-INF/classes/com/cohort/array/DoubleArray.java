@@ -202,8 +202,7 @@ public class DoubleArray extends PrimitiveArray {
     // and java docs for Double.hashCode
     int code = 0;
     for (int i = 0; i < size; i++) {
-      long v = Double.doubleToLongBits(array[i]);
-      code = 31 * code + ((int) (v ^ v >>> 32)); // safe (only want low 32 bits)
+      code = 31 * code + Double.hashCode(array[i]);
     }
     return code;
     // return HashDigest.murmur32(array, size);
@@ -301,8 +300,7 @@ public class DoubleArray extends PrimitiveArray {
   public void addObject(final Object value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] =
-        value != null && value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
+    array[size++] = value instanceof Number ? ((Number) value).doubleValue() : Double.NaN;
   }
 
   /**
@@ -794,7 +792,7 @@ public class DoubleArray extends PrimitiveArray {
    */
   @Override
   public void setFloat(final int index, final float d) {
-    set(index, (double) d);
+    set(index, d);
   }
 
   /**
@@ -1015,7 +1013,7 @@ public class DoubleArray extends PrimitiveArray {
   @Override
   public String toNccsvAttString() {
     final StringBuilder sb = new StringBuilder(size * 15);
-    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + String.valueOf(array[i]) + "d");
+    for (int i = 0; i < size; i++) sb.append((i == 0 ? "" : ",") + array[i] + "d");
     return sb.toString();
   }
 
@@ -1229,17 +1227,17 @@ public class DoubleArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     double lastValue = array[0]; // since lastValue often equals currentValue, cache it
-    hashMap.put(Double.valueOf(lastValue), dummy);
+    hashMap.put(lastValue, dummy);
     boolean alreadySorted = true;
     for (int i = 1; i < size; i++) {
       double currentValue = array[i];
       if (currentValue != lastValue) {
         if (currentValue < lastValue) alreadySorted = false;
         lastValue = currentValue;
-        hashMap.put(Double.valueOf(lastValue), dummy);
+        hashMap.put(lastValue, dummy);
       }
     }
 
@@ -1269,21 +1267,21 @@ public class DoubleArray extends PrimitiveArray {
     // and make tUnique
     final double tUnique[] = new double[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
-      tUnique[i] = ((Double) unique[i]).doubleValue();
+      hashMap.put(unique[i], i);
+      tUnique[i] = (Double) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = array[0];
-    ranks[0] = ((Integer) hashMap.get(Double.valueOf(lastValue))).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (array[i] == lastValue) {
         ranks[i] = lastRank;
       } else {
         lastValue = array[i];
-        ranks[i] = ((Integer) hashMap.get(Double.valueOf(lastValue))).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }

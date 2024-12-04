@@ -6,10 +6,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class DataVariableHandler extends StateWithParent {
-  StringBuilder content = new StringBuilder();
+  final StringBuilder content = new StringBuilder();
   String tSourceName = null, tDestinationName = null, tDataType = null;
-  com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
-  List<Object[]> tDataVariables;
+  final com.cohort.array.Attributes tAttributes = new com.cohort.array.Attributes();
+  final List<Object[]> tDataVariables;
 
   public DataVariableHandler(
       SaxHandler saxHandler, List<Object[]> tDataVariables, State completeState) {

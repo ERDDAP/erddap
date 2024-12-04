@@ -7,7 +7,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
-  private String datasetType;
+  private final String datasetType;
 
   public EDDTableFromAsciiServiceHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
@@ -16,7 +16,7 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
   }
 
   private String tLocalSourceUrl = null;
-  private String tBeforeData[] = new String[11];
+  private final String[] tBeforeData = new String[11];
   private String tAfterData = null;
   private String tNoData = null;
 

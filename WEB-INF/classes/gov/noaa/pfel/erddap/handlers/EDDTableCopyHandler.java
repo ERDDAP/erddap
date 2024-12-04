@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDTableCopyHandler extends BaseTableHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDTableCopyHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {

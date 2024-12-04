@@ -26,9 +26,8 @@ import ucar.nc2.Variable;
 
 public class TableFromMultidimNcFile {
 
-  private Table table;
+  private final Table table;
   private VarData cachedVarData[];
-  private boolean haveConstraints;
   private String warningInMethod;
   private Set<Dimension> notStringLengthDims;
   private Dimension tDimsAs[][];
@@ -49,7 +48,7 @@ public class TableFromMultidimNcFile {
       isCharArray =
           tVar.getDataType() == DataType.CHAR
               && dims.size() > 0
-              && !tableMultidim.notStringLengthDims.contains(dims.get(dims.size() - 1));
+              && !tableMultidim.notStringLengthDims.contains(dims.getLast());
       nDims = dims.size() - (isCharArray ? 1 : 0);
     }
 
@@ -181,7 +180,7 @@ public class TableFromMultidimNcFile {
     if (loadDimNames == null) loadDimNames = new StringArray();
     if (standardizeWhat != 0 || removeMVRows) getMetadata = true;
     warningInMethod = "TableFromMultidimNcFile.readMultidimNc read " + fullName + ":\n";
-    haveConstraints =
+    boolean haveConstraints =
         conVars != null
             && conVars.size() > 0
             && conOps != null
@@ -630,10 +629,10 @@ public class TableFromMultidimNcFile {
   }
 
   private BitSet getKeepForVar(VarData data, int nd0, List<Pair<VarData, BitSet>> varToKeep) {
-    for (int i = 0; i < varToKeep.size(); i++) {
-      VarData inList = varToKeep.get(i).getLeft();
+    for (Pair<VarData, BitSet> varDataBitSetPair : varToKeep) {
+      VarData inList = varDataBitSetPair.getLeft();
       if (doDimsMatch(nd0, data.nDims, data.dims, inList.nDims, inList.dims)) {
-        return varToKeep.get(i).getRight();
+        return varDataBitSetPair.getRight();
       }
     }
     BitSet keep = new BitSet();
@@ -926,7 +925,7 @@ public class TableFromMultidimNcFile {
           }
         } catch (Exception e) {
           // FUTURE: read all static variables
-          String2.log("Table.readMultidimNc caught: " + e.toString());
+          String2.log("Table.readMultidimNc caught: " + e);
         }
 
       } else {

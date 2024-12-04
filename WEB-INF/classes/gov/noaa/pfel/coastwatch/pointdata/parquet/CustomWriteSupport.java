@@ -12,10 +12,10 @@ import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 
 public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
-  MessageType schema;
+  final MessageType schema;
   RecordConsumer recordConsumer;
-  List<ColumnDescriptor> cols;
-  private Map<String, String> metadata;
+  final List<ColumnDescriptor> cols;
+  private final Map<String, String> metadata;
 
   CustomWriteSupport(MessageType schema, Map<String, String> metadata) {
     this.schema = schema;
@@ -73,7 +73,8 @@ public class CustomWriteSupport extends WriteSupport<List<PAOne>> {
             recordConsumer.addBinary(stringToBinary(val.getString()));
             break;
           default:
-            throw new ParquetEncodingException("Unsupported column type: " + cols.get(i).getType());
+            throw new ParquetEncodingException(
+                "Unsupported column type: " + cols.get(i).getPrimitiveType());
         }
         recordConsumer.endField(cols.get(i).getPath()[0], i);
       }

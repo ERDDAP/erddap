@@ -137,7 +137,7 @@ public class EDVTimeStamp extends EDV {
       longName =
           suggestLongName(longName, destinationName, combinedAttributes.getString("standard_name"));
       combinedAttributes.set("long_name", longName);
-    } else if (longName.toLowerCase().equals("time")) { // catch alternate case
+    } else if (longName.equalsIgnoreCase("time")) { // catch alternate case
       longName = TIME_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }
@@ -219,12 +219,10 @@ public class EDVTimeStamp extends EDV {
         dateTimeFormat = String2.replaceAll(dateTimeFormat, "Z", "'Z'");
 
       if (time_zone.equals("Zulu")) { // UTC -> Zulu above
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
       } else {
         timeZone =
             TimeZone.getTimeZone(
                 time_zone); // VERY BAD: if failure, no exception and it returns GMT timeZone!!!
-        dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
 
         // NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
         // verify that timeZone matches zoneId  (to deal with VERY BAD above)
@@ -234,6 +232,7 @@ public class EDVTimeStamp extends EDV {
         //    "The Java and Joda time_zone objects have different standard offsets, " +
         //    "probably because the time_zone is supported by Joda but not Java.");
       }
+      dateTimeFormatter = Calendar2.makeDateTimeFormatter(dateTimeFormat, time_zone);
     }
 
     // then set missing_value  (as PAType.DOUBLE)
@@ -473,10 +472,9 @@ public class EDVTimeStamp extends EDV {
         || Math2.almostEqual(9, sourceTime, sourceMissingValue)
         || Math2.almostEqual(9, sourceTime, sourceFillValue)) return Double.NaN;
     if (scaleAddOffset) sourceTime = sourceTime * scaleFactor + addOffset;
-    double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     // String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
     // " = " + Calendar2.safeEpochSecondsToIsoStringTZ(d, ""));
-    return d;
+    return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
   }
 
   /**
@@ -510,21 +508,17 @@ public class EDVTimeStamp extends EDV {
 
     // time is a string
     try {
-      double d = // parseISOWithCalendar2?
-          // parse with Calendar2.parseISODateTime
-          // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-          // parse sourceTime
-          Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
+      // parseISOWithCalendar2?
+      // parse with Calendar2.parseISODateTime
+      // Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
+      // parse sourceTime
       // String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" +
       // Calendar2.epochSecondsToIsoStringTZ(d));
-      return d;
+      return Calendar2.parseToEpochSeconds(sourceTime, dateTimeFormat, timeZone);
     } catch (Throwable t) {
       if (verbose && sourceTime != null && sourceTime.length() > 0)
         String2.log(
-            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime="
-                + sourceTime
-                + "\n"
-                + t.toString());
+            "  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime=" + sourceTime + "\n" + t);
       return Double.NaN;
     }
   }

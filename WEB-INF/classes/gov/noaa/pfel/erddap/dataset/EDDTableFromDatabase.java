@@ -55,17 +55,17 @@ import javax.sql.DataSource;
 public class EDDTableFromDatabase extends EDDTable {
 
   /** set by the constructor */
-  protected String dataSourceName;
+  protected final String dataSourceName;
 
   protected DataSource dataSource; // null if none available
-  protected String driverName;
-  protected String connectionProperties[]; // may have username and password!
-  protected String catalogName;
-  protected String schemaName;
-  protected String tableName;
+  protected final String driverName;
+  protected final String[] connectionProperties; // may have username and password!
+  protected final String catalogName;
+  protected final String schemaName;
+  protected final String tableName;
   protected String columnNameQuotes = "\""; // may also be ' or empty string
-  protected String orderBy[];
-  protected Map<String, Set<String>> scriptNeedsColumns =
+  protected final String[] orderBy;
+  protected final Map<String, Set<String>> scriptNeedsColumns =
       new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   protected String catalogSeparator;
@@ -146,60 +146,60 @@ public class EDDTableFromDatabase extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<dataSourceName>")) {
-      } else if (localTags.equals("</dataSourceName>")) tDataSourceName = content;
-      else if (localTags.equals("<driverName>")) {
-      } else if (localTags.equals("</driverName>")) tDriverName = content;
-      else if (localTags.equals("<connectionProperty>"))
-        tConnectionProperties.add(xmlReader.attributeValue("name"));
-      else if (localTags.equals("</connectionProperty>")) tConnectionProperties.add(content);
-      else if (localTags.equals("<catalogName>")) {
-      } else if (localTags.equals("</catalogName>")) tCatalogName = content;
-      else if (localTags.equals("<schemaName>")) {
-      } else if (localTags.equals("</schemaName>")) tSchemaName = content;
-      else if (localTags.equals("<tableName>")) {
-      } else if (localTags.equals("</tableName>")) tTableName = content;
-      else if (localTags.equals("<columnNameQuotes>")) {
-      } else if (localTags.equals("</columnNameQuotes>")) tColumnNameQuotes = content;
-      else if (localTags.equals("<orderBy>")) {
-      } else if (localTags.equals("</orderBy>")) {
-        if (content != null && content.length() > 0) tOrderBy = String2.split(content, ',');
-      } else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanOrderBy>")) {
-      } else if (localTags.equals("</sourceCanOrderBy>")) tSourceCanOrderBy = content;
-      else if (localTags.equals("<sourceCanDoDistinct>")) {
-      } else if (localTags.equals("</sourceCanDoDistinct>")) tSourceCanDoDistinct = content;
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceCanDoDistinct>",
+            "<sourceCanOrderBy>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<orderBy>",
+            "<columnNameQuotes>",
+            "<tableName>",
+            "<schemaName>",
+            "<catalogName>",
+            "<driverName>",
+            "<dataSourceName>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</dataSourceName>" -> tDataSourceName = content;
+        case "</driverName>" -> tDriverName = content;
+        case "<connectionProperty>" -> tConnectionProperties.add(xmlReader.attributeValue("name"));
+        case "</connectionProperty>" -> tConnectionProperties.add(content);
+        case "</catalogName>" -> tCatalogName = content;
+        case "</schemaName>" -> tSchemaName = content;
+        case "</tableName>" -> tTableName = content;
+        case "</columnNameQuotes>" -> tColumnNameQuotes = content;
+        case "</orderBy>" -> {
+          if (content != null && content.length() > 0) tOrderBy = String2.split(content, ',');
+        }
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</sourceCanOrderBy>" -> tSourceCanOrderBy = content;
+        case "</sourceCanDoDistinct>" -> tSourceCanDoDistinct = content;
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -486,9 +486,11 @@ public class EDDTableFromDatabase extends EDDTable {
           "dataSourceName="
               + dataSourceName
               + (dataSource == null
-                  ? " wasn't found, so connection pooling won't be used.\n"
-                      + "  (Isn't this code running in an application server like Tomcat?\n"
-                      + "  Did you define the resource in, e.g., [tomcat]/conf/context.xml ?)\n"
+                  ? """
+                   wasn't found, so connection pooling won't be used.
+                    (Isn't this code running in an application server like Tomcat?
+                    Did you define the resource in, e.g., [tomcat]/conf/context.xml ?)
+                  """
                   : " was successfully found, so connection pooling will be used.\n"));
     } else {
       String2.log("\ndataSourceName wasn't specified, so connection pooling won't be used.\n");
@@ -651,7 +653,7 @@ public class EDDTableFromDatabase extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromDatabase "
               + datasetID
               + " constructor finished. TIME="
@@ -761,7 +763,7 @@ public class EDDTableFromDatabase extends EDDTable {
     // String2.log(">>resultsVars=" + resultsVariables.toString());
 
     // pull script variables out of resultsVariables
-    HashSet<String> sourceNamesSet = new HashSet();
+    HashSet<String> sourceNamesSet = new HashSet<>();
     BitSet keep = new BitSet();
     StringArray scriptNames = null;
     StringArray scriptTypes = null;
@@ -775,7 +777,7 @@ public class EDDTableFromDatabase extends EDDTable {
         if (scriptNames == null) {
           scriptNames = new StringArray();
           scriptTypes = new StringArray();
-          needOtherSourceNames = new HashSet();
+          needOtherSourceNames = new HashSet<>();
         }
         scriptNames.add(sourceName);
         scriptTypes.add(edv.sourceDataType());
@@ -798,8 +800,7 @@ public class EDDTableFromDatabase extends EDDTable {
     StringArray queryOrderBy = null; // the query orderBy or distinct source variable names
     int nDistinctOrOrderBy = 0;
     String[] parts = Table.getDapQueryParts(userDapQuery); // decoded.
-    for (int pi = 0; pi < parts.length; pi++) {
-      String p = parts[pi];
+    for (String p : parts) {
       // String2.log(">>p#" + pi + "=" + p);
       if (p.equals("distinct()")) {
         nDistinctOrOrderBy++;
@@ -933,13 +934,13 @@ public class EDDTableFromDatabase extends EDDTable {
                     + "("
                     + EDStatic.databaseUnableToConnectAr[0]
                     + ": "
-                    + t.toString()
+                    + t
                     + ")",
                 EDStatic.waitThenTryAgainAr[language]
                     + "("
                     + EDStatic.databaseUnableToConnectAr[language]
                     + ": "
-                    + t.toString()
+                    + t
                     + ")"));
       }
     }
@@ -967,8 +968,8 @@ public class EDDTableFromDatabase extends EDDTable {
       // (If do quote in future, quote individual parts.)
       query.append(
           " FROM "
-              + (catalogName.equals("") ? "" : catalogName + catalogSeparator)
-              + (schemaName.equals("") ? "" : schemaName + ".")
+              + (catalogName.isEmpty() ? "" : catalogName + catalogSeparator)
+              + (schemaName.isEmpty() ? "" : schemaName + ".")
               + tableName);
 
       // create orderBySB
@@ -984,11 +985,11 @@ public class EDDTableFromDatabase extends EDDTable {
         }
       } else {
         // append predefined orderBy variables
-        for (int ob = 0; ob < orderBy.length; ob++) {
-          if (resultsVariables.indexOf(orderBy[ob]) >= 0) {
+        for (String s : orderBy) {
+          if (resultsVariables.indexOf(s) >= 0) {
             if (orderBySB.length() > 0) orderBySB.append(", ");
             // Quotes around colNames avoid trouble when colName is a SQL reserved word.
-            orderBySB.append(columnNameQuotes + orderBy[ob] + columnNameQuotes);
+            orderBySB.append(columnNameQuotes + s + columnNameQuotes);
           }
         }
       }
@@ -1025,7 +1026,7 @@ public class EDDTableFromDatabase extends EDDTable {
         humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
       }
       if (orderBySB.length() > 0) {
-        String ts = " ORDER BY " + orderBySB.toString();
+        String ts = " ORDER BY " + orderBySB;
         query.append(ts);
         humanQuery.append(ts);
       }
@@ -1078,8 +1079,7 @@ public class EDDTableFromDatabase extends EDDTable {
               "Prepared statements don't support class type=" + edv.sourceDataType() + ".");
       }
       if (verbose)
-        String2.log(
-            "  statement=" + statement.toString() + "\n" + " statement~=" + humanQuery.toString());
+        String2.log("  statement=" + statement.toString() + "\n" + " statement~=" + humanQuery);
 
       // execute the query
       ResultSet rs = statement.executeQuery();
@@ -1204,7 +1204,7 @@ public class EDDTableFromDatabase extends EDDTable {
         throw t;
       } else {
         // all other errors probably from database
-        throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+        throw new Throwable(EDStatic.errorFromDataSource + t, t);
       }
     }
   }
@@ -1703,7 +1703,10 @@ public class EDDTableFromDatabase extends EDDTable {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     // convert boolean var dataType from byte to boolean
     String search = "<dataType>byte";

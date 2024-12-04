@@ -10,7 +10,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -103,20 +102,17 @@ public class SaveOpendap {
           if (verbose) String2.log("    varName" + v + "=" + varName);
 
           // get nDimensions
-          List tDimList = inVar.getDimensions();
-          int nTDim = tDimList.size();
+          List<Dimension> tDimList = inVar.getDimensions();
 
           // create dimension[]
-          ArrayList<Dimension> dimList = new ArrayList();
-          for (int d = 0; d < nTDim; d++) dimList.add((Dimension) tDimList.get(d));
+          ArrayList<Dimension> dimList = new ArrayList<>(tDimList);
 
           // add the variable to 'out'
           newVars[v] = NcHelper.addVariable(outRootGroup, varName, inVar.getDataType(), dimList);
 
           // write Attributes   (after adding variables)
           AttributeContainer attList = inVar.attributes();
-          Iterator it = attList.iterator();
-          while (it.hasNext()) newVars[v].addAttribute((ucar.nc2.Attribute) it.next());
+          for (Attribute attribute : attList) newVars[v].addAttribute(attribute);
         }
 
         // global attributes

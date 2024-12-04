@@ -52,7 +52,7 @@ public class ParseException extends Exception {
    * This variable determines which constructor was used to create this object and thereby affects
    * the semantics of the "getMessage" method (see below).
    */
-  protected boolean specialConstructor;
+  protected final boolean specialConstructor;
 
   /**
    * This is the last token that has been consumed successfully. If this object has been created due
@@ -84,45 +84,48 @@ public class ParseException extends Exception {
     if (!specialConstructor) {
       return super.getMessage();
     }
-    String expected = "";
+    StringBuilder expected = new StringBuilder();
     int maxSize = 0;
-    for (int i = 0; i < expectedTokenSequences.length; i++) {
-      if (maxSize < expectedTokenSequences[i].length) {
-        maxSize = expectedTokenSequences[i].length;
+    for (int[] expectedTokenSequence : expectedTokenSequences) {
+      if (maxSize < expectedTokenSequence.length) {
+        maxSize = expectedTokenSequence.length;
       }
-      for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-        expected += tokenImage.get(expectedTokenSequences[i][j]) + " ";
+      for (int i : expectedTokenSequence) {
+        expected.append(tokenImage.get(i)).append(" ");
       }
-      if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
-        expected += "...";
+      if (expectedTokenSequence[expectedTokenSequence.length - 1] != 0) {
+        expected.append("...");
       }
-      expected += eol + "    ";
+      expected.append(eol).append("    ");
     }
-    String retval = "Encountered \"";
+    StringBuilder retval = new StringBuilder("Encountered \"");
     Token tok = currentToken.next;
     for (int i = 0; i < maxSize; i++) {
-      if (i != 0) retval += " ";
+      if (i != 0) retval.append(" ");
       if (tok.kind == 0) {
-        retval += tokenImage.get(0);
+        retval.append(tokenImage.getFirst());
         break;
       }
-      retval += add_escapes(tok.image);
+      retval.append(add_escapes(tok.image));
       tok = tok.next;
     }
-    retval +=
-        "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn;
-    retval += "." + eol;
+    retval
+        .append("\" at line ")
+        .append(currentToken.next.beginLine)
+        .append(", column ")
+        .append(currentToken.next.beginColumn);
+    retval.append(".").append(eol);
     if (expectedTokenSequences.length == 1) {
-      retval += "Was expecting:" + eol + "    ";
+      retval.append("Was expecting:").append(eol).append("    ");
     } else {
-      retval += "Was expecting one of:" + eol + "    ";
+      retval.append("Was expecting one of:").append(eol).append("    ");
     }
-    retval += expected;
-    return retval;
+    retval.append(expected);
+    return retval.toString();
   }
 
   /** The end of line string for this machine. */
-  protected String eol = System.getProperty("line.separator", "\n");
+  protected final String eol = System.getProperty("line.separator", "\n");
 
   /**
    * Used to convert raw characters to their escaped version when these raw version cannot be used
@@ -162,7 +165,7 @@ public class ParseException extends Exception {
         default:
           if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
             String s = "0000" + Integer.toString(ch, 16);
-            retval.append("\\u" + s.substring(s.length() - 4, s.length()));
+            retval.append("\\u" + s.substring(s.length() - 4));
           } else {
             retval.append(ch);
           }

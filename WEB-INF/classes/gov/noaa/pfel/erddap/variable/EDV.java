@@ -72,16 +72,15 @@ public class EDV {
       TIME_STANDARD_NAME = "time",
       TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
 
-  public static String[] LON_UNITS_VARIANTS = {
-    LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E"
-  };
-  public static String[] LAT_UNITS_VARIANTS = {
-    LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N"
-  };
-  public static String[] METERS_VARIANTS = {ALT_UNITS, "meter", "meters", "metre", "metres"};
+  public static final ImmutableList<String> LON_UNITS_VARIANTS =
+      ImmutableList.of(LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E");
+  public static final ImmutableList<String> LAT_UNITS_VARIANTS =
+      ImmutableList.of(LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N");
+  public static final ImmutableList<String> METERS_VARIANTS =
+      ImmutableList.of(ALT_UNITS, "meter", "meters", "metre", "metres");
 
   /** */
-  public static String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
+  public static final String TIME_UCUM_UNITS = Units2.udunitsToUcum(TIME_UNITS);
 
   /**
    * The optional string for no units. There doesn't seem to be a udUnits standard. But LAS uses
@@ -742,7 +741,7 @@ public class EDV {
                 + " paType="
                 + destinationDataPAType()
                 + " "
-                + pa.toString());
+                + pa);
     }
   }
 
@@ -1417,15 +1416,13 @@ public class EDV {
     }
 
     // change to destType and scaleAddOffset if needed
-    PrimitiveArray pa =
-        scaleAddOffset
-            ?
-            // this is method is okay if scaleAddOffset returns same PA (not a new one).
-            source.scaleAddOffset(sourceIsUnsigned, destinationDataPAType, scaleFactor, addOffset)
-            : PrimitiveArray.factory(
-                destinationDataPAType,
-                source); // if already correct type, maxIsMV setting won't be changed
-    return pa;
+    // this is method is okay if scaleAddOffset returns same PA (not a new one).
+    // if already correct type, maxIsMV setting won't be changed
+    return scaleAddOffset
+        ?
+        // this is method is okay if scaleAddOffset returns same PA (not a new one).
+        source.scaleAddOffset(sourceIsUnsigned, destinationDataPAType, scaleFactor, addOffset)
+        : PrimitiveArray.factory(destinationDataPAType, source);
   }
 
   /**
@@ -1751,18 +1748,20 @@ public class EDV {
 
     // suggest adding it to the variable's addAttributes
     PAOne tmv = PrimitiveArray.factory(sourceDataPAType, 1, false).missingValue();
-    EDStatic.suggestAddFillValueCSV.append(
-        String2.toJson(tDatasetID)
-            + ","
-            + String2.toJson(sourceName)
-            + ","
-            + String2.toJson(
-                "<att name=\"_FillValue\" type=\""
-                    + tmv.pa().elementTypeString()
-                    + "\">"
-                    + tmv.toString()
-                    + "</att>")
-            + "\n");
+    synchronized (EDStatic.suggestAddFillValueCSV) {
+      EDStatic.suggestAddFillValueCSV.append(
+          String2.toJson(tDatasetID)
+              + ","
+              + String2.toJson(sourceName)
+              + ","
+              + String2.toJson(
+                  "<att name=\"_FillValue\" type=\""
+                      + tmv.pa().elementTypeString()
+                      + "\">"
+                      + tmv
+                      + "</att>")
+              + "\n");
+    }
     String2.log(
         "Add _FillValue Attribute?  "
             + // This exact message is noted in setupDatasetsXml.html
@@ -1773,7 +1772,7 @@ public class EDV {
             + ", in the <addAttributes> section, add <att name=\"_FillValue\" type=\""
             + tmv.pa().elementTypeString()
             + "\">"
-            + tmv.toString()
+            + tmv
             + "</att> .");
   }
 
@@ -1837,7 +1836,6 @@ public class EDV {
       factor = -1;
       location = location.substring(0, location.length() - 1);
     }
-    ;
     int len = location.length();
 
     // just degrees?
@@ -1918,7 +1916,7 @@ public class EDV {
         tUnits.indexOf("degrees west") >= 0
         || // some goofy datasets
         tUnits.startsWith("ddd.d")
-        || String2.indexOf(LON_UNITS_VARIANTS, tUnits) >= 0;
+        || LON_UNITS_VARIANTS.indexOf(tUnits) >= 0;
   }
 
   /**
@@ -1935,6 +1933,6 @@ public class EDV {
         || tUnits.indexOf("decimal degrees") >= 0
         || tUnits.indexOf("degrees north") >= 0
         || tUnits.startsWith("dd.d")
-        || String2.indexOf(LAT_UNITS_VARIANTS, tUnits) >= 0;
+        || LAT_UNITS_VARIANTS.indexOf(tUnits) >= 0;
   }
 }

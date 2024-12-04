@@ -288,7 +288,7 @@ public class JPane extends javax.swing.JLayeredPane
    * @see StackedLayout
    */
   public JPane() {
-    this(new String(""), new Dimension(50, 50));
+    this("", new Dimension(50, 50));
   }
 
   /**
@@ -597,7 +597,7 @@ public class JPane extends javax.swing.JLayeredPane
 
   @Override
   public Component getComponent() {
-    return (Component) this;
+    return this;
   }
 
   @Override
@@ -778,10 +778,6 @@ public class JPane extends javax.swing.JLayeredPane
     }
 
     switch (proxy_.getPageHAlign()) {
-      default:
-      case AbstractPane.CENTER:
-        dx += (pf.getImageableWidth() - scale * d.getWidth()) / 2.0;
-        break;
       case AbstractPane.RIGHT:
         dx += pf.getImageableWidth() - scale * d.getWidth();
         break;
@@ -791,13 +787,13 @@ public class JPane extends javax.swing.JLayeredPane
       case AbstractPane.SPECIFIED_LOCATION:
         dx += pageOrigin.x;
         break;
+      case AbstractPane.CENTER:
+      default:
+        dx += (pf.getImageableWidth() - scale * d.getWidth()) / 2.0;
+        break;
     }
 
     switch (proxy_.getPageVAlign()) {
-      default:
-      case AbstractPane.TOP:
-        // do nothing
-        break;
       case AbstractPane.BOTTOM:
         dy += pf.getImageableHeight() - scale * d.getHeight();
         break;
@@ -806,6 +802,10 @@ public class JPane extends javax.swing.JLayeredPane
         break;
       case AbstractPane.SPECIFIED_LOCATION:
         dy += pageOrigin.y;
+        break;
+      case AbstractPane.TOP:
+      default:
+        // do nothing
         break;
     }
     g.clipRect(-1000, -1000, 2000, 2000);

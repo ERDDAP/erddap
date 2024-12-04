@@ -10,6 +10,7 @@ import com.cohort.array.FloatArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -27,41 +28,36 @@ import ucar.units.UnitFormat;
 public class Units2 {
 
   /** UDUNITS and UCUM support metric prefixes. */
-  public static String metricName[] = {
-    "yotta", "zetta", "exa", "peta", "tera",
-    "giga", "mega", "kilo", "hecto", "deka",
-    "deci", "centi", "milli", "micro", "nano",
-    "pico", "femto", "atto", "zepto", "yocto",
-    "µ",
-  };
+  public static final ImmutableList<String> metricName =
+      ImmutableList.of(
+          "yotta", "zetta", "exa", "peta", "tera", "giga", "mega", "kilo", "hecto", "deka", "deci",
+          "centi", "milli", "micro", "nano", "pico", "femto", "atto", "zepto", "yocto", "µ");
 
-  public static String metricAcronym[] = {
-    "Y", "Z", "E", "P", "T",
-    "G", "M", "k", "h", "da",
-    "d", "c", "m", "u", "n",
-    "p", "f", "a", "z", "y",
-    "u"
-  };
-  public static int nMetric = metricName.length;
+  public static final ImmutableList<String> metricAcronym =
+      ImmutableList.of(
+          "Y", "Z", "E", "P", "T", "G", "M", "k", "h", "da", "d", "c", "m", "u", "n", "p", "f", "a",
+          "z", "y", "u");
+  public static final int nMetric = metricName.size();
 
   /** UCUM supports power-of-two prefixes, but UDUNITS doesn't. */
-  public static String twoAcronym[] = {"Ki", "Mi", "Gi", "Ti"};
+  public static final ImmutableList<String> twoAcronym = ImmutableList.of("Ki", "Mi", "Gi", "Ti");
 
-  public static String twoValue[] = {"1024", "1048576", "1073741824", "1.099511627776e12"};
-  public static int nTwo = twoAcronym.length;
+  public static final ImmutableList<String> twoValue =
+      ImmutableList.of("1024", "1048576", "1073741824", "1.099511627776e12");
+  public static final int nTwo = twoAcronym.size();
 
   // these don't need to be thread-safe because they are read-only after creation
-  private static Map<String, String> udHashMap =
+  private static final Map<String, String> udHashMap =
       getHashMapStringString(
           Resources.getResource("com/cohort/util/UdunitsToUcum.properties"), File2.UTF_8);
-  protected static Map<String, String> ucHashMap =
+  protected static final Map<String, String> ucHashMap =
       getHashMapStringString(
           Resources.getResource("com/cohort/util/UcumToUdunits.properties"), File2.UTF_8);
 
   // these special cases are usually populated by EDStatic static constructor, but don't have to be
-  public static Map<String, String> standardizeUdunitsHM = new HashMap();
-  public static Map<String, String> ucumToUdunitsHM = new HashMap();
-  public static Map<String, String> udunitsToUcumHM = new HashMap();
+  public static final Map<String, String> standardizeUdunitsHM = new HashMap<>();
+  public static final Map<String, String> ucumToUdunitsHM = new HashMap<>();
+  public static final Map<String, String> udunitsToUcumHM = new HashMap<>();
 
   /**
    * Set this to true (by calling reallyReallyVerbose=true in your program, not by changing the code
@@ -69,7 +65,7 @@ public class Units2 {
    */
   public static boolean verbose = false;
 
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
   /**
    * This is like udunitsToUcum() but won't throw an exception. If there is trouble, it returns
@@ -181,24 +177,29 @@ public class Units2 {
     udunits = String2.replaceAll(udunits, "_per_", " per ");
 
     // these are comments, not units   set to ""???
-    if (udunits.equals("8 bits, encoded")
-        || udunits.equals("biomass density unit per abundance unit")
-        || udunits.equals("level")
-        || udunits.equals("link")
-        || udunits.equals("local time")
-        || udunits.equals("mean")
-        || udunits.equals("mm water per 1.38m soil (0 to 7 layers)")
-        || udunits.equals("sigma")
-        || udunits.equals("sigma_level")
-        || udunits.equals("site")
-        ||
-        // udunits.equals("") ||
-        udunits.equals("Standardized Units of Relative Dry and Wet")
-        || udunits.equals("Total Scale")
-        || udunits.equals("varies by taxon/group (see description)")) return "{" + udunits + "}";
-
-    if (udunits.equals("1-12")) return "mo";
-    if (udunits.equals("1-31")) return "d";
+    switch (udunits) {
+      case "8 bits, encoded",
+          "biomass density unit per abundance unit",
+          "level",
+          "link",
+          "local time",
+          "mean",
+          "mm water per 1.38m soil (0 to 7 layers)",
+          "sigma",
+          "sigma_level",
+          "site",
+          "Standardized Units of Relative Dry and Wet",
+          "Total Scale",
+          "varies by taxon/group (see description)" -> {
+        return "{" + udunits + "}";
+      }
+      case "1-12" -> {
+        return "mo";
+      }
+      case "1-31" -> {
+        return "d";
+      }
+    }
 
     udunits = String2.replaceAll(udunits, "atomosphere", "atmosphere"); // misspelling
 
@@ -225,20 +226,27 @@ public class Units2 {
     if (udunits.startsWith("decimal")) // hours, minutes, seconds, degrees
     udunits = udunits.substring(7).trim();
 
-    if (udunits.equals("degrees (+E)") || udunits.equals("degrees-east")) return "deg{east}";
-    if (udunits.equals("degrees (+N)") || udunits.equals("degrees-north")) return "deg{north}";
-
-    if (udunits.equals("Degrees, Oceanographic Convention, 0=toward N, 90=toward E")
-        || udunits.equals("degrees (clockwise from true north)")
-        || udunits.equals("degrees (clockwise towards true north)")) return "deg{true}";
-
-    if (udunits.equals("degree(azimuth)")
-        || udunits.equals("Degrees(azimuth)")
-        || udunits.equals("degrees(azimuth)")) return "deg{azimuth}";
-
-    if (udunits.equals("degree(clockwise from bow)")
-        || udunits.equals("degree (clockwise from bow)")
-        || udunits.equals("degrees (clockwise from bow)")) return "deg{clockwise from bow}";
+    switch (udunits) {
+      case "degrees (+E)", "degrees-east" -> {
+        return "deg{east}";
+      }
+      case "degrees (+N)", "degrees-north" -> {
+        return "deg{north}";
+      }
+      case "Degrees, Oceanographic Convention, 0=toward N, 90=toward E",
+          "degrees (clockwise from true north)",
+          "degrees (clockwise towards true north)" -> {
+        return "deg{true}";
+      }
+      case "degree(azimuth)", "Degrees(azimuth)", "degrees(azimuth)" -> {
+        return "deg{azimuth}";
+      }
+      case "degree(clockwise from bow)",
+          "degree (clockwise from bow)",
+          "degrees (clockwise from bow)" -> {
+        return "deg{clockwise from bow}";
+      }
+    }
 
     if (udunits.startsWith("four digit ")) // year
     udunits = udunits.substring(11);
@@ -264,26 +272,37 @@ public class Units2 {
 
     udunits = String2.replaceAll(udunits, "micro-", "micro");
 
-    if (udunits.equals("MM/HR")) return "mm.h-1";
-
-    if (udunits.equals("mm/mn")) // /month?
-    return "mm.mo-1";
-
-    if (udunits.equals("mm (01 to 12)")) // month
-    return "mo";
+    switch (udunits) {
+      case "MM/HR" -> {
+        return "mm.h-1";
+      }
+      case "mm/mn" -> {
+        // /month?
+        return "mm.mo-1";
+        // /month?
+      }
+      case "mm (01 to 12)" -> {
+        // month
+        return "mo";
+      }
+    }
 
     if (udunits.startsWith("molm-2")) udunits = "mol m-2 " + udunits.substring(6);
 
-    if (udunits.equals("nominal day")) return "d";
-
-    if (udunits.equals("number of cells")
-        || udunits.equals("number of observations")
-        || udunits.equals("Obs count")
-        || udunits.equals("observations")) return "{count}";
-
-    if (udunits.equals("numeric")) return "1";
-
-    if (udunits.equals("pa")) return "Pa";
+    switch (udunits) {
+      case "nominal day" -> {
+        return "d";
+      }
+      case "number of cells", "number of observations", "Obs count", "observations" -> {
+        return "{count}";
+      }
+      case "numeric" -> {
+        return "1";
+      }
+      case "pa" -> {
+        return "Pa";
+      }
+    }
 
     udunits = String2.replaceAll(udunits, "parts per 1000000", "ppm");
     udunits = String2.replaceAll(udunits, "parts per million", "ppm");
@@ -315,7 +334,7 @@ public class Units2 {
     if (udunits.startsWith("two digit ")) // e.g. month, day, hour, minute, second
     udunits = udunits.substring(10);
 
-    if (udunits.toLowerCase().equals("unitless")) return "1";
+    if (udunits.equalsIgnoreCase("unitless")) return "1";
 
     if (udunits.equals("volts (0-5 FSO)")) return "V";
 
@@ -345,14 +364,14 @@ public class Units2 {
       if (ch == '{') {
         int po2 = po + 1;
         while (po2 < udLength && udunits.charAt(po2) != '}') po2++;
-        ucum.append(udunits.substring(po, po2 + 1));
+        ucum.append(udunits, po, po2 + 1);
         po = po2 + 1;
         continue;
       }
 
       // PER
       if (po <= udLength - 3) {
-        if (udunits.substring(po, po + 3).toLowerCase().equals("per")
+        if (udunits.substring(po, po + 3).equalsIgnoreCase("per")
             && (po + 3 == udLength || !String2.isLetter(udunits.charAt(po + 3)))) {
           dividePending = !dividePending;
           po += 3;
@@ -549,15 +568,15 @@ public class Units2 {
 
     // try to separate out a metricName prefix (e.g., "kilo")
     for (int p = 0; p < nMetric; p++) {
-      if (udunits.startsWith(metricName[p])) {
-        String tUd = udunits.substring(metricName[p].length());
+      if (udunits.startsWith(metricName.get(p))) {
+        String tUd = udunits.substring(metricName.get(p).length());
         if (tUd.length() == 0) {
-          ucum.append(metricAcronym[p] + "{count}"); // standardize on acronym
+          ucum.append(metricAcronym.get(p) + "{count}"); // standardize on acronym
           return ucum.toString();
         }
         String newUd = udHashMap.get(tUd);
         if (String2.isSomething(newUd)) {
-          ucum.append(metricAcronym[p] + newUd); // standardize on acronym
+          ucum.append(metricAcronym.get(p) + newUd); // standardize on acronym
           return ucum.toString();
         }
       }
@@ -565,15 +584,15 @@ public class Units2 {
 
     // try to separate out a metricAcronym prefix (e.g., "k")
     for (int p = 0; p < nMetric; p++) {
-      if (udunits.startsWith(metricAcronym[p])) {
-        String tUd = udunits.substring(metricAcronym[p].length());
+      if (udunits.startsWith(metricAcronym.get(p))) {
+        String tUd = udunits.substring(metricAcronym.get(p).length());
         if (tUd.length() == 0) {
-          ucum.append(metricAcronym[p] + "{count}");
+          ucum.append(metricAcronym.get(p) + "{count}");
           return ucum.toString();
         }
         String newUd = udHashMap.get(tUd);
         if (String2.isSomething(newUd)) {
-          ucum.append(metricAcronym[p] + newUd);
+          ucum.append(metricAcronym.get(p) + newUd);
           return ucum.toString();
         }
       }
@@ -716,7 +735,7 @@ public class Units2 {
       if (ch == '{') {
         int po2 = po + 1;
         while (po2 < ucLength && ucum.charAt(po2) != '}') po2++;
-        udunits.append(ucum.substring(po + 1, po2)); // non-standard udunits comment or unknown term
+        udunits.append(ucum, po + 1, po2); // non-standard udunits comment or unknown term
         po = po2 + 1;
         continue;
       }
@@ -895,9 +914,9 @@ public class Units2 {
       // try to separate out one metricAcronym prefix (e.g., "k")
       if (!caughtPrefix) {
         for (int p = 0; p < nMetric; p++) {
-          if (ucum.startsWith(metricAcronym[p])) {
-            ucum = ucum.substring(metricAcronym[p].length());
-            udunits.append(metricAcronym[p]);
+          if (ucum.startsWith(metricAcronym.get(p))) {
+            ucum = ucum.substring(metricAcronym.get(p).length());
+            udunits.append(metricAcronym.get(p));
             if (ucum.length() == 0) {
               udunits.append("{count}");
               return udunits.toString();
@@ -911,15 +930,15 @@ public class Units2 {
       // try to separate out a twoAcronym prefix (e.g., "Ki")
       if (!caughtPrefix) {
         for (int p = 0; p < nTwo; p++) {
-          if (ucum.startsWith(twoAcronym[p])) {
-            ucum = ucum.substring(twoAcronym[p].length());
+          if (ucum.startsWith(twoAcronym.get(p))) {
+            ucum = ucum.substring(twoAcronym.get(p).length());
             char udch = udunits.length() > 0 ? udunits.charAt(udunits.length() - 1) : '\u0000';
             if (udch != '\u0000' && udch != '.' && udch != '/') udunits.append('.');
             if (ucum.length() == 0) {
               udunits.append("{count}");
               return udunits.toString();
             }
-            udunits.append(twoValue[p] + ".");
+            udunits.append(twoValue.get(p) + ".");
             caughtPrefix = true;
             continue MAIN;
           }
@@ -955,7 +974,7 @@ public class Units2 {
   public static Map<String, String> getHashMapStringString(URL resourceFile, String charset)
       throws RuntimeException {
     try {
-      Map ht = new HashMap();
+      Map<String, String> ht = new HashMap<>();
       List<String> sar = Resources.readLines(resourceFile, Charset.forName(charset));
       int n = sar.size();
       int i = 0;
@@ -966,7 +985,7 @@ public class Units2 {
         int po = s.indexOf('=');
         if (po < 0) continue;
         // new String: so not linked to big source file's text
-        ht.put(new String(s.substring(0, po).trim()), new String(s.substring(po + 1).trim()));
+        ht.put(s.substring(0, po).trim(), s.substring(po + 1).trim());
       }
       return ht;
     } catch (Throwable t) {
@@ -1071,8 +1090,8 @@ public class Units2 {
     String2.log("\n*** Units2.makeCrudeUcumToUdunits");
     StringArray sa = new StringArray();
     Object keys[] = udHashMap.keySet().toArray();
-    for (int i = 0; i < keys.length; i++) {
-      String key = (String) keys[i];
+    for (Object o : keys) {
+      String key = (String) o;
       if (key.endsWith("s") && udHashMap.get(key.substring(0, key.length() - 1)) != null) {
         // skip this plural (a singular exists)
       } else {
@@ -1096,7 +1115,7 @@ public class Units2 {
   }
 
   // ******************************
-  public static UnitFormat unitFormat = ucar.units.StandardUnitFormat.instance();
+  public static final UnitFormat unitFormat = ucar.units.StandardUnitFormat.instance();
 
   /**
    * This tries to return a standardized (lightly canonical) version of a UDUnits string. This is
@@ -1143,23 +1162,23 @@ public class Units2 {
 
     if (debugMode) String2.log(">> unpackVariableAttributes for varName=" + varName);
 
-    Attributes newAtts = atts; // the results, so it has a more descriptive name
+    // the results, so it has a more descriptive name
     Attributes oldAtts = new Attributes(atts); // so we have an unchanged copy to refer to
 
     // deal with numeric time units
-    String oUnits = newAtts.getString("units");
-    if (oUnits == null || !String2.isSomething(oUnits)) newAtts.remove("units");
+    String oUnits = atts.getString("units");
+    if (oUnits == null || !String2.isSomething(oUnits)) atts.remove("units");
     else if (Calendar2.isNumericTimeUnits(oUnits))
-      newAtts.set("units", Calendar2.SECONDS_SINCE_1970); // AKA EDV.TIME_UNITS
+      atts.set("units", Calendar2.SECONDS_SINCE_1970); // AKA EDV.TIME_UNITS
     // presumably, String time var doesn't have numeric time units
     else if (Calendar2.isStringTimeUnits(oUnits)) {
     } else // standardize the units
-    newAtts.set("units", Units2.safeStandardizeUdunits(oUnits));
+    atts.set("units", Units2.safeStandardizeUdunits(oUnits));
 
-    PrimitiveArray unsignedPA = newAtts.remove("_Unsigned");
+    PrimitiveArray unsignedPA = atts.remove("_Unsigned");
     boolean unsigned = unsignedPA != null && "true".equals(unsignedPA.toString());
-    PrimitiveArray scalePA = newAtts.remove("scale_factor");
-    PrimitiveArray addPA = newAtts.remove("add_offset");
+    PrimitiveArray scalePA = atts.remove("scale_factor");
+    PrimitiveArray addPA = atts.remove("add_offset");
 
     // if present, convert _FillValue and missing_value to PA standard mv
     PAType destPAType =
@@ -1181,10 +1200,10 @@ public class Units2 {
                                 ? PAType.ULONG
                                 : // was PAType.DOUBLE : //longs are converted to double (not ideal)
                                 oPAType;
-    if (newAtts.remove("_FillValue") != null)
-      newAtts.set("_FillValue", PrimitiveArray.factory(destPAType, 1, ""));
-    if (newAtts.remove("missing_value") != null)
-      newAtts.set("missing_value", PrimitiveArray.factory(destPAType, 1, ""));
+    if (atts.remove("_FillValue") != null)
+      atts.set("_FillValue", PrimitiveArray.factory(destPAType, 1, ""));
+    if (atts.remove("missing_value") != null)
+      atts.set("missing_value", PrimitiveArray.factory(destPAType, 1, ""));
 
     // if var isn't packed, we're done
     if (!unsigned && scalePA == null && addPA == null) return;
@@ -1222,13 +1241,13 @@ public class Units2 {
 
     // if scale and/or addOffset, then remove redundant related atts
     if (scalePA != null || addPA != null) {
-      newAtts.remove("Intercept");
-      newAtts.remove("Slope");
-      String ss = newAtts.getString("Scaling");
+      atts.remove("Intercept");
+      atts.remove("Slope");
+      String ss = atts.getString("Scaling");
       if ("linear".equals(ss)) {
         // remove if Scaling=linear
-        newAtts.remove("Scaling");
-        newAtts.remove("Scaling_Equation");
+        atts.remove("Scaling");
+        atts.remove("Scaling_Equation");
       }
     }
 
@@ -1237,12 +1256,12 @@ public class Units2 {
     // So look at data types and guess which to do, with preference to believing they're already
     // unpacked
     // Note that at this point in this method, we're dealing with a packed data variable
-    if (destPAType != null && (destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
+    if ((destPAType == PAType.FLOAT || destPAType == PAType.DOUBLE)) {
       for (int i = 0; i < Attributes.signedToUnsignedAttNames.length; i++) {
         String name = Attributes.signedToUnsignedAttNames[i];
-        PrimitiveArray pa = newAtts.get(name);
+        PrimitiveArray pa = atts.get(name);
         if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
-          newAtts.set(name, oldAtts.unpackPA(varName, pa, false, false));
+          atts.set(name, oldAtts.unpackPA(varName, pa, false, false));
       }
     }
 
@@ -1253,20 +1272,20 @@ public class Units2 {
               + " unsigned="
               + unsigned
               + " actual_max="
-              + newAtts.get("actual_max")
+              + atts.get("actual_max")
               + " actual_min="
-              + newAtts.get("actual_min")
+              + atts.get("actual_min")
               + " actual_range="
-              + newAtts.get("actual_range")
+              + atts.get("actual_range")
               + " data_max="
-              + newAtts.get("data_max")
+              + atts.get("data_max")
               + " data_min="
-              + newAtts.get("data_min")
+              + atts.get("data_min")
               + " valid_max="
-              + newAtts.get("valid_max")
+              + atts.get("valid_max")
               + " valid_min="
-              + newAtts.get("valid_min")
+              + atts.get("valid_min")
               + " valid_range="
-              + newAtts.get("valid_range"));
+              + atts.get("valid_range"));
   }
 }

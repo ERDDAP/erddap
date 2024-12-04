@@ -59,12 +59,12 @@ public class TableWriterOrderBy extends TableWriterAll {
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0) throw new SimpleException(err);
     orderBy = String2.split(tOrderByCsv, ',');
     if (orderBy.length == 0) throw new SimpleException(err);
-    for (int i = 0; i < orderBy.length; i++)
-      if (orderBy[i].indexOf('/') >= 0)
+    for (String s : orderBy)
+      if (s.indexOf('/') >= 0)
         throw new SimpleException(
             EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
                 + "'orderBy' doesn't support '/' ("
-                + orderBy[i]
+                + s
                 + ").");
   }
 

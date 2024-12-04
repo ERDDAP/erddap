@@ -23,10 +23,10 @@ import java.util.Properties;
 public class SGTMetaData implements java.io.Serializable {
   private String name_;
   private String units_;
-  private boolean modulo_;
+  private final boolean modulo_;
   private double moduloValue_ = 0.0;
   private GeoDate moduloTime_ = null;
-  private boolean reversed_;
+  private final boolean reversed_;
   private Properties props_ = null;
 
   /** Default constructor. */

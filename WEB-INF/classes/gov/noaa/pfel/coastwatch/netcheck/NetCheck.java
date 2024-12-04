@@ -81,12 +81,12 @@ public class NetCheck {
   private String smtpFromAddress;
   private int memoryWarningMB;
   // emailAdministrator is just one person, but is an ArrayList to standardize subscriber lists
-  private ArrayList<String> emailAdministrator = new ArrayList<>();
-  private ArrayList<String> emailStatusTo = new ArrayList<>();
-  private ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
-  private ArrayList<String> emailChangesTo = new ArrayList<>();
-  private ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
-  private ArrayList<NetCheckTest> netCheckTests = new ArrayList<>();
+  private final ArrayList<String> emailAdministrator = new ArrayList<>();
+  private final ArrayList<String> emailStatusTo = new ArrayList<>();
+  private final ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
+  private final ArrayList<String> emailChangesTo = new ArrayList<>();
+  private final ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
+  private final ArrayList<NetCheckTest> netCheckTests = new ArrayList<>();
   private String lastResult[]; // initially all ""
   private int nPass[];
   private int nTry[];
@@ -193,74 +193,68 @@ public class NetCheck {
       while (!tags.equals("</netCheck>") && iteration++ < 1000000) {
         // process the tags
         // String2.log(tags + xmlReader.content());
-        if (tags.equals("<netCheck>")) {
-        } else if (tags.equals("<netCheck><setup>")) {
-        } else if (tags.equals("<netCheck></setup>")) {
-        } else if (tags.equals("<netCheck><setup><minutesBetweenTests>")) {
-        } else if (tags.equals("<netCheck><setup></minutesBetweenTests>"))
-          minutesBetweenTests = String2.parseDouble(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><minutesBetweenStatusReports>")) {
-        } else if (tags.equals("<netCheck><setup></minutesBetweenStatusReports>"))
-          minutesBetweenStatusReports = String2.parseInt(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><mustRespondWithinSeconds>")) {
-        } else if (tags.equals("<netCheck><setup></mustRespondWithinSeconds>"))
-          mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><smtpServer>")) {
-        } else if (tags.equals("<netCheck><setup></smtpServer>")) smtpServer = xmlReader.content();
-        else if (tags.equals("<netCheck><setup><smtpPort>")) {
-        } else if (tags.equals("<netCheck><setup></smtpPort>"))
-          smtpPort = String2.parseInt(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><smtpProperties>")) {
-        } else if (tags.equals("<netCheck><setup></smtpProperties>"))
-          smtpProperties = xmlReader.content();
-        else if (tags.equals("<netCheck><setup><smtpUser>")) {
-        } else if (tags.equals("<netCheck><setup></smtpUser>")) smtpUser = xmlReader.content();
-        else if (tags.equals("<netCheck><setup><smtpPassword>")) {
-        } else if (tags.equals("<netCheck><setup></smtpPassword>"))
-          smtpPassword = xmlReader.content();
-        else if (tags.equals("<netCheck><setup><smtpFromAddress>")) {
-        } else if (tags.equals("<netCheck><setup></smtpFromAddress>"))
-          smtpFromAddress = xmlReader.content();
-        else if (tags.equals("<netCheck><setup><emailStatusTo>")) {
-        } else if (tags.equals("<netCheck><setup></emailStatusTo>"))
-          emailStatusTo.add(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><emailStatusHeadlinesTo>")) {
-        } else if (tags.equals("<netCheck><setup></emailStatusHeadlinesTo>"))
-          emailStatusHeadlinesTo.add(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><emailChangesTo>")) {
-        } else if (tags.equals("<netCheck><setup></emailChangesTo>"))
-          emailChangesTo.add(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><emailChangeHeadlinesTo>")) {
-        } else if (tags.equals("<netCheck><setup></emailChangeHeadlinesTo>"))
-          emailChangeHeadlinesTo.add(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><testMode>")) {
-        } else if (tags.equals("<netCheck><setup></testMode>"))
-          testMode = String2.parseBoolean(xmlReader.content());
-        else if (tags.equals("<netCheck><setup><memoryWarningMB>")) {
-        } else if (tags.equals("<netCheck><setup></memoryWarningMB>"))
-          memoryWarningMB = String2.parseInt(xmlReader.content());
-        else if (tags.equals("<netCheck><httpTest>")) {
-          // create a new httpTest
-          // this reads all the tags until </httpTest>
-          netCheckTests.add(new HttpTest(xmlReader));
+        switch (tags) {
+          case "<netCheck>",
+              "<netCheck><setup><memoryWarningMB>",
+              "<netCheck><setup><testMode>",
+              "<netCheck><setup><emailChangeHeadlinesTo>",
+              "<netCheck><setup><emailChangesTo>",
+              "<netCheck><setup><emailStatusHeadlinesTo>",
+              "<netCheck><setup><emailStatusTo>",
+              "<netCheck><setup><smtpFromAddress>",
+              "<netCheck><setup><smtpPassword>",
+              "<netCheck><setup><smtpUser>",
+              "<netCheck><setup><smtpProperties>",
+              "<netCheck><setup><smtpPort>",
+              "<netCheck><setup><smtpServer>",
+              "<netCheck><setup><mustRespondWithinSeconds>",
+              "<netCheck><setup><minutesBetweenStatusReports>",
+              "<netCheck><setup><minutesBetweenTests>",
+              "<netCheck></setup>",
+              "<netCheck><setup>" -> {}
+          case "<netCheck><setup></minutesBetweenTests>" ->
+              minutesBetweenTests = String2.parseDouble(xmlReader.content());
+          case "<netCheck><setup></minutesBetweenStatusReports>" ->
+              minutesBetweenStatusReports = String2.parseInt(xmlReader.content());
+          case "<netCheck><setup></mustRespondWithinSeconds>" ->
+              mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
+          case "<netCheck><setup></smtpServer>" -> smtpServer = xmlReader.content();
+          case "<netCheck><setup></smtpPort>" -> smtpPort = String2.parseInt(xmlReader.content());
+          case "<netCheck><setup></smtpProperties>" -> smtpProperties = xmlReader.content();
+          case "<netCheck><setup></smtpUser>" -> smtpUser = xmlReader.content();
+          case "<netCheck><setup></smtpPassword>" -> smtpPassword = xmlReader.content();
+          case "<netCheck><setup></smtpFromAddress>" -> smtpFromAddress = xmlReader.content();
+          case "<netCheck><setup></emailStatusTo>" -> emailStatusTo.add(xmlReader.content());
+          case "<netCheck><setup></emailStatusHeadlinesTo>" ->
+              emailStatusHeadlinesTo.add(xmlReader.content());
+          case "<netCheck><setup></emailChangesTo>" -> emailChangesTo.add(xmlReader.content());
+          case "<netCheck><setup></emailChangeHeadlinesTo>" ->
+              emailChangeHeadlinesTo.add(xmlReader.content());
+          case "<netCheck><setup></testMode>" ->
+              testMode = String2.parseBoolean(xmlReader.content());
+          case "<netCheck><setup></memoryWarningMB>" ->
+              memoryWarningMB = String2.parseInt(xmlReader.content());
+          case "<netCheck><httpTest>" ->
+              // create a new httpTest
+              // this reads all the tags until </httpTest>
+              netCheckTests.add(new HttpTest(xmlReader));
+          case "<netCheck><opendapTest>" ->
+              // create a new opendapTest
+              // this reads all the tags until </opendapTest>
+              netCheckTests.add(new OpendapTest(xmlReader));
+          case "<netCheck><pauseTest>" ->
+              // create a new pauseTest
+              // this reads all the tags until </pauseTest>
+              netCheckTests.add(new PauseTest(xmlReader));
 
-        } else if (tags.equals("<netCheck><opendapTest>")) {
-          // create a new opendapTest
-          // this reads all the tags until </opendapTest>
-          netCheckTests.add(new OpendapTest(xmlReader));
+            // 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
+            // } else if (tags.equals("<netCheck><sftpTest>")) {
+            //        //create a new sftpTest
+            //        //this reads all the tags until </sftpTest>
+            //        netCheckTests.add(new SftpTest(xmlReader));
 
-        } else if (tags.equals("<netCheck><pauseTest>")) {
-          // create a new pauseTest
-          // this reads all the tags until </pauseTest>
-          netCheckTests.add(new PauseTest(xmlReader));
-
-          // 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
-          // } else if (tags.equals("<netCheck><sftpTest>")) {
-          //        //create a new sftpTest
-          //        //this reads all the tags until </sftpTest>
-          //        netCheckTests.add(new SftpTest(xmlReader));
-
-        } else throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+          default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+        }
 
         // get the next tags
         xmlReader.nextTag();
@@ -612,9 +606,8 @@ public class NetCheck {
       Set<String> notifiedReThisTest,
       String result) {
 
-    for (int i = 0; i < subscribers.size(); i++) {
+    for (String subscriber : subscribers) {
       // subscriber already notified re this test?
-      String subscriber = subscribers.get(i);
       if (notifiedReThisTest.add(
           subscriber)) { // true if subscriber wasn't already in set, i.e. new
 
@@ -654,9 +647,9 @@ public class NetCheck {
 
     boolean testMode = false;
     String xmlName = null;
-    for (int i = 0; i < args.length; i++) {
-      if (args[i].toLowerCase().equals("-testmode")) testMode = true;
-      else if (args[i].endsWith(".xml")) xmlName = args[i];
+    for (String arg : args) {
+      if (arg.equalsIgnoreCase("-testmode")) testMode = true;
+      else if (arg.endsWith(".xml")) xmlName = arg;
     }
 
     if (xmlName == null) {

@@ -22,11 +22,12 @@ public class SharedWatchService {
   public static final WatchEvent.Kind<Path> MODIFY = StandardWatchEventKinds.ENTRY_MODIFY;
   public static final WatchEvent.Kind<Object> OVERFLOW = StandardWatchEventKinds.OVERFLOW;
 
-  private static ConcurrentHashMap<WatchKey, String> keyToDirMap = new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<String, WatchService> fileSystemToService =
+  private static final ConcurrentHashMap<WatchKey, String> keyToDirMap = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, WatchService> fileSystemToService =
       new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<WatchKey, String> keyToHandlerId = new ConcurrentHashMap<>();
-  private static ConcurrentHashMap<String, WatchUpdateHandler> handlerIdToHandler =
+  private static final ConcurrentHashMap<WatchKey, String> keyToHandlerId =
+      new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, WatchUpdateHandler> handlerIdToHandler =
       new ConcurrentHashMap<>();
 
   /**
@@ -86,18 +87,17 @@ public class SharedWatchService {
 
   private static void register(WatchService watchService, String directory, String handler)
       throws IOException {
-    WatchKey key =
-        Paths.get(directory).register(watchService, new WatchEvent.Kind[] {CREATE, DELETE, MODIFY});
+    WatchKey key = Paths.get(directory).register(watchService, CREATE, DELETE, MODIFY);
     keyToDirMap.put(key, directory);
     keyToHandlerId.put(key, handler);
   }
 
   private static String systemToID(FileSystem system) {
-    String id = "";
+    StringBuilder id = new StringBuilder();
     for (FileStore store : system.getFileStores()) {
-      id += store.name() + store.type();
+      id.append(store.name()).append(store.type());
     }
-    return id;
+    return id.toString();
   }
 
   /**

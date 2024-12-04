@@ -33,7 +33,7 @@ import java.util.HashSet;
 @SaxHandlerClass(EDDTableFromOBISHandler.class)
 public class EDDTableFromOBIS extends EDDTable {
 
-  protected String sourceCode;
+  protected final String sourceCode;
   protected int nFixedVariables;
 
   public static final String STANDARD_INFO_URL = "http://www.iobis.org";
@@ -43,151 +43,154 @@ public class EDDTableFromOBIS extends EDDTable {
    * &amp;sourceUrl; and &amp;creator_email; are used in constructor to customize the license.
    */
   public static final String OBIS_LICENSE =
-      "By using OBIS data, I agree that, in any publication or presentation\n"
-          + "of any sort based wholly or in part on such data, I will:\n"
-          + "\n"
-          + "1. Acknowledge the use of specific records from contributing databases\n"
-          + "in the form appearing in the GLOBAL 'citation' attribute thereof (if any);\n"
-          + "and acknowledge the use of the OBIS facility in one of the following\n"
-          + "prescribed forms:\n"
-          + "\n"
-          + "For OBIS website:\n"
-          + "\n"
-          + "Ocean Biogeographic Information System. [date accessed]\n"
-          + "&sourceUrl;\n"
-          + "\n"
-          + "For data used:\n"
-          + "\n"
-          + "Author, initials. Database title. Retrieved [date accessed] from\n"
-          + "&sourceUrl;\n"
-          + "\n"
-          + "Example:\n"
-          + "\n"
-          + "Stocks, K. SeamountsOnline: an online information system for seamount\n"
-          + "biology. Version 3.1. Retrieved [date accessed] from\n"
-          + "&sourceUrl;.\n"
-          + "\n"
-          + "2. For information purposes, provide to &creator_email;\n"
-          + "the full citation of any publication I make (printed or electronic)\n"
-          + "that cites OBIS or any constituent part.\n"
-          + "\n"
-          + "3. Recognize the limitations of data in OBIS:\n"
-          + "OBIS is comparable to a scientific journal that makes data freely\n"
-          + "available on the internet. Thus the geographic and taxonomic scope,\n"
-          + "and quantity of data provided, depend on the scientists and\n"
-          + "organizations that provide data. However, in contrast to data in a\n"
-          + "journal, the 'reader' can select and combine data in OBIS from a\n"
-          + "variety of sources. OBIS and its users give feedback on data quality\n"
-          + "and possible errors to data providers. Because data providers are\n"
-          + "willing to correct errors, the quality of the data will increase in\n"
-          + "time. How OBIS provides quality assurance, who is primarily\n"
-          + "responsible for data published in OBIS (its owners), issues to be\n"
-          + "considered in using the data, and known gaps in the data, are\n"
-          + "described below.\n"
-          + "\n"
-          + "Quality assurance\n"
-          + "\n"
-          + "Only data from authoritative scientists and science organizations\n"
-          + "approved by OBIS are served. All data are subject to quality control\n"
-          + "procedures before publication, and at regular intervals, with data\n"
-          + "providers informed of any discrepancies and potential errors (e.g.\n"
-          + "species names spelt incorrectly, mapping errors). OBIS also benefits\n"
-          + "from user peer-review and feedback to identify technical, geographic,\n"
-          + "and taxonomic errors in data served. However, although errors will\n"
-          + "exist as they do in any publication, OBIS is confident that the data\n"
-          + "are the best available in electronic form. That said, the user needs\n"
-          + "sufficient knowledge to judge the appropriate use of the data, i.e.\n"
-          + "for what purpose it is fit.\n"
-          + "\n"
-          + "Many of the data published through OBIS have voucher specimens in\n"
-          + "institutional collections and museums, images of observations, and\n"
-          + "the original identifier of the specimens is often credited or will\n"
-          + "be contactable from the data custodian.\n"
-          + "\n"
-          + "Data ownership\n"
-          + "\n"
-          + "Data providers retain ownership of the data provided. OBIS does not\n"
-          + "own or control or limit the use of any data or products accessible\n"
-          + "through its website. Accordingly, it does not take responsibility\n"
-          + "for the quality of such data or products, or the use that people may\n"
-          + "make of them.\n"
-          + "\n"
-          + "Data use\n"
-          + "\n"
-          + "Appropriate caution is necessary in the interpretation of results\n"
-          + "derived from OBIS. Users must recognize that the analysis and\n"
-          + "interpretation of data require background knowledge and expertise\n"
-          + "about marine biodiversity (including ecosystems and taxonomy).\n"
-          + "Users should be aware of possible errors, including in the use of\n"
-          + "species names, geo-referencing, data handling, and mapping. They\n"
-          + "should cross-check their results for possible errors, and qualify\n"
-          + "their interpretation of any results accordingly.\n"
-          + "\n"
-          + "Users should be aware that OBIS is a gateway to a system of databases\n"
-          + "distributed around the world. More information on OBIS data is\n"
-          + "available from the data sources websites and contact persons. Users\n"
-          + "should email any questions concerning OBIS data or tools (e.g. maps)\n"
-          + "to the appropriate contact person and copy this request to\n"
-          + "&creator_email; .\n"
-          + "\n"
-          + "Data gaps\n"
-          + "\n"
-          + "Major gaps in data and knowledge about the oceans are reflected in\n"
-          + "OBIS' data coverage. Note the following:\n"
-          + "Most of the planet is more than 1 km under water: this deep sea is\n"
-          + "the least surveyed part of our world.\n"
-          + "Coastal areas have been adequately sampled only for the distribution\n"
-          + "of most vertebrates (birds, mammals, reptiles, larger fish).\n"
-          + "The oceans have been better sampled in the northern than the\n"
-          + "southern hemisphere, as reflected in the distribution of data in\n"
-          + "OBIS.\n"
-          + "Most marine species have not yet been recognized or named. A major\n"
-          + "effort is required to describe marine species, especially\n"
-          + "invertebrates and deep-sea organisms.\n"
-          + "Of the marine species that have been described, some have been\n"
-          + "discovered to be several species, and others combined into single\n"
-          + "species. Thus, there are changes in the application of species names\n"
-          + "over time. A checklist of all current marine species names is not\n"
-          + "available but it is estimated that 230,000 have been described.\n"
-          + "Only about half of these names have been organized into global\n"
-          + "species checklists. OBIS includes distribution data on (a) many of\n"
-          + "these validated names and (b) additional names that remain to be\n"
-          + "organized into global species checklists. Thus, OBIS has some\n"
-          + "distribution data for about one third of the known marine species.\n"
-          + "Some species distribution data are not available in any form, as\n"
-          + "they have not have been published nor made available for databases.\n"
-          + "Only some of the recently collected, and less of the older published,\n"
-          + "data have been entered into databases. Thus databases are incomplete.\n"
-          + "Of existing databases, many are not connected to OBIS.\n"
-          + "\n"
-          + "You can help address these data gaps by (a) recognizing and\n"
-          + "encouraging scientists and organizations to make their data available\n"
-          + "online so they are accessible to OBIS, and (b) advocating for and\n"
-          + "carrying out field surveys and taxonomic studies designed to fill\n"
-          + "geographic and taxonomic gaps in knowledge.\n";
+      """
+                  By using OBIS data, I agree that, in any publication or presentation
+                  of any sort based wholly or in part on such data, I will:
+
+                  1. Acknowledge the use of specific records from contributing databases
+                  in the form appearing in the GLOBAL 'citation' attribute thereof (if any);
+                  and acknowledge the use of the OBIS facility in one of the following
+                  prescribed forms:
+
+                  For OBIS website:
+
+                  Ocean Biogeographic Information System. [date accessed]
+                  &sourceUrl;
+
+                  For data used:
+
+                  Author, initials. Database title. Retrieved [date accessed] from
+                  &sourceUrl;
+
+                  Example:
+
+                  Stocks, K. SeamountsOnline: an online information system for seamount
+                  biology. Version 3.1. Retrieved [date accessed] from
+                  &sourceUrl;.
+
+                  2. For information purposes, provide to &creator_email;
+                  the full citation of any publication I make (printed or electronic)
+                  that cites OBIS or any constituent part.
+
+                  3. Recognize the limitations of data in OBIS:
+                  OBIS is comparable to a scientific journal that makes data freely
+                  available on the internet. Thus the geographic and taxonomic scope,
+                  and quantity of data provided, depend on the scientists and
+                  organizations that provide data. However, in contrast to data in a
+                  journal, the 'reader' can select and combine data in OBIS from a
+                  variety of sources. OBIS and its users give feedback on data quality
+                  and possible errors to data providers. Because data providers are
+                  willing to correct errors, the quality of the data will increase in
+                  time. How OBIS provides quality assurance, who is primarily
+                  responsible for data published in OBIS (its owners), issues to be
+                  considered in using the data, and known gaps in the data, are
+                  described below.
+
+                  Quality assurance
+
+                  Only data from authoritative scientists and science organizations
+                  approved by OBIS are served. All data are subject to quality control
+                  procedures before publication, and at regular intervals, with data
+                  providers informed of any discrepancies and potential errors (e.g.
+                  species names spelt incorrectly, mapping errors). OBIS also benefits
+                  from user peer-review and feedback to identify technical, geographic,
+                  and taxonomic errors in data served. However, although errors will
+                  exist as they do in any publication, OBIS is confident that the data
+                  are the best available in electronic form. That said, the user needs
+                  sufficient knowledge to judge the appropriate use of the data, i.e.
+                  for what purpose it is fit.
+
+                  Many of the data published through OBIS have voucher specimens in
+                  institutional collections and museums, images of observations, and
+                  the original identifier of the specimens is often credited or will
+                  be contactable from the data custodian.
+
+                  Data ownership
+
+                  Data providers retain ownership of the data provided. OBIS does not
+                  own or control or limit the use of any data or products accessible
+                  through its website. Accordingly, it does not take responsibility
+                  for the quality of such data or products, or the use that people may
+                  make of them.
+
+                  Data use
+
+                  Appropriate caution is necessary in the interpretation of results
+                  derived from OBIS. Users must recognize that the analysis and
+                  interpretation of data require background knowledge and expertise
+                  about marine biodiversity (including ecosystems and taxonomy).
+                  Users should be aware of possible errors, including in the use of
+                  species names, geo-referencing, data handling, and mapping. They
+                  should cross-check their results for possible errors, and qualify
+                  their interpretation of any results accordingly.
+
+                  Users should be aware that OBIS is a gateway to a system of databases
+                  distributed around the world. More information on OBIS data is
+                  available from the data sources websites and contact persons. Users
+                  should email any questions concerning OBIS data or tools (e.g. maps)
+                  to the appropriate contact person and copy this request to
+                  &creator_email; .
+
+                  Data gaps
+
+                  Major gaps in data and knowledge about the oceans are reflected in
+                  OBIS' data coverage. Note the following:
+                  Most of the planet is more than 1 km under water: this deep sea is
+                  the least surveyed part of our world.
+                  Coastal areas have been adequately sampled only for the distribution
+                  of most vertebrates (birds, mammals, reptiles, larger fish).
+                  The oceans have been better sampled in the northern than the
+                  southern hemisphere, as reflected in the distribution of data in
+                  OBIS.
+                  Most marine species have not yet been recognized or named. A major
+                  effort is required to describe marine species, especially
+                  invertebrates and deep-sea organisms.
+                  Of the marine species that have been described, some have been
+                  discovered to be several species, and others combined into single
+                  species. Thus, there are changes in the application of species names
+                  over time. A checklist of all current marine species names is not
+                  available but it is estimated that 230,000 have been described.
+                  Only about half of these names have been organized into global
+                  species checklists. OBIS includes distribution data on (a) many of
+                  these validated names and (b) additional names that remain to be
+                  organized into global species checklists. Thus, OBIS has some
+                  distribution data for about one third of the known marine species.
+                  Some species distribution data are not available in any form, as
+                  they have not have been published nor made available for databases.
+                  Only some of the recently collected, and less of the older published,
+                  data have been entered into databases. Thus databases are incomplete.
+                  Of existing databases, many are not connected to OBIS.
+
+                  You can help address these data gaps by (a) recognizing and
+                  encouraging scientists and organizations to make their data available
+                  online so they are accessible to OBIS, and (b) advocating for and
+                  carrying out field surveys and taxonomic studies designed to fill
+                  geographic and taxonomic gaps in knowledge.
+                  """;
 
   public static final String OBIS_SUMMARY =
-      "DiGIR is an engine which takes XML requests for data and returns a data\n"
-          + "subset stored as XML data (as defined in a schema). For more DiGIR\n"
-          + "information, see http://digir.sourceforge.net/ ,\n"
-          + "http://diveintodigir.ecoforge.net/draft/digirdive.html ,\n"
-          + "and http://digir.net/prov/prov_manual.html .\n"
-          + "A list of Digir providers is at\n"
-          + "http://bigdig.ecoforge.net/wiki/SchemaStatus .\n"
-          + "\n"
-          + "Darwin is the original schema for use with the DiGIR engine.\n"
-          + "\n"
-          + "The Ocean Biogeographic Information System (OBIS) schema extends\n"
-          + "Darwin. For more OBIS info, see http://www.iobis.org .\n"
-          + "See the OBIS schema at http://www.iobis.org/tech/provider/questions .\n"
-          + "\n"
-          + "Queries: Although OBIS datasets have many variables, most variables\n"
-          + "have few values.  The only queries that are likely to succeed MUST\n"
-          + "include a constraint for Genus= and MAY include constraints for\n"
-          + "Species=, longitude, latitude, and time.\n"
-          + "\n"
-          + "Most OBIS datasets return a maximum of 1000 rows of data per request.\n"
-          + "The limitation is imposed by the OBIS administrators.";
+      """
+                  DiGIR is an engine which takes XML requests for data and returns a data
+                  subset stored as XML data (as defined in a schema). For more DiGIR
+                  information, see http://digir.sourceforge.net/ ,
+                  http://diveintodigir.ecoforge.net/draft/digirdive.html ,
+                  and http://digir.net/prov/prov_manual.html .
+                  A list of Digir providers is at
+                  http://bigdig.ecoforge.net/wiki/SchemaStatus .
+
+                  Darwin is the original schema for use with the DiGIR engine.
+
+                  The Ocean Biogeographic Information System (OBIS) schema extends
+                  Darwin. For more OBIS info, see http://www.iobis.org .
+                  See the OBIS schema at http://www.iobis.org/tech/provider/questions .
+
+                  Queries: Although OBIS datasets have many variables, most variables
+                  have few values.  The only queries that are likely to succeed MUST
+                  include a constraint for Genus= and MAY include constraints for
+                  Species=, longitude, latitude, and time.
+
+                  Most OBIS datasets return a maximum of 1000 rows of data per request.
+                  The limitation is imposed by the OBIS administrators.""";
 
   /**
    * This constructs an EDDTableFromOBIS based on the information in an .xml file.
@@ -241,58 +244,53 @@ public class EDDTableFromOBIS extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<sourceCode>")) {
-      } else if (localTags.equals("</sourceCode>")) tSourceCode = content;
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<longitudeSourceMinimum>")) {
-      } else if (localTags.equals("</longitudeSourceMinimum>"))
-        tLongitudeSourceMinimum = String2.parseDouble(content);
-      else if (localTags.equals("<longitudeSourceMaximum>")) {
-      } else if (localTags.equals("</longitudeSourceMaximum>"))
-        tLongitudeSourceMaximum = String2.parseDouble(content);
-      else if (localTags.equals("<latitudeSourceMinimum>")) {
-      } else if (localTags.equals("</latitudeSourceMinimum>"))
-        tLatitudeSourceMinimum = String2.parseDouble(content);
-      else if (localTags.equals("<latitudeSourceMaximum>")) {
-      } else if (localTags.equals("</latitudeSourceMaximum>"))
-        tLatitudeSourceMaximum = String2.parseDouble(content);
-      else if (localTags.equals("<altitudeSourceMinimum>")) {
-      } else if (localTags.equals("</altitudeSourceMinimum>"))
-        tAltitudeSourceMinimum = String2.parseDouble(content);
-      else if (localTags.equals("<altitudeSourceMaximum>")) {
-      } else if (localTags.equals("</altitudeSourceMaximum>"))
-        tAltitudeSourceMaximum = String2.parseDouble(content);
-      else if (localTags.equals("<timeSourceMinimum>")) {
-      } else if (localTags.equals("</timeSourceMinimum>")) tTimeSourceMinimum = content;
-      else if (localTags.equals("<timeSourceMaximum>")) {
-      } else if (localTags.equals("</timeSourceMaximum>")) tTimeSourceMaximum = content;
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<sourceUrl>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<timeSourceMaximum>",
+            "<timeSourceMinimum>",
+            "<altitudeSourceMaximum>",
+            "<altitudeSourceMinimum>",
+            "<latitudeSourceMaximum>",
+            "<latitudeSourceMinimum>",
+            "<longitudeSourceMaximum>",
+            "<longitudeSourceMinimum>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>",
+            "<accessibleTo>",
+            "<sourceCode>" -> {}
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</sourceCode>" -> tSourceCode = content;
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</longitudeSourceMinimum>" -> tLongitudeSourceMinimum = String2.parseDouble(content);
+        case "</longitudeSourceMaximum>" -> tLongitudeSourceMaximum = String2.parseDouble(content);
+        case "</latitudeSourceMinimum>" -> tLatitudeSourceMinimum = String2.parseDouble(content);
+        case "</latitudeSourceMaximum>" -> tLatitudeSourceMaximum = String2.parseDouble(content);
+        case "</altitudeSourceMinimum>" -> tAltitudeSourceMinimum = String2.parseDouble(content);
+        case "</altitudeSourceMaximum>" -> tAltitudeSourceMaximum = String2.parseDouble(content);
+        case "</timeSourceMinimum>" -> tTimeSourceMinimum = content;
+        case "</timeSourceMaximum>" -> tTimeSourceMaximum = content;
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
 
     return new EDDTableFromOBIS(
@@ -554,8 +552,7 @@ public class EDDTableFromOBIS extends EDDTable {
 
     // make the other variables
     int tv = nFixedVariables;
-    for (int v = 0; v < tVarNames.length; v++) {
-      String tSourceName = tVarNames[v];
+    for (String tSourceName : tVarNames) {
       String tDestName = tSourceName;
       if (tDestName == null || tDestName.trim().length() == 0) tDestName = tSourceName;
       Attributes tAddAtt = new Attributes();
@@ -588,12 +585,12 @@ public class EDDTableFromOBIS extends EDDTable {
       // get sourceAtt
       Attributes tSourceAtt = new Attributes();
       String metadata[] = String2.split(infoArray[1], '`');
-      for (int i = 0; i < metadata.length; i++) {
-        int eqPo = metadata[i].indexOf('='); // first instance of '='
+      for (String metadatum : metadata) {
+        int eqPo = metadatum.indexOf('='); // first instance of '='
         Test.ensureTrue(
             eqPo > 0,
-            errorInMethod + "Invalid metadata for " + prefix + tSourceName + " : " + metadata[i]);
-        tSourceAtt.set(metadata[i].substring(0, eqPo), metadata[i].substring(eqPo + 1));
+            errorInMethod + "Invalid metadata for " + prefix + tSourceName + " : " + metadatum);
+        tSourceAtt.set(metadatum.substring(0, eqPo), metadatum.substring(eqPo + 1));
       }
       // if (reallyVerbose) String2.log("v=" + v + " source=" + prefix+tSourceName +
       //    " destName=" + tDestName + " type=" + tSourceType + " sourceAtt=\n" + tSourceAtt);
@@ -608,7 +605,6 @@ public class EDDTableFromOBIS extends EDDTable {
                 tSourceAtt,
                 tAddAtt,
                 tSourceType); // this constructor gets source / sets destination actual_range
-        tv++;
       } else {
         dataVariables[tv] =
             new EDV(
@@ -619,8 +615,8 @@ public class EDDTableFromOBIS extends EDDTable {
                 tAddAtt,
                 tSourceType); // the constructor that reads source actual_range
         dataVariables[tv].setActualRangeFromDestinationMinMax();
-        tv++;
       }
+      tv++;
     }
 
     // make addVariablesWhereAttNames and addVariablesWhereAttValues
@@ -633,7 +629,7 @@ public class EDDTableFromOBIS extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromOBIS "
               + datasetID
               + " constructor finished. TIME="
@@ -858,13 +854,12 @@ public class EDDTableFromOBIS extends EDDTable {
             "Point",
             tLocalSourceUrl,
             externalAddGlobalAttributes,
-            new HashSet());
+            new HashSet<>());
 
     // don't use suggestSubsetVariables since sourceTable not really available
 
     // generate the datasets.xml
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+    String sb =
         "<dataset type=\"EDDTableFromOBIS\" datasetID=\""
             + suggestDatasetID(tPublicSourceUrl)
             + "\" active=\"true\">\n"
@@ -892,9 +887,9 @@ public class EDDTableFromOBIS extends EDDTable {
             cdmSuggestion()
             + writeAttsForDatasetsXml(true, addAtts, "    ")
             + "</dataset>\n"
-            + "\n");
+            + "\n";
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

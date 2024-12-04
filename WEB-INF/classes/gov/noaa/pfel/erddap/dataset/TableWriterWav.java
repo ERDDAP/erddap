@@ -31,10 +31,10 @@ public class TableWriterWav extends TableWriter {
   // set by constructor
 
   // set by firstTime
-  protected volatile int randomInt;
-  protected volatile String fullDosName;
+  protected final int randomInt;
+  protected final String fullDosName;
   protected volatile DataOutputStream dos;
-  protected volatile String fullOutName;
+  protected final String fullOutName;
   protected volatile String tClass;
   protected volatile boolean isLong; // if true, save as int (from high 4 bytes)
   public volatile long totalNRows = 0;
@@ -156,16 +156,12 @@ public class TableWriterWav extends TableWriter {
     File2.delete(fullDosName);
 
     // then send to outputStream
-    OutputStream out = outputStreamSource.outputStream(""); // no character_encoding
-    try {
+    // no character_encoding
+    try (OutputStream out = outputStreamSource.outputStream("")) {
       if (!File2.copy(fullOutName, out))
         throw new SimpleException(String2.ERROR + " while transmitting file.");
-    } finally {
-      try {
-        out.close();
-      } catch (Exception e) {
-      } // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
     }
+    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
 
     // diagnostic
     if (verbose)

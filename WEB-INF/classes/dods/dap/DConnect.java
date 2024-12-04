@@ -36,8 +36,6 @@ public class DConnect {
   protected int openConnectionMaxRetry = 3; // original value was 3;
   protected int getDataMaxRetry = 5; // original value was 5;
 
-  private boolean dumpStream = false, dumpDAS = false;
-
   /** InputStream to use for connection to a file instead of a remote host. */
   private InputStream fileStream;
 
@@ -120,7 +118,7 @@ public class DConnect {
 
   private static class CleanupConnect implements Runnable {
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
     private CleanupConnect(InputStream input) {
       this.inputStream = input;
@@ -390,6 +388,7 @@ public class DConnect {
     if (fileStream != null) is = parseMime(fileStream);
     else { // String2.log(">> DConnect.getDAS: " + urlString + ".das" + projString + selString);
       URL url = new URL(urlString + ".das" + projString + selString);
+      boolean dumpDAS = false;
       if (dumpDAS) {
         String2.log("--DConnect.getDAS to " + url);
         copy(url.openStream(), System.out);
@@ -539,16 +538,14 @@ public class DConnect {
       InputStream fileStream, StatusUI statusUI, BaseTypeFactory btf)
       throws IOException, ParseException, DDSException, DODSException {
 
-    InputStream is = parseMime(fileStream);
-    try { // 2018-05-22 Bob Simons added try/finally
+    try (InputStream is = parseMime(fileStream)) { // 2018-05-22 Bob Simons added try/finally
       DataDDS dds = new DataDDS(ver, btf);
       dds.parse(new HeaderInputStream(is)); // read the DDS header
       // NOTE: the HeaderInputStream will have skipped over "Data:" line
       dds.readData(is, statusUI); // read the data!
       return dds;
-    } finally {
-      is.close(); // stream is always closed even if parse() throws exception
     }
+    // stream is always closed even if parse() throws exception
   }
 
   public DataDDS getDataFromUrl(URL url, StatusUI statusUI, BaseTypeFactory btf)
@@ -559,6 +556,7 @@ public class DConnect {
 
     // DEBUG
     ByteArrayInputStream bis = null;
+    boolean dumpStream = false;
     if (dumpStream) {
       String2.log("DConnect to " + url);
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -756,19 +754,17 @@ public class DConnect {
 
     // while there are more header (non-blank) lines
     String line;
-    while (!(line = d.readLine()).equals("")) {
+    while (!(line = d.readLine()).isEmpty()) {
       int spaceIndex = line.indexOf(' ');
       // all header lines should have a space in them, but if not, skip ahead
       if (spaceIndex == -1) continue;
       String header = line.substring(0, spaceIndex);
       String value = line.substring(spaceIndex + 1);
 
-      if (header.equals("Server:")) {
-        ver = new ServerVersion(value);
-      } else if (header.equals("Content-Description:")) {
-        description = value;
-      } else if (header.equals("Content-Encoding:")) {
-        encoding = value;
+      switch (header) {
+        case "Server:" -> ver = new ServerVersion(value);
+        case "Content-Description:" -> description = value;
+        case "Content-Encoding:" -> encoding = value;
       }
     }
     handleContentDesc(is, description);

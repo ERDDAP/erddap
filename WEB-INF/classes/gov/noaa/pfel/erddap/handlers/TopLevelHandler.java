@@ -15,10 +15,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class TopLevelHandler extends State {
-  private StringBuilder data = new StringBuilder();
-  private SaxParsingContext context;
-  private boolean reallyVerbose;
-  private StringBuilder warningsFromLoadDatasets;
+  private final StringBuilder data = new StringBuilder();
+  private final SaxParsingContext context;
+  private final boolean reallyVerbose;
+  private final StringBuilder warningsFromLoadDatasets;
   private int nDatasets = 0;
 
   public TopLevelHandler(SaxHandler saxHandler, SaxParsingContext context) {
@@ -138,7 +138,7 @@ public class TopLevelHandler extends State {
         String ts = data.toString();
         if (!String2.isSomething(ts)) ts = EDStatic.DEFAULT_ANGULAR_DEGREE_UNITS;
         EDStatic.angularDegreeUnitsSet =
-            new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray()));
+            new HashSet<>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray()));
 
         if (reallyVerbose) {
           String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
@@ -148,7 +148,7 @@ public class TopLevelHandler extends State {
         String ts = data.toString();
         if (!String2.isSomething(ts)) ts = EDStatic.DEFAULT_ANGULAR_DEGREE_TRUE_UNITS;
         EDStatic.angularDegreeTrueUnitsSet =
-            new HashSet<String>(
+            new HashSet<>(
                 String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); // so canonical
 
         if (reallyVerbose) {
@@ -218,7 +218,7 @@ public class TopLevelHandler extends State {
       }
       case "emailDiagnosticsToErdData" -> {
         String ts = data.toString();
-        boolean ted = String2.isSomething(ts) ? String2.parseBoolean(ts) : true; // the default
+        boolean ted = !String2.isSomething(ts) || String2.parseBoolean(ts); // the default
 
         EDStatic.emailDiagnosticsToErdData = ted;
 
@@ -260,7 +260,7 @@ public class TopLevelHandler extends State {
         String ts = data.toString();
         String[] sar =
             StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
-        EDStatic.ipAddressUnlimited = new HashSet<String>(String2.toArrayList(sar));
+        EDStatic.ipAddressUnlimited = new HashSet<>(String2.toArrayList(sar));
         for (String s : sar) {
           EDStatic.ipAddressQueue.remove(s);
         }

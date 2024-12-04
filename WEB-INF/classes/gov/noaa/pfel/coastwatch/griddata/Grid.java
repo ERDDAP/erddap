@@ -86,17 +86,17 @@ public class Grid {
    * Set this to true (by calling doExtraErrorChecking=true in your program, not by changing the
    * code here) if you want extra error checking to be done.
    */
-  public static boolean doExtraErrorChecking = false;
+  public static final boolean doExtraErrorChecking = false;
 
   /* A string used by climatology datasets. */
   public static final String SINCE_111 = "since 0001-01-01";
 
   /** The attribute lists are used sporadically; see method documentation. */
-  private Attributes globalAttributes = new Attributes();
+  private final Attributes globalAttributes = new Attributes();
 
-  private Attributes latAttributes = new Attributes();
-  private Attributes lonAttributes = new Attributes();
-  private Attributes dataAttributes = new Attributes();
+  private final Attributes latAttributes = new Attributes();
+  private final Attributes lonAttributes = new Attributes();
+  private final Attributes dataAttributes = new Attributes();
 
   /**
    * This returns a medium-deep clone of this Grid.
@@ -477,8 +477,7 @@ public class Grid {
     }
 
     // open the file  (reading should be thread safe)
-    RandomAccessFile raf = new RandomAccessFile(fullFileName, "r");
-    try {
+    try (RandomAccessFile raf = new RandomAccessFile(fullFileName, "r")) {
 
       // fill data array
       // lat is outer loop because file is lat major
@@ -499,8 +498,6 @@ public class Grid {
       }
       minData = minSData;
       maxData = maxSData;
-    } finally {
-      raf.close();
     }
     if (verbose) String2.log("Grid.readBinary TIME=" + (System.currentTimeMillis() - time) + "\n");
   }
@@ -608,8 +605,7 @@ public class Grid {
     maxData = Double.NaN;
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    NetcdfFile grdFile = NcHelper.openFile(fullFileName);
-    try {
+    try (NetcdfFile grdFile = NcHelper.openFile(fullFileName)) {
       // if (verbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
       // get lon and lat
@@ -994,12 +990,6 @@ public class Grid {
                 + " TOTAL TIME="
                 + (System.currentTimeMillis() - time)
                 + "\n");
-
-    } finally {
-      try {
-        if (grdFile != null) grdFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -1162,8 +1152,7 @@ public class Grid {
     String errorInMethod = String2.ERROR + " in Grid.readNetCDF(" + fullFileName + "): ";
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    NetcdfFile ncFile = NcHelper.openFile(fullFileName);
-    try {
+    try (NetcdfFile ncFile = NcHelper.openFile(fullFileName)) {
 
       // *** ncdump
       // if (verbose) NcHelper.ncdump("Start of Grid.readNetCDF", fullFileName, "-h");
@@ -1178,8 +1167,8 @@ public class Grid {
       Variable latVariable = null, lonVariable = null;
       Index1D index0 = new Index1D(new int[] {1});
       index0.set(0);
-      for (int i = 0; i < list.size(); i++) {
-        Variable variable = (Variable) list.get(i);
+      for (Object o : list) {
+        Variable variable = (Variable) o;
         Attribute units = variable.findAttribute("units");
         if (units != null) {
           String value = units.getValues().getObject(index0).toString();
@@ -1221,18 +1210,17 @@ public class Grid {
       Variable dataVariable = null;
       if (dataName == null) {
         // find first variable which uses lonVariable and latVariable
-        List rootGroupVariables = rootGroup.getVariables();
-        Dimension latDim = (Dimension) latVariable.getDimensions().get(0);
-        Dimension lonDim = (Dimension) lonVariable.getDimensions().get(0);
-        for (int var = 0; var < rootGroupVariables.size(); var++) {
-          dataVariable = (Variable) rootGroupVariables.get(var);
-          List tDimensions = dataVariable.getDimensions();
-          int nDimensions = tDimensions.size();
+        List<Variable> rootGroupVariables = rootGroup.getVariables();
+        Dimension latDim = latVariable.getDimensions().getFirst();
+        Dimension lonDim = lonVariable.getDimensions().getFirst();
+        for (Variable rootGroupVariable : rootGroupVariables) {
+          dataVariable = rootGroupVariable;
+          List<Dimension> tDimensions = dataVariable.getDimensions();
           boolean latUsed = false;
           boolean lonUsed = false;
-          for (int dim = 0; dim < nDimensions; dim++) {
-            if (tDimensions.get(dim) == latDim) latUsed = true;
-            if (tDimensions.get(dim) == lonDim) lonUsed = true;
+          for (Dimension tDimension : tDimensions) {
+            if (tDimension.equals(latDim)) latUsed = true;
+            if (tDimension.equals(lonDim)) lonUsed = true;
           }
           if (latUsed && lonUsed) { // spaces are useful for GenerateThreddsXml
             if (verbose)
@@ -1381,39 +1369,48 @@ public class Grid {
 
       // gather data in desired order
       // do directly so as not to waste memory which is precious here since array may be huge
-      if (array instanceof ArrayDouble.D2 add2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++)
-            data[po++] =
-                add2.get(
-                    tLat,
-                    tLon); // here and below were "nLat-1 - tLat"  when up side down in the .nc file
-      } else if (array instanceof ArrayFloat.D2 afd2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = afd2.get(tLat, tLon);
-      } else if (array instanceof ArrayLong.D2 ald2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = ald2.get(tLat, tLon);
-      } else if (array instanceof ArrayInt.D2 aid2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = aid2.get(tLat, tLon);
-      } else if (array instanceof ArrayShort.D2 asd2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = asd2.get(tLat, tLon);
-      } else if (array instanceof ArrayByte.D2 abd2) {
-        for (int tLon = 0; tLon < nLon; tLon++)
-          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = abd2.get(tLat, tLon);
-      } else
-        throw new RuntimeException(
-            errorInMethod
-                + "grid array is of unknown type: "
-                + array
-                + "\nrank="
-                + array.getRank()
-                + " size="
-                + array.getSize()
-                + " shape="
-                + String2.toCSSVString(array.getShape()));
+      switch (array) {
+        case ArrayDouble.D2 add2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++)
+              data[po++] =
+                  add2.get(
+                      tLat,
+                      tLon); // here and below were "nLat-1 - tLat"  when up side down in the .nc
+          // file
+        }
+        case ArrayFloat.D2 afd2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = afd2.get(tLat, tLon);
+        }
+        case ArrayLong.D2 ald2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = ald2.get(tLat, tLon);
+        }
+        case ArrayInt.D2 aid2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = aid2.get(tLat, tLon);
+        }
+        case ArrayShort.D2 asd2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = asd2.get(tLat, tLon);
+        }
+        case ArrayByte.D2 abd2 -> {
+          for (int tLon = 0; tLon < nLon; tLon++)
+            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = abd2.get(tLat, tLon);
+        }
+        case null, default ->
+            throw new RuntimeException(
+                errorInMethod
+                    + "grid array is of unknown type: "
+                    + array
+                    + "\nrank="
+                    + array.getRank()
+                    + " size="
+                    + array.getSize()
+                    + " shape="
+                    + String2.toCSSVString(array.getShape()));
+      }
       Test.ensureEqual(po, data.length, "po");
       setLonLatSpacing();
 
@@ -1489,12 +1486,6 @@ public class Grid {
                 + ", Total TIME="
                 + (System.currentTimeMillis() - time)
                 + "\n");
-
-    } finally {
-      try {
-        if (ncFile != null) ncFile.close();
-      } catch (Exception e9) {
-      }
     }
   }
 
@@ -1598,13 +1589,13 @@ public class Grid {
     // tData
     double tData[] = new double[newNLon * nLat];
     int po = 0;
-    for (int i = 0; i < newNLon; i++) {
-      int which = Math2.binaryFindClosest(lon, tLon[i]);
-      if (!Math2.almostEqual(5, lon[which], tLon[i])) {
-        which = Math2.binaryFindClosest(lon, tLon[i] - 360);
-        if (!Math2.almostEqual(5, lon[which], tLon[i] - 360)) {
-          which = Math2.binaryFindClosest(lon, tLon[i] + 360);
-          if (!Math2.almostEqual(5, lon[which], tLon[i] + 360)) {
+    for (double v : tLon) {
+      int which = Math2.binaryFindClosest(lon, v);
+      if (!Math2.almostEqual(5, lon[which], v)) {
+        which = Math2.binaryFindClosest(lon, v - 360);
+        if (!Math2.almostEqual(5, lon[which], v - 360)) {
+          which = Math2.binaryFindClosest(lon, v + 360);
+          if (!Math2.almostEqual(5, lon[which], v + 360)) {
             Arrays.fill(tData, po, po + nLat, Double.NaN);
             po += nLat;
             continue;
@@ -1851,8 +1842,7 @@ public class Grid {
     // remove values out of range
     double good[] = new double[Math.min(MAX_NGOOD, dar.length)];
     int nGood = 0;
-    for (int i = 0; i < dar.length; i++) {
-      double d = dar[i];
+    for (double d : dar) {
       if ((d >= minData) && (d <= maxData)) good[nGood++] = d;
       if (nGood >= MAX_NGOOD) return new double[0];
     }
@@ -2220,23 +2210,22 @@ public class Grid {
       ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
       tTime.set(0, hasTime ? centeredTimeDouble : 0);
       Variable.Builder timeVar =
-          NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, Arrays.asList(timeDimension));
+          NcHelper.addVariable(rootGroup, "time", DataType.DOUBLE, List.of(timeDimension));
 
       ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
       tAltitude.set(0, 0); // I treat all as altitude=0 !!!!
       Variable.Builder altitudeVar =
-          NcHelper.addVariable(
-              rootGroup, "altitude", DataType.DOUBLE, Arrays.asList(altitudeDimension));
+          NcHelper.addVariable(rootGroup, "altitude", DataType.DOUBLE, List.of(altitudeDimension));
 
       ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
       for (int i = 0; i < nLat; i++) tLat.set(i, lat[i]);
       Variable.Builder latVar =
-          NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, Arrays.asList(latDimension));
+          NcHelper.addVariable(rootGroup, "lat", DataType.DOUBLE, List.of(latDimension));
 
       ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
       for (int i = 0; i < nLon; i++) tLon.set(i, lon[i]);
       Variable.Builder lonVar =
-          NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, Arrays.asList(lonDimension));
+          NcHelper.addVariable(rootGroup, "lon", DataType.DOUBLE, List.of(lonDimension));
 
       // write values to ArrayFloat.D4
       ArrayFloat.D4 tGrid = new ArrayFloat.D4(1, 1, nLat, nLon);
@@ -2262,10 +2251,10 @@ public class Grid {
 
       // write Attributes
       String names[] = globalAttributes.getNames();
-      for (int i = 0; i < names.length; i++) {
+      for (String s : names) {
         // any existing et_affine needs to be modified, since .nc has data right-side-up
         // I suspect CDAT georeferences this correctly but with coast and data upside down.
-        if (names[i].equals("et_affine")) {
+        if (s.equals("et_affine")) {
           // lon = a*row + c*col + e
           // lat = b*row + d*col + f
           double matrix[] = {0, latSpacing, lonSpacing, 0, lon[0], lat[0]}; // right side up
@@ -2273,8 +2262,7 @@ public class Grid {
               NcHelper.newAttribute(
                   "et_affine", NcHelper.get1DArray(matrix, false))); // float64[] {a, b, c, d, e, f}
         } else {
-          rootGroup.addAttribute(
-              NcHelper.newAttribute(nc3Mode, names[i], globalAttributes.get(names[i])));
+          rootGroup.addAttribute(NcHelper.newAttribute(nc3Mode, s, globalAttributes.get(s)));
         }
       }
 
@@ -2284,7 +2272,7 @@ public class Grid {
             NcHelper.newAttribute(
                 "actual_range",
                 NcHelper.get1DArray(new double[] {centeredTimeDouble, centeredTimeDouble}, false)));
-      timeVar.addAttribute(new Attribute("fraction_digits", Integer.valueOf(0)));
+      timeVar.addAttribute(new Attribute("fraction_digits", 0));
       timeVar.addAttribute(
           new Attribute("long_name", hasTime ? "Centered Time" : "Place Holder for Time"));
       timeVar.addAttribute(new Attribute("units", centeredTimeUnits));
@@ -2296,7 +2284,7 @@ public class Grid {
       // altitude attributes
       altitudeVar.addAttribute(
           NcHelper.newAttribute("actual_range", NcHelper.get1DArray(new double[] {0, 0}, false)));
-      altitudeVar.addAttribute(new Attribute("fraction_digits", Integer.valueOf(0)));
+      altitudeVar.addAttribute(new Attribute("fraction_digits", 0));
       altitudeVar.addAttribute(new Attribute("long_name", "Altitude"));
       altitudeVar.addAttribute(new Attribute("positive", "up"));
       altitudeVar.addAttribute(new Attribute("standard_name", "altitude"));
@@ -2417,8 +2405,8 @@ public class Grid {
 
       Dimension sideDimension = NcHelper.addDimension(rootGroup, "side", 2);
       Dimension xysizeDimension = NcHelper.addDimension(rootGroup, "xysize", nLon * nLat);
-      List<Dimension> sideDimList = Arrays.asList(sideDimension);
-      List<Dimension> xysizeDimList = Arrays.asList(xysizeDimension);
+      List<Dimension> sideDimList = List.of(sideDimension);
+      List<Dimension> xysizeDimList = List.of(xysizeDimension);
 
       ArrayDouble.D1 x_range = new ArrayDouble.D1(2);
       x_range.set(0, lon[0]);
@@ -2463,9 +2451,9 @@ public class Grid {
       xRangeVar.addAttribute(new Attribute("units", "user_x_unit"));
       yRangeVar.addAttribute(new Attribute("units", "user_y_unit"));
       zRangeVar.addAttribute(new Attribute("units", "user_z_unit"));
-      zVar.addAttribute(new Attribute("scale_factor", Double.valueOf(1.0)));
-      zVar.addAttribute(new Attribute("add_offset", Double.valueOf(0.0)));
-      zVar.addAttribute(new Attribute("node_offset", Integer.valueOf(0)));
+      zVar.addAttribute(new Attribute("scale_factor", 1.0));
+      zVar.addAttribute(new Attribute("add_offset", 0.0));
+      zVar.addAttribute(new Attribute("node_offset", 0));
 
       rootGroup.addAttribute(new Attribute("title", ""));
       rootGroup.addAttribute(new Attribute("source", "CoastWatch West Coast Node"));

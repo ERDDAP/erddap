@@ -38,12 +38,12 @@ public class AxisDataAccessor {
   public static boolean reallyVerbose = false;
 
   // things passed into the constructor
-  protected EDDGrid eddGrid;
-  protected String userDapQuery;
+  protected final EDDGrid eddGrid;
+  protected final String userDapQuery;
 
   // things the constructor generates
   protected EDVGridAxis[] rAxisVariables;
-  protected IntArray constraints;
+  protected final IntArray constraints;
   protected Attributes globalAttributes;
   protected Attributes rAxisAttributes[];
   protected PrimitiveArray rAxisValues[];

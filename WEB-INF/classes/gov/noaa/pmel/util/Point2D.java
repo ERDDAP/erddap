@@ -64,7 +64,7 @@ public abstract class Point2D implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-      return new String("(" + x + ", " + y + ")");
+      return "(" + x + ", " + y + ")";
     }
 
     /**

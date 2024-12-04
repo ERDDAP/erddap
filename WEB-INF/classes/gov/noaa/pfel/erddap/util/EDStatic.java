@@ -213,7 +213,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static String erddapVersion = "2.25_1"; // see comment above
+  public static final String erddapVersion = "2.25_1"; // see comment above
 
   /**
    * This is almost always false. During development, Bob sets this to true. No one else needs to.
@@ -222,9 +222,9 @@ public class EDStatic {
   public static boolean developmentMode = false;
 
   /** This identifies the dods server/version that this mimics. */
-  public static String dapVersion = "DAP/2.0";
+  public static final String dapVersion = "DAP/2.0";
 
-  public static String serverVersion = "dods/3.7"; // this is what thredds replies (in 2008!)
+  public static final String serverVersion = "dods/3.7"; // this is what thredds replies (in 2008!)
 
   // drds at https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
   // both reply with server version, neither replies with coreVersion
@@ -245,56 +245,56 @@ public class EDStatic {
   public static final String DOWNLOAD_DIR = "download/";
   public static final String IMAGES_DIR = "images/";
   public static final String PUBLIC_DIR = "public/";
-  public static String fullPaletteDirectory;
-  public static String fullPublicDirectory;
-  public static String downloadDir; // local directory on this computer
-  public static String imageDir; // local directory on this computer
-  public static Tally tally = new Tally();
+  public static final String fullPaletteDirectory;
+  public static final String fullPublicDirectory;
+  public static final String downloadDir; // local directory on this computer
+  public static final String imageDir; // local directory on this computer
+  public static final Tally tally = new Tally();
   public static int emailThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int emailThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] emailThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
   public static int emailThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int emailThreadSucceededDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] emailThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
   public static int emailThreadNEmailsDistribution24[] =
       new int[String2.CountDistributionSize]; // count, not time
-  public static int emailThreadNEmailsDistributionTotal[] =
+  public static int[] emailThreadNEmailsDistributionTotal =
       new int[String2.CountDistributionSize]; // count, not time
   public static int failureTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
   public static int failureTimesDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int failureTimesDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] failureTimesDistributionTotal = new int[String2.TimeDistributionSize];
   public static int majorLoadDatasetsDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int majorLoadDatasetsDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] majorLoadDatasetsDistributionTotal = new int[String2.TimeDistributionSize];
   public static int minorLoadDatasetsDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int minorLoadDatasetsDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] minorLoadDatasetsDistributionTotal = new int[String2.TimeDistributionSize];
   public static int responseTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
   public static int responseTimesDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int responseTimesDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] responseTimesDistributionTotal = new int[String2.TimeDistributionSize];
   public static int taskThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int taskThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] taskThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
   public static int taskThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int taskThreadSucceededDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] taskThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
   public static int touchThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int touchThreadFailedDistributionTotal[] = new int[String2.TimeDistributionSize];
+  public static int[] touchThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
   public static int touchThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int touchThreadSucceededDistributionTotal[] = new int[String2.TimeDistributionSize];
-  public static volatile AtomicInteger requestsShed =
+  public static int[] touchThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
+  public static final AtomicInteger requestsShed =
       new AtomicInteger(0); // since last Major LoadDatasets
-  public static volatile AtomicInteger dangerousMemoryEmails =
+  public static final AtomicInteger dangerousMemoryEmails =
       new AtomicInteger(0); // since last Major LoadDatasets
-  public static volatile AtomicInteger dangerousMemoryFailures =
+  public static final AtomicInteger dangerousMemoryFailures =
       new AtomicInteger(0); // since last Major LoadDatasets
-  public static StringBuffer suggestAddFillValueCSV =
-      new StringBuffer(); // EDV constructors append message here   //thread-safe but probably
+  public static final StringBuilder suggestAddFillValueCSV =
+      new StringBuilder(); // EDV constructors append message here   //thread-safe but probably
   // doesn't need to be
 
   public static String datasetsThatFailedToLoad = "";
   public static String failedDatasetsWithErrors = "";
   public static String errorsDuringMajorReload = "";
-  public static StringBuffer majorLoadDatasetsTimeSeriesSB =
-      new StringBuffer(""); // thread-safe (1 thread writes but others may read)
+  public static final StringBuilder majorLoadDatasetsTimeSeriesSB =
+      new StringBuilder(); // thread-safe (1 thread writes but others may read)
   public static HashSet<String> requestBlacklist =
       null; // is read-only. Replacement is swapped into place.
-  public static long startupMillis = System.currentTimeMillis();
-  public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
+  public static final long startupMillis = System.currentTimeMillis();
+  public static final String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
   public static int nGridDatasets = 0; // as of end of last major loadDatasets
   public static int nTableDatasets = 0; // as of end of last major loadDatasets
   public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
@@ -328,7 +328,7 @@ public class EDStatic {
   public static Set<String>
       ipAddressUnlimited = // in datasets.xml  //read only. New one is swapped into place. You can
           // add and remove addresses as needed.
-          new HashSet<String>(
+          new HashSet<>(
               String2.toArrayList(
                   StringArray.fromCSVNoBlanks(DEFAULT_ipAddressUnlimited).toArray()));
   public static int tooManyRequests =
@@ -368,11 +368,11 @@ public class EDStatic {
   public static final String DEFAULT_ANGULAR_DEGREE_TRUE_UNITS =
       "degreesT,degrees_T,degrees_Tangular_degree,degrees_true," + "degreeT,degree_T,degree_true";
   public static Set<String> angularDegreeUnitsSet =
-      new HashSet<String>(
+      new HashSet<>(
           String2.toArrayList(
               StringArray.fromCSV(DEFAULT_ANGULAR_DEGREE_UNITS).toArray())); // so canonical
   public static Set<String> angularDegreeTrueUnitsSet =
-      new HashSet<String>(
+      new HashSet<>(
           String2.toArrayList(
               StringArray.fromCSV(DEFAULT_ANGULAR_DEGREE_TRUE_UNITS).toArray())); // so canonical
 
@@ -424,43 +424,44 @@ public class EDStatic {
   public static boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
   // not translated
-  public static
+  public static final
   String // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)
-      DEFAULT_standardLicense,
-      standardLicense,
-      DEFAULT_startHeadHtml, // see xxx() methods
-      startHeadHtml; // see xxx() methods
+      DEFAULT_standardLicense;
+  public static String standardLicense;
+  public static final String DEFAULT_startHeadHtml; // see xxx() methods
+  public static String startHeadHtml; // see xxx() methods
 
   // translated
-  public static String
-      [] // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)
-      DEFAULT_standardContactAr,
-      DEFAULT_standardDataLicensesAr,
-      DEFAULT_standardDisclaimerOfEndorsementAr,
-      DEFAULT_standardDisclaimerOfExternalLinksAr,
-      DEFAULT_standardGeneralDisclaimerAr,
-      DEFAULT_standardPrivacyPolicyAr,
-      DEFAULT_startBodyHtmlAr,
-      DEFAULT_theShortDescriptionHtmlAr,
-      DEFAULT_endBodyHtmlAr,
-      standardContactAr,
-      standardDataLicensesAr,
-      standardDisclaimerOfEndorsementAr,
-      standardDisclaimerOfExternalLinksAr,
-      standardGeneralDisclaimerAr,
-      standardPrivacyPolicyAr,
-      startBodyHtmlAr,
-      theShortDescriptionHtmlAr,
-      endBodyHtmlAr;
+  public static final String
+          [] // these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml
+      // (v2.00+)
+      DEFAULT_standardContactAr;
+  public static final String[] DEFAULT_standardDataLicensesAr;
+  public static final String[] DEFAULT_standardDisclaimerOfEndorsementAr;
+  public static final String[] DEFAULT_standardDisclaimerOfExternalLinksAr;
+  public static final String[] DEFAULT_standardGeneralDisclaimerAr;
+  public static final String[] DEFAULT_standardPrivacyPolicyAr;
+  public static final String[] DEFAULT_startBodyHtmlAr;
+  public static final String[] DEFAULT_theShortDescriptionHtmlAr;
+  public static final String[] DEFAULT_endBodyHtmlAr;
+  public static final String[] standardContactAr;
+  public static final String[] standardDataLicensesAr;
+  public static final String[] standardDisclaimerOfEndorsementAr;
+  public static final String[] standardDisclaimerOfExternalLinksAr;
+  public static final String[] standardGeneralDisclaimerAr;
+  public static final String[] standardPrivacyPolicyAr;
+  public static final String[] startBodyHtmlAr;
+  public static final String[] theShortDescriptionHtmlAr;
+  public static final String[] endBodyHtmlAr;
   public static String // in messages.xml and perhaps in datasets.xml (v2.00+)
-      commonStandardNames[],
-      DEFAULT_commonStandardNames[];
+      commonStandardNames[];
+  public static final String[] DEFAULT_commonStandardNames;
 
   // Default max of 25 copy tasks at a time, so different datasets have a chance.
   // Otherwise, some datasets could take months to do all the tasks.
   // And some file downloads are very slow (10 minutes).
   // Remember: last task is to reload the dataset, so that will get the next 25 tasks.
-  public static int DefaultMaxMakeCopyFileTasks = 25;
+  public static final int DefaultMaxMakeCopyFileTasks = 25;
 
   /**
    * userHashMap. key=username (if email address, they are lowercased) value=[encoded password,
@@ -476,7 +477,7 @@ public class EDStatic {
    * stopped in Tomcat. For example, key="taskThread", value=taskThread. The key make it easy to get
    * a specific thread (e.g., to remove it).
    */
-  public static ConcurrentHashMap<String, Thread> runningThreads =
+  public static final ConcurrentHashMap<String, Thread> runningThreads =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
   // emailThread variables
@@ -484,7 +485,7 @@ public class EDStatic {
   //  emails that timeout don't slow down other processes
   //  and allows me to email in batches so fewer email sessions (so I won't
   //  get Too Many Login Attempts and lost emails).
-  public static ArrayList<String[]> emailList =
+  public static final ArrayList<String[]> emailList =
       new ArrayList<>(); // keep here in case EmailThread needs to be restarted
   private static EmailThread emailThread;
 
@@ -507,7 +508,7 @@ public class EDStatic {
   //  and stress on remote servers will be minimal
   //  (although at the cost of not doing the tasks faster / in parallel).
   // In a grid of erddaps, each will have its own taskThread, which is appropriate.
-  public static ArrayList<Object[]> taskList =
+  public static final ArrayList<Object[]> taskList =
       new ArrayList<>(); // keep here in case TaskThread needs to be restarted
   private static TaskThread taskThread;
 
@@ -515,7 +516,7 @@ public class EDStatic {
    * lastAssignedTask is used by EDDxxxCopy instances to keep track of the number of the last task
    * assigned to taskThread for a given datasetID. key=datasetID value=Integer(task#)
    */
-  public static ConcurrentHashMap<String, Integer> lastAssignedTask =
+  public static final ConcurrentHashMap<String, Integer> lastAssignedTask =
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /**
@@ -533,7 +534,7 @@ public class EDStatic {
   // touchThread variables
   // Funnelling all touchThread tasks through one touchThread ensures that
   //  touches that timeout don't slow down other processes.
-  public static ArrayList<String> touchList =
+  public static final ArrayList<String> touchList =
       new ArrayList<>(); // keep here in case TouchThread needs to be restarted
   private static TouchThread touchThread;
 
@@ -554,7 +555,8 @@ public class EDStatic {
    * This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets and is
    * used by EDD.convertToPublicSourceUrl.
    */
-  public static ConcurrentHashMap convertToPublicSourceUrl = new ConcurrentHashMap(16, 0.75f, 4);
+  public static final ConcurrentHashMap<String, String> convertToPublicSourceUrl =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /**
    * This returns the position of the "/" in if tFrom has "[something]//[something]/...", and is
@@ -581,7 +583,7 @@ public class EDStatic {
 
   // special characters to be escaped
   // see bottom of https://lucene.apache.org/java/3_5_0/queryparsersyntax.html
-  public static String luceneSpecialCharacters = "+-&|!(){}[]^\"~*?:\\";
+  public static final String luceneSpecialCharacters = "+-&|!(){}[]^\"~*?:\\";
 
   // made if useLuceneSearchEngine
   // there are many analyzers; this is a good starting point
@@ -594,7 +596,7 @@ public class EDStatic {
 
   // made/returned by luceneIndexSearcher
   private static IndexReader luceneIndexReader; // is thread-safe, but only need/want one
-  private static Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+  private static final Object luceneIndexReaderLock = Calendar2.newGCalendarLocal();
   public static boolean needNewLuceneIndexReader = true;
   private static IndexSearcher luceneIndexSearcher; // is thread-safe, so can reuse
   public static ConcurrentHashMap<Integer, String> luceneDocNToDatasetID;
@@ -616,138 +618,145 @@ public class EDStatic {
    * These values are loaded from the [contentDirectory]setup.xml file. See comments in the
    * [contentDirectory]setup.xml file.
    */
-  public static String baseUrl,
-      baseHttpsUrl, // won't be null, may be "(not specified)"
-      bigParentDirectory,
-      adminInstitution,
-      adminInstitutionUrl,
-      adminIndividualName,
-      adminPosition,
-      adminPhone,
-      adminAddress,
-      adminCity,
-      adminStateOrProvince,
-      adminPostalCode,
-      adminCountry,
-      adminEmail,
-      accessConstraints,
-      accessRequiresAuthorization,
-      fees,
-      keywords,
-      units_standard,
+  public static final String baseUrl;
 
-      // the unencoded EDDGrid...Example attributes
-      EDDGridErddapUrlExample,
-      EDDGridIdExample,
-      EDDGridDimensionExample,
-      EDDGridNoHyperExample,
-      EDDGridDimNamesExample,
-      EDDGridDataTimeExample,
-      EDDGridDataValueExample,
-      EDDGridDataIndexExample,
-      EDDGridGraphExample,
-      EDDGridMapExample,
-      EDDGridMatlabPlotExample,
+  public static final String baseHttpsUrl; // won't be null, may be "(not specified)"
+  public static String bigParentDirectory;
+  public static final String adminInstitution;
+  public static final String adminInstitutionUrl;
+  public static final String adminIndividualName;
+  public static final String adminPosition;
+  public static final String adminPhone;
+  public static final String adminAddress;
+  public static final String adminCity;
+  public static final String adminStateOrProvince;
+  public static final String adminPostalCode;
+  public static final String adminCountry;
+  public static final String adminEmail;
+  public static final String accessConstraints;
+  public static final String accessRequiresAuthorization;
+  public static final String fees;
+  public static final String keywords;
+  public static final String units_standard;
 
-      // variants encoded to be Html Examples
-      EDDGridDimensionExampleHE,
-      EDDGridDataIndexExampleHE,
-      EDDGridDataValueExampleHE,
-      EDDGridDataTimeExampleHE,
-      EDDGridGraphExampleHE,
-      EDDGridMapExampleHE,
+  public static String // the unencoded EDDGrid...Example attributes
+      EDDGridErddapUrlExample;
+  public static String EDDGridIdExample;
+  public static String EDDGridDimensionExample;
+  public static String EDDGridNoHyperExample;
+  public static String EDDGridDimNamesExample;
+  public static String EDDGridDataTimeExample;
+  public static String EDDGridDataValueExample;
+  public static String EDDGridDataIndexExample;
+  public static String EDDGridGraphExample;
+  public static String EDDGridMapExample;
+  public static String EDDGridMatlabPlotExample;
 
-      // variants encoded to be Html Attributes
-      EDDGridDimensionExampleHA,
-      EDDGridDataIndexExampleHA,
-      EDDGridDataValueExampleHA,
-      EDDGridDataTimeExampleHA,
-      EDDGridGraphExampleHA,
-      EDDGridMapExampleHA,
-      EDDTableFromHttpGetDatasetDescription,
-      EDDTableFromHttpGetAuthorDescription,
-      EDDTableFromHttpGetTimestampDescription,
+  public static final String // variants encoded to be Html Examples
+      EDDGridDimensionExampleHE;
+  public static final String EDDGridDataIndexExampleHE;
+  public static final String EDDGridDataValueExampleHE;
+  public static final String EDDGridDataTimeExampleHE;
+  public static final String EDDGridGraphExampleHE;
+  public static final String EDDGridMapExampleHE;
 
-      // the unencoded EDDTable...Example attributes
-      EDDTableErddapUrlExample,
-      EDDTableIdExample,
-      EDDTableVariablesExample,
-      EDDTableConstraintsExample,
-      EDDTableDataTimeExample,
-      EDDTableDataValueExample,
-      EDDTableGraphExample,
-      EDDTableMapExample,
-      EDDTableMatlabPlotExample,
+  public static final String // variants encoded to be Html Attributes
+      EDDGridDimensionExampleHA;
+  public static final String EDDGridDataIndexExampleHA;
+  public static final String EDDGridDataValueExampleHA;
+  public static final String EDDGridDataTimeExampleHA;
+  public static final String EDDGridGraphExampleHA;
+  public static final String EDDGridMapExampleHA;
+  public static final String EDDTableFromHttpGetDatasetDescription;
+  public static final String EDDTableFromHttpGetAuthorDescription;
+  public static final String EDDTableFromHttpGetTimestampDescription;
 
-      // variants encoded to be Html Examples
-      EDDTableConstraintsExampleHE,
-      EDDTableDataTimeExampleHE,
-      EDDTableDataValueExampleHE,
-      EDDTableGraphExampleHE,
-      EDDTableMapExampleHE,
+  public static String // the unencoded EDDTable...Example attributes
+      EDDTableErddapUrlExample;
+  public static String EDDTableIdExample;
+  public static String EDDTableVariablesExample;
+  public static String EDDTableConstraintsExample;
+  public static String EDDTableDataTimeExample;
+  public static String EDDTableDataValueExample;
+  public static String EDDTableGraphExample;
+  public static String EDDTableMapExample;
+  public static String EDDTableMatlabPlotExample;
 
-      // variants encoded to be Html Attributes
-      EDDTableConstraintsExampleHA,
-      EDDTableDataTimeExampleHA,
-      EDDTableDataValueExampleHA,
-      EDDTableGraphExampleHA,
-      EDDTableMapExampleHA,
+  public static final String // variants encoded to be Html Examples
+      EDDTableConstraintsExampleHE;
+  public static final String EDDTableDataTimeExampleHE;
+  public static final String EDDTableDataValueExampleHE;
+  public static final String EDDTableGraphExampleHE;
+  public static final String EDDTableMapExampleHE;
 
-      /* For the wcs examples, pick one of your grid datasets that has longitude and latitude axes.
-      The sample variable must be a variable in the sample grid dataset.
-      The bounding box values are minx,miny,maxx,maxy.
-      */
-      wcsSampleDatasetID = "jplMURSST41",
-      wcsSampleVariable = "analysed_sst",
-      wcsSampleBBox = "-179.98,-89.98,179.98,89.98",
-      wcsSampleAltitude = "0",
-      wcsSampleTime = "2002-06-01T09:00:00Z",
+  public static final String // variants encoded to be Html Attributes
+      EDDTableConstraintsExampleHA;
+  public static final String EDDTableDataTimeExampleHA;
+  public static final String EDDTableDataValueExampleHA;
+  public static final String EDDTableGraphExampleHA;
+  public static final String EDDTableMapExampleHA;
 
-      /* For the wms examples, pick one of your grid datasets that has longitude
+  public static
+  String /* For the wcs examples, pick one of your grid datasets that has longitude and latitude axes.
+         The sample variable must be a variable in the sample grid dataset.
+         The bounding box values are minx,miny,maxx,maxy.
+         */ wcsSampleDatasetID = "jplMURSST41";
+  public static String wcsSampleVariable = "analysed_sst";
+  public static String wcsSampleBBox = "-179.98,-89.98,179.98,89.98";
+  public static String wcsSampleAltitude = "0";
+  public static String wcsSampleTime = "2002-06-01T09:00:00Z";
+
+  public static String /* For the wms examples, pick one of your grid datasets that has longitude
       and latitude axes.
       The sample variable must be a variable in the sample grid dataset.
       The bounding box values are minx,miny,maxx,maxy.
       The default for wmsActive is "true".
       */
-      wmsSampleDatasetID = "jplMURSST41",
-      wmsSampleVariable = "analysed_sst",
-      /* The bounding box values are minLongitude,minLatitude,maxLongitude,maxLatitude.
-      Longitude values within -180 to 180, or 0 to 360, are now okay. */
-      wmsSampleBBox110 = "-179.99,-89.99,180.0,89.99",
-      wmsSampleBBox130 = "-89.99,-179.99,89.99,180.0",
-      wmsSampleTime = "2002-06-01T09:00:00Z",
-      sosFeatureOfInterest,
-      sosUrnBase,
-      sosBaseGmlName,
-      sosStandardNamePrefix,
-      authentication, // will be one of "", "custom", "email", "google", "orcid", "oauth2". If
-      // baseHttpsUrl doesn't start with https:, this will be "".
-      datasetsRegex,
-      emailEverythingToCsv,
-      emailDailyReportToCsv,
-      emailSubscriptionsFrom,
-      flagKeyKey,
-      fontFamily,
-      googleClientID, // if authentication=google or oauth2, this will be something
-      orcidClientID, // if authentication=orcid  or oauth2, this will be something
-      orcidClientSecret, // if authentication=orcid  or oauth2, this will be something
-      googleEarthLogoFile,
-      highResLogoImageFile,
-      legendTitle1,
-      legendTitle2,
-      lowResLogoImageFile,
-      passwordEncoding, // will be one of "MD5", "UEPMD5", "SHA256", "UEPSHA256"
-      questionMarkImageFile,
-      searchEngine,
-      warName;
+      wmsSampleDatasetID = "jplMURSST41";
+  public static String wmsSampleVariable = "analysed_sst";
+  public static
+  String /* The bounding box values are minLongitude,minLatitude,maxLongitude,maxLatitude.
+         Longitude values within -180 to 180, or 0 to 360, are now okay. */
+      wmsSampleBBox110 = "-179.99,-89.99,180.0,89.99";
+  public static String wmsSampleBBox130 = "-89.99,-179.99,89.99,180.0";
+  public static String wmsSampleTime = "2002-06-01T09:00:00Z";
+  public static String sosFeatureOfInterest;
+  public static String sosUrnBase;
+  public static String sosBaseGmlName;
+  public static String sosStandardNamePrefix;
+  public static String
+      authentication; // will be one of "", "custom", "email", "google", "orcid", "oauth2". If
+  public static final String // baseHttpsUrl doesn't start with https:, this will be "".
+      datasetsRegex;
+  public static final String emailEverythingToCsv;
+  public static final String emailDailyReportToCsv;
+  public static final String emailSubscriptionsFrom;
+  public static final String flagKeyKey;
+  public static final String fontFamily;
+  public static final String
+      googleClientID; // if authentication=google or oauth2, this will be something
+  public static final String
+      orcidClientID; // if authentication=orcid  or oauth2, this will be something
+  public static final String
+      orcidClientSecret; // if authentication=orcid  or oauth2, this will be something
+  public static final String googleEarthLogoFile;
+  public static final String highResLogoImageFile;
+  public static String legendTitle1;
+  public static String legendTitle2;
+  public static final String lowResLogoImageFile;
+  public static final String
+      passwordEncoding; // will be one of "MD5", "UEPMD5", "SHA256", "UEPSHA256"
+  public static String questionMarkImageFile;
+  public static final String searchEngine;
+  public static final String warName;
 
-  public static String accessibleViaNC4; // "" if accessible, else message why not
-  public static int lowResLogoImageFileWidth,
-      lowResLogoImageFileHeight,
-      highResLogoImageFileWidth,
-      highResLogoImageFileHeight,
-      googleEarthLogoFileWidth,
-      googleEarthLogoFileHeight;
+  public static final String accessibleViaNC4; // "" if accessible, else message why not
+  public static final int lowResLogoImageFileWidth;
+  public static final int lowResLogoImageFileHeight;
+  public static final int highResLogoImageFileWidth;
+  public static final int highResLogoImageFileHeight;
+  public static final int googleEarthLogoFileWidth;
+  public static final int googleEarthLogoFileHeight;
 
   /**
    * These are special because other loggedInAs must be String2.justPrintable loggedInAsHttps is for
@@ -771,71 +780,76 @@ public class EDStatic {
   public static S3TransferManager awsS3OutputTransferManager = null;
   // public static S3Client          awsS3OutputClient          = null;
 
-  public static boolean listPrivateDatasets,
-      reallyVerbose,
-      subscriptionSystemActive,
-      convertersActive,
-      slideSorterActive,
-      fgdcActive,
-      iso19115Active,
-      jsonldActive,
-      geoServicesRestActive,
-      filesActive,
-      defaultAccessibleViaFiles,
-      dataProviderFormActive,
-      outOfDateDatasetsActive,
-      politicalBoundariesActive,
-      wmsClientActive,
-      sosActive,
-      wcsActive,
-      wmsActive,
-      quickRestart,
-      subscribeToRemoteErddapDataset,
-      // if useLuceneSearchEngine=false (a setting, or after error), original search engine will be
+  public static final boolean listPrivateDatasets;
+  public static boolean reallyVerbose;
+  public static final boolean subscriptionSystemActive;
+  public static final boolean convertersActive;
+  public static final boolean slideSorterActive;
+  public static final boolean fgdcActive;
+  public static final boolean iso19115Active;
+  public static final boolean jsonldActive;
+  public static final boolean geoServicesRestActive;
+  public static final boolean filesActive;
+  public static final boolean defaultAccessibleViaFiles;
+  public static final boolean dataProviderFormActive;
+  public static final boolean outOfDateDatasetsActive;
+  public static final boolean politicalBoundariesActive;
+  public static final boolean wmsClientActive;
+  public static boolean sosActive;
+  public static final boolean wcsActive;
+  public static final boolean wmsActive;
+  public static boolean quickRestart;
+  public static final boolean subscribeToRemoteErddapDataset;
+  public static
+  boolean // if useLuceneSearchEngine=false (a setting, or after error), original search engine will
+      // be
       // used
-      useLuceneSearchEngine,
-      variablesMustHaveIoosCategory,
-      verbose,
-      useSaxParser,
-      useEddReflection;
-  public static String categoryAttributes[]; // as it appears in metadata (and used for hashmap)
-  public static String categoryAttributesInURLs[]; // fileNameSafe (as used in URLs)
-  public static boolean categoryIsGlobal[];
+      useLuceneSearchEngine;
+  public static final boolean variablesMustHaveIoosCategory;
+  public static boolean verbose;
+  public static boolean useSaxParser;
+  public static final boolean useEddReflection;
+  public static final String[]
+      categoryAttributes; // as it appears in metadata (and used for hashmap)
+  public static final String[] categoryAttributesInURLs; // fileNameSafe (as used in URLs)
+  public static final boolean[] categoryIsGlobal;
   public static int variableNameCategoryAttributeIndex = -1;
-  public static int logMaxSizeMB;
+  public static final int logMaxSizeMB;
 
-  public static String emailSmtpHost,
-      emailUserName,
-      emailFromAddress,
-      emailPassword,
-      emailProperties;
+  public static final String emailSmtpHost;
+  public static final String emailUserName;
+  public static final String emailFromAddress;
+  public static final String emailPassword;
+  public static final String emailProperties;
   public static int emailSmtpPort = 0; // <=0 means inactive
   private static String emailLogDate = "";
   private static BufferedWriter emailLogFile;
   private static boolean emailIsActive = false; // ie if actual emails will be sent
 
   // these are set as a consequence of setup.xml info
-  public static SgtGraph sgtGraph;
-  public static String erddapUrl, // without slash at end
-      erddapHttpsUrl, // without slash at end   (may be useless, but won't be null)
-      preferredErddapUrl, // without slash at end   (https if avail, else http)
-      fullDatasetDirectory, // all the Directory's have slash at end
-      fullFileVisitorDirectory,
-      fullCacheDirectory,
-      fullDecompressedDirectory,
-      fullDecompressedGenerateDatasetsXmlDirectory,
-      fullLogsDirectory,
-      fullCopyDirectory,
-      fullLuceneDirectory,
-      fullResetFlagDirectory,
-      fullBadFilesFlagDirectory,
-      fullHardFlagDirectory,
-      fullCptCacheDirectory,
-      fullPlainFileNcCacheDirectory,
-      fullSgtMapTopographyCacheDirectory,
-      fullTestCacheDirectory,
-      fullWmsCacheDirectory,
-      computerName; // e.g., coastwatch (or "")
+  public static final SgtGraph sgtGraph;
+  public static final String erddapUrl; // without slash at end
+  public static final String
+      erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
+  public static final String
+      preferredErddapUrl; // without slash at end   (https if avail, else http)
+  public static final String fullDatasetDirectory; // all the Directory's have slash at end
+  public static final String fullFileVisitorDirectory;
+  public static final String fullCacheDirectory;
+  public static final String fullDecompressedDirectory;
+  public static final String fullDecompressedGenerateDatasetsXmlDirectory;
+  public static final String fullLogsDirectory;
+  public static final String fullCopyDirectory;
+  public static final String fullLuceneDirectory;
+  public static final String fullResetFlagDirectory;
+  public static final String fullBadFilesFlagDirectory;
+  public static final String fullHardFlagDirectory;
+  public static final String fullCptCacheDirectory;
+  public static final String fullPlainFileNcCacheDirectory;
+  public static final String fullSgtMapTopographyCacheDirectory;
+  public static final String fullTestCacheDirectory;
+  public static final String fullWmsCacheDirectory;
+  public static String computerName; // e.g., coastwatch (or "")
   public static Subscriptions subscriptions; // null if !EDStatic.subscriptionSystemActive
 
   /**
@@ -844,966 +858,968 @@ public class EDStatic {
    */
 
   // NOT TRANSLATED
-  public static String admKeywords,
-      admSubsetVariables,
-      advl_datasetID,
-      advr_cdm_data_type,
-      advr_class,
-      advr_dataStructure,
-      EDDChangedWasnt,
-      EDDChangedDifferentNVar,
-      EDDChanged2Different,
-      EDDChanged1Different,
-      EDDChangedCGADifferent,
-      EDDChangedAxesDifferentNVar,
-      EDDChangedAxes2Different,
-      EDDChangedAxes1Different,
-      EDDChangedNoValue,
-      EDDChangedTableToGrid,
-      EDDFgdc,
-      EDDIso19115,
-      EDDSimilarDifferentNVar,
-      EDDSimilarDifferent,
-      extensionsNoRangeRequests[], // an array of extensions (not translated)
-      inotifyFixCommands,
-      legal,
-      palettes[], // an array of palettes
-      palettes0[], // the array of palettes with a blank [0] item inserted
-      paletteSections
-      [] =
-          {
-            "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
-            "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"
-          },
-      sparqlP01toP02pre,
-      sparqlP01toP02post;
+  public static final String admKeywords;
+
+  public static final String admSubsetVariables;
+  public static final String advl_datasetID;
+  public static final String advr_cdm_data_type;
+  public static final String advr_class;
+  public static final String advr_dataStructure;
+  public static final String EDDChangedWasnt;
+  public static final String EDDChangedDifferentNVar;
+  public static final String EDDChanged2Different;
+  public static final String EDDChanged1Different;
+  public static final String EDDChangedCGADifferent;
+  public static final String EDDChangedAxesDifferentNVar;
+  public static final String EDDChangedAxes2Different;
+  public static final String EDDChangedAxes1Different;
+  public static final String EDDChangedNoValue;
+  public static final String EDDChangedTableToGrid;
+  public static final String EDDFgdc;
+  public static final String EDDIso19115;
+  public static final String EDDSimilarDifferentNVar;
+  public static final String EDDSimilarDifferent;
+  public static final String[] extensionsNoRangeRequests; // an array of extensions (not translated)
+  public static final String inotifyFixCommands;
+  public static String legal;
+  public static String palettes[]; // an array of palettes
+  public static String palettes0[]; // the array of palettes with a blank [0] item inserted
+  public static final ImmutableList<String> paletteSections =
+      ImmutableList.of(
+          "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
+          "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31",
+          "32", "33", "34", "35", "36", "37", "38", "39", "40");
+  public static final String sparqlP01toP02pre;
+  public static final String sparqlP01toP02post;
 
   // TRANSLATED
-  private static String[] // private to force use via methods, e.g., acceptEncodingHtml()
-      acceptEncodingHtmlAr,
-      filesDocumentationAr;
-  public static String[] accessRESTFULAr,
-      acronymsAr,
-      addConstraintsAr,
-      addVarWhereAttNameAr,
-      addVarWhereAttValueAr,
-      addVarWhereAr,
-      additionalLinksAr,
-      admSummaryAr,
-      admTitleAr,
-      advc_accessibleAr,
-      advl_accessibleAr,
-      advl_institutionAr,
-      advc_dataStructureAr,
-      advl_dataStructureAr,
-      advl_cdm_data_typeAr,
-      advl_classAr,
-      advl_titleAr,
-      advl_minLongitudeAr,
-      advl_maxLongitudeAr,
-      advl_longitudeSpacingAr,
-      advl_minLatitudeAr,
-      advl_maxLatitudeAr,
-      advl_latitudeSpacingAr,
-      advl_minAltitudeAr,
-      advl_maxAltitudeAr,
-      advl_minTimeAr,
-      advc_maxTimeAr,
-      advl_maxTimeAr,
-      advl_timeSpacingAr,
-      advc_griddapAr,
-      advl_griddapAr,
-      advl_subsetAr,
-      advc_tabledapAr,
-      advl_tabledapAr,
-      advl_MakeAGraphAr,
-      advc_sosAr,
-      advl_sosAr,
-      advl_wcsAr,
-      advl_wmsAr,
-      advc_filesAr,
-      advl_filesAr,
-      advc_fgdcAr,
-      advl_fgdcAr,
-      advc_iso19115Ar,
-      advl_iso19115Ar,
-      advc_metadataAr,
-      advl_metadataAr,
-      advl_sourceUrlAr,
-      advl_infoUrlAr,
-      advl_rssAr,
-      advc_emailAr,
-      advl_emailAr,
-      advl_summaryAr,
-      advc_testOutOfDateAr,
-      advl_testOutOfDateAr,
-      advc_outOfDateAr,
-      advl_outOfDateAr,
-      advn_outOfDateAr,
-      advancedSearchAr,
-      advancedSearchResultsAr,
-      advancedSearchDirectionsAr,
-      advancedSearchTooltipAr,
-      advancedSearchBoundsAr,
-      advancedSearchMinLatAr,
-      advancedSearchMaxLatAr,
-      advancedSearchMinLonAr,
-      advancedSearchMaxLonAr,
-      advancedSearchMinMaxLonAr,
-      advancedSearchMinTimeAr,
-      advancedSearchMaxTimeAr,
-      advancedSearchClearAr,
-      advancedSearchClearHelpAr,
-      advancedSearchCategoryTooltipAr,
-      advancedSearchRangeTooltipAr,
-      advancedSearchMapTooltipAr,
-      advancedSearchLonTooltipAr,
-      advancedSearchTimeTooltipAr,
-      advancedSearchWithCriteriaAr,
-      advancedSearchFewerCriteriaAr,
-      advancedSearchNoCriteriaAr,
-      advancedSearchErrorHandlingAr,
-      autoRefreshAr,
-      blacklistMsgAr,
-      BroughtToYouByAr,
-      categoryTitleHtmlAr,
-      categoryHtmlAr,
-      category3HtmlAr,
-      categoryPickAttributeAr,
-      categorySearchHtmlAr,
-      categorySearchDifferentHtmlAr,
-      categoryClickHtmlAr,
-      categoryNotAnOptionAr,
-      caughtInterruptedAr,
-      cdmDataTypeHelpAr,
-      clickAccessAr,
-      clickBackgroundInfoAr,
-      clickERDDAPAr,
-      clickInfoAr,
-      clickToSubmitAr,
-      convertAr,
-      convertBypassAr,
-      convertToAFullNameAr,
-      convertToAnAcronymAr,
-      convertToACountyNameAr,
-      convertToAFIPSCodeAr,
-      convertToGCMDAr,
-      convertToCFStandardNamesAr,
-      convertToNumericTimeAr,
-      convertToStringTimeAr,
-      convertAnyStringTimeAr,
-      convertToProperTimeUnitsAr,
-      convertFromUDUNITSToUCUMAr,
-      convertFromUCUMToUDUNITSAr,
-      convertToUCUMAr,
-      convertToUDUNITSAr,
-      convertStandardizeUDUNITSAr,
-      convertToFullNameAr,
-      convertToVariableNameAr,
-      converterWebServiceAr,
-      convertOAAcronymsAr,
-      convertOAAcronymsToFromAr,
-      convertOAAcronymsIntroAr,
-      convertOAAcronymsNotesAr,
-      convertOAAcronymsServiceAr,
-      convertOAVariableNamesAr,
-      convertOAVariableNamesToFromAr,
-      convertOAVariableNamesIntroAr,
-      convertOAVariableNamesNotesAr,
-      convertOAVariableNamesServiceAr,
-      convertFipsCountyAr,
-      convertFipsCountyIntroAr,
-      convertFipsCountyNotesAr,
-      convertFipsCountyServiceAr,
-      convertHtmlAr,
-      convertInterpolateAr,
-      convertInterpolateIntroAr,
-      convertInterpolateTLLTableAr,
-      convertInterpolateTLLTableHelpAr,
-      convertInterpolateDatasetIDVariableAr,
-      convertInterpolateDatasetIDVariableHelpAr,
-      convertInterpolateNotesAr,
-      convertInterpolateServiceAr,
-      convertKeywordsAr,
-      convertKeywordsCfTooltipAr,
-      convertKeywordsGcmdTooltipAr,
-      convertKeywordsIntroAr,
-      convertKeywordsNotesAr,
-      convertKeywordsServiceAr,
-      convertTimeAr,
-      convertTimeReferenceAr,
-      convertTimeIntroAr,
-      convertTimeNotesAr,
-      convertTimeServiceAr,
-      convertTimeNumberTooltipAr,
-      convertTimeStringTimeTooltipAr,
-      convertTimeUnitsTooltipAr,
-      convertTimeUnitsHelpAr,
-      convertTimeIsoFormatErrorAr,
-      convertTimeNoSinceErrorAr,
-      convertTimeNumberErrorAr,
-      convertTimeNumericTimeErrorAr,
-      convertTimeParametersErrorAr,
-      convertTimeStringFormatErrorAr,
-      convertTimeTwoTimeErrorAr,
-      convertTimeUnitsErrorAr,
-      convertUnitsAr,
-      convertUnitsComparisonAr,
-      convertUnitsFilterAr,
-      convertUnitsIntroAr,
-      convertUnitsNotesAr,
-      convertUnitsServiceAr,
-      convertURLsAr,
-      convertURLsIntroAr,
-      convertURLsNotesAr,
-      convertURLsServiceAr,
-      cookiesHelpAr,
-      copyImageToClipboardAr,
-      copyTextToClipboardAr,
-      copyToClipboardNotAvailableAr,
-      dafAr,
-      dafGridBypassTooltipAr,
-      dafGridTooltipAr,
-      dafTableBypassTooltipAr,
-      dafTableTooltipAr,
-      dasTitleAr,
-      dataAccessNotAllowedAr,
-      databaseUnableToConnectAr,
-      dataProviderFormAr,
-      dataProviderFormP1Ar,
-      dataProviderFormP2Ar,
-      dataProviderFormP3Ar,
-      dataProviderFormP4Ar,
-      dataProviderFormDoneAr,
-      dataProviderFormSuccessAr,
-      dataProviderFormShortDescriptionAr,
-      dataProviderFormLongDescriptionHTMLAr,
-      dataProviderFormPart1Ar,
-      dataProviderFormPart2HeaderAr,
-      dataProviderFormPart2GlobalMetadataAr,
-      dataProviderContactInfoAr,
-      dataProviderDataAr,
-      documentationAr,
-      dpf_submitAr,
-      dpf_fixProblemAr,
-      dpf_yourNameAr,
-      dpf_emailAddressAr,
-      dpf_TimestampAr,
-      dpf_frequencyAr,
-      dpf_titleAr,
-      dpf_titleTooltipAr,
-      dpf_summaryAr,
-      dpf_summaryTooltipAr,
-      dpf_creatorNameAr,
-      dpf_creatorNameTooltipAr,
-      dpf_creatorTypeAr,
-      dpf_creatorTypeTooltipAr,
-      dpf_creatorEmailAr,
-      dpf_creatorEmailTooltipAr,
-      dpf_institutionAr,
-      dpf_institutionTooltipAr,
-      dpf_infoUrlAr,
-      dpf_infoUrlTooltipAr,
-      dpf_licenseAr,
-      dpf_licenseTooltipAr,
-      dpf_howYouStoreDataAr,
-      dpf_provideIfAvailableAr,
-      dpf_acknowledgementAr,
-      dpf_acknowledgementTooltipAr,
-      dpf_historyAr,
-      dpf_historyTooltipAr,
-      dpf_idTooltipAr,
-      dpf_namingAuthorityAr,
-      dpf_namingAuthorityTooltipAr,
-      dpf_productVersionAr,
-      dpf_productVersionTooltipAr,
-      dpf_referencesAr,
-      dpf_referencesTooltipAr,
-      dpf_commentAr,
-      dpf_commentTooltipAr,
-      dpf_dataTypeHelpAr,
-      dpf_ioosCategoryAr,
-      dpf_ioosCategoryHelpAr,
-      dpf_part3HeaderAr,
-      dpf_variableMetadataAr,
-      dpf_sourceNameAr,
-      dpf_sourceNameTooltipAr,
-      dpf_destinationNameAr,
-      dpf_destinationNameTooltipAr,
-      dpf_longNameAr,
-      dpf_longNameTooltipAr,
-      dpf_standardNameAr,
-      dpf_standardNameTooltipAr,
-      dpf_dataTypeAr,
-      dpf_fillValueAr,
-      dpf_fillValueTooltipAr,
-      dpf_unitsAr,
-      dpf_unitsTooltipAr,
-      dpf_rangeAr,
-      dpf_rangeTooltipAr,
-      dpf_part4HeaderAr,
-      dpf_otherCommentAr,
-      dpf_finishPart4Ar,
-      dpf_congratulationAr,
-      disabledAr,
-      distinctValuesTooltipAr,
-      doWithGraphsAr,
-      dtAccessibleAr,
-      dtAccessiblePublicAr,
-      dtAccessibleYesAr,
-      dtAccessibleGraphsAr,
-      dtAccessibleNoAr,
-      dtAccessibleLogInAr,
-      dtLogInAr,
-      dtDAFAr,
-      dtFilesAr,
-      dtMAGAr,
-      dtSOSAr,
-      dtSubsetAr,
-      dtWCSAr,
-      dtWMSAr,
-      EasierAccessToScientificDataAr,
-      EDDDatasetIDAr,
-      EDDFgdcMetadataAr,
-      EDDFilesAr,
-      EDDIso19115MetadataAr,
-      EDDMetadataAr,
-      EDDBackgroundAr,
-      EDDClickOnSubmitHtmlAr,
-      EDDInstitutionAr,
-      EDDInformationAr,
-      EDDSummaryAr,
-      EDDDatasetTitleAr,
-      EDDDownloadDataAr,
-      EDDMakeAGraphAr,
-      EDDMakeAMapAr,
-      EDDFileTypeAr,
-      EDDFileTypeInformationAr,
-      EDDSelectFileTypeAr,
-      EDDMinimumAr,
-      EDDMaximumAr,
-      EDDConstraintAr,
-      EDDGridDapDescriptionAr,
-      EDDGridDapLongDescriptionAr,
-      EDDGridDownloadDataTooltipAr,
-      EDDGridDimensionAr,
-      EDDGridDimensionRangesAr,
-      EDDGridFirstAr,
-      EDDGridLastAr,
-      EDDGridStartAr,
-      EDDGridStopAr,
-      EDDGridStartStopTooltipAr,
-      EDDGridStrideAr,
-      EDDGridNValuesAr,
-      EDDGridNValuesHtmlAr,
-      EDDGridSpacingAr,
-      EDDGridJustOneValueAr,
-      EDDGridEvenAr,
-      EDDGridUnevenAr,
-      EDDGridDimensionTooltipAr,
-      EDDGridDimensionFirstTooltipAr,
-      EDDGridDimensionLastTooltipAr,
-      EDDGridVarHasDimTooltipAr,
-      EDDGridSSSTooltipAr,
-      EDDGridStartTooltipAr,
-      EDDGridStopTooltipAr,
-      EDDGridStrideTooltipAr,
-      EDDGridSpacingTooltipAr,
-      EDDGridDownloadTooltipAr,
-      EDDGridGridVariableHtmlAr,
-      EDDGridCheckAllAr,
-      EDDGridCheckAllTooltipAr,
-      EDDGridUncheckAllAr,
-      EDDGridUncheckAllTooltipAr,
-      EDDTableConstraintsAr,
-      EDDTableTabularDatasetTooltipAr,
-      EDDTableVariableAr,
-      EDDTableCheckAllAr,
-      EDDTableCheckAllTooltipAr,
-      EDDTableUncheckAllAr,
-      EDDTableUncheckAllTooltipAr,
-      EDDTableMinimumTooltipAr,
-      EDDTableMaximumTooltipAr,
-      EDDTableCheckTheVariablesAr,
-      EDDTableSelectAnOperatorAr,
-      EDDTableFromEDDGridSummaryAr,
-      EDDTableOptConstraint1HtmlAr,
-      EDDTableOptConstraint2HtmlAr,
-      EDDTableOptConstraintVarAr,
-      EDDTableNumericConstraintTooltipAr,
-      EDDTableStringConstraintTooltipAr,
-      EDDTableTimeConstraintTooltipAr,
-      EDDTableConstraintTooltipAr,
-      EDDTableSelectConstraintTooltipAr,
-      EDDTableDapDescriptionAr,
-      EDDTableDapLongDescriptionAr,
-      EDDTableDownloadDataTooltipAr,
-      erddapIsAr,
-      erddapVersionHTMLAr,
-      errorTitleAr,
-      errorRequestUrlAr,
-      errorRequestQueryAr,
-      errorTheErrorAr,
-      errorCopyFromAr,
-      errorFileNotFoundAr,
-      errorFileNotFoundImageAr,
-      errorInternalAr,
-      errorJsonpFunctionNameAr,
-      errorJsonpNotAllowedAr,
-      errorMoreThan2GBAr,
-      errorNotFoundAr,
-      errorNotFoundInAr,
-      errorOdvLLTGridAr,
-      errorOdvLLTTableAr,
-      errorOnWebPageAr,
-      externalLinkAr,
-      externalWebSiteAr,
-      fileHelp_ascAr,
-      fileHelp_csvAr,
-      fileHelp_csvpAr,
-      fileHelp_csv0Ar,
-      fileHelp_dataTableAr,
-      fileHelp_dasAr,
-      fileHelp_ddsAr,
-      fileHelp_dodsAr,
-      fileHelpGrid_esriAsciiAr,
-      fileHelpTable_esriCsvAr,
-      fileHelp_fgdcAr,
-      fileHelp_geoJsonAr,
-      fileHelp_graphAr,
-      fileHelpGrid_helpAr,
-      fileHelpTable_helpAr,
-      fileHelp_htmlAr,
-      fileHelp_htmlTableAr,
-      fileHelp_iso19115Ar,
-      fileHelp_itxGridAr,
-      fileHelp_itxTableAr,
-      fileHelp_jsonAr,
-      fileHelp_jsonlCSV1Ar,
-      fileHelp_jsonlCSVAr,
-      fileHelp_jsonlKVPAr,
-      fileHelp_matAr,
-      fileHelpGrid_nc3Ar,
-      fileHelpGrid_nc4Ar,
-      fileHelpTable_nc3Ar,
-      fileHelpTable_nc4Ar,
-      fileHelp_nc3HeaderAr,
-      fileHelp_nc4HeaderAr,
-      fileHelp_nccsvAr,
-      fileHelp_nccsvMetadataAr,
-      fileHelp_ncCFAr,
-      fileHelp_ncCFHeaderAr,
-      fileHelp_ncCFMAAr,
-      fileHelp_ncCFMAHeaderAr,
-      fileHelp_ncmlAr,
-      fileHelp_ncoJsonAr,
-      fileHelpGrid_odvTxtAr,
-      fileHelpTable_odvTxtAr,
-      fileHelp_parquetAr,
-      fileHelp_parquet_with_metaAr,
-      fileHelp_subsetAr,
-      fileHelp_timeGapsAr,
-      fileHelp_tsvAr,
-      fileHelp_tsvpAr,
-      fileHelp_tsv0Ar,
-      fileHelp_wavAr,
-      fileHelp_xhtmlAr,
-      fileHelp_geotifAr, // graphical
-      fileHelpGrid_kmlAr,
-      fileHelpTable_kmlAr,
-      fileHelp_smallPdfAr,
-      fileHelp_pdfAr,
-      fileHelp_largePdfAr,
-      fileHelp_smallPngAr,
-      fileHelp_pngAr,
-      fileHelp_largePngAr,
-      fileHelp_transparentPngAr,
-      filesDescriptionAr,
-      filesSortAr,
-      filesWarningAr,
-      findOutChangeAr,
-      FIPSCountyCodesAr,
-      forSOSUseAr,
-      forWCSUseAr,
-      forWMSUseAr,
-      functionsAr,
-      functionTooltipAr,
-      functionDistinctCheckAr,
-      functionDistinctTooltipAr,
-      functionOrderByExtraAr,
-      functionOrderByTooltipAr,
-      functionOrderBySortAr,
-      functionOrderBySort1Ar,
-      functionOrderBySort2Ar,
-      functionOrderBySort3Ar,
-      functionOrderBySort4Ar,
-      functionOrderBySortLeastAr,
-      functionOrderBySortRowMaxAr,
-      generatedAtAr,
-      geoServicesDescriptionAr,
-      getStartedHtmlAr,
-      helpAr,
-      htmlTableMaxMessageAr,
-      imageDataCourtesyOfAr,
-      imagesEmbedAr,
-      indexViewAllAr,
-      indexSearchWithAr,
-      indexDevelopersSearchAr,
-      indexProtocolAr,
-      indexDescriptionAr,
-      indexDatasetsAr,
-      indexDocumentationAr,
-      indexRESTfulSearchAr,
-      indexAllDatasetsSearchAr,
-      indexOpenSearchAr,
-      indexServicesAr,
-      indexDescribeServicesAr,
-      indexMetadataAr,
-      indexWAF1Ar,
-      indexWAF2Ar,
-      indexConvertersAr,
-      indexDescribeConvertersAr,
-      infoAboutFromAr,
-      infoTableTitleHtmlAr,
-      infoRequestFormAr,
-      informationAr,
-      inotifyFixAr,
-      interpolateAr,
-      javaProgramsHTMLAr,
-      justGenerateAndViewAr,
-      justGenerateAndViewTooltipAr,
-      justGenerateAndViewUrlAr,
-      justGenerateAndViewGraphUrlTooltipAr,
-      keywordsAr,
-      langCodeAr,
-      legalNoticesAr,
-      legalNoticesTitleAr,
-      licenseAr,
-      likeThisAr,
-      listAllAr,
-      listOfDatasetsAr,
-      LogInAr,
-      loginAr,
-      loginHTMLAr,
-      loginAttemptBlockedAr,
-      loginDescribeCustomAr,
-      loginDescribeEmailAr,
-      loginDescribeGoogleAr,
-      loginDescribeOrcidAr,
-      loginDescribeOauth2Ar,
-      loginErddapAr,
-      loginCanNotAr,
-      loginAreNotAr,
-      loginToLogInAr,
-      loginEmailAddressAr,
-      loginYourEmailAddressAr,
-      loginUserNameAr,
-      loginPasswordAr,
-      loginUserNameAndPasswordAr,
-      loginGoogleSignInAr,
-      loginOrcidSignInAr,
-      loginOpenIDAr,
-      loginOpenIDOrAr,
-      loginOpenIDCreateAr,
-      loginOpenIDFreeAr,
-      loginOpenIDSameAr,
-      loginAsAr,
-      loginPartwayAsAr,
-      loginFailedAr,
-      loginSucceededAr,
-      loginInvalidAr,
-      loginNotAr,
-      loginBackAr,
-      loginProblemExactAr,
-      loginProblemExpireAr,
-      loginProblemGoogleAgainAr,
-      loginProblemOrcidAgainAr,
-      loginProblemOauth2AgainAr,
-      loginProblemSameBrowserAr,
-      loginProblem3TimesAr,
-      loginProblemsAr,
-      loginProblemsAfterAr,
-      loginPublicAccessAr,
-      LogOutAr,
-      logoutAr,
-      logoutOpenIDAr,
-      logoutSuccessAr,
-      magAr,
-      magAxisXAr,
-      magAxisYAr,
-      magAxisColorAr,
-      magAxisStickXAr,
-      magAxisStickYAr,
-      magAxisVectorXAr,
-      magAxisVectorYAr,
-      magAxisHelpGraphXAr,
-      magAxisHelpGraphYAr,
-      magAxisHelpMarkerColorAr,
-      magAxisHelpSurfaceColorAr,
-      magAxisHelpStickXAr,
-      magAxisHelpStickYAr,
-      magAxisHelpMapXAr,
-      magAxisHelpMapYAr,
-      magAxisHelpVectorXAr,
-      magAxisHelpVectorYAr,
-      magAxisVarHelpAr,
-      magAxisVarHelpGridAr,
-      magConstraintHelpAr,
-      magDocumentationAr,
-      magDownloadAr,
-      magDownloadTooltipAr,
-      magFileTypeAr,
-      magGraphTypeAr,
-      magGraphTypeTooltipGridAr,
-      magGraphTypeTooltipTableAr,
-      magGSAr,
-      magGSMarkerTypeAr,
-      magGSSizeAr,
-      magGSColorAr,
-      magGSColorBarAr,
-      magGSColorBarTooltipAr,
-      magGSContinuityAr,
-      magGSContinuityTooltipAr,
-      magGSScaleAr,
-      magGSScaleTooltipAr,
-      magGSMinAr,
-      magGSMinTooltipAr,
-      magGSMaxAr,
-      magGSMaxTooltipAr,
-      magGSNSectionsAr,
-      magGSNSectionsTooltipAr,
-      magGSLandMaskAr,
-      magGSLandMaskTooltipGridAr,
-      magGSLandMaskTooltipTableAr,
-      magGSVectorStandardAr,
-      magGSVectorStandardTooltipAr,
-      magGSYAscendingTooltipAr,
-      magGSYAxisMinAr,
-      magGSYAxisMaxAr,
-      magGSYRangeMinTooltipAr,
-      magGSYRangeMaxTooltipAr,
-      magGSYRangeTooltipAr,
-      magGSYScaleTooltipAr,
-      magItemFirstAr,
-      magItemPreviousAr,
-      magItemNextAr,
-      magItemLastAr,
-      magJust1ValueAr,
-      magRangeAr,
-      magRangeToAr,
-      magRedrawAr,
-      magRedrawTooltipAr,
-      magTimeRangeAr,
-      magTimeRangeFirstAr,
-      magTimeRangeBackAr,
-      magTimeRangeForwardAr,
-      magTimeRangeLastAr,
-      magTimeRangeTooltipAr,
-      magTimeRangeTooltip2Ar,
-      magTimesVaryAr,
-      magViewUrlAr,
-      magZoomAr,
-      magZoomCenterAr,
-      magZoomCenterTooltipAr,
-      magZoomInAr,
-      magZoomInTooltipAr,
-      magZoomOutAr,
-      magZoomOutTooltipAr,
-      magZoomALittleAr,
-      magZoomDataAr,
-      magZoomOutDataAr,
-      magGridTooltipAr,
-      magTableTooltipAr,
-      metadataDownloadAr,
-      moreInformationAr,
-      nMatching1Ar,
-      nMatchingAr,
-      nMatchingAlphabeticalAr,
-      nMatchingMostRelevantAr,
-      nMatchingPageAr,
-      nMatchingCurrentAr,
-      noDataFixedValueAr,
-      noDataNoLLAr,
-      noDatasetWithAr,
-      noPage1Ar,
-      noPage2Ar,
-      notAllowedAr,
-      notAuthorizedAr,
-      notAuthorizedForDataAr,
-      notAvailableAr,
-      noteAr,
-      noXxxAr,
-      noXxxBecauseAr,
-      noXxxBecause2Ar,
-      noXxxNotActiveAr,
-      noXxxNoAxis1Ar,
-      noXxxNoColorBarAr,
-      noXxxNoCdmDataTypeAr,
-      noXxxNoLLAr,
-      noXxxNoLLEvenlySpacedAr,
-      noXxxNoLLGt1Ar,
-      noXxxNoLLTAr,
-      noXxxNoLonIn180Ar,
-      noXxxNoNonStringAr,
-      noXxxNo2NonStringAr,
-      noXxxNoStationAr,
-      noXxxNoStationIDAr,
-      noXxxNoSubsetVariablesAr,
-      noXxxNoOLLSubsetVariablesAr,
-      noXxxNoMinMaxAr,
-      noXxxItsGriddedAr,
-      noXxxItsTabularAr,
-      oneRequestAtATimeAr,
-      openSearchDescriptionAr,
-      optionalAr,
-      optionsAr,
-      orAListOfValuesAr,
-      orRefineSearchWithAr,
-      orSearchWithAr,
-      orCommaAr,
-      otherFeaturesAr,
-      outOfDateDatasetsAr,
-      outOfDateKeepTrackAr,
-      outOfDateHtmlAr,
-      patientDataAr,
-      patientYourGraphAr,
-      percentEncodeAr,
-      pickADatasetAr,
-      protocolSearchHtmlAr,
-      protocolSearch2HtmlAr,
-      protocolClickAr,
-      queryErrorAr,
-      queryError180Ar,
-      queryError1ValueAr,
-      queryError1VarAr,
-      queryError2VarAr,
-      queryErrorActualRangeAr,
-      queryErrorAdjustedAr,
-      queryErrorAscendingAr,
-      queryErrorConstraintNaNAr,
-      queryErrorEqualSpacingAr,
-      queryErrorExpectedAtAr,
-      queryErrorFileTypeAr,
-      queryErrorInvalidAr,
-      queryErrorLLAr,
-      queryErrorLLGt1Ar,
-      queryErrorLLTAr,
-      queryErrorNeverTrueAr,
-      queryErrorNeverBothTrueAr,
-      queryErrorNotAxisAr,
-      queryErrorNotExpectedAtAr,
-      queryErrorNotFoundAfterAr,
-      queryErrorOccursTwiceAr,
-      queryErrorOrderByClosestAr,
-      queryErrorOrderByLimitAr,
-      queryErrorOrderByMeanAr,
-      queryErrorOrderBySumAr,
-      queryErrorOrderByVariableAr,
-      queryErrorUnknownVariableAr,
-      queryErrorGrid1AxisAr,
-      queryErrorGridAmpAr,
-      queryErrorGridDiagnosticAr,
-      queryErrorGridBetweenAr,
-      queryErrorGridLessMinAr,
-      queryErrorGridGreaterMaxAr,
-      queryErrorGridMissingAr,
-      queryErrorGridNoAxisVarAr,
-      queryErrorGridNoDataVarAr,
-      queryErrorGridNotIdenticalAr,
-      queryErrorGridSLessSAr,
-      queryErrorLastEndPAr,
-      queryErrorLastExpectedAr,
-      queryErrorLastUnexpectedAr,
-      queryErrorLastPMInvalidAr,
-      queryErrorLastPMIntegerAr,
-      rangesFromToAr,
-      requiredAr,
-      resetTheFormAr,
-      resetTheFormWasAr,
-      resourceNotFoundAr,
-      restfulWebServicesAr,
-      restfulHTMLAr,
-      restfulHTMLContinuedAr,
-      restfulGetAllDatasetAr,
-      restfulProtocolsAr,
-      SOSDocumentationAr,
-      WCSDocumentationAr,
-      WMSDocumentationAr,
-      requestFormatExamplesHtmlAr,
-      resultsFormatExamplesHtmlAr,
-      resultsOfSearchForAr,
-      restfulInformationFormatsAr,
-      restfulViaServiceAr,
-      rowsAr,
-      rssNoAr,
-      searchTitleAr,
-      searchDoFullTextHtmlAr,
-      searchFullTextHtmlAr,
-      searchHintsLuceneTooltipAr,
-      searchHintsOriginalTooltipAr,
-      searchHintsTooltipAr,
-      searchButtonAr,
-      searchClickTipAr,
-      searchMultipleERDDAPsAr,
-      searchMultipleERDDAPsDescriptionAr,
-      searchNotAvailableAr,
-      searchTipAr,
-      searchSpellingAr,
-      searchFewerWordsAr,
-      searchWithQueryAr,
-      seeProtocolDocumentationAr,
-      selectNextAr,
-      selectPreviousAr,
-      shiftXAllTheWayLeftAr,
-      shiftXLeftAr,
-      shiftXRightAr,
-      shiftXAllTheWayRightAr,
-      slideSorterAr,
-      SOSAr,
-      sosDescriptionHtmlAr,
-      sosLongDescriptionHtmlAr,
-      sosOverview1Ar,
-      sosOverview2Ar,
-      ssUseAr,
-      ssUsePlainAr,
-      ssBePatientAr,
-      ssInstructionsHtmlAr,
-      standardShortDescriptionHtmlAr,
-      statusAr,
-      statusHtmlAr,
-      submitAr,
-      submitTooltipAr,
-      subscriptionOfferRssAr,
-      subscriptionOfferUrlAr,
-      subscriptionsTitleAr,
-      subscriptionEmailListAr,
-      subscriptionAddAr,
-      subscriptionAddHtmlAr,
-      subscriptionValidateAr,
-      subscriptionValidateHtmlAr,
-      subscriptionListAr,
-      subscriptionListHtmlAr,
-      subscriptionRemoveAr,
-      subscriptionRemoveHtmlAr,
-      subscriptionAbuseAr,
-      subscriptionAddErrorAr,
-      subscriptionAdd2Ar,
-      subscriptionAddSuccessAr,
-      subscriptionEmailAr,
-      subscriptionEmailOnBlacklistAr,
-      subscriptionEmailInvalidAr,
-      subscriptionEmailTooLongAr,
-      subscriptionEmailUnspecifiedAr,
-      subscription0HtmlAr,
-      subscription1HtmlAr,
-      subscription2HtmlAr,
-      subscriptionIDInvalidAr,
-      subscriptionIDTooLongAr,
-      subscriptionIDUnspecifiedAr,
-      subscriptionKeyInvalidAr,
-      subscriptionKeyUnspecifiedAr,
-      subscriptionListErrorAr,
-      subscriptionListSuccessAr,
-      subscriptionRemoveErrorAr,
-      subscriptionRemove2Ar,
-      subscriptionRemoveSuccessAr,
-      subscriptionRSSAr,
-      subscriptionsNotAvailableAr,
-      subscriptionUrlHtmlAr,
-      subscriptionUrlInvalidAr,
-      subscriptionUrlTooLongAr,
-      subscriptionValidateErrorAr,
-      subscriptionValidateSuccessAr,
-      subsetAr,
-      subsetSelectAr,
-      subsetNMatchingAr,
-      subsetInstructionsAr,
-      subsetOptionAr,
-      subsetOptionsAr,
-      subsetRefineMapDownloadAr,
-      subsetRefineSubsetDownloadAr,
-      subsetClickResetClosestAr,
-      subsetClickResetLLAr,
-      subsetMetadataAr,
-      subsetCountAr,
-      subsetPercentAr,
-      subsetViewSelectAr,
-      subsetViewSelectDistinctCombosAr,
-      subsetViewSelectRelatedCountsAr,
-      subsetWhenAr,
-      subsetWhenNoConstraintsAr,
-      subsetWhenCountsAr,
-      subsetComboClickSelectAr,
-      subsetNVariableCombosAr,
-      subsetShowingAllRowsAr,
-      subsetShowingNRowsAr,
-      subsetChangeShowingAr,
-      subsetNRowsRelatedDataAr,
-      subsetViewRelatedChangeAr,
-      subsetTotalCountAr,
-      subsetViewAr,
-      subsetViewCheckAr,
-      subsetViewCheck1Ar,
-      subsetViewDistinctMapAr,
-      subsetViewRelatedMapAr,
-      subsetViewDistinctDataCountsAr,
-      subsetViewDistinctDataAr,
-      subsetViewRelatedDataCountsAr,
-      subsetViewRelatedDataAr,
-      subsetViewDistinctMapTooltipAr,
-      subsetViewRelatedMapTooltipAr,
-      subsetViewDistinctDataCountsTooltipAr,
-      subsetViewDistinctDataTooltipAr,
-      subsetViewRelatedDataCountsTooltipAr,
-      subsetViewRelatedDataTooltipAr,
-      subsetWarnAr,
-      subsetWarn10000Ar,
-      subsetTooltipAr,
-      subsetNotSetUpAr,
-      subsetLongNotShownAr,
-      tabledapVideoIntroAr,
-      theDatasetIDAr,
-      theKeyAr,
-      theSubscriptionIDAr,
-      theUrlActionAr,
-      ThenAr,
-      thisParticularErddapAr,
-      timeAr,
-      timeoutOtherRequestsAr,
-      unitsAr,
-      unknownDatasetIDAr,
-      unknownProtocolAr,
-      unsupportedFileTypeAr,
-      updateUrlsFrom, // not Ar. They were arrays before and now
-      updateUrlsTo, // not Ar
-      updateUrlsSkipAttributes, // not Ar
-      usingGriddapAr,
-      usingTabledapAr,
-      variableNamesAr,
-      viewAllDatasetsHtmlAr,
-      waitThenTryAgainAr,
-      warningAr,
-      WCSAr,
-      wcsDescriptionHtmlAr,
-      wcsLongDescriptionHtmlAr,
-      wcsOverview1Ar,
-      wcsOverview2Ar,
-      wmsDescriptionHtmlAr,
-      WMSDocumentation1Ar,
-      WMSGetCapabilitiesAr,
-      WMSGetMapAr,
-      WMSNotesAr,
-      wmsInstructionsAr,
-      wmsLongDescriptionHtmlAr,
-      wmsManyDatasetsAr,
-      yourEmailAddressAr,
-      zoomInAr,
-      zoomOutAr;
-  public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
-  private static String[] theLongDescriptionHtmlAr; // see the xxx() methods
-  public static String errorFromDataSource = String2.ERROR + " from data source: ";
-  public static int nLanguages = TranslateMessages.languageList.length;
+  private static final String[] // private to force use via methods, e.g., acceptEncodingHtml()
+      acceptEncodingHtmlAr;
+  private static final String[] filesDocumentationAr;
+  public static final String[] accessRESTFULAr;
+  public static final String[] acronymsAr;
+  public static final String[] addConstraintsAr;
+  public static final String[] addVarWhereAttNameAr;
+  public static final String[] addVarWhereAttValueAr;
+  public static final String[] addVarWhereAr;
+  public static final String[] additionalLinksAr;
+  public static final String[] admSummaryAr;
+  public static final String[] admTitleAr;
+  public static final String[] advc_accessibleAr;
+  public static final String[] advl_accessibleAr;
+  public static final String[] advl_institutionAr;
+  public static final String[] advc_dataStructureAr;
+  public static final String[] advl_dataStructureAr;
+  public static final String[] advl_cdm_data_typeAr;
+  public static final String[] advl_classAr;
+  public static final String[] advl_titleAr;
+  public static final String[] advl_minLongitudeAr;
+  public static final String[] advl_maxLongitudeAr;
+  public static final String[] advl_longitudeSpacingAr;
+  public static final String[] advl_minLatitudeAr;
+  public static final String[] advl_maxLatitudeAr;
+  public static final String[] advl_latitudeSpacingAr;
+  public static final String[] advl_minAltitudeAr;
+  public static final String[] advl_maxAltitudeAr;
+  public static final String[] advl_minTimeAr;
+  public static final String[] advc_maxTimeAr;
+  public static final String[] advl_maxTimeAr;
+  public static final String[] advl_timeSpacingAr;
+  public static final String[] advc_griddapAr;
+  public static final String[] advl_griddapAr;
+  public static final String[] advl_subsetAr;
+  public static final String[] advc_tabledapAr;
+  public static final String[] advl_tabledapAr;
+  public static final String[] advl_MakeAGraphAr;
+  public static final String[] advc_sosAr;
+  public static final String[] advl_sosAr;
+  public static final String[] advl_wcsAr;
+  public static final String[] advl_wmsAr;
+  public static final String[] advc_filesAr;
+  public static final String[] advl_filesAr;
+  public static final String[] advc_fgdcAr;
+  public static final String[] advl_fgdcAr;
+  public static final String[] advc_iso19115Ar;
+  public static final String[] advl_iso19115Ar;
+  public static final String[] advc_metadataAr;
+  public static final String[] advl_metadataAr;
+  public static final String[] advl_sourceUrlAr;
+  public static final String[] advl_infoUrlAr;
+  public static final String[] advl_rssAr;
+  public static final String[] advc_emailAr;
+  public static final String[] advl_emailAr;
+  public static final String[] advl_summaryAr;
+  public static final String[] advc_testOutOfDateAr;
+  public static final String[] advl_testOutOfDateAr;
+  public static final String[] advc_outOfDateAr;
+  public static final String[] advl_outOfDateAr;
+  public static final String[] advn_outOfDateAr;
+  public static final String[] advancedSearchAr;
+  public static final String[] advancedSearchResultsAr;
+  public static final String[] advancedSearchDirectionsAr;
+  public static final String[] advancedSearchTooltipAr;
+  public static final String[] advancedSearchBoundsAr;
+  public static final String[] advancedSearchMinLatAr;
+  public static final String[] advancedSearchMaxLatAr;
+  public static final String[] advancedSearchMinLonAr;
+  public static final String[] advancedSearchMaxLonAr;
+  public static final String[] advancedSearchMinMaxLonAr;
+  public static final String[] advancedSearchMinTimeAr;
+  public static final String[] advancedSearchMaxTimeAr;
+  public static final String[] advancedSearchClearAr;
+  public static final String[] advancedSearchClearHelpAr;
+  public static final String[] advancedSearchCategoryTooltipAr;
+  public static final String[] advancedSearchRangeTooltipAr;
+  public static final String[] advancedSearchMapTooltipAr;
+  public static final String[] advancedSearchLonTooltipAr;
+  public static final String[] advancedSearchTimeTooltipAr;
+  public static final String[] advancedSearchWithCriteriaAr;
+  public static final String[] advancedSearchFewerCriteriaAr;
+  public static final String[] advancedSearchNoCriteriaAr;
+  public static final String[] advancedSearchErrorHandlingAr;
+  public static final String[] autoRefreshAr;
+  public static final String[] blacklistMsgAr;
+  public static final String[] BroughtToYouByAr;
+  public static final String[] categoryTitleHtmlAr;
+  public static final String[] categoryHtmlAr;
+  public static final String[] category3HtmlAr;
+  public static final String[] categoryPickAttributeAr;
+  public static final String[] categorySearchHtmlAr;
+  public static final String[] categorySearchDifferentHtmlAr;
+  public static final String[] categoryClickHtmlAr;
+  public static final String[] categoryNotAnOptionAr;
+  public static final String[] caughtInterruptedAr;
+  public static final String[] cdmDataTypeHelpAr;
+  public static final String[] clickAccessAr;
+  public static final String[] clickBackgroundInfoAr;
+  public static final String[] clickERDDAPAr;
+  public static final String[] clickInfoAr;
+  public static final String[] clickToSubmitAr;
+  public static final String[] convertAr;
+  public static final String[] convertBypassAr;
+  public static final String[] convertToAFullNameAr;
+  public static final String[] convertToAnAcronymAr;
+  public static final String[] convertToACountyNameAr;
+  public static final String[] convertToAFIPSCodeAr;
+  public static final String[] convertToGCMDAr;
+  public static final String[] convertToCFStandardNamesAr;
+  public static final String[] convertToNumericTimeAr;
+  public static final String[] convertToStringTimeAr;
+  public static final String[] convertAnyStringTimeAr;
+  public static final String[] convertToProperTimeUnitsAr;
+  public static final String[] convertFromUDUNITSToUCUMAr;
+  public static final String[] convertFromUCUMToUDUNITSAr;
+  public static final String[] convertToUCUMAr;
+  public static final String[] convertToUDUNITSAr;
+  public static final String[] convertStandardizeUDUNITSAr;
+  public static final String[] convertToFullNameAr;
+  public static final String[] convertToVariableNameAr;
+  public static final String[] converterWebServiceAr;
+  public static final String[] convertOAAcronymsAr;
+  public static final String[] convertOAAcronymsToFromAr;
+  public static final String[] convertOAAcronymsIntroAr;
+  public static final String[] convertOAAcronymsNotesAr;
+  public static final String[] convertOAAcronymsServiceAr;
+  public static final String[] convertOAVariableNamesAr;
+  public static final String[] convertOAVariableNamesToFromAr;
+  public static final String[] convertOAVariableNamesIntroAr;
+  public static final String[] convertOAVariableNamesNotesAr;
+  public static final String[] convertOAVariableNamesServiceAr;
+  public static final String[] convertFipsCountyAr;
+  public static final String[] convertFipsCountyIntroAr;
+  public static final String[] convertFipsCountyNotesAr;
+  public static final String[] convertFipsCountyServiceAr;
+  public static final String[] convertHtmlAr;
+  public static final String[] convertInterpolateAr;
+  public static final String[] convertInterpolateIntroAr;
+  public static final String[] convertInterpolateTLLTableAr;
+  public static final String[] convertInterpolateTLLTableHelpAr;
+  public static final String[] convertInterpolateDatasetIDVariableAr;
+  public static final String[] convertInterpolateDatasetIDVariableHelpAr;
+  public static final String[] convertInterpolateNotesAr;
+  public static final String[] convertInterpolateServiceAr;
+  public static final String[] convertKeywordsAr;
+  public static final String[] convertKeywordsCfTooltipAr;
+  public static final String[] convertKeywordsGcmdTooltipAr;
+  public static final String[] convertKeywordsIntroAr;
+  public static final String[] convertKeywordsNotesAr;
+  public static final String[] convertKeywordsServiceAr;
+  public static final String[] convertTimeAr;
+  public static final String[] convertTimeReferenceAr;
+  public static final String[] convertTimeIntroAr;
+  public static final String[] convertTimeNotesAr;
+  public static final String[] convertTimeServiceAr;
+  public static final String[] convertTimeNumberTooltipAr;
+  public static final String[] convertTimeStringTimeTooltipAr;
+  public static final String[] convertTimeUnitsTooltipAr;
+  public static final String[] convertTimeUnitsHelpAr;
+  public static final String[] convertTimeIsoFormatErrorAr;
+  public static final String[] convertTimeNoSinceErrorAr;
+  public static final String[] convertTimeNumberErrorAr;
+  public static final String[] convertTimeNumericTimeErrorAr;
+  public static final String[] convertTimeParametersErrorAr;
+  public static final String[] convertTimeStringFormatErrorAr;
+  public static final String[] convertTimeTwoTimeErrorAr;
+  public static final String[] convertTimeUnitsErrorAr;
+  public static final String[] convertUnitsAr;
+  public static final String[] convertUnitsComparisonAr;
+  public static final String[] convertUnitsFilterAr;
+  public static final String[] convertUnitsIntroAr;
+  public static final String[] convertUnitsNotesAr;
+  public static final String[] convertUnitsServiceAr;
+  public static final String[] convertURLsAr;
+  public static final String[] convertURLsIntroAr;
+  public static final String[] convertURLsNotesAr;
+  public static final String[] convertURLsServiceAr;
+  public static final String[] cookiesHelpAr;
+  public static final String[] copyImageToClipboardAr;
+  public static final String[] copyTextToClipboardAr;
+  public static final String[] copyToClipboardNotAvailableAr;
+  public static final String[] dafAr;
+  public static final String[] dafGridBypassTooltipAr;
+  public static final String[] dafGridTooltipAr;
+  public static final String[] dafTableBypassTooltipAr;
+  public static final String[] dafTableTooltipAr;
+  public static final String[] dasTitleAr;
+  public static final String[] dataAccessNotAllowedAr;
+  public static final String[] databaseUnableToConnectAr;
+  public static final String[] dataProviderFormAr;
+  public static final String[] dataProviderFormP1Ar;
+  public static final String[] dataProviderFormP2Ar;
+  public static final String[] dataProviderFormP3Ar;
+  public static final String[] dataProviderFormP4Ar;
+  public static final String[] dataProviderFormDoneAr;
+  public static final String[] dataProviderFormSuccessAr;
+  public static final String[] dataProviderFormShortDescriptionAr;
+  public static final String[] dataProviderFormLongDescriptionHTMLAr;
+  public static final String[] dataProviderFormPart1Ar;
+  public static final String[] dataProviderFormPart2HeaderAr;
+  public static final String[] dataProviderFormPart2GlobalMetadataAr;
+  public static final String[] dataProviderContactInfoAr;
+  public static final String[] dataProviderDataAr;
+  public static final String[] documentationAr;
+  public static final String[] dpf_submitAr;
+  public static final String[] dpf_fixProblemAr;
+  public static final String[] dpf_yourNameAr;
+  public static final String[] dpf_emailAddressAr;
+  public static final String[] dpf_TimestampAr;
+  public static final String[] dpf_frequencyAr;
+  public static final String[] dpf_titleAr;
+  public static final String[] dpf_titleTooltipAr;
+  public static final String[] dpf_summaryAr;
+  public static final String[] dpf_summaryTooltipAr;
+  public static final String[] dpf_creatorNameAr;
+  public static final String[] dpf_creatorNameTooltipAr;
+  public static final String[] dpf_creatorTypeAr;
+  public static final String[] dpf_creatorTypeTooltipAr;
+  public static final String[] dpf_creatorEmailAr;
+  public static final String[] dpf_creatorEmailTooltipAr;
+  public static final String[] dpf_institutionAr;
+  public static final String[] dpf_institutionTooltipAr;
+  public static final String[] dpf_infoUrlAr;
+  public static final String[] dpf_infoUrlTooltipAr;
+  public static final String[] dpf_licenseAr;
+  public static final String[] dpf_licenseTooltipAr;
+  public static final String[] dpf_howYouStoreDataAr;
+  public static final String[] dpf_provideIfAvailableAr;
+  public static final String[] dpf_acknowledgementAr;
+  public static final String[] dpf_acknowledgementTooltipAr;
+  public static final String[] dpf_historyAr;
+  public static final String[] dpf_historyTooltipAr;
+  public static final String[] dpf_idTooltipAr;
+  public static final String[] dpf_namingAuthorityAr;
+  public static final String[] dpf_namingAuthorityTooltipAr;
+  public static final String[] dpf_productVersionAr;
+  public static final String[] dpf_productVersionTooltipAr;
+  public static final String[] dpf_referencesAr;
+  public static final String[] dpf_referencesTooltipAr;
+  public static final String[] dpf_commentAr;
+  public static final String[] dpf_commentTooltipAr;
+  public static final String[] dpf_dataTypeHelpAr;
+  public static final String[] dpf_ioosCategoryAr;
+  public static final String[] dpf_ioosCategoryHelpAr;
+  public static final String[] dpf_part3HeaderAr;
+  public static final String[] dpf_variableMetadataAr;
+  public static final String[] dpf_sourceNameAr;
+  public static final String[] dpf_sourceNameTooltipAr;
+  public static final String[] dpf_destinationNameAr;
+  public static final String[] dpf_destinationNameTooltipAr;
+  public static final String[] dpf_longNameAr;
+  public static final String[] dpf_longNameTooltipAr;
+  public static final String[] dpf_standardNameAr;
+  public static final String[] dpf_standardNameTooltipAr;
+  public static final String[] dpf_dataTypeAr;
+  public static final String[] dpf_fillValueAr;
+  public static final String[] dpf_fillValueTooltipAr;
+  public static final String[] dpf_unitsAr;
+  public static final String[] dpf_unitsTooltipAr;
+  public static final String[] dpf_rangeAr;
+  public static final String[] dpf_rangeTooltipAr;
+  public static final String[] dpf_part4HeaderAr;
+  public static final String[] dpf_otherCommentAr;
+  public static final String[] dpf_finishPart4Ar;
+  public static final String[] dpf_congratulationAr;
+  public static final String[] disabledAr;
+  public static final String[] distinctValuesTooltipAr;
+  public static final String[] doWithGraphsAr;
+  public static final String[] dtAccessibleAr;
+  public static final String[] dtAccessiblePublicAr;
+  public static final String[] dtAccessibleYesAr;
+  public static final String[] dtAccessibleGraphsAr;
+  public static final String[] dtAccessibleNoAr;
+  public static final String[] dtAccessibleLogInAr;
+  public static final String[] dtLogInAr;
+  public static final String[] dtDAFAr;
+  public static final String[] dtFilesAr;
+  public static final String[] dtMAGAr;
+  public static final String[] dtSOSAr;
+  public static final String[] dtSubsetAr;
+  public static final String[] dtWCSAr;
+  public static final String[] dtWMSAr;
+  public static final String[] EasierAccessToScientificDataAr;
+  public static final String[] EDDDatasetIDAr;
+  public static final String[] EDDFgdcMetadataAr;
+  public static final String[] EDDFilesAr;
+  public static final String[] EDDIso19115MetadataAr;
+  public static final String[] EDDMetadataAr;
+  public static final String[] EDDBackgroundAr;
+  public static final String[] EDDClickOnSubmitHtmlAr;
+  public static final String[] EDDInstitutionAr;
+  public static final String[] EDDInformationAr;
+  public static final String[] EDDSummaryAr;
+  public static final String[] EDDDatasetTitleAr;
+  public static final String[] EDDDownloadDataAr;
+  public static final String[] EDDMakeAGraphAr;
+  public static final String[] EDDMakeAMapAr;
+  public static final String[] EDDFileTypeAr;
+  public static final String[] EDDFileTypeInformationAr;
+  public static final String[] EDDSelectFileTypeAr;
+  public static final String[] EDDMinimumAr;
+  public static final String[] EDDMaximumAr;
+  public static final String[] EDDConstraintAr;
+  public static final String[] EDDGridDapDescriptionAr;
+  public static final String[] EDDGridDapLongDescriptionAr;
+  public static final String[] EDDGridDownloadDataTooltipAr;
+  public static final String[] EDDGridDimensionAr;
+  public static final String[] EDDGridDimensionRangesAr;
+  public static final String[] EDDGridFirstAr;
+  public static final String[] EDDGridLastAr;
+  public static final String[] EDDGridStartAr;
+  public static final String[] EDDGridStopAr;
+  public static final String[] EDDGridStartStopTooltipAr;
+  public static final String[] EDDGridStrideAr;
+  public static final String[] EDDGridNValuesAr;
+  public static final String[] EDDGridNValuesHtmlAr;
+  public static final String[] EDDGridSpacingAr;
+  public static final String[] EDDGridJustOneValueAr;
+  public static final String[] EDDGridEvenAr;
+  public static final String[] EDDGridUnevenAr;
+  public static final String[] EDDGridDimensionTooltipAr;
+  public static final String[] EDDGridDimensionFirstTooltipAr;
+  public static final String[] EDDGridDimensionLastTooltipAr;
+  public static final String[] EDDGridVarHasDimTooltipAr;
+  public static final String[] EDDGridSSSTooltipAr;
+  public static final String[] EDDGridStartTooltipAr;
+  public static final String[] EDDGridStopTooltipAr;
+  public static final String[] EDDGridStrideTooltipAr;
+  public static final String[] EDDGridSpacingTooltipAr;
+  public static final String[] EDDGridDownloadTooltipAr;
+  public static final String[] EDDGridGridVariableHtmlAr;
+  public static final String[] EDDGridCheckAllAr;
+  public static final String[] EDDGridCheckAllTooltipAr;
+  public static final String[] EDDGridUncheckAllAr;
+  public static final String[] EDDGridUncheckAllTooltipAr;
+  public static final String[] EDDTableConstraintsAr;
+  public static final String[] EDDTableTabularDatasetTooltipAr;
+  public static final String[] EDDTableVariableAr;
+  public static final String[] EDDTableCheckAllAr;
+  public static final String[] EDDTableCheckAllTooltipAr;
+  public static final String[] EDDTableUncheckAllAr;
+  public static final String[] EDDTableUncheckAllTooltipAr;
+  public static final String[] EDDTableMinimumTooltipAr;
+  public static final String[] EDDTableMaximumTooltipAr;
+  public static final String[] EDDTableCheckTheVariablesAr;
+  public static final String[] EDDTableSelectAnOperatorAr;
+  public static final String[] EDDTableFromEDDGridSummaryAr;
+  public static final String[] EDDTableOptConstraint1HtmlAr;
+  public static final String[] EDDTableOptConstraint2HtmlAr;
+  public static final String[] EDDTableOptConstraintVarAr;
+  public static final String[] EDDTableNumericConstraintTooltipAr;
+  public static final String[] EDDTableStringConstraintTooltipAr;
+  public static final String[] EDDTableTimeConstraintTooltipAr;
+  public static final String[] EDDTableConstraintTooltipAr;
+  public static final String[] EDDTableSelectConstraintTooltipAr;
+  public static final String[] EDDTableDapDescriptionAr;
+  public static final String[] EDDTableDapLongDescriptionAr;
+  public static final String[] EDDTableDownloadDataTooltipAr;
+  public static final String[] erddapIsAr;
+  public static final String[] erddapVersionHTMLAr;
+  public static final String[] errorTitleAr;
+  public static final String[] errorRequestUrlAr;
+  public static final String[] errorRequestQueryAr;
+  public static final String[] errorTheErrorAr;
+  public static final String[] errorCopyFromAr;
+  public static final String[] errorFileNotFoundAr;
+  public static final String[] errorFileNotFoundImageAr;
+  public static final String[] errorInternalAr;
+  public static final String[] errorJsonpFunctionNameAr;
+  public static final String[] errorJsonpNotAllowedAr;
+  public static final String[] errorMoreThan2GBAr;
+  public static final String[] errorNotFoundAr;
+  public static final String[] errorNotFoundInAr;
+  public static final String[] errorOdvLLTGridAr;
+  public static final String[] errorOdvLLTTableAr;
+  public static final String[] errorOnWebPageAr;
+  public static final String[] externalLinkAr;
+  public static final String[] externalWebSiteAr;
+  public static final String[] fileHelp_ascAr;
+  public static final String[] fileHelp_csvAr;
+  public static final String[] fileHelp_csvpAr;
+  public static final String[] fileHelp_csv0Ar;
+  public static final String[] fileHelp_dataTableAr;
+  public static final String[] fileHelp_dasAr;
+  public static final String[] fileHelp_ddsAr;
+  public static final String[] fileHelp_dodsAr;
+  public static final String[] fileHelpGrid_esriAsciiAr;
+  public static final String[] fileHelpTable_esriCsvAr;
+  public static final String[] fileHelp_fgdcAr;
+  public static final String[] fileHelp_geoJsonAr;
+  public static final String[] fileHelp_graphAr;
+  public static final String[] fileHelpGrid_helpAr;
+  public static final String[] fileHelpTable_helpAr;
+  public static final String[] fileHelp_htmlAr;
+  public static final String[] fileHelp_htmlTableAr;
+  public static final String[] fileHelp_iso19115Ar;
+  public static final String[] fileHelp_itxGridAr;
+  public static final String[] fileHelp_itxTableAr;
+  public static final String[] fileHelp_jsonAr;
+  public static final String[] fileHelp_jsonlCSV1Ar;
+  public static final String[] fileHelp_jsonlCSVAr;
+  public static final String[] fileHelp_jsonlKVPAr;
+  public static final String[] fileHelp_matAr;
+  public static final String[] fileHelpGrid_nc3Ar;
+  public static final String[] fileHelpGrid_nc4Ar;
+  public static final String[] fileHelpTable_nc3Ar;
+  public static final String[] fileHelpTable_nc4Ar;
+  public static final String[] fileHelp_nc3HeaderAr;
+  public static final String[] fileHelp_nc4HeaderAr;
+  public static final String[] fileHelp_nccsvAr;
+  public static final String[] fileHelp_nccsvMetadataAr;
+  public static final String[] fileHelp_ncCFAr;
+  public static final String[] fileHelp_ncCFHeaderAr;
+  public static final String[] fileHelp_ncCFMAAr;
+  public static final String[] fileHelp_ncCFMAHeaderAr;
+  public static final String[] fileHelp_ncmlAr;
+  public static final String[] fileHelp_ncoJsonAr;
+  public static final String[] fileHelpGrid_odvTxtAr;
+  public static final String[] fileHelpTable_odvTxtAr;
+  public static final String[] fileHelp_parquetAr;
+  public static final String[] fileHelp_parquet_with_metaAr;
+  public static final String[] fileHelp_subsetAr;
+  public static final String[] fileHelp_timeGapsAr;
+  public static final String[] fileHelp_tsvAr;
+  public static final String[] fileHelp_tsvpAr;
+  public static final String[] fileHelp_tsv0Ar;
+  public static final String[] fileHelp_wavAr;
+  public static final String[] fileHelp_xhtmlAr;
+  public static final String[] fileHelp_geotifAr; // graphical
+  public static final String[] fileHelpGrid_kmlAr;
+  public static final String[] fileHelpTable_kmlAr;
+  public static final String[] fileHelp_smallPdfAr;
+  public static final String[] fileHelp_pdfAr;
+  public static final String[] fileHelp_largePdfAr;
+  public static final String[] fileHelp_smallPngAr;
+  public static final String[] fileHelp_pngAr;
+  public static final String[] fileHelp_largePngAr;
+  public static final String[] fileHelp_transparentPngAr;
+  public static final String[] filesDescriptionAr;
+  public static final String[] filesSortAr;
+  public static final String[] filesWarningAr;
+  public static final String[] findOutChangeAr;
+  public static final String[] FIPSCountyCodesAr;
+  public static final String[] forSOSUseAr;
+  public static final String[] forWCSUseAr;
+  public static final String[] forWMSUseAr;
+  public static final String[] functionsAr;
+  public static final String[] functionTooltipAr;
+  public static final String[] functionDistinctCheckAr;
+  public static final String[] functionDistinctTooltipAr;
+  public static final String[] functionOrderByExtraAr;
+  public static final String[] functionOrderByTooltipAr;
+  public static final String[] functionOrderBySortAr;
+  public static final String[] functionOrderBySort1Ar;
+  public static final String[] functionOrderBySort2Ar;
+  public static final String[] functionOrderBySort3Ar;
+  public static final String[] functionOrderBySort4Ar;
+  public static final String[] functionOrderBySortLeastAr;
+  public static final String[] functionOrderBySortRowMaxAr;
+  public static final String[] generatedAtAr;
+  public static final String[] geoServicesDescriptionAr;
+  public static final String[] getStartedHtmlAr;
+  public static final String[] helpAr;
+  public static final String[] htmlTableMaxMessageAr;
+  public static final String[] imageDataCourtesyOfAr;
+  public static final String[] imagesEmbedAr;
+  public static final String[] indexViewAllAr;
+  public static final String[] indexSearchWithAr;
+  public static final String[] indexDevelopersSearchAr;
+  public static final String[] indexProtocolAr;
+  public static final String[] indexDescriptionAr;
+  public static final String[] indexDatasetsAr;
+  public static final String[] indexDocumentationAr;
+  public static final String[] indexRESTfulSearchAr;
+  public static final String[] indexAllDatasetsSearchAr;
+  public static final String[] indexOpenSearchAr;
+  public static final String[] indexServicesAr;
+  public static final String[] indexDescribeServicesAr;
+  public static final String[] indexMetadataAr;
+  public static final String[] indexWAF1Ar;
+  public static final String[] indexWAF2Ar;
+  public static final String[] indexConvertersAr;
+  public static final String[] indexDescribeConvertersAr;
+  public static final String[] infoAboutFromAr;
+  public static final String[] infoTableTitleHtmlAr;
+  public static final String[] infoRequestFormAr;
+  public static final String[] informationAr;
+  public static final String[] inotifyFixAr;
+  public static final String[] interpolateAr;
+  public static final String[] javaProgramsHTMLAr;
+  public static final String[] justGenerateAndViewAr;
+  public static final String[] justGenerateAndViewTooltipAr;
+  public static final String[] justGenerateAndViewUrlAr;
+  public static final String[] justGenerateAndViewGraphUrlTooltipAr;
+  public static final String[] keywordsAr;
+  public static final String[] langCodeAr;
+  public static final String[] legalNoticesAr;
+  public static final String[] legalNoticesTitleAr;
+  public static final String[] licenseAr;
+  public static final String[] likeThisAr;
+  public static final String[] listAllAr;
+  public static final String[] listOfDatasetsAr;
+  public static final String[] LogInAr;
+  public static final String[] loginAr;
+  public static final String[] loginHTMLAr;
+  public static final String[] loginAttemptBlockedAr;
+  public static final String[] loginDescribeCustomAr;
+  public static final String[] loginDescribeEmailAr;
+  public static final String[] loginDescribeGoogleAr;
+  public static final String[] loginDescribeOrcidAr;
+  public static final String[] loginDescribeOauth2Ar;
+  public static final String[] loginErddapAr;
+  public static final String[] loginCanNotAr;
+  public static final String[] loginAreNotAr;
+  public static final String[] loginToLogInAr;
+  public static final String[] loginEmailAddressAr;
+  public static final String[] loginYourEmailAddressAr;
+  public static final String[] loginUserNameAr;
+  public static final String[] loginPasswordAr;
+  public static final String[] loginUserNameAndPasswordAr;
+  public static final String[] loginGoogleSignInAr;
+  public static final String[] loginOrcidSignInAr;
+  public static final String[] loginOpenIDAr;
+  public static final String[] loginOpenIDOrAr;
+  public static final String[] loginOpenIDCreateAr;
+  public static final String[] loginOpenIDFreeAr;
+  public static final String[] loginOpenIDSameAr;
+  public static final String[] loginAsAr;
+  public static final String[] loginPartwayAsAr;
+  public static final String[] loginFailedAr;
+  public static final String[] loginSucceededAr;
+  public static final String[] loginInvalidAr;
+  public static final String[] loginNotAr;
+  public static final String[] loginBackAr;
+  public static final String[] loginProblemExactAr;
+  public static final String[] loginProblemExpireAr;
+  public static final String[] loginProblemGoogleAgainAr;
+  public static final String[] loginProblemOrcidAgainAr;
+  public static final String[] loginProblemOauth2AgainAr;
+  public static final String[] loginProblemSameBrowserAr;
+  public static final String[] loginProblem3TimesAr;
+  public static final String[] loginProblemsAr;
+  public static final String[] loginProblemsAfterAr;
+  public static final String[] loginPublicAccessAr;
+  public static final String[] LogOutAr;
+  public static final String[] logoutAr;
+  public static final String[] logoutOpenIDAr;
+  public static final String[] logoutSuccessAr;
+  public static final String[] magAr;
+  public static final String[] magAxisXAr;
+  public static final String[] magAxisYAr;
+  public static final String[] magAxisColorAr;
+  public static final String[] magAxisStickXAr;
+  public static final String[] magAxisStickYAr;
+  public static final String[] magAxisVectorXAr;
+  public static final String[] magAxisVectorYAr;
+  public static final String[] magAxisHelpGraphXAr;
+  public static final String[] magAxisHelpGraphYAr;
+  public static final String[] magAxisHelpMarkerColorAr;
+  public static final String[] magAxisHelpSurfaceColorAr;
+  public static final String[] magAxisHelpStickXAr;
+  public static final String[] magAxisHelpStickYAr;
+  public static final String[] magAxisHelpMapXAr;
+  public static final String[] magAxisHelpMapYAr;
+  public static final String[] magAxisHelpVectorXAr;
+  public static final String[] magAxisHelpVectorYAr;
+  public static final String[] magAxisVarHelpAr;
+  public static final String[] magAxisVarHelpGridAr;
+  public static final String[] magConstraintHelpAr;
+  public static final String[] magDocumentationAr;
+  public static final String[] magDownloadAr;
+  public static final String[] magDownloadTooltipAr;
+  public static final String[] magFileTypeAr;
+  public static final String[] magGraphTypeAr;
+  public static final String[] magGraphTypeTooltipGridAr;
+  public static final String[] magGraphTypeTooltipTableAr;
+  public static final String[] magGSAr;
+  public static final String[] magGSMarkerTypeAr;
+  public static final String[] magGSSizeAr;
+  public static final String[] magGSColorAr;
+  public static final String[] magGSColorBarAr;
+  public static final String[] magGSColorBarTooltipAr;
+  public static final String[] magGSContinuityAr;
+  public static final String[] magGSContinuityTooltipAr;
+  public static final String[] magGSScaleAr;
+  public static final String[] magGSScaleTooltipAr;
+  public static final String[] magGSMinAr;
+  public static final String[] magGSMinTooltipAr;
+  public static final String[] magGSMaxAr;
+  public static final String[] magGSMaxTooltipAr;
+  public static final String[] magGSNSectionsAr;
+  public static final String[] magGSNSectionsTooltipAr;
+  public static final String[] magGSLandMaskAr;
+  public static final String[] magGSLandMaskTooltipGridAr;
+  public static final String[] magGSLandMaskTooltipTableAr;
+  public static final String[] magGSVectorStandardAr;
+  public static final String[] magGSVectorStandardTooltipAr;
+  public static final String[] magGSYAscendingTooltipAr;
+  public static final String[] magGSYAxisMinAr;
+  public static final String[] magGSYAxisMaxAr;
+  public static final String[] magGSYRangeMinTooltipAr;
+  public static final String[] magGSYRangeMaxTooltipAr;
+  public static final String[] magGSYRangeTooltipAr;
+  public static final String[] magGSYScaleTooltipAr;
+  public static final String[] magItemFirstAr;
+  public static final String[] magItemPreviousAr;
+  public static final String[] magItemNextAr;
+  public static final String[] magItemLastAr;
+  public static final String[] magJust1ValueAr;
+  public static final String[] magRangeAr;
+  public static final String[] magRangeToAr;
+  public static final String[] magRedrawAr;
+  public static final String[] magRedrawTooltipAr;
+  public static final String[] magTimeRangeAr;
+  public static final String[] magTimeRangeFirstAr;
+  public static final String[] magTimeRangeBackAr;
+  public static final String[] magTimeRangeForwardAr;
+  public static final String[] magTimeRangeLastAr;
+  public static final String[] magTimeRangeTooltipAr;
+  public static final String[] magTimeRangeTooltip2Ar;
+  public static final String[] magTimesVaryAr;
+  public static final String[] magViewUrlAr;
+  public static final String[] magZoomAr;
+  public static final String[] magZoomCenterAr;
+  public static final String[] magZoomCenterTooltipAr;
+  public static final String[] magZoomInAr;
+  public static final String[] magZoomInTooltipAr;
+  public static final String[] magZoomOutAr;
+  public static final String[] magZoomOutTooltipAr;
+  public static final String[] magZoomALittleAr;
+  public static final String[] magZoomDataAr;
+  public static final String[] magZoomOutDataAr;
+  public static final String[] magGridTooltipAr;
+  public static final String[] magTableTooltipAr;
+  public static final String[] metadataDownloadAr;
+  public static final String[] moreInformationAr;
+  public static final String[] nMatching1Ar;
+  public static final String[] nMatchingAr;
+  public static final String[] nMatchingAlphabeticalAr;
+  public static final String[] nMatchingMostRelevantAr;
+  public static final String[] nMatchingPageAr;
+  public static final String[] nMatchingCurrentAr;
+  public static final String[] noDataFixedValueAr;
+  public static final String[] noDataNoLLAr;
+  public static final String[] noDatasetWithAr;
+  public static final String[] noPage1Ar;
+  public static final String[] noPage2Ar;
+  public static final String[] notAllowedAr;
+  public static final String[] notAuthorizedAr;
+  public static final String[] notAuthorizedForDataAr;
+  public static final String[] notAvailableAr;
+  public static final String[] noteAr;
+  public static final String[] noXxxAr;
+  public static final String[] noXxxBecauseAr;
+  public static final String[] noXxxBecause2Ar;
+  public static final String[] noXxxNotActiveAr;
+  public static final String[] noXxxNoAxis1Ar;
+  public static final String[] noXxxNoColorBarAr;
+  public static final String[] noXxxNoCdmDataTypeAr;
+  public static final String[] noXxxNoLLAr;
+  public static final String[] noXxxNoLLEvenlySpacedAr;
+  public static final String[] noXxxNoLLGt1Ar;
+  public static final String[] noXxxNoLLTAr;
+  public static final String[] noXxxNoLonIn180Ar;
+  public static final String[] noXxxNoNonStringAr;
+  public static final String[] noXxxNo2NonStringAr;
+  public static final String[] noXxxNoStationAr;
+  public static final String[] noXxxNoStationIDAr;
+  public static final String[] noXxxNoSubsetVariablesAr;
+  public static final String[] noXxxNoOLLSubsetVariablesAr;
+  public static final String[] noXxxNoMinMaxAr;
+  public static final String[] noXxxItsGriddedAr;
+  public static final String[] noXxxItsTabularAr;
+  public static final String[] oneRequestAtATimeAr;
+  public static final String[] openSearchDescriptionAr;
+  public static final String[] optionalAr;
+  public static final String[] optionsAr;
+  public static final String[] orAListOfValuesAr;
+  public static final String[] orRefineSearchWithAr;
+  public static final String[] orSearchWithAr;
+  public static final String[] orCommaAr;
+  public static final String[] otherFeaturesAr;
+  public static final String[] outOfDateDatasetsAr;
+  public static final String[] outOfDateKeepTrackAr;
+  public static final String[] outOfDateHtmlAr;
+  public static final String[] patientDataAr;
+  public static final String[] patientYourGraphAr;
+  public static final String[] percentEncodeAr;
+  public static final String[] pickADatasetAr;
+  public static final String[] protocolSearchHtmlAr;
+  public static final String[] protocolSearch2HtmlAr;
+  public static final String[] protocolClickAr;
+  public static final String[] queryErrorAr;
+  public static final String[] queryError180Ar;
+  public static final String[] queryError1ValueAr;
+  public static final String[] queryError1VarAr;
+  public static final String[] queryError2VarAr;
+  public static final String[] queryErrorActualRangeAr;
+  public static final String[] queryErrorAdjustedAr;
+  public static final String[] queryErrorAscendingAr;
+  public static final String[] queryErrorConstraintNaNAr;
+  public static final String[] queryErrorEqualSpacingAr;
+  public static final String[] queryErrorExpectedAtAr;
+  public static final String[] queryErrorFileTypeAr;
+  public static final String[] queryErrorInvalidAr;
+  public static final String[] queryErrorLLAr;
+  public static final String[] queryErrorLLGt1Ar;
+  public static final String[] queryErrorLLTAr;
+  public static final String[] queryErrorNeverTrueAr;
+  public static final String[] queryErrorNeverBothTrueAr;
+  public static final String[] queryErrorNotAxisAr;
+  public static final String[] queryErrorNotExpectedAtAr;
+  public static final String[] queryErrorNotFoundAfterAr;
+  public static final String[] queryErrorOccursTwiceAr;
+  public static final String[] queryErrorOrderByClosestAr;
+  public static final String[] queryErrorOrderByLimitAr;
+  public static final String[] queryErrorOrderByMeanAr;
+  public static final String[] queryErrorOrderBySumAr;
+  public static final String[] queryErrorOrderByVariableAr;
+  public static final String[] queryErrorUnknownVariableAr;
+  public static final String[] queryErrorGrid1AxisAr;
+  public static final String[] queryErrorGridAmpAr;
+  public static final String[] queryErrorGridDiagnosticAr;
+  public static final String[] queryErrorGridBetweenAr;
+  public static final String[] queryErrorGridLessMinAr;
+  public static final String[] queryErrorGridGreaterMaxAr;
+  public static final String[] queryErrorGridMissingAr;
+  public static final String[] queryErrorGridNoAxisVarAr;
+  public static final String[] queryErrorGridNoDataVarAr;
+  public static final String[] queryErrorGridNotIdenticalAr;
+  public static final String[] queryErrorGridSLessSAr;
+  public static final String[] queryErrorLastEndPAr;
+  public static final String[] queryErrorLastExpectedAr;
+  public static final String[] queryErrorLastUnexpectedAr;
+  public static final String[] queryErrorLastPMInvalidAr;
+  public static final String[] queryErrorLastPMIntegerAr;
+  public static final String[] rangesFromToAr;
+  public static final String[] requiredAr;
+  public static final String[] resetTheFormAr;
+  public static final String[] resetTheFormWasAr;
+  public static final String[] resourceNotFoundAr;
+  public static final String[] restfulWebServicesAr;
+  public static final String[] restfulHTMLAr;
+  public static final String[] restfulHTMLContinuedAr;
+  public static final String[] restfulGetAllDatasetAr;
+  public static final String[] restfulProtocolsAr;
+  public static final String[] SOSDocumentationAr;
+  public static final String[] WCSDocumentationAr;
+  public static final String[] WMSDocumentationAr;
+  public static final String[] requestFormatExamplesHtmlAr;
+  public static final String[] resultsFormatExamplesHtmlAr;
+  public static final String[] resultsOfSearchForAr;
+  public static final String[] restfulInformationFormatsAr;
+  public static final String[] restfulViaServiceAr;
+  public static final String[] rowsAr;
+  public static final String[] rssNoAr;
+  public static final String[] searchTitleAr;
+  public static final String[] searchDoFullTextHtmlAr;
+  public static final String[] searchFullTextHtmlAr;
+  public static final String[] searchHintsLuceneTooltipAr;
+  public static final String[] searchHintsOriginalTooltipAr;
+  public static final String[] searchHintsTooltipAr;
+  public static final String[] searchButtonAr;
+  public static final String[] searchClickTipAr;
+  public static final String[] searchMultipleERDDAPsAr;
+  public static final String[] searchMultipleERDDAPsDescriptionAr;
+  public static final String[] searchNotAvailableAr;
+  public static final String[] searchTipAr;
+  public static final String[] searchSpellingAr;
+  public static final String[] searchFewerWordsAr;
+  public static final String[] searchWithQueryAr;
+  public static final String[] seeProtocolDocumentationAr;
+  public static final String[] selectNextAr;
+  public static final String[] selectPreviousAr;
+  public static final String[] shiftXAllTheWayLeftAr;
+  public static final String[] shiftXLeftAr;
+  public static final String[] shiftXRightAr;
+  public static final String[] shiftXAllTheWayRightAr;
+  public static final String[] slideSorterAr;
+  public static final String[] SOSAr;
+  public static final String[] sosDescriptionHtmlAr;
+  public static final String[] sosLongDescriptionHtmlAr;
+  public static final String[] sosOverview1Ar;
+  public static final String[] sosOverview2Ar;
+  public static final String[] ssUseAr;
+  public static final String[] ssUsePlainAr;
+  public static final String[] ssBePatientAr;
+  public static final String[] ssInstructionsHtmlAr;
+  public static final String[] standardShortDescriptionHtmlAr;
+  public static final String[] statusAr;
+  public static final String[] statusHtmlAr;
+  public static final String[] submitAr;
+  public static final String[] submitTooltipAr;
+  public static final String[] subscriptionOfferRssAr;
+  public static final String[] subscriptionOfferUrlAr;
+  public static final String[] subscriptionsTitleAr;
+  public static final String[] subscriptionEmailListAr;
+  public static final String[] subscriptionAddAr;
+  public static final String[] subscriptionAddHtmlAr;
+  public static final String[] subscriptionValidateAr;
+  public static final String[] subscriptionValidateHtmlAr;
+  public static final String[] subscriptionListAr;
+  public static final String[] subscriptionListHtmlAr;
+  public static final String[] subscriptionRemoveAr;
+  public static final String[] subscriptionRemoveHtmlAr;
+  public static final String[] subscriptionAbuseAr;
+  public static final String[] subscriptionAddErrorAr;
+  public static final String[] subscriptionAdd2Ar;
+  public static final String[] subscriptionAddSuccessAr;
+  public static final String[] subscriptionEmailAr;
+  public static final String[] subscriptionEmailOnBlacklistAr;
+  public static final String[] subscriptionEmailInvalidAr;
+  public static final String[] subscriptionEmailTooLongAr;
+  public static final String[] subscriptionEmailUnspecifiedAr;
+  public static final String[] subscription0HtmlAr;
+  public static final String[] subscription1HtmlAr;
+  public static final String[] subscription2HtmlAr;
+  public static final String[] subscriptionIDInvalidAr;
+  public static final String[] subscriptionIDTooLongAr;
+  public static final String[] subscriptionIDUnspecifiedAr;
+  public static final String[] subscriptionKeyInvalidAr;
+  public static final String[] subscriptionKeyUnspecifiedAr;
+  public static final String[] subscriptionListErrorAr;
+  public static final String[] subscriptionListSuccessAr;
+  public static final String[] subscriptionRemoveErrorAr;
+  public static final String[] subscriptionRemove2Ar;
+  public static final String[] subscriptionRemoveSuccessAr;
+  public static final String[] subscriptionRSSAr;
+  public static final String[] subscriptionsNotAvailableAr;
+  public static final String[] subscriptionUrlHtmlAr;
+  public static final String[] subscriptionUrlInvalidAr;
+  public static final String[] subscriptionUrlTooLongAr;
+  public static final String[] subscriptionValidateErrorAr;
+  public static final String[] subscriptionValidateSuccessAr;
+  public static final String[] subsetAr;
+  public static final String[] subsetSelectAr;
+  public static final String[] subsetNMatchingAr;
+  public static final String[] subsetInstructionsAr;
+  public static final String[] subsetOptionAr;
+  public static final String[] subsetOptionsAr;
+  public static final String[] subsetRefineMapDownloadAr;
+  public static final String[] subsetRefineSubsetDownloadAr;
+  public static final String[] subsetClickResetClosestAr;
+  public static final String[] subsetClickResetLLAr;
+  public static final String[] subsetMetadataAr;
+  public static final String[] subsetCountAr;
+  public static final String[] subsetPercentAr;
+  public static final String[] subsetViewSelectAr;
+  public static final String[] subsetViewSelectDistinctCombosAr;
+  public static final String[] subsetViewSelectRelatedCountsAr;
+  public static final String[] subsetWhenAr;
+  public static final String[] subsetWhenNoConstraintsAr;
+  public static final String[] subsetWhenCountsAr;
+  public static final String[] subsetComboClickSelectAr;
+  public static final String[] subsetNVariableCombosAr;
+  public static final String[] subsetShowingAllRowsAr;
+  public static final String[] subsetShowingNRowsAr;
+  public static final String[] subsetChangeShowingAr;
+  public static final String[] subsetNRowsRelatedDataAr;
+  public static final String[] subsetViewRelatedChangeAr;
+  public static final String[] subsetTotalCountAr;
+  public static final String[] subsetViewAr;
+  public static final String[] subsetViewCheckAr;
+  public static final String[] subsetViewCheck1Ar;
+  public static final String[] subsetViewDistinctMapAr;
+  public static final String[] subsetViewRelatedMapAr;
+  public static final String[] subsetViewDistinctDataCountsAr;
+  public static final String[] subsetViewDistinctDataAr;
+  public static final String[] subsetViewRelatedDataCountsAr;
+  public static final String[] subsetViewRelatedDataAr;
+  public static final String[] subsetViewDistinctMapTooltipAr;
+  public static final String[] subsetViewRelatedMapTooltipAr;
+  public static final String[] subsetViewDistinctDataCountsTooltipAr;
+  public static final String[] subsetViewDistinctDataTooltipAr;
+  public static final String[] subsetViewRelatedDataCountsTooltipAr;
+  public static final String[] subsetViewRelatedDataTooltipAr;
+  public static final String[] subsetWarnAr;
+  public static final String[] subsetWarn10000Ar;
+  public static final String[] subsetTooltipAr;
+  public static final String[] subsetNotSetUpAr;
+  public static final String[] subsetLongNotShownAr;
+  public static final String[] tabledapVideoIntroAr;
+  public static final String[] theDatasetIDAr;
+  public static final String[] theKeyAr;
+  public static final String[] theSubscriptionIDAr;
+  public static final String[] theUrlActionAr;
+  public static final String[] ThenAr;
+  public static final String[] thisParticularErddapAr;
+  public static final String[] timeAr;
+  public static final String[] timeoutOtherRequestsAr;
+  public static final String[] unitsAr;
+  public static final String[] unknownDatasetIDAr;
+  public static final String[] unknownProtocolAr;
+  public static final String[] unsupportedFileTypeAr;
+  public static final String[] updateUrlsFrom; // not Ar. They were arrays before and now
+  public static final String[] updateUrlsTo; // not Ar
+  public static final String[] updateUrlsSkipAttributes; // not Ar
+  public static final String[] usingGriddapAr;
+  public static final String[] usingTabledapAr;
+  public static final String[] variableNamesAr;
+  public static final String[] viewAllDatasetsHtmlAr;
+  public static final String[] waitThenTryAgainAr;
+  public static final String[] warningAr;
+  public static final String[] WCSAr;
+  public static final String[] wcsDescriptionHtmlAr;
+  public static final String[] wcsLongDescriptionHtmlAr;
+  public static final String[] wcsOverview1Ar;
+  public static final String[] wcsOverview2Ar;
+  public static final String[] wmsDescriptionHtmlAr;
+  public static final String[] WMSDocumentation1Ar;
+  public static final String[] WMSGetCapabilitiesAr;
+  public static final String[] WMSGetMapAr;
+  public static final String[] WMSNotesAr;
+  public static final String[] wmsInstructionsAr;
+  public static final String[] wmsLongDescriptionHtmlAr;
+  public static final String[] wmsManyDatasetsAr;
+  public static final String[] yourEmailAddressAr;
+  public static final String[] zoomInAr;
+  public static final String[] zoomOutAr;
+  public static final int[] imageWidths;
+  public static final int[] imageHeights;
+  public static final int[] pdfWidths;
+  public static final int[] pdfHeights;
+  private static final String[] theLongDescriptionHtmlAr; // see the xxx() methods
+  public static final String errorFromDataSource = String2.ERROR + " from data source: ";
+  public static final int nLanguages = TranslateMessages.languageList.size();
 
   /**
    * These are only created/used by GenerateDatasetsXml threads. See the related methods below that
@@ -1927,20 +1943,20 @@ public class EDStatic {
 
       String tsar[] = String2.split(emailEverythingToCsv, ',');
       if (emailEverythingToCsv.length() > 0)
-        for (int i = 0; i < tsar.length; i++)
-          if (!String2.isEmailAddress(tsar[i])
-              || tsar[i].startsWith("your.")) // prohibit the default email addresses
+        for (String s : tsar)
+          if (!String2.isEmailAddress(s)
+              || s.startsWith("your.")) // prohibit the default email addresses
           throw new RuntimeException(
-                "setup.xml error: invalid email address=" + tsar[i] + " in <emailEverythingTo>.");
+                "setup.xml error: invalid email address=" + s + " in <emailEverythingTo>.");
       emailSubscriptionsFrom = tsar.length > 0 ? tsar[0] : ""; // won't be null
 
       tsar = String2.split(emailDailyReportToCsv, ',');
       if (emailDailyReportToCsv.length() > 0) {
-        for (int i = 0; i < tsar.length; i++)
-          if (!String2.isEmailAddress(tsar[i])
-              || tsar[i].startsWith("your.")) // prohibit the default email addresses
+        for (String s : tsar)
+          if (!String2.isEmailAddress(s)
+              || s.startsWith("your.")) // prohibit the default email addresses
           throw new RuntimeException(
-                "setup.xml error: invalid email address=" + tsar[i] + " in <emailDailyReportTo>.");
+                "setup.xml error: invalid email address=" + s + " in <emailDailyReportTo>.");
       }
 
       if (!skipEmailThread) {
@@ -2085,8 +2101,7 @@ public class EDStatic {
       variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
 
       String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-      wmsActive =
-          String2.isSomething(wmsActiveString) ? String2.parseBoolean(wmsActiveString) : true;
+      wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
       wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
       wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
       wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);
@@ -2287,7 +2302,7 @@ public class EDStatic {
       // use Lucence?
       if (searchEngine.equals("lucene")) {
         useLuceneSearchEngine = true;
-        luceneDocNToDatasetID = new ConcurrentHashMap();
+        luceneDocNToDatasetID = new ConcurrentHashMap<>();
       } else {
         Test.ensureEqual(
             searchEngine,
@@ -2318,7 +2333,7 @@ public class EDStatic {
       errorInMethod = "ERROR while checking authentication setup: ";
       if (authentication == null) authentication = "";
       authentication = authentication.trim().toLowerCase();
-      if (!authentication.equals("")
+      if (!authentication.isEmpty()
           && !authentication.equals("custom")
           && !authentication.equals("email")
           && !authentication.equals("google")
@@ -2328,7 +2343,7 @@ public class EDStatic {
             "setup.xml error: authentication="
                 + authentication
                 + " must be (nothing)|custom|email|google|orcid|oauth2.");
-      if (!authentication.equals("") && !baseHttpsUrl.startsWith("https://"))
+      if (!authentication.isEmpty() && !baseHttpsUrl.startsWith("https://"))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": For any <authentication> other than \"\", the baseHttpsUrl="
@@ -2377,14 +2392,14 @@ public class EDStatic {
       // subdirectories)
       String tFiles[] =
           RegexFilenameFilter.recursiveFullNameList(contentDirectory + "images/", ".+", false);
-      for (int i = 0; i < tFiles.length; i++) {
-        int tpo = tFiles[i].indexOf("/images/");
-        if (tpo < 0) tpo = tFiles[i].indexOf("\\images\\");
+      for (String file : tFiles) {
+        int tpo = file.indexOf("/images/");
+        if (tpo < 0) tpo = file.indexOf("\\images\\");
         if (tpo < 0) {
-          String2.log("'/images/' not found in images/ file: " + tFiles[i]);
+          String2.log("'/images/' not found in images/ file: " + file);
           continue;
         }
-        String tName = tFiles[i].substring(tpo + 8);
+        String tName = file.substring(tpo + 8);
         if (verbose) String2.log("  copying images/ file: " + tName);
         File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
       }
@@ -2403,9 +2418,9 @@ public class EDStatic {
       // copy all <contentDirectory>cptfiles/ files to cptfiles
       tFiles =
           RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
-      for (int i = 0; i < tFiles.length; i++) {
-        if (verbose) String2.log("  copying cptfiles/ file: " + tFiles[i]);
-        File2.copy(contentDirectory + "cptfiles/" + tFiles[i], fullPaletteDirectory + tFiles[i]);
+      for (String tFile : tFiles) {
+        if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
+        File2.copy(contentDirectory + "cptfiles/" + tFile, fullPaletteDirectory + tFile);
       }
 
       // **** messages.xml *************************************************************
@@ -2430,7 +2445,7 @@ public class EDStatic {
       }
 
       for (int tl = 1; tl < nLanguages; tl++) {
-        String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
+        String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
         errorInMethod = "ERROR while reading " + tName + ": ";
         URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
         messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
@@ -4194,11 +4209,11 @@ public class EDStatic {
             tUpdateUrls[i3 + 2].trim(), "", "updateUrls line #" + (i3 + 0) + " isn't empty.");
       }
 
-      for (int p = 0; p < palettes.length; p++) {
-        String tName = fullPaletteDirectory + palettes[p] + ".cpt";
+      for (String palette : palettes) {
+        String tName = fullPaletteDirectory + palette + ".cpt";
         Test.ensureTrue(
             File2.isFile(tName),
-            "\"" + palettes[p] + "\" is listed in <palettes>, but there is no file " + tName);
+            "\"" + palette + "\" is listed in <palettes>, but there is no file " + tName);
       }
 
       // try to create an nc4 file
@@ -4543,7 +4558,7 @@ public class EDStatic {
   public static String erddapUrl(String loggedInAs, int language) {
     return (loggedInAs == null ? erddapUrl : erddapHttpsUrl)
         + // works because of loggedInAsHttps
-        (language == 0 ? "" : "/" + TranslateMessages.languageCodeList[language]);
+        (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**
@@ -4554,7 +4569,7 @@ public class EDStatic {
    */
   public static String erddapHttpsUrl(int language) {
     return erddapHttpsUrl
-        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList[language]);
+        + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
   }
 
   /**
@@ -5077,8 +5092,8 @@ public class EDStatic {
       String2.log("requestBlacklist is now null.");
     } else {
       String rb[] = String2.split(csv, ',');
-      HashSet<String> hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
-      for (int i = 0; i < rb.length; i++) hs.add(rb[i]);
+      HashSet<String> hs = new HashSet<>(Math2.roundToInt(1.4 * rb.length));
+      hs.addAll(Arrays.asList(rb));
       requestBlacklist = hs; // set atomically
       String2.log("requestBlacklist is now " + String2.toCSSVString(rb));
     }
@@ -5308,9 +5323,11 @@ public class EDStatic {
   public static void addCommonStatistics(StringBuilder sb) {
     if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
       sb.append(
-          "Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open\n"
-              + "  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n"
-              + "----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----\n");
+          """
+                      Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open
+                        timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files
+                      ----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----
+                      """);
       sb.append(majorLoadDatasetsTimeSeriesSB);
       sb.append("\n\n");
     }
@@ -5590,18 +5607,18 @@ public class EDStatic {
     if (expected == null) return false;
 
     // generate observedPassword from plaintextPassword via passwordEncoding
-    String observed = plaintextPassword;
-    if (passwordEncoding.equals("MD5"))
-      observed = String2.md5Hex(plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("UEPMD5"))
-      observed = String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("SHA256"))
-      observed = String2.passwordDigest("SHA-256", plaintextPassword); // it will be lowercase
-    else if (passwordEncoding.equals("UEPSHA256"))
-      observed =
-          String2.passwordDigest(
-              "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-    else throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+    String observed =
+        switch (passwordEncoding) {
+          case "MD5" -> String2.md5Hex(plaintextPassword); // it will be lowercase
+          case "UEPMD5" ->
+              String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
+          case "SHA256" ->
+              String2.passwordDigest("SHA-256", plaintextPassword); // it will be lowercase
+          case "UEPSHA256" ->
+              String2.passwordDigest(
+                  "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
+          default -> throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+        };
     // only for debugging:
     // String2.log("username=" + username + " plaintextPassword=" + plaintextPassword +
     //    "\nobsPassword=" + observed + "\nexpPassword=" + expected);
@@ -5637,7 +5654,7 @@ public class EDStatic {
     // ???future: for authentication="basic", use tomcat-defined roles???
 
     // all other authentication methods
-    Object oar[] = (Object[]) userHashMap.get(loggedInAs);
+    Object oar[] = userHashMap.get(loggedInAs);
     if (oar == null) {
       String[] roles = new String[anyoneLoggedInRoles.size()];
       return anyoneLoggedInRoles.toArray(
@@ -5711,7 +5728,7 @@ public class EDStatic {
    *     user isn't logged in.
    */
   public static String getLoginHtml(int language, String loggedInAs) {
-    if (authentication.equals("")) {
+    if (authentication.isEmpty()) {
       // user can't log in
       return "";
     } else {
@@ -6004,11 +6021,11 @@ public class EDStatic {
       EDDTableFromCassandra.shutdown();
 
       // interrupt all of them
-      for (int i = 0; i < names.length; i++) {
+      for (String name : names) {
         try {
-          Thread thread = runningThreads.get(names[i]);
+          Thread thread = runningThreads.get(name);
           if (thread != null && thread.isAlive()) thread.interrupt();
-          else runningThreads.remove(names[i]);
+          else runningThreads.remove(name);
         } catch (Throwable t) {
           String2.log(MustBe.throwableToString(t));
         }
@@ -6449,8 +6466,8 @@ public class EDStatic {
       String common[] = { // "DOC", "DOD", "DOE", "USDOC", "USDOD", "USDOE",
         "NOAA", "NASA", "US"
       };
-      for (int c = 0; c < common.length; c++) {
-        int po = acronymSA.indexOf(common[c]);
+      for (String s : common) {
+        int po = acronymSA.indexOf(s);
         if (po >= 0) keep.clear(po);
       }
       table.justKeep(keep);
@@ -6730,10 +6747,9 @@ public class EDStatic {
     synchronized (luceneQueryParser) {
       try {
         // long qTime = System.currentTimeMillis();
-        Query q = luceneQueryParser.parse(searchString);
         // String2.log("  luceneParseQuery finished.  time=" + (System.currentTimeMillis() - qTime)
         // + "ms"); //always 0
-        return q;
+        return luceneQueryParser.parse(searchString);
       } catch (Throwable t) {
         String2.log(
             "Lucene failed to parse searchString="
@@ -7025,25 +7041,25 @@ public class EDStatic {
    */
   public static void updateUrls(Attributes sourceAtts, Attributes addAtts) {
     // get all the attribute names
-    HashSet<String> hs = new HashSet();
+    HashSet<String> hs = new HashSet<>();
     String names[];
     if (sourceAtts != null) {
       names = sourceAtts.getNames();
-      for (int i = 0; i < names.length; i++) hs.add(names[i]);
+      hs.addAll(Arrays.asList(names));
     }
     names = addAtts.getNames();
-    for (int i = 0; i < names.length; i++) hs.add(names[i]);
+    hs.addAll(Arrays.asList(names));
     names = hs.toArray(new String[] {});
 
     // updateUrls in all attributes
-    for (int i = 0; i < names.length; i++) {
-      if (String2.indexOf(updateUrlsSkipAttributes, names[i]) >= 0) continue;
-      PrimitiveArray pa = addAtts.get(names[i]);
-      if (pa == null && sourceAtts != null) pa = sourceAtts.get(names[i]);
+    for (String name : names) {
+      if (String2.indexOf(updateUrlsSkipAttributes, name) >= 0) continue;
+      PrimitiveArray pa = addAtts.get(name);
+      if (pa == null && sourceAtts != null) pa = sourceAtts.get(name);
       if (pa != null && pa.size() > 0 && pa.elementType() == PAType.STRING) {
         String oValue = pa.getString(0);
         String value = updateUrls(oValue);
-        if (!value.equals(oValue)) addAtts.set(names[i], value);
+        if (!value.equals(oValue)) addAtts.set(name, value);
       }
     }
   }
@@ -7094,8 +7110,7 @@ public class EDStatic {
       ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
       Integer datasetLastAssignedTask = lastAssignedTask.get(tDatasetID);
       boolean pendingTasks =
-          datasetLastAssignedTask != null
-              && lastFinishedTask.get() < datasetLastAssignedTask.intValue();
+          datasetLastAssignedTask != null && lastFinishedTask.get() < datasetLastAssignedTask;
       if (verbose)
         String2.log(
             "  "
@@ -7189,7 +7204,7 @@ public class EDStatic {
           taskOA[0] = TaskThread.TASK_DOWNLOAD;
           taskOA[1] = remoteDirs.get(remoteI) + remoteNames.get(remoteI);
           taskOA[2] = tLocalDir + remoteRelativeDir + remoteNames.get(remoteI);
-          taskOA[3] = Long.valueOf(remoteLastMod.get(remoteI)); // or if unknown?
+          taskOA[3] = remoteLastMod.get(remoteI); // or if unknown?
           nFilesToDownload++;
           int tTaskNumber =
               nFilesToDownload <= maxTasks ? (lastTask = addTask(taskOA)) : -nFilesToDownload;
@@ -7227,7 +7242,7 @@ public class EDStatic {
         lastTask = addTask(taskOA); // TASK_SET_FLAG will always be added
         if (reallyVerbose)
           String2.log("% created task#" + lastTask + " TASK_SET_FLAG " + tDatasetID);
-        lastAssignedTask.put(tDatasetID, Integer.valueOf(lastTask));
+        lastAssignedTask.put(tDatasetID, lastTask);
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
         if (EDStatic.forceSynchronousLoading) {

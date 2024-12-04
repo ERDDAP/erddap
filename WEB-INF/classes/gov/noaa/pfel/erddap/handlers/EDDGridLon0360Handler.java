@@ -9,7 +9,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridLon0360Handler extends BaseGridHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDGridLon0360Handler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {

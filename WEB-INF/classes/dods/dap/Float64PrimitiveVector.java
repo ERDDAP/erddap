@@ -160,8 +160,8 @@ public class Float64PrimitiveVector extends PrimitiveVector implements Cloneable
    */
   @Override
   public void externalize(DataOutputStream sink) throws IOException {
-    for (int i = 0; i < vals.length; i++) {
-      sink.writeDouble(vals[i]);
+    for (double val : vals) {
+      sink.writeDouble(val);
     }
   }
 

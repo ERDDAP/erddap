@@ -12,6 +12,7 @@
 package dods.dap;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This abstract class defines the basic data type features for the DODS data access protocol (DAP)
@@ -66,8 +67,7 @@ public abstract class BaseType implements Cloneable {
   @Override
   public BaseType clone() {
     try {
-      BaseType bt = (BaseType) super.clone();
-      return bt;
+      return (BaseType) super.clone();
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable
       throw new InternalError();
@@ -224,7 +224,8 @@ public abstract class BaseType implements Cloneable {
    */
   public final void printDecl(
       OutputStream os, String space, boolean print_semi, boolean constrained) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printDecl(pw, space, print_semi, constrained);
     pw.flush();
   }
@@ -252,7 +253,8 @@ public abstract class BaseType implements Cloneable {
    * @see DDS#print(PrintWriter)
    */
   public final void printDecl(OutputStream os, String space) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printDecl(pw, space);
     pw.flush();
   }
@@ -264,7 +266,8 @@ public abstract class BaseType implements Cloneable {
    * @see DDS#print(PrintWriter)
    */
   public final void printDecl(OutputStream os) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printDecl(pw);
     pw.flush();
   }
@@ -304,7 +307,8 @@ public abstract class BaseType implements Cloneable {
    * @see DataDDS#printVal(PrintWriter)
    */
   public final void printVal(OutputStream os, String space, boolean print_decl_p) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printVal(pw, space, print_decl_p);
     pw.flush();
   }
@@ -318,7 +322,8 @@ public abstract class BaseType implements Cloneable {
    * @see DataDDS#printVal(PrintWriter)
    */
   public final void printVal(OutputStream os, String space) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printVal(pw, space);
     pw.flush();
   }
@@ -381,12 +386,12 @@ public abstract class BaseType implements Cloneable {
 
     BaseType parent = _myParent;
 
-    String longName = _name;
+    StringBuilder longName = new StringBuilder(_name);
 
     while (parent != null) {
-      longName = parent.getName() + "." + longName;
+      longName.insert(0, parent.getName() + ".");
       parent = parent.getParent();
     }
-    return longName;
+    return longName.toString();
   }
 }

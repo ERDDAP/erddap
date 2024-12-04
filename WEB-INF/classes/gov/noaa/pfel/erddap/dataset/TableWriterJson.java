@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TableWriterJson extends TableWriter {
 
   // set by constructor
-  protected String jsonp;
+  protected final String jsonp;
   protected boolean writeUnits;
 
   // set by firstTime
@@ -39,7 +39,7 @@ public class TableWriterJson extends TableWriter {
 
   // other
   protected volatile boolean rowsWritten = false;
-  public volatile AtomicLong totalNRows = new AtomicLong(0);
+  public final AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.

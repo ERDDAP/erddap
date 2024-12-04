@@ -22,7 +22,8 @@ public class TableWriterUnits extends TableWriter {
 
   // set by constructor
   protected TableWriter otherTableWriter;
-  public String fromUnits, toUnits;
+  public final String fromUnits;
+  public final String toUnits;
 
   /**
    * The constructor.
@@ -164,7 +165,7 @@ public class TableWriterUnits extends TableWriter {
     for (int col = 0; col < nColumns; col++) {
       Attributes atts = table.columnAttributes(col);
       String units = atts.getString("units");
-      if (units == null || units.equals("")) continue;
+      if (units == null || units.isEmpty()) continue;
       if (toUcum) atts.set("units", Units2.safeUdunitsToUcum(units));
       else if (toUdunits) atts.set("units", Units2.safeUcumToUdunits(units));
     }

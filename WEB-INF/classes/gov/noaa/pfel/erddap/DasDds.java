@@ -93,7 +93,9 @@ public class DasDds {
             + "\n"
             + String2.standardHelpAboutMessage());
     // trick EDStatic.initialLoadDatasets by making majorLoadDatasetsTimeSeriesSB not empty
-    EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+      EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    }
     outFile = File2.getBufferedFileWriterUtf8(outFileName);
     try {
 

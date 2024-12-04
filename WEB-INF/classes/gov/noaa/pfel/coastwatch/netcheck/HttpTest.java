@@ -19,8 +19,8 @@ import java.util.ArrayList;
 public class HttpTest extends NetCheckTest {
 
   private String url;
-  private ArrayList<String> responseMustInclude = new ArrayList();
-  private ArrayList<String> responseMustNotInclude = new ArrayList();
+  private final ArrayList<String> responseMustInclude = new ArrayList<>();
+  private final ArrayList<String> responseMustNotInclude = new ArrayList<>();
 
   /**
    * This constructor loads the information for a test with information from the xmlReader. The
@@ -45,32 +45,32 @@ public class HttpTest extends NetCheckTest {
     while (!tags.equals("<netCheck></httpTest>") && iteration++ < 1000000) {
       // process the tags
       if (verbose) String2.log(tags + xmlReader.content());
-      if (tags.equals("<netCheck><httpTest><title>")) {
-      } else if (tags.equals("<netCheck><httpTest></title>")) title = xmlReader.content();
-      else if (tags.equals("<netCheck><httpTest><url>")) {
-      } else if (tags.equals("<netCheck><httpTest></url>")) url = xmlReader.content();
-      else if (tags.equals("<netCheck><httpTest><mustRespondWithinSeconds>")) {
-      } else if (tags.equals("<netCheck><httpTest></mustRespondWithinSeconds>"))
-        mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><responseMustInclude>")) {
-      } else if (tags.equals("<netCheck><httpTest></responseMustInclude>"))
-        responseMustInclude.add(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><responseMustNotInclude>")) {
-      } else if (tags.equals("<netCheck><httpTest></responseMustNotInclude>"))
-        responseMustNotInclude.add(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><emailStatusTo>")) {
-      } else if (tags.equals("<netCheck><httpTest></emailStatusTo>"))
-        emailStatusTo.add(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><emailStatusHeadlinesTo>")) {
-      } else if (tags.equals("<netCheck><httpTest></emailStatusHeadlinesTo>"))
-        emailStatusHeadlinesTo.add(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><emailChangesTo>")) {
-      } else if (tags.equals("<netCheck><httpTest></emailChangesTo>"))
-        emailChangesTo.add(xmlReader.content());
-      else if (tags.equals("<netCheck><httpTest><emailChangeHeadlinesTo>")) {
-      } else if (tags.equals("<netCheck><httpTest></emailChangeHeadlinesTo>"))
-        emailChangeHeadlinesTo.add(xmlReader.content());
-      else throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+      switch (tags) {
+        case "<netCheck><httpTest><title>",
+            "<netCheck><httpTest><emailChangeHeadlinesTo>",
+            "<netCheck><httpTest><emailChangesTo>",
+            "<netCheck><httpTest><emailStatusHeadlinesTo>",
+            "<netCheck><httpTest><emailStatusTo>",
+            "<netCheck><httpTest><responseMustNotInclude>",
+            "<netCheck><httpTest><responseMustInclude>",
+            "<netCheck><httpTest><mustRespondWithinSeconds>",
+            "<netCheck><httpTest><url>" -> {}
+        case "<netCheck><httpTest></title>" -> title = xmlReader.content();
+        case "<netCheck><httpTest></url>" -> url = xmlReader.content();
+        case "<netCheck><httpTest></mustRespondWithinSeconds>" ->
+            mustRespondWithinSeconds = String2.parseDouble(xmlReader.content());
+        case "<netCheck><httpTest></responseMustInclude>" ->
+            responseMustInclude.add(xmlReader.content());
+        case "<netCheck><httpTest></responseMustNotInclude>" ->
+            responseMustNotInclude.add(xmlReader.content());
+        case "<netCheck><httpTest></emailStatusTo>" -> emailStatusTo.add(xmlReader.content());
+        case "<netCheck><httpTest></emailStatusHeadlinesTo>" ->
+            emailStatusHeadlinesTo.add(xmlReader.content());
+        case "<netCheck><httpTest></emailChangesTo>" -> emailChangesTo.add(xmlReader.content());
+        case "<netCheck><httpTest></emailChangeHeadlinesTo>" ->
+            emailChangeHeadlinesTo.add(xmlReader.content());
+        default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
+      }
 
       // get the next tags
       xmlReader.nextTag();
@@ -173,15 +173,13 @@ public class HttpTest extends NetCheckTest {
       }
 
       // check for responseMustInclude
-      for (int i = 0; i < responseMustInclude.size(); i++) {
-        String required = responseMustInclude.get(i);
+      for (String required : responseMustInclude) {
         if (response.indexOf(required) < 0)
           errorSB.append("  " + String2.ERROR + ": response must include \"" + required + "\".\n");
       }
 
       // check for responseMustNotInclude
-      for (int i = 0; i < responseMustNotInclude.size(); i++) {
-        String undesired = responseMustNotInclude.get(i);
+      for (String undesired : responseMustNotInclude) {
         if (response.indexOf(undesired) >= 0)
           errorSB.append(
               "  " + String2.ERROR + ": response must not include \"" + undesired + "\".\n");

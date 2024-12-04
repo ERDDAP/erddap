@@ -27,29 +27,29 @@ public class TaskThread extends Thread {
    * If taskOA[0].equals(TASK_MAKE_A_DATAFILE), then make taskOA[1]=edd, taskOA[2]=query,
    * taskOA[3]=fileDir, taskOA[4]=fileName, taskOA[5]=fileType
    */
-  public static final Integer TASK_MAKE_A_DATAFILE = Integer.valueOf(0);
+  public static final Integer TASK_MAKE_A_DATAFILE = 0;
 
   /** If taskOA[0].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID */
-  public static final Integer TASK_SET_FLAG = Integer.valueOf(1);
+  public static final Integer TASK_SET_FLAG = 1;
 
   /**
    * If taskOA[0].equals(TASK_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=StringArray(vars),
    * taskOA[3]=projection, taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
    * taskOA[6]=lastModified (Long)
    */
-  public static final Integer TASK_DAP_TO_NC = Integer.valueOf(2);
+  public static final Integer TASK_DAP_TO_NC = 2;
 
   /**
    * If taskOA[0].equals(TASK_ALL_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=fullFileName,
    * taskOA[3]=lastModified (Long)
    */
-  public static final Integer TASK_ALL_DAP_TO_NC = Integer.valueOf(3);
+  public static final Integer TASK_ALL_DAP_TO_NC = 3;
 
   /**
    * If taskOA[0].equals(TASK_DOWNLOAD), then make taskOA[1]=remoteUrl, taskOA[2]=fullFileName,
    * taskOA[3]=lastModified (Long) if MAX_VALUE, will be ignored
    */
-  public static final Integer TASK_DOWNLOAD = Integer.valueOf(4);
+  public static final Integer TASK_DOWNLOAD = 4;
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -168,13 +168,11 @@ public class TaskThread extends Thread {
                   + "    file="
                   + fullFileName
                   + " lastMod="
-                  + Calendar2.safeEpochSecondsToIsoStringTZ(
-                      lastModified.longValue() / 1000.0, "NaN");
+                  + Calendar2.safeEpochSecondsToIsoStringTZ(lastModified / 1000.0, "NaN");
           String2.log(taskSummary);
 
-          OpendapHelper.dapToNc(
-              dapUrl, vars.toArray(), projection, fullFileName, jplMode.booleanValue());
-          File2.setLastModified(fullFileName, lastModified.longValue());
+          OpendapHelper.dapToNc(dapUrl, vars.toArray(), projection, fullFileName, jplMode);
+          File2.setLastModified(fullFileName, lastModified);
 
           // TASK_ALL_DAP_TO_NC
         } else if (taskType.equals(TASK_ALL_DAP_TO_NC)) {
@@ -189,19 +187,18 @@ public class TaskThread extends Thread {
                   + "    file="
                   + fullFileName
                   + " lastMod="
-                  + Calendar2.safeEpochSecondsToIsoStringTZ(
-                      lastModified.longValue() / 1000.0, "NaN");
+                  + Calendar2.safeEpochSecondsToIsoStringTZ(lastModified / 1000.0, "NaN");
           String2.log(taskSummary);
 
           OpendapHelper.allDapToNc(dapUrl, fullFileName);
-          File2.setLastModified(fullFileName, lastModified.longValue());
+          File2.setLastModified(fullFileName, lastModified);
 
           // TASK_DOWNLOAD
         } else if (taskType.equals(TASK_DOWNLOAD)) {
 
           String sourceUrl = (String) taskOA[1];
           String fullFileName = (String) taskOA[2];
-          long lastMod = ((Long) taskOA[3]).longValue();
+          long lastMod = (Long) taskOA[3];
           taskSummary =
               "  TASK_DOWNLOAD sourceUrl="
                   + sourceUrl
@@ -251,7 +248,7 @@ public class TaskThread extends Thread {
                 + (EDStatic.nextTask.get() - 1)
                 + " failed after "
                 + Calendar2.elapsedTimeString(tElapsedTime);
-        String content = "" + taskSummary + "\n" + MustBe.throwableToString(t);
+        String content = taskSummary + "\n" + MustBe.throwableToString(t);
         String2.log("%%% " + subject + "\n" + content);
         EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
       }

@@ -52,13 +52,13 @@ public class SgtGraph {
    */
   public static boolean reallyVerbose = false;
 
-  private String fontFamily;
-  public double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
-  public double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
-  public double majorLabelRatio = 1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
+  private final String fontFamily;
+  public final double defaultAxisLabelHeight = SgtUtil.DEFAULT_AXIS_LABEL_HEIGHT;
+  public final double defaultLabelHeight = SgtUtil.DEFAULT_LABEL_HEIGHT;
+  public final double majorLabelRatio = 1.25; // axisTitleHeight/axisLabelHeight; 1.25 matches SGT
 
   public static Color DefaultBackgroundColor = new Color(0xCCCCFF); // just the RGB part (no A)
-  public int widenOnePoint = 1; // pixels
+  public final int widenOnePoint = 1; // pixels
   public static String fullTestCacheDir =
       "/erddapBPD/cache/_test/"; // EDStatic resets this if needed
 
@@ -591,8 +591,8 @@ public class SgtGraph {
             String2.isSomething(legendTitle1 + legendTitle2)
                 ? 1
                 : -1; // for legend title   //???needs adjustment for larger font size
-        for (int i = 0; i < graphDataLayers.size(); i++)
-          legendLineCount += graphDataLayers.get(i).legendLineCount(maxCharsPerLine);
+        for (GraphDataLayer graphDataLayer : graphDataLayers)
+          legendLineCount += graphDataLayer.legendLineCount(maxCharsPerLine);
         // String2.log("legendLineCount=" + legendLineCount);
         legendBoxWidth = imageWidthPixels;
         legendBoxHeight =
@@ -848,14 +848,12 @@ public class SgtGraph {
       // redefine some graph parts for this graph with SoT objects -- minX vs beginX
       SoTRange xUserRange =
           xIsTimeAxis
-              ? (SoTRange)
-                  new SoTRange.Time((long) (beginX * scaleXIfTime), (long) (endX * scaleXIfTime))
-              : (SoTRange) new SoTRange.Double(beginX, endX, (xAscending ? 1 : -1) * xDivisions[0]);
+              ? new SoTRange.Time((long) (beginX * scaleXIfTime), (long) (endX * scaleXIfTime))
+              : new SoTRange.Double(beginX, endX, (xAscending ? 1 : -1) * xDivisions[0]);
       SoTRange yUserRange =
           yIsTimeAxis
-              ? (SoTRange)
-                  new SoTRange.Time((long) (beginY * scaleYIfTime), (long) (endY * scaleYIfTime))
-              : (SoTRange) new SoTRange.Double(beginY, endY, (yAscending ? 1 : -1) * yDivisions[0]);
+              ? new SoTRange.Time((long) (beginY * scaleYIfTime), (long) (endY * scaleYIfTime))
+              : new SoTRange.Double(beginY, endY, (yAscending ? 1 : -1) * yDivisions[0]);
       gov.noaa.pmel.sgt.AxisTransform xt =
           xIsLogAxis
               ? new gov.noaa.pmel.sgt.LogTransform(xPhysRange, xUserRange)
@@ -867,11 +865,11 @@ public class SgtGraph {
       SoTPoint origin2 =
           new SoTPoint( // where are axes drawn?
               xIsTimeAxis
-                  ? (SoTValue) new SoTValue.Time((long) (beginX * scaleXIfTime))
-                  : (SoTValue) new SoTValue.Double(beginX),
+                  ? new SoTValue.Time((long) (beginX * scaleXIfTime))
+                  : new SoTValue.Double(beginX),
               yIsTimeAxis
-                  ? (SoTValue) new SoTValue.Time((long) (beginY * scaleYIfTime))
-                  : (SoTValue) new SoTValue.Double(beginY));
+                  ? new SoTValue.Time((long) (beginY * scaleYIfTime))
+                  : new SoTValue.Double(beginY));
 
       // draw the point layers
       int nTotalValid = 0;
@@ -1225,15 +1223,14 @@ public class SgtGraph {
             levels[nLevels - 1] = colorMap.rangeHigh[nLevels - 1];
             DecimalFormat format = new DecimalFormat("#0.######");
             ContourLevels contourLevels = new ContourLevels();
-            for (int i = 0; i < levels.length; i++) {
+            for (double level : levels) {
               ContourLineAttribute contourLineAttribute = new ContourLineAttribute();
               contourLineAttribute.setColor(gdl.lineColor);
               contourLineAttribute.setLabelColor(gdl.lineColor);
               contourLineAttribute.setLabelHeightP(fontScale * 0.15);
               contourLineAttribute.setLabelFormat("%g"); // this seems to be active
-              contourLineAttribute.setLabelText(
-                  format.format(levels[i])); // this seems to be ignored
-              contourLevels.addLevel(levels[i], contourLineAttribute);
+              contourLineAttribute.setLabelText(format.format(level)); // this seems to be ignored
+              contourLevels.addLevel(level, contourLineAttribute);
             }
             graph.setData(simpleGrid, new GridAttribute(contourLevels));
             if (reallyVerbose) String2.log("  contour levels = " + String2.toCSSVString(levels));
@@ -1329,9 +1326,9 @@ public class SgtGraph {
 
           // draw a marker
           if (drawMarkers || drawMarkersAndLines) {
-            int tx = legendTextX;
             int ty = legendTextY - labelHeightPixels;
-            drawMarker(g2, gdl.markerType, tMarkerSize, tx, ty, gdl.lineColor, gdl.lineColor);
+            drawMarker(
+                g2, gdl.markerType, tMarkerSize, legendTextX, ty, gdl.lineColor, gdl.lineColor);
             legendTextY += labelHeightPixels;
           }
 
@@ -1404,8 +1401,7 @@ public class SgtGraph {
         Axis xAxis;
         if (xIsTimeAxis) {
           // TimeAxis
-          TimeAxis timeAxis = new TimeAxis(TimeAxis.AUTO);
-          xAxis = timeAxis;
+          xAxis = new TimeAxis(TimeAxis.AUTO);
         } else if (xIsLogAxis) {
           xAxis = new LogAxis("X"); // id
         } else {
@@ -1454,8 +1450,7 @@ public class SgtGraph {
         Axis yAxis;
         if (yIsTimeAxis) {
           // TimeAxis
-          TimeAxis timeAxis = new TimeAxis(TimeAxis.AUTO);
-          yAxis = timeAxis;
+          yAxis = new TimeAxis(TimeAxis.AUTO);
           // timeAxis.setRangeU(yUserRange);
           // timeAxis.setLocationU(origin);
         } else if (yIsLogAxis) {

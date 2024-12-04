@@ -21,7 +21,7 @@ public class Script2 {
   /** Use jexlEngine to instantiate and obtain this. */
   private static JexlEngine jexlEngine;
 
-  public static JexlPermissions permissions =
+  public static final JexlPermissions permissions =
       JexlPermissions.parse(
           "com.cohort.util.*\n"
               + "gov.noaa.pfel.coastwatch.pointdata.*\n"
@@ -117,7 +117,7 @@ public class Script2 {
       scriptCalendar2 = new ScriptCalendar2();
       scriptMath = new ScriptMath();
       scriptMath2 = new ScriptMath2();
-      scriptString = new String("");
+      scriptString = "";
       scriptString2 = new ScriptString2();
     }
     MapContext jcontext = new MapContext();

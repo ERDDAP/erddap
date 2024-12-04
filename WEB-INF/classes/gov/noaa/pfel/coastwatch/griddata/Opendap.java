@@ -17,7 +17,6 @@ import com.cohort.util.Test;
 import dods.dap.*;
 import gov.noaa.pfel.coastwatch.TimePeriods;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 
@@ -31,7 +30,7 @@ public class Opendap {
   public static boolean verbose = false;
 
   /** The following information about this OPeNDAP data set is set by the constructor. */
-  public String url;
+  public final String url;
 
   public boolean acceptDeflate =
       true; // Dave got faster than possible response; ergo, compression is working(?)
@@ -166,15 +165,15 @@ public class Opendap {
       // search top-level variables
       // dds is read-only so no need to use sychronized(dds)
       int len;
-      Enumeration e = dds.getVariables();
-      while (e.hasMoreElements()) {
-        BaseType bt = (BaseType) e.nextElement();
+      Iterator<BaseType> e = dds.getVariables();
+      while (e.hasNext()) {
+        BaseType bt = e.next();
         len = getDArrayLength(bt, dimensionName);
         if (len > 0) return len;
         if (bt instanceof DGrid dg) {
-          Enumeration e2 = dg.getVariables();
-          while (e2.hasMoreElements()) {
-            len = getDArrayLength((BaseType) e2.nextElement(), dimensionName);
+          Iterator<BaseType> e2 = dg.getVariables();
+          while (e2.hasNext()) {
+            len = getDArrayLength(e2.next(), dimensionName);
             if (len > 0) {
               if (verbose) String2.log("Opendap.getArrayLength(" + dimensionName + ") = " + len);
               return len;
@@ -265,8 +264,7 @@ public class Opendap {
 
     // get the grid baseType
     BaseType bt = dds.getVariable(gridName); // throws exception if not found
-    DArray da =
-        (DArray) ((DGrid) bt).getVariables().nextElement(); // first element is always main array
+    DArray da = (DArray) ((DGrid) bt).getVariables().next(); // first element is always main array
     // if (verbose) String2.log("  da.getName()=" + da.getName()); //always(?) same as gridName
 
     // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)
@@ -291,10 +289,10 @@ public class Opendap {
     gridDimensionData = new double[numDimensions][];
     gridDimensionAscending = new boolean[numDimensions];
     int po = 0;
-    Enumeration e2 = da.getDimensions();
-    while (e2.hasMoreElements()) {
+    Iterator<DArrayDimension> e2 = da.getDimensions();
+    while (e2.hasNext()) {
       long time1 = System.currentTimeMillis();
-      DArrayDimension dad = (DArrayDimension) e2.nextElement();
+      DArrayDimension dad = e2.next();
       gridDimensionNames[po] = dad.getName();
 
       // get dimension info
@@ -311,38 +309,40 @@ public class Opendap {
           Math.abs(
               gridDimensionData[po][gridDimensionData[po].length - 1] - gridDimensionData[po][0]);
       gridDimensionAscending[po] = range > 0;
-      if (dad.getName().equals("time")
-          || dad.getName().equals("time_series")) { // lynn's files use this
-        gridTimeDimension = po;
+      switch (dad.getName()) {
+        case "time", "time_series" -> {
+          gridTimeDimension = po;
 
-        // interpret time_series units (e.g., "days since 1985-01-01" or "days since 1985-1-1")
-        // it must be: <units> since <isoDate>   or exception thrown
-        // FUTURE: need to catch time zone information
-        String tsUnits = OpendapHelper.getAttributeValue(das, dad.getName(), "units");
-        tsUnits = String2.replaceAll(tsUnits, "\"", "");
-        double timeBaseAndFactor[] =
-            Calendar2.getTimeBaseAndFactor(tsUnits); // throws exception if trouble
-        gridTimeBaseSeconds = timeBaseAndFactor[0];
-        gridTimeFactorToGetSeconds = timeBaseAndFactor[1];
+          // interpret time_series units (e.g., "days since 1985-01-01" or "days since 1985-1-1")
+          // it must be: <units> since <isoDate>   or exception thrown
+          // FUTURE: need to catch time zone information
+          String tsUnits = OpendapHelper.getAttributeValue(das, dad.getName(), "units");
+          tsUnits = String2.replaceAll(tsUnits, "\"", "");
+          double timeBaseAndFactor[] =
+              Calendar2.getTimeBaseAndFactor(tsUnits); // throws exception if trouble
 
-        // timeLongName is used to determine if the times in the file are already
-        // centered ("Centered Time" or anything other than "End Time")
-        // or aren't yet centered ("End Time").
-        timeLongName = OpendapHelper.getAttributeValue(das, dad.getName(), "long_name");
+          gridTimeBaseSeconds = timeBaseAndFactor[0];
+          gridTimeFactorToGetSeconds = timeBaseAndFactor[1];
 
-      } else if (dad.getName().equals("depth") || dad.getName().equals("altitude")) {
-        gridDepthDimension = po;
-      } else if (dad.getName().equals("lat") || dad.getName().equals("latitude")) {
-        gridLatDimension = po;
-        gridNLatValues = gridDimensionData[po].length;
-        gridLatIncrement = range / (gridNLatValues - 1);
-      } else if (dad.getName().equals("lon") || dad.getName().equals("longitude")) {
-        gridLonDimension = po;
-        gridNLonValues = gridDimensionData[po].length;
-        gridLonIncrement = range / (gridNLonValues - 1);
-        lonIsPM180 =
-            !DataHelper.lonNeedsToBe0360(
-                gridDimensionData[po][0], gridDimensionData[po][gridNLonValues - 1]);
+          // timeLongName is used to determine if the times in the file are already
+          // centered ("Centered Time" or anything other than "End Time")
+          // or aren't yet centered ("End Time").
+          timeLongName = OpendapHelper.getAttributeValue(das, dad.getName(), "long_name");
+        }
+        case "depth", "altitude" -> gridDepthDimension = po;
+        case "lat", "latitude" -> {
+          gridLatDimension = po;
+          gridNLatValues = gridDimensionData[po].length;
+          gridLatIncrement = range / (gridNLatValues - 1);
+        }
+        case "lon", "longitude" -> {
+          gridLonDimension = po;
+          gridNLonValues = gridDimensionData[po].length;
+          gridLonIncrement = range / (gridNLonValues - 1);
+          lonIsPM180 =
+              !DataHelper.lonNeedsToBe0360(
+                  gridDimensionData[po][0], gridDimensionData[po][gridNLonValues - 1]);
+        }
       }
       Test.ensureEqual(
           dad.getStop() + 1,
@@ -1212,9 +1212,9 @@ public class Opendap {
   private static int getDArrayLength(BaseType bt, String dimensionName) {
     if (bt instanceof DArray da) {
       // bt is read-only so no need to use sychronized(bt)
-      Enumeration e = da.getDimensions();
-      while (e.hasMoreElements()) {
-        DArrayDimension dam = (DArrayDimension) e.nextElement();
+      Iterator<DArrayDimension> e = da.getDimensions();
+      while (e.hasNext()) {
+        DArrayDimension dam = e.next();
         if (dam.getName().equals(dimensionName)) {
           return dam.getStop() + 1; // start = 0; stop is inclusive; so nValues = getStop()+1
         }

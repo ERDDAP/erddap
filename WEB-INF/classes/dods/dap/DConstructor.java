@@ -11,7 +11,7 @@
 
 package dods.dap;
 
-import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * Contains methods used only by the DODS constructor classes (<code>DStructure</code>, <code>
@@ -86,5 +86,5 @@ public abstract class DConstructor extends BaseType {
    *
    * @return An Enumeration object.
    */
-  public abstract Enumeration getVariables();
+  public abstract Iterator<BaseType> getVariables();
 }

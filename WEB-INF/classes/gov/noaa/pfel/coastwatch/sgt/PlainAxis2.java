@@ -34,7 +34,7 @@ import java.awt.Graphics;
  * @since 1.0
  */
 public class PlainAxis2 extends PlainAxis {
-  protected NumberFormatter numberFormatter;
+  protected final NumberFormatter numberFormatter;
 
   /**
    * Default constructor for PlainAxis.

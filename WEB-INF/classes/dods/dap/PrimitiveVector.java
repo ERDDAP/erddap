@@ -51,7 +51,7 @@ public abstract class PrimitiveVector implements ClientIO, Cloneable {
   public Object clone() {
     try {
       PrimitiveVector v = (PrimitiveVector) super.clone();
-      v.var = (BaseType) var.clone();
+      v.var = var.clone();
       return v;
     } catch (CloneNotSupportedException e) {
       // this shouldn't happen, since we are Cloneable

@@ -146,7 +146,7 @@ public class BaseTypePrimitiveVector extends PrimitiveVector implements Cloneabl
       throws IOException, EOFException, DataReadException {
     for (int i = 0; i < vals.length; i++) {
       // create new variable from template
-      vals[i] = (BaseType) getTemplate().clone();
+      vals[i] = getTemplate().clone();
       ((ClientIO) vals[i]).deserialize(source, sv, statusUI);
       if (statusUI != null && statusUI.userCancelled())
         throw new DataReadException("User cancelled");
@@ -162,9 +162,9 @@ public class BaseTypePrimitiveVector extends PrimitiveVector implements Cloneabl
    */
   @Override
   public void externalize(DataOutputStream sink) throws IOException {
-    for (int i = 0; i < vals.length; i++) {
+    for (BaseType val : vals) {
       // System.out.println("\t\t\tI AM THE WALRUS!");
-      ((ClientIO) vals[i]).externalize(sink);
+      ((ClientIO) val).externalize(sink);
     }
   }
 

@@ -17,11 +17,15 @@ import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.swing.Draggable;
 import gov.noaa.pmel.util.Dimension2D;
 import gov.noaa.pmel.util.Rectangle2D;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 // jdk1.2
 // import  java.awt.geom.Rectangle2D;
@@ -120,7 +124,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @undirected
    * @label children
    */
-  private Vector<LayerChild> children_;
+  private List<LayerChild> children_;
 
   private double pWidth_;
   private double pHeight_;
@@ -141,9 +145,9 @@ public class Layer extends Component implements Cloneable, LayerControl {
         o.releaseResources();
       }
       if (children_ != null) {
-        Vector<LayerChild> o = children_; // done this way to avoid infinite loop
+        List<LayerChild> o = children_; // done this way to avoid infinite loop
         children_ = null;
-        for (Object o2 : o) ((LayerChild) o2).releaseResources();
+        for (LayerChild o2 : o) o2.releaseResources();
         o.clear();
       }
       pane_ = null; // not releaseResources, else infinite loop
@@ -158,23 +162,23 @@ public class Layer extends Component implements Cloneable, LayerControl {
   private void computeScale() {
     // compute xoff and yoff as double then truncate to int
     Rectangle pbnds = pane_.getBounds();
-    Rectangle bnds = pbnds; // getBounds();
+    // getBounds();
     if (pane_.isPrinter()) {
       ax_ = 72; // java2 is in 1/72 of an inch
       ay_ = ax_;
-      xoff2_ = (bnds.width - ax_ * pWidth_) / 2.0 + bnds.x;
-      yoff2_ = bnds.height - (bnds.height - ay_ * pHeight_) / 2.0 + bnds.y;
+      xoff2_ = (pbnds.width - ax_ * pWidth_) / 2.0 + pbnds.x;
+      yoff2_ = pbnds.height - (pbnds.height - ay_ * pHeight_) / 2.0 + pbnds.y;
     } else {
       // not printer
-      ax_ = (double) bnds.width / pWidth_;
-      ay_ = (double) bnds.height / pHeight_;
+      ax_ = (double) pbnds.width / pWidth_;
+      ay_ = (double) pbnds.height / pHeight_;
       if (ax_ > ay_) {
         ax_ = ay_;
       } else if (ay_ > ax_) {
         ay_ = ax_;
       }
-      xoff2_ = (bnds.width - ax_ * pWidth_) / 2.0 + bnds.x - pbnds.x;
-      yoff2_ = bnds.height - (bnds.height - ay_ * pHeight_) / 2.0 + bnds.y - pbnds.y;
+      xoff2_ = (pbnds.width - ax_ * pWidth_) / 2.0 + pbnds.x - pbnds.x;
+      yoff2_ = pbnds.height - (pbnds.height - ay_ * pHeight_) / 2.0 + pbnds.y - pbnds.y;
     }
 
     // bob added:
@@ -339,7 +343,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @return physical x coordinate
    */
   public double getXDtoP(int xd) {
-    return (double) (xd - xoff2_) / ax_;
+    return (xd - xoff2_) / ax_;
   }
 
   /**
@@ -349,7 +353,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @return physical y coordinate
    */
   public double getYDtoP(int yd) {
-    return (double) (yoff2_ - yd) / ay_;
+    return (yoff2_ - yd) / ay_;
   }
 
   /**
@@ -373,7 +377,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     ident_ = id;
     pWidth_ = psize.width;
     pHeight_ = psize.height;
-    children_ = new Vector<>(5, 5);
+    children_ = new ArrayList<>();
   }
 
   /**
@@ -399,19 +403,19 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     // copy children
     //
-    newLayer.children_ = new Vector<>(5, 5);
+    newLayer.children_ = new ArrayList<>();
     //
     if (!children_.isEmpty()) {
       LayerChild newChild;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        newChild = it.nextElement().copy();
+      for (LayerChild child : children_) {
+        newChild = child.copy();
         newLayer.addChild(newChild);
       }
     }
     //
     // copy Graph
     //
-    if (graph_ != (Graph) null) {
+    if (graph_ != null) {
       Graph newGraph = graph_.copy();
       newLayer.setGraph(newGraph);
     }
@@ -449,14 +453,12 @@ public class Layer extends Component implements Cloneable, LayerControl {
     //
     // draw Graph
     //
-    if (graph_ != (Graph) null) graph_.draw(g);
+    if (graph_ != null) graph_.draw(g);
     //
     // draw children
     //
     if (!children_.isEmpty()) {
-      LayerChild child;
-      for (Enumeration it = children_.elements(); it.hasMoreElements(); ) {
-        child = (LayerChild) it.nextElement();
+      for (LayerChild child : children_) {
         if (!(child instanceof Draggable)) {
           try {
             child.draw(g);
@@ -474,9 +476,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     // draw draggable items
     //
     if (!children_.isEmpty()) {
-      LayerChild child;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        child = it.nextElement();
+      for (LayerChild child : children_) {
         if (child instanceof Draggable) {
           try {
             child.draw(g);
@@ -523,7 +523,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public void addChild(LayerChild child) {
     child.setLayer(this);
-    children_.addElement(child);
+    children_.add(child);
     modified("Layer: addChild()");
   }
 
@@ -539,17 +539,11 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public void removeChild(LayerChild child) throws ChildNotFoundException {
     if (!children_.isEmpty()) {
-      LayerChild chld;
-      boolean found = false;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        chld = it.nextElement();
-        if (chld.equals(child)) {
-          children_.removeElement(child);
-          found = true;
-          modified("Layer: removeChild(LayerChild)");
-        }
-      }
+      boolean found = children_.remove(child);
       if (!found) throw new ChildNotFoundException();
+      else {
+        modified("Layer: removeChild(LayerChild)");
+      }
     } else {
       throw new ChildNotFoundException();
     }
@@ -567,17 +561,17 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public void removeChild(String labid) throws ChildNotFoundException {
     if (!children_.isEmpty()) {
-      boolean found = false;
-      LayerChild child;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        child = it.nextElement();
+      LayerChild toRemove = null;
+      for (LayerChild child : children_) {
         if (child.getId().equals(labid)) {
-          children_.removeElement(child);
-          found = true;
-          modified("Layer: removeChild(String)");
+          toRemove = child;
         }
       }
-      if (!found) throw new ChildNotFoundException();
+      if (toRemove == null) throw new ChildNotFoundException();
+      else {
+        children_.remove(toRemove);
+        modified("Layer: removeChild(String)");
+      }
     } else {
       throw new ChildNotFoundException();
     }
@@ -591,9 +585,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @since 3.0
    */
   public LayerChild findChild(String id) {
-    LayerChild child = null;
-    for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-      child = it.nextElement();
+    for (LayerChild child : children_) {
       if (child.getId().equals(id)) return child;
     }
     return null;
@@ -609,11 +601,9 @@ public class Layer extends Component implements Cloneable, LayerControl {
   public boolean isChildAttached(LayerChild child) {
     boolean found = false;
     if (!children_.isEmpty()) {
-      LayerChild chld;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        chld = it.nextElement();
+      for (LayerChild chld : children_) {
         if (chld.equals(child)) {
-          children_.removeElement(child);
+          children_.remove(child);
           found = true;
           break;
         }
@@ -624,7 +614,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
 
   /** Remove all <code>LayerChild</code> objects from the <code>Layer</code>. */
   public void removeAllChildren() {
-    children_.removeAllElements();
+    children_.clear();
     modified("Layer: removeAllChildren()");
   }
 
@@ -641,15 +631,11 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public LayerChild getChild(String labid) throws ChildNotFoundException {
     if (!children_.isEmpty()) {
-      LayerChild child;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        child = it.nextElement();
+      for (LayerChild child : children_) {
         if (child.getId().equals(labid)) return child;
       }
-      throw new ChildNotFoundException();
-    } else {
-      throw new ChildNotFoundException();
     }
+    throw new ChildNotFoundException();
   }
 
   /**
@@ -663,8 +649,8 @@ public class Layer extends Component implements Cloneable, LayerControl {
    * @see ColorKey
    * @see Ruler
    */
-  public Enumeration<LayerChild> childElements() {
-    return children_.elements();
+  public Iterator<LayerChild> childElements() {
+    return children_.iterator();
   }
 
   /**
@@ -679,7 +665,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
    */
   public LayerChild[] getChildren() {
     LayerChild[] childs = new LayerChild[0];
-    childs = (LayerChild[]) children_.toArray(childs);
+    childs = children_.toArray(childs);
     return childs;
   }
 
@@ -813,9 +799,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     Rectangle bnds;
     Object obj;
     if (!children_.isEmpty()) {
-      LayerChild child;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        child = it.nextElement();
+      for (LayerChild child : children_) {
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
           return child;
@@ -824,9 +808,9 @@ public class Layer extends Component implements Cloneable, LayerControl {
     }
     if (graph_ != null) {
       obj = graph_.getObjectAt(pt);
-      if (obj != null) return obj;
+      return obj;
     }
-    return (Object) null;
+    return null;
   }
 
   /**
@@ -847,9 +831,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
     Object obj = null;
     Rectangle bnds;
     if (!children_.isEmpty()) {
-      LayerChild child;
-      for (Enumeration<LayerChild> it = children_.elements(); it.hasMoreElements(); ) {
-        child = it.nextElement();
+      for (LayerChild child : children_) {
         bnds = child.getBounds();
         if (bnds.contains(pt) && (!check || child.isSelectable()) && child.isVisible()) {
           if (child != null) obList.add(child);

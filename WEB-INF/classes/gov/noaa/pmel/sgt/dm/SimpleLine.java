@@ -191,7 +191,7 @@ public class SimpleLine implements SGTLine, Cartesian, Serializable, Cloneable {
     } catch (CloneNotSupportedException e) {
       newLine = new SimpleLine();
     }
-    return (SGTData) newLine;
+    return newLine;
   }
 
   /** Get the X coordinate array. */
@@ -387,10 +387,10 @@ public class SimpleLine implements SGTLine, Cartesian, Serializable, Cloneable {
     double dstart = Double.POSITIVE_INFINITY;
     double dend = Double.NEGATIVE_INFINITY;
     int count = 0;
-    for (int i = 0; i < array.length; i++) {
-      if (!Double.isNaN(array[i])) {
-        dstart = Math.min(dstart, array[i]);
-        dend = Math.max(dend, array[i]);
+    for (double v : array) {
+      if (!Double.isNaN(v)) {
+        dstart = Math.min(dstart, v);
+        dend = Math.max(dend, v);
         count++;
       }
     }
@@ -406,10 +406,10 @@ public class SimpleLine implements SGTLine, Cartesian, Serializable, Cloneable {
     long tend = Long.MIN_VALUE;
     long[] tar = tarray.getTime();
     int count = 0;
-    for (int i = 0; i < tar.length; i++) {
-      if (!(tar[i] == Long.MAX_VALUE)) {
-        tstart = Math.min(tstart, tar[i]);
-        tend = Math.max(tend, tar[i]);
+    for (long l : tar) {
+      if (!(l == Long.MAX_VALUE)) {
+        tstart = Math.min(tstart, l);
+        tend = Math.max(tend, l);
         count++;
       }
     }

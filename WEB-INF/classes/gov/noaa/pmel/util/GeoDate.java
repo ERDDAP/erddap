@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter;
  * @since sgt 1.0
  */
 public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
-  private int max_day_[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  private final int[] max_day_ = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   private boolean splitDone_;
   private int yearday_;
   private int year_;

@@ -12,7 +12,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridFromFilesHandler extends BaseGridHandler {
-  private String datasetType;
+  private final String datasetType;
 
   public EDDGridFromFilesHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {
@@ -73,10 +73,9 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
   }
 
   private EDD getDataset(Object[][] ttAxisVariables, Object[][] ttDataVariables) throws Throwable {
-    EDD dataset;
 
-    if (datasetType.equals("EDDGridFromAudioFiles")) {
-      dataset =
+    return switch (datasetType) {
+      case "EDDGridFromAudioFiles" ->
           new EDDGridFromAudioFiles(
               datasetID,
               tAccessibleTo,
@@ -105,8 +104,7 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tCacheFromUrl,
               tCacheSizeGB,
               tCachePartialPathRegex);
-    } else if (datasetType.equals("EDDGridFromNcFiles")) {
-      dataset =
+      case "EDDGridFromNcFiles" ->
           new EDDGridFromNcFiles(
               datasetID,
               tAccessibleTo,
@@ -135,8 +133,7 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tCacheFromUrl,
               tCacheSizeGB,
               tCachePartialPathRegex);
-    } else if (datasetType.equals("EDDGridFromNcFilesUnpacked")) {
-      dataset =
+      case "EDDGridFromNcFilesUnpacked" ->
           new EDDGridFromNcFilesUnpacked(
               datasetID,
               tAccessibleTo,
@@ -165,8 +162,7 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tCacheFromUrl,
               tCacheSizeGB,
               tCachePartialPathRegex);
-    } else if (datasetType.equals("EDDGridFromMergeIRFiles")) {
-      dataset =
+      case "EDDGridFromMergeIRFiles" ->
           new EDDGridFromMergeIRFiles(
               datasetID,
               tAccessibleTo,
@@ -195,11 +191,10 @@ public class EDDGridFromFilesHandler extends BaseGridHandler {
               tCacheFromUrl,
               tCacheSizeGB,
               tCachePartialPathRegex);
-    } else {
-      throw new Exception(
-          "type=\"" + datasetType + "\" needs to be added to EDDGridFromFiles.fromXml at end.");
-    }
-    return dataset;
+      default ->
+          throw new Exception(
+              "type=\"" + datasetType + "\" needs to be added to EDDGridFromFiles.fromXml at end.");
+    };
   }
 
   @Override

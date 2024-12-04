@@ -9,8 +9,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class AddAttributesHandler extends StateWithParent {
-  private StringBuilder content = new StringBuilder();
-  private com.cohort.array.Attributes tAttributes;
+  private final StringBuilder content = new StringBuilder();
+  private final com.cohort.array.Attributes tAttributes;
   private String tName = null, tType = null;
 
   public AddAttributesHandler(

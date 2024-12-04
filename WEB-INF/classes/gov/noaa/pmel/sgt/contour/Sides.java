@@ -24,9 +24,9 @@ import java.util.BitSet;
  */
 class Sides {
   BitSet sides_;
-  int nx_;
-  int ny_;
-  int ny2_;
+  final int nx_;
+  final int ny_;
+  final int ny2_;
 
   public Sides(int nx, int ny) {
     nx_ = nx;

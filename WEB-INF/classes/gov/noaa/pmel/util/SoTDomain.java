@@ -146,8 +146,7 @@ public class SoTDomain implements java.io.Serializable {
     if (!xRange_.equals(d.getXRange())) return false;
     if (!yRange_.equals(d.getYRange())) return false;
     if (xReversed_ != d.isXReversed()) return false;
-    if (yReversed_ != d.isYReversed()) return false;
-    return true;
+    return yReversed_ == d.isYReversed();
   }
 
   @Override
@@ -160,13 +159,7 @@ public class SoTDomain implements java.io.Serializable {
 
   @Override
   public String toString() {
-    StringBuilder buf = new StringBuilder(100);
-    buf.append("x=");
-    buf.append(xRange_).append(",y=");
-    buf.append(yRange_);
-    buf.append(", xRev=").append(xReversed_);
-    buf.append(", yRev=").append(yReversed_);
-    return buf.toString();
+    return "x=" + xRange_ + ",y=" + yRange_ + ", xRev=" + xReversed_ + ", yRev=" + yReversed_;
   }
 
   /**

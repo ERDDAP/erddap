@@ -332,7 +332,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_SMALL,
             0, // vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList<>();
     graphDataLayers1.add(graphDataLayer);
 
     // graph 1: plus 10 random points of each marker type
@@ -406,7 +406,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_MEDIUM,
             0, // vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-    ArrayList<GraphDataLayer> graphDataLayers2 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers2 = new ArrayList<>();
     graphDataLayers2.add(graphDataLayer);
 
     // graph 3: make a graphDataLayer with data for a sticks graph
@@ -436,7 +436,7 @@ class SgtGraphTests {
             0,
             0, // vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-    ArrayList graphDataLayers3 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers3 = new ArrayList<>();
     graphDataLayers3.add(graphDataLayer);
 
     // graph 4: make a graphDataLayer with data for a time series line
@@ -466,7 +466,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_MEDIUM,
             0, // vectorStandard
             GraphDataLayer.REGRESS_NONE);
-    ArrayList graphDataLayers4 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers4 = new ArrayList<>();
     graphDataLayers4.add(graphDataLayer);
 
     // graph 4: plus 10 random points of each marker type
@@ -538,7 +538,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_SMALL,
             0, // vectorStandard
             GraphDataLayer.REGRESS_NONE);
-    ArrayList<GraphDataLayer> graphDataLayers5 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers5 = new ArrayList<>();
     graphDataLayers5.add(graphDataLayer);
 
     // graph 6: make a graphDataLayer with data for a x=data, y=time line
@@ -568,7 +568,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_SMALL,
             0, // vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-    ArrayList graphDataLayers6 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers6 = new ArrayList<>();
     graphDataLayers6.add(graphDataLayer);
 
     // draw the graph with data
@@ -1088,7 +1088,7 @@ class SgtGraphTests {
             GraphDataLayer.MARKER_SIZE_SMALL,
             0, // vectorStandard
             GraphDataLayer.REGRESS_NONE);
-    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
+    ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList<>();
     graphDataLayers1.add(graphDataLayer);
 
     // draw the graph with data

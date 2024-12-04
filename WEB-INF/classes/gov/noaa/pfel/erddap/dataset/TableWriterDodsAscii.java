@@ -28,7 +28,7 @@ import java.io.Writer;
 public class TableWriterDodsAscii extends TableWriter {
 
   // set by constructor
-  protected String sequenceName;
+  protected final String sequenceName;
 
   // set by firstTime
   protected boolean isCharOrString[];

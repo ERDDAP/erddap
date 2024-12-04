@@ -11,10 +11,14 @@
 
 package dods.dap;
 
-import java.io.*;
-import java.util.Enumeration;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * This class holds a <code>DArray</code> and a set of "Map" vectors. The Map vectors are
@@ -59,7 +63,7 @@ public class DGrid extends DConstructor implements ClientIO {
   protected DArray arrayVar;
 
   /** The Map component of this <code>DGrid</code>. */
-  protected Vector<BaseType> mapVars;
+  protected List<BaseType> mapVars;
 
   /** Constructs a new <code>DGrid</code>. */
   public DGrid() {
@@ -73,7 +77,7 @@ public class DGrid extends DConstructor implements ClientIO {
    */
   public DGrid(String n) {
     super(n);
-    mapVars = new Vector<>();
+    mapVars = new ArrayList<>();
   }
 
   /**
@@ -85,11 +89,11 @@ public class DGrid extends DConstructor implements ClientIO {
   @Override
   public DGrid clone() {
     DGrid g = (DGrid) super.clone();
-    g.arrayVar = (DArray) arrayVar.clone();
-    g.mapVars = new Vector<>();
+    g.arrayVar = arrayVar.clone();
+    g.mapVars = new ArrayList<>();
     for (int i = 0; i < mapVars.size(); i++) {
-      BaseType bt = mapVars.elementAt(i);
-      g.mapVars.addElement(bt.clone());
+      BaseType bt = mapVars.get(i);
+      g.mapVars.add(bt.clone());
     }
     return g;
   }
@@ -149,7 +153,7 @@ public class DGrid extends DConstructor implements ClientIO {
         return;
 
       case MAPS:
-        mapVars.addElement(v);
+        mapVars.add(v);
         return;
 
       default:
@@ -182,8 +186,7 @@ public class DGrid extends DConstructor implements ClientIO {
     } else {
       if (arrayVar.getName().equals(name)) return arrayVar;
 
-      for (Enumeration<BaseType> e = mapVars.elements(); e.hasMoreElements(); ) {
-        BaseType v = e.nextElement();
+      for (BaseType v : mapVars) {
         if (v.getName().equals(name)) return v;
       }
     }
@@ -204,7 +207,7 @@ public class DGrid extends DConstructor implements ClientIO {
       return arrayVar;
     } else {
       int i = index - 1;
-      if (i < mapVars.size()) return mapVars.elementAt(i);
+      if (i < mapVars.size()) return mapVars.get(i);
       else
         throw new NoSuchVariableException(
             "DGrid.getVariable() No Such variable: " + index + " - 1)");
@@ -215,9 +218,9 @@ public class DGrid extends DConstructor implements ClientIO {
    * Private class for implemantation of the Enumeration. Because DStructure and DSequence are
    * simpler classes and use a single Vector, their implementations of getVariables aren't as fancy.
    */
-  class EnumerateDGrid implements Enumeration {
+  class EnumerateDGrid implements Iterator<BaseType> {
     boolean array;
-    Iterator e;
+    final Iterator<BaseType> e;
 
     EnumerateDGrid() {
       array = false; // true when the array is/has being/been
@@ -226,12 +229,12 @@ public class DGrid extends DConstructor implements ClientIO {
     }
 
     @Override
-    public boolean hasMoreElements() {
-      return (array == false) || e.hasNext();
+    public boolean hasNext() {
+      return !array || e.hasNext();
     }
 
     @Override
-    public Object nextElement() {
+    public BaseType next() {
       if (!array) {
         array = true;
         return arrayVar;
@@ -249,7 +252,7 @@ public class DGrid extends DConstructor implements ClientIO {
    * @return An Enumeration
    */
   @Override
-  public Enumeration<DArray> getVariables() {
+  public Iterator<BaseType> getVariables() {
     return new EnumerateDGrid();
   }
 
@@ -289,17 +292,17 @@ public class DGrid extends DConstructor implements ClientIO {
     // ----- so now that I have written it...  ndp 12/3/99
 
     // Is the size of the maps equal to the size of the cooresponding dimensions?
-    Enumeration emap = mapVars.elements();
+    Iterator<BaseType> emap = mapVars.iterator();
 
-    Enumeration edims = arrayVar.getDimensions();
+    Iterator<DArrayDimension> edims = arrayVar.getDimensions();
     int dim = 0;
-    while (emap.hasMoreElements() && edims.hasMoreElements()) {
+    while (emap.hasNext() && edims.hasNext()) {
 
-      DArray thisMapArray = (DArray) emap.nextElement();
-      Enumeration ema = thisMapArray.getDimensions();
-      DArrayDimension thisMapDim = (DArrayDimension) ema.nextElement();
+      DArray thisMapArray = (DArray) emap.next();
+      Iterator<DArrayDimension> ema = thisMapArray.getDimensions();
+      DArrayDimension thisMapDim = ema.next();
 
-      DArrayDimension thisArrayDim = (DArrayDimension) edims.nextElement();
+      DArrayDimension thisArrayDim = edims.next();
 
       if (thisMapDim.getSize() != thisArrayDim.getSize()) {
 

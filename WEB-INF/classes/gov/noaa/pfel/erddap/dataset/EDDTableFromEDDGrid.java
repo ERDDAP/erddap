@@ -90,70 +90,68 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<dataset>")) {
-        if ("false".equals(xmlReader.attributeValue("active"))) {
-          // skip it - read to </dataset>
-          if (verbose)
-            String2.log(
-                "  skipping datasetID="
-                    + xmlReader.attributeValue("datasetID")
-                    + " because active=\"false\".");
-          while (xmlReader.stackSize() != startOfTagsN + 1
-              || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
-            xmlReader.nextTag();
-            // String2.log("  skippping tags: " + xmlReader.allTags());
-          }
+      switch (localTags) {
+        case "<dataset>" -> {
+          if ("false".equals(xmlReader.attributeValue("active"))) {
+            // skip it - read to </dataset>
+            if (verbose)
+              String2.log(
+                  "  skipping datasetID="
+                      + xmlReader.attributeValue("datasetID")
+                      + " because active=\"false\".");
+            while (xmlReader.stackSize() != startOfTagsN + 1
+                || !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+              xmlReader.nextTag();
+              // String2.log("  skippping tags: " + xmlReader.allTags());
+            }
 
-        } else {
-          if (tChildDataset == null) {
-            String tType = xmlReader.attributeValue("type");
-            if (tType == null || !tType.startsWith("EDDGrid"))
-              throw new SimpleException(
-                  "type=\""
-                      + tType
-                      + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. "
-                      + "The type MUST start with \"EDDGrid\".");
-            tChildDataset = (EDDGrid) EDD.fromXml(tErddap, tType, xmlReader);
           } else {
-            throw new RuntimeException(
-                "Datasets.xml error: "
-                    + "There can be only one <dataset> defined within an "
-                    + "EDDGridFromEDDTableo <dataset>.");
+            if (tChildDataset == null) {
+              String tType = xmlReader.attributeValue("type");
+              if (tType == null || !tType.startsWith("EDDGrid"))
+                throw new SimpleException(
+                    "type=\""
+                        + tType
+                        + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. "
+                        + "The type MUST start with \"EDDGrid\".");
+              tChildDataset = (EDDGrid) EDD.fromXml(tErddap, tType, xmlReader);
+            } else {
+              throw new RuntimeException(
+                  "Datasets.xml error: "
+                      + "There can be only one <dataset> defined within an "
+                      + "EDDGridFromEDDTableo <dataset>.");
+            }
           }
         }
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<reloadEveryNMinutes>",
+            "<accessibleViaFiles>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
-      } else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<accessibleViaFiles>")) {
-      } else if (localTags.equals("</accessibleViaFiles>"))
-        tAccessibleViaFiles = String2.parseBoolean(content);
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
-      //            else if (localTags.equals( "<updateEveryNMillis>")) {}
-      //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
-      // String2.parseInt(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<addAttributes>")) {
-        tAddGlobalAttributes = getAttributesFromXml(xmlReader);
-      } else {
-        xmlReader.unexpectedTagException();
+          // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
+          //            else if (localTags.equals( "<updateEveryNMillis>")) {}
+          //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
+          // String2.parseInt(content);
+        case "<onChange>" -> {}
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "<addAttributes>" -> tAddGlobalAttributes = getAttributesFromXml(xmlReader);
+        default -> xmlReader.unexpectedTagException();
       }
     }
 
@@ -302,32 +300,44 @@ public class EDDTableFromEDDGrid extends EDDTable {
       PAOne tMin = new PAOne(gridVar.destinationMin()); // make/use a copy
       PAOne tMax = new PAOne(gridVar.destinationMax());
       EDV newVar = null;
-      if (tSourceName.equals(EDV.LON_NAME)) {
-        newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        lonIndex = dv;
-      } else if (tSourceName.equals(EDV.LAT_NAME)) {
-        newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        latIndex = dv;
-      } else if (tSourceName.equals(EDV.ALT_NAME)) {
-        newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        altIndex = dv;
-      } else if (tSourceName.equals(EDV.DEPTH_NAME)) {
-        newVar = new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
-        depthIndex = dv;
-      } else if (tSourceName.equals(EDV.TIME_NAME)) {
-        tAddAtts.add("data_min", "" + tMin); // data_min/max have priority
-        tAddAtts.add("data_max", "" + tMax); // tMin tMax are epochSeconds
-        newVar =
-            new EDVTime(
-                datasetID,
-                tSourceName,
-                tSourceAtts,
-                tAddAtts,
-                tDataType); // this constructor gets source / sets destination actual_range
-        timeIndex = dv;
-        // currently, there is no EDVTimeStampGridAxis
-      } else
-        newVar = new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+      switch (tSourceName) {
+        case EDV.LON_NAME -> {
+          newVar = new EDVLon(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          lonIndex = dv;
+        }
+        case EDV.LAT_NAME -> {
+          newVar = new EDVLat(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          latIndex = dv;
+        }
+        case EDV.ALT_NAME -> {
+          newVar = new EDVAlt(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          altIndex = dv;
+        }
+        case EDV.DEPTH_NAME -> {
+          newVar =
+              new EDVDepth(datasetID, tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+          depthIndex = dv;
+        }
+        case EDV.TIME_NAME -> {
+          tAddAtts.add("data_min", "" + tMin); // data_min/max have priority
+
+          tAddAtts.add("data_max", "" + tMax); // tMin tMax are epochSeconds
+
+          newVar =
+              new EDVTime(
+                  datasetID,
+                  tSourceName,
+                  tSourceAtts,
+                  tAddAtts,
+                  tDataType); // this constructor gets source / sets destination actual_range
+
+          timeIndex = dv;
+          // currently, there is no EDVTimeStampGridAxis
+        }
+        default ->
+            newVar =
+                new EDV(datasetID, tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
+      }
 
       dataVariables[dv] = newVar;
     }
@@ -345,7 +355,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromEDDGrid "
               + datasetID
               + " constructor finished. TIME="

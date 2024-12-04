@@ -17,18 +17,13 @@ public class DASParserTokenManager implements DASParserConstants {
   }
 
   private final int jjMoveStringLiteralDfa0_0() {
-    switch (curChar) {
-      case 44:
-        return jjStopAtPos(0, 21);
-      case 59:
-        return jjStopAtPos(0, 22);
-      case 123:
-        return jjStopAtPos(0, 19);
-      case 125:
-        return jjStopAtPos(0, 20);
-      default:
-        return jjMoveNfa_0(0, 0);
-    }
+    return switch (curChar) {
+      case 44 -> jjStopAtPos(0, 21);
+      case 59 -> jjStopAtPos(0, 22);
+      case 123 -> jjStopAtPos(0, 19);
+      case 125 -> jjStopAtPos(0, 20);
+      default -> jjMoveNfa_0(0, 0);
+    };
   }
 
   private final void jjCheckNAdd(int state) {
@@ -711,7 +706,7 @@ public class DASParserTokenManager implements DASParserConstants {
   }
 
   public void SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0)
+    if (lexState != 0)
       throw new TokenMgrError(
           "Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.",
           TokenMgrError.INVALID_LEXICAL_STATE);
@@ -731,7 +726,7 @@ public class DASParserTokenManager implements DASParserConstants {
   }
 
   int curLexState = 0;
-  int defaultLexState = 0;
+  final int defaultLexState = 0;
   int jjnewStateCnt;
   int jjround;
   int jjmatchedPos;

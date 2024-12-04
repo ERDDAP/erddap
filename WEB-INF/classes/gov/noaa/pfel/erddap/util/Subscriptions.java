@@ -78,20 +78,20 @@ public class Subscriptions implements AutoCloseable {
    * From the point of view of a dataset: which subscriptions are for a given dataset.
    * key=datasetID, value=HashSet of persistentTable row numbers
    */
-  protected Map<String, Set<Integer>> datasetSubscriptions = new HashMap<>();
+  protected final Map<String, Set<Integer>> datasetSubscriptions = new HashMap<>();
 
   /**
    * From the point of view of email addresses: which subscriptions are related to that email
    * address. key=email, value=HashSet of persistentTable row numbers for valid and pending
    * subscriptions
    */
-  protected Map<String, Set<Integer>> emailSubscriptions = new HashMap<>();
+  protected final Map<String, Set<Integer>> emailSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected Map<String, Integer> pendingSubscriptions = new HashMap<>();
+  protected final Map<String, Integer> pendingSubscriptions = new HashMap<>();
 
   /** key=comboKey, value=persistentTable Integer row number */
-  protected Map<String, Integer> validSubscriptions = new HashMap<>();
+  protected final Map<String, Integer> validSubscriptions = new HashMap<>();
 
   /**
    * The constructor for Subscriptions. If fullFuleName exists, the info will be loaded. If there is
@@ -252,12 +252,8 @@ public class Subscriptions implements AutoCloseable {
    */
   protected synchronized boolean _addSubscription(
       Map<String, Set<Integer>> map, String key, int row) {
-    Set<Integer> rowNumbers = map.get(key);
-    if (rowNumbers == null) {
-      rowNumbers = new HashSet<Integer>();
-      map.put(key, rowNumbers);
-    }
-    return rowNumbers.add(Integer.valueOf(row));
+    Set<Integer> rowNumbers = map.computeIfAbsent(key, k -> new HashSet<>());
+    return rowNumbers.add(row);
   }
 
   protected synchronized boolean addEmailSubscription(String email, int row) {
@@ -279,7 +275,7 @@ public class Subscriptions implements AutoCloseable {
       Map<String, Set<Integer>> map, String key, int row) {
     Set<Integer> rowNumbers = map.get(key);
     if (rowNumbers == null) return false;
-    boolean result = rowNumbers.remove(Integer.valueOf(row));
+    boolean result = rowNumbers.remove(row);
     if (result && rowNumbers.size() == 0) map.remove(key);
     return result;
   }
@@ -304,8 +300,7 @@ public class Subscriptions implements AutoCloseable {
     Set<Integer> hashSet = map.get(key);
     if (hashSet == null) return null;
     IntArray rows = new IntArray();
-    Iterator<Integer> it = hashSet.iterator();
-    while (it.hasNext()) rows.add(it.next().intValue());
+    for (Integer integer : hashSet) rows.add(integer);
     rows.sort();
     return rows;
   }
@@ -325,7 +320,7 @@ public class Subscriptions implements AutoCloseable {
    */
   protected synchronized boolean addPVSubscription(
       Map<String, Integer> map, String comboKey, int row) {
-    return map.put(comboKey, Integer.valueOf(row)) != null;
+    return map.put(comboKey, row) != null;
   }
 
   /**
@@ -461,7 +456,7 @@ public class Subscriptions implements AutoCloseable {
     int nRows = persistentTable.nRows();
     Iterator<String> it = pendingSubscriptions.keySet().iterator();
     while (it.hasNext()) {
-      int row = pendingSubscriptions.get(it.next()).intValue();
+      int row = pendingSubscriptions.get(it.next());
       int creationMinute = (row < 0 || row >= nRows) ? -1 : readCreationMinute(row);
       if (creationMinute == Integer.MAX_VALUE || creationMinute < oldestPendingAllowed) {
         String email = readEmail(row); // before clearRow
@@ -538,7 +533,7 @@ public class Subscriptions implements AutoCloseable {
     int row = -1;
     if (rowInteger != null) {
       // it's already pending
-      row = rowInteger.intValue();
+      row = rowInteger;
       writeCreationMinute(row, currentMinute); // refresh it
       persistentTable.flush();
     } else {
@@ -565,7 +560,7 @@ public class Subscriptions implements AutoCloseable {
         addEmailSubscription(email, row);
       } else {
         // it's already valid
-        row = rowInteger.intValue();
+        row = rowInteger;
       }
     }
     return row;
@@ -708,7 +703,7 @@ public class Subscriptions implements AutoCloseable {
     Integer rowInteger = validSubscriptions.get(comboKey);
     if (rowInteger == null) rowInteger = pendingSubscriptions.get(comboKey);
     if (rowInteger == null) return false;
-    int row = rowInteger.intValue();
+    int row = rowInteger;
     remove(row, readKey(row));
     return true;
   }
@@ -831,8 +826,7 @@ public class Subscriptions implements AutoCloseable {
         "\n\nNote that pending subscriptions that aren't validated soon will be deleted.\n"
             + "\n\n*****\n"
             + messageToRequestList(email));
-    if (reallyVerbose)
-      String2.log("Subscriptions.listSubscriptions(" + email + ")=\n" + sb.toString());
+    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions(" + email + ")=\n" + sb);
     return sb.toString();
   }
 
@@ -857,17 +851,17 @@ public class Subscriptions implements AutoCloseable {
                 + ", nValidSubscriptions="
                 + validSubscriptions.size()
                 + ")\n\n");
-    for (int i = 0; i < emails.length; i++) {
+    for (String email : emails) {
 
       // get the row numbers
-      IntArray rows = getSortedEmailSubscriptions(emails[i]);
+      IntArray rows = getSortedEmailSubscriptions(email);
       if (rows == null || rows.size() == 0) {
-        emailSubscriptions.remove(emails[i]); // shouldn't happen.  fix it by removing the key
+        emailSubscriptions.remove(email); // shouldn't happen.  fix it by removing the key
         continue;
       }
 
       // format the results
-      sb.append(emails[i] + "\n");
+      sb.append(email + "\n");
       for (int which = 0; which < rows.size(); which++) {
         int row = rows.get(which);
         byte status = readStatus(row);
@@ -887,7 +881,7 @@ public class Subscriptions implements AutoCloseable {
       }
       sb.append('\n');
     }
-    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions()=\n" + sb.toString());
+    if (reallyVerbose) String2.log("Subscriptions.listSubscriptions()=\n" + sb);
     return sb.toString();
   }
 

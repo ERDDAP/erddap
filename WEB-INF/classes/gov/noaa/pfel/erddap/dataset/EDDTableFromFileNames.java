@@ -47,11 +47,12 @@ import java.util.regex.Pattern;
 public class EDDTableFromFileNames extends EDDTable {
 
   protected String fileDir; // has forward slashes and trailing slash
-  protected String fileNameRegex, pathRegex;
+  protected final String fileNameRegex;
+  protected String pathRegex;
   protected boolean recursive;
   protected String extractRegex[];
   protected byte extractGroup[];
-  protected Map<String, Set<String>> scriptNeedsColumns =
+  protected final Map<String, Set<String>> scriptNeedsColumns =
       new HashMap<>(); // <sourceName, otherSourceColumnNames>
 
   /**
@@ -141,39 +142,39 @@ public class EDDTableFromFileNames extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else if (localTags.equals("<fileDir>")) {
-      } else if (localTags.equals("</fileDir>")) tFileDir = content;
-      else if (localTags.equals("<fileNameRegex>")) {
-      } else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content;
-      else if (localTags.equals("<recursive>")) {
-      } else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content);
-      else if (localTags.equals("<pathRegex>")) {
-      } else if (localTags.equals("</pathRegex>")) tPathRegex = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<pathRegex>",
+            "<recursive>",
+            "<fileNameRegex>",
+            "<fileDir>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        case "</fileDir>" -> tFileDir = content;
+        case "</fileNameRegex>" -> tFileNameRegex = content;
+        case "</recursive>" -> tRecursive = String2.parseBoolean(content);
+        case "</pathRegex>" -> tPathRegex = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -478,9 +479,9 @@ public class EDDTableFromFileNames extends EDDTable {
             FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
                 fileDir,
                 fileNameRegex,
-                from == fromOnTheFly ? false : recursive,
+                from != fromOnTheFly && recursive,
                 pathRegex,
-                from == fromOnTheFly ? true : false); // tDirectoriesToo
+                from == fromOnTheFly); // tDirectoriesToo
         tCachedDNLSTable.setColumn(
             2, new DoubleArray(tCachedDNLSTable.getColumn(2))); // long -> double
         tCachedDNLSTable.setColumn(
@@ -730,7 +731,7 @@ public class EDDTableFromFileNames extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromFileNames "
               + datasetID
               + " constructor finished. TIME="
@@ -884,12 +885,11 @@ public class EDDTableFromFileNames extends EDDTable {
       }
 
       // and add subdirs
-      String subdirs[] = (String[]) twardt.subdirHash().toArray(new String[0]);
+      String subdirs[] = twardt.subdirHash().toArray(new String[0]);
       Arrays.sort(subdirs, String2.STRING_COMPARATOR_IGNORE_CASE);
-      int nSubdirs = subdirs.length;
       StringArray dirSA = (StringArray) dnlsTable.getColumn(0);
-      for (int i = 0; i < nSubdirs; i++) {
-        dirSA.add(fileDir + subdirs[i]);
+      for (String subdir : subdirs) {
+        dirSA.add(fileDir + subdir);
       }
       dnlsTable.makeColumnsSameSize();
       String2.log(
@@ -1048,7 +1048,7 @@ public class EDDTableFromFileNames extends EDDTable {
           dnlsTable = FileVisitorDNLS.makeEmptyTable();
         }
 
-        String subDirs[] = (String[]) twardt.subdirHash().toArray(new String[0]);
+        String subDirs[] = twardt.subdirHash().toArray(new String[0]);
         Arrays.sort(subDirs, String2.STRING_COMPARATOR_IGNORE_CASE);
         accessibleViaFilesMakeReadyForUser(dnlsTable);
         return new Object[] {dnlsTable, subDirs, fileDir + nextPath};
@@ -1351,7 +1351,7 @@ public class EDDTableFromFileNames extends EDDTable {
             scriptTypes,
             scriptNeedsColumns);
 
-      if (debugMode) String2.log(">> getDataForDapQuery:\n" + table.toString());
+      if (debugMode) String2.log(">> getDataForDapQuery:\n" + table);
       if (table.nRows() > 0) { // should be
         standardizeResultsTable(language, requestUrl, userDapQuery, table);
         tableWriter.writeSome(table);
@@ -1513,13 +1513,12 @@ public class EDDTableFromFileNames extends EDDTable {
     }
     Set<String> keywords = suggestKeywords(sourceTable, addTable);
     cleanSuggestedKeywords(keywords);
-    String keywordSar[] = (String[]) keywords.toArray(new String[0]);
+    String keywordSar[] = keywords.toArray(new String[0]);
     Arrays.sort(keywordSar, String2.STRING_COMPARATOR_IGNORE_CASE);
     addTable.globalAttributes().add("keywords", String2.toCSSVString(keywordSar));
 
     // write the information
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+    String sb =
         "<dataset type=\"EDDTableFromFileNames\" datasetID=\""
             + tDatasetID
             + "\" active=\"true\">\n"
@@ -1537,59 +1536,58 @@ public class EDDTableFromFileNames extends EDDTable {
             + "</pathRegex>\n"
             + "    <reloadEveryNMinutes>"
             + tReloadEveryNMinutes
-            + "</reloadEveryNMinutes>\n");
-    sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
-    sb.append(writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    "));
-    sb.append(
-        writeVariablesForDatasetsXml(
-            sourceTable,
-            addTable,
-            "dataVariable",
-            true,
-            false)); // includeDataType, questionDestinationName
-    sb.append(
-        "    <dataVariable>\n"
-            + "        <sourceName>fileType</sourceName>\n"
-            + "        <destinationName>fileType</destinationName>\n"
-            + "        <dataType>String</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">.*(\\..+?)</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"ioos_category\">Identifier</att>\n"
-            + "            <att name=\"long_name\">File Type</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    <!-- You can create other variables which are derived from extracts\n"
-            + "         from the file names.  Use an extractRegex attribute to specify a\n"
-            + "         regular expression with a capturing group (in parentheses). The\n"
-            + "         part of the file name which matches the specified capturing group\n"
-            + "         (usually group #1) will be extracted to make the new data variable.\n"
-            + "         fileType above shows how to extract a String. Below are examples\n"
-            + "         showing how to extract a date, and how to extract an integer.\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>time</sourceName>\n"
-            + "        <destinationName>time</destinationName>\n"
-            + "        <dataType>String</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">jplMURSST(.*)\\.png</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"units\">yyyyMMddHHmmss</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    <dataVariable>\n"
-            + "        <sourceName>day</sourceName>\n"
-            + "        <destinationName>day</destinationName>\n"
-            + "        <dataType>int</dataType>\n"
-            + "        <addAttributes>\n"
-            + "            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n"
-            + "            <att name=\"extractGroup\" type=\"int\">1</att>\n"
-            + "            <att name=\"ioos_category\">Time</att>\n"
-            + "        </addAttributes>\n"
-            + "    </dataVariable>\n"
-            + "    -->\n");
-    sb.append("</dataset>\n" + "\n");
+            + "</reloadEveryNMinutes>\n"
+            + writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    ")
+            + writeAttsForDatasetsXml(true, addTable.globalAttributes(), "    ")
+            + writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false)
+            + // includeDataType, questionDestinationName
+            """
+                          <dataVariable>
+                              <sourceName>fileType</sourceName>
+                              <destinationName>fileType</destinationName>
+                              <dataType>String</dataType>
+                              <addAttributes>
+                                  <att name="extractRegex">.*(\\..+?)</att>
+                                  <att name="extractGroup" type="int">1</att>
+                                  <att name="ioos_category">Identifier</att>
+                                  <att name="long_name">File Type</att>
+                              </addAttributes>
+                          </dataVariable>
+                          <!-- You can create other variables which are derived from extracts
+                               from the file names.  Use an extractRegex attribute to specify a
+                               regular expression with a capturing group (in parentheses). The
+                               part of the file name which matches the specified capturing group
+                               (usually group #1) will be extracted to make the new data variable.
+                               fileType above shows how to extract a String. Below are examples
+                               showing how to extract a date, and how to extract an integer.
+                          <dataVariable>
+                              <sourceName>time</sourceName>
+                              <destinationName>time</destinationName>
+                              <dataType>String</dataType>
+                              <addAttributes>
+                                  <att name="extractRegex">jplMURSST(.*)\\.png</att>
+                                  <att name="extractGroup" type="int">1</att>
+                                  <att name="units">yyyyMMddHHmmss</att>
+                              </addAttributes>
+                          </dataVariable>
+                          <dataVariable>
+                              <sourceName>day</sourceName>
+                              <destinationName>day</destinationName>
+                              <dataType>int</dataType>
+                              <addAttributes>
+                                  <att name="extractRegex">jplMURSST.{6}(..).{6}\\.png</att>
+                                  <att name="extractGroup" type="int">1</att>
+                                  <att name="ioos_category">Time</att>
+                              </addAttributes>
+                          </dataVariable>
+                          -->
+                      """
+            + """
+                      </dataset>
+
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

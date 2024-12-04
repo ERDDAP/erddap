@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @since sgt 3.0
  */
 public class GeoDateArray implements Serializable {
-  private long[] date_;
+  private final long[] date_;
 
   /**
    * Construct a new <code>GeoDateArray</code> from an array of <code>GeoDate</code>s.

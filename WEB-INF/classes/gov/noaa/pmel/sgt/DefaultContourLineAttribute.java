@@ -94,7 +94,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
    */
   public void setLabelEnabled(boolean sle) {
     if (labelEnabled_ != sle) {
-      Boolean tempOld = Boolean.valueOf(labelEnabled_);
+      Boolean tempOld = labelEnabled_;
       labelEnabled_ = sle;
       changes_.firePropertyChange("labelEnabled", tempOld, Boolean.valueOf(labelEnabled_));
     }
@@ -142,9 +142,9 @@ public class DefaultContourLineAttribute extends LineAttribute {
    */
   public void setLabelHeightP(double height) {
     if (labelHeightP_ != height) {
-      Double tempOld = Double.valueOf(labelHeightP_);
+      Double tempOld = labelHeightP_;
       labelHeightP_ = height;
-      changes_.firePropertyChange("labelHeightP", tempOld, Double.valueOf(labelHeightP_));
+      changes_.firePropertyChange("labelHeightP", tempOld, labelHeightP_);
     }
   }
 
@@ -190,7 +190,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
    */
   public void setSignificantDigits(int sig) {
     if (sigDigits_ != sig) {
-      Integer tempOld = Integer.valueOf(sigDigits_);
+      Integer tempOld = sigDigits_;
       sigDigits_ = sig;
       changes_.firePropertyChange("significantDigits", tempOld, Integer.valueOf(sigDigits_));
     }

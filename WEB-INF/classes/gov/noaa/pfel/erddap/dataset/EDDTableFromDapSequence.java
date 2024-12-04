@@ -29,7 +29,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -39,17 +39,18 @@ import java.util.Enumeration;
 @SaxHandlerClass(EDDTableFromDapSequenceHandler.class)
 public class EDDTableFromDapSequence extends EDDTable {
 
-  protected String outerSequenceName, innerSequenceName;
-  protected boolean sourceCanConstrainStringEQNE,
-      sourceCanConstrainStringGTLT,
-      skipDapperSpacerRows;
+  protected final String outerSequenceName;
+  protected final String innerSequenceName;
+  protected final boolean sourceCanConstrainStringEQNE;
+  protected final boolean sourceCanConstrainStringGTLT;
+  protected final boolean skipDapperSpacerRows;
   protected boolean isOuterVar[];
 
   /**
    * Indicates if data can be transmitted in a compressed form. It is unlikely anyone would want to
    * change this.
    */
-  public static boolean acceptDeflate = true;
+  public static final boolean acceptDeflate = true;
 
   /**
    * This constructs an EDDTableFromDapSequence based on the information in an .xml file.
@@ -102,54 +103,52 @@ public class EDDTableFromDapSequence extends EDDTable {
       String localTags = tags.substring(startOfTagsLength);
 
       // try to make the tag names as consistent, descriptive and readable as possible
-      if (localTags.equals("<addAttributes>")) tGlobalAttributes = getAttributesFromXml(xmlReader);
-      else if (localTags.equals("<altitudeMetersPerSourceUnit>"))
-        throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
-      else if (localTags.equals("<dataVariable>"))
-        tDataVariables.add(getSDADVariableFromXml(xmlReader));
-      else if (localTags.equals("<accessibleTo>")) {
-      } else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-      else if (localTags.equals("<graphsAccessibleTo>")) {
-      } else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
-      else if (localTags.equals("<reloadEveryNMinutes>")) {
-      } else if (localTags.equals("</reloadEveryNMinutes>"))
-        tReloadEveryNMinutes = String2.parseInt(content);
-      else if (localTags.equals("<sourceUrl>")) {
-      } else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content;
-      else if (localTags.equals("<outerSequenceName>")) {
-      } else if (localTags.equals("</outerSequenceName>")) tOuterSequenceName = content;
-      else if (localTags.equals("<innerSequenceName>")) {
-      } else if (localTags.equals("</innerSequenceName>")) tInnerSequenceName = content;
-      else if (localTags.equals("<sourceNeedsExpandedFP_EQ>")) {
-      } else if (localTags.equals("</sourceNeedsExpandedFP_EQ>"))
-        tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringEQNE>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringEQNE>"))
-        tSourceCanConstrainStringEQNE = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringGTLT>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringGTLT>"))
-        tSourceCanConstrainStringGTLT = String2.parseBoolean(content);
-      else if (localTags.equals("<sourceCanConstrainStringRegex>")) {
-      } else if (localTags.equals("</sourceCanConstrainStringRegex>"))
-        tSourceCanConstrainStringRegex = content;
-      else if (localTags.equals("<skipDapperSpacerRows>")) {
-      } else if (localTags.equals("</skipDapperSpacerRows>"))
-        tSkipDapperSpacerRows = String2.parseBoolean(content);
-      else if (localTags.equals("<onChange>")) {
-      } else if (localTags.equals("</onChange>")) tOnChange.add(content);
-      else if (localTags.equals("<fgdcFile>")) {
-      } else if (localTags.equals("</fgdcFile>")) tFgdcFile = content;
-      else if (localTags.equals("<iso19115File>")) {
-      } else if (localTags.equals("</iso19115File>")) tIso19115File = content;
-      else if (localTags.equals("<sosOfferingPrefix>")) {
-      } else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content;
-      else if (localTags.equals("<defaultDataQuery>")) {
-      } else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content;
-      else if (localTags.equals("<defaultGraphQuery>")) {
-      } else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content;
-      else if (localTags.equals("<addVariablesWhere>")) {
-      } else if (localTags.equals("</addVariablesWhere>")) tAddVariablesWhere = content;
-      else xmlReader.unexpectedTagException();
+      switch (localTags) {
+        case "<addAttributes>" -> tGlobalAttributes = getAttributesFromXml(xmlReader);
+        case "<altitudeMetersPerSourceUnit>" ->
+            throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
+        case "<dataVariable>" -> tDataVariables.add(getSDADVariableFromXml(xmlReader));
+        case "<accessibleTo>",
+            "<addVariablesWhere>",
+            "<defaultGraphQuery>",
+            "<defaultDataQuery>",
+            "<sosOfferingPrefix>",
+            "<iso19115File>",
+            "<fgdcFile>",
+            "<onChange>",
+            "<skipDapperSpacerRows>",
+            "<sourceCanConstrainStringRegex>",
+            "<sourceCanConstrainStringGTLT>",
+            "<sourceCanConstrainStringEQNE>",
+            "<sourceNeedsExpandedFP_EQ>",
+            "<innerSequenceName>",
+            "<outerSequenceName>",
+            "<sourceUrl>",
+            "<reloadEveryNMinutes>",
+            "<graphsAccessibleTo>" -> {}
+        case "</accessibleTo>" -> tAccessibleTo = content;
+        case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
+        case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
+        case "</sourceUrl>" -> tLocalSourceUrl = content;
+        case "</outerSequenceName>" -> tOuterSequenceName = content;
+        case "</innerSequenceName>" -> tInnerSequenceName = content;
+        case "</sourceNeedsExpandedFP_EQ>" ->
+            tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content);
+        case "</sourceCanConstrainStringEQNE>" ->
+            tSourceCanConstrainStringEQNE = String2.parseBoolean(content);
+        case "</sourceCanConstrainStringGTLT>" ->
+            tSourceCanConstrainStringGTLT = String2.parseBoolean(content);
+        case "</sourceCanConstrainStringRegex>" -> tSourceCanConstrainStringRegex = content;
+        case "</skipDapperSpacerRows>" -> tSkipDapperSpacerRows = String2.parseBoolean(content);
+        case "</onChange>" -> tOnChange.add(content);
+        case "</fgdcFile>" -> tFgdcFile = content;
+        case "</iso19115File>" -> tIso19115File = content;
+        case "</sosOfferingPrefix>" -> tSosOfferingPrefix = content;
+        case "</defaultDataQuery>" -> tDefaultDataQuery = content;
+        case "</defaultGraphQuery>" -> tDefaultGraphQuery = content;
+        case "</addVariablesWhere>" -> tAddVariablesWhere = content;
+        default -> xmlReader.unexpectedTagException();
+      }
     }
     int ndv = tDataVariables.size();
     Object ttDataVariables[][] = new Object[ndv][];
@@ -387,7 +386,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     }
 
     // delve into the outerSequence
-    BaseType outerVariable = (BaseType) dds.getVariable(outerSequenceName);
+    BaseType outerVariable = dds.getVariable(outerSequenceName);
     if (!(outerVariable instanceof DSequence))
       throw new RuntimeException(
           errorInMethod
@@ -401,16 +400,16 @@ public class EDDTableFromDapSequence extends EDDTable {
     for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
 
       // look at the variables in the outer sequence
-      BaseType obt = (BaseType) outerSequence.getVar(outerCol);
+      BaseType obt = outerSequence.getVar(outerCol);
       String oName = obt.getName();
       if (innerSequenceName != null && oName.equals(innerSequenceName)) {
 
         // look at the variables in the inner sequence
         DSequence innerSequence = (DSequence) obt;
         AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
-        Enumeration ien = innerSequence.getVariables();
-        while (ien.hasMoreElements()) {
-          BaseType ibt = (BaseType) ien.nextElement();
+        Iterator<BaseType> ien = innerSequence.getVariables();
+        while (ien.hasNext()) {
+          BaseType ibt = ien.next();
           String iName = ibt.getName();
 
           // is iName in tDataVariableNames?  i.e., are we interested in this variable?
@@ -633,7 +632,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
       String2.log(
-          (debugMode ? "\n" + toString() : "")
+          (debugMode ? "\n" + this : "")
               + "\n*** EDDTableFromDapSequence "
               + datasetID
               + " constructor finished. TIME="
@@ -866,11 +865,11 @@ public class EDDTableFromDapSequence extends EDDTable {
     // get all of the vars
     String outerSequenceName = null;
     String innerSequenceName = null;
-    Enumeration datasetVars = dds.getVariables();
+    Iterator<BaseType> datasetVars = dds.getVariables();
     int nOuterVars = 0; // so outerVars are first in dataAddTable
     Attributes gridMappingAtts = null;
-    while (datasetVars.hasMoreElements()) {
-      BaseType datasetVar = (BaseType) datasetVars.nextElement();
+    while (datasetVars.hasNext()) {
+      BaseType datasetVar = datasetVars.next();
 
       // is this the pseudo-data grid_mapping variable?
       if (gridMappingAtts == null) {
@@ -883,18 +882,18 @@ public class EDDTableFromDapSequence extends EDDTable {
         outerSequenceName = outerSequence.getName();
 
         // get list of outerSequence variables
-        Enumeration outerVars = outerSequence.getVariables();
-        while (outerVars.hasMoreElements()) {
-          BaseType outerVar = (BaseType) outerVars.nextElement();
+        Iterator<BaseType> outerVars = outerSequence.getVariables();
+        while (outerVars.hasNext()) {
+          BaseType outerVar = outerVars.next();
 
           // catch innerSequence
           if (outerVar instanceof DSequence innerSequence) {
             if (innerSequenceName == null) {
               innerSequenceName = outerVar.getName();
-              Enumeration innerVars = innerSequence.getVariables();
-              while (innerVars.hasMoreElements()) {
+              Iterator<BaseType> innerVars = innerSequence.getVariables();
+              while (innerVars.hasNext()) {
                 // inner variable
-                BaseType innerVar = (BaseType) innerVars.nextElement();
+                BaseType innerVar = innerVars.next();
                 if (innerVar instanceof DConstructor || innerVar instanceof DVector) {
                 } else {
                   String varName = innerVar.getName();
@@ -1000,8 +999,8 @@ public class EDDTableFromDapSequence extends EDDTable {
 
     // write the information
     boolean isDapper = tLocalSourceUrl.indexOf("dapper") > 0;
-    StringBuilder sb = new StringBuilder();
-    sb.append(
+
+    String sb =
         "<dataset type=\"EDDTableFromDapSequence\" datasetID=\""
             + suggestDatasetID(tPublicSourceUrl)
             + "\" active=\"true\">\n"
@@ -1031,17 +1030,21 @@ public class EDDTableFromDapSequence extends EDDTable {
             + // was ~=, now ""; see notes.txt for 2009-01-16
             "    <reloadEveryNMinutes>"
             + tReloadEveryNMinutes
-            + "</reloadEveryNMinutes>\n");
-    sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
-    sb.append(cdmSuggestion());
-    sb.append(writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    "));
+            + "</reloadEveryNMinutes>\n"
+            + writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    ")
+            + cdmSuggestion()
+            + writeAttsForDatasetsXml(true, dataAddTable.globalAttributes(), "    ")
+            +
 
-    // last 2 params: includeDataType, questionDestinationName
-    sb.append(
-        writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
-    sb.append("</dataset>\n" + "\n");
+            // last 2 params: includeDataType, questionDestinationName
+            writeVariablesForDatasetsXml(
+                dataSourceTable, dataAddTable, "dataVariable", false, false)
+            + """
+                      </dataset>
+
+                      """;
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-    return sb.toString();
+    return sb;
   }
 }

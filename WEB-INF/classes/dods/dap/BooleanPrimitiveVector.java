@@ -179,8 +179,8 @@ public class BooleanPrimitiveVector extends PrimitiveVector implements Cloneable
    */
   @Override
   public void externalize(DataOutputStream sink) throws IOException {
-    for (int i = 0; i < vals.length; i++) {
-      sink.writeBoolean(vals[i]);
+    for (boolean val : vals) {
+      sink.writeBoolean(val);
     }
   }
 

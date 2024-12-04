@@ -58,8 +58,8 @@ public class EDVLon extends EDV {
     longName = combinedAttributes.getString("long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("lon")
-        || longName.toLowerCase().equals("longitude")) { // catch alternate case
+        longName.equalsIgnoreCase("lon")
+        || longName.equalsIgnoreCase("longitude")) { // catch alternate case
       longName = LON_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }

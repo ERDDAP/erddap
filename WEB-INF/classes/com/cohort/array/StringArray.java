@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +49,8 @@ import ucar.ma2.StructureData;
  */
 public class StringArray extends PrimitiveArray {
 
-  static StringHolderComparator stringHolderComparator = new StringHolderComparator();
-  static StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase =
+  static final StringHolderComparator stringHolderComparator = new StringHolderComparator();
+  static final StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase =
       new StringHolderComparatorIgnoreCase();
 
   /**
@@ -162,7 +163,7 @@ public class StringArray extends PrimitiveArray {
     int al = anArray.length;
     array = new StringHolder[al];
     size = 0;
-    for (int i = 0; i < al; i++) add(anArray[i]);
+    for (String s : anArray) add(s);
   }
 
   /**
@@ -186,8 +187,7 @@ public class StringArray extends PrimitiveArray {
     final int al = anArray.length;
     array = new StringHolder[al];
     size = 0;
-    for (int i = 0; i < al; i++)
-      add(anArray[i] == null ? String2.EMPTY_STRING : anArray[i].toString());
+    for (Object o : anArray) add(o == null ? String2.EMPTY_STRING : o.toString());
   }
 
   /**
@@ -334,7 +334,7 @@ public class StringArray extends PrimitiveArray {
         File2.length(fileName), "StringArray.fromFile"); // canonical may lessen memory requirement
     final StringArray sa = new StringArray();
     try (final BufferedReader bufferedReader =
-        File2.getDecompressedBufferedFileReader(fileName, charset); ) {
+        File2.getDecompressedBufferedFileReader(fileName, charset)) {
       String s = bufferedReader.readLine();
       while (s != null) { // null = end-of-file
         sa.addNotCanonical(s);
@@ -678,7 +678,7 @@ public class StringArray extends PrimitiveArray {
   public void add(final String sar[]) {
     final int otherSize = sar.length;
     ensureCapacity(size + (long) otherSize);
-    for (int i = 0; i < otherSize; i++) add(sar[i]);
+    for (String s : sar) add(s);
   }
 
   /**
@@ -1777,7 +1777,7 @@ public class StringArray extends PrimitiveArray {
       int nChar = dis.readInt();
       if (buffer.length < nChar) buffer = new byte[nChar + 10];
       dis.readFully(buffer, 0, nChar);
-      add(new String(buffer, 0, nChar));
+      add(new String(buffer, 0, nChar, StandardCharsets.UTF_8));
 
       // pad to 4 bytes boundary at end
       while (nChar++ % 4 != 0) dis.readByte();
@@ -1827,7 +1827,7 @@ public class StringArray extends PrimitiveArray {
     raf.readFully(bar);
     int po = 0;
     while (po < nBytesPer && bar[po] != 0) po++;
-    return new String(bar, 0, po);
+    return new String(bar, 0, po, StandardCharsets.UTF_8);
   }
 
   /**
@@ -1906,7 +1906,7 @@ public class StringArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
     String lastValue = get(0); // since lastValue often equals currentValue, cache it
     hashMap.put(lastValue, dummy); // special for String
@@ -1946,25 +1946,25 @@ public class StringArray extends PrimitiveArray {
     Arrays.sort(unique); // a variant could use String2.STRING_COMPARATOR_IGNORE_CASE);
 
     // special for StringArray: "" (missing value) sorts highest
-    if (((String) unique[0]).length() == 0) {
+    if (unique[0].length() == 0) {
       System.arraycopy(unique, 1, unique, 0, nUnique - 1);
       unique[nUnique - 1] = "";
     }
 
     // put the unique values back in the hashMap with the ranks as the associated values
-    for (int i = 0; i < count; i++) hashMap.put(unique[i], Integer.valueOf(i));
+    for (int i = 0; i < count; i++) hashMap.put(unique[i], i);
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = get(0);
-    ranks[0] = ((Integer) hashMap.get(lastValue)).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (get(i).equals(lastValue)) {
         ranks[i] = lastRank;
       } else {
         lastValue = get(i);
-        ranks[i] = ((Integer) hashMap.get(lastValue)).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }
@@ -2009,7 +2009,7 @@ public class StringArray extends PrimitiveArray {
    *     phrase"). The resulting parts are all trim'd.
    */
   public static StringArray wordsAndQuotedPhrases(final String searchFor) {
-    ArrayList<String> sa = new ArrayList(16);
+    ArrayList<String> sa = new ArrayList<>(16);
     wordsAndQuotedPhrases(searchFor, sa);
     return new StringArray(sa.iterator());
   }
@@ -2094,9 +2094,8 @@ public class StringArray extends PrimitiveArray {
    */
   public static StringArray fromCSVNoBlanks(final String searchFor) {
     final String[] sar = arrayFromCSV(searchFor);
-    final int tSize = sar.length;
     final StringArray sa = new StringArray();
-    for (int i = 0; i < tSize; i++) if (sar[i].length() > 0) sa.add(sar[i]);
+    for (String s : sar) if (s.length() > 0) sa.add(s);
     return sa;
   }
 
@@ -2210,12 +2209,12 @@ public class StringArray extends PrimitiveArray {
             // String2.log(">> quoteloop ch=" + ch);
             // "" internal quote
             if (ch == '"' && po < n && searchFor.charAt(po) == '"') {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               start = po++; // the 2nd char " will be the first appended later
 
               // backslashed character
             } else if (ch == '\\' && po < n) {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               ch = searchFor.charAt(po++);
               // don't support \\b, it's trouble
               if (ch == 'f') word.append('\f');
@@ -2239,12 +2238,12 @@ public class StringArray extends PrimitiveArray {
 
               // the end of the quoted string?
             } else if (ch == '"') {
-              word.append(searchFor.substring(start, po - 1));
+              word.append(searchFor, start, po - 1);
               break;
 
               // the end of searchFor?
             } else if (po == n) {
-              word.append(searchFor.substring(start, po));
+              word.append(searchFor, start, po);
               break;
 
               // a letter in the quoted string

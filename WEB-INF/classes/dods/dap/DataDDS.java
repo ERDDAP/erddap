@@ -12,7 +12,8 @@
 package dods.dap;
 
 import java.io.*;
-import java.util.Enumeration;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 
 /**
@@ -25,7 +26,7 @@ import java.util.zip.DeflaterOutputStream;
  */
 public class DataDDS extends DDS {
   /** The ServerVersion returned from the open DODS connection. */
-  private ServerVersion ver;
+  private final ServerVersion ver;
 
   /**
    * Construct the DataDDS with the given server version.
@@ -68,10 +69,10 @@ public class DataDDS extends DDS {
     // Use a DataInputStream for deserialize
     DataInputStream dataIS = new DataInputStream(bufferedIS);
 
-    for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
+    for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
       if (statusUI != null && statusUI.userCancelled())
         throw new DataReadException("User cancelled");
-      ClientIO bt = (ClientIO) e.nextElement();
+      ClientIO bt = (ClientIO) e.next();
       bt.deserialize(dataIS, ver, statusUI);
     }
     // notify GUI of finished download
@@ -84,8 +85,8 @@ public class DataDDS extends DDS {
    * @param os the <code>PrintWriter</code> to use.
    */
   public void printVal(PrintWriter os) {
-    for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
-      BaseType bt = (BaseType) e.nextElement();
+    for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
+      BaseType bt = e.next();
       bt.printVal(os, "", true);
     }
     os.println();
@@ -97,7 +98,8 @@ public class DataDDS extends DDS {
    * @param os the <code>OutputStream</code> to use.
    */
   public final void printVal(OutputStream os) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     printVal(pw);
     pw.flush();
   }
@@ -115,7 +117,7 @@ public class DataDDS extends DDS {
       throws IOException {
     // First, print headers
     if (headers) {
-      PrintWriter pw = new PrintWriter(new OutputStreamWriter(os));
+      PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
       pw.println("HTTP/1.0 200 OK");
       pw.println("Server: " + ServerVersion.getCurrentVersion());
       pw.println("Content-type: application/octet-stream");
@@ -138,28 +140,23 @@ public class DataDDS extends DDS {
     try { // 2018-05-22 Bob Simons added try/finally
 
       // Redefine PrintWriter here, so the DDS is also compressed if necessary
-      PrintWriter pw = new PrintWriter(new OutputStreamWriter(bufferedOS));
-      try {
+      try (PrintWriter pw =
+          new PrintWriter(new OutputStreamWriter(bufferedOS, StandardCharsets.UTF_8))) {
         print(pw);
         // pw.println("Data:");  // JCARON CHANGED
         pw.flush();
-        bufferedOS.write("\nData:\n".getBytes()); // JCARON CHANGED
+        bufferedOS.write("\nData:\n".getBytes(StandardCharsets.UTF_8)); // JCARON CHANGED
         bufferedOS.flush();
 
         // Use a DataOutputStream for serialize
-        DataOutputStream dataOS = new DataOutputStream(bufferedOS);
-        try {
-          for (Enumeration e = getVariables(); e.hasMoreElements(); ) {
-            ClientIO bt = (ClientIO) e.nextElement();
+        try (DataOutputStream dataOS = new DataOutputStream(bufferedOS)) {
+          for (Iterator<BaseType> e = getVariables(); e.hasNext(); ) {
+            ClientIO bt = (ClientIO) e.next();
             bt.externalize(dataOS);
           }
           // Note: for DeflaterOutputStream, flush() is not sufficient to flush
           // all buffered data
-        } finally {
-          dataOS.close();
         }
-      } finally {
-        pw.close();
       }
     } finally {
       bufferedOS.close();

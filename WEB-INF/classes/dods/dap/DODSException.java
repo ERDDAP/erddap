@@ -14,6 +14,7 @@ package dods.dap;
 import dods.dap.parser.ErrorParser;
 import dods.dap.parser.ParseException;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Holds an exception thrown by DODS server to a client.
@@ -248,7 +249,8 @@ public class DODSException extends Exception {
    * @see DODSException#print(PrintWriter)
    */
   public final void print(OutputStream os) {
-    PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)));
+    PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8)));
     print(pw);
     pw.flush();
   }

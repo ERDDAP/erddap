@@ -27,10 +27,10 @@ public abstract class NetCheckTest {
 
   protected String title;
   protected double mustRespondWithinSeconds = Double.NaN;
-  protected ArrayList<String> emailStatusTo = new ArrayList<>();
-  protected ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
-  protected ArrayList<String> emailChangesTo = new ArrayList<>();
-  protected ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
+  protected final ArrayList<String> emailStatusTo = new ArrayList<>();
+  protected final ArrayList<String> emailStatusHeadlinesTo = new ArrayList<>();
+  protected final ArrayList<String> emailChangesTo = new ArrayList<>();
+  protected final ArrayList<String> emailChangeHeadlinesTo = new ArrayList<>();
 
   /**
    * The gets the title of this test (usually <40 characters).

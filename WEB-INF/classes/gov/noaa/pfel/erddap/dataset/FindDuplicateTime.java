@@ -36,11 +36,11 @@ public class FindDuplicateTime {
     directory = File2.addSlash(directory);
     int nErrors = 0;
     int nDup = 0;
-    ArrayList<String> fileNames = new ArrayList();
+    ArrayList<String> fileNames = new ArrayList<>();
     RegexFilenameFilter.recursiveFullNameList(
         fileNames, directory, fileNameRegex, false); // directoriesToo
     StringBuilder results = new StringBuilder();
-    HashMap<String, StringArray> hashMap = new HashMap();
+    HashMap<String, StringArray> hashMap = new HashMap<>();
 
     int n = fileNames.size();
     results.append(
@@ -55,10 +55,8 @@ public class FindDuplicateTime {
             + "\n");
     for (int i = 0; i < n; i++) {
       String fileName = fileNames.get(i);
-      NetcdfFile ncf = null;
-      try {
-        ncf =
-            NcHelper.openFile(fileName); // needs to be inside try/catch, so loop continues if error
+      try (NetcdfFile ncf = NcHelper.openFile(fileName)) {
+        // needs to be inside try/catch, so loop continues if error
         if ((i < 1000 && i % 100 == 0) || i % 1000 == 0) String2.log("file #" + i + "=" + fileName);
 
         Variable var = ncf.findVariable(timeVarName);
@@ -79,12 +77,7 @@ public class FindDuplicateTime {
 
       } catch (Throwable t) {
         nErrors++;
-        results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t.toString() + "\n");
-      } finally {
-        try {
-          if (ncf != null) ncf.close();
-        } catch (Exception e9) {
-        }
+        results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t + "\n");
       }
     }
 

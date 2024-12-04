@@ -11,7 +11,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDGridFromEDDTableHandler extends BaseGridHandler {
-  private SaxParsingContext context;
+  private final SaxParsingContext context;
 
   public EDDGridFromEDDTableHandler(
       SaxHandler saxHandler, String datasetID, State completeState, SaxParsingContext context) {

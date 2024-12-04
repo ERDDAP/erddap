@@ -38,7 +38,7 @@ public class TableWriterNccsv extends TableWriter {
   protected volatile String time_precision[];
   protected volatile BufferedWriter writer;
 
-  public volatile AtomicLong totalNRows = new AtomicLong(0);
+  public final AtomicLong totalNRows = new AtomicLong(0);
 
   /**
    * The constructor.
@@ -100,7 +100,7 @@ public class TableWriterNccsv extends TableWriter {
           time_precision[col] = catts.getString(EDV.TIME_PRECISION);
           catts.set("units", Calendar2.timePrecisionToTimeFormat(time_precision[col]));
           PrimitiveArray pa = catts.get("actual_range");
-          if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+          if (pa instanceof DoubleArray && pa.size() == 2) {
             StringArray sa = new StringArray();
             for (int i = 0; i < 2; i++)
               sa.add(

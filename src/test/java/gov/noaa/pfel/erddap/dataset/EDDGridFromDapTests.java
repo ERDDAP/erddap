@@ -6359,8 +6359,10 @@ class EDDGridFromDapTests {
     time1 = System.currentTimeMillis() - time1;
 
     // try to load from quickRestartFile
-    EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(
-        0); // so EDStatic.initialLoadDatasets() will be true
+    synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+      EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(
+          0); // so EDStatic.initialLoadDatasets() will be true
+    }
     Test.ensureTrue(EDStatic.initialLoadDatasets(), "");
     long time2 = System.currentTimeMillis();
     EDD edd2 = EDDTestDataset.geterdBAssta5day();
@@ -6377,7 +6379,9 @@ class EDDGridFromDapTests {
     Test.ensureEqual(searchString1, searchString2, "");
 
     // but add something to it so again EDStatic.initialLoadDatasets() will be false
-    EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    synchronized (EDStatic.majorLoadDatasetsTimeSeriesSB) {
+      EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+    }
   }
 
   /**

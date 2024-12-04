@@ -59,8 +59,8 @@ public class EDVLat extends EDV {
     longName = combinedAttributes.getString("long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("lat")
-        || longName.toLowerCase().equals("latitude")) { // catch alternate case
+        longName.equalsIgnoreCase("lat")
+        || longName.equalsIgnoreCase("latitude")) { // catch alternate case
       longName = LAT_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }

@@ -192,7 +192,7 @@ public class Test {
   public static boolean equal(float f1, float f2) {
     // special check if both are the same special value
     if (Float.isNaN(f1) && Float.isNaN(f2)) return true;
-    if (Float.isInfinite(f1) && Float.isInfinite(f2)) return !(f1 > 0 ^ f2 > 0);
+    if (Float.isInfinite(f1) && Float.isInfinite(f2)) return f1 > 0 == f2 > 0;
     return Math2.almostEqual(5, f1, f2);
   }
 
@@ -206,7 +206,7 @@ public class Test {
   public static boolean equal(double d1, double d2) {
     // special check if both are the same special value
     if (Double.isNaN(d1) && Double.isNaN(d2)) return true;
-    if (Double.isInfinite(d1) && Double.isInfinite(d2)) return !(d1 > 0 ^ d2 > 0);
+    if (Double.isInfinite(d1) && Double.isInfinite(d2)) return d1 > 0 == d2 > 0;
     return Math2.almostEqual(9, d1, d2);
   }
 
@@ -1049,12 +1049,12 @@ public class Test {
               + "a("
               + a.getClass().getName()
               + ")="
-              + a.toString()
+              + a
               + "\n"
               + "b("
               + b.getClass().getName()
               + ")="
-              + b.toString());
+              + b);
   }
 
   /**
@@ -1125,11 +1125,10 @@ public class Test {
       error(
           "\n" + String2.ERROR + " in Test.ensureSomethingUnicode():\n" + message + " wasn't set.");
     String names[] = atts.getNames();
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      ensureSomethingUnicode(names[i], message + ": an attribute name");
+    for (String name : names) {
+      ensureSomethingUnicode(name, message + ": an attribute name");
       ensureSomethingUnicode(
-          atts.get(names[i]).toString(), message + ": the attribute value for name=" + names[i]);
+          atts.get(name).toString(), message + ": the attribute value for name=" + name);
     }
   }
 

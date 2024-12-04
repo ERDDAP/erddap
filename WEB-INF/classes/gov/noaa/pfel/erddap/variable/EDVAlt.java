@@ -8,7 +8,6 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.SimpleException;
-import com.cohort.util.String2;
 
 /**
  * This class holds information about an altitude variable, which is like EDV, but the
@@ -19,7 +18,7 @@ import com.cohort.util.String2;
  */
 public class EDVAlt extends EDV {
 
-  public static String stopUsingAltitudeMetersPerSourceUnit =
+  public static final String stopUsingAltitudeMetersPerSourceUnit =
       "Please stop using <altitudeMetersPerSourceUnit>.  "
           + "When the value is 1, just delete it.  "
           + "For other values, set the altitude variable's <scale_factor> instead.";
@@ -66,8 +65,8 @@ public class EDVAlt extends EDV {
     longName = combinedAttributes.getString("long_name");
     if (longName == null
         || // catch nothing
-        longName.toLowerCase().equals("alt")
-        || longName.toLowerCase().equals("altitude")) { // catch alternate case
+        longName.equalsIgnoreCase("alt")
+        || longName.equalsIgnoreCase("altitude")) { // catch alternate case
       longName = ALT_LONGNAME;
       combinedAttributes.set("long_name", longName);
     }
@@ -98,7 +97,7 @@ public class EDVAlt extends EDV {
    * @throws a SimpleException if cUnits isn't "m" or an alias.
    */
   public static void ensureUnitsAreM(String cUnits, String altitudeDepth, String upDown) {
-    if (cUnits != null && String2.indexOf(EDV.METERS_VARIANTS, cUnits) >= 0) return;
+    if (cUnits != null && EDV.METERS_VARIANTS.indexOf(cUnits) >= 0) return;
 
     throw new SimpleException(
         "When a variable's destinationName is \""

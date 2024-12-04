@@ -30,22 +30,27 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
    * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
    * you want every possible diagnostic message sent to String2.log.
    */
-  public static boolean debugMode = false;
+  public static final boolean debugMode = false;
 
-  int language;
-  String identifier;
+  final int language;
+  final String identifier;
   int task;
-  EDDTableFromFiles eddTableFromFiles;
-  String loggedInAs;
-  String requestUrl;
-  String userDapQuery;
-  int fileDirIndex;
-  String fileDir, fileName;
-  long fileLastMod;
-  StringArray sourceDataNames;
-  String sourceDataTypes[];
-  double sortedSpacing, minSorted, maxSorted;
-  StringArray sourceConVars, sourceConOps, sourceConValues;
+  final EDDTableFromFiles eddTableFromFiles;
+  final String loggedInAs;
+  final String requestUrl;
+  final String userDapQuery;
+  final int fileDirIndex;
+  final String fileDir;
+  final String fileName;
+  final long fileLastMod;
+  final StringArray sourceDataNames;
+  final String[] sourceDataTypes;
+  final double sortedSpacing;
+  final double minSorted;
+  final double maxSorted;
+  final StringArray sourceConVars;
+  final StringArray sourceConOps;
+  final StringArray sourceConValues;
   TableWriter tableWriter;
 
   public EDDTableFromFilesCallable(

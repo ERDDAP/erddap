@@ -30,7 +30,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
 
   // set by constructor
   protected TableWriter otherTableWriter;
-  public String orderBy[];
+  public final String[] orderBy;
 
   /**
    * The constructor.
@@ -110,7 +110,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
         cumTable.keyColumnNamesToNumbers(
             "orderByCount",
             // just get the column names, ignoring rounding e.g. time not time/1day
-            Arrays.stream(orderBy).map((s) -> s.split("/")[0]).toArray(size -> new String[size]));
+            Arrays.stream(orderBy).map((s) -> s.split("/")[0]).toArray(String[]::new));
     int nKeyCols = keyCols.length;
 
     // sort based on keys
@@ -119,7 +119,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
 
     // note which are keyCol
     boolean isKeyCol[] = new boolean[nCols]; // all false
-    for (int kc = 0; kc < nKeyCols; kc++) isKeyCol[keyCols[kc]] = true;
+    for (int keyCol : keyCols) isKeyCol[keyCol] = true;
 
     // get pas and set units to "count"
     PrimitiveArray pas[] = new PrimitiveArray[nCols];

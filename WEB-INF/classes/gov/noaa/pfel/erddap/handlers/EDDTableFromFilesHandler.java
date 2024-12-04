@@ -14,7 +14,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public class EDDTableFromFilesHandler extends BaseTableHandler {
-  private String datasetType;
+  private final String datasetType;
 
   public EDDTableFromFilesHandler(
       SaxHandler saxHandler, String datasetID, State completeState, String datasetType) {

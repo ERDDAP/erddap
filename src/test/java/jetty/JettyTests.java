@@ -3529,18 +3529,7 @@ class JettyTests {
             + "\t\t:institution = \"PMEL EcoFOCI\" ;\n"
             + "\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Salinity/Density > Salinity, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans, oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n"
             + "\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n"
-            + "\t\t:license = \"Data Licenses / Data Usage Restrictions\n"
-            + "The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\n"
-            + "\n"
-            + "Unless otherwise noted, data served through this ERDDAP server are \n"
-            + "not quality controlled.  Users may need to do quality control when using \n"
-            + "these data. These data are made available at the users own risk.\" ;\n"
+            + "\t\t:license = \"These data were produced by NOAA and are not subject to copyright protection in the United States. NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication (CC0-1.0).\" ;\n"
             + "\t\t:Northernmost_Northing = 73.11517 ;\n"
             + "\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n"
             + "\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n"
@@ -3671,18 +3660,7 @@ class JettyTests {
             + "\t\t:institution = \"PMEL EcoFOCI\" ;\n"
             + "\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Salinity/Density > Salinity, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans, oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n"
             + "\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n"
-            + "\t\t:license = \"Data Licenses / Data Usage Restrictions\n"
-            + "The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\n"
-            + "\n"
-            + "Unless otherwise noted, data served through this ERDDAP server are \n"
-            + "not quality controlled.  Users may need to do quality control when using \n"
-            + "these data. These data are made available at the users own risk.\" ;\n"
+            + "\t\t:license = \"These data were produced by NOAA and are not subject to copyright protection in the United States. NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication (CC0-1.0).\" ;\n"
             + "\t\t:Northernmost_Northing = 73.11517 ;\n"
             + "\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n"
             + "\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n"
@@ -4795,7 +4773,7 @@ class JettyTests {
       }
 
       // Look for ZsomethingZ
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1)
@@ -4811,7 +4789,7 @@ class JettyTests {
       // replaceAll().
       // There are some legit uses in changes.html, setup.html, and
       // setupDatasetsXml.html.
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(&amp;[a-zA-Z]+?;)", 1)
@@ -4827,7 +4805,7 @@ class JettyTests {
       // Look for {0}, {1}, etc that should have been replaced by replaceAll().
       // There are some legit values on setupDatasetsXml.html in regexes ({nChar}:
       // 12,14,4,6,7,8).
-      hs = new HashSet();
+      hs = new HashSet<>();
       hs.addAll(
           Arrays.asList(
               String2.extractAllCaptureGroupsAsHashSet(content, "(\\{\\d+\\})", 1)
@@ -6849,7 +6827,7 @@ class JettyTests {
     String lines[] = SSR.getUrlResponseLines(tUrl);
     StringBuilder log = new StringBuilder();
     int errorCount = 0;
-    HashSet<String> tried = new HashSet();
+    HashSet<String> tried = new HashSet<>();
     String skip[] =
         new String[] {
           "http://",

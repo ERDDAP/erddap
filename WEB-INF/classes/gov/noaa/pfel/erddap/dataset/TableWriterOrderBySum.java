@@ -36,10 +36,10 @@ public class TableWriterOrderBySum extends TableWriterAll {
 
   // set by constructor
   protected final TableWriter otherTableWriter;
-  public String orderBy[];
+  public final String[] orderBy;
   // maintains count of the number of values in sum
-  protected final Map<String, int[]> counts = new HashMap<String, int[]>();
-  protected final Map<String, Integer> rowmap = new HashMap<String, Integer>();
+  protected final Map<String, int[]> counts = new HashMap<>();
+  protected final Map<String, Integer> rowmap = new HashMap<>();
 
   protected Attributes oColumnAtts[] = null; // from incoming table or edd
 
@@ -47,11 +47,9 @@ public class TableWriterOrderBySum extends TableWriterAll {
   private String cellMethods = null;
   private BitSet isKeyCol;
   private BitSet cannotSumCol;
-  private BitSet wasDecimalCol;
-  private int timeCol = -1;
   private boolean configured = false;
   private Table sumsTable;
-  private final Map<String, Table.Rounder> rounders = new HashMap<String, Table.Rounder>();
+  private final Map<String, Table.Rounder> rounders = new HashMap<>();
 
   /**
    * The constructor.
@@ -140,8 +138,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
     ROW:
     for (int row = 0; row < nRows; row++) {
       sbKey.setLength(0);
-      for (int i = 0; i < keyCols.length; i++) {
-        int col = keyCols[i];
+      for (int col : keyCols) {
         PrimitiveArray column = table.getColumn(col);
         String columnName = table.getColumnName(col);
         if (column.isFloatingPointType() || column.isIntegerType()) {
@@ -222,12 +219,12 @@ public class TableWriterOrderBySum extends TableWriterAll {
   private boolean configure(Table table) throws SimpleException {
     int nKeyCols = orderBy.length;
     int ncols = table.nColumns();
-    ArrayList<Integer> tKeyCols = new ArrayList<Integer>();
+    ArrayList<Integer> tKeyCols = new ArrayList<>();
     isKeyCol = new BitSet(ncols);
     cannotSumCol = new BitSet(ncols);
     // degreesCol     = new BitSet(ncols);
     // degreesTrueCol = new BitSet(ncols);
-    wasDecimalCol = new BitSet(ncols);
+    BitSet wasDecimalCol = new BitSet(ncols);
     for (int k = 0; k < nKeyCols; k++) {
       int col = table.findColumnNumber(orderBy[k]);
       if (col < 0)
@@ -277,6 +274,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
         if (column.isFloatingPointType()) {
           wasDecimalCol.set(col);
         }
+        int timeCol = -1;
         if (column.isIntegerType() || column.isFloatingPointType()) {
           dataType[col] = "double";
         } else if (col != timeCol) {

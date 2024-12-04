@@ -54,7 +54,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -638,7 +638,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();
@@ -680,7 +683,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String msg = MustBe.throwableToString(t);
         if (msg.indexOf("ERROR: whichChild=") < 0 || msg.indexOf(" not found as ") < 0) msg = "";
         else msg = "<!-- " + String2.replaceAll(msg, "--", "- - ") + " -->\n\n";
-        return whichChild > 1 ? children.toString() + msg : main + msg;
+        return whichChild > 1 ? children + msg : main + msg;
       }
     }
     return children.toString();
@@ -768,7 +771,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
     // if xmlFileName is truly remote, download it
     if (String2.isTrulyRemote(xmlFileName)) {
-      if (tInputXmlDir.equals(""))
+      if (tInputXmlDir.isEmpty())
         throw new RuntimeException(
             "When the xmlFileName is a URL (but not an AWS S3 URL), you must specify the tInputXmlDir to store it in.");
       String destName = tInputXmlDir + File2.getNameAndExtension(xmlFileName);
@@ -786,7 +789,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
       }
     }
 
-    int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
     String catID = File2.getNameNoExtension(xmlFileName);
     if (!String2.isSomething(tInputXmlDir)) tInputXmlDir = "???";
     if (!String2.isSomething(tDataFileName)) tDataFileName = "???";
@@ -799,13 +801,12 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     String creatorEmail2 = null, creatorEmail3 = null;
     String creatorOrg2 = null, creatorOrg3 = null;
     String creatorUrl2 = null, creatorUrl3 = null;
-    ;
     String metaCreatedBy = "???";
     String metaCreated = "???";
     String metaLastModBy = "???";
     String metaLastMod = "???";
     String acronym = "???"; // institution acronym
-    String title = "???";
+    StringBuilder title = new StringBuilder("???");
     String securityClass = "";
     // accumulate results from some tags
     StringBuilder background = new StringBuilder();
@@ -907,7 +908,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           if (String2.isSomething(tBaseDataDir)) tDataDir = tBaseDataDir + content + "/";
 
         } else if (tags.endsWith("</title>") && hasContent) {
-          title = content;
+          title = new StringBuilder(content);
           // </short-name>
         } else if (tags.endsWith("</catalog-item-type>") && hasContent) {
           // tally: Entity: 4811, Data Set: 2065, Document: 168,
@@ -927,7 +928,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           gAddAtts.add("InPort_parent_item_id", content);
         } else if (tags.endsWith("</parent-title>") && hasContent) {
           // parent-title is useful as precursor to title
-          title = content + (title.endsWith("???") ? "" : ", " + title);
+          title =
+              new StringBuilder(content + (title.toString().endsWith("???") ? "" : ", " + title));
         } else if (tags.endsWith("</status>") && hasContent) {
           // this may be overwritten by child below
           gAddAtts.add("InPort_status", content); // e.g., Complete
@@ -1028,7 +1030,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           // String2.log(">>attTags=" + attTags);
           int col = sourceTable.nColumns() - 1; // 0.. for actual columns
           Attributes varAddAtts = col >= 0 ? sourceTable.columnAttributes(col) : null;
-          if (attTags.equals("")) {
+          if (attTags.isEmpty()) {
             // the start: add the column
             varAddAtts = new Attributes();
             col++; // 0..
@@ -1106,7 +1108,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
           } else if (attTags.equals("</description>") && hasContent) {
             // description -> comment
             // widely used  (Is <description> used another way?)
-            if (content.toLowerCase().equals("month/day/year")) { // date format
+            if (content.equalsIgnoreCase("month/day/year")) { // date format
               varAddAtts.set("units", "M/d/yyyy");
               varAddAtts.set("time_precision", "1970-01-01");
             } else {
@@ -1139,7 +1141,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
           } else if (tags.endsWith("</title>") && hasContent) {
             if (whichChild == 0) gAddAtts.add(entityPre + "title", content);
-            else if (nEntities == whichChild) title += ", " + content;
+            else if (nEntities == whichChild) title.append(", ").append(content);
 
           } else if (tags.endsWith("</metadata-workflow-state>") && hasContent) {
             // overwrite parent info
@@ -1725,7 +1727,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
     gAddAtts.add("sourceUrl", tSourceUrl);
 
-    gAddAtts.add("summary", summary.length() == 0 ? title : summary.toString().trim());
+    gAddAtts.add("summary", summary.length() == 0 ? title.toString() : summary.toString().trim());
 
     // urls -- now done separately
     // if (urls.length() > 0)
@@ -1888,8 +1890,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         addTable.setColumn(col, destPA);
       }
       if (destPA.elementType() == PAType.STRING) {
-        tUnits =
-            Calendar2.suggestDateTimeFormat((StringArray) destPA, false); // evenIfPurelyNumeric
+        tUnits = Calendar2.suggestDateTimeFormat(destPA, false); // evenIfPurelyNumeric
         if (tUnits.length() > 0) addAtts.set("units", tUnits);
         // ??? and if tUnits = "", set to ""???
       }
@@ -2002,7 +2003,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             + tStandardizeWhat
             + "</standardizeWhat>\n"
             + "    <reloadEveryNMinutes>"
-            + tReloadEveryNMinutes
+            + DEFAULT_RELOAD_EVERY_N_MINUTES
             + "</reloadEveryNMinutes>\n"
             + "    <updateEveryNMillis>-1</updateEveryNMillis>\n"
             + "    <accessibleViaFiles>true</accessibleViaFiles>\n"
@@ -2023,7 +2024,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "dataVariable",
             true,
             false)); // includeDataType, questionDestinationName
-    results.append("</dataset>\n" + "\n");
+    results.append("""
+            </dataset>
+
+            """);
 
     // background
     String2.log("\n-----");
@@ -2711,8 +2715,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             // convert e.g., yyyyMMdd columns from int to String
             addTable.setColumn(col, new StringArray(destPA));
           if (destPA.elementType() == PAType.STRING) {
-            tUnits =
-                Calendar2.suggestDateTimeFormat((StringArray) destPA, false); // evenIfPurelyNumeric
+            tUnits = Calendar2.suggestDateTimeFormat(destPA, false); // evenIfPurelyNumeric
             if (tUnits.length() > 0) addTable.columnAttributes(col).set("units", tUnits);
             // ??? and if tUnits = "", set to ""???
           }
@@ -2860,7 +2863,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         // last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false));
-        sb.append("</dataset>\n" + "\n");
+        sb.append("""
+                </dataset>
+
+                """);
 
         // success
         results.append(sb.toString());

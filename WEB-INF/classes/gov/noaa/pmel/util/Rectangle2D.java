@@ -205,7 +205,7 @@ public abstract class Rectangle2D implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-      return (int) Math.round(7 * 31 * x * y * width * height);
+      return Math.round(7 * 31 * x * y * width * height);
     }
 
     @Override

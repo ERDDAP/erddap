@@ -81,7 +81,7 @@ public class ScriptMath2 {
    * For security, this is a different object than Math2's random. It is private so only accessible
    * via methods in this class.
    */
-  private static java.util.Random random = new java.util.Random();
+  private static final java.util.Random random = new java.util.Random();
 
   /**
    * 1200.0 / 3927.0. udunits says: US_survey_footS (1200/3937) meter# exact US_survey_feetS

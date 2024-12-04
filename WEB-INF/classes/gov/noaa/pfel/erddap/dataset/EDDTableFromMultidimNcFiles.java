@@ -38,7 +38,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
     return DEFAULT_STANDARDIZEWHAT;
   }
 
-  public static int DEFAULT_STANDARDIZEWHAT = 0;
+  public static final int DEFAULT_STANDARDIZEWHAT = 0;
 
   /**
    * The constructor just calls the super constructor.
@@ -521,7 +521,10 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("</dataset>\n" + "\n");
+    sb.append("""
+            </dataset>
+
+            """);
 
     String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
     return sb.toString();

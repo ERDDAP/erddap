@@ -298,8 +298,7 @@ public class ULongArray extends PrimitiveArray {
     // https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
     // and java docs for ULong.hashCode()
     int code = 0;
-    for (int i = 0; i < size; i++)
-      code = 31 * code + ((int) (array[i] ^ array[i] >>> 32)); // safe, only want low 32 bits
+    for (int i = 0; i < size; i++) code = 31 * code + Long.hashCode(array[i]);
     return code;
     // return HashDigest.murmur32(array, size);
   }
@@ -408,7 +407,7 @@ public class ULongArray extends PrimitiveArray {
    */
   @Override
   public void addObject(final Object value) {
-    if (value != null && value instanceof Number num) {
+    if (value instanceof Number num) {
       if (value instanceof Double) addDouble(num.doubleValue()); // supports NaN
       else if (value instanceof Float) addFloat(num.floatValue()); // supports NaN
       else addLong(num.longValue());
@@ -436,7 +435,7 @@ public class ULongArray extends PrimitiveArray {
   public void add(final BigInteger ar[]) {
     final int arSize = ar.length;
     ensureCapacity(size + (long) arSize);
-    for (int i = 0; i < arSize; i++) array[size++] = packAndSetMaxIsMV(ar[i]);
+    for (BigInteger bigInteger : ar) array[size++] = packAndSetMaxIsMV(bigInteger);
   }
 
   /**
@@ -1466,7 +1465,7 @@ public class ULongArray extends PrimitiveArray {
     }
 
     // make a hashMap with all the unique values (associated values are initially all dummy)
-    final Integer dummy = Integer.valueOf(-1);
+    final Integer dummy = -1;
     final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size)); // HashMap supports null keys
     BigInteger lastValue =
         unpackIgnoreMaxIsMV(array[0]); // since lastValue often equals currentValue, cache it
@@ -1506,21 +1505,21 @@ public class ULongArray extends PrimitiveArray {
     // and make tUnique
     final BigInteger tUnique[] = new BigInteger[nUnique];
     for (int i = 0; i < count; i++) {
-      hashMap.put(unique[i], Integer.valueOf(i));
+      hashMap.put(unique[i], i);
       tUnique[i] = (BigInteger) unique[i];
     }
 
     // convert original values to ranks
     final int ranks[] = new int[size];
     lastValue = unpackIgnoreMaxIsMV(array[0]);
-    ranks[0] = ((Integer) hashMap.get(lastValue)).intValue();
+    ranks[0] = (Integer) hashMap.get(lastValue);
     int lastRank = ranks[0];
     for (int i = 1; i < size; i++) {
       if (unpackIgnoreMaxIsMV(array[i]).compareTo(lastValue) == 0) {
         ranks[i] = lastRank;
       } else {
         lastValue = unpackIgnoreMaxIsMV(array[i]);
-        ranks[i] = ((Integer) hashMap.get(lastValue)).intValue();
+        ranks[i] = (Integer) hashMap.get(lastValue);
         lastRank = ranks[i];
       }
     }

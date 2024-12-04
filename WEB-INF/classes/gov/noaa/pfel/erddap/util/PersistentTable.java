@@ -46,22 +46,23 @@ public class PersistentTable implements AutoCloseable {
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
-  public static boolean verbose = false;
+  public static final boolean verbose = false;
 
-  public static boolean reallyVerbose = false;
+  public static final boolean reallyVerbose = false;
 
   /** When primitives are stored in file, these are the lengths (in bytes). */
   public static int BOOLEAN_LENGTH = 1;
 
-  public static int BYTE_LENGTH = 4;
-  public static int SHORT_LENGTH = 6;
-  public static int INT_LENGTH = 11;
-  public static int LONG_LENGTH = 20;
-  public static int FLOAT_LENGTH = 16; // I think 15 (e.g., -1.09464165E-11), but add 1 for safety
-  public static int DOUBLE_LENGTH =
+  public static final int BYTE_LENGTH = 4;
+  public static final int SHORT_LENGTH = 6;
+  public static final int INT_LENGTH = 11;
+  public static final int LONG_LENGTH = 20;
+  public static final int FLOAT_LENGTH =
+      16; // I think 15 (e.g., -1.09464165E-11), but add 1 for safety
+  public static final int DOUBLE_LENGTH =
       25; // I think 24 (e.g,. -2.4353007519111625E-151), but add 1 for safety
 
-  public static int BINARY_BYTE_LENGTH = 1;
+  public static final int BINARY_BYTE_LENGTH = 1;
   public static int BINARY_CHAR_LENGTH = 2;
   public static int BINARY_SHORT_LENGTH = 2;
   public static int BINARY_INT_LENGTH = 4;
@@ -71,8 +72,8 @@ public class PersistentTable implements AutoCloseable {
 
   // set once
   private RandomAccessFile raf;
-  private int columnWidths[];
-  private int columnStartAt[];
+  private final int[] columnWidths;
+  private final int[] columnStartAt;
   private int nBytesPerRow;
 
   // changes
@@ -405,10 +406,9 @@ public class PersistentTable implements AutoCloseable {
     byte ar[] = new byte[columnWidths[col]];
     raf.seek(row * nBytesPerRow + columnStartAt[col]);
     raf.readFully(ar);
-    String s = new String(ar, StandardCharsets.UTF_8).trim();
     // if (reallyVerbose) String2.log("low level read col=" + col +
     //    " row=" + row + " value=" + String2.annotatedString(s));
-    return s;
+    return new String(ar, StandardCharsets.UTF_8).trim();
   }
 
   /** This reads a boolean (stored as T|F) from the file (or false if trouble). */

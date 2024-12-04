@@ -44,16 +44,19 @@ public class TableWriterHtmlTable extends TableWriter {
   public static int htmlTableMaxMB = 15;
 
   // set by constructor
-  protected String loggedInAs,
-      endOfRequest,
-      queryString,
-      fileNameNoExt,
-      preTableHtml,
-      postTableHtml,
-      tErddapUrl,
-      externalLinkHtml,
-      questionMarkImageUrl;
-  protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
+  protected final String loggedInAs;
+  protected final String endOfRequest;
+  protected final String queryString;
+  protected final String fileNameNoExt;
+  protected final String preTableHtml;
+  protected final String postTableHtml;
+  protected final String tErddapUrl;
+  protected final String externalLinkHtml;
+  protected final String questionMarkImageUrl;
+  protected final boolean writeHeadAndBodyTags;
+  protected final boolean xhtmlMode;
+  protected final boolean encode;
+  protected final boolean writeUnits;
   protected int totalRows = 0, rowsShown = 0;
   protected int showFirstNRows; // perhaps modified by htmlTableMaxMB in "do firstTime stuff"
   protected String noWrap;
@@ -494,7 +497,11 @@ public class TableWriterHtmlTable extends TableWriter {
     // close the document
     writer.write(postTableHtml);
     if (writeHeadAndBodyTags)
-      if (xhtmlMode) writer.write("</body>\n" + "</html>\n");
+      if (xhtmlMode)
+        writer.write("""
+              </body>
+              </html>
+              """);
       else
         writer.write(
             EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language), loggedInAs)

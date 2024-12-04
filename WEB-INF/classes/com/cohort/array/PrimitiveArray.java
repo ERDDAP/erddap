@@ -136,44 +136,74 @@ public abstract class PrimitiveArray {
    * @return a PrimitiveArray which (at least initially) uses the array for data storage.
    */
   public static PrimitiveArray factory(Object o, boolean isUnsigned) {
-    if (o == null)
-      throw new IllegalArgumentException(String2.ERROR + " in PrimitiveArray.factory: o is null.");
-
-    if (o instanceof char[][] car) {
-      int nStrings = car.length;
-      StringArray sa = new StringArray(nStrings, false);
-      for (int i = 0; i < nStrings; i++) {
-        String s = new String(car[i]);
-        int po0 = s.indexOf('\u0000');
-        if (po0 >= 0) s = s.substring(0, po0);
-        sa.add(s);
+    switch (o) {
+      case null ->
+          throw new IllegalArgumentException(
+              String2.ERROR + " in PrimitiveArray.factory: o is null.");
+      case char[][] car -> {
+        int nStrings = car.length;
+        StringArray sa = new StringArray(nStrings, false);
+        for (char[] chars : car) {
+          String s = new String(chars);
+          int po0 = s.indexOf('\u0000');
+          if (po0 >= 0) s = s.substring(0, po0);
+          sa.add(s);
+        }
+        return sa;
       }
-      return sa;
+      case double[] da -> {
+        return new DoubleArray(da);
+      }
+      case float[] fa -> {
+        return new FloatArray(fa);
+      }
+      case long[] la -> {
+        return isUnsigned ? new ULongArray(la) : new LongArray(la);
+      }
+      case int[] ia -> {
+        return isUnsigned ? new UIntArray(ia) : new IntArray(ia);
+      }
+      case short[] sa -> {
+        return isUnsigned ? new UShortArray(sa) : new ShortArray(sa);
+      }
+      case byte[] ba -> {
+        return isUnsigned ? new UByteArray(ba) : new ByteArray(ba);
+      }
+      case char[] ca -> {
+        return new CharArray(ca);
+      }
+      case String[] sa -> {
+        return new StringArray(sa);
+      }
+      case Object[] oar -> {
+        int n = oar.length;
+        StringArray sa = new StringArray(n, false);
+        for (Object object : oar) sa.add(object == null ? "" : object.toString());
+        return sa;
+      }
+      case Double d -> {
+        return new DoubleArray(new double[] {d});
+      }
+      case Float f -> {
+        return new FloatArray(new float[] {f});
+      }
+      case Long l -> {
+        return new LongArray(new long[] {l});
+      }
+      case Integer i -> {
+        return new IntArray(new int[] {i});
+      }
+      case Short s -> {
+        return new ShortArray(new short[] {s});
+      }
+      case Byte b -> {
+        return new ByteArray(new byte[] {b});
+      }
+      case Character c -> {
+        return new CharArray(new char[] {c});
+      }
+      default -> {}
     }
-    if (o instanceof double[] da) return new DoubleArray(da);
-    if (o instanceof float[] fa) return new FloatArray(fa);
-    if (o instanceof long[] la) return isUnsigned ? new ULongArray(la) : new LongArray(la);
-    if (o instanceof int[] ia) return isUnsigned ? new UIntArray(ia) : new IntArray(ia);
-    if (o instanceof short[] sa) return isUnsigned ? new UShortArray(sa) : new ShortArray(sa);
-    if (o instanceof byte[] ba) return isUnsigned ? new UByteArray(ba) : new ByteArray(ba);
-    if (o instanceof char[] ca) return new CharArray(ca);
-    if (o instanceof String[] sa) return new StringArray(sa);
-
-    if (o instanceof Object[]) {
-      Object oar[] = (Object[]) o;
-      int n = oar.length;
-      StringArray sa = new StringArray(n, false);
-      for (int i = 0; i < n; i++) sa.add(oar[i] == null ? "" : oar[i].toString());
-      return sa;
-    }
-
-    if (o instanceof Double d) return new DoubleArray(new double[] {d.doubleValue()});
-    if (o instanceof Float f) return new FloatArray(new float[] {f.floatValue()});
-    if (o instanceof Long l) return new LongArray(new long[] {l.longValue()});
-    if (o instanceof Integer i) return new IntArray(new int[] {i.intValue()});
-    if (o instanceof Short s) return new ShortArray(new short[] {s.shortValue()});
-    if (o instanceof Byte b) return new ByteArray(new byte[] {b.byteValue()});
-    if (o instanceof Character c) return new CharArray(new char[] {c.charValue()});
 
     // String and fall through
     return new StringArray(new String[] {o.toString()});
@@ -345,7 +375,7 @@ public abstract class PrimitiveArray {
     if (elementType == PAType.STRING) return new StringArray(sa);
     int n = sa.length;
     PrimitiveArray pa = factory(elementType, n, false);
-    for (int i = 0; i < n; i++) pa.addString(sa[i]);
+    for (String s : sa) pa.addString(s);
     return pa;
   }
 
@@ -1387,7 +1417,7 @@ public abstract class PrimitiveArray {
 
       for (int i = 0; i < size; i++) {
         BigInteger d = getULong(i);
-        if (d == null || d.equals(fv) || d.equals(fv)) {
+        if (d == null || d.equals(fv)) {
         } else {
           n++;
           tMin = tMin.min(d);
@@ -2532,7 +2562,7 @@ public abstract class PrimitiveArray {
           // not NaN
           continue;
 
-        if (s.toLowerCase().equals("nan")) { // signifies a numeric missing value
+        if (s.equalsIgnoreCase("nan")) { // signifies a numeric missing value
           // non-specific, skip this row
           hasNaN = true;
           continue;
@@ -2717,7 +2747,7 @@ public abstract class PrimitiveArray {
   private static int[] lowRank(RowComparator comparator, List<PrimitiveArray> table) {
 
     // create the rowArray with pointer to specific rows
-    int n = table.get(0).size();
+    int n = table.getFirst().size();
     Integer[] rowArray = new Integer[n];
     for (int i = 0; i < n; i++) rowArray[i] = i;
 
@@ -2750,8 +2780,8 @@ public abstract class PrimitiveArray {
     int[] ranks = rank(table, keys, ascending);
 
     // reorder the columns
-    for (int col = 0; col < table.size(); col++) {
-      table.get(col).reorder(ranks);
+    for (PrimitiveArray primitiveArray : table) {
+      primitiveArray.reorder(ranks);
     }
   }
 
@@ -2762,8 +2792,8 @@ public abstract class PrimitiveArray {
     int[] ranks = rankIgnoreCase(table, keys, ascending);
 
     // reorder the columns
-    for (int col = 0; col < table.size(); col++) {
-      table.get(col).reorder(ranks);
+    for (PrimitiveArray primitiveArray : table) {
+      primitiveArray.reorder(ranks);
     }
   }
 
@@ -2776,8 +2806,7 @@ public abstract class PrimitiveArray {
    * @param to the 'to' row
    */
   public static void copyRow(List<PrimitiveArray> table, int from, int to) {
-    int nColumns = table.size();
-    for (int col = 0; col < nColumns; col++) table.get(col).copy(from, to);
+    for (PrimitiveArray primitiveArray : table) primitiveArray.copy(from, to);
   }
 
   /**
@@ -2850,15 +2879,15 @@ public abstract class PrimitiveArray {
    */
   public static int removeDuplicates(List<PrimitiveArray> table) {
 
-    int nRows = table.get(0).size();
+    int nRows = table.getFirst().size();
     if (nRows <= 1) return 0;
     int nColumns = table.size();
     int nUnique = 1; // row 0 is unique
     for (int row = 1; row < nRows; row++) { // start at 1; compare to previous row
       // does it equal row above?
       boolean equal = true;
-      for (int col = 0; col < nColumns; col++) {
-        if (table.get(col).compare(row - 1, row) != 0) {
+      for (PrimitiveArray primitiveArray : table) {
+        if (primitiveArray.compare(row - 1, row) != 0) {
           equal = false;
           break;
         }
@@ -2934,11 +2963,10 @@ public abstract class PrimitiveArray {
             keep1.set(po1);
             po1++;
             po2++;
-            continue;
           } else {
             po1++;
-            continue;
           }
+          continue;
         }
       }
       if (isNumeric2) {
@@ -3019,7 +3047,7 @@ public abstract class PrimitiveArray {
    *     table2.
    * @param table2 a List of PrimitiveArrays
    */
-  public static void append(List table1, List table2) {
+  public static void append(List<PrimitiveArray> table1, List<PrimitiveArray> table2) {
 
     if (table1.size() != table2.size())
       throw new RuntimeException(
@@ -3028,8 +3056,8 @@ public abstract class PrimitiveArray {
     // append table2 to the end of table1
     for (int col = 0; col < table1.size(); col++) {
       // if needed, make a new wider PrimitiveArray in table1
-      PrimitiveArray pa1 = (PrimitiveArray) table1.get(col);
-      PrimitiveArray pa2 = (PrimitiveArray) table2.get(col);
+      PrimitiveArray pa1 = table1.get(col);
+      PrimitiveArray pa2 = table2.get(col);
 
       PAType needPAType = pa1.needPAType(pa2.elementType());
       if (pa1.elementType() != needPAType) {
@@ -3062,7 +3090,11 @@ public abstract class PrimitiveArray {
    * @param removeDuplicates specifies if completely identical rows should be removed.
    */
   public static void merge(
-      List table1, List table2, int[] keys, boolean ascending[], boolean removeDuplicates) {
+      List<PrimitiveArray> table1,
+      List<PrimitiveArray> table2,
+      int[] keys,
+      boolean ascending[],
+      boolean removeDuplicates) {
     // the current approach is quick, fun, and easy, but uses lots of memory
     // FUTURE: if needed, this could be done in a more space-saving way:
     //   sort each table, then merge table2 into table1,
@@ -3537,14 +3569,17 @@ public abstract class PrimitiveArray {
     if (op.equals("!=")) return value1 != value2;
 
     if (value1 == Integer.MAX_VALUE || value2 == Integer.MAX_VALUE) return false;
-    if (op.equals("<=")) return value1 <= value2;
-    if (op.equals(">=")) return value1 >= value2;
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
+    return switch (op) {
+      case "<=" -> value1 <= value2;
+      case ">=" -> value1 >= value2;
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      default ->
 
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3566,14 +3601,17 @@ public abstract class PrimitiveArray {
     if (op.equals("!=")) return value1 != value2;
 
     if (value1 == Long.MAX_VALUE || value2 == Long.MAX_VALUE) return false;
-    if (op.equals("<=")) return value1 <= value2;
-    if (op.equals(">=")) return value1 >= value2;
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
+    return switch (op) {
+      case "<=" -> value1 <= value2;
+      case ">=" -> value1 >= value2;
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      default ->
 
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3599,14 +3637,17 @@ public abstract class PrimitiveArray {
     if (op.equals("!=")) return !value1.equals(value2);
 
     if (value1.equals(ULongArray.MAX_VALUE) || value2.equals(ULongArray.MAX_VALUE)) return false;
-    if (op.equals("<=")) return value1.compareTo(value2) <= 0;
-    if (op.equals(">=")) return value1.compareTo(value2) >= 0;
-    if (op.equals("<")) return value1.compareTo(value2) < 0;
-    if (op.equals(">")) return value1.compareTo(value2) > 0;
+    return switch (op) {
+      case "<=" -> value1.compareTo(value2) <= 0;
+      case ">=" -> value1.compareTo(value2) >= 0;
+      case "<" -> value1.compareTo(value2) < 0;
+      case ">" -> value1.compareTo(value2) > 0;
+      default ->
 
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3625,17 +3666,19 @@ public abstract class PrimitiveArray {
    */
   public static boolean testValueOpValue(float value1, String op, float value2) {
     // String2.log("testValueOpValue (float): " + value1 + op + value2);
-    if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(6, value1, value2);
-    if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(6, value1, value2);
-    if (op.equals("="))
-      return (Float.isNaN(value1) && Float.isNaN(value2)) || Math2.almostEqual(6, value1, value2);
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
-    if (op.equals("!="))
-      return (Float.isNaN(value1) && Float.isNaN(value2)) ? false : value1 != value2;
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    return switch (op) {
+      case "<=" -> value1 <= value2 || Math2.almostEqual(6, value1, value2);
+      case ">=" -> value1 >= value2 || Math2.almostEqual(6, value1, value2);
+      case "=" ->
+          (Float.isNaN(value1) && Float.isNaN(value2)) || Math2.almostEqual(6, value1, value2);
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      case "!=" -> (!Float.isNaN(value1) || !Float.isNaN(value2)) && value1 != value2;
+      default ->
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3657,17 +3700,19 @@ public abstract class PrimitiveArray {
     // if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
     //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters
     // }
-    if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(9, value1, value2);
-    if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(9, value1, value2);
-    if (op.equals("="))
-      return (Double.isNaN(value1) && Double.isNaN(value2)) || Math2.almostEqual(9, value1, value2);
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
-    if (op.equals("!="))
-      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    return switch (op) {
+      case "<=" -> value1 <= value2 || Math2.almostEqual(9, value1, value2);
+      case ">=" -> value1 >= value2 || Math2.almostEqual(9, value1, value2);
+      case "=" ->
+          (Double.isNaN(value1) && Double.isNaN(value2)) || Math2.almostEqual(9, value1, value2);
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
+      default ->
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3690,18 +3735,19 @@ public abstract class PrimitiveArray {
     // if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
     //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters
     // }
-    if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(12, value1, value2);
-    if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(12, value1, value2);
-    if (op.equals("="))
-      return (Double.isNaN(value1) && Double.isNaN(value2))
-          || Math2.almostEqual(12, value1, value2);
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
-    if (op.equals("!="))
-      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    return switch (op) {
+      case "<=" -> value1 <= value2 || Math2.almostEqual(12, value1, value2);
+      case ">=" -> value1 >= value2 || Math2.almostEqual(12, value1, value2);
+      case "=" ->
+          (Double.isNaN(value1) && Double.isNaN(value2)) || Math2.almostEqual(12, value1, value2);
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
+      default ->
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3723,16 +3769,18 @@ public abstract class PrimitiveArray {
     // if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
     //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters
     // }
-    if (op.equals("<=")) return value1 <= value2;
-    if (op.equals(">=")) return value1 >= value2;
-    if (op.equals("=")) return (Double.isNaN(value1) && Double.isNaN(value2)) || value1 == value2;
-    if (op.equals("<")) return value1 < value2;
-    if (op.equals(">")) return value1 > value2;
-    if (op.equals("!="))
-      return (Double.isNaN(value1) && Double.isNaN(value2)) ? false : value1 != value2;
-    // Regex test has to be handled via String testValueOpValue
-    //  if (op.equals(PrimitiveArray.REGEX_OP))
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    return switch (op) {
+      case "<=" -> value1 <= value2;
+      case ">=" -> value1 >= value2;
+      case "=" -> (Double.isNaN(value1) && Double.isNaN(value2)) || value1 == value2;
+      case "<" -> value1 < value2;
+      case ">" -> value1 > value2;
+      case "!=" -> (!Double.isNaN(value1) || !Double.isNaN(value2)) && value1 != value2;
+      default ->
+          // Regex test has to be handled via String testValueOpValue
+          //  if (op.equals(PrimitiveArray.REGEX_OP))
+          throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /**
@@ -3759,16 +3807,26 @@ public abstract class PrimitiveArray {
    */
   public static boolean testValueOpValue(String value1, String op, String value2) {
     // String2.log("testValueOpValue (String): " + value1 + op + value2);
-    if (op.equals("=")) return value1.equals(value2);
-    if (op.equals("!=")) return !value1.equals(value2);
-    if (op.equals(REGEX_OP)) return value1.matches(value2); // regex test
+    switch (op) {
+      case "=" -> {
+        return value1.equals(value2);
+      }
+      case "!=" -> {
+        return !value1.equals(value2);
+      }
+      case REGEX_OP -> {
+        return value1.matches(value2); // regex test
+      }
+    }
 
     int t = value1.toLowerCase().compareTo(value2.toLowerCase());
-    if (op.equals("<=")) return t <= 0;
-    if (op.equals(">=")) return t >= 0;
-    if (op.equals("<")) return t < 0;
-    if (op.equals(">")) return t > 0;
-    throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    return switch (op) {
+      case "<=" -> t <= 0;
+      case ">=" -> t >= 0;
+      case "<" -> t < 0;
+      case ">" -> t > 0;
+      default -> throw new SimpleException("Query error: " + "Unknown operator=\"" + op + "\".");
+    };
   }
 
   /** This is applies one constraint and just keeps the results. */
@@ -3964,50 +4022,55 @@ public abstract class PrimitiveArray {
 
     // what type is it?
     if (last2CharSame) { // it might be an unsigned type
-      if (last2Char.equals("ub")) {
-        if (sa.firstNonMatch(String2.NCCSV_UBYTE_ATT_PATTERN) < 0) {
-          UByteArray uba = new UByteArray(saSize, false);
-          for (int i = 0; i < saSize; i++) {
-            String s = sa.get(i);
-            uba.addString(s.substring(0, s.length() - 2));
-            // ensure that maxValue was correctly specified, not e.g., 999ub
-            if (uba.isMaxValue(i) && !"255ub".equals(s))
-              throw new SimpleException("Invalid ubyte value: " + s);
+      switch (last2Char) {
+        case "ub" -> {
+          if (sa.firstNonMatch(String2.NCCSV_UBYTE_ATT_PATTERN) < 0) {
+            UByteArray uba = new UByteArray(saSize, false);
+            for (int i = 0; i < saSize; i++) {
+              String s = sa.get(i);
+              uba.addString(s.substring(0, s.length() - 2));
+              // ensure that maxValue was correctly specified, not e.g., 999ub
+              if (uba.isMaxValue(i) && !"255ub".equals(s))
+                throw new SimpleException("Invalid ubyte value: " + s);
+            }
+            return uba;
           }
-          return uba;
         }
-      } else if (last2Char.equals("us")) {
-        if (sa.firstNonMatch(String2.NCCSV_USHORT_ATT_PATTERN) < 0) {
-          UShortArray uba = new UShortArray(saSize, false);
-          for (int i = 0; i < saSize; i++) {
-            String s = sa.get(i);
-            uba.addString(s.substring(0, s.length() - 2));
-            if (uba.isMaxValue(i) && !"65535us".equals(s))
-              throw new SimpleException("Invalid ushort value: " + s);
+        case "us" -> {
+          if (sa.firstNonMatch(String2.NCCSV_USHORT_ATT_PATTERN) < 0) {
+            UShortArray uba = new UShortArray(saSize, false);
+            for (int i = 0; i < saSize; i++) {
+              String s = sa.get(i);
+              uba.addString(s.substring(0, s.length() - 2));
+              if (uba.isMaxValue(i) && !"65535us".equals(s))
+                throw new SimpleException("Invalid ushort value: " + s);
+            }
+            return uba;
           }
-          return uba;
         }
-      } else if (last2Char.equals("ui")) {
-        if (sa.firstNonMatch(String2.NCCSV_UINT_ATT_PATTERN) < 0) {
-          UIntArray uia = new UIntArray(saSize, false);
-          for (int i = 0; i < saSize; i++) {
-            String s = sa.get(i);
-            uia.addString(s.substring(0, s.length() - 2));
-            if (uia.isMaxValue(i) && !"4294967295ui".equals(s))
-              throw new SimpleException("Invalid uint value: " + s);
+        case "ui" -> {
+          if (sa.firstNonMatch(String2.NCCSV_UINT_ATT_PATTERN) < 0) {
+            UIntArray uia = new UIntArray(saSize, false);
+            for (int i = 0; i < saSize; i++) {
+              String s = sa.get(i);
+              uia.addString(s.substring(0, s.length() - 2));
+              if (uia.isMaxValue(i) && !"4294967295ui".equals(s))
+                throw new SimpleException("Invalid uint value: " + s);
+            }
+            return uia;
           }
-          return uia;
         }
-      } else if (last2Char.equals("uL")) {
-        if (sa.firstNonMatch(String2.NCCSV_ULONG_ATT_PATTERN) < 0) {
-          ULongArray ula = new ULongArray(saSize, false);
-          for (int i = 0; i < saSize; i++) {
-            String s = sa.get(i);
-            ula.addString(s.substring(0, s.length() - 2));
-            if (ula.isMaxValue(i) && !"18446744073709551615uL".equals(s))
-              throw new SimpleException("Invalid ulong value: " + s);
+        case "uL" -> {
+          if (sa.firstNonMatch(String2.NCCSV_ULONG_ATT_PATTERN) < 0) {
+            ULongArray ula = new ULongArray(saSize, false);
+            for (int i = 0; i < saSize; i++) {
+              String s = sa.get(i);
+              ula.addString(s.substring(0, s.length() - 2));
+              if (ula.isMaxValue(i) && !"18446744073709551615uL".equals(s))
+                throw new SimpleException("Invalid ulong value: " + s);
+            }
+            return ula;
           }
-          return ula;
         }
       }
     }
@@ -4105,7 +4168,7 @@ public abstract class PrimitiveArray {
    * @return int[2] with the indices of the first 2 duplicate values, or null if no duplicates.
    */
   public int[] firstDuplicates() {
-    HashSet<String> hs = new HashSet();
+    HashSet<String> hs = new HashSet<>();
     for (int i = 0; i < size(); i++) {
       String s = getString(i);
       if (!hs.add(s)) return new int[] {indexOf(s), i};

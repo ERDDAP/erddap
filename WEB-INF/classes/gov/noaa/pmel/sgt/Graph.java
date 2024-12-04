@@ -90,7 +90,7 @@ import java.beans.PropertyChangeListener;
  * @see CartesianGraph
  */
 public abstract class Graph implements PropertyChangeListener {
-  private String ident_;
+  private final String ident_;
 
   /**
    * @directed
@@ -237,7 +237,7 @@ public abstract class Graph implements PropertyChangeListener {
     //
     nt = (int) log10(temp);
     if (temp < 1.0) nt--;
-    pow = Math.pow(10.0, (double) nt);
+    pow = Math.pow(10.0, nt);
     temp = temp / pow;
     //
     // find the closest permissible value for the interval size

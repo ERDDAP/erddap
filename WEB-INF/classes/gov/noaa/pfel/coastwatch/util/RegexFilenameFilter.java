@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public class RegexFilenameFilter implements FilenameFilter {
-  private Pattern pattern;
+  private final Pattern pattern;
 
   // ideally, not static, but used for informational purposes only
   public static long getTime, matchTime, sortTime;
@@ -91,8 +91,7 @@ public class RegexFilenameFilter implements FilenameFilter {
       // determine which match the regex
       tTime = System.currentTimeMillis();
       RegexFilenameFilter filter = new RegexFilenameFilter(regex);
-      int n = allNames.length;
-      for (int i = 0; i < n; i++) if (filter.accept(null, allNames[i])) list.add(allNames[i]);
+      for (String allName : allNames) if (filter.accept(null, allName)) list.add(allName);
       matchTime += System.currentTimeMillis() - tTime;
 
       // sort
@@ -138,9 +137,7 @@ public class RegexFilenameFilter implements FilenameFilter {
 
     // for each, determine if it is a file or a dir
     Arrays.sort(names, String2.STRING_COMPARATOR_IGNORE_CASE);
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      String tName = names[i];
+    for (String tName : names) {
       File tFile = new File(dir + tName);
       if (tFile.isDirectory()) {
         if (!tName.equals(".")) // ignore self
@@ -208,9 +205,7 @@ public class RegexFilenameFilter implements FilenameFilter {
     if (names == null) return;
 
     // for each, determine if it is a file or a dir
-    int n = names.length;
-    for (int i = 0; i < n; i++) {
-      String tName = names[i];
+    for (String tName : names) {
       File tFile = new File(dir + tName);
       if (tName.equals(".") || tName.equals("..")) { // ignore parent and itself
       } else if (tFile.isFile()) {
@@ -271,7 +266,7 @@ public class RegexFilenameFilter implements FilenameFilter {
     String names[] =
         recursive ? recursiveFullNameList(dir, regex, false) : fullNameList(dir, regex);
     int notDeleted = 0;
-    for (int i = 0; i < names.length; i++) if (!File2.delete(names[i])) notDeleted++;
+    for (String name : names) if (!File2.delete(name)) notDeleted++;
     return notDeleted;
   }
 
@@ -339,7 +334,7 @@ public class RegexFilenameFilter implements FilenameFilter {
               dir,
               String2.plainTextToRegex(File2.getNameAndExtension(fullName))
                   + ".*"); // .* catches the file and all related index files
-      for (int i = 0; i < files.length; i++) File2.touch(dir + files[i]);
+      for (String file : files) File2.touch(dir + file);
     } else {
       File2.touch(fullName);
     }

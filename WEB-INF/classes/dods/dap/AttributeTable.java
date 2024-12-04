@@ -15,7 +15,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Enumeration;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -134,7 +134,7 @@ public class AttributeTable implements Cloneable {
    * @see Attribute
    */
   public final Attribute getAttribute(String name) {
-    return (Attribute) attr.get(name);
+    return attr.get(name);
   }
 
   /**
@@ -158,7 +158,7 @@ public class AttributeTable implements Cloneable {
   public final void appendAttribute(String name, int type, String value, boolean check)
       throws AttributeExistsException, AttributeBadValueException {
 
-    Attribute a = (Attribute) attr.get(name);
+    Attribute a = attr.get(name);
 
     if (a != null && (type != a.getType())) {
 
@@ -233,7 +233,7 @@ public class AttributeTable implements Cloneable {
       throw new AttributeExistsException("Could not alias `" + name + "' and `" + alias + "'.");
 
     // Make sure name exists.
-    Attribute a = (Attribute) attr.get(name);
+    Attribute a = attr.get(name);
     if (a == null)
       throw new NoSuchAttributeException("Could not alias `" + name + "' and `" + alias + "'.");
 
@@ -270,7 +270,7 @@ public class AttributeTable implements Cloneable {
 
     } else {
 
-      Attribute a = (Attribute) attr.get(name);
+      Attribute a = attr.get(name);
 
       if (a != null) {
 
@@ -311,18 +311,18 @@ public class AttributeTable implements Cloneable {
         if (a.isContainer()) {
           if (_Debug) System.out.println("  Attribute \"" + name + "\" is a Container.");
           os.println(pad + name + " {");
-          ((AttributeTable) a.getContainer()).print(os, pad + "    ");
+          a.getContainer().print(os, pad + "    ");
           os.println(pad + "}");
         } else {
           if (_Debug) System.out.println("    Printing Attribute \"" + name + "\".");
 
           os.print(pad + a.getTypeString() + " " + name + " ");
-          Enumeration es = a.getValues();
-          String val = (String) es.nextElement(); // get first element
+          Iterator<String> es = a.getValues();
+          String val = es.next(); // get first element
 
-          while (es.hasMoreElements()) { // lookahead one element
+          while (es.hasNext()) { // lookahead one element
             os.print(val + ", ");
-            val = (String) es.nextElement();
+            val = es.next();
           }
           os.println(val + ";"); // print last element
         }
@@ -339,7 +339,9 @@ public class AttributeTable implements Cloneable {
    * @param pad the number of spaces to indent each line.
    */
   public final void print(OutputStream os, String pad) {
-    print(new PrintWriter(new BufferedWriter(new OutputStreamWriter(os))), pad);
+    print(
+        new PrintWriter(new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))),
+        pad);
   }
 
   /**
