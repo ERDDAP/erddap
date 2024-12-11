@@ -1934,7 +1934,7 @@ public class EDStatic {
       emailFromAddress = getSetupEVString(setup, ev, "emailFromAddress", (String) null);
       emailEverythingToCsv = getSetupEVString(setup, ev, "emailEverythingTo", ""); // won't be null
       emailDailyReportToCsv =
-          Optional.ofNullable(getSetupEVString(setup, ev, "emailDailyReportTo", ""))
+          Optional.ofNullable(getSetupEVString(setup, ev, "emailDailyReportTo", (String) null))
               .orElse(getSetupEVString(setup, ev, "emailDailyReportsTo", ""));
       emailIsActive = // ie if actual emails will be sent
           String2.isSomething(emailSmtpHost)
