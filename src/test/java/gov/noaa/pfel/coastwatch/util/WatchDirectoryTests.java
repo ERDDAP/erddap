@@ -8,10 +8,17 @@ import com.cohort.util.Test;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.util.ArrayList;
+import org.junit.jupiter.api.BeforeAll;
 import tags.TagIncompleteTest;
 import tags.TagSlowTests;
+import testDataset.Initialization;
 
 class WatchDirectoryTests {
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
+
   /** This tests this class. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
