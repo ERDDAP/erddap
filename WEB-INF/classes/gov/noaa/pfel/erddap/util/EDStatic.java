@@ -84,6 +84,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1933,7 +1934,8 @@ public class EDStatic {
       emailFromAddress = getSetupEVString(setup, ev, "emailFromAddress", (String) null);
       emailEverythingToCsv = getSetupEVString(setup, ev, "emailEverythingTo", ""); // won't be null
       emailDailyReportToCsv =
-          getSetupEVString(setup, ev, "emailDailyReportTo", ""); // won't be null
+          Optional.ofNullable(getSetupEVString(setup, ev, "emailDailyReportTo", ""))
+              .orElse(getSetupEVString(setup, ev, "emailDailyReportsTo", ""));
       emailIsActive = // ie if actual emails will be sent
           String2.isSomething(emailSmtpHost)
               && emailSmtpPort > 0
