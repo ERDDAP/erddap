@@ -47,7 +47,6 @@ class RegexFilenameFilterTests {
           coastwatchDir + "griddata/SaveOpendap.class",
           coastwatchDir + "netcheck/",
           coastwatchDir + "pointdata/",
-          coastwatchDir + "pointdata/ScriptRow.class",
           coastwatchDir + "pointdata/parquet/",
           coastwatchDir + "sgt/",
           coastwatchDir + "sgt/SGTPointsVector.class",
@@ -67,7 +66,6 @@ class RegexFilenameFilterTests {
     shouldBe =
         new String[] {
           coastwatchDir + "griddata/SaveOpendap.class",
-          coastwatchDir + "pointdata/ScriptRow.class",
           coastwatchDir + "sgt/SGTPointsVector.class",
           coastwatchDir + "sgt/SgtGraph.class",
           coastwatchDir + "sgt/SgtMap.class",

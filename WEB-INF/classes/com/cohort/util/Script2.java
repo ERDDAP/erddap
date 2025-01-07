@@ -13,8 +13,7 @@ import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlSandbox;
 
 /**
- * A class with static Jexl script methods. For tests, see
- * gov.noaa.pfel.coastwatch.pointdata.ScriptRow.testScript().
+ * A class with static Jexl script methods. For tests, see com.cohort.util.ScriptRow.testScript().
  */
 public class Script2 {
 
@@ -86,7 +85,7 @@ public class Script2 {
       jsandbox.allow("com.cohort.util.ScriptCalendar2");
       jsandbox.allow("com.cohort.util.ScriptMath");
       jsandbox.allow("com.cohort.util.ScriptMath2");
-      jsandbox.allow("gov.noaa.pfel.coastwatch.pointdata.ScriptRow");
+      jsandbox.allow("com.cohort.util.ScriptRow");
       jsandbox.allow("java.lang.String");
       jsandbox.allow("com.cohort.util.ScriptString2");
       jexlEngine =

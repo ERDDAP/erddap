@@ -1,11 +1,9 @@
-package gov.noaa.pfel.coastwatch.pointdata;
+package com.cohort.util;
 
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.StringArray;
-import com.cohort.util.Script2;
-import com.cohort.util.String2;
-import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -86,7 +84,7 @@ class ScriptRowTests {
       results = "Caught: " + e.toString();
     }
     expected =
-        "Caught: org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand";
+        "Caught: org.apache.commons.jexl3.JexlException: com.cohort.util.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand";
     results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
@@ -180,7 +178,7 @@ class ScriptRowTests {
     Test.ensureEqual(
         results,
         "org.apache.commons.jexl3.JexlException$Method: "
-            + "gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION unsolvable function/method 'java.lang.StringBuilder(String)'",
+            + "com.cohort.util.ScriptRowTests.basicTest:ERROR_LOCATION unsolvable function/method 'java.lang.StringBuilder(String)'",
         "");
 
     // work with static functions by making a shell class (ScriptMath) that can be
@@ -235,7 +233,7 @@ class ScriptRowTests {
     results = results.replaceAll("[0-9]+@[0-9]+:[0-9]+", "ERROR_LOCATION");
     Test.ensureEqual(
         results,
-        "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand",
+        "org.apache.commons.jexl3.JexlException: com.cohort.util.ScriptRowTests.basicTest:ERROR_LOCATION JEXL error : + error caused by null operand",
         "");
 
     // String static methods are accessible if String in MapContext

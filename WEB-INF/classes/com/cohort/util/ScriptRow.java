@@ -1,10 +1,9 @@
 /* Table Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch.pointdata;
+package com.cohort.util;
 
-import com.cohort.util.File2;
-import com.cohort.util.String2;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 
 /**
  * This class makes the data on 1 row of a table accessible to JexlScript scripts via
