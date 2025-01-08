@@ -7,10 +7,16 @@ import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tags.TagSlowTests;
+import testDataset.Initialization;
 
 class SharedWatchServiceTests {
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   private static class EventHandler implements WatchUpdateHandler {
 

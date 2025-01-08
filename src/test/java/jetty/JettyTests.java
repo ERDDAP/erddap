@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Path;
+import java.time.Year;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -6905,6 +6906,12 @@ class JettyTests {
               + PORT
               + "/erddap/griddap/erdMHchla8day.timeGaps", // dataset not found
           "https://linux.die.net/man/1/ncdump", // fail, works in browser
+          "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/", // Whole
+          // site
+          // seems
+          // to be
+          // down
+          // (temporary?) early 2025
         };
     // https://unitsofmeasure.org/ucum.html fails in tests because of certificate,
     // but succeeds in my browser. Others are like this, too.
@@ -7819,7 +7826,7 @@ class JettyTests {
     EDD.testVerboseOn();
     String htmlUrl = EDStatic.erddapUrl + "/search/advanced.html?page=1&itemsPerPage=1000";
     String csvUrl = EDStatic.erddapUrl + "/search/advanced.csv?page=1&itemsPerPage=1000";
-    String expected = "pmelTaoMonPos";
+    String expected = "nceiPH53sstd1day";
     String expected2, query, results;
     String2.log(
         "\n*** Erddap.testAdvancedSearch\n"
@@ -7828,12 +7835,12 @@ class JettyTests {
     // test valid search string, values are case-insensitive
     query = "";
     String goodQueries[] = {
-      "&searchFor=pmelTao",
-      "&protocol=TAbleDAp",
+      "&searchFor=nceiPH53",
+      "&protocol=GrIdDaP",
       "&short_name=depth",
       "&minLat=-45&maxLat=45",
       "&minLon=-25&maxLon=25",
-      "&minTime=now-3years&maxTime=now-1years"
+      "&minTime=now-5years&maxTime=now-2years"
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
@@ -7844,7 +7851,7 @@ class JettyTests {
     }
 
     // valid for .html but error for .csv: protocol
-    query = "&searchFor=pmelTao&protocol=gibberish";
+    query = "&searchFor=nceiPH53&protocol=gibberish";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7861,7 +7868,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: standard_name
-    query = "&searchFor=pmelTao&standard_name=gibberish";
+    query = "&searchFor=nceiPH53&standard_name=gibberish";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7878,7 +7885,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: &minLat > &maxLat
-    query = "&searchFor=pmelTao&minLat=45&maxLat=0";
+    query = "&searchFor=nceiPH53&minLat=45&maxLat=0";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -7895,7 +7902,7 @@ class JettyTests {
         results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
 
     // valid for .html but error for .csv: &minTime > &maxTime
-    query = "&searchFor=pmelTao&minTime=now-10years&maxTime=now-11years";
+    query = "&searchFor=nceiPH53&minTime=now-10years&maxTime=now-11years";
     results = SSR.getUrlResponseStringUnchanged(htmlUrl + query);
     Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
     try {
@@ -16574,6 +16581,7 @@ class JettyTests {
     String gridTable = "grid"; // grid or table
     String tDatasetID = "erdSWchlamday";
     String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
+    int currentYear = Year.now().getValue();
     EDD edd =
         EDD.oneFromXmlFragment(
             null,
@@ -16648,7 +16656,9 @@ class JettyTests {
             + //
             "      <support-role-type>Metadata Contact</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>nobody@example.com</person-email>\n"
             + //
@@ -16662,7 +16672,9 @@ class JettyTests {
             + //
             "      <support-role-type>Distributor</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>nobody@example.com</person-email>\n"
             + //
@@ -16676,7 +16688,9 @@ class JettyTests {
             + //
             "      <support-role-type>Author</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16690,7 +16704,9 @@ class JettyTests {
             + //
             "      <support-role-type>Data Set Credit</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16704,7 +16720,9 @@ class JettyTests {
             + //
             "      <support-role-type>Data Steward</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
@@ -16718,7 +16736,9 @@ class JettyTests {
             + //
             "      <support-role-type>Point of Contact</support-role-type>\n"
             + //
-            "      <from-date>2024</from-date>\n"
+            "      <from-date>"
+            + currentYear
+            + "</from-date>\n"
             + //
             "      <person-email>erd.data@noaa.gov</person-email>\n"
             + //
