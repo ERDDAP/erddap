@@ -59,6 +59,8 @@ https://coastwatch.pfel.noaa.gov/erddap/download/setupDatasetsXml.html
 <standardDisclaimerOfEndorsement></standardDisclaimerOfEndorsement>
 <standardDisclaimerOfExternalLinks></standardDisclaimerOfExternalLinks>
 <standardGeneralDisclaimer></standardGeneralDisclaimer>
+<displayInfo></displayInfo>
+<displayAttribute></displayAttribute>
 
 <standardPrivacyPolicy><![CDATA[
 <br>&nbsp;

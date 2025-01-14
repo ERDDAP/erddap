@@ -206,6 +206,22 @@ public class TopLevelHandler extends State {
           String2.log("decompressedCacheMaxMinutesOld=" + EDStatic.decompressedCacheMaxMinutesOld);
         }
       }
+      case "displayAttribute" -> {
+        String tContent = data.toString();
+        String[] displayAttributeAr =
+            String2.isSomething(tContent)
+                ? String2.split(tContent, ',')
+                : EDStatic.DEFAULT_displayAttributeAr;
+        EDStatic.displayAttributeAr = displayAttributeAr;
+      }
+      case "displayInfo" -> {
+        String tContent = data.toString();
+        String[] displayInfoAr =
+            String2.isSomething(tContent)
+                ? String2.split(tContent, ',')
+                : EDStatic.DEFAULT_displayInfoAr;
+        EDStatic.displayInfoAr = displayInfoAr;
+      }
       case "drawLandMask" -> {
         String ts = data.toString();
         int tnt = SgtMap.drawLandMask_OPTIONS.indexOf(ts);

@@ -817,6 +817,11 @@ public class EDStatic {
   public static int variableNameCategoryAttributeIndex = -1;
   public static final int logMaxSizeMB;
 
+  public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
+  public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
+  public static String[] displayAttributeAr = DEFAULT_displayAttributeAr;
+  public static String[] displayInfoAr = DEFAULT_displayInfoAr;
+
   public static final String emailSmtpHost;
   public static final String emailUserName;
   public static final String emailFromAddress;

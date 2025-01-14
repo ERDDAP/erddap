@@ -3763,6 +3763,7 @@ public abstract class EDD {
                 "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>")
             + "\n"
             + tLicense
+            + getDisplayInfo(language, loggedInAs)
             + (accessibleViaFGDC.length() > 0
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
@@ -3818,6 +3819,39 @@ public abstract class EDD {
             + "</td>\n"
             + "  </tr>\n"
             + "</table>\n");
+  }
+
+  private String getDisplayInfo(int language, String loggedInAs) {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+      return "";
+    }
+
+    StringBuilder displayInfoStr = new StringBuilder();
+    for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
+      String attribute = EDStatic.displayAttributeAr[i];
+
+      // Skip "summary" and "license" as they are already handled
+      if ("summary".equals(attribute) || "license".equals(attribute)) {
+        continue;
+      }
+
+      String attVal = combinedGlobalAttributes().getString(attribute);
+
+      displayInfoStr
+          .append("    | ")
+          .append(EDStatic.displayInfoAr[i])
+          .append(" ")
+          .append(
+              EDStatic.htmlTooltipImage(
+                  language,
+                  loggedInAs,
+                  "<div class=\"standard_max_width\">"
+                      + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
+                      + "</div>"))
+          .append("\n");
+    }
+
+    return displayInfoStr.toString();
   }
 
   /**
