@@ -3917,15 +3917,15 @@ public abstract class EDDTable extends EDD {
         // make .ncCF or .ncCFMA file
         boolean nodcMode = fileTypeName.equals(".ncCFMA") || fileTypeName.equals(".ncCFMAHeader");
         String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-        switch (cdmType) {
-          case CDM_POINT -> saveAsNcCF0(language, cacheFullName, twawm);
-          case CDM_TIMESERIES, CDM_PROFILE, CDM_TRAJECTORY ->
-              saveAsNcCF1(language, nodcMode, cacheFullName, twawm);
-          case CDM_TIMESERIESPROFILE, CDM_TRAJECTORYPROFILE ->
-              saveAsNcCF2(language, nodcMode, cacheFullName, twawm);
-          case null, default ->
-              // shouldn't happen, since accessibleViaNcCF checks this
-              throw new SimpleException("unexpected cdm_data_type=" + cdmType);
+        if (CDM_POINT.equals(cdmType)) saveAsNcCF0(language, cacheFullName, twawm);
+        else if (CDM_TIMESERIES.equals(cdmType)
+            || CDM_PROFILE.equals(cdmType)
+            || CDM_TRAJECTORY.equals(cdmType))
+          saveAsNcCF1(language, nodcMode, cacheFullName, twawm);
+        else if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType))
+          saveAsNcCF2(language, nodcMode, cacheFullName, twawm);
+        else { // shouldn't happen, since accessibleViaNcCF checks this
+          throw new SimpleException("unexpected cdm_data_type=" + cdmType);
         }
 
         File2.isFile(
@@ -6650,19 +6650,19 @@ public abstract class EDDTable extends EDD {
 
     // ensure profile_id|timeseries_id|trajectory_id variable is defined
     // and that cdmType is valid
-    int idDVI =
-        switch (cdmType) {
-          case CDM_PROFILE -> profile_idIndex;
-          case CDM_TIMESERIES -> timeseries_idIndex;
-          case CDM_TRAJECTORY -> trajectory_idIndex;
-          case null, default ->
-              throw new SimpleException(
-                  EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
-                      + // but already checked before calling this method
-                      "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, not "
-                      + cdmType
-                      + ".");
-        };
+    int idDVI = -1;
+    if (CDM_PROFILE.equals(cdmType)) idDVI = profile_idIndex;
+    else if (CDM_TIMESERIES.equals(cdmType)) idDVI = timeseries_idIndex;
+    else if (CDM_TRAJECTORY.equals(cdmType)) idDVI = trajectory_idIndex;
+    else {
+      throw new SimpleException(
+          EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+              + // but already checked before calling this method
+              "For convertFlatNcToNcCF1(), cdm_data_type must be TimeSeries, Profile, or Trajectory, not "
+              + cdmType
+              + ".");
+    }
+
     if (idDVI < 0) // but already checked by accessibleViaNcCF
     throw new SimpleException(
           EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)

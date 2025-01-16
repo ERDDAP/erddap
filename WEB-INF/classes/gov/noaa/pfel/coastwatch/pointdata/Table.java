@@ -2198,24 +2198,18 @@ public class Table {
         columnAttributes(col).set("standard_name", "depth"); // this is a commitment to Depth
         columnAttributes(col).set("units", "m"); // CF standard names says canonical units are "m"
 
-        switch (range) {
-          case null -> {
-            globalAttributes.remove("geospatial_vertical_min"); // unidata-related
-
-            globalAttributes.remove("geospatial_vertical_max");
-          }
-          case DoubleArray doubleArray -> {
-            globalAttributes.set("geospatial_vertical_min", range.getDouble(0));
-            globalAttributes.set("geospatial_vertical_max", range.getDouble(1));
-          }
-          case FloatArray floatArray -> {
-            globalAttributes.set("geospatial_vertical_min", range.getFloat(0));
-            globalAttributes.set("geospatial_vertical_max", range.getFloat(1));
-          }
-          default -> {
-            globalAttributes.set("geospatial_vertical_min", range.getInt(0));
-            globalAttributes.set("geospatial_vertical_max", range.getInt(1));
-          }
+        if (range == null) {
+          globalAttributes.remove("geospatial_vertical_min"); // unidata-related
+          globalAttributes.remove("geospatial_vertical_max");
+        } else if (range instanceof DoubleArray) {
+          globalAttributes.set("geospatial_vertical_min", range.getDouble(0));
+          globalAttributes.set("geospatial_vertical_max", range.getDouble(1));
+        } else if (range instanceof FloatArray) {
+          globalAttributes.set("geospatial_vertical_min", range.getFloat(0));
+          globalAttributes.set("geospatial_vertical_max", range.getFloat(1));
+        } else {
+          globalAttributes.set("geospatial_vertical_min", range.getInt(0));
+          globalAttributes.set("geospatial_vertical_max", range.getInt(1));
         }
         globalAttributes.set("geospatial_vertical_units", "m");
         globalAttributes.set(
@@ -2230,24 +2224,18 @@ public class Table {
         columnAttributes(col).set("standard_name", "altitude"); // this is a commitment to Altitude
         columnAttributes(col).set("units", "m"); // CF standard names says canonical units are "m"
 
-        switch (range) {
-          case null -> {
-            globalAttributes.remove("geospatial_vertical_min"); // unidata-related
-
-            globalAttributes.remove("geospatial_vertical_max");
-          }
-          case DoubleArray doubleArray -> {
-            globalAttributes.set("geospatial_vertical_min", range.getDouble(0));
-            globalAttributes.set("geospatial_vertical_max", range.getDouble(1));
-          }
-          case FloatArray floatArray -> {
-            globalAttributes.set("geospatial_vertical_min", range.getFloat(0));
-            globalAttributes.set("geospatial_vertical_max", range.getFloat(1));
-          }
-          default -> {
-            globalAttributes.set("geospatial_vertical_min", range.getInt(0));
-            globalAttributes.set("geospatial_vertical_max", range.getInt(1));
-          }
+        if (range == null) {
+          globalAttributes.remove("geospatial_vertical_min"); // unidata-related
+          globalAttributes.remove("geospatial_vertical_max");
+        } else if (range instanceof DoubleArray) {
+          globalAttributes.set("geospatial_vertical_min", range.getDouble(0));
+          globalAttributes.set("geospatial_vertical_max", range.getDouble(1));
+        } else if (range instanceof FloatArray) {
+          globalAttributes.set("geospatial_vertical_min", range.getFloat(0));
+          globalAttributes.set("geospatial_vertical_max", range.getFloat(1));
+        } else {
+          globalAttributes.set("geospatial_vertical_min", range.getInt(0));
+          globalAttributes.set("geospatial_vertical_max", range.getInt(1));
         }
         globalAttributes.set("geospatial_vertical_units", "m");
         globalAttributes.set(
@@ -10917,106 +10905,104 @@ public class Table {
       // create the columns
       BaseType obt =
           outerSequence.getVar(outerCol); // this doesn't have data, just description of obt
-      switch (obt) {
-        case DByte aByte -> addColumn(obt.getName(), new ByteArray());
-        case DFloat32 float32 -> addColumn(obt.getName(), new FloatArray());
-        case DFloat64 float64 -> addColumn(obt.getName(), new DoubleArray());
-        case DUInt16 int16 -> addColumn(obt.getName(), new ShortArray());
-        case DInt16 int16 -> addColumn(obt.getName(), new ShortArray());
-        case DUInt32 int32 -> addColumn(obt.getName(), new IntArray());
-        case DInt32 int32 -> addColumn(obt.getName(), new IntArray());
-        case DBoolean aBoolean ->
+      if (obt instanceof DByte) addColumn(obt.getName(), new ByteArray());
+      else if (obt instanceof DFloat32) addColumn(obt.getName(), new FloatArray());
+      else if (obt instanceof DFloat64) addColumn(obt.getName(), new DoubleArray());
+      else if (obt instanceof DInt16) addColumn(obt.getName(), new ShortArray());
+      else if (obt instanceof DUInt16) addColumn(obt.getName(), new ShortArray());
+      else if (obt instanceof DInt32) addColumn(obt.getName(), new IntArray());
+      else if (obt instanceof DUInt32) addColumn(obt.getName(), new IntArray());
+      else if (obt instanceof DBoolean)
+        addColumn(
+            obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
+      else if (obt instanceof DString) addColumn(obt.getName(), new StringArray());
+      else if (obt instanceof DSequence) {
+        // *** Start Dealing With InnerSequence
+        // Ensure this is the first innerSequence.
+        // If there are two, the response can't be represented as a simple table.
+        if (innerSequenceColumn != -1) {
+          throw new Exception(
+              errorInMethod
+                  + "The response has more than one inner sequence: "
+                  + getColumnName(innerSequenceColumn)
+                  + " and "
+                  + obt.getName()
+                  + ".");
+        }
+        innerSequenceColumn = outerCol;
+        if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
+
+        // deal with the inner sequence
+        DSequence innerSequence = (DSequence) obt;
+        nInnerColumns = innerSequence.elementCount();
+        AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
+        // String2.log("innerAttributeTable=" + innerAttributeTable);
+        for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
+
+          // create the columns
+          BaseType ibt =
+              innerSequence.getVar(innerCol); // this doesn't have data, just description of ibt
+          if (ibt instanceof DByte) addColumn(ibt.getName(), new ByteArray());
+          else if (ibt instanceof DFloat32) addColumn(ibt.getName(), new FloatArray());
+          else if (ibt instanceof DFloat64) addColumn(ibt.getName(), new DoubleArray());
+          else if (ibt instanceof DUInt16) addColumn(ibt.getName(), new ShortArray());
+          else if (ibt instanceof DInt16) addColumn(ibt.getName(), new ShortArray());
+          else if (ibt instanceof DUInt32) addColumn(ibt.getName(), new IntArray());
+          else if (ibt instanceof DInt32) addColumn(ibt.getName(), new IntArray());
+          else if (ibt instanceof DBoolean)
             addColumn(
-                obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-        case DString string -> addColumn(obt.getName(), new StringArray());
-        case DSequence innerSequence -> {
-          // *** Start Dealing With InnerSequence
-          // Ensure this is the first innerSequence.
-          // If there are two, the response can't be represented as a simple table.
-          if (innerSequenceColumn != -1)
+                ibt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
+          else if (ibt instanceof DString) addColumn(ibt.getName(), new StringArray());
+          else {
             throw new Exception(
                 errorInMethod
-                    + "The response has more than one inner sequence: "
-                    + getColumnName(innerSequenceColumn)
-                    + " and "
-                    + obt.getName()
-                    + ".");
-          innerSequenceColumn = outerCol;
-          if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
+                    + "Unexpected inner variable type="
+                    + ibt.getTypeName()
+                    + " for name="
+                    + ibt.getName());
+          }
 
-          // deal with the inner sequence
-          nInnerColumns = innerSequence.elementCount();
-          AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
-          // String2.log("innerAttributeTable=" + innerAttributeTable);
-          for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
-
-            // create the columns
-            BaseType ibt =
-                innerSequence.getVar(innerCol); // this doesn't have data, just description of ibt
-            switch (ibt) {
-              case DByte dByte -> addColumn(ibt.getName(), new ByteArray());
-              case DFloat32 dFloat32 -> addColumn(ibt.getName(), new FloatArray());
-              case DFloat64 dFloat64 -> addColumn(ibt.getName(), new DoubleArray());
-              case DUInt16 duInt16 -> addColumn(ibt.getName(), new ShortArray());
-              case DInt16 dInt16 -> addColumn(ibt.getName(), new ShortArray());
-              case DUInt32 duInt32 -> addColumn(ibt.getName(), new IntArray());
-              case DInt32 dInt32 -> addColumn(ibt.getName(), new IntArray());
-              case DBoolean dBoolean ->
-                  addColumn(
-                      ibt.getName(),
-                      new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-              case DString dString -> addColumn(ibt.getName(), new StringArray());
-              case null, default ->
-                  throw new Exception(
-                      errorInMethod
-                          + "Unexpected inner variable type="
-                          + ibt.getTypeName()
-                          + " for name="
-                          + ibt.getName());
-            }
-
-            // get the ibt attributes
-            // (some servers return innerAttributeTable, some don't -- see test cases)
-            if (innerAttributeTable == null) {
-              // Dapper needs this approach
-              // note use of getLongName here
-              Attributes tAtt = columnAttributes(nColumns() - 1);
-              OpendapHelper.getAttributes(das, ibt.getLongName(), tAtt);
-              if (tAtt.size() == 0) OpendapHelper.getAttributes(das, ibt.getName(), tAtt);
+          // get the ibt attributes
+          // (some servers return innerAttributeTable, some don't -- see test cases)
+          if (innerAttributeTable == null) {
+            // Dapper needs this approach
+            // note use of getLongName here
+            Attributes tAtt = columnAttributes(nColumns() - 1);
+            OpendapHelper.getAttributes(das, ibt.getLongName(), tAtt);
+            if (tAtt.size() == 0) OpendapHelper.getAttributes(das, ibt.getName(), tAtt);
+          } else {
+            // note use of getName in this section
+            int tCol = nColumns() - 1; // the table column just created
+            // String2.log("try getting attributes for inner " + getColumnName(col));
+            dods.dap.Attribute attribute = innerAttributeTable.getAttribute(ibt.getName());
+            // it should be a container with the attributes for this column
+            if (attribute == null) {
+              String2.log(
+                  errorInMethod + "Unexpected: no attribute for innerVar=" + ibt.getName() + ".");
+            } else if (attribute.isContainer()) {
+              OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
             } else {
-              // note use of getName in this section
-              int tCol = nColumns() - 1; // the table column just created
-              // String2.log("try getting attributes for inner " + getColumnName(col));
-              dods.dap.Attribute attribute = innerAttributeTable.getAttribute(ibt.getName());
-              // it should be a container with the attributes for this column
-              if (attribute == null) {
-                String2.log(
-                    errorInMethod + "Unexpected: no attribute for innerVar=" + ibt.getName() + ".");
-              } else if (attribute.isContainer()) {
-                OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
-              } else {
-                String2.log(
-                    errorInMethod
-                        + "Unexpected: attribute for innerVar="
-                        + ibt.getName()
-                        + " not a container: "
-                        + attribute.getName()
-                        + "="
-                        + attribute.getValueAt(0));
-              }
+              String2.log(
+                  errorInMethod
+                      + "Unexpected: attribute for innerVar="
+                      + ibt.getName()
+                      + " not a container: "
+                      + attribute.getName()
+                      + "="
+                      + attribute.getValueAt(0));
             }
           }
-          // *** End Dealing With InnerSequence
         }
-        case null, default ->
-            throw new Exception(
-                errorInMethod
-                    + "Unexpected outer variable type="
-                    + obt.getTypeName()
-                    + " for name="
-                    + obt.getName());
-      }
+        // *** End Dealing With InnerSequence
 
+      } else {
+        throw new Exception(
+            errorInMethod
+                + "Unexpected outer variable type="
+                + obt.getTypeName()
+                + " for name="
+                + obt.getName());
+      }
       // get the obt attributes
       // (some servers return outerAttributeTable, some don't -- see test cases)
       if (obt instanceof DSequence) {
@@ -11082,29 +11068,35 @@ public class Table {
             // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow
             // + " IC=" + innerCol);
             BaseType ibt = innerVector.get(innerCol);
-            switch (ibt) {
-              case DByte t -> ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
-              case DFloat32 t -> ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
-              case DFloat64 t -> ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
-              case DUInt16 t -> ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-              case DInt16 t -> ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-              case DUInt32 t -> ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-              case DInt32 t -> ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-              case DBoolean t ->
-                  ((ByteArray) columns.get(col + innerCol))
-                      .add(
-                          (byte)
-                              (t.getValue()
-                                  ? 1
-                                  : 0)); // .nc doesn't support booleans, so store byte=0|1
-              case DString t -> ((StringArray) columns.get(col + innerCol)).add(t.getValue());
-              case null, default ->
-                  throw new Exception(
-                      errorInMethod
-                          + "Unexpected inner variable type="
-                          + ibt.getTypeName()
-                          + " for name="
-                          + ibt.getName());
+            if (ibt instanceof DByte t) ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DFloat32 t)
+              ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DFloat64 t)
+              ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DUInt16 t)
+              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DInt16 t)
+              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DUInt32 t)
+              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DInt32 t)
+              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+            else if (ibt instanceof DBoolean t)
+              ((ByteArray) columns.get(col + innerCol))
+                  .add(
+                      (byte)
+                          (t.getValue()
+                              ? 1
+                              : 0)); // .nc doesn't support booleans, so store byte=0|1
+            else if (ibt instanceof DString t)
+              ((StringArray) columns.get(col + innerCol)).add(t.getValue());
+            else {
+              throw new Exception(
+                  errorInMethod
+                      + "Unexpected inner variable type="
+                      + ibt.getTypeName()
+                      + " for name="
+                      + ibt.getName());
             }
           }
         }
@@ -11123,30 +11115,33 @@ public class Table {
         // note addN (not add)
         // I tried storing type of column to avoid instanceof, but no faster.
         BaseType obt = outerVector.get(outerCol);
-        switch (obt) {
-          case DByte t -> ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DFloat32 t -> ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DFloat64 t -> ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DUInt16 t -> ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DInt16 t -> ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DUInt32 t -> ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DInt32 t -> ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case DBoolean t ->
-              ((ByteArray) columns.get(col++))
-                  .addN(
-                      nInnerRows,
-                      (byte)
-                          (t.getValue()
-                              ? 1
-                              : 0)); // .nc doesn't support booleans, so store byte=0|1
-          case DString t -> ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-          case null, default ->
-              throw new Exception(
-                  errorInMethod
-                      + "Unexpected outer variable type="
-                      + obt.getTypeName()
-                      + " for name="
-                      + obt.getName());
+        if (obt instanceof DByte t) ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DFloat32 t)
+          ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DFloat64 t)
+          ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DUInt16 t)
+          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DInt16 t)
+          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DUInt32 t)
+          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DInt32 t)
+          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else if (obt instanceof DBoolean t)
+          ((ByteArray) columns.get(col++))
+              .addN(
+                  nInnerRows,
+                  (byte) (t.getValue() ? 1 : 0)); // .nc doesn't support booleans, so store byte=0|1
+        else if (obt instanceof DString t)
+          ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+        else {
+          throw new Exception(
+              errorInMethod
+                  + "Unexpected outer variable type="
+                  + obt.getTypeName()
+                  + " for name="
+                  + obt.getName());
         }
       }
     }
