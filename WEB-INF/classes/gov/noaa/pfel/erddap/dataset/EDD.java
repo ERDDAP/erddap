@@ -3694,24 +3694,6 @@ public abstract class EDD {
               + "\">"
               + EDStatic.EDDMakeAGraphAr[language]
               + "</a>\n";
-    String tSummary = extendedSummary();
-    String tLicense = combinedGlobalAttributes().getString("license");
-    boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
-    tLicense =
-        tLicense == null
-            ? ""
-            : "    | "
-                + (nonStandardLicense ? "<span class=\"warningColor\">" : "")
-                + EDStatic.licenseAr[language]
-                + " "
-                + (nonStandardLicense ? "</span>" : "")
-                +
-                // link below should have rel=\"license\"
-                EDStatic.htmlTooltipImage(
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) + "</div>")
-                + "\n";
     String encTitle = XML.encodeAsHTML(String2.noLongLines(title(), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
     writer.write(
@@ -3755,14 +3737,6 @@ public abstract class EDD {
             + EDStatic.EDDInformationAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + EDStatic.EDDSummaryAr[language]
-            + " "
-            + EDStatic.htmlTooltipImage(
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>")
-            + "\n"
-            + tLicense
             + getDisplayInfo(language, loggedInAs)
             + (accessibleViaFGDC.length() > 0
                 ? ""
@@ -3827,6 +3801,35 @@ public abstract class EDD {
     }
 
     StringBuilder displayInfoStr = new StringBuilder();
+    String tSummary = extendedSummary();
+    displayInfoStr
+        .append(EDStatic.EDDSummaryAr[language])
+        .append(" ")
+        .append(
+            EDStatic.htmlTooltipImage(
+                language,
+                loggedInAs,
+                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>"))
+        .append("\n");
+
+    String tLicense = combinedGlobalAttributes().getString("license");
+    boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
+    tLicense =
+        tLicense == null
+            ? ""
+            : "    | "
+                + (nonStandardLicense ? "<span class=\"warningColor\">" : "")
+                + EDStatic.licenseAr[language]
+                + " "
+                + (nonStandardLicense ? "</span>" : "")
+                +
+                // link below should have rel=\"license\"
+                EDStatic.htmlTooltipImage(
+                    language,
+                    loggedInAs,
+                    "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) + "</div>")
+                + "\n";
+    displayInfoStr.append(tLicense);
     for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
       String attribute = EDStatic.displayAttributeAr[i];
 
@@ -3836,7 +3839,6 @@ public abstract class EDD {
       }
 
       String attVal = combinedGlobalAttributes().getString(attribute);
-
       displayInfoStr
           .append("    | ")
           .append(EDStatic.displayInfoAr[i])
@@ -3850,7 +3852,6 @@ public abstract class EDD {
                       + "</div>"))
           .append("\n");
     }
-
     return displayInfoStr.toString();
   }
 
