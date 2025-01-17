@@ -229,6 +229,13 @@ public class LoadDatasets extends Thread {
       int nTry = nTryAndDatasets[0];
       int nDatasets = nTryAndDatasets[1];
 
+      // validation for displayInfo and displayAttribute Tags
+      if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+        String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+        EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
+        EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
+      }
+
       erddap.updateLucene(changedDatasetIDs);
       lastLuceneUpdate = System.currentTimeMillis();
 
