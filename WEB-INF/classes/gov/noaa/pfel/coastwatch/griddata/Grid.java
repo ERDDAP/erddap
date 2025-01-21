@@ -1369,47 +1369,39 @@ public class Grid {
 
       // gather data in desired order
       // do directly so as not to waste memory which is precious here since array may be huge
-      switch (array) {
-        case ArrayDouble.D2 add2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++)
-              data[po++] =
-                  add2.get(
-                      tLat,
-                      tLon); // here and below were "nLat-1 - tLat"  when up side down in the .nc
-          // file
-        }
-        case ArrayFloat.D2 afd2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = afd2.get(tLat, tLon);
-        }
-        case ArrayLong.D2 ald2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = ald2.get(tLat, tLon);
-        }
-        case ArrayInt.D2 aid2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = aid2.get(tLat, tLon);
-        }
-        case ArrayShort.D2 asd2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = asd2.get(tLat, tLon);
-        }
-        case ArrayByte.D2 abd2 -> {
-          for (int tLon = 0; tLon < nLon; tLon++)
-            for (int tLat = 0; tLat < nLat; tLat++) data[po++] = abd2.get(tLat, tLon);
-        }
-        case null, default ->
-            throw new RuntimeException(
-                errorInMethod
-                    + "grid array is of unknown type: "
-                    + array
-                    + "\nrank="
-                    + array.getRank()
-                    + " size="
-                    + array.getSize()
-                    + " shape="
-                    + String2.toCSSVString(array.getShape()));
+      if (array instanceof ArrayDouble.D2 add2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++)
+            data[po++] =
+                add2.get(
+                    tLat,
+                    tLon); // here and below were "nLat-1 - tLat"  when up side down in the .nc file
+      } else if (array instanceof ArrayFloat.D2 afd2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = afd2.get(tLat, tLon);
+      } else if (array instanceof ArrayLong.D2 ald2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = ald2.get(tLat, tLon);
+      } else if (array instanceof ArrayInt.D2 aid2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = aid2.get(tLat, tLon);
+      } else if (array instanceof ArrayShort.D2 asd2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = asd2.get(tLat, tLon);
+      } else if (array instanceof ArrayByte.D2 abd2) {
+        for (int tLon = 0; tLon < nLon; tLon++)
+          for (int tLat = 0; tLat < nLat; tLat++) data[po++] = abd2.get(tLat, tLon);
+      } else {
+        throw new RuntimeException(
+            errorInMethod
+                + "grid array is of unknown type: "
+                + array
+                + "\nrank="
+                + array.getRank()
+                + " size="
+                + array.getSize()
+                + " shape="
+                + String2.toCSSVString(array.getShape()));
       }
       Test.ensureEqual(po, data.length, "po");
       setLonLatSpacing();

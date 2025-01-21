@@ -136,74 +136,44 @@ public abstract class PrimitiveArray {
    * @return a PrimitiveArray which (at least initially) uses the array for data storage.
    */
   public static PrimitiveArray factory(Object o, boolean isUnsigned) {
-    switch (o) {
-      case null ->
-          throw new IllegalArgumentException(
-              String2.ERROR + " in PrimitiveArray.factory: o is null.");
-      case char[][] car -> {
-        int nStrings = car.length;
-        StringArray sa = new StringArray(nStrings, false);
-        for (char[] chars : car) {
-          String s = new String(chars);
-          int po0 = s.indexOf('\u0000');
-          if (po0 >= 0) s = s.substring(0, po0);
-          sa.add(s);
-        }
-        return sa;
-      }
-      case double[] da -> {
-        return new DoubleArray(da);
-      }
-      case float[] fa -> {
-        return new FloatArray(fa);
-      }
-      case long[] la -> {
-        return isUnsigned ? new ULongArray(la) : new LongArray(la);
-      }
-      case int[] ia -> {
-        return isUnsigned ? new UIntArray(ia) : new IntArray(ia);
-      }
-      case short[] sa -> {
-        return isUnsigned ? new UShortArray(sa) : new ShortArray(sa);
-      }
-      case byte[] ba -> {
-        return isUnsigned ? new UByteArray(ba) : new ByteArray(ba);
-      }
-      case char[] ca -> {
-        return new CharArray(ca);
-      }
-      case String[] sa -> {
-        return new StringArray(sa);
-      }
-      case Object[] oar -> {
-        int n = oar.length;
-        StringArray sa = new StringArray(n, false);
-        for (Object object : oar) sa.add(object == null ? "" : object.toString());
-        return sa;
-      }
-      case Double d -> {
-        return new DoubleArray(new double[] {d});
-      }
-      case Float f -> {
-        return new FloatArray(new float[] {f});
-      }
-      case Long l -> {
-        return new LongArray(new long[] {l});
-      }
-      case Integer i -> {
-        return new IntArray(new int[] {i});
-      }
-      case Short s -> {
-        return new ShortArray(new short[] {s});
-      }
-      case Byte b -> {
-        return new ByteArray(new byte[] {b});
-      }
-      case Character c -> {
-        return new CharArray(new char[] {c});
-      }
-      default -> {}
+    if (o == null) {
+      throw new IllegalArgumentException(String2.ERROR + " in PrimitiveArray.factory: o is null.");
     }
+
+    if (o instanceof char[][] car) {
+      int nStrings = car.length;
+      StringArray sa = new StringArray(nStrings, false);
+      for (int i = 0; i < nStrings; i++) {
+        String s = new String(car[i]);
+        int po0 = s.indexOf('\u0000');
+        if (po0 >= 0) s = s.substring(0, po0);
+        sa.add(s);
+      }
+      return sa;
+    }
+    if (o instanceof double[] da) return new DoubleArray(da);
+    if (o instanceof float[] fa) return new FloatArray(fa);
+    if (o instanceof long[] la) return isUnsigned ? new ULongArray(la) : new LongArray(la);
+    if (o instanceof int[] ia) return isUnsigned ? new UIntArray(ia) : new IntArray(ia);
+    if (o instanceof short[] sa) return isUnsigned ? new UShortArray(sa) : new ShortArray(sa);
+    if (o instanceof byte[] ba) return isUnsigned ? new UByteArray(ba) : new ByteArray(ba);
+    if (o instanceof char[] ca) return new CharArray(ca);
+    if (o instanceof String[] sa) return new StringArray(sa);
+
+    if (o instanceof Object[]) {
+      Object oar[] = (Object[]) o;
+      int n = oar.length;
+      StringArray sa = new StringArray(n, false);
+      for (int i = 0; i < n; i++) sa.add(oar[i] == null ? "" : oar[i].toString());
+      return sa;
+    }
+    if (o instanceof Double d) return new DoubleArray(new double[] {d.doubleValue()});
+    if (o instanceof Float f) return new FloatArray(new float[] {f.floatValue()});
+    if (o instanceof Long l) return new LongArray(new long[] {l.longValue()});
+    if (o instanceof Integer i) return new IntArray(new int[] {i.intValue()});
+    if (o instanceof Short s) return new ShortArray(new short[] {s.shortValue()});
+    if (o instanceof Byte b) return new ByteArray(new byte[] {b.byteValue()});
+    if (o instanceof Character c) return new CharArray(new char[] {c.charValue()});
 
     // String and fall through
     return new StringArray(new String[] {o.toString()});

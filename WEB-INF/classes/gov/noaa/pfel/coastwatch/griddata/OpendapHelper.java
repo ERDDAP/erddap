@@ -513,58 +513,43 @@ public class OpendapHelper {
    */
   public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
     // String2.log(">>    baseType=" + baseType.getTypeName());
-    switch (baseType) {
-      case DGrid dgrid -> {
-        ArrayList<DArray> al = new ArrayList<>();
-        Iterator<BaseType> e = dgrid.getVariables();
-        while (e.hasNext()) al.add((DArray) e.next());
-        PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
-        for (int i = 0; i < al.size(); i++)
-          paAr[i] = getPrimitiveArray(al.get(i).getPrimitiveVector());
-        return paAr;
-      }
-      case DArray da -> {
-        return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
-      }
-      case DVector dVector -> {
-        return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
-      }
-      case DFloat64 dfloat64 -> {
-        return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
-      }
-      case DFloat32 dfloat32 -> {
-        return new PrimitiveArray[] {new FloatArray(new float[] {dfloat32.getValue()})};
-      }
-      case DUInt32 duint32 -> {
-        return new PrimitiveArray[] {new UIntArray(new int[] {duint32.getValue()})};
-      }
-      case DInt32 dint32 -> {
-        return new PrimitiveArray[] {new IntArray(new int[] {dint32.getValue()})};
-      }
-      case DUInt16 duint16 -> {
-        return new PrimitiveArray[] {new UShortArray(new short[] {duint16.getValue()})};
-      }
-      case DInt16 dint16 -> {
-        return new PrimitiveArray[] {new ShortArray(new short[] {dint16.getValue()})};
-      }
-      case DByte dbyte -> {
-        return new PrimitiveArray[] {new ByteArray(new byte[] {dbyte.getValue()})};
-      }
-      case DBoolean dboolean -> {
-        return new PrimitiveArray[] {
-          new ByteArray(new byte[] {dboolean.getValue() ? (byte) 1 : (byte) 0})
-        };
-      }
-      case DString dstring -> {
-        // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
-        return new PrimitiveArray[] {new StringArray(new String[] {dstring.getValue()})};
-        // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
-      }
-      case null, default -> {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baseType.printVal(baos, " ");
-        throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
-      }
+    if (baseType instanceof DGrid dgrid) {
+      ArrayList<DArray> al = new ArrayList<>();
+      Iterator<BaseType> e = dgrid.getVariables();
+      while (e.hasNext()) al.add((DArray) e.next());
+      PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
+      for (int i = 0; i < al.size(); i++)
+        paAr[i] = getPrimitiveArray(((DArray) al.get(i)).getPrimitiveVector());
+      return paAr;
+    } else if (baseType instanceof DArray da) {
+      return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
+    } else if (baseType instanceof DVector) {
+      return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
+    } else if (baseType instanceof DFloat64 dfloat64) {
+      return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
+    } else if (baseType instanceof DFloat32 dfloat32) {
+      return new PrimitiveArray[] {new FloatArray(new float[] {dfloat32.getValue()})};
+    } else if (baseType instanceof DUInt32 duint32) {
+      return new PrimitiveArray[] {new UIntArray(new int[] {duint32.getValue()})};
+    } else if (baseType instanceof DInt32 dint32) {
+      return new PrimitiveArray[] {new IntArray(new int[] {dint32.getValue()})};
+    } else if (baseType instanceof DUInt16 duint16) {
+      return new PrimitiveArray[] {new UShortArray(new short[] {duint16.getValue()})};
+    } else if (baseType instanceof DInt16 dint16) {
+      return new PrimitiveArray[] {new ShortArray(new short[] {dint16.getValue()})};
+    } else if (baseType instanceof DByte dbyte) {
+      return new PrimitiveArray[] {new ByteArray(new byte[] {dbyte.getValue()})};
+    } else if (baseType instanceof DBoolean dboolean) {
+      return new PrimitiveArray[] {
+        new ByteArray(new byte[] {dboolean.getValue() ? (byte) 1 : (byte) 0})
+      };
+    } else if (baseType instanceof DString dstring) {
+      // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
+      return new PrimitiveArray[] {new StringArray(new String[] {dstring.getValue()})};
+    } else {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      baseType.printVal(baos, " ");
+      throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
     }
   }
 
@@ -903,32 +888,27 @@ public class OpendapHelper {
     Test.ensureNotNull(pv, "pv is null");
     int n = pv.getLength();
     double da[] = new double[n];
-    switch (pv) {
-      case Float32PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
-      }
-      case Float64PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      case BytePrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      case UInt16PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      case Int16PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      case UInt32PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      case Int32PrimitiveVector tpv -> {
-        for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-      }
-      default ->
-          throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
+    if (pv instanceof Float32PrimitiveVector tpv) {
+      for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
+    } else if (pv instanceof Float64PrimitiveVector tpv) {
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else if (pv instanceof BytePrimitiveVector tpv) {
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else if (pv
+        instanceof
+        UInt16PrimitiveVector tpv) { // uint16 is instanceof int16! so must test uint16 first
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else if (pv instanceof Int16PrimitiveVector tpv) {
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else if (pv
+        instanceof
+        UInt32PrimitiveVector tpv) { // uint32 is instanceof int32! so must test uint32 first
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else if (pv instanceof Int32PrimitiveVector tpv) {
+      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
+    } else {
+      throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
     }
-
     return da;
   }
 
