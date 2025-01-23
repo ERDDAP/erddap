@@ -229,12 +229,7 @@ public class LoadDatasets extends Thread {
       int nTry = nTryAndDatasets[0];
       int nDatasets = nTryAndDatasets[1];
 
-      // validation for displayInfo and displayAttribute Tags
-      if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
-        String2.log("Incorrect input to the displayAttribute and displayInfo tags");
-        EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
-        EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
-      }
+      validateDatasetsXmlResults();
 
       erddap.updateLucene(changedDatasetIDs);
       lastLuceneUpdate = System.currentTimeMillis();
@@ -453,6 +448,15 @@ public class LoadDatasets extends Thread {
       synchronized (EDStatic.suggestAddFillValueCSV) {
         EDStatic.suggestAddFillValueCSV.setLength(0);
       }
+    }
+  }
+
+  /** Validation checks post the parsing of the datasets.xml file */
+  private void validateDatasetsXmlResults() {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+      EDStatic.displayAttributeAr = EDStatic.DEFAULT_displayAttributeAr;
+      EDStatic.displayInfoAr = EDStatic.DEFAULT_displayInfoAr;
     }
   }
 

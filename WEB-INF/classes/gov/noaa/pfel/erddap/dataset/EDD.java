@@ -3795,63 +3795,73 @@ public abstract class EDD {
             + "</table>\n");
   }
 
+  /**
+   * This renders the string for the Information section of the dataset page
+   *
+   * @return the String to append to Information row
+   */
   private String getDisplayInfo(int language, String loggedInAs) {
     if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
       return "";
     }
 
     StringBuilder displayInfoStr = new StringBuilder();
-    String tSummary = extendedSummary();
-    displayInfoStr
-        .append(EDStatic.EDDSummaryAr[language])
-        .append(" ")
-        .append(
+
+    for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
+      String attribute = EDStatic.displayAttributeAr[i];
+      String displayInfo = EDStatic.displayInfoAr[i];
+      String value;
+
+      // Handle "summary"
+      if ("summary".equals(attribute)) {
+        String tSummary = extendedSummary();
+        value =
             EDStatic.htmlTooltipImage(
                 language,
                 loggedInAs,
-                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>"))
-        .append("\n");
-
-    String tLicense = combinedGlobalAttributes().getString("license");
-    boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
-    tLicense =
-        tLicense == null
-            ? ""
-            : "    | "
-                + (nonStandardLicense ? "<span class=\"warningColor\">" : "")
-                + EDStatic.licenseAr[language]
-                + " "
-                + (nonStandardLicense ? "</span>" : "")
-                +
-                // link below should have rel=\"license\"
-                EDStatic.htmlTooltipImage(
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) + "</div>")
-                + "\n";
-    displayInfoStr.append(tLicense);
-    for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
-      String attribute = EDStatic.displayAttributeAr[i];
-
-      // Skip "summary" and "license" as they are already handled
-      if ("summary".equals(attribute) || "license".equals(attribute)) {
+                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>");
+        displayInfoStr
+            .append(EDStatic.EDDSummaryAr[language])
+            .append(" ")
+            .append(value)
+            .append("\n");
         continue;
       }
 
+      // Handle "license"
+      if ("license".equals(attribute)) {
+        String tLicense = combinedGlobalAttributes().getString("license");
+        boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
+        value =
+            tLicense == null
+                ? attribute + " is undefined"
+                : (nonStandardLicense ? "<span class=\"warningColor\">" : "")
+                    + EDStatic.licenseAr[language]
+                    + " "
+                    + (nonStandardLicense ? "</span>" : "")
+                    + EDStatic.htmlTooltipImage(
+                        language,
+                        loggedInAs,
+                        "<div class=\"standard_max_width\">"
+                            + XML.encodeAsPreHTML(tLicense)
+                            + "</div>");
+        displayInfoStr.append("    | ").append(value).append("\n");
+        continue;
+      }
+
+      // Handle other attributes
       String attVal = combinedGlobalAttributes().getString(attribute);
-      displayInfoStr
-          .append("    | ")
-          .append(EDStatic.displayInfoAr[i])
-          .append(" ")
-          .append(
-              EDStatic.htmlTooltipImage(
-                  language,
-                  loggedInAs,
-                  "<div class=\"standard_max_width\">"
-                      + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
-                      + "</div>"))
-          .append("\n");
+      value =
+          EDStatic.htmlTooltipImage(
+              language,
+              loggedInAs,
+              "<div class=\"standard_max_width\">"
+                  + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
+                  + "</div>");
+      displayInfoStr.append("    | ").append(displayInfo).append(" ").append(value).append("\n");
     }
+
     return displayInfoStr.toString();
   }
 
