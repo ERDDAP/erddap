@@ -549,6 +549,59 @@
                     </formatterOptions>
                 </configuration>
             </plugin>
+             <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>dokka</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDir>${project.basedir}/dokka/documentation/</outputDir>
+                    <sourceDirectories>
+                        <dir>${project.basedir}/WEB-INF/classes/com/cohort/util/</dir>
+                    </sourceDirectories>
+                    <suppressedFiles>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Calendar2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/DoubleObject.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/File2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/HashDigest.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Image2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LRUCache.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LICENSE.txt</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/MaskingThread.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Math2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/MustBe.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/ResourceBundle2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Script2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/SimpleException.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2Log.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolder.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Test.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
+                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>
+                    </suppressedFiles>
+                    <jdkVersion>17</jdkVersion>
+                    <noStdlibLink>true</noStdlibLink> <!-- This is the Kotlin stdlib -->
+                    <dokkaPlugins>
+                        <plugin>
+                            <groupId>org.jetbrains.dokka</groupId>
+                             <artifactId>gfm-plugin</artifactId>
+                            <version>2.0.0</version>
+                        </plugin>
+                    </dokkaPlugins>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
