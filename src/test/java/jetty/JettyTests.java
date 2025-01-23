@@ -120,6 +120,18 @@ class JettyTests {
     server.stop();
   }
 
+  /** Check if the Institution row attributes are being displayed correctly */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void displayInformation() throws Exception {
+    String results =
+        SSR.getUrlResponseStringUnchanged(
+            "http://localhost:" + PORT + "/erddap/griddap/erdMH1chla1day.html");
+
+    Test.ensureTrue(results.indexOf("value for att1") > 0, "");
+    Test.ensureTrue(results.indexOf("value for att2") > 0, "");
+  }
+
   /** Test the metadata */
   @org.junit.jupiter.api.Test
   @TagJetty

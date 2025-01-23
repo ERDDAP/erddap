@@ -60,7 +60,9 @@ public class EDDTestDataset {
               // Try to set this so the datasets that need to load in the background have a chance
               // and this runs again before the jetty tests to ensure all the datasets are loaded.
               + "<loadDatasetsMinMinutes>4</loadDatasetsMinMinutes>\n"
-              + "<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>\n");
+              + "<loadDatasetsMaxMinutes>8</loadDatasetsMaxMinutes>\n"
+              + "<displayInfo>display1,display2</displayInfo>\n"
+              + "<displayAttribute>att1,att2</displayAttribute>\n");
 
       datasetsXml.append(xmlFragment_test_chars());
       datasetsXml.append(xmlFragment_testZarr_compressedData());
@@ -45504,6 +45506,10 @@ public class EDDTestDataset {
         "    <addAttributes>\n"
         + //
         "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n"
+        + //
+        "        <att name=\"att1\">value for att1</att>\n"
+        + //
+        "        <att name=\"att2\">value for att2</att>\n"
         + //
         "        <att name=\"creator_type\">group</att>\n"
         + //
