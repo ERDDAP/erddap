@@ -44,6 +44,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1816,6 +1817,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       requestReloadASAP();
       return false;
     }
+    Map<String, String> snapshot = snapshot();
 
     // get BadFile and FileTable info and make local copies
     ConcurrentHashMap badFileMap = readBadFileMap(); // already a copy of what's in file
@@ -2057,14 +2059,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       }
 
       // after changes all in place
-      // Currently, update() doesn't trigger these changes.
-      // The problem is that some datasets might update every second, others every
-      // day.
-      // Even if they are done, perhaps do them in ERDDAP ((low)update return
-      // changes?)
-      // ?update rss?
-      // ?subscription and onchange actions?
-
+      if (EDStatic.updateSubsRssOnFileChanges) {
+        Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
+      }
     }
 
     if (verbose)

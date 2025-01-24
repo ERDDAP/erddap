@@ -2613,6 +2613,110 @@ public abstract class EDDGrid extends EDD {
     }
   }
 
+  @Override
+  public Map<String, String> snapshot() {
+    Map<String, String> snapshot = super.snapshot();
+    snapshot.put("nAv", "" + dataVariables.length);
+    for (int av = 0; av < axisVariables.length; av++) {
+      EDVGridAxis variable = axisVariables()[av];
+      snapshot.put("av_" + av + "_name", variable.destinationName());
+      snapshot.put("av_" + av + "_type", variable.destinationDataType());
+      snapshot.put("av_" + av + "_sourceSize", "" + variable.sourceValues().size());
+      snapshot.put("av_" + av + "_minValue", "" + variable.destinationCoarseMin());
+      snapshot.put("av_" + av + "_maxValue", "" + variable.destinationCoarseMax());
+      snapshot.put("av_" + av + "_attr", variable.combinedAttributes().toString());
+    }
+
+    return snapshot;
+  }
+
+  @Override
+  public String changed(Map<String, String> oldSnapshot) {
+    if (oldSnapshot == null) return super.changed(oldSnapshot); // so message is consistent
+
+    Map<String, String> newSnapshot = snapshot();
+    StringBuilder diff = new StringBuilder();
+    // check most important things first
+    if (!oldSnapshot.get("nAv").equals(newSnapshot.get("nAv"))) {
+      diff.append(
+          MessageFormat.format(
+              EDStatic.EDDChangedAxesDifferentNVar,
+              oldSnapshot.get("nAv"),
+              newSnapshot.get("nAv")));
+      return diff.toString(); // because tests below assume nAv are same
+    }
+
+    int nAv = dataVariables.length;
+    for (int av = 0; av < nAv; av++) {
+      String nameKey = "av_" + av + "_name";
+      String typeKey = "av_" + av + "_type";
+      String sourceSizeKey = "av_" + av + "_sourceSize";
+      String minKey = "av_" + av + "_minValue";
+      String maxKey = "av_" + av + "_maxValue";
+      String attrKey = "av_" + av + "_attr";
+      String msg2 = "#" + av + "=" + newSnapshot.get(nameKey);
+      if (!oldSnapshot.get(nameKey).equals(newSnapshot.get(nameKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChangedAxes2Different,
+                    "destinationName",
+                    msg2,
+                    oldSnapshot.get(nameKey),
+                    newSnapshot.get(nameKey))
+                + "\n");
+      }
+      if (!oldSnapshot.get(typeKey).equals(newSnapshot.get(typeKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChangedAxes2Different,
+                    "destinationDataType",
+                    msg2,
+                    oldSnapshot.get(typeKey),
+                    newSnapshot.get(typeKey))
+                + "\n");
+      }
+      if (!oldSnapshot.get(sourceSizeKey).equals(newSnapshot.get(sourceSizeKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChangedAxes2Different,
+                    "numberOfValues",
+                    msg2,
+                    oldSnapshot.get(sourceSizeKey),
+                    newSnapshot.get(sourceSizeKey))
+                + "\n");
+      }
+      if (!oldSnapshot.get(minKey).equals(newSnapshot.get(minKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChangedAxes2Different,
+                    "minValue",
+                    msg2,
+                    oldSnapshot.get(minKey),
+                    newSnapshot.get(minKey))
+                + "\n");
+      }
+      if (!oldSnapshot.get(maxKey).equals(newSnapshot.get(maxKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChangedAxes2Different,
+                    "maxValue",
+                    msg2,
+                    oldSnapshot.get(maxKey),
+                    newSnapshot.get(maxKey))
+                + "\n");
+      }
+      String s = String2.differentLine(oldSnapshot.get(attrKey), newSnapshot.get(attrKey));
+      if (s.length() > 0) {
+        diff.append(
+            MessageFormat.format(EDStatic.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
+                + "\n");
+      }
+    }
+
+    diff.append(super.changed(oldSnapshot));
+    return diff.toString();
+  }
+
   /**
    * This tests if 'old' is different from this in any way. <br>
    * This test is from the view of a subscriber who wants to know when a dataset has changed in any

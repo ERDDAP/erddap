@@ -186,7 +186,8 @@ public class Erddap extends HttpServlet {
       new ConcurrentHashMap<>(16, 0.75f, 4);
 
   /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-  public final ConcurrentHashMap<String, byte[]> rssHashMap = new ConcurrentHashMap<>(16, 0.75f, 4);
+  public static final ConcurrentHashMap<String, byte[]> rssHashMap =
+      new ConcurrentHashMap<>(16, 0.75f, 4);
 
   public final ConcurrentHashMap<String, int[]> failedLogins =
       new ConcurrentHashMap<>(16, 0.75f, 4);
@@ -23550,7 +23551,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param subject for email messages
    * @param change the change description must be specified or nothing is done
    */
-  protected void tryToDoActions(String tDatasetID, EDD cooDataset, String subject, String change) {
+  public static void tryToDoActions(
+      String tDatasetID, EDD cooDataset, String subject, String change) {
     if (String2.isSomething(tDatasetID) && String2.isSomething(change)) {
       if (!String2.isSomething(subject)) subject = "Change to datasetID=" + tDatasetID;
       try {
@@ -23629,7 +23631,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // trigger RSS action
         // (after new dataset is in place and if there is either a current or older dataset)
         if (cooDataset != null) {
-          cooDataset.updateRSS(this, change);
+          cooDataset.updateRSS(change);
         }
 
       } catch (Throwable subT) {

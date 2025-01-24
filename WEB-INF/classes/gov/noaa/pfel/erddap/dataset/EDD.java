@@ -1245,6 +1245,95 @@ public abstract class EDD {
     }
   }
 
+  protected Map<String, String> snapshot() {
+    Map<String, String> snapshot = new HashMap<>();
+    snapshot.put("nDv", "" + dataVariables.length);
+
+    for (int dv = 0; dv < dataVariables.length; dv++) {
+      EDV variable = dataVariables()[dv];
+      snapshot.put("dv_" + dv + "_name", variable.destinationName());
+      snapshot.put("dv_" + dv + "_type", variable.destinationDataType());
+      snapshot.put("dv_" + dv + "_attr", variable.combinedAttributes().toString());
+    }
+
+    snapshot.put("globalAttributes", combinedGlobalAttributes.toString());
+
+    return snapshot;
+  }
+
+  /**
+   * This tests if 'oldSnapshot' is different from this in any way. <br>
+   * This test is from the view of a subscriber who wants to know when a dataset has changed in any
+   * way. <br>
+   * So some things like onChange and reloadEveryNMinutes are not checked. <br>
+   * This only lists the first change found.
+   *
+   * <p>EDDGrid overwrites this to also check the axis variables.
+   *
+   * @param old
+   * @return "" if same or message if not.
+   */
+  public String changed(Map<String, String> oldSnapshot) {
+
+    // FUTURE: perhaps it would be nice if EDDTable changed showed new data.
+    //  so it would appear in email subscription and rss.
+    //  but for many datasets (e.g., ndbc met) there are huge number of buoys. so not practical.
+    if (oldSnapshot == null) return EDStatic.EDDChangedWasnt;
+
+    Map<String, String> newSnapshot = snapshot();
+    StringBuilder diff = new StringBuilder();
+    // check most important things first
+    if (!oldSnapshot.get("nDv").equals(newSnapshot.get("nDv"))) {
+      diff.append(
+          MessageFormat.format(
+              EDStatic.EDDChangedDifferentNVar, oldSnapshot.get("nDv"), newSnapshot.get("nDv")));
+      return diff.toString(); // because tests below assume nDv are same
+    }
+
+    int nDv = dataVariables.length;
+    for (int dv = 0; dv < nDv; dv++) {
+      String nameKey = "dv_" + dv + "_name";
+      String typeKey = "dv_" + dv + "_type";
+      String attrKey = "dv_" + dv + "_attr";
+      String msg2 = "#" + dv + "=" + newSnapshot.get(nameKey);
+      if (!oldSnapshot.get(nameKey).equals(newSnapshot.get(nameKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChanged2Different,
+                    "destinationName",
+                    msg2,
+                    oldSnapshot.get(nameKey),
+                    newSnapshot.get(nameKey))
+                + "\n");
+      }
+      if (!oldSnapshot.get(typeKey).equals(newSnapshot.get(typeKey))) {
+        diff.append(
+            MessageFormat.format(
+                    EDStatic.EDDChanged2Different,
+                    "destinationDataType",
+                    msg2,
+                    oldSnapshot.get(typeKey),
+                    newSnapshot.get(typeKey))
+                + "\n");
+      }
+      String s = String2.differentLine(oldSnapshot.get(attrKey), newSnapshot.get(attrKey));
+      if (s.length() > 0) {
+        diff.append(
+            MessageFormat.format(EDStatic.EDDChanged1Different, "combinedAttribute", msg2, s)
+                + "\n");
+      }
+    }
+
+    // check least important things last
+    String s =
+        String2.differentLine(
+            oldSnapshot.get("globalAttributes"), newSnapshot.get("globalAttributes"));
+    if (s.length() > 0)
+      diff.append(MessageFormat.format(EDStatic.EDDChangedCGADifferent, s) + "\n");
+
+    return diff.toString();
+  }
+
   //    protected static String test1Changed(String msg, String diff) {
   //        return diff.length() == 0? "" : msg + "\n" + diff + "\n";
   //    }
@@ -1333,7 +1422,7 @@ public abstract class EDD {
    *     returns "")
    * @return the rss document
    */
-  public String updateRSS(Erddap erddap, String change) {
+  public String updateRSS(String change) {
     if (change == null || change.length() == 0) return "";
     try {
       // generate the rss xml
@@ -1376,7 +1465,7 @@ public abstract class EDD {
 
       // store the xml
       String rssString = rss.toString();
-      if (erddap != null) erddap.rssHashMap.put(datasetID(), String2.stringToUtf8Bytes(rssString));
+      Erddap.rssHashMap.put(datasetID(), String2.stringToUtf8Bytes(rssString));
       return rssString;
 
     } catch (Throwable rssT) {
