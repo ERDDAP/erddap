@@ -3694,24 +3694,6 @@ public abstract class EDD {
               + "\">"
               + EDStatic.EDDMakeAGraphAr[language]
               + "</a>\n";
-    String tSummary = extendedSummary();
-    String tLicense = combinedGlobalAttributes().getString("license");
-    boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
-    tLicense =
-        tLicense == null
-            ? ""
-            : "    | "
-                + (nonStandardLicense ? "<span class=\"warningColor\">" : "")
-                + EDStatic.licenseAr[language]
-                + " "
-                + (nonStandardLicense ? "</span>" : "")
-                +
-                // link below should have rel=\"license\"
-                EDStatic.htmlTooltipImage(
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) + "</div>")
-                + "\n";
     String encTitle = XML.encodeAsHTML(String2.noLongLines(title(), 80, ""));
     encTitle = String2.replaceAll(encTitle, "\n", "<br>");
     writer.write(
@@ -3755,14 +3737,7 @@ public abstract class EDD {
             + EDStatic.EDDInformationAr[language]
             + ":&nbsp;</td>\n"
             + "    <td>"
-            + EDStatic.EDDSummaryAr[language]
-            + " "
-            + EDStatic.htmlTooltipImage(
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>")
-            + "\n"
-            + tLicense
+            + getDisplayInfo(language, loggedInAs)
             + (accessibleViaFGDC.length() > 0
                 ? ""
                 : "     | <a rel=\"alternate\" \n"
@@ -3818,6 +3793,55 @@ public abstract class EDD {
             + "</td>\n"
             + "  </tr>\n"
             + "</table>\n");
+  }
+
+  /**
+   * This renders the string for the Information section of the dataset page
+   *
+   * @return the String to append to Information row
+   */
+  private String getDisplayInfo(int language, String loggedInAs) {
+    if (EDStatic.displayAttributeAr.length != EDStatic.displayInfoAr.length) {
+      String2.log("Incorrect input to the displayAttribute and displayInfo tags");
+      return "";
+    }
+
+    StringBuilder displayInfoStr = new StringBuilder();
+
+    for (int i = 0; i < EDStatic.displayAttributeAr.length; i++) {
+      String attribute = EDStatic.displayAttributeAr[i];
+      String displayInfo = EDStatic.displayInfoAr[i];
+      String value;
+
+      String attVal = combinedGlobalAttributes().getString(attribute);
+      boolean warningColor = false;
+      // Handle "summary"
+      if ("summary".equals(attribute)) {
+        attVal = extendedSummary();
+        displayInfo = EDStatic.EDDSummaryAr[language];
+      }
+      if ("license".equals(attribute)) {
+        warningColor = attVal != null && !attVal.equals(EDStatic.standardLicense);
+        displayInfo = EDStatic.licenseAr[language];
+      }
+      if (warningColor) {
+        displayInfo = "<span class=\"warningColor\">" + displayInfo + "</span>";
+      }
+      value =
+          EDStatic.htmlTooltipImage(
+              language,
+              loggedInAs,
+              "<div class=\"standard_max_width\">"
+                  + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
+                  + "</div>");
+      if (i != 0) {
+        // Add a spacer between items after the first.
+        displayInfoStr.append("    | ");
+      }
+      displayInfoStr.append(displayInfo).append(" ").append(value).append("\n");
+    }
+
+    return displayInfoStr.toString();
   }
 
   /**

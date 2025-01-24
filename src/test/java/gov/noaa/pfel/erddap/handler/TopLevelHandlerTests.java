@@ -10,6 +10,7 @@ import gov.noaa.pfel.erddap.handlers.TopLevelHandler;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import javax.xml.parsers.SAXParser;
@@ -30,6 +31,7 @@ public class TopLevelHandlerTests {
   private static SaxHandler saxHandler;
   private static SaxParsingContext context;
   private static HashSet<String> preservedAngularDegreeUnitsSet;
+  private static String[] preserverDisplayAttributeAr;
 
   @BeforeAll
   static void initAll() throws Throwable {
@@ -39,6 +41,8 @@ public class TopLevelHandlerTests {
     //        because test execution order is not guaranteed. As a temporary fix,
     //        preserve the original angularDegreeUnitsSet and restore it after the tests.
     preservedAngularDegreeUnitsSet = new HashSet<>(EDStatic.angularDegreeUnitsSet);
+    preserverDisplayAttributeAr =
+        Arrays.copyOf(EDStatic.displayAttributeAr, EDStatic.displayAttributeAr.length);
 
     context = new SaxParsingContext();
 
@@ -71,6 +75,7 @@ public class TopLevelHandlerTests {
     // restore altered angularDegreeUnitsSet because other tests depend on it
     // (e.g. EDDTableFromNcFilesTests#testOrderByMean2)
     EDStatic.angularDegreeUnitsSet = preservedAngularDegreeUnitsSet;
+    EDStatic.displayAttributeAr = preserverDisplayAttributeAr;
   }
 
   @BeforeEach
@@ -109,5 +114,17 @@ public class TopLevelHandlerTests {
   @Test
   void datasetTest() {
     assertEquals(2, context.getNTryAndDatasets()[1]);
+  }
+
+  @Test
+  void displayAttributeTest() {
+    assertEquals(EDStatic.displayAttributeAr[0], "attribute1");
+    assertEquals(EDStatic.displayAttributeAr[1], "attribute2");
+  }
+
+  @Test
+  void displayInfoTest() {
+    assertEquals(EDStatic.displayInfoAr[0], "info1");
+    assertEquals(EDStatic.displayInfoAr[1], "info2");
   }
 }

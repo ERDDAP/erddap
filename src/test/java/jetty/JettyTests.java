@@ -120,6 +120,18 @@ class JettyTests {
     server.stop();
   }
 
+  /** Check if the Institution row attributes are being displayed correctly */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void displayInformation() throws Exception {
+    String results =
+        SSR.getUrlResponseStringUnchanged(
+            "http://localhost:" + PORT + "/erddap/griddap/erdMH1chla1day.html");
+
+    Test.ensureTrue(results.indexOf("value for att1") > 0, "");
+    Test.ensureTrue(results.indexOf("value for att2") > 0, "");
+  }
+
   /** Test the metadata */
   @org.junit.jupiter.api.Test
   @TagJetty
@@ -7098,696 +7110,353 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/info/erdMH1chla1day/index.html");
     expected =
         "<script type=\"application/ld+json\">\n"
-            + //
-            "{\n"
-            + //
-            "  \"@context\": \"http://schema.org\",\n"
-            + //
-            "  \"@type\": \"Dataset\",\n"
-            + //
-            "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
-            + //
-            "  \"headline\": \"erdMH1chla1day\",\n"
-            + //
-            "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n"
-            + //
-            "_lastModified=YYYY-MM-DDThh:mm:ss.000Z\\n"
-            + //
-            "cdm_data_type=Grid\\n"
-            + //
-            "Conventions=CF-1.6, COARDS, ACDD-1.3\\n"
-            + //
-            "Easternmost_Easting=179.9792\\n"
-            + //
-            "geospatial_lat_max=89.97916\\n"
-            + //
-            "geospatial_lat_min=-89.97918\\n"
-            + //
-            "geospatial_lat_units=degrees_north\\n"
-            + //
-            "geospatial_lon_max=179.9792\\n"
-            + //
-            "geospatial_lon_min=-179.9792\\n"
-            + //
-            "geospatial_lon_units=degrees_east\\n"
-            + //
-            "grid_mapping_name=latitude_longitude\\n"
-            + //
-            "history=Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\\n"
-            + //
-            "ERDDAP adds the time dimension.\\n"
-            + //
-            "Direct read of HDF4 file through CDM library\\n"
-            + //
-            "identifier_product_doi=10.5067/AQUA/MODIS_OC.2014.0\\n"
-            + //
-            "identifier_product_doi_authority=https://dx.doi.org\\n"
-            + //
-            "infoUrl=https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\\n"
-            + //
-            "institution=NOAA NMFS SWFSC ERD\\n"
-            + //
-            "instrument=MODIS\\n"
-            + //
-            "keywords_vocabulary=GCMD Science Keywords\\n"
-            + //
-            "l2_flag_names=ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\\n"
-            + //
-            "map_projection=Equidistant Cylindrical\\n"
-            + //
-            "measure=Mean\\n"
-            + //
-            "naming_authority=gov.noaa.pfeg.coastwatch\\n"
-            + //
-            "Northernmost_Northing=89.97916\\n"
-            + //
-            "platform=Aqua\\n"
-            + //
-            "processing_level=L3 Mapped\\n"
-            + //
-            "processing_version=VERSION\\n"
-            + //
-            "product_name=AYYYYMMDD.L3m_DAY_CHL_chlor_a_4km.nc\\n"
-            + //
-            "project=Ocean Biology Processing Group (NASA/GSFC/OBPG)\\n"
-            + //
-            "sourceUrl=(local files)\\n"
-            + //
-            "Southernmost_Northing=-89.97918\\n"
-            + //
-            "spatialResolution=DIST km\\n"
-            + //
-            "standard_name_vocabulary=CF Standard Name Table v70\\n"
-            + //
-            "temporal_range=day\\n"
-            + //
-            "testOutOfDate=now-3days\\n"
-            + //
-            "time_coverage_end=2016-10-17T12:00:00Z\\n"
-            + //
-            "time_coverage_start=2003-01-01T12:00:00Z\\n"
-            + //
-            "Westernmost_Easting=-179.9792\",\n"
-            + //
-            "  \"url\": \"http://localhost:8080/erddap/griddap/erdMH1chla1day.html\",\n"
-            + //
-            "  \"includedInDataCatalog\": {\n"
-            + //
-            "    \"@type\": \"DataCatalog\",\n"
-            + //
-            "    \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
-            + //
-            "    \"sameAs\": \"http://localhost:8080/erddap\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"keywords\": [\n"
-            + //
-            "    \"algorithm\",\n"
-            + //
-            "    \"biology\",\n"
-            + //
-            "    \"center\",\n"
-            + //
-            "    \"chemistry\",\n"
-            + //
-            "    \"chlor_a\",\n"
-            + //
-            "    \"chlorophyll\",\n"
-            + //
-            "    \"color\",\n"
-            + //
-            "    \"concentration\",\n"
-            + //
-            "    \"data\",\n"
-            + //
-            "    \"Earth Science > Oceans > Ocean Chemistry > Chlorophyll\",\n"
-            + //
-            "    \"Earth Science > Oceans > Ocean Optics > Ocean Color\",\n"
-            + //
-            "    \"ecology\",\n"
-            + //
-            "    \"flight\",\n"
-            + //
-            "    \"goddard\",\n"
-            + //
-            "    \"group\",\n"
-            + //
-            "    \"gsfc\",\n"
-            + //
-            "    \"image\",\n"
-            + //
-            "    \"imaging\",\n"
-            + //
-            "    \"L3\",\n"
-            + //
-            "    \"laboratory\",\n"
-            + //
-            "    \"level\",\n"
-            + //
-            "    \"level-3\",\n"
-            + //
-            "    \"mapped\",\n"
-            + //
-            "    \"mass\",\n"
-            + //
-            "    \"mass_concentration_chlorophyll_concentration_in_sea_water\",\n"
-            + //
-            "    \"moderate\",\n"
-            + //
-            "    \"modis\",\n"
-            + //
-            "    \"nasa\",\n"
-            + //
-            "    \"ocean\",\n"
-            + //
-            "    \"ocean color\",\n"
-            + //
-            "    \"oceans\",\n"
-            + //
-            "    \"oci\",\n"
-            + //
-            "    \"optics\",\n"
-            + //
-            "    \"processing\",\n"
-            + //
-            "    \"resolution\",\n"
-            + //
-            "    \"sea\",\n"
-            + //
-            "    \"seawater\",\n"
-            + //
-            "    \"smi\",\n"
-            + //
-            "    \"space\",\n"
-            + //
-            "    \"spectroradiometer\",\n"
-            + //
-            "    \"standard\",\n"
-            + //
-            "    \"time\",\n"
-            + //
-            "    \"water\"\n"
-            + //
-            "  ],\n"
-            + //
-            "  \"license\": \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\\n"
-            + //
-            "The data may be used and redistributed for free but is not intended\\n"
-            + //
-            "for legal use, since it may contain inaccuracies. Neither the data\\n"
-            + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\\n"
-            + //
-            "of their employees or contractors, makes any warranty, express or\\n"
-            + //
-            "implied, including warranties of merchantability and fitness for a\\n"
-            + //
-            "particular purpose, or assumes any legal liability for the accuracy,\\n"
-            + //
-            "completeness, or usefulness, of this information.\",\n"
-            + //
-            "  \"variableMeasured\": [\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"time\",\n"
-            + //
-            "      \"alternateName\": \"Centered Time\",\n"
-            + //
-            "      \"description\": \"Centered Time\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"T\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Centered Time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"time\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"time_origin\",\n"
-            + //
-            "          \"value\": \"01-JAN-1970 00:00:00\"\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": \"2016-10-17T12:00:00Z\",\n"
-            + //
-            "      \"minValue\": \"2003-01-01T12:00:00Z\",\n"
-            + //
-            "      \"propertyID\": \"time\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"latitude\",\n"
-            + //
-            "      \"alternateName\": \"Latitude\",\n"
-            + //
-            "      \"description\": \"Latitude\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Lat\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"Y\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Location\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Latitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"latitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 90\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": -90\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": 89.97916,\n"
-            + //
-            "      \"minValue\": -89.97918,\n"
-            + //
-            "      \"propertyID\": \"latitude\",\n"
-            + //
-            "      \"unitText\": \"degrees_north\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"longitude\",\n"
-            + //
-            "      \"alternateName\": \"Longitude\",\n"
-            + //
-            "      \"description\": \"Longitude\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"axis\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_CoordinateAxisType\",\n"
-            + //
-            "          \"value\": \"Lon\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axis\",\n"
-            + //
-            "          \"value\": \"X\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Location\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Longitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"longitude\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 180\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": -180\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"maxValue\": 179.9792,\n"
-            + //
-            "      \"minValue\": -179.9792,\n"
-            + //
-            "      \"propertyID\": \"longitude\",\n"
-            + //
-            "      \"unitText\": \"degrees_east\"\n"
-            + //
-            "    },\n"
-            + //
-            "    {\n"
-            + //
-            "      \"@type\": \"PropertyValue\",\n"
-            + //
-            "      \"name\": \"chlorophyll\",\n"
-            + //
-            "      \"alternateName\": \"Mean Chlorophyll a Concentration\",\n"
-            + //
-            "      \"description\": \"Mean Chlorophyll a Concentration\",\n"
-            + //
-            "      \"valueReference\": [\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"axisOrDataVariable\",\n"
-            + //
-            "          \"value\": \"data\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"_FillValue\",\n"
-            + //
-            "          \"value\": null\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarMaximum\",\n"
-            + //
-            "          \"value\": 30\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarMinimum\",\n"
-            + //
-            "          \"value\": 0.03\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"colorBarScale\",\n"
-            + //
-            "          \"value\": \"Log\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"ioos_category\",\n"
-            + //
-            "          \"value\": \"Ocean Color\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"long_name\",\n"
-            + //
-            "          \"value\": \"Mean Chlorophyll a Concentration\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"references\",\n"
-            + //
-            "          \"value\": \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"standard_name\",\n"
-            + //
-            "          \"value\": \"concentration_of_chlorophyll_in_sea_water\"\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_max\",\n"
-            + //
-            "          \"value\": 100\n"
-            + //
-            "        },\n"
-            + //
-            "        {\n"
-            + //
-            "          \"@type\": \"PropertyValue\",\n"
-            + //
-            "          \"name\": \"valid_min\",\n"
-            + //
-            "          \"value\": 0.001\n"
-            + //
-            "        }\n"
-            + //
-            "      ],\n"
-            + //
-            "      \"propertyID\": \"concentration_of_chlorophyll_in_sea_water\",\n"
-            + //
-            "      \"unitText\": \"mg m-3\"\n"
-            + //
-            "    }\n"
-            + //
-            "  ],\n"
-            + //
-            "  \"creator\": {\n"
-            + //
-            "    \"@type\": \"Organization\",\n"
-            + //
-            "    \"name\": \"NASA/GSFC/OBPG\",\n"
-            + //
-            "    \"email\": \"data@oceancolor.gsfc.nasa.gov\",\n"
-            + //
-            "    \"sameAs\": \"https://oceandata.sci.gsfc.nasa.gov\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"publisher\": {\n"
-            + //
-            "    \"@type\": \"Organization\",\n"
-            + //
-            "    \"name\": \"NOAA NMFS SWFSC ERD\",\n"
-            + //
-            "    \"email\": \"erd.data@noaa.gov\",\n"
-            + //
-            "    \"sameAs\": \"https://www.pfeg.noaa.gov\"\n"
-            + //
-            "  },\n"
-            + //
-            "  \"dateCreated\": \"2016-10-18T06:45:00.000Z\",\n"
-            + //
-            "  \"identifier\": \"erdMH1chla1day\",\n"
-            + //
-            "  \"temporalCoverage\": \"2003-01-01T12:00:00Z/2016-10-17T12:00:00Z\",\n"
-            + //
-            "  \"spatialCoverage\": {\n"
-            + //
-            "    \"@type\": \"Place\",\n"
-            + //
-            "    \"geo\": {\n"
-            + //
-            "      \"@type\": \"GeoShape\",\n"
-            + //
-            "      \"box\": \"-89.97918 -179.9792 89.97916 179.9792\"\n"
-            + //
-            "    }\n"
-            + //
-            "  }\n"
-            + //
-            "}\n"
-            + //
-            "</script>\n";
+            + "{\n"
+            + "  \"@context\": \"http://schema.org\",\n"
+            + "  \"@type\": \"Dataset\",\n"
+            + "  \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
+            + "  \"headline\": \"erdMH1chla1day\",\n"
+            + "  \"description\": \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\\n"
+            + "_lastModified=YYYY-MM-DDThh:mm:ss.000Z\\n"
+            + "att1=value for att1\\n"
+            + "att2=value for att2\\n"
+            + "cdm_data_type=Grid\\n"
+            + "Conventions=CF-1.6, COARDS, ACDD-1.3\\n"
+            + "Easternmost_Easting=179.9792\\n"
+            + "geospatial_lat_max=89.97916\\n"
+            + "geospatial_lat_min=-89.97918\\n"
+            + "geospatial_lat_units=degrees_north\\n"
+            + "geospatial_lon_max=179.9792\\n"
+            + "geospatial_lon_min=-179.9792\\n"
+            + "geospatial_lon_units=degrees_east\\n"
+            + "grid_mapping_name=latitude_longitude\\n"
+            + "history=Files downloaded daily from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA SWFSC ERD (erd.data@noaa.gov)\\n"
+            + "ERDDAP adds the time dimension.\\n"
+            + "Direct read of HDF4 file through CDM library\\n"
+            + "identifier_product_doi=10.5067/AQUA/MODIS_OC.2014.0\\n"
+            + "identifier_product_doi_authority=https://dx.doi.org\\n"
+            + "infoUrl=https://coastwatch.pfeg.noaa.gov/infog/MH1_chla_las.html\\n"
+            + "institution=NOAA NMFS SWFSC ERD\\n"
+            + "instrument=MODIS\\n"
+            + "keywords_vocabulary=GCMD Science Keywords\\n"
+            + "l2_flag_names=ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\\n"
+            + "map_projection=Equidistant Cylindrical\\n"
+            + "measure=Mean\\n"
+            + "naming_authority=gov.noaa.pfeg.coastwatch\\n"
+            + "Northernmost_Northing=89.97916\\n"
+            + "platform=Aqua\\n"
+            + "processing_level=L3 Mapped\\n"
+            + "processing_version=VERSION\\n"
+            + "product_name=AYYYYMMDD.L3m_DAY_CHL_chlor_a_4km.nc\\n"
+            + "project=Ocean Biology Processing Group (NASA/GSFC/OBPG)\\n"
+            + "sourceUrl=(local files)\\n"
+            + "Southernmost_Northing=-89.97918\\n"
+            + "spatialResolution=DIST km\\n"
+            + "standard_name_vocabulary=CF Standard Name Table v70\\n"
+            + "temporal_range=day\\n"
+            + "testOutOfDate=now-3days\\n"
+            + "time_coverage_end=2016-10-17T12:00:00Z\\n"
+            + "time_coverage_start=2003-01-01T12:00:00Z\\n"
+            + "Westernmost_Easting=-179.9792\",\n"
+            + "  \"url\": \"http://localhost:8080/erddap/griddap/erdMH1chla1day.html\",\n"
+            + "  \"includedInDataCatalog\": {\n"
+            + "    \"@type\": \"DataCatalog\",\n"
+            + "    \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
+            + "    \"sameAs\": \"http://localhost:8080/erddap\"\n"
+            + "  },\n"
+            + "  \"keywords\": [\n"
+            + "    \"algorithm\",\n"
+            + "    \"biology\",\n"
+            + "    \"center\",\n"
+            + "    \"chemistry\",\n"
+            + "    \"chlor_a\",\n"
+            + "    \"chlorophyll\",\n"
+            + "    \"color\",\n"
+            + "    \"concentration\",\n"
+            + "    \"data\",\n"
+            + "    \"Earth Science > Oceans > Ocean Chemistry > Chlorophyll\",\n"
+            + "    \"Earth Science > Oceans > Ocean Optics > Ocean Color\",\n"
+            + "    \"ecology\",\n"
+            + "    \"flight\",\n"
+            + "    \"goddard\",\n"
+            + "    \"group\",\n"
+            + "    \"gsfc\",\n"
+            + "    \"image\",\n"
+            + "    \"imaging\",\n"
+            + "    \"L3\",\n"
+            + "    \"laboratory\",\n"
+            + "    \"level\",\n"
+            + "    \"level-3\",\n"
+            + "    \"mapped\",\n"
+            + "    \"mass\",\n"
+            + "    \"mass_concentration_chlorophyll_concentration_in_sea_water\",\n"
+            + "    \"moderate\",\n"
+            + "    \"modis\",\n"
+            + "    \"nasa\",\n"
+            + "    \"ocean\",\n"
+            + "    \"ocean color\",\n"
+            + "    \"oceans\",\n"
+            + "    \"oci\",\n"
+            + "    \"optics\",\n"
+            + "    \"processing\",\n"
+            + "    \"resolution\",\n"
+            + "    \"sea\",\n"
+            + "    \"seawater\",\n"
+            + "    \"smi\",\n"
+            + "    \"space\",\n"
+            + "    \"spectroradiometer\",\n"
+            + "    \"standard\",\n"
+            + "    \"time\",\n"
+            + "    \"water\"\n"
+            + "  ],\n"
+            + "  \"license\": \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\\n"
+            + "The data may be used and redistributed for free but is not intended\\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\\n"
+            + "of their employees or contractors, makes any warranty, express or\\n"
+            + "implied, including warranties of merchantability and fitness for a\\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\\n"
+            + "completeness, or usefulness, of this information.\",\n"
+            + "  \"variableMeasured\": [\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"time\",\n"
+            + "      \"alternateName\": \"Centered Time\",\n"
+            + "      \"description\": \"Centered Time\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"T\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Centered Time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"time\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"time_origin\",\n"
+            + "          \"value\": \"01-JAN-1970 00:00:00\"\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": \"2016-10-17T12:00:00Z\",\n"
+            + "      \"minValue\": \"2003-01-01T12:00:00Z\",\n"
+            + "      \"propertyID\": \"time\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"latitude\",\n"
+            + "      \"alternateName\": \"Latitude\",\n"
+            + "      \"description\": \"Latitude\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Lat\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"Y\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Location\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Latitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"latitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 90\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": -90\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": 89.97916,\n"
+            + "      \"minValue\": -89.97918,\n"
+            + "      \"propertyID\": \"latitude\",\n"
+            + "      \"unitText\": \"degrees_north\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"longitude\",\n"
+            + "      \"alternateName\": \"Longitude\",\n"
+            + "      \"description\": \"Longitude\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"axis\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_CoordinateAxisType\",\n"
+            + "          \"value\": \"Lon\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axis\",\n"
+            + "          \"value\": \"X\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Location\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Longitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"longitude\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 180\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": -180\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"maxValue\": 179.9792,\n"
+            + "      \"minValue\": -179.9792,\n"
+            + "      \"propertyID\": \"longitude\",\n"
+            + "      \"unitText\": \"degrees_east\"\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"@type\": \"PropertyValue\",\n"
+            + "      \"name\": \"chlorophyll\",\n"
+            + "      \"alternateName\": \"Mean Chlorophyll a Concentration\",\n"
+            + "      \"description\": \"Mean Chlorophyll a Concentration\",\n"
+            + "      \"valueReference\": [\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"axisOrDataVariable\",\n"
+            + "          \"value\": \"data\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"_FillValue\",\n"
+            + "          \"value\": null\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarMaximum\",\n"
+            + "          \"value\": 30\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarMinimum\",\n"
+            + "          \"value\": 0.03\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"colorBarScale\",\n"
+            + "          \"value\": \"Log\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"ioos_category\",\n"
+            + "          \"value\": \"Ocean Color\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"long_name\",\n"
+            + "          \"value\": \"Mean Chlorophyll a Concentration\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"references\",\n"
+            + "          \"value\": \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"standard_name\",\n"
+            + "          \"value\": \"concentration_of_chlorophyll_in_sea_water\"\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_max\",\n"
+            + "          \"value\": 100\n"
+            + "        },\n"
+            + "        {\n"
+            + "          \"@type\": \"PropertyValue\",\n"
+            + "          \"name\": \"valid_min\",\n"
+            + "          \"value\": 0.001\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"propertyID\": \"concentration_of_chlorophyll_in_sea_water\",\n"
+            + "      \"unitText\": \"mg m-3\"\n"
+            + "    }\n"
+            + "  ],\n"
+            + "  \"creator\": {\n"
+            + "    \"@type\": \"Organization\",\n"
+            + "    \"name\": \"NASA/GSFC/OBPG\",\n"
+            + "    \"email\": \"data@oceancolor.gsfc.nasa.gov\",\n"
+            + "    \"sameAs\": \"https://oceandata.sci.gsfc.nasa.gov\"\n"
+            + "  },\n"
+            + "  \"publisher\": {\n"
+            + "    \"@type\": \"Organization\",\n"
+            + "    \"name\": \"NOAA NMFS SWFSC ERD\",\n"
+            + "    \"email\": \"erd.data@noaa.gov\",\n"
+            + "    \"sameAs\": \"https://www.pfeg.noaa.gov\"\n"
+            + "  },\n"
+            + "  \"dateCreated\": \"2016-10-18T06:45:00.000Z\",\n"
+            + "  \"identifier\": \"erdMH1chla1day\",\n"
+            + "  \"temporalCoverage\": \"2003-01-01T12:00:00Z/2016-10-17T12:00:00Z\",\n"
+            + "  \"spatialCoverage\": {\n"
+            + "    \"@type\": \"Place\",\n"
+            + "    \"geo\": {\n"
+            + "      \"@type\": \"GeoShape\",\n"
+            + "      \"box\": \"-89.97918 -179.9792 89.97916 179.9792\"\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n"
+            + "</script>\n";
     results =
         results.replaceAll(
             "time_coverage_end=....-..-..T09:00:00Z", "time_coverage_end=yyyy-mm-ddT09:00:00Z");
