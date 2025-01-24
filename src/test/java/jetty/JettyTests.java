@@ -6906,6 +6906,8 @@ class JettyTests {
               + PORT
               + "/erddap/griddap/erdMHchla8day.timeGaps", // dataset not found
           "https://linux.die.net/man/1/ncdump", // fail, works in browser
+          "https://www.noaa.gov", // fail, works in browser
+          "https://www.noaa.gov/", // fail, works in browser
           "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/", // Whole
           // site
           // seems
