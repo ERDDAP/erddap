@@ -3813,45 +3813,20 @@ public abstract class EDD {
       String displayInfo = EDStatic.displayInfoAr[i];
       String value;
 
+      String attVal = combinedGlobalAttributes().getString(attribute);
+      boolean warningColor = false;
       // Handle "summary"
       if ("summary".equals(attribute)) {
-        String tSummary = extendedSummary();
-        value =
-            EDStatic.htmlTooltipImage(
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) + "</div>");
-        displayInfoStr
-            .append(EDStatic.EDDSummaryAr[language])
-            .append(" ")
-            .append(value)
-            .append("\n");
-        continue;
+        attVal = extendedSummary();
+        displayInfo = EDStatic.EDDSummaryAr[language];
       }
-
-      // Handle "license"
       if ("license".equals(attribute)) {
-        String tLicense = combinedGlobalAttributes().getString("license");
-        boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
-        value =
-            tLicense == null
-                ? attribute + " is undefined"
-                : (nonStandardLicense ? "<span class=\"warningColor\">" : "")
-                    + EDStatic.licenseAr[language]
-                    + " "
-                    + (nonStandardLicense ? "</span>" : "")
-                    + EDStatic.htmlTooltipImage(
-                        language,
-                        loggedInAs,
-                        "<div class=\"standard_max_width\">"
-                            + XML.encodeAsPreHTML(tLicense)
-                            + "</div>");
-        displayInfoStr.append("    | ").append(value).append("\n");
-        continue;
+        warningColor = attVal != null && !attVal.equals(EDStatic.standardLicense);
+        displayInfo = EDStatic.licenseAr[language];
       }
-
-      // Handle other attributes
-      String attVal = combinedGlobalAttributes().getString(attribute);
+      if (warningColor) {
+        displayInfo = "<span class=\"warningColor\">" + displayInfo + "</span>";
+      }
       value =
           EDStatic.htmlTooltipImage(
               language,
@@ -3859,7 +3834,11 @@ public abstract class EDD {
               "<div class=\"standard_max_width\">"
                   + XML.encodeAsPreHTML(attVal != null ? attVal : attribute + " is undefined")
                   + "</div>");
-      displayInfoStr.append("    | ").append(displayInfo).append(" ").append(value).append("\n");
+      if (i != 0) {
+        // Add a spacer between items after the first.
+        displayInfoStr.append("    | ");
+      }
+      displayInfoStr.append(displayInfo).append(" ").append(value).append("\n");
     }
 
     return displayInfoStr.toString();
