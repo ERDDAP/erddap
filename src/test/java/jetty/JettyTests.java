@@ -1,6 +1,8 @@
 package jetty;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.LongArray;
@@ -52,6 +54,10 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
 import java.util.Arrays;
@@ -65,6 +71,7 @@ import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
@@ -130,6 +137,108 @@ class JettyTests {
 
     Test.ensureTrue(results.indexOf("value for att1") > 0, "");
     Test.ensureTrue(results.indexOf("value for att2") > 0, "");
+  }
+
+  /** Test Cors Filter */
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  @TagJetty
+  void testCorsFilter(boolean enableCors) throws Exception {
+    EDStatic.enableCors = enableCors;
+
+    HttpClient client = HttpClient.newHttpClient();
+    URI uri = server.getURI().resolve("/erddap/index.html");
+
+    HttpRequest optionsRequest =
+        HttpRequest.newBuilder(uri).method("OPTIONS", HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(optionsRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest getRequest = HttpRequest.newBuilder(uri).GET().build();
+    validateCorsHeaders(client.send(getRequest, HttpResponse.BodyHandlers.discarding()));
+
+    HttpRequest postRequest =
+        HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build();
+    validateCorsHeaders(client.send(postRequest, HttpResponse.BodyHandlers.discarding()));
+  }
+
+  private void validateCorsHeaders(HttpResponse<?> response) {
+    if (EDStatic.enableCors && response.request().method().equalsIgnoreCase("OPTIONS")) {
+      assertEquals(204, response.statusCode());
+    } else {
+      assertEquals(200, response.statusCode());
+    }
+    if (EDStatic.enableCors) {
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertEquals(
+          "GET, POST, OPTIONS",
+          response.headers().firstValue("Access-Control-Allow-Methods").get());
+      assertTrue(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+      assertEquals(
+          EDStatic.corsAllowHeaders,
+          response.headers().firstValue("Access-Control-Allow-Headers").get());
+    } else {
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Origin").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Methods").isPresent());
+      assertFalse(response.headers().firstValue("Access-Control-Allow-Headers").isPresent());
+    }
+  }
+
+  /** Check string and json ERDDAP version responses */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testErddapVersionResponse() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+
+    String erddapShortVersion = EDStatic.erddapVersion;
+    int po = erddapShortVersion.indexOf('_');
+    if (po >= 0) erddapShortVersion = erddapShortVersion.substring(0, po);
+
+    // test short version string response
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version")).GET().build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    assertEquals("ERDDAP_version=" + erddapShortVersion + "\n", response.body());
+
+    // test full version string response
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version_string")).GET().build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    assertEquals("ERDDAP_version_string=" + EDStatic.erddapVersion + "\n", response.body());
+
+    // test json response using Accept header including deployment info
+    EDStatic.deploymentInfo = "integration testing with jetty";
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version"))
+                .GET()
+                .header("Accept", "application/json")
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    JSONObject jsonResponse = new JSONObject(response.body());
+    assertTrue(jsonResponse.has("version"));
+    assertEquals(erddapShortVersion, jsonResponse.getString("version"));
+    assertTrue(jsonResponse.has("version_full"));
+    assertEquals(EDStatic.erddapVersion, jsonResponse.getString("version_full"));
+    assertTrue(jsonResponse.has("deployment_info"));
+    assertEquals(EDStatic.deploymentInfo, jsonResponse.getString("deployment_info"));
+
+    // test json response using query parameter including deployment info
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/version?format=json"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    // should be equal to the previous json response
+    assertTrue(jsonResponse.similar(new JSONObject(response.body())));
   }
 
   /** Test the metadata */

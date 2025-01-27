@@ -51,6 +51,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
@@ -810,12 +811,16 @@ public class EDStatic {
   public static boolean verbose;
   public static boolean useSaxParser;
   public static final boolean useEddReflection;
+  public static boolean enableCors;
+  public static final String corsAllowHeaders;
+  public static final String[] corsAllowOrigin;
   public static final String[]
       categoryAttributes; // as it appears in metadata (and used for hashmap)
   public static final String[] categoryAttributesInURLs; // fileNameSafe (as used in URLs)
   public static final boolean[] categoryIsGlobal;
   public static int variableNameCategoryAttributeIndex = -1;
   public static final int logMaxSizeMB;
+  public static String deploymentInfo;
 
   public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
   public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
@@ -2300,11 +2305,19 @@ public class EDStatic {
       convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
       useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
+      enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
+      corsAllowHeaders =
+          getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
+      corsAllowOrigin =
+          String2.split(
+              String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
+              ',');
       slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
       variablesMustHaveIoosCategory =
           getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
       warName = getSetupEVString(setup, ev, "warName", "erddap");
       useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
+      deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
 
       // use Lucence?
       if (searchEngine.equals("lucene")) {
