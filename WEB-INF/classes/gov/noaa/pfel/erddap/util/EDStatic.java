@@ -810,6 +810,7 @@ public class EDStatic {
   public static final boolean variablesMustHaveIoosCategory;
   public static boolean verbose;
   public static boolean useSaxParser;
+  public static boolean updateSubsRssOnFileChanges;
   public static final boolean useEddReflection;
   public static boolean enableCors;
   public static final String corsAllowHeaders;
@@ -2304,6 +2305,7 @@ public class EDStatic {
       subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
       convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
+      updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
       useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
       enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
       corsAllowHeaders =

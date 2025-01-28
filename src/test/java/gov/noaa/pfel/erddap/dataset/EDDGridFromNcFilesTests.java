@@ -13,10 +13,12 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import java.util.Arrays;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -37,9 +39,17 @@ import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 class EDDGridFromNcFilesTests {
+  private static boolean initialUpdateRss;
+
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+    initialUpdateRss = EDStatic.updateSubsRssOnFileChanges;
+  }
+
+  @AfterEach
+  void cleanup() {
+    EDStatic.updateSubsRssOnFileChanges = initialUpdateRss;
   }
 
   /** This prints time, lat, and lon values from an .ncml dataset. */
@@ -14049,10 +14059,12 @@ class EDDGridFromNcFilesTests {
    *
    * @throws Throwable if trouble
    */
-  @org.junit.jupiter.api.Test
   @TagSlowTests
-  void testUpdate() throws Throwable {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testUpdate(boolean allowRssUpdates) throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testUpdate()\n");
+    String datasetId = "testGriddedNcFiles";
     EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
     String dataDir = eddGrid.fileDir;
     String tDir = EDStatic.fullTestCacheDirectory;
@@ -14060,6 +14072,9 @@ class EDDGridFromNcFilesTests {
     String dataQuery = "x_wind[][][100][100]";
     String tName, results, expected;
     int language = 0;
+    // This is set back to the initial value in the @After for the class.
+    EDStatic.updateSubsRssOnFileChanges = allowRssUpdates;
+    Erddap.rssHashMap.remove(datasetId);
 
     // *** read the original data
     String2.log("\n*** read original data\n");
@@ -14126,6 +14141,10 @@ class EDDGridFromNcFilesTests {
         oldMaxTime,
         "time_coverage_end");
 
+    byte[] rssAr = Erddap.rssHashMap.get(datasetId);
+    String rss = String2.utf8BytesToString(rssAr);
+    Test.ensureEqual(rss, null, "initial_rss");
+
     // *** rename a data file so it doesn't match regex
     try {
       String2.log("\n*** rename a data file so it doesn't match regex\n");
@@ -14185,6 +14204,46 @@ class EDDGridFromNcFilesTests {
           oldMaxTime,
           "time_coverage_end");
 
+      rssAr = Erddap.rssHashMap.get(datasetId);
+      rss = String2.utf8BytesToString(rssAr);
+      if (!allowRssUpdates) {
+        Test.ensureEqual(rss, null, "initial_rss");
+      } else {
+        String rssExpected =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
+                + "  <channel>\n"
+                + "    <title>ERDDAP: Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</title>\n"
+                + "    <description>This RSS feed changes when the dataset changes.</description>\n"
+                + "    <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+                + "    <pubDate>PUBLISHED_DATE</pubDate>\n"
+                + "    <item>\n"
+                + "      <title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>\n"
+                + "      <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+                + "      <description>The numberOfValues for axisVariable #0=time changed:\n"
+                + "  old=10,\n"
+                + "  new=7.\n"
+                + "The minValue for axisVariable #0=time changed:\n"
+                + "  old=1.1991456E9,\n"
+                + "  new=1.1994048E9.\n"
+                + "The combinedAttribute for axisVariable #0=time changed:\n"
+                + "  old line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;,\n"
+                + "  new line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;.\n"
+                + "A combinedGlobalAttribute changed:\n"
+                + "  old line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;,\n"
+                + "  new line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;.\n"
+                + "</description>\n"
+                + "    </item>\n"
+                + "  </channel>\n"
+                + "</rss>\n";
+        rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+        rss =
+            rss.replaceAll(
+                "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+                "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+        Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
+      }
+
     } finally {
       // rename it back to original
       String2.log("\n*** rename it back to original\n");
@@ -14225,6 +14284,46 @@ class EDDGridFromNcFilesTests {
         eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
+
+    rssAr = Erddap.rssHashMap.get(datasetId);
+    rss = String2.utf8BytesToString(rssAr);
+    String rssExpected =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n"
+            + "  <channel>\n"
+            + "    <title>ERDDAP: Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</title>\n"
+            + "    <description>This RSS feed changes when the dataset changes.</description>\n"
+            + "    <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+            + "    <pubDate>PUBLISHED_DATE</pubDate>\n"
+            + "    <item>\n"
+            + "      <title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>\n"
+            + "      <link>&erddapUrl;/griddap/testGriddedNcFiles.html</link>\n"
+            + "      <description>The numberOfValues for axisVariable #0=time changed:\n"
+            + "  old=7,\n"
+            + "  new=10.\n"
+            + "The minValue for axisVariable #0=time changed:\n"
+            + "  old=1.1994048E9,\n"
+            + "  new=1.1991456E9.\n"
+            + "The combinedAttribute for axisVariable #0=time changed:\n"
+            + "  old line #2=&quot;    actual_range=1.199448E9d,1.1999664E9d&quot;,\n"
+            + "  new line #2=&quot;    actual_range=1.1991888E9d,1.1999664E9d&quot;.\n"
+            + "A combinedGlobalAttribute changed:\n"
+            + "  old line #47=&quot;    time_coverage_start=2008-01-04T12:00:00Z&quot;,\n"
+            + "  new line #47=&quot;    time_coverage_start=2008-01-01T12:00:00Z&quot;.\n"
+            + "</description>\n"
+            + "    </item>\n"
+            + "  </channel>\n"
+            + "</rss>\n";
+    if (!allowRssUpdates) {
+      Test.ensureEqual(rss, null, "initial_rss");
+    } else {
+      rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+      rss =
+          rss.replaceAll(
+              "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+              "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+      Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
+    }
 
     // *** rename a non-data file so it matches the regex
     try {
@@ -14269,6 +14368,19 @@ class EDDGridFromNcFilesTests {
           eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
           oldMaxTime,
           "time_coverage_end");
+
+      rssAr = Erddap.rssHashMap.get(datasetId);
+      rss = String2.utf8BytesToString(rssAr);
+      if (!allowRssUpdates) {
+        Test.ensureEqual(rss, null, "initial_rss");
+      } else {
+        rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+        rss =
+            rss.replaceAll(
+                "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+                "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+        Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
+      }
     } catch (Exception e) {
       String2.log("Note exception being thrown:\n" + MustBe.throwableToString(e));
       throw e;
@@ -14313,6 +14425,19 @@ class EDDGridFromNcFilesTests {
         eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
         oldMaxTime,
         "time_coverage_end");
+
+    rssAr = Erddap.rssHashMap.get(datasetId);
+    rss = String2.utf8BytesToString(rssAr);
+    if (!allowRssUpdates) {
+      Test.ensureEqual(rss, null, "initial_rss");
+    } else {
+      rss = rss.replaceAll("<pubDate>.*</pubDate>", "<pubDate>PUBLISHED_DATE</pubDate>");
+      rss =
+          rss.replaceAll(
+              "<title>This dataset changed ....-..-..T..:..:..Z</title>",
+              "<title>This dataset changed YYYY-MM-DDThh:mm:ssZ</title>");
+      Test.ensureEqual(rss, rssExpected, "results=\n" + rss);
+    }
 
     // test time for update if 0 events
     long cumTime = 0;
