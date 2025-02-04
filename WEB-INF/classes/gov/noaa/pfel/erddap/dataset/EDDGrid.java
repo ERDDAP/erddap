@@ -7234,6 +7234,7 @@ public abstract class EDDGrid extends EDD {
       double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
       boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
       String xScale = "", yScale = ""; // (default) or Linear or Log
+      double aspect = Double.NaN;
       int nVars = 4;
       EDV vars[] = null; // set by .vars or lower
       int axisVarI[] = null, dataVarI[] = null; // set by .vars or lower
@@ -7439,6 +7440,12 @@ public abstract class EDDGrid extends EDD {
             if (!yScale.equals("Log") && !yScale.equals("Linear"))
               yScale = ""; // "" -> (the default)
           }
+          if(pParts.length > 4){
+            aspect = String2.parseDouble(pParts[4]);
+            if(aspect < 0.01 || aspect > 100){
+              aspect = Double.NaN;
+            }
+          }
           if (reallyVerbose)
             String2.log(
                 ".yRange min="
@@ -7448,7 +7455,9 @@ public abstract class EDDGrid extends EDD {
                     + " ascending="
                     + yAscending
                     + " scale="
-                    + yScale);
+                    + yScale
+                    + " aspect="
+                    + aspect);
 
           // just to be clear: ignore any unrecognized .something
         } else if (ampPart.startsWith(".")) {
