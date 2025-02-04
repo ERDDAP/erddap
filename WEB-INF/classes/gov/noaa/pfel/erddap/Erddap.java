@@ -39,6 +39,7 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
+import io.prometheus.metrics.model.snapshots.Unit;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -908,6 +909,9 @@ public class Erddap extends HttpServlet {
       String2.distributeTime(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
       String2.distributeTime(responseTime, EDStatic.responseTimesDistribution24);
       String2.distributeTime(responseTime, EDStatic.responseTimesDistributionTotal);
+
+      recordRequestResponseTime(response.getStatus(), requestUrl, responseTime);
+
       if (verbose)
         String2.log(
             "}}}}#"
@@ -956,9 +960,9 @@ public class Erddap extends HttpServlet {
           EDStatic.sendError(requestNumber, request, response, t);
         } catch (Throwable t3) {
         }
-
-        long tTime = System.currentTimeMillis() - doGetTime;
-        if (verbose)
+        recordRequestResponseTime(response.getStatus(), request.getRequestURI(), responseTime);
+        if (verbose) {
+          long tTime = System.currentTimeMillis() - doGetTime;
           String2.log(
               "}}}}#"
                   + requestNumber
@@ -969,6 +973,7 @@ public class Erddap extends HttpServlet {
                   + "ms"
                   + (tTime >= 600000 ? "  (>10m!)" : tTime >= 10000 ? "  (>10s!)" : "")
                   + "\n");
+        }
       } catch (Throwable t2) {
         String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
       }
@@ -994,6 +999,55 @@ public class Erddap extends HttpServlet {
         String2.log("Caught: " + MustBe.throwableToString(t2));
       }
     }
+  }
+
+  private void recordRequestResponseTime(int responseStatus, String requestUrl, long responseTime) {
+    int protocolStart = EDStatic.warName.length() + 2; // lead and trailing /
+
+    // identify language code, if any
+    int langCodeEnd = requestUrl.indexOf("/", protocolStart);
+    if (langCodeEnd < 0) langCodeEnd = requestUrl.length();
+    String langCode = requestUrl.substring(protocolStart, langCodeEnd);
+    if (!TranslateMessages.languageCodeList.contains(langCode)) {
+      // langCode not found in our list, use default(0)
+      // assume first thing is a protocol
+      langCode = "";
+    } else {
+      protocolStart = langCodeEnd + 1;
+    }
+    int protocolEnd = requestUrl.indexOf("/", protocolStart);
+    if (protocolEnd < 0) protocolEnd = requestUrl.length();
+    String protocol = requestUrl.substring(protocolStart, protocolEnd);
+    String id = protocol;
+    String fileTypeName = "";
+    String endOfRequestUrl = requestUrl.substring(Math.min(protocolEnd + 1, requestUrl.length()));
+    if (protocol.equals("griddap") || protocol.equals("tabledap")) {
+      int dotPo = endOfRequestUrl.lastIndexOf('.');
+      if (dotPo != -1) {
+        id = endOfRequestUrl.substring(0, dotPo);
+        fileTypeName = endOfRequestUrl.substring(dotPo);
+      }
+    } else if (protocol.equals("wms") || protocol.equals("files")) {
+      int slashPo = endOfRequestUrl.lastIndexOf('/');
+      if (slashPo != -1) {
+        id = endOfRequestUrl.substring(0, slashPo);
+        fileTypeName = endOfRequestUrl.substring(Math.min(slashPo + 1, endOfRequestUrl.length()));
+      }
+    }
+    EDD dataset =
+        gridDatasetHashMap.containsKey(id)
+            ? gridDatasetHashMap.get(id)
+            : tableDatasetHashMap.containsKey(id) ? tableDatasetHashMap.get(id) : null;
+    EDStatic.metrics
+        .responseDuration
+        .labelValues(
+            protocol,
+            id,
+            dataset == null ? "" : dataset.className(),
+            fileTypeName,
+            langCode,
+            "" + responseStatus)
+        .observe(Unit.millisToSeconds(responseTime));
   }
 
   /**

@@ -20,6 +20,7 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.EDV;
+import io.prometheus.metrics.model.snapshots.Unit;
 import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -262,9 +263,17 @@ public class LoadDatasets extends Thread {
         // unload them
         emailOrphanDatasetsRemoved(orphanIDSet, changedDatasetIDs, errorsDuringMajorReload);
       }
-
-      EDStatic.nGridDatasets = erddap.gridDatasetHashMap.size();
-      EDStatic.nTableDatasets = erddap.tableDatasetHashMap.size();
+      int newGridCount = erddap.gridDatasetHashMap.size();
+      int newTableCount = erddap.tableDatasetHashMap.size();
+      EDStatic.metrics
+          .datasetsCount
+          .labelValues(Metrics.DatasetCategory.grid.name())
+          .set(newGridCount);
+      EDStatic.metrics
+          .datasetsCount
+          .labelValues(Metrics.DatasetCategory.table.name())
+          .set(newTableCount);
+      EDStatic.metrics.datasetsFailedCount.set(nTry - nDatasets);
 
       // *** print lots of useful information
       long loadDatasetsTime = System.currentTimeMillis() - startTime;
@@ -279,14 +288,14 @@ public class LoadDatasets extends Thread {
               + loadDatasetsTime
               + "ms\n"
               + "  nGridDatasets active="
-              + EDStatic.nGridDatasets
+              + newGridCount
               + " change="
-              + (EDStatic.nGridDatasets - oldNGrid)
+              + (newGridCount - oldNGrid)
               + "\n"
               + "  nTableDatasets active="
-              + EDStatic.nTableDatasets
+              + newTableCount
               + " change="
-              + (EDStatic.nTableDatasets - oldNTable)
+              + (newTableCount - oldNTable)
               + "\n"
               + "  nDatasets in datasets.xml="
               + nDatasets
@@ -296,6 +305,13 @@ public class LoadDatasets extends Thread {
               + "  nUsers="
               + tUserHashMap.size());
 
+      EDStatic.metrics
+          .loadDatasetsDuration
+          .labelValues(
+              majorLoad
+                  ? Metrics.LoadDatasetsType.major.name()
+                  : Metrics.LoadDatasetsType.minor.name())
+          .observe(Unit.millisToSeconds(loadDatasetsTime));
       // minorLoad?
       if (!majorLoad) {
         String2.distributeTime(loadDatasetsTime, EDStatic.minorLoadDatasetsDistribution24);
@@ -385,7 +401,17 @@ public class LoadDatasets extends Thread {
                   + // time
                   String2.right("" + nTry, 7)
                   + String2.right("" + ndf, 6)
-                  + String2.right("" + (EDStatic.nGridDatasets + EDStatic.nTableDatasets), 7)
+                  + String2.right(
+                      ""
+                          + (EDStatic.metrics
+                                  .datasetsCount
+                                  .labelValues(Metrics.DatasetCategory.grid.name())
+                                  .get()
+                              + EDStatic.metrics
+                                  .datasetsCount
+                                  .labelValues(Metrics.DatasetCategory.table.name())
+                                  .get()),
+                      7)
                   + // nTotal
                   String2.right("" + nResponseSucceeded, 10)
                   + " ("

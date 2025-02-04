@@ -18,6 +18,8 @@ import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Metrics;
 import gov.noaa.pmel.sgt.*;
 import gov.noaa.pmel.sgt.dm.*;
 import gov.noaa.pmel.util.*;
@@ -117,8 +119,6 @@ public class SgtMap {
     cRes, cRes, cRes, cRes, cRes, lRes, lRes, iRes, iRes, hRes, hRes, hRes, fRes, fRes, fRes, fRes,
     fRes
   };
-
-  private static int topoFromCache = 0, topoNotFromCache = 0;
 
   /**
    * The nationalBoundary and stateBoundary files must be in the refDirectory. "gshhs_?.b"
@@ -2323,7 +2323,7 @@ public class SgtMap {
       if (fullPrivateDirectory != null) {
         if (File2.touch(fullTopoFileName)) {
           try {
-            topoFromCache++;
+            EDStatic.metrics.sgtMapTopoRequest.labelValues(Metrics.Cache.cached.name()).inc();
             Grid grid = new Grid();
             grid.readGrd(
                 fullTopoFileName, minX, maxX, minY, maxY, graphWidthPixels, graphHeightPixels);
@@ -2336,9 +2336,9 @@ public class SgtMap {
                   "  createTopographyGrid "
                       + topoFileName
                       + " nFromCache="
-                      + topoFromCache
+                      + topoCache()
                       + "* nNotFromCache="
-                      + topoNotFromCache);
+                      + topoNotCache());
             return grid;
           } catch (Throwable t) {
             String2.log(
@@ -2381,15 +2381,15 @@ public class SgtMap {
       if (fullPrivateDirectory != null && grid.lon.length < 600 && grid.lat.length < 600) {
         grid.saveAsGrd(fullPrivateDirectory, topoFileName); // this calls calculateStats
       }
-      topoNotFromCache++;
+      EDStatic.metrics.sgtMapTopoRequest.labelValues(Metrics.Cache.not_cached.name()).inc();
       if (reallyVerbose)
         String2.log(
             "  createTopographyGrid "
                 + topoFileName
                 + " nFromCache="
-                + topoFromCache
+                + topoCache()
                 + " nNotFromCache="
-                + topoNotFromCache
+                + topoNotCache()
                 + "*");
 
       return grid;
@@ -2398,9 +2398,23 @@ public class SgtMap {
     }
   }
 
+  private static long topoCache() {
+    return EDStatic.metrics
+        .sgtMapTopoRequest
+        .labelValues(Metrics.Cache.cached.name())
+        .getLongValue();
+  }
+
+  private static long topoNotCache() {
+    return EDStatic.metrics
+        .sgtMapTopoRequest
+        .labelValues(Metrics.Cache.not_cached.name())
+        .getLongValue();
+  }
+
   /** Returns the topography stats string. */
   public static String topographyStats() {
-    return "SgtMap topography nFromCache=" + topoFromCache + " nNotFromCache=" + topoNotFromCache;
+    return "SgtMap topography nFromCache=" + topoCache() + " nNotFromCache=" + topoNotCache();
   }
 
   // *** Junk Yard *******
