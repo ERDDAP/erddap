@@ -218,7 +218,7 @@ public class EDConfig {
   @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
   @FeatureFlag public final boolean wmsClientActive;
-  @FeatureFlag public final boolean sosActive;
+  @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
   @FeatureFlag public final boolean wmsActive;
   @FeatureFlag public boolean quickRestart;
