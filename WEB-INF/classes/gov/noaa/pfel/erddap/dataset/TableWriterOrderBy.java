@@ -54,7 +54,7 @@ public class TableWriterOrderBy extends TableWriterAll {
     super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt);
     otherTableWriter = tOtherTableWriter;
     String err =
-        EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+        EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
             + "No column names were specified for 'orderBy'.";
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0) throw new SimpleException(err);
     orderBy = String2.split(tOrderByCsv, ',');
@@ -62,7 +62,7 @@ public class TableWriterOrderBy extends TableWriterAll {
     for (String s : orderBy)
       if (s.indexOf('/') >= 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "'orderBy' doesn't support '/' ("
                 + s
                 + ").");
@@ -115,7 +115,7 @@ public class TableWriterOrderBy extends TableWriterAll {
       ascending[ob] = true;
       if (keys[ob] < 0)
         throw new SimpleException(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + "'orderBy' column="
                 + orderBy[ob]
                 + " isn't in the results table.");

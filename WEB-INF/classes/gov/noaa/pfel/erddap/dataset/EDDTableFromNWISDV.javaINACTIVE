@@ -327,7 +327,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
-     *     will be converted to the EDStatic.standardLicense.
+     *     will be converted to the EDStatic.messages.standardLicense.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -401,7 +401,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tLicense = combinedGlobalAttributes.getString("license");
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+                String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
         parameterCode = combinedGlobalAttributes.getString("parameterCode");
         statisticCode = combinedGlobalAttributes.getString("statisticCode");
@@ -744,7 +744,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             } catch (Throwable t) {
                 if (!reallyVerbose)  //if reallyVerbose, it was done above
                     String2.log(encodedSourceUrl);
-                throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+                throw new Throwable(EDStatic.messages.errorFromDataSource + t.toString(), t);
             }
 
             int nRows = table.nRows();

@@ -268,7 +268,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     maxAxis0 = combinedGlobalAttributes.getInt("maxAxis0");
@@ -390,7 +390,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");
@@ -529,12 +529,13 @@ public class EDDTableFromEDDGrid extends EDDTable {
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[0], conVar + conOp + conValD)
                       + ")",
                   MustBe.THERE_IS_NO_DATA
                       + " ("
                       + MessageFormat.format(
-                          EDStatic.queryErrorNeverTrueAr[language], conVar + conOp + conValD)
+                          EDStatic.messages.queryErrorNeverTrueAr[language],
+                          conVar + conOp + conValD)
                       + ")"));
       }
     }
@@ -552,7 +553,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[0],
+                        EDStatic.messages.queryErrorNeverTrueAr[0],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -563,7 +564,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
                 MustBe.THERE_IS_NO_DATA
                     + " "
                     + MessageFormat.format(
-                        EDStatic.queryErrorNeverTrueAr[language],
+                        EDStatic.messages.queryErrorNeverTrueAr[language],
                         edvga.destinationName()
                             + ">="
                             + avMin[av]
@@ -669,7 +670,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
             if (debugMode) String2.log(tTable.dataToString(5));
             if (Thread.currentThread().isInterrupted())
               throw new SimpleException(
-                  "EDDTableFromEDDGrid.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                  "EDDTableFromEDDGrid.getDataForDapQuery"
+                      + EDStatic.messages.caughtInterruptedAr[0]);
 
             standardizeResultsTable(
                 language,
@@ -769,7 +771,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
         if (++cumNRows >= chunkNRows) {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
-                "EDDTableFromDatabase.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                "EDDTableFromDatabase.getDataForDapQuery"
+                    + EDStatic.messages.caughtInterruptedAr[0]);
 
           standardizeResultsTable(
               language,
@@ -803,8 +806,8 @@ public class EDDTableFromEDDGrid extends EDDTable {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + " No results variables?!",
-              EDStatic.queryErrorAr[language] + " No results variables?!"));
+              EDStatic.messages.queryErrorAr[0] + " No results variables?!",
+              EDStatic.messages.queryErrorAr[language] + " No results variables?!"));
     }
   }
 
@@ -899,7 +902,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
       String tSummary =
           (tMaxAxis0 > 0
                   ? MessageFormat.format(
-                          EDStatic.EDDTableFromEDDGridSummaryAr[language], tDatasetID, tMaxAxis0)
+                          EDStatic.messages.EDDTableFromEDDGridSummaryAr[language],
+                          tDatasetID,
+                          tMaxAxis0)
                       + "\n"
                   : "")
               + summaryPA.getString(row);

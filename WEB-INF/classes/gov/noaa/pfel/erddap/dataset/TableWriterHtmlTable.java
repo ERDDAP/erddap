@@ -127,7 +127,7 @@ public class TableWriterHtmlTable extends TableWriter {
     writeUnits = tWriteUnits;
     showFirstNRows = tShowFirstNRows >= 0 ? tShowFirstNRows : Integer.MAX_VALUE;
     tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
+    externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     questionMarkImageUrl = tQuestionMarkImageUrl;
   }
 
@@ -489,7 +489,7 @@ public class TableWriterHtmlTable extends TableWriter {
     if (isMBLimited && !allDataDisplayed)
       writer.write(
           "<span class=\"warningColor\">"
-              + EDStatic.htmlTableMaxMessageAr[language]
+              + EDStatic.messages.htmlTableMaxMessageAr[language]
               + "</span>"
               + (xhtmlMode ? "<br />" : "<br>")
               + "\n");
@@ -566,7 +566,7 @@ public class TableWriterHtmlTable extends TableWriter {
             encode,
             writeUnits,
             tShowFirstNRows,
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile);
     tw.writeAllAndFinish(table);
     tw.close();
   }

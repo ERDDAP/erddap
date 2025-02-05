@@ -371,7 +371,7 @@ public class EDDTableFromSOS extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense. Special case: if addGlobalAttributes
+   *     be converted to the EDStatic.messages.standardLicense. Special case: if addGlobalAttributes
    *     name="summary", then "[standard]" within the value will be replaced by the standardSummary
    *     (from this class).
    * @param tLonSourceName the results field name for the longitude variable (e.g., longitude). The
@@ -601,7 +601,7 @@ public class EDDTableFromSOS extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // get all dv sourceObservedProperties
@@ -1471,7 +1471,7 @@ public class EDDTableFromSOS extends EDDTable {
     for (int station = 0; station < nStations; station++) {
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDTableFromSOS.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
 
       String tStationLonString = "",
           tStationLatString = "",
@@ -1789,7 +1789,10 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                  + "\n("
+                  + t
+                  + ")");
     }
 
     try {
@@ -2118,7 +2121,10 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                  + "\n("
+                  + t
+                  + ")");
     }
     try {
 
@@ -2454,7 +2460,10 @@ public class EDDTableFromSOS extends EDDTable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + "\n(" + t + ")");
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
+                  + "\n("
+                  + t
+                  + ")");
     }
 
     try {

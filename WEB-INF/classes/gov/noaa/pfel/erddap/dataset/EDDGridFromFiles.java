@@ -440,7 +440,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense
+   *     be converted to the EDStatic.messages.standardLicense
    * @param tAxisVariables is an Object[nAxisVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -534,7 +534,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -920,7 +921,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         String tmsg = MustBe.throwableToString(t);
-        if (tmsg.indexOf("inotify instances") >= 0) tmsg += EDStatic.inotifyFixAr[0];
+        if (tmsg.indexOf("inotify instances") >= 0) tmsg += EDStatic.messages.inotifyFixAr[0];
         EDStatic.email(EDStatic.adminEmail, subject, tmsg);
       }
     }
@@ -1096,7 +1097,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
-          throw new SimpleException("EDDGridFromFiles.init" + EDStatic.caughtInterruptedAr[0]);
+          throw new SimpleException(
+              "EDDGridFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -1425,7 +1427,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     if (combinedGlobalAttributes.getString("cdm_data_type") == null)
       combinedGlobalAttributes.add("cdm_data_type", "Grid");
@@ -1851,7 +1853,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     int ndv = sourceDataAttributes.length;
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
-        throw new SimpleException("EDDGridFromFiles.lowUpdate" + EDStatic.caughtInterruptedAr[0]);
+        throw new SimpleException(
+            "EDDGridFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -2726,7 +2729,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (tFileTable == null) tFileTable = getFileTable();
     } catch (Exception e) {
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n(Details: unable to read fileTable.)");
     }
 
@@ -2783,7 +2786,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       if (Thread.currentThread().isInterrupted()) {
         if (workManager != null) workManager.forceShutdown();
         throw new SimpleException(
-            "EDDGridFromFiles.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDGridFromFiles.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
       }
 
       // find next relevant file

@@ -231,22 +231,23 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + "For this dataset, all queries must include a \"datum=\" constraint.",
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[language]
                   + "For this dataset, all queries must include a \"datum=\" constraint."));
     if (Double.isNaN(beginSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + "Missing time>= constraint.",
-              EDStatic.queryErrorAr[language] + "Missing time>= constraint."));
+              EDStatic.messages.queryErrorAr[0] + "Missing time>= constraint.",
+              EDStatic.messages.queryErrorAr[language] + "Missing time>= constraint."));
     if (Double.isNaN(endSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + "If present, the time<= constraint must be valid.",
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[0]
+                  + "If present, the time<= constraint must be valid.",
+              EDStatic.messages.queryErrorAr[language]
                   + "If present, the time<= constraint must be valid."));
     String beginTime =
         Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16); // no seconds

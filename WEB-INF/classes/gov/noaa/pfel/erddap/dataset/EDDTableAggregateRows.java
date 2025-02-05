@@ -280,7 +280,7 @@ public class EDDTableAggregateRows extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // specify what sourceCanConstrain
@@ -535,7 +535,7 @@ public class EDDTableAggregateRows extends EDDTable {
       if (tChild == null) {
         EDD.requestReloadASAP(localChildrenID[c]);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local child["
                 + c
                 + "] datasetID="

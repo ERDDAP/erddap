@@ -354,7 +354,8 @@ public class EDDTableFromOBIS extends EDDTable {
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     <br>
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense plus EDDTableFromOBIS OBIS_LICENSE. <br>
+   *     be converted to the EDStatic.messages.standardLicense plus EDDTableFromOBIS OBIS_LICENSE.
+   *     <br>
    *     Special case: addGlobalAttributes must have a name="creator_email" value=AnEmailAddress for
    *     users to contact regarding publications that use the data in order to comply with license.
    *     A suitable email address can be found by reading the XML response from the sourceURL. <br>
@@ -454,7 +455,7 @@ public class EDDTableFromOBIS extends EDDTable {
           String2.replaceAll(
               tLicense,
               "[standard]",
-              EDStatic.standardLicense
+              EDStatic.messages.standardLicense
                   + "\n\n"
                   + String2.replaceAll(OBIS_LICENSE, "&sourceUrl;", tLocalSourceUrl));
       tLicense = String2.replaceAll(tLicense, "&creator_email;", tCreator_email);
@@ -784,7 +785,7 @@ public class EDDTableFromOBIS extends EDDTable {
           || tToString.indexOf(Math2.memoryTooMuchData) >= 0
           || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) throw t;
 
-      throw new Throwable(EDStatic.errorFromDataSource + tToString, t);
+      throw new Throwable(EDStatic.messages.errorFromDataSource + tToString, t);
     }
     // if (reallyVerbose) String2.log(table.toString());
     table.setColumnName(table.findColumnNumber("LON"), "darwin:Longitude");

@@ -586,7 +586,7 @@ public class EDDTableFromCassandra extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create dataVariables[]
@@ -1422,7 +1422,7 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***

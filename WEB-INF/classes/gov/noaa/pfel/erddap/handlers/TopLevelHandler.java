@@ -177,13 +177,14 @@ public class TopLevelHandler extends State {
       }
       case "commonStandardNames" -> {
         String ts = data.toString();
-        EDStatic.commonStandardNames =
+        EDStatic.messages.commonStandardNames =
             String2.isSomething(ts)
                 ? String2.canonical(StringArray.arrayFromCSV(ts))
-                : EDStatic.DEFAULT_commonStandardNames;
+                : EDStatic.messages.DEFAULT_commonStandardNames;
 
         if (reallyVerbose) {
-          String2.log("commonStandardNames=" + String2.toCSSVString(EDStatic.commonStandardNames));
+          String2.log(
+              "commonStandardNames=" + String2.toCSSVString(EDStatic.messages.commonStandardNames));
         }
       }
       case "decompressedCacheMaxGB" -> {
@@ -333,17 +334,17 @@ public class TopLevelHandler extends State {
         String[] tPalettes =
             String2.isSomething(tContent)
                 ? String2.split(tContent, ',')
-                : EDStatic.DEFAULT_palettes;
+                : EDStatic.messages.DEFAULT_palettes;
         Set<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
-        if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
+        if (!newPaletteSet.containsAll(EDStatic.messages.DEFAULT_palettes_set))
           throw new RuntimeException(
               "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");
         String[] tPalettes0 = new String[tPalettes.length + 1];
         tPalettes0[0] = "";
         System.arraycopy(tPalettes, 0, tPalettes0, 1, tPalettes.length);
         // then copy into place
-        EDStatic.palettes = tPalettes;
-        EDStatic.palettes0 = tPalettes0;
+        EDStatic.messages.palettes = tPalettes;
+        EDStatic.messages.palettes0 = tPalettes0;
 
         if (reallyVerbose) {
           String2.log("palettes=" + String2.toCSSVString(tPalettes));
@@ -385,7 +386,8 @@ public class TopLevelHandler extends State {
       }
       case "standardLicense" -> {
         String ts = data.toString();
-        EDStatic.standardLicense = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardLicense;
+        EDStatic.messages.standardLicense =
+            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardLicense;
 
         if (reallyVerbose) {
           String2.log("standardLicense was set.");
@@ -393,9 +395,9 @@ public class TopLevelHandler extends State {
       }
       case "standardContact" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardContactAr[0];
+        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardContactAr[0];
         ts = String2.replaceAll(ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
-        EDStatic.standardContactAr[0] = ts; // swap into place
+        EDStatic.messages.standardContactAr[0] = ts; // swap into place
 
         if (reallyVerbose) {
           String2.log("standardContact was set.");
@@ -403,8 +405,8 @@ public class TopLevelHandler extends State {
       }
       case "standardDataLicenses" -> {
         String ts = data.toString();
-        EDStatic.standardDataLicensesAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardDataLicensesAr[0];
+        EDStatic.messages.standardDataLicensesAr[0] =
+            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardDataLicensesAr[0];
 
         if (reallyVerbose) {
           String2.log("standardDataLicenses was set.");
@@ -412,8 +414,10 @@ public class TopLevelHandler extends State {
       }
       case "standardDisclaimerOfEndorsement" -> {
         String ts = data.toString();
-        EDStatic.standardDisclaimerOfEndorsementAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardDisclaimerOfEndorsementAr[0];
+        EDStatic.messages.standardDisclaimerOfEndorsementAr[0] =
+            String2.isSomething(ts)
+                ? ts
+                : EDStatic.messages.DEFAULT_standardDisclaimerOfEndorsementAr[0];
 
         if (reallyVerbose) {
           String2.log("standardDisclaimerOfEndorsement was set.");
@@ -421,8 +425,10 @@ public class TopLevelHandler extends State {
       }
       case "standardDisclaimerOfExternalLinks" -> {
         String ts = data.toString();
-        EDStatic.standardDisclaimerOfExternalLinksAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
+        EDStatic.messages.standardDisclaimerOfExternalLinksAr[0] =
+            String2.isSomething(ts)
+                ? ts
+                : EDStatic.messages.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
 
         if (reallyVerbose) {
           String2.log("standardDisclaimerOfExternalLinks was set.");
@@ -430,8 +436,8 @@ public class TopLevelHandler extends State {
       }
       case "standardGeneralDisclaimer" -> {
         String ts = data.toString();
-        EDStatic.standardGeneralDisclaimerAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardGeneralDisclaimerAr[0];
+        EDStatic.messages.standardGeneralDisclaimerAr[0] =
+            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardGeneralDisclaimerAr[0];
 
         if (reallyVerbose) {
           String2.log("standardGeneralDisclaimer was set.");
@@ -439,8 +445,8 @@ public class TopLevelHandler extends State {
       }
       case "standardPrivacyPolicy" -> {
         String ts = data.toString();
-        EDStatic.standardPrivacyPolicyAr[0] =
-            String2.isSomething(ts) ? ts : EDStatic.DEFAULT_standardPrivacyPolicyAr[0];
+        EDStatic.messages.standardPrivacyPolicyAr[0] =
+            String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_standardPrivacyPolicyAr[0];
 
         if (reallyVerbose) {
           String2.log("standardPrivacyPolicy was set.");
@@ -448,14 +454,14 @@ public class TopLevelHandler extends State {
       }
       case "startHeadHtml5" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_startHeadHtml;
+        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_startHeadHtml;
         if (!ts.startsWith("<!DOCTYPE html>")) {
           String2.log(
               String2.ERROR
                   + " in datasets.xml: <startHeadHtml> must start with \"<!DOCTYPE html>\". Using default <startHeadHtml> instead.");
-          ts = EDStatic.DEFAULT_startHeadHtml;
+          ts = EDStatic.messages.DEFAULT_startHeadHtml;
         }
-        EDStatic.startHeadHtml = ts; // swap into place
+        EDStatic.messages.startHeadHtml = ts; // swap into place
 
         if (reallyVerbose) {
           String2.log("startHeadHtml5 was set.");
@@ -463,8 +469,8 @@ public class TopLevelHandler extends State {
       }
       case "startBodyHtml5" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
-        EDStatic.startBodyHtmlAr[0] = ts; // swap into place
+        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_startBodyHtmlAr[0];
+        EDStatic.messages.startBodyHtmlAr[0] = ts; // swap into place
 
         if (reallyVerbose) {
           String2.log("startBodyHtml5 was set.");
@@ -472,8 +478,8 @@ public class TopLevelHandler extends State {
       }
       case "theShortDescriptionHtml" -> {
         String ts = data.toString();
-        ts = String2.isSomething(ts) ? ts : EDStatic.DEFAULT_theShortDescriptionHtmlAr[0];
-        EDStatic.theShortDescriptionHtmlAr[0] = ts; // swap into place
+        ts = String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_theShortDescriptionHtmlAr[0];
+        EDStatic.messages.theShortDescriptionHtmlAr[0] = ts; // swap into place
 
         if (reallyVerbose) {
           String2.log("theShortDescriptionHtml was set.");
@@ -481,9 +487,9 @@ public class TopLevelHandler extends State {
       }
       case "endBodyHtml5" -> {
         String ts = data.toString();
-        EDStatic.endBodyHtmlAr[0] =
+        EDStatic.messages.endBodyHtmlAr[0] =
             String2.replaceAll(
-                String2.isSomething(ts) ? ts : EDStatic.DEFAULT_endBodyHtmlAr[0],
+                String2.isSomething(ts) ? ts : EDStatic.messages.DEFAULT_endBodyHtmlAr[0],
                 "&erddapVersion;",
                 EDStatic.erddapVersion);
 

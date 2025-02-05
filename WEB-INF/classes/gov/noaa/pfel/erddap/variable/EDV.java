@@ -554,12 +554,12 @@ public class EDV {
     if (hasColorBarMinMax && tMin >= tMax) // this may change if flipped range is allowed
     throw new IllegalArgumentException(
           "colorBarMinimum=" + tMin + " must be less than colorBarMaximum=" + tMax + ".");
-    if (tPalette != null && String2.indexOf(EDStatic.palettes, tPalette) < 0)
+    if (tPalette != null && String2.indexOf(EDStatic.messages.palettes, tPalette) < 0)
       throw new IllegalArgumentException(
           "colorBarPalette="
               + tPalette
               + " must be one of "
-              + String2.toCSSVString(EDStatic.palettes)
+              + String2.toCSSVString(EDStatic.messages.palettes)
               + " (default='Rainbow').");
     if (tContinuous != null && !tContinuous.equals("true") && !tContinuous.equals("false"))
       throw new IllegalArgumentException(

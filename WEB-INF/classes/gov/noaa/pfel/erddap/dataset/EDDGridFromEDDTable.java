@@ -230,7 +230,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tAxisVariables is an Object[nAxisVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -296,7 +296,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     accessibleViaFiles =
         EDStatic.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
     onChange = tOnChange;
@@ -323,7 +324,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     if (combinedGlobalAttributes.getString("cdm_data_type") == null)
       combinedGlobalAttributes.add("cdm_data_type", "Grid");

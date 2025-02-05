@@ -629,9 +629,9 @@ public class GridDataAccessor implements AutoCloseable {
       throw t instanceof WaitThenTryAgainException
           ? t
           : new WaitThenTryAgainException(
-              EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+              EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                   + "\n("
-                  + EDStatic.errorFromDataSource
+                  + EDStatic.messages.errorFromDataSource
                   + tToString
                   + ")",
               t);
@@ -708,7 +708,7 @@ public class GridDataAccessor implements AutoCloseable {
               || !Math2.almostEqual(
                   9, pa.getDouble(0), avInDriverExpectedValues[av])) { // source values
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "]=\""
@@ -723,7 +723,7 @@ public class GridDataAccessor implements AutoCloseable {
           String tError = gda.axisValues[av].almostEqual(pa); // destination values
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n(Details: GridDataAccessor.increment: partialResults["
                     + av
                     + "] was not as expected.\n"

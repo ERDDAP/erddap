@@ -1181,7 +1181,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of
-   *     value="[standard]" will be converted to the EDStatic.standardLicense.
+   *     value="[standard]" will be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3 or 4]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source, without the
    *     outer or inner sequence name), <br>
@@ -1710,7 +1710,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         updateEveryNMillis = 0; // disable the inotify system for this instance
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         msg = MustBe.throwableToString(t);
-        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.inotifyFixAr[0];
+        if (msg.indexOf("inotify instances") >= 0) msg += EDStatic.messages.inotifyFixAr[0];
         EDStatic.email(EDStatic.adminEmail, subject, msg);
         msg = "";
       }
@@ -1901,7 +1901,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       elapsedTime = System.currentTimeMillis();
       while (tFileListPo < tFileNamePA.size()) {
         if (Thread.currentThread().isInterrupted())
-          throw new SimpleException("EDDTableFromFiles.init" + EDStatic.caughtInterruptedAr[0]);
+          throw new SimpleException(
+              "EDDTableFromFiles.init" + EDStatic.messages.caughtInterruptedAr[0]);
 
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
@@ -2277,7 +2278,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     // if (debugMode) String2.log(">> EDDTableFromFiles " +
     // Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished making
@@ -3235,7 +3236,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
     int nChanges = 0; // BadFiles or FileTable
     for (int evi = 0; evi < nEvents; evi++) {
       if (Thread.currentThread().isInterrupted())
-        throw new SimpleException("EDDTableFromFiles.lowUpdate" + EDStatic.caughtInterruptedAr[0]);
+        throw new SimpleException(
+            "EDDTableFromFiles.lowUpdate" + EDStatic.messages.caughtInterruptedAr[0]);
 
       String fullName = contexts.get(evi);
       String dirName = File2.getDirectory(fullName);
@@ -4962,8 +4964,8 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         throw t;
         // throw t instanceof WaitThenTryAgainException? t :
         // new WaitThenTryAgainException(
-        // EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) +
-        // "\n(" + EDStatic.errorFromDataSource + tToString + ")", t);
+        // EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr) +
+        // "\n(" + EDStatic.messages.errorFromDataSource + tToString + ")", t);
       }
 
     } finally {

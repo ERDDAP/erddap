@@ -233,7 +233,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 Variable var = ncFile.findVariable(tDataVariables[dvi].sourceName());  
                 if (var == null) 
                     throw new RuntimeException(
-                        MessageFormat.format(EDStatic.errorNotFoundIn,
+                        MessageFormat.format(EDStatic.messages.errorNotFoundIn,
                             "dataVariableSourceName=" + tDataVariables[dvi].sourceName(),
                             fileName)); //don't show directory
                 Array array = var.read(selection);
