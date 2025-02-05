@@ -824,7 +824,7 @@ public class EDV {
       combinedAttributes.remove(DECIMAL_DIGITS);
     }
 
-    if (EDStatic.variablesMustHaveIoosCategory) {
+    if (EDStatic.config.variablesMustHaveIoosCategory) {
       String ic = combinedAttributes().getString("ioos_category");
       Test.ensureSomethingUnicode(ic, errorInMethod + "ioos_category");
       Test.ensureTrue(
@@ -1079,8 +1079,8 @@ public class EDV {
   }
 
   /**
-   * The destination units for this variable (presumably using the EDStatic.units_standard, e.g.,
-   * UDUNITS).
+   * The destination units for this variable (presumably using the EDStatic.config.units_standard,
+   * e.g., UDUNITS).
    *
    * @return the destination units for this variable (e.g., "m") (may be null).
    */
@@ -1096,7 +1096,7 @@ public class EDV {
   public String ucumUnits() {
     // not yet set?
     if ("\u0000".equals(ucumUnits)) {
-      if ("UDUNITS".equals(EDStatic.units_standard)) {
+      if ("UDUNITS".equals(EDStatic.config.units_standard)) {
         try {
           ucumUnits = Units2.udunitsToUcum(units()); // null returns null
         } catch (Throwable t) {

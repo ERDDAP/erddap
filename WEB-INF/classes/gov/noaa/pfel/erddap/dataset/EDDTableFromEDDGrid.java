@@ -67,7 +67,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     Attributes tAddGlobalAttributes = null;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -253,7 +253,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
     }
     // for rest of constructor, use temporary, stable tChildDataset reference.
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
     // global attributes
     localSourceUrl = tChildDataset.localSourceUrl;
@@ -434,7 +434,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -591,7 +591,9 @@ public class EDDTableFromEDDGrid extends EDDTable {
 
     StringBuilder gridDapQuery = new StringBuilder();
     String gridRequestUrl =
-        "/griddap/" + tChildDataset.datasetID() + ".dods"; // after EDStatic.baseUrl, before '?'
+        "/griddap/"
+            + tChildDataset.datasetID()
+            + ".dods"; // after EDStatic.config.baseUrl, before '?'
 
     if (resultsDvNames.size() > 0 || constraintsDvNames.size() > 0) {
       // handle a request for 1+ data variables (in results or constraint variables)
@@ -646,7 +648,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
               findDataVariableByDestinationName(queryDV[dv].destinationName());
 
         // make a table to hold a chunk of the results
-        int chunkNRows = EDStatic.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
+        int chunkNRows = EDStatic.config.partialRequestMaxCells / (childDatasetNAV + nQueryDV);
         Table tTable =
             makeEmptySourceTable(
                 sourceTableVars,
@@ -750,7 +752,7 @@ public class EDDTableFromEDDGrid extends EDDTable {
       NDimensionalIndex ndIndex = new NDimensionalIndex(ndShape);
 
       // make a table to hold a chunk of the results
-      int chunkNRows = EDStatic.partialRequestMaxCells / nActiveEdvga;
+      int chunkNRows = EDStatic.config.partialRequestMaxCells / nActiveEdvga;
       Table tTable = new Table(); // source table, but source here is tChildDataset's destination
       PrimitiveArray paAr[] = new PrimitiveArray[nActiveEdvga];
       for (int aav = 0; aav < nActiveEdvga; aav++) {

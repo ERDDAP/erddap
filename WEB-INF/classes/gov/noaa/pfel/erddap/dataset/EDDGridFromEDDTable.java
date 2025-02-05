@@ -69,7 +69,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -299,7 +299,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       accessibleViaWMS =
           String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -506,7 +506,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
   /**
    * This gets source data (not yet converted to destination data) from the data source for this
    * EDDGrid. Because this is called by GridDataAccessor, the request won't be the full user's
-   * request, but will be a partial request (for less than EDStatic.partialRequestMaxBytes).
+   * request, but will be a partial request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

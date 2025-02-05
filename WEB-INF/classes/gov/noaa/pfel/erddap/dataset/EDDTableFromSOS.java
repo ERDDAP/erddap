@@ -120,7 +120,7 @@ public class EDDTableFromSOS extends EDDTable {
   protected static final int stationProcedureCol = 5;
   protected static final String defaultStationIdSourceName = "station_id";
   protected static final String stationIdDestinationName = "station_id";
-  static final String sosCopyDir = EDStatic.fullCopyDirectory + "_SOS_cache/";
+  static final String sosCopyDir = EDStatic.config.fullCopyDirectory + "_SOS_cache/";
 
   /**
    * The first nFixedVariables dataVariables are always created automatically (don't include in
@@ -666,7 +666,7 @@ public class EDDTableFromSOS extends EDDTable {
     // to test, set this to true in test method, not here.
     boolean testQuickRestart = false;
     if (quickRestartFileExists
-        && (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()))) {
+        && (testQuickRestart || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()))) {
       // use the quickRestartFile
       // Note that if this fails (any reason, e.g., damaged quickRestartFile)
       //  the dataset will reload at next majorLoadDatasets,
@@ -1774,7 +1774,7 @@ public class EDDTableFromSOS extends EDDTable {
     String grabFileName = cacheDirectory() + "grabFile" + String2.md5Hex12(kvp);
     long downloadTime = System.currentTimeMillis();
     try {
-      if (EDStatic.developmentMode && File2.isFile(grabFileName)) {
+      if (EDStatic.config.developmentMode && File2.isFile(grabFileName)) {
       } else SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
       downloadTime = System.currentTimeMillis() - downloadTime;
     } catch (Throwable t) {
@@ -2042,7 +2042,7 @@ public class EDDTableFromSOS extends EDDTable {
                 + processTime
                 + "ms");
 
-      if (!EDStatic.developmentMode)
+      if (!EDStatic.config.developmentMode)
         File2.simpleDelete(grabFileName); // don't keep in cache. SOS datasets change frequently.
 
     } catch (Throwable t) {
@@ -2052,7 +2052,7 @@ public class EDDTableFromSOS extends EDDTable {
               + " while processing response from requestUrl="
               + localSourceUrl
               + kvp);
-      if (!EDStatic.developmentMode)
+      if (!EDStatic.config.developmentMode)
         File2.simpleDelete(grabFileName); // don't keep in cache. SOS datasets change frequently.
       throw t;
     }

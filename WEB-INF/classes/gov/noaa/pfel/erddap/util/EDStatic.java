@@ -12,10 +12,8 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
-import com.cohort.util.ResourceBundle2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.String2LogOutputStream;
@@ -50,15 +48,12 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromCassandra;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamFromHttpResponse;
-import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.awt.Color;
-import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -74,7 +69,6 @@ import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +77,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -99,7 +92,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -108,17 +100,6 @@ import software.amazon.awssdk.transfer.s3.S3TransferManager;
 public class EDStatic {
 
   public static final Cleaner cleaner = Cleaner.create();
-
-  /**
-   * These are options used to control behavior for testing. They should be their default values
-   * during normal operation. Better encapsulation of EDStatic initilization would mean we can get
-   * rid of these.
-   */
-  public static boolean skipEmailThread = false;
-
-  public static boolean forceSynchronousLoading = false;
-
-  public static boolean usePrometheusMetrics = true;
 
   /** The all lowercase name for the program that appears in urls. */
   public static final String programname = "erddap";
@@ -215,12 +196,6 @@ public class EDStatic {
    */
   public static final String erddapVersion = "2.25_1"; // see comment above
 
-  /**
-   * This is almost always false. During development, Bob sets this to true. No one else needs to.
-   * If true, ERDDAP uses setup2.xml and datasets2.xml (and messages2.xml if it exists).
-   */
-  public static boolean developmentMode = false;
-
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
 
@@ -230,24 +205,10 @@ public class EDStatic {
   // both reply with server version, neither replies with coreVersion
   // spec says #.#.#, but Gallagher says #.# is fine.
 
-  /**
-   * contentDirectory is the local directory on this computer, e.g., [tomcat]/content/erddap/ It
-   * will have a slash at the end.
-   */
-  public static String contentDirectory;
-
   public static final String INSTITUTION = "institution";
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
-  // fgdc and iso19115XmlDirectory are used for virtual URLs.
-  public static final String fgdcXmlDirectory = "metadata/fgdc/xml/"; // virtual
-  public static final String iso19115XmlDirectory = "metadata/iso19115/xml/"; // virtual
-  public static final String DOWNLOAD_DIR = "download/";
-  public static final String IMAGES_DIR = "images/";
-  public static final String PUBLIC_DIR = "public/";
-  public static final String fullPaletteDirectory;
-  public static final String fullPublicDirectory;
-  public static final String imageDir; // local directory on this computer
+  public static final EDConfig config;
   public static final Metrics metrics;
   public static final Tally tally = new Tally();
   public static int[] emailThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
@@ -385,39 +346,6 @@ public class EDStatic {
   public static int nTableThreads = DEFAULT_nTableThreads; // will be a valid number 1+
   public static String convertInterpolateRequestCSVExample = null; // may be null or ""
   public static String convertInterpolateDatasetIDVariableList[] = new String[0]; // may be [0]
-
-  // things that were in setup.xml (discouraged) and are now in datasets.xml (v2.00+)
-  public static final int DEFAULT_cacheMinutes = 60;
-  public static final String DEFAULT_drawLandMask = "under";
-  public static final int DEFAULT_graphBackgroundColorInt = 0xffccccff;
-  public static final int DEFAULT_loadDatasetsMinMinutes = 15;
-  public static final int DEFAULT_loadDatasetsMaxMinutes = 60;
-  public static final String DEFAULT_logLevel = "info"; // warning|info|all
-  public static final int DEFAULT_partialRequestMaxBytes =
-      490000000; // this is just below tds default <opendap><binLimit> of 500MB
-  public static final int DEFAULT_partialRequestMaxCells = 10000000;
-  public static final int DEFAULT_slowDownTroubleMillis = 1000;
-  public static final int DEFAULT_unusualActivity = 10000;
-  public static final int DEFAULT_updateMaxEvents = 10;
-  public static final int DEFAULT_unusualActivityFailPercent = 25;
-  public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
-  public static long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
-  public static String drawLandMask = DEFAULT_drawLandMask;
-  public static boolean emailDiagnosticsToErdData = true;
-  public static Color graphBackgroundColor =
-      new Color(DEFAULT_graphBackgroundColorInt, true); // hasAlpha
-  public static long loadDatasetsMinMillis =
-      DEFAULT_loadDatasetsMinMinutes * Calendar2.MILLIS_PER_MINUTE;
-  public static long loadDatasetsMaxMillis =
-      DEFAULT_loadDatasetsMaxMinutes * Calendar2.MILLIS_PER_MINUTE;
-  // logLevel handled specially by setLogLevel
-  public static int partialRequestMaxBytes = DEFAULT_partialRequestMaxBytes;
-  public static int partialRequestMaxCells = DEFAULT_partialRequestMaxCells;
-  public static int slowDownTroubleMillis = DEFAULT_slowDownTroubleMillis;
-  public static int unusualActivity = DEFAULT_unusualActivity;
-  public static int updateMaxEvents = DEFAULT_updateMaxEvents;
-  public static int unusualActivityFailPercent = DEFAULT_unusualActivityFailPercent;
-  public static boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
   // Default max of 25 copy tasks at a time, so different datasets have a chance.
   // Otherwise, some datasets could take months to do all the tasks.
@@ -577,90 +505,6 @@ public class EDStatic {
   public static final String DONT_LOG_THIS_EMAIL = "!!! DON'T LOG THIS EMAIL: ";
 
   /**
-   * These values are loaded from the [contentDirectory]setup.xml file. See comments in the
-   * [contentDirectory]setup.xml file.
-   */
-  public static final String baseUrl;
-
-  public static final String baseHttpsUrl; // won't be null, may be "(not specified)"
-  public static String bigParentDirectory;
-  public static final String adminInstitution;
-  public static final String adminInstitutionUrl;
-  public static final String adminIndividualName;
-  public static final String adminPosition;
-  public static final String adminPhone;
-  public static final String adminAddress;
-  public static final String adminCity;
-  public static final String adminStateOrProvince;
-  public static final String adminPostalCode;
-  public static final String adminCountry;
-  public static final String adminEmail;
-  public static final String accessConstraints;
-  public static final String accessRequiresAuthorization;
-  public static final String fees;
-  public static final String keywords;
-  public static final String units_standard;
-
-  public static
-  String /* For the wcs examples, pick one of your grid datasets that has longitude and latitude axes.
-         The sample variable must be a variable in the sample grid dataset.
-         The bounding box values are minx,miny,maxx,maxy.
-         */ wcsSampleDatasetID = "jplMURSST41";
-  public static String wcsSampleVariable = "analysed_sst";
-  public static String wcsSampleBBox = "-179.98,-89.98,179.98,89.98";
-  public static String wcsSampleAltitude = "0";
-  public static String wcsSampleTime = "2002-06-01T09:00:00Z";
-
-  public static String /* For the wms examples, pick one of your grid datasets that has longitude
-      and latitude axes.
-      The sample variable must be a variable in the sample grid dataset.
-      The bounding box values are minx,miny,maxx,maxy.
-      The default for wmsActive is "true".
-      */
-      wmsSampleDatasetID = "jplMURSST41";
-  public static String wmsSampleVariable = "analysed_sst";
-  public static
-  String /* The bounding box values are minLongitude,minLatitude,maxLongitude,maxLatitude.
-         Longitude values within -180 to 180, or 0 to 360, are now okay. */
-      wmsSampleBBox110 = "-179.99,-89.99,180.0,89.99";
-  public static String wmsSampleBBox130 = "-89.99,-179.99,89.99,180.0";
-  public static String wmsSampleTime = "2002-06-01T09:00:00Z";
-  public static String sosFeatureOfInterest;
-  public static String sosUrnBase;
-  public static String sosBaseGmlName;
-  public static String sosStandardNamePrefix;
-  public static String
-      authentication; // will be one of "", "custom", "email", "google", "orcid", "oauth2". If
-  public static final String // baseHttpsUrl doesn't start with https:, this will be "".
-      datasetsRegex;
-  public static final String emailEverythingToCsv;
-  public static final String emailDailyReportToCsv;
-  public static final String emailSubscriptionsFrom;
-  public static final String flagKeyKey;
-  public static final String fontFamily;
-  public static final String
-      googleClientID; // if authentication=google or oauth2, this will be something
-  public static final String
-      orcidClientID; // if authentication=orcid  or oauth2, this will be something
-  public static final String
-      orcidClientSecret; // if authentication=orcid  or oauth2, this will be something
-  public static final String googleEarthLogoFile;
-  public static final String highResLogoImageFile;
-  public static final String lowResLogoImageFile;
-  public static final String
-      passwordEncoding; // will be one of "MD5", "UEPMD5", "SHA256", "UEPSHA256"
-  public static final String searchEngine;
-  public static final String warName;
-
-  public static final String accessibleViaNC4; // "" if accessible, else message why not
-  public static final int lowResLogoImageFileWidth;
-  public static final int lowResLogoImageFileHeight;
-  public static final int highResLogoImageFileWidth;
-  public static final int highResLogoImageFileHeight;
-  public static final int googleEarthLogoFileWidth;
-  public static final int googleEarthLogoFileHeight;
-
-  /**
    * These are special because other loggedInAs must be String2.justPrintable loggedInAsHttps is for
    * using https without being logged in, but &amp;loginInfo; indicates user isn't logged in. It is
    * a reserved username -- LoadDatasets prohibits defining a user with that name. Tab is useful
@@ -676,67 +520,13 @@ public class EDStatic {
   public static final ImmutableList<String> anyoneLoggedInRoles = ImmutableList.of(anyoneLoggedIn);
   public static final int minimumPasswordLength = 8;
 
-  // these are all non-null if in awsS3Output mode, otherwise all are null
-  public static String awsS3OutputBucketUrl = null; // ends in slash
-  public static String awsS3OutputBucket = null; // the short name of the bucket
-  public static S3TransferManager awsS3OutputTransferManager = null;
-  // public static S3Client          awsS3OutputClient          = null;
-
-  public static final boolean listPrivateDatasets;
-  public static boolean reallyVerbose;
-  public static final boolean subscriptionSystemActive;
-  public static final boolean convertersActive;
-  public static final boolean slideSorterActive;
-  public static final boolean fgdcActive;
-  public static final boolean iso19115Active;
-  public static final boolean jsonldActive;
-  public static final boolean geoServicesRestActive;
-  public static final boolean filesActive;
-  public static final boolean defaultAccessibleViaFiles;
-  public static final boolean dataProviderFormActive;
-  public static final boolean outOfDateDatasetsActive;
-  public static final boolean politicalBoundariesActive;
-  public static final boolean wmsClientActive;
-  public static boolean sosActive;
-  public static final boolean wcsActive;
-  public static final boolean wmsActive;
-  public static boolean quickRestart;
-  public static final boolean subscribeToRemoteErddapDataset;
-  public static
-  boolean // if useLuceneSearchEngine=false (a setting, or after error), original search engine will
-      // be
-      // used
-      useLuceneSearchEngine;
-  public static final boolean variablesMustHaveIoosCategory;
-  public static boolean verbose;
-  public static boolean useSaxParser;
-  public static boolean updateSubsRssOnFileChanges;
-  public static final boolean useEddReflection;
-  public static boolean enableCors;
-  public static final String corsAllowHeaders;
-  public static final String[] corsAllowOrigin;
-  public static final String[]
-      categoryAttributes; // as it appears in metadata (and used for hashmap)
-  public static final String[] categoryAttributesInURLs; // fileNameSafe (as used in URLs)
-  public static final boolean[] categoryIsGlobal;
-  public static int variableNameCategoryAttributeIndex = -1;
-  public static final int logMaxSizeMB;
-  public static String deploymentInfo;
-
   public static String[] DEFAULT_displayAttributeAr = {"summary", "license"};
   public static String[] DEFAULT_displayInfoAr = {"Summary", "License"};
   public static String[] displayAttributeAr = DEFAULT_displayAttributeAr;
   public static String[] displayInfoAr = DEFAULT_displayInfoAr;
 
-  public static final String emailSmtpHost;
-  public static final String emailUserName;
-  public static final String emailFromAddress;
-  public static final String emailPassword;
-  public static final String emailProperties;
-  public static int emailSmtpPort = 0; // <=0 means inactive
   private static String emailLogDate = "";
   private static BufferedWriter emailLogFile;
-  private static boolean emailIsActive = false; // ie if actual emails will be sent
 
   // these are set as a consequence of setup.xml info
   public static final SgtGraph sgtGraph;
@@ -745,24 +535,11 @@ public class EDStatic {
       erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
   public static final String
       preferredErddapUrl; // without slash at end   (https if avail, else http)
-  public static final String fullDatasetDirectory; // all the Directory's have slash at end
-  public static final String fullFileVisitorDirectory;
-  public static final String fullCacheDirectory;
-  public static final String fullDecompressedDirectory;
-  public static final String fullDecompressedGenerateDatasetsXmlDirectory;
-  public static final String fullLogsDirectory;
-  public static final String fullCopyDirectory;
-  public static final String fullLuceneDirectory;
-  public static final String fullResetFlagDirectory;
-  public static final String fullBadFilesFlagDirectory;
-  public static final String fullHardFlagDirectory;
-  public static final String fullCptCacheDirectory;
-  public static final String fullPlainFileNcCacheDirectory;
-  public static final String fullSgtMapTopographyCacheDirectory;
-  public static final String fullTestCacheDirectory;
-  public static final String fullWmsCacheDirectory;
   public static String computerName; // e.g., coastwatch (or "")
-  public static Subscriptions subscriptions; // null if !EDStatic.subscriptionSystemActive
+  public static Subscriptions subscriptions; // null if !EDStatic.config.subscriptionSystemActive
+
+  public static boolean reallyVerbose;
+  public static boolean verbose;
 
   /**
    * These values are loaded from the [contentDirectory]messages.xml file (if present) or
@@ -783,7 +560,6 @@ public class EDStatic {
   private static Table gdxAcronymsTable;
 
   private static Map<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
-  public static boolean useSharedWatchService = true;
 
   /**
    * This static block reads this class's static String values from contentDirectory, which must
@@ -798,10 +574,6 @@ public class EDStatic {
     String errorInMethod = "";
     try {
       String webInfParentDirectory = File2.getWebInfParentDirectory();
-
-      fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
-      fullPublicDirectory = webInfParentDirectory + PUBLIC_DIR;
-      imageDir = webInfParentDirectory + IMAGES_DIR; // local directory on this computer
 
       // route calls to a logger to com.cohort.util.String2Log
       String2.setupCommonsLogging(-1);
@@ -821,98 +593,10 @@ public class EDStatic {
               + eol
               + String2.standardHelpAboutMessage());
 
-      skipEmailThread = Boolean.parseBoolean(System.getProperty("skipEmailThread"));
-      // **** find contentDirectory
-      String ecd = "erddapContentDirectory"; // the name of the environment variable
-      errorInMethod =
-          "Couldn't find 'content' directory ([tomcat]/content/erddap/ ?) "
-              + "because '"
-              + ecd
-              + "' environment variable not found "
-              + "and couldn't find '/webapps/' "
-              + // with / separator and / at the end
-              " (and 'content/erddap' should be a sibling of <tomcat>/webapps): ";
-      contentDirectory = System.getProperty(ecd);
-      if (contentDirectory == null) {
-        // Or, it must be sibling of webapps
-        // e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
-        // On windows, contentDirectory may have spaces as %20(!)
-        contentDirectory = File2.getClassPath(); // access a resource folder
-        int po = contentDirectory.indexOf("/webapps/");
-        contentDirectory =
-            contentDirectory.substring(0, po) + "/content/erddap/"; // exception if po=-1
-      } else {
-        contentDirectory = File2.addSlash(contentDirectory);
-      }
-      Test.ensureTrue(
-          File2.isDirectory(contentDirectory),
-          "contentDirectory (" + contentDirectory + ") doesn't exist.");
-
-      // **** setup.xml  *************************************************************
-      // This is read BEFORE messages.xml. If that is a problem for something,
-      //  defer reading it in setup and add it to the messages section.
-      // read static Strings from setup.xml
-      String setupFileName = contentDirectory + "setup" + (developmentMode ? "2" : "") + ".xml";
-      errorInMethod = "ERROR while reading " + setupFileName + ": ";
-      ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
-      Map<String, String> ev = System.getenv();
-
-      // logLevel may be: warning, info(default), all
-      setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
-
-      usePrometheusMetrics = getSetupEVBoolean(setup, ev, "usePrometheusMetrics", true);
+      config = new EDConfig(webInfParentDirectory);
       metrics = new Metrics();
-      metrics.initialize(usePrometheusMetrics);
 
-      bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", "");
-      bigParentDirectory = File2.addSlash(bigParentDirectory);
-      Path bpd = Path.of(bigParentDirectory);
-      if (!bpd.isAbsolute()) {
-        if (!File2.isDirectory(bigParentDirectory)) {
-          bigParentDirectory = File2.getWebInfParentDirectory() + bigParentDirectory;
-        }
-      }
-      Test.ensureTrue(
-          File2.isDirectory(bigParentDirectory),
-          "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-
-      // email  (do early on so email can be sent if trouble later in this method)
-      emailSmtpHost = getSetupEVString(setup, ev, "emailSmtpHost", (String) null);
-      emailSmtpPort = getSetupEVInt(setup, ev, "emailSmtpPort", 25);
-      emailUserName = getSetupEVString(setup, ev, "emailUserName", (String) null);
-      emailPassword = getSetupEVString(setup, ev, "emailPassword", (String) null);
-      emailProperties = getSetupEVString(setup, ev, "emailProperties", (String) null);
-      emailFromAddress = getSetupEVString(setup, ev, "emailFromAddress", (String) null);
-      emailEverythingToCsv = getSetupEVString(setup, ev, "emailEverythingTo", ""); // won't be null
-      emailDailyReportToCsv =
-          Optional.ofNullable(getSetupEVString(setup, ev, "emailDailyReportTo", (String) null))
-              .orElse(getSetupEVString(setup, ev, "emailDailyReportsTo", ""));
-      emailIsActive = // ie if actual emails will be sent
-          String2.isSomething(emailSmtpHost)
-              && emailSmtpPort > 0
-              && String2.isSomething(emailUserName)
-              && String2.isSomething(emailPassword)
-              && String2.isEmailAddress(emailFromAddress);
-
-      String tsar[] = String2.split(emailEverythingToCsv, ',');
-      if (emailEverythingToCsv.length() > 0)
-        for (String s : tsar)
-          if (!String2.isEmailAddress(s)
-              || s.startsWith("your.")) // prohibit the default email addresses
-          throw new RuntimeException(
-                "setup.xml error: invalid email address=" + s + " in <emailEverythingTo>.");
-      emailSubscriptionsFrom = tsar.length > 0 ? tsar[0] : ""; // won't be null
-
-      tsar = String2.split(emailDailyReportToCsv, ',');
-      if (emailDailyReportToCsv.length() > 0) {
-        for (String s : tsar)
-          if (!String2.isEmailAddress(s)
-              || s.startsWith("your.")) // prohibit the default email addresses
-          throw new RuntimeException(
-                "setup.xml error: invalid email address=" + s + " in <emailDailyReportTo>.");
-      }
-
-      if (!skipEmailThread) {
+      if (!config.skipEmailThread) {
         ensureEmailThreadIsRunningIfNeeded();
       }
       ensureTouchThreadIsRunningIfNeeded();
@@ -920,55 +604,13 @@ public class EDStatic {
       // test of email
       // Test.error("This is a test of emailing an error in Erddap constructor.");
 
-      // *** set up directories  //all with slashes at end
-      // before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
-      fullDatasetDirectory = bigParentDirectory + "dataset/";
-      fullFileVisitorDirectory = fullDatasetDirectory + "_FileVisitor/";
-      FileVisitorDNLS.FILE_VISITOR_DIRECTORY = fullFileVisitorDirectory;
-      File2.deleteAllFiles(
-          fullFileVisitorDirectory); // no temp file list can be active at ERDDAP restart
-      fullCacheDirectory = bigParentDirectory + "cache/";
-      fullDecompressedDirectory = bigParentDirectory + "decompressed/";
-      fullDecompressedGenerateDatasetsXmlDirectory =
-          bigParentDirectory + "decompressed/GenerateDatasetsXml/";
-      fullResetFlagDirectory = bigParentDirectory + "flag/";
-      fullBadFilesFlagDirectory = bigParentDirectory + "badFilesFlag/";
-      fullHardFlagDirectory = bigParentDirectory + "hardFlag/";
-      fullLogsDirectory = bigParentDirectory + "logs/";
-      fullCopyDirectory = bigParentDirectory + "copy/";
-      fullLuceneDirectory = bigParentDirectory + "lucene/";
-
-      Test.ensureTrue(
-          File2.isDirectory(fullPaletteDirectory),
-          "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
-      errorInMethod =
-          "ERROR while creating directories: "; // File2.makeDir throws exception if failure
-      File2.makeDirectory(fullPublicDirectory); // make it, because Git doesn't track empty dirs
-      File2.makeDirectory(fullDatasetDirectory);
-      File2.makeDirectory(fullCacheDirectory);
-      File2.makeDirectory(fullDecompressedDirectory);
-      File2.makeDirectory(fullDecompressedGenerateDatasetsXmlDirectory);
-      File2.makeDirectory(fullResetFlagDirectory);
-      File2.makeDirectory(fullBadFilesFlagDirectory);
-      File2.makeDirectory(fullHardFlagDirectory);
-      File2.makeDirectory(fullLogsDirectory);
-      File2.makeDirectory(fullCopyDirectory);
-      File2.makeDirectory(fullLuceneDirectory);
-
-      String2.log(
-          "bigParentDirectory="
-              + bigParentDirectory
-              + eol
-              + "webInfParentDirectory="
-              + webInfParentDirectory);
-
       // are bufferedImages hardware accelerated?
       String2.log(SgtUtil.isBufferedImageAccelerated());
 
       // 2011-12-30 convert /datasetInfo/[datasetID]/ to
       //                   /dataset/[last2char]/[datasetID]/
       // to prepare for huge number of datasets
-      String oldBaseDir = bigParentDirectory + "datasetInfo/"; // the old name
+      String oldBaseDir = config.bigParentDirectory + "datasetInfo/"; // the old name
       if (File2.isDirectory(oldBaseDir)) {
         errorInMethod = "ERROR while converting from oldBaseDir=" + oldBaseDir + ": ";
         try {
@@ -1007,273 +649,19 @@ public class EDStatic {
           String2.log("WARNING: " + MustBe.throwableToString(t));
         }
       }
-
-      // make some subdirectories of fullCacheDirectory
-      // '_' distinguishes from dataset cache dirs
-      errorInMethod = "ERROR while creating directories: ";
-      fullCptCacheDirectory = fullCacheDirectory + "_cpt/";
-      fullPlainFileNcCacheDirectory = fullCacheDirectory + "_plainFileNc/";
-      fullSgtMapTopographyCacheDirectory = fullCacheDirectory + "_SgtMapTopography/";
-      fullTestCacheDirectory = fullCacheDirectory + "_test/";
-      fullWmsCacheDirectory =
-          fullCacheDirectory + "_wms/"; // for all-datasets WMS and subdirs for non-data layers
-      SgtGraph.fullTestCacheDir = fullTestCacheDirectory;
-      File2.makeDirectory(fullCptCacheDirectory);
-      File2.makeDirectory(fullPlainFileNcCacheDirectory);
-      File2.makeDirectory(fullSgtMapTopographyCacheDirectory);
-      File2.makeDirectory(fullTestCacheDirectory);
-      File2.makeDirectory(fullWmsCacheDirectory);
-      File2.makeDirectory(fullWmsCacheDirectory + "Land"); // includes LandMask
-      File2.makeDirectory(fullWmsCacheDirectory + "Coastlines");
-      File2.makeDirectory(fullWmsCacheDirectory + "LakesAndRivers");
-      File2.makeDirectory(fullWmsCacheDirectory + "Nations");
-      File2.makeDirectory(fullWmsCacheDirectory + "States");
-
-      // get other info from setup.xml
-      errorInMethod = "ERROR while reading " + setupFileName + ": ";
-      baseUrl = getSetupEVNotNothingString(setup, ev, "baseUrl", errorInMethod);
-      baseHttpsUrl =
-          getSetupEVString(
-              setup, ev, "baseHttpsUrl", "(not specified)"); // not "" (to avoid relative urls)
-      categoryAttributes =
-          String2.split(getSetupEVNotNothingString(setup, ev, "categoryAttributes", ""), ',');
-      int nCat = categoryAttributes.length;
-      categoryAttributesInURLs = new String[nCat];
-      categoryIsGlobal = new boolean[nCat]; // initially all false
-      for (int cati = 0; cati < nCat; cati++) {
-        String cat = categoryAttributes[cati];
-        if (cat.startsWith("global:")) {
-          categoryIsGlobal[cati] = true;
-          cat = cat.substring(7);
-          categoryAttributes[cati] = cat;
-        } else if (cat.equals("institution")) { // legacy special case
-          categoryIsGlobal[cati] = true;
-        }
-        categoryAttributesInURLs[cati] = String2.modifyToBeFileNameSafe(cat);
-      }
-      variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
-
-      String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-      wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
-      wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
-      wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
-      wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);
-      wmsSampleBBox130 = getSetupEVString(setup, ev, "wmsSampleBBox130", wmsSampleBBox130);
-      wmsSampleTime = getSetupEVString(setup, ev, "wmsSampleTime", wmsSampleTime);
-
-      adminInstitution = getSetupEVNotNothingString(setup, ev, "adminInstitution", errorInMethod);
-      adminInstitutionUrl =
-          getSetupEVNotNothingString(setup, ev, "adminInstitutionUrl", errorInMethod);
-      adminIndividualName =
-          getSetupEVNotNothingString(setup, ev, "adminIndividualName", errorInMethod);
-      adminPosition = getSetupEVNotNothingString(setup, ev, "adminPosition", errorInMethod);
-      adminPhone = getSetupEVNotNothingString(setup, ev, "adminPhone", errorInMethod);
-      adminAddress = getSetupEVNotNothingString(setup, ev, "adminAddress", errorInMethod);
-      adminCity = getSetupEVNotNothingString(setup, ev, "adminCity", errorInMethod);
-      adminStateOrProvince =
-          getSetupEVNotNothingString(setup, ev, "adminStateOrProvince", errorInMethod);
-      adminPostalCode = getSetupEVNotNothingString(setup, ev, "adminPostalCode", errorInMethod);
-      adminCountry = getSetupEVNotNothingString(setup, ev, "adminCountry", errorInMethod);
-      adminEmail = getSetupEVNotNothingString(setup, ev, "adminEmail", errorInMethod);
-
-      if (adminInstitution.startsWith("Your"))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminInstitution>=" + adminInstitution);
-      if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);
-      if (adminIndividualName.startsWith("Your"))
-        throw new RuntimeException(
-            "setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);
-      // if (adminPosition.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);
-      if (adminPhone.indexOf("999-999") >= 0)
-        throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);
-      if (adminAddress.equals("123 Main St."))
-        throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);
-      if (adminCity.equals("Some Town"))
-        throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);
-      // if (adminStateOrProvince.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" +
-      // adminStateOrProvince);
-      if (adminPostalCode.equals("99999"))
-        throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);
-      // if (adminCountry.length() == 0)
-      //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);
-      if (!String2.isEmailAddress(adminEmail)
-          || adminEmail.startsWith("your.")) // prohibit default adminEmail
-      throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);
-
-      accessConstraints = getSetupEVNotNothingString(setup, ev, "accessConstraints", errorInMethod);
-      accessRequiresAuthorization =
-          getSetupEVNotNothingString(setup, ev, "accessRequiresAuthorization", errorInMethod);
-      fees = getSetupEVNotNothingString(setup, ev, "fees", errorInMethod);
-      keywords = getSetupEVNotNothingString(setup, ev, "keywords", errorInMethod);
-
-      awsS3OutputBucketUrl = getSetupEVString(setup, ev, "awsS3OutputBucketUrl", (String) null);
-      if (!String2.isSomething(awsS3OutputBucketUrl)) awsS3OutputBucketUrl = null;
-      if (awsS3OutputBucketUrl != null) {
-
-        // ensure that it is valid
-        awsS3OutputBucketUrl = File2.addSlash(awsS3OutputBucketUrl);
-        String bro[] = String2.parseAwsS3Url(awsS3OutputBucketUrl);
-        if (bro == null)
-          throw new RuntimeException(
-              "The value of <awsS3OutputBucketUrl> specified in setup.xml doesn't match this regular expression: "
-                  + String2.AWS_S3_REGEX());
-
-        awsS3OutputBucket = bro[0];
-        String region = bro[1];
-
-        // build the awsS3OutputTransferManager
-        awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
-
-        // note that I could set LifecycleRule(s) for the bucket via
-        // awsS3OutputClient.putBucketLifecycleConfiguration
-        // but LifecycleRule precision seems to be days, not e.g., minutes
-        // So make my own system
-      }
-
-      units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
-
-      fgdcActive = getSetupEVBoolean(setup, ev, "fgdcActive", true);
-      iso19115Active = getSetupEVBoolean(setup, ev, "iso19115Active", true);
-      jsonldActive = getSetupEVBoolean(setup, ev, "jsonldActive", true);
-      // until geoServicesRest is finished, it is always inactive
-      geoServicesRestActive =
-          false; // getSetupEVBoolean(setup, ev,          "geoServicesRestActive",      false);
-      filesActive = getSetupEVBoolean(setup, ev, "filesActive", true);
-      defaultAccessibleViaFiles =
-          getSetupEVBoolean(
-              setup, ev, "defaultAccessibleViaFiles", false); // false matches historical behavior
-      dataProviderFormActive = getSetupEVBoolean(setup, ev, "dataProviderFormActive", true);
-      outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
-      politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
-      wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
-      SgtMap.drawPoliticalBoundaries = politicalBoundariesActive;
-
-      // until SOS is finished, it is always inactive
-      sosActive = false; //        sosActive                  = getSetupEVBoolean(setup, ev,
-      // "sosActive",                  false);
-      if (sosActive) {
-        sosFeatureOfInterest =
-            getSetupEVNotNothingString(setup, ev, "sosFeatureOfInterest", errorInMethod);
-        sosStandardNamePrefix =
-            getSetupEVNotNothingString(setup, ev, "sosStandardNamePrefix", errorInMethod);
-        sosUrnBase = getSetupEVNotNothingString(setup, ev, "sosUrnBase", errorInMethod);
-
-        // make the sosGmlName, e.g., https://coastwatch.pfeg.noaa.gov -> gov.noaa.pfeg.coastwatch
-        sosBaseGmlName = baseUrl;
-        int po = sosBaseGmlName.indexOf("//");
-        if (po > 0) sosBaseGmlName = sosBaseGmlName.substring(po + 2);
-        po = sosBaseGmlName.indexOf(":");
-        if (po > 0) sosBaseGmlName = sosBaseGmlName.substring(0, po);
-        StringArray sbgn = new StringArray(String2.split(sosBaseGmlName, '.'));
-        sbgn.reverse();
-        sosBaseGmlName = String2.toSVString(sbgn.toArray(), ".", false);
-      }
-
-      // until it is finished, it is always inactive
-      wcsActive =
-          false; // getSetupEVBoolean(setup, ev,          "wcsActive",                  false);
-
-      authentication = getSetupEVString(setup, ev, "authentication", "");
-      datasetsRegex = getSetupEVString(setup, ev, "datasetsRegex", ".*");
-      drawLandMask = getSetupEVString(setup, ev, "drawLandMask", (String) null); // new name
-      if (drawLandMask == null) // 2014-08-28 changed defaults below to "under". It will be in v1.48
-      drawLandMask =
-            getSetupEVString(
-                setup, ev, "drawLand", DEFAULT_drawLandMask); // old name. DEFAULT...="under"
-      int tdlm = SgtMap.drawLandMask_OPTIONS.indexOf(drawLandMask);
-      if (tdlm < 1) drawLandMask = DEFAULT_drawLandMask; // "under"
-      flagKeyKey = getSetupEVNotNothingString(setup, ev, "flagKeyKey", errorInMethod);
-      if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
-        // really old default: "A stitch in time saves nine. CHANGE THIS!!!"
-        // current default:    "CHANGE THIS TO YOUR FAVORITE QUOTE"
-        throw new RuntimeException(
-            String2.ERROR
-                + ": You must change the <flagKeyKey> in setup.xml to a new, unique, non-default value. "
-                + "NOTE that this will cause the flagKeys used by your datasets to change. "
-                + "Any subscriptions using the old flagKeys will need to be redone.");
-      fontFamily = getSetupEVString(setup, ev, "fontFamily", "DejaVu Sans");
-      graphBackgroundColor =
-          new Color(
-              String2.parseInt(
-                  getSetupEVString(
-                      setup, ev, "graphBackgroundColor", "" + DEFAULT_graphBackgroundColorInt)),
-              true); // hasAlpha
-      googleClientID = getSetupEVString(setup, ev, "googleClientID", (String) null);
-      orcidClientID = getSetupEVString(setup, ev, "orcidClientID", (String) null);
-      orcidClientSecret = getSetupEVString(setup, ev, "orcidClientSecret", (String) null);
-      googleEarthLogoFile =
-          getSetupEVNotNothingString(setup, ev, "googleEarthLogoFile", errorInMethod);
-      highResLogoImageFile =
-          getSetupEVNotNothingString(setup, ev, "highResLogoImageFile", errorInMethod);
-      listPrivateDatasets = getSetupEVBoolean(setup, ev, "listPrivateDatasets", false);
-      logMaxSizeMB =
-          Math2.minMax(1, 2000, getSetupEVInt(setup, ev, "logMaxSizeMB", 20)); // 2048MB=2GB
-
-      // v2.00: these are now also in datasets.xml
-      cacheMillis = getSetupEVInt(setup, ev, "cacheMinutes", DEFAULT_cacheMinutes) * 60000L;
-      loadDatasetsMinMillis =
-          Math.max(
-                  1,
-                  getSetupEVInt(
-                      setup, ev, "loadDatasetsMinMinutes", DEFAULT_loadDatasetsMinMinutes))
-              * 60000L;
-      loadDatasetsMaxMillis =
-          getSetupEVInt(setup, ev, "loadDatasetsMaxMinutes", DEFAULT_loadDatasetsMaxMinutes)
-              * 60000L;
-      loadDatasetsMaxMillis = Math.max(loadDatasetsMinMillis * 2, loadDatasetsMaxMillis);
-      partialRequestMaxBytes =
-          getSetupEVInt(setup, ev, "partialRequestMaxBytes", DEFAULT_partialRequestMaxBytes);
-      partialRequestMaxCells =
-          getSetupEVInt(setup, ev, "partialRequestMaxCells", DEFAULT_partialRequestMaxCells);
-      unusualActivity = getSetupEVInt(setup, ev, "unusualActivity", DEFAULT_unusualActivity);
-      showLoadErrorsOnStatusPage =
-          getSetupEVBoolean(
-              setup, ev, "showLoadErrorsOnStatusPage", DEFAULT_showLoadErrorsOnStatusPage);
-
-      lowResLogoImageFile =
-          getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
-      quickRestart = getSetupEVBoolean(setup, ev, "quickRestart", true);
-      passwordEncoding = getSetupEVString(setup, ev, "passwordEncoding", "UEPSHA256");
-      searchEngine = getSetupEVString(setup, ev, "searchEngine", "original");
-
-      subscribeToRemoteErddapDataset =
-          getSetupEVBoolean(setup, ev, "subscribeToRemoteErddapDataset", true);
-      subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
-      convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
-      useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
-      updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-      useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
-      enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
-      corsAllowHeaders =
-          getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
-      corsAllowOrigin =
-          String2.split(
-              String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
-              ',');
-      slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
-      variablesMustHaveIoosCategory =
-          getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
-      warName = getSetupEVString(setup, ev, "warName", "erddap");
-      useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
-      deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
-
       // use Lucence?
-      if (searchEngine.equals("lucene")) {
-        useLuceneSearchEngine = true;
+      if (config.searchEngine.equals("lucene")) {
+        config.useLuceneSearchEngine = true;
         luceneDocNToDatasetID = new ConcurrentHashMap<>();
       } else {
         Test.ensureEqual(
-            searchEngine,
+            config.searchEngine,
             "original",
             "<searchEngine> must be \"original\" (the default) or \"lucene\".");
       }
 
       errorInMethod = "ERROR while initializing SgtGraph: ";
-      sgtGraph = new SgtGraph(fontFamily);
+      sgtGraph = new SgtGraph(config.fontFamily);
 
       // ensure erddapVersion is okay
       int upo = erddapVersion.indexOf('_');
@@ -1293,6 +681,7 @@ public class EDStatic {
 
       // ensure authentication setup is okay
       errorInMethod = "ERROR while checking authentication setup: ";
+      String authentication = config.authentication;
       if (authentication == null) authentication = "";
       authentication = authentication.trim().toLowerCase();
       if (!authentication.isEmpty()
@@ -1305,42 +694,43 @@ public class EDStatic {
             "setup.xml error: authentication="
                 + authentication
                 + " must be (nothing)|custom|email|google|orcid|oauth2.");
-      if (!authentication.isEmpty() && !baseHttpsUrl.startsWith("https://"))
+      if (!authentication.isEmpty() && !config.baseHttpsUrl.startsWith("https://"))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": For any <authentication> other than \"\", the baseHttpsUrl="
-                + baseHttpsUrl
+                + config.baseHttpsUrl
                 + " must start with \"https://\".");
       if ((authentication.equals("google") || authentication.equals("auth2"))
-          && !String2.isSomething(googleClientID))
+          && !String2.isSomething(config.googleClientID))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": When authentication=google or oauth2, you must provide your <googleClientID>.");
       if ((authentication.equals("orcid") || authentication.equals("auth2"))
-          && (!String2.isSomething(orcidClientID) || !String2.isSomething(orcidClientSecret)))
+          && (!String2.isSomething(config.orcidClientID)
+              || !String2.isSomething(config.orcidClientSecret)))
         throw new RuntimeException(
             "setup.xml error: "
                 + ": When authentication=orcid or oauth2, you must provide your <orcidClientID> and <orcidClientSecret>.");
       if (authentication.equals("custom")
-          && (!passwordEncoding.equals("MD5")
-              && !passwordEncoding.equals("UEPMD5")
-              && !passwordEncoding.equals("SHA256")
-              && !passwordEncoding.equals("UEPSHA256")))
+          && (!config.passwordEncoding.equals("MD5")
+              && !config.passwordEncoding.equals("UEPMD5")
+              && !config.passwordEncoding.equals("SHA256")
+              && !config.passwordEncoding.equals("UEPSHA256")))
         throw new RuntimeException(
             "setup.xml error: When authentication=custom, passwordEncoding="
-                + passwordEncoding
+                + config.passwordEncoding
                 + " must be MD5|UEPMD5|SHA256|UEPSHA256.");
       // String2.log("authentication=" + authentication);
 
       // things set as a consequence of setup.xml
-      erddapUrl = baseUrl + "/" + warName;
-      erddapHttpsUrl = baseHttpsUrl + "/" + warName;
-      preferredErddapUrl = baseHttpsUrl.startsWith("https://") ? erddapHttpsUrl : erddapUrl;
+      erddapUrl = config.baseUrl + "/" + config.warName;
+      erddapHttpsUrl = config.baseHttpsUrl + "/" + config.warName;
+      preferredErddapUrl = config.baseHttpsUrl.startsWith("https://") ? erddapHttpsUrl : erddapUrl;
 
-      if (subscriptionSystemActive) {
+      if (config.subscriptionSystemActive) {
         subscriptions =
             new Subscriptions(
-                bigParentDirectory + "subscriptionsV1.txt",
+                config.bigParentDirectory + "subscriptionsV1.txt",
                 48, // maxHoursPending,
                 preferredErddapUrl); // prefer https url
       }
@@ -1353,7 +743,8 @@ public class EDStatic {
       // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
       // subdirectories)
       String tFiles[] =
-          RegexFilenameFilter.recursiveFullNameList(contentDirectory + "images/", ".+", false);
+          RegexFilenameFilter.recursiveFullNameList(
+              config.contentDirectory + "images/", ".+", false);
       for (String file : tFiles) {
         int tpo = file.indexOf("/images/");
         if (tpo < 0) tpo = file.indexOf("\\images\\");
@@ -1363,32 +754,20 @@ public class EDStatic {
         }
         String tName = file.substring(tpo + 8);
         if (verbose) String2.log("  copying images/ file: " + tName);
-        File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
+        File2.copy(config.contentDirectory + "images/" + tName, config.imageDir + tName);
       }
-
-      // ensure images exist and get their sizes
-      Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
-      lowResLogoImageFileWidth = tImage.getWidth(null);
-      lowResLogoImageFileHeight = tImage.getHeight(null);
-      tImage = Image2.getImage(imageDir + highResLogoImageFile, 10000, false);
-      highResLogoImageFileWidth = tImage.getWidth(null);
-      highResLogoImageFileHeight = tImage.getHeight(null);
-      tImage = Image2.getImage(imageDir + googleEarthLogoFile, 10000, false);
-      googleEarthLogoFileWidth = tImage.getWidth(null);
-      googleEarthLogoFileHeight = tImage.getHeight(null);
-
       // copy all <contentDirectory>cptfiles/ files to cptfiles
       tFiles =
-          RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
+          RegexFilenameFilter.list(
+              config.contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
       for (String tFile : tFiles) {
         if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
-        File2.copy(contentDirectory + "cptfiles/" + tFile, fullPaletteDirectory + tFile);
+        File2.copy(
+            config.contentDirectory + "cptfiles/" + tFile, config.fullPaletteDirectory + tFile);
       }
 
-      messages = new EDMessages(contentDirectory, setup, ev);
-
       // try to create an nc4 file
-      accessibleViaNC4 = ".nc4 is not yet supported.";
+      config.accessibleViaNC4 = ".nc4 is not yet supported.";
       /* DISABLED until nc4 is thread safe -- next netcdf-java
               String testNc4Name = fullTestCacheDirectory +
                   "testNC4_" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".nc";
@@ -1436,7 +815,8 @@ public class EDStatic {
               }
       //        File2.delete(testNc4Name);
       */
-
+      metrics.initialize(config.usePrometheusMetrics);
+      messages = new EDMessages(config.contentDirectory);
       try {
         computerName = System.getenv("COMPUTERNAME"); // windows
         if (computerName == null) computerName = System.getenv("HOSTNAME"); // linux
@@ -1470,86 +850,6 @@ public class EDStatic {
       //        String2.returnLoggingToSystemOut();
       throw new RuntimeException(errorInMethod);
     }
-  }
-
-  /**
-   * This gets a string from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static String getSetupEVString(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, String tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (String2.isSomething(value)) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return value;
-    }
-    return setup.getString(paramName, tDefault);
-  }
-
-  /**
-   * This gets a boolean from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static boolean getSetupEVBoolean(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, boolean tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (value != null) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return String2.parseBoolean(value);
-    }
-    return setup.getBoolean(paramName, tDefault);
-  }
-
-  /**
-   * This gets an int from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param tDefault the default value
-   * @return the desired value (or the default if it isn't defined anywhere)
-   */
-  private static int getSetupEVInt(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (value != null) {
-      int valuei = String2.parseInt(value);
-      if (valuei < Integer.MAX_VALUE) {
-        String2.log("got " + paramName + " from ERDDAP_" + paramName);
-        return valuei;
-      }
-    }
-    return setup.getInt(paramName, tDefault);
-  }
-
-  /**
-   * This gets a string from setup.xml or environmentalVariables (preferred).
-   *
-   * @param setup from setup.xml
-   * @param ev from System.getenv()
-   * @param paramName If present in ev, it will be ERDDAP_paramName.
-   * @param errorInMethod the start of an Error message
-   * @return the desired value
-   * @throws RuntimeException if there is no value for key
-   */
-  private static String getSetupEVNotNothingString(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, String errorInMethod) {
-    String value = ev.get("ERDDAP_" + paramName);
-    if (String2.isSomething(value)) {
-      String2.log("got " + paramName + " from ERDDAP_" + paramName);
-      return value;
-    }
-    return setup.getNotNothingString(paramName, errorInMethod);
   }
 
   /**
@@ -1638,7 +938,9 @@ public class EDStatic {
    *     end).
    */
   public static String baseUrl(String loggedInAs) {
-    return loggedInAs == null ? baseUrl : baseHttpsUrl; // works because of loggedInAsHttps
+    return loggedInAs == null
+        ? config.baseUrl
+        : config.baseHttpsUrl; // works because of loggedInAsHttps
   }
 
   /**
@@ -1672,7 +974,7 @@ public class EDStatic {
    * @param tUrl
    */
   public static boolean urlIsThisComputer(String tUrl) {
-    return tUrl.startsWith(baseUrl)
+    return tUrl.startsWith(config.baseUrl)
         || tUrl.startsWith(preferredErddapUrl)
         || // will be baseHttpsUrl if active
         urlIsLocalhost(tUrl);
@@ -1699,7 +1001,7 @@ public class EDStatic {
    * @return returns the appropriate image directory URL (with slash at end).
    */
   public static String imageDirUrl(String loggedInAs, int language) {
-    return erddapUrl(loggedInAs, language) + "/" + IMAGES_DIR;
+    return erddapUrl(loggedInAs, language) + "/" + EDConfig.IMAGES_DIR;
   }
 
   /**
@@ -2020,7 +1322,8 @@ public class EDStatic {
         String addr = emailAddressesSA.get(i);
         String err =
             subscriptions == null
-                ? // don't use EDStatic.subscriptionSystemActive for this test -- it's a separate
+                ? // don't use EDStatic.config.subscriptionSystemActive for this test -- it's a
+                // separate
                 // issue
                 String2.testEmailAddress(addr)
                 : // tests syntax
@@ -2068,7 +1371,7 @@ public class EDStatic {
         emailLogFile =
             File2.getBufferedWriterUtf8(
                 new FileOutputStream(
-                    fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
+                    config.fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
       }
 
       // write the email to the log
@@ -2107,7 +1410,7 @@ public class EDStatic {
     if (!String2.isSomething(emailAddressesCSSV)) {
       String2.log("Email not sent because no To address.");
 
-    } else if (emailIsActive) {
+    } else if (config.emailIsActive) {
       // send email
       synchronized (emailList) {
         emailList.add(
@@ -2290,7 +1593,7 @@ public class EDStatic {
     synchronized (emailList) {
       ensureEmailThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
       // checking on it
-      if (emailIsActive) {
+      if (config.emailIsActive) {
         long tElapsedTime = emailThread == null ? -1 : emailThread.elapsedTime();
         sb.append(
             "EmailThread has sent "
@@ -2413,7 +1716,7 @@ public class EDStatic {
     sb.append('\n');
     sb.append('\n');
 
-    if (emailIsActive) {
+    if (config.emailIsActive) {
       sb.append("EmailThread Failed Time Distribution (since last Daily Report):\n");
       sb.append(String2.getTimeDistributionStatistics(emailThreadFailedDistribution24));
       sb.append('\n');
@@ -2479,7 +1782,7 @@ public class EDStatic {
   /**
    * This returns the user's login name (or null if not logged in).
    *
-   * <p>This relies on EDStatic.authentication
+   * <p>This relies on EDStatic.config.authentication
    *
    * <p>This is safe to use this after outputStream has been written to -- this won't make a session
    * if the user doesn't have one.
@@ -2496,7 +1799,7 @@ public class EDStatic {
     if (!fullRequestUrl.startsWith("https://")) return null;
 
     // request is via https, but authentication=""?  then can't be logged in
-    if (authentication.length() == 0) return loggedInAsHttps;
+    if (config.authentication.length() == 0) return loggedInAsHttps;
 
     // see if user is logged in
     // NOTE: session is associated with https urls, not http urls!
@@ -2509,12 +1812,12 @@ public class EDStatic {
 
     // session != null
     String loggedInAs = null;
-    if (authentication.equals("custom")
-        || authentication.equals("email")
-        || authentication.equals("google")
-        || authentication.equals("orcid")
-        || authentication.equals("oauth2")) {
-      loggedInAs = (String) session.getAttribute("loggedInAs:" + warName);
+    if (config.authentication.equals("custom")
+        || config.authentication.equals("email")
+        || config.authentication.equals("google")
+        || config.authentication.equals("orcid")
+        || config.authentication.equals("oauth2")) {
+      loggedInAs = (String) session.getAttribute("loggedInAs:" + config.warName);
 
       // } else if (authentication.equals("openid"))
       //    loggedInAs = OpenIdFilter.getCurrentUser(session);
@@ -2534,7 +1837,7 @@ public class EDStatic {
             + "_"
             + basis
             + "_"
-            + flagKeyKey);
+            + config.flagKeyKey);
   }
 
   /**
@@ -2651,7 +1954,7 @@ public class EDStatic {
 
     // generate observedPassword from plaintextPassword via passwordEncoding
     String observed =
-        switch (passwordEncoding) {
+        switch (config.passwordEncoding) {
           case "MD5" -> String2.md5Hex(plaintextPassword); // it will be lowercase
           case "UEPMD5" ->
               String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
@@ -2660,7 +1963,8 @@ public class EDStatic {
           case "UEPSHA256" ->
               String2.passwordDigest(
                   "SHA-256", username + ":ERDDAP:" + plaintextPassword); // it will be lowercase
-          default -> throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
+          default ->
+              throw new RuntimeException("Unexpected passwordEncoding=" + config.passwordEncoding);
         };
     // only for debugging:
     // String2.log("username=" + username + " plaintextPassword=" + plaintextPassword +
@@ -2771,7 +2075,7 @@ public class EDStatic {
    *     user isn't logged in.
    */
   public static String getLoginHtml(int language, String loggedInAs) {
-    if (authentication.isEmpty()) {
+    if (config.authentication.isEmpty()) {
       // user can't log in
       return "";
     } else {
@@ -2871,7 +2175,7 @@ public class EDStatic {
                         "onchange=\"window.location.href='"
                             + baseUrl(loggedInAs)
                             + "/"
-                            + warName
+                            + config.warName
                             + "/' + "
                             + "(this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + '"
                             + // e.g., de
@@ -3002,9 +2306,9 @@ public class EDStatic {
   }
 
   public static String adminContact() {
-    String ae = String2.replaceAll(adminEmail, "@", " at ");
+    String ae = String2.replaceAll(config.adminEmail, "@", " at ");
     ae = String2.replaceAll(ae, ".", " dot ");
-    return adminIndividualName + " (email: " + ae + ")";
+    return config.adminIndividualName + " (email: " + ae + ")";
   }
 
   /**
@@ -3100,8 +2404,8 @@ public class EDStatic {
       }
 
       // finally
-      if (useLuceneSearchEngine) String2.log("stopping lucene...");
-      useLuceneSearchEngine = false;
+      if (config.useLuceneSearchEngine) String2.log("stopping lucene...");
+      config.useLuceneSearchEngine = false;
       luceneIndexSearcher = null;
       try {
         if (luceneIndexReader != null) luceneIndexReader.close();
@@ -3185,7 +2489,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "emailThread Stalled", tError);
+          email(config.emailEverythingToCsv, "emailThread Stalled", tError);
           String2.log(tError);
 
           stopThread(emailThread, 10); // short time; it is already in trouble
@@ -3229,7 +2533,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "taskThread Stalled", tError);
+          email(config.emailEverythingToCsv, "taskThread Stalled", tError);
           String2.log(tError);
 
           stopThread(taskThread, 10); // short time; it is already in trouble
@@ -3275,7 +2579,7 @@ public class EDStatic {
                   + Calendar2.elapsedTimeString(maxTime)
                   + ") at "
                   + Calendar2.getCurrentISODateTimeStringLocalTZ();
-          email(emailEverythingToCsv, "touchThread Stalled", tError);
+          email(config.emailEverythingToCsv, "touchThread Stalled", tError);
           String2.log(tError);
 
           stopThread(touchThread, 10); // short time; it is already in trouble
@@ -3304,7 +2608,7 @@ public class EDStatic {
   public static void ensureEmailThreadIsRunningIfNeeded() {
     synchronized (emailList) {
       // this checks if it is running and not stalled
-      if (!emailIsActive || isEmailThreadRunning()) return;
+      if (!config.emailIsActive || isEmailThreadRunning()) return;
 
       // emailIsActive && emailThread isn't running
       // need to start a new emailThread
@@ -3673,7 +2977,7 @@ public class EDStatic {
               + (System.currentTimeMillis() - tTime)
               + "ms");
     } catch (Throwable t) {
-      useLuceneSearchEngine = false;
+      config.useLuceneSearchEngine = false;
       throw new RuntimeException(t);
     }
   }
@@ -3736,7 +3040,7 @@ public class EDStatic {
           if (!initialLoadDatasets()) {
             String subject = String2.ERROR + " while creating Lucene Searcher";
             String msg = MustBe.throwableToString(t);
-            email(emailEverythingToCsv, subject, msg);
+            email(config.emailEverythingToCsv, subject, msg);
             String2.log(subject + "\n" + msg);
           }
 
@@ -4276,7 +3580,7 @@ public class EDStatic {
         lastAssignedTask.put(tDatasetID, lastTask);
         ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
-        if (EDStatic.forceSynchronousLoading) {
+        if (config.forceSynchronousLoading) {
           while (lastFinishedTask.get() < lastTask) {
             Thread.sleep(2000);
           }
@@ -4381,7 +3685,7 @@ public class EDStatic {
               + "Active requests:\n"
               + String2.toNewlineString(activeRequestLines);
       String2.log(report);
-      email(emailEverythingToCsv, "Dangerously High Memory Use!!!", report);
+      email(config.emailEverythingToCsv, "Dangerously High Memory Use!!!", report);
     }
 
     // memory use is too high, so shed this request
@@ -4579,7 +3883,7 @@ public class EDStatic {
 
       } else {
         // everything else
-        if (tError.indexOf("NullPointerException") >= 0 && emailDiagnosticsToErdData) {
+        if (tError.indexOf("NullPointerException") >= 0 && config.emailDiagnosticsToErdData) {
           // email stack trace for all NullPointerExceptions to erd.data@noaa.gov (i.e., ERDDAP
           // development team)
           email(
@@ -4636,7 +3940,7 @@ public class EDStatic {
       // because any of these errors could be in a script
       // and it's good to slow the script down (prevent 100 bad requests/second)
       // and if it's a human they won't even notice a short delay
-      if (slowDownTroubleMillis > 0) Math2.sleep(slowDownTroubleMillis);
+      if (config.slowDownTroubleMillis > 0) Math2.sleep(config.slowDownTroubleMillis);
 
       // put the HTTP status code name at the start of the message (from Wikipedia list
       // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -4825,20 +4129,21 @@ public class EDStatic {
       // delete old index files
       // Index will be recreated, and Lucense throws exception if it tries to read from old
       // indices.
-      File2.deleteAllFiles(fullLuceneDirectory);
+      File2.deleteAllFiles(config.fullLuceneDirectory);
 
       // Since I recreate index when erddap restarted, I can change anything
       //  (e.g., Directory type, Version) any time
       //  (no worries about compatibility with existing index).
       // ??? For now, use NIOFSDirectory,
       //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
-      luceneDirectory = new NIOFSDirectory(FileSystems.getDefault().getPath(fullLuceneDirectory));
+      luceneDirectory =
+          new NIOFSDirectory(FileSystems.getDefault().getPath(config.fullLuceneDirectory));
 
       // At start of ERDDAP, always create a new index.  Never re-use existing index.
       // Do it here to use true and also to ensure it can be done.
       createLuceneIndexWriter(true); // throws exception if trouble
     } catch (Throwable t) {
-      useLuceneSearchEngine = false;
+      config.useLuceneSearchEngine = false;
       throw new RuntimeException(t);
     }
   }

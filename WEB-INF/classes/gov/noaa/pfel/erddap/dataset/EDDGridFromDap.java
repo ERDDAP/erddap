@@ -295,7 +295,7 @@ public class EDDGridFromDap extends EDDGrid {
 
     // quickRestart
     Attributes quickRestartAttributes = null;
-    if (EDStatic.quickRestart
+    if (EDStatic.config.quickRestart
         && EDStatic.initialLoadDatasets()
         && File2.isFile(quickRestartFullFileName())) {
       // try to do quick initialLoadDatasets()
@@ -946,7 +946,7 @@ public class EDDGridFromDap extends EDDGrid {
   /**
    * This gets source data (not yet converted to destination data) from the data source for this
    * EDDGrid. Because this is called by GridDataAccessor, the request won't be the full user's
-   * request, but will be a partial request (for less than EDStatic.partialRequestMaxBytes).
+   * request, but will be a partial request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

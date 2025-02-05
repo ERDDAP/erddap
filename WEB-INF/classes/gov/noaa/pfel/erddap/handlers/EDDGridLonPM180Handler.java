@@ -18,7 +18,7 @@ public class EDDGridLonPM180Handler extends BaseGridHandler {
   }
 
   private EDDGrid tChildDataset = null;
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tUpdateEveryNMillis = Integer.MAX_VALUE;
 
   @Override

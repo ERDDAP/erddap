@@ -13,6 +13,6 @@ public class Initialization {
     System.setProperty("skipEmailThread", String.valueOf(true));
     EDD.debugMode = true;
     SgtMap.fontFamily = "SansSerif";
-    EDStatic.useSaxParser = true;
+    EDStatic.config.useSaxParser = true;
   }
 }

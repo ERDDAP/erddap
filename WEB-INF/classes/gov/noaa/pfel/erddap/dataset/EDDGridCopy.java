@@ -82,7 +82,7 @@ public class EDDGridCopy extends EDDGrid {
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     boolean tDimensionValuesInMemory = true;
     String tOnlySince = null;
 
@@ -263,12 +263,12 @@ public class EDDGridCopy extends EDDGrid {
     setReloadEveryNMinutes(tReloadEveryNMinutes);
     matchAxisNDigits = tMatchAxisNDigits;
     onlySince = tOnlySince;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
 
     // ensure copyDatasetDir exists
-    String copyDatasetDir = EDStatic.fullCopyDirectory + datasetID + "/";
+    String copyDatasetDir = EDStatic.config.fullCopyDirectory + datasetID + "/";
     File2.makeDirectory(copyDatasetDir);
 
     // assign copy tasks to taskThread
@@ -398,7 +398,7 @@ public class EDDGridCopy extends EDDGrid {
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it
 
-        if (EDStatic.forceSynchronousLoading) {
+        if (EDStatic.config.forceSynchronousLoading) {
           while (EDStatic.lastFinishedTask.get() < taskNumber) {
             Thread.sleep(2000);
           }
@@ -600,7 +600,7 @@ public class EDDGridCopy extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

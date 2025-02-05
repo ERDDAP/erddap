@@ -83,7 +83,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     if (verbose) String2.log("\n*** constructing EDDGridFromEtopo(xmlReader)...");
     String tDatasetID = xmlReader.attributeValue("datasetID");
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nGridThreads
     boolean tDimensionValuesInMemory = true;
 
@@ -147,7 +147,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     if (!tAccessibleViaWMS)
       accessibleViaWMS =
           String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
 
@@ -270,7 +270,7 @@ public class EDDGridFromEtopo extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

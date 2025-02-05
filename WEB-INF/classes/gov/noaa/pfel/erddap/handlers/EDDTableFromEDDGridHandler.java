@@ -18,7 +18,7 @@ public class EDDTableFromEDDGridHandler extends BaseTableHandler {
   }
 
   private EDDGrid tChildDataset = null;
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {

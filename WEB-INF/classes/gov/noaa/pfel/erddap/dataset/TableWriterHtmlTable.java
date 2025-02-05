@@ -350,7 +350,7 @@ public class TableWriterHtmlTable extends TableWriter {
     }
 
     // write the data
-    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.baseHttpsUrl);
+    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.config.baseHttpsUrl);
     for (int row = 0; row < showNRows; row++) {
       writer.write("<tr>\n");
       somethingWritten = false;
@@ -378,8 +378,9 @@ public class TableWriterHtmlTable extends TableWriter {
                   // display as a link
                   url = fileAccessBaseUrl[col] + s + fileAccessSuffix[col];
                   boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
+                      url.startsWith(EDStatic.config.baseUrl)
+                          || (baseHttpsUrlIsSomething
+                              && url.startsWith(EDStatic.config.baseHttpsUrl));
                   s =
                       "<a href=\""
                           + XML.encodeAsHTMLAttribute(url)
@@ -392,8 +393,9 @@ public class TableWriterHtmlTable extends TableWriter {
                   // display as a link
                   url = s;
                   boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
+                      url.startsWith(EDStatic.config.baseUrl)
+                          || (baseHttpsUrlIsSomething
+                              && url.startsWith(EDStatic.config.baseHttpsUrl));
                   s =
                       "<a href=\""
                           + XML.encodeAsHTMLAttribute(url)

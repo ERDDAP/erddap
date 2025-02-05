@@ -1620,8 +1620,8 @@ public abstract class EDDTable extends EDD {
    * (which has access to all the data).
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery the OPeNDAP DAP-style query from the user, after the '?', still
    *     percentEncoded (shouldn't be null). (e.g., var1,var2&var3&lt;40) referring to variable's
    *     destinationNames (e.g., LAT), instead of the sourceNames. Presumably, getSourceDapQuery has
@@ -1935,8 +1935,8 @@ public abstract class EDDTable extends EDD {
    *     is included, this method does NOT check if loggedInAs has access to this dataset. The
    *     exceptions are fromPOST datasets, where loggedInAs is used to determine access to each row
    *     of data.
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery the OPeNDAP DAP-style query from the user after the '?', still
    *     percentEncoded (may be null). (e.g., var1,var2&var3%3C=40) referring to destination
    *     variable names. See parseUserDapQuery.
@@ -1961,9 +1961,9 @@ public abstract class EDDTable extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but in unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata. Use "" if not important (e.g., for
-   *     tests).
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata. Use "" if not important (e.g.,
+   *     for tests).
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null).
    * @return twawm with all of the data already read. twawm always adds a randomInt to the temporary
@@ -2018,8 +2018,8 @@ public abstract class EDDTable extends EDD {
    * This calls standardizeResultsTable.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery after the '?', still percentEncoded (shouldn't be null).
    * @param table with a chunk of the total source data.
    * @param tableWriter to which the table's data will be written
@@ -2041,7 +2041,7 @@ public abstract class EDDTable extends EDD {
     // write to tableWriter?
     // String2.log("writeChunkToTableWriter table.nRows=" + table.nRows());
     if (table.nRows() > 1000
-        || (table.nRows() * (long) table.nColumns() > EDStatic.partialRequestMaxCells)
+        || (table.nRows() * (long) table.nColumns() > EDStatic.config.partialRequestMaxCells)
         || finish) {
 
       if (table.nRows() == 0 && finish) {
@@ -3229,8 +3229,8 @@ public abstract class EDDTable extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but in unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null).
    * @param outputStreamSource the source of an outputStream that receives the results, usually
@@ -3315,7 +3315,7 @@ public abstract class EDDTable extends EDD {
     // special EDDTableFromHttpGet file types
     if (this instanceof EDDTableFromHttpGet etfhg
         && (fileTypeName.equals(".insert") || fileTypeName.equals(".delete"))) {
-      if (!EDStatic.developmentMode && loggedInAs == null)
+      if (!EDStatic.config.developmentMode && loggedInAs == null)
         throw new SimpleException(
             EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
                 + fileTypeName
@@ -3867,10 +3867,10 @@ public abstract class EDDTable extends EDD {
         twawm.close();
       } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
 
-        if (EDStatic.accessibleViaNC4.length() > 0)
+        if (EDStatic.config.accessibleViaNC4.length() > 0)
           throw new SimpleException(
               EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                  + EDStatic.accessibleViaNC4);
+                  + EDStatic.config.accessibleViaNC4);
 
         // if .nc4Header, make sure the .nc4 file exists
         // (and it is the better file to cache)
@@ -4005,7 +4005,8 @@ public abstract class EDDTable extends EDD {
         File2.rename(cacheFullName + random, cacheFullName); // make available in an instant
         if (!ok) // make eligible to be removed from cache in 5 minutes
         File2.touch(
-              cacheFullName, Math.max(0, EDStatic.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
+              cacheFullName,
+              Math.max(0, EDStatic.config.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
 
         File2.isFile(
             cacheFullName,
@@ -4049,7 +4050,7 @@ public abstract class EDDTable extends EDD {
     }
 
     // copy file to ...
-    if (EDStatic.awsS3OutputBucketUrl == null) {
+    if (EDStatic.config.awsS3OutputBucketUrl == null) {
 
       // copy file to outputStream
       // (I delayed getting actual outputStream as long as possible.)
@@ -4069,8 +4070,10 @@ public abstract class EDDTable extends EDD {
       // copy file to AWS and redirect user
       String contentType =
           OutputStreamFromHttpResponse.getFileContentType(request, fileTypeName, fileTypeExtension);
-      String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
-      SSR.uploadFileToAwsS3(EDStatic.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
+      String fullAwsUrl =
+          EDStatic.config.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
+      SSR.uploadFileToAwsS3(
+          EDStatic.config.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
       response.sendRedirect(fullAwsUrl);
     }
 
@@ -4376,7 +4379,7 @@ public abstract class EDDTable extends EDD {
           }
         }
       } else if (p.startsWith("units(\"") && p.endsWith("\")")) {
-        String fromUnits = EDStatic.units_standard;
+        String fromUnits = EDStatic.config.units_standard;
         String toUnits = p.substring(7, p.length() - 2);
         TableWriterUnits.checkFromToUnits(language, fromUnits, toUnits);
         if (!fromUnits.equals(toUnits)) {
@@ -4400,8 +4403,8 @@ public abstract class EDDTable extends EDD {
    * request.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery the part after the '?', still percentEncoded (shouldn't be null).
    * @param withAttributes
    * @return an empty table (with columns, but without rows) corresponding to the request
@@ -4437,7 +4440,7 @@ public abstract class EDDTable extends EDD {
       //// fix up global attributes  (always to a local COPY of global attributes)
       // EDD.addToHistory(table.globalAttributes(), publicSourceUrl());
       // EDD.addToHistory(table.globalAttributes(),
-      //    EDStatic.baseUrl + requestUrl); //userDapQuery is irrelevant
+      //    EDStatic.config.baseUrl + requestUrl); //userDapQuery is irrelevant
     }
 
     // add the columns
@@ -5167,7 +5170,7 @@ public abstract class EDDTable extends EDD {
       double fontScale = 1, vectorStandard = Double.NaN;
       String currentDrawLandMask = null; // not yet set
       StringBuilder title2 = new StringBuilder();
-      Color bgColor = EDStatic.graphBackgroundColor;
+      Color bgColor = EDStatic.config.graphBackgroundColor;
       String ampParts[] =
           Table.getDapQueryParts(userDapQuery); // decoded.  always at least 1 part (may be "")
       for (int ap = 0; ap < ampParts.length; ap++) {
@@ -5479,25 +5482,25 @@ public abstract class EDDTable extends EDD {
           if (zVar instanceof EDVTimeStamp)
             colorMap =
                 new CompoundColorMap(
-                    EDStatic.fullPaletteDirectory,
+                    EDStatic.config.fullPaletteDirectory,
                     palette,
                     false, // false= data is seconds
                     paletteMin,
                     paletteMax,
                     nSections,
                     continuous,
-                    EDStatic.fullCptCacheDirectory);
+                    EDStatic.config.fullCptCacheDirectory);
           else
             colorMap =
                 new CompoundColorMap(
-                    EDStatic.fullPaletteDirectory,
+                    EDStatic.config.fullPaletteDirectory,
                     palette,
                     scale,
                     paletteMin,
                     paletteMax,
                     nSections,
                     continuous,
-                    EDStatic.fullCptCacheDirectory);
+                    EDStatic.config.fullCptCacheDirectory);
         }
       }
 
@@ -5617,7 +5620,7 @@ public abstract class EDDTable extends EDD {
       // setup graphics2D
       String logoImageFile;
       if (pdf) {
-        logoImageFile = EDStatic.highResLogoImageFile;
+        logoImageFile = EDStatic.config.highResLogoImageFile;
         fontScale *= 1.4; // SgtMap.PDF_FONTSCALE=1.5 is too big
         // getting the outputStream was delayed as long as possible to allow errors
         // to be detected and handled before committing to sending results to client
@@ -5630,7 +5633,9 @@ public abstract class EDDTable extends EDD {
         g2 = (Graphics2D) pdfInfo[0];
       } else {
         logoImageFile =
-            sizeIndex <= 1 ? EDStatic.lowResLogoImageFile : EDStatic.highResLogoImageFile;
+            sizeIndex <= 1
+                ? EDStatic.config.lowResLogoImageFile
+                : EDStatic.config.highResLogoImageFile;
         fontScale *= imageWidth < 500 ? 1 : 1.25;
         bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
         g2 = (Graphics2D) bufferedImage.getGraphics();
@@ -5768,7 +5773,7 @@ public abstract class EDDTable extends EDD {
                     || table.nRows() == 0
                 ? null
                 : SgtMap.createTopographyGrid(
-                    EDStatic.fullSgtMapTopographyCacheDirectory,
+                    EDStatic.config.fullSgtMapTopographyCacheDirectory,
                     xMin,
                     xMax,
                     yMin,
@@ -5800,7 +5805,7 @@ public abstract class EDDTable extends EDD {
                 SgtUtil.LEGEND_BELOW,
                 EDStatic.messages.legendTitle1,
                 EDStatic.messages.legendTitle2,
-                EDStatic.imageDir,
+                EDStatic.config.imageDir,
                 logoImageFile,
                 xMin,
                 xMax,
@@ -5863,7 +5868,7 @@ public abstract class EDDTable extends EDD {
                 SgtUtil.LEGEND_BELOW,
                 EDStatic.messages.legendTitle1,
                 EDStatic.messages.legendTitle2,
-                EDStatic.imageDir,
+                EDStatic.config.imageDir,
                 logoImageFile,
                 xMin,
                 xMax,
@@ -5944,7 +5949,7 @@ public abstract class EDDTable extends EDD {
             msg = String2.noLongLines(msg, (imageWidth * 10 / 6) / tHeight, "    ");
             String lines[] = msg.split("\\n"); // not String2.split which trims
             g2.setColor(Color.black);
-            g2.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
+            g2.setFont(new Font(EDStatic.config.fontFamily, Font.PLAIN, tHeight));
             int ty = tHeight * 2;
             for (String line : lines) {
               g2.drawString(line, tHeight, ty);
@@ -6468,7 +6473,7 @@ public abstract class EDDTable extends EDD {
         // missing values are already destinationMissingValues or destinationFillValues
         int nToGo = nRows;
         int ncOffset = 0;
-        int bufferSize = EDStatic.partialRequestMaxCells;
+        int bufferSize = EDStatic.config.partialRequestMaxCells;
         PrimitiveArray pa = null;
         try (DataInputStream dis = twawm.dataInputStream(col)) {
           PAType colType = twawm.columnType(col);
@@ -7964,7 +7969,7 @@ public abstract class EDDTable extends EDD {
     twawm.releaseResources();
     String parquetTempFileName =
         Path.of(
-                EDStatic.fullTestCacheDirectory,
+                EDStatic.config.fullTestCacheDirectory,
                 datasetID + Math2.random(Integer.MAX_VALUE) + ".parquet")
             .toString();
     table.writeParquet(parquetTempFileName, fullMetadata);
@@ -10156,7 +10161,7 @@ public abstract class EDDTable extends EDD {
             + "</a>\n"
             + "      (e.g., <kbd>2002-08-03T12:30:00Z</kbd>, but some time variables in some datasets include\n"
             + "      milliseconds, e.g., <kbd>2002-08-03T12:30:00.123Z</kbd>).\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "      <br>ERDDAP has a utility to\n"
                     + "        <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -10199,7 +10204,7 @@ public abstract class EDDTable extends EDD {
             + "      And this is consistent with some other places in ERDDAP that try to repair\n"
             + "      invalid input when the intention is clear, instead of just returning an error\n"
             + "      message.)\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "      <br>ERDDAP has a utility to\n"
                     + "        <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -10542,9 +10547,9 @@ public abstract class EDDTable extends EDD {
             + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
             + "</a> standard (for example, <kbd>Cel</kbd>).\n"
             + "      <br>On this ERDDAP, the default for most/all datasets is "
-            + EDStatic.units_standard
+            + EDStatic.config.units_standard
             + ".\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\""
                     + tErddapUrl
                     + "/convert/units.html\"\n"
@@ -10587,7 +10592,7 @@ public abstract class EDDTable extends EDD {
             + "       For example, a fully opaque (ff) greenish-blue color with red=22, green=88, blue=ee\n"
             + "       would be 0xff2288ee. Opaque white is 0xffffffff. Opaque light blue is 0xffccccff.\n"
             + "       The default on this ERDDAP is "
-            + String2.to0xHexString(EDStatic.graphBackgroundColor.getRGB(), 8)
+            + String2.to0xHexString(EDStatic.config.graphBackgroundColor.getRGB(), 8)
             + ".\n"
             + "    <li><kbd>&amp;.colorBar=<i>palette</i>|<i>continuous</i>|<i>scale</i>|<i>min</i>|<i>max</i>|<i>nSections</i></kbd> \n"
             + "      <br>This specifies the settings for a color bar.  The sub-values are:\n"
@@ -10976,8 +10981,8 @@ public abstract class EDDTable extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery after the '?', still percentEncoded (shouldn't be null). If the query has
    *     missing or invalid parameters, defaults will be used. If the query has irrelevant
    *     parameters, they will be ignored.
@@ -12585,7 +12590,7 @@ public abstract class EDDTable extends EDD {
       }
 
       // bgColor
-      Color bgColor = EDStatic.graphBackgroundColor;
+      Color bgColor = EDStatic.config.graphBackgroundColor;
       String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
       if (tBGColor != null) {
         String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
@@ -15241,7 +15246,7 @@ public abstract class EDDTable extends EDD {
 
     // are the combinations available in a .json or .csv file created by ERDDAP admin?
     // <contentDir>subset/datasetID.json
-    String adminSubsetFileName = EDStatic.contentDirectory + "subset/" + datasetID;
+    String adminSubsetFileName = EDStatic.config.contentDirectory + "subset/" + datasetID;
     if (File2.isFile(adminSubsetFileName + ".json")) {
       // json
       if (reallyVerbose)
@@ -15591,7 +15596,7 @@ public abstract class EDDTable extends EDD {
       String subject = "WARNING: datasetID=" + datasetID + " has carriageReturns or newlines";
       String2.log(subject);
       String2.log(results.toString());
-      // EDStatic.email(EDStatic.emailEverythingToCsv, subject,
+      // EDStatic.email(EDStatic.config.emailEverythingToCsv, subject,
       //    results.toString());
     }
 
@@ -15731,8 +15736,8 @@ public abstract class EDDTable extends EDD {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. I think
-   *     it's currently just used to add to "history" metadata.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'. I
+   *     think it's currently just used to add to "history" metadata.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -15930,7 +15935,7 @@ public abstract class EDDTable extends EDD {
         tAccessibleViaSubset = EDStatic.messages.subsetNotSetUpAr[0];
 
       if ((className.equals("EDDTableFromDapSequence") || className.equals("EDDTableFromErddap"))
-          && EDStatic.quickRestart
+          && EDStatic.config.quickRestart
           && EDStatic.initialLoadDatasets()
           && File2.isFile(quickRestartFullFileName())) {
 
@@ -15938,7 +15943,7 @@ public abstract class EDDTable extends EDD {
         if (verbose) String2.log("  quickRestart: reusing subset and distinct files");
 
       } else if ((this instanceof EDDTableFromFiles)
-          && EDStatic.quickRestart
+          && EDStatic.config.quickRestart
           && EDStatic.initialLoadDatasets()) {
 
         // 2022-07-26 don't delete subset and distinct files  (to reuse them)
@@ -16061,7 +16066,7 @@ public abstract class EDDTable extends EDD {
   public String preliminaryAccessibleViaSOS() {
 
     // easy tests make for a better error message
-    if (!EDStatic.sosActive)
+    if (!EDStatic.config.sosActive)
       return String2.canonical(
           MessageFormat.format(
               EDStatic.messages.noXxxBecauseAr[0],
@@ -16184,7 +16189,7 @@ public abstract class EDDTable extends EDD {
   public String accessibleViaGeoServicesRest() {
     if (accessibleViaGeoServicesRest == null) {
 
-      if (!EDStatic.geoServicesRestActive)
+      if (!EDStatic.config.geoServicesRestActive)
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
@@ -16208,7 +16213,7 @@ public abstract class EDDTable extends EDD {
   public String accessibleViaWCS() {
     if (accessibleViaWCS == null) {
 
-      if (!EDStatic.wcsActive)
+      if (!EDStatic.config.wcsActive)
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
@@ -16230,7 +16235,7 @@ public abstract class EDDTable extends EDD {
   @Override
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null)
-      if (!EDStatic.wmsActive)
+      if (!EDStatic.config.wmsActive)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
@@ -16574,7 +16579,7 @@ public abstract class EDDTable extends EDD {
         + ":"
         + tSosOfferingType
         + ":"
-        + EDStatic.sosBaseGmlName
+        + EDStatic.config.sosBaseGmlName
         + "."
         + datasetID
         + ":"; // + shortOffering
@@ -16729,39 +16734,39 @@ public abstract class EDDTable extends EDD {
       writer.write(
           "  <ows:ServiceProvider>\n"
               + "    <ows:ProviderName>"
-              + XML.encodeAsXML(EDStatic.adminInstitution)
+              + XML.encodeAsXML(EDStatic.config.adminInstitution)
               + "</ows:ProviderName>\n"
               + "    <ows:ProviderSite xlink:href=\""
               + XML.encodeAsXML(tErddapUrl)
               + "\"/>\n"
               + "    <ows:ServiceContact>\n"
               + "      <ows:IndividualName>"
-              + XML.encodeAsXML(EDStatic.adminIndividualName)
+              + XML.encodeAsXML(EDStatic.config.adminIndividualName)
               + "</ows:IndividualName>\n"
               + "      <ows:ContactInfo>\n"
               + "        <ows:Phone>\n"
               + "          <ows:Voice>"
-              + XML.encodeAsXML(EDStatic.adminPhone)
+              + XML.encodeAsXML(EDStatic.config.adminPhone)
               + "</ows:Voice>\n"
               + "        </ows:Phone>\n"
               + "        <ows:Address>\n"
               + "          <ows:DeliveryPoint>"
-              + XML.encodeAsXML(EDStatic.adminAddress)
+              + XML.encodeAsXML(EDStatic.config.adminAddress)
               + "</ows:DeliveryPoint>\n"
               + "          <ows:City>"
-              + XML.encodeAsXML(EDStatic.adminCity)
+              + XML.encodeAsXML(EDStatic.config.adminCity)
               + "</ows:City>\n"
               + "          <ows:AdministrativeArea>"
-              + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+              + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
               + "</ows:AdministrativeArea>\n"
               + "          <ows:PostalCode>"
-              + XML.encodeAsXML(EDStatic.adminPostalCode)
+              + XML.encodeAsXML(EDStatic.config.adminPostalCode)
               + "</ows:PostalCode>\n"
               + "          <ows:Country>"
-              + XML.encodeAsXML(EDStatic.adminCountry)
+              + XML.encodeAsXML(EDStatic.config.adminCountry)
               + "</ows:Country>\n"
               + "          <ows:ElectronicMailAddress>"
-              + XML.encodeAsXML(EDStatic.adminEmail)
+              + XML.encodeAsXML(EDStatic.config.adminEmail)
               + "</ows:ElectronicMailAddress>\n"
               + "        </ows:Address>\n"
               + "      </ows:ContactInfo>\n"
@@ -17490,37 +17495,37 @@ public abstract class EDDTable extends EDD {
             +
             // bob added:
             "          <sml:individualName>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</sml:individualName>\n"
             + "          <sml:organizationName>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</sml:organizationName>\n"
             + "          <sml:contactInfo>\n"
             + "            <sml:phone>\n"
             + "              <sml:voice>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</sml:voice>\n"
             + "            </sml:phone>\n"
             + "            <sml:address>\n"
             + "              <sml:deliveryPoint>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</sml:deliveryPoint>\n"
             + "              <sml:city>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</sml:city>\n"
             + "              <sml:administrativeArea>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</sml:administrativeArea>\n"
             + "              <sml:postalCode>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</sml:postalCode>\n"
             + "              <sml:country>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</sml:country>\n"
             +
             // bob added:
             "              <sml:electronicMailAddress>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</sml:electronicMailAddress>\n"
             + "            </sml:address>\n"
             + "            <sml:onlineResource xlink:href=\""
@@ -17892,7 +17897,7 @@ public abstract class EDDTable extends EDD {
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (from source)");
 
           // convert UDUNITS to UCUM units  (before direct use of twawm or get cumulativeTable)
-          if (EDStatic.units_standard.equals("UDUNITS")) {
+          if (EDStatic.config.units_standard.equals("UDUNITS")) {
             int nColumns = twawm.nColumns();
             for (int col = 0; col < nColumns; col++) {
               Attributes atts = twawm.columnAttributes(col);
@@ -17927,7 +17932,7 @@ public abstract class EDDTable extends EDD {
       } else {
         // *** handle all other file types
         // add the units function to dapQuery?
-        if (!EDStatic.units_standard.equals("UCUM")) dapQuery += "&units(%22UCUM%22)";
+        if (!EDStatic.config.units_standard.equals("UCUM")) dapQuery += "&units(%22UCUM%22)";
 
         respondToDapQuery(
             language,
@@ -20913,7 +20918,7 @@ public abstract class EDDTable extends EDD {
     String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
     String sosUrl = tErddapUrl + "/sos/" + datasetID() + "/" + sosServer; // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate =
@@ -20950,7 +20955,7 @@ public abstract class EDDTable extends EDD {
     String keywords = combinedGlobalAttributes.getString("keywords");
     String keywordsVocabulary = combinedGlobalAttributes.getString("keywords_vocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
       keywordsVocabulary = null;
     }
     String license = combinedGlobalAttributes.getString("license");
@@ -20963,18 +20968,24 @@ public abstract class EDDTable extends EDD {
     String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
 
     String adminInstitution =
-        EDStatic.adminInstitution == null ? unknown : EDStatic.adminInstitution;
+        EDStatic.config.adminInstitution == null ? unknown : EDStatic.config.adminInstitution;
     String adminIndividualName =
-        EDStatic.adminIndividualName == null ? unknown : EDStatic.adminIndividualName;
-    String adminPosition = EDStatic.adminPosition == null ? unknown : EDStatic.adminPosition;
-    String adminPhone = EDStatic.adminPhone == null ? unknown : EDStatic.adminPhone;
-    String adminAddress = EDStatic.adminAddress == null ? unknown : EDStatic.adminAddress;
-    String adminCity = EDStatic.adminCity == null ? unknown : EDStatic.adminCity;
+        EDStatic.config.adminIndividualName == null ? unknown : EDStatic.config.adminIndividualName;
+    String adminPosition =
+        EDStatic.config.adminPosition == null ? unknown : EDStatic.config.adminPosition;
+    String adminPhone = EDStatic.config.adminPhone == null ? unknown : EDStatic.config.adminPhone;
+    String adminAddress =
+        EDStatic.config.adminAddress == null ? unknown : EDStatic.config.adminAddress;
+    String adminCity = EDStatic.config.adminCity == null ? unknown : EDStatic.config.adminCity;
     String adminStateOrProvince =
-        EDStatic.adminStateOrProvince == null ? unknown : EDStatic.adminStateOrProvince;
-    String adminPostalCode = EDStatic.adminPostalCode == null ? unknown : EDStatic.adminPostalCode;
-    String adminCountry = EDStatic.adminCountry == null ? unknown : EDStatic.adminCountry;
-    String adminEmail = EDStatic.adminEmail == null ? unknown : EDStatic.adminEmail;
+        EDStatic.config.adminStateOrProvince == null
+            ? unknown
+            : EDStatic.config.adminStateOrProvince;
+    String adminPostalCode =
+        EDStatic.config.adminPostalCode == null ? unknown : EDStatic.config.adminPostalCode;
+    String adminCountry =
+        EDStatic.config.adminCountry == null ? unknown : EDStatic.config.adminCountry;
+    String adminEmail = EDStatic.config.adminEmail == null ? unknown : EDStatic.config.adminEmail;
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -21865,7 +21876,7 @@ public abstract class EDDTable extends EDD {
     String datasetUrl = tErddapUrl + "/tabledap/" + datasetID;
     // String wcsUrl     = tErddapUrl + "/wcs/"     + datasetID() + "/" + wcsServer;  // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
@@ -21900,7 +21911,7 @@ public abstract class EDDTable extends EDD {
     String institution = combinedGlobalAttributes.getString("institution");
     String keywords = combinedGlobalAttributes.getString("keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
     }
     String license = combinedGlobalAttributes.getString("license");
     String project = combinedGlobalAttributes.getString("project");
@@ -22050,12 +22061,12 @@ public abstract class EDDTable extends EDD {
             + "    <gmd:CI_ResponsibleParty>\n"
             + "      <gmd:individualName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "      </gmd:individualName>\n"
             + "      <gmd:organisationName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "      </gmd:organisationName>\n"
             + "      <gmd:contactInfo>\n"
@@ -22064,7 +22075,7 @@ public abstract class EDDTable extends EDD {
             + "            <gmd:CI_Telephone>\n"
             + "              <gmd:voice>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "              </gmd:voice>\n"
             + "            </gmd:CI_Telephone>\n"
@@ -22073,32 +22084,32 @@ public abstract class EDDTable extends EDD {
             + "            <gmd:CI_Address>\n"
             + "              <gmd:deliveryPoint>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "              </gmd:deliveryPoint>\n"
             + "              <gmd:city>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "              </gmd:city>\n"
             + "              <gmd:administrativeArea>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "              </gmd:administrativeArea>\n"
             + "              <gmd:postalCode>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "              </gmd:postalCode>\n"
             + "              <gmd:country>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "              </gmd:country>\n"
             + "              <gmd:electronicMailAddress>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "              </gmd:electronicMailAddress>\n"
             + "            </gmd:CI_Address>\n"
@@ -23170,12 +23181,12 @@ public abstract class EDDTable extends EDD {
             "            <gmd:CI_ResponsibleParty>\n"
             + "              <gmd:individualName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "              </gmd:individualName>\n"
             + "              <gmd:organisationName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "              </gmd:organisationName>\n"
             + "              <gmd:contactInfo>\n"
@@ -23184,7 +23195,7 @@ public abstract class EDDTable extends EDD {
             + "                    <gmd:CI_Telephone>\n"
             + "                      <gmd:voice>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "                      </gmd:voice>\n"
             + "                    </gmd:CI_Telephone>\n"
@@ -23193,32 +23204,32 @@ public abstract class EDDTable extends EDD {
             + "                    <gmd:CI_Address>\n"
             + "                      <gmd:deliveryPoint>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "                      </gmd:deliveryPoint>\n"
             + "                      <gmd:city>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "                      </gmd:city>\n"
             + "                      <gmd:administrativeArea>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "                      </gmd:administrativeArea>\n"
             + "                      <gmd:postalCode>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "                      </gmd:postalCode>\n"
             + "                      <gmd:country>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "                      </gmd:country>\n"
             + "                      <gmd:electronicMailAddress>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "                      </gmd:electronicMailAddress>\n"
             + "                    </gmd:CI_Address>\n"

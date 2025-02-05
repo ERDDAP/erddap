@@ -13,6 +13,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
@@ -222,11 +223,11 @@ public class EDDTableFromAllDatasets extends EDDTable {
         .globalAttributes()
         .add("cdm_data_type", CDM_OTHER)
         .add("Conventions", "COARDS, CF-1.6, ACDD-1.3")
-        .add("creator_name", EDStatic.adminIndividualName)
-        .add("creator_email", EDStatic.adminEmail)
+        .add("creator_name", EDStatic.config.adminIndividualName)
+        .add("creator_email", EDStatic.config.adminEmail)
         .add("creator_url", tErddapUrl)
         .add("infoUrl", tErddapUrl)
-        .add("institution", EDStatic.adminInstitution)
+        .add("institution", EDStatic.config.adminInstitution)
         .add("keywords", EDStatic.messages.admKeywords)
         .add("license", EDStatic.messages.standardLicense)
         .add("sourceUrl", publicSourceUrl)
@@ -515,7 +516,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
       continue;
       boolean isAccessible = edd.isAccessibleTo(roles);
       boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-      if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+      if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
 
       // add this dataset's value to each column   (order is not important)
       idCol.add(tId);
@@ -652,7 +653,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
           graphsAccessible && edd.accessibleViaFGDC().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.fgdcXmlDirectory
+                  + EDConfig.fgdcXmlDirectory
                   + edd.datasetID()
                   + EDD.fgdcSuffix
                   + ".xml"
@@ -661,7 +662,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
           graphsAccessible && edd.accessibleViaISO19115().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.iso19115XmlDirectory
+                  + EDConfig.iso19115XmlDirectory
                   + edd.datasetID()
                   + EDD.iso19115Suffix
                   + ".xml"
@@ -674,7 +675,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
               ? EDStatic.erddapUrl + "/rss/" + edd.datasetID() + ".rss"
               : ""); // never https url
       emailCol.add(
-          graphsAccessible && EDStatic.subscriptionSystemActive
+          graphsAccessible && EDStatic.config.subscriptionSystemActive
               ? tErddapUrl
                   + "/"
                   + Subscriptions.ADD_HTML
@@ -697,7 +698,7 @@ public class EDDTableFromAllDatasets extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

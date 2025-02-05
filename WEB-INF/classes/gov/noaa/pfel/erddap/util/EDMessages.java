@@ -1077,37 +1077,37 @@ public class EDMessages {
   public final String errorFromDataSource = String2.ERROR + " from data source: ";
   public final int nLanguages = TranslateMessages.languageList.size();
 
-  public EDMessages(String contentDirectory, ResourceBundle2 setup, Map<String, String> ev) {
+  public EDMessages(String contentDirectory) throws Exception {
+    String setupFileName =
+        contentDirectory + "setup" + (EDStatic.config.developmentMode ? "2" : "") + ".xml";
+    String errorInMethod;
+    ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+    Map<String, String> ev = System.getenv();
     // **** messages.xml *************************************************************
     // This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup
     // and add it below.
     // Read static messages from messages(2).xml in contentDirectory.
-    String errorInMethod;
     ResourceBundle2[] messagesAr = new ResourceBundle2[nLanguages];
     String messagesFileName = contentDirectory + "messages.xml";
-    try {
-      if (File2.isFile(messagesFileName)) {
-        String2.log("Using custom messages.xml from " + messagesFileName);
-        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
-      } else {
-        // use default messages.xml
-        String2.log("Custom messages.xml not found at " + messagesFileName);
-        // use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-        URL messagesResourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/messages.xml");
-        // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
-        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesResourceFile, false));
-        String2.log("Using default messages.xml from  " + messagesFileName);
-      }
+    if (File2.isFile(messagesFileName)) {
+      String2.log("Using custom messages.xml from " + messagesFileName);
+      // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
+      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
+    } else {
+      // use default messages.xml
+      String2.log("Custom messages.xml not found at " + messagesFileName);
+      // use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
+      URL messagesResourceFile = Resources.getResource("gov/noaa/pfel/erddap/util/messages.xml");
+      // messagesAr[0] is either the custom messages.xml or the one provided by Erddap
+      messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesResourceFile, false));
+      String2.log("Using default messages.xml from  " + messagesFileName);
+    }
 
-      for (int tl = 1; tl < nLanguages; tl++) {
-        String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
-        errorInMethod = "ERROR while reading " + tName + ": ";
-        URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
-        messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
-      }
-    } catch (Exception e) {
-      String2.log("EDMessages error loading files\n" + e.toString());
+    for (int tl = 1; tl < nLanguages; tl++) {
+      String tName = "messages-" + TranslateMessages.languageCodeList.get(tl) + ".xml";
+      errorInMethod = "ERROR while reading " + tName + ": ";
+      URL messageFile = new URL(TranslateMessages.translatedMessagesDir + tName);
+      messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(messageFile, false));
     }
     // read all the static Strings from messages.xml
     errorInMethod = "ERROR while reading from all the messages.xml files: ";
@@ -1372,7 +1372,7 @@ public class EDMessages {
     convertUnitsNotesAr = getNotNothingString(messagesAr, "convertUnitsNotes", errorInMethod);
     for (int tl = 0; tl < nLanguages; tl++)
       convertUnitsNotesAr[tl] =
-          convertUnitsNotesAr[tl].replace("&unitsStandard;", EDStatic.units_standard);
+          convertUnitsNotesAr[tl].replace("&unitsStandard;", EDStatic.config.units_standard);
     convertUnitsServiceAr = getNotNothingString(messagesAr, "convertUnitsService", errorInMethod);
     convertURLsAr = getNotNothingString(messagesAr, "convertURLs", errorInMethod);
     convertURLsIntroAr = getNotNothingString(messagesAr, "convertURLsIntro", errorInMethod);
@@ -1657,21 +1657,16 @@ public class EDMessages {
     EDDGridMapExampleHE = XML.encodeAsHTML(EDDGridMapExample);
 
     // variants encoded to be Html Attributes
-    try {
-      EDDGridDimensionExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDimensionExample));
-      EDDGridDataIndexExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataIndexExample));
-      EDDGridDataValueExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataValueExample));
-      EDDGridDataTimeExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataTimeExample));
-      EDDGridGraphExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridGraphExample));
-      EDDGridMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridMapExample));
-    } catch (Exception e) {
-      String2.log("EDMessages error percent encoding\n" + e.toString());
-    }
+    EDDGridDimensionExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDimensionExample));
+    EDDGridDataIndexExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataIndexExample));
+    EDDGridDataValueExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataValueExample));
+    EDDGridDataTimeExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridDataTimeExample));
+    EDDGridGraphExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridGraphExample));
+    EDDGridMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridMapExample));
 
     EDDTableConstraintsAr = getNotNothingString(messagesAr, "EDDTableConstraints", errorInMethod);
     EDDTableDapDescriptionAr =
@@ -1758,20 +1753,16 @@ public class EDMessages {
     EDDTableGraphExampleHE = XML.encodeAsHTML(EDDTableGraphExample);
     EDDTableMapExampleHE = XML.encodeAsHTML(EDDTableMapExample);
 
-    try {
-      // variants encoded to be Html Attributes
-      EDDTableConstraintsExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableConstraintsExample));
-      EDDTableDataTimeExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataTimeExample));
-      EDDTableDataValueExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataValueExample));
-      EDDTableGraphExampleHA =
-          XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableGraphExample));
-      EDDTableMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableMapExample));
-    } catch (Exception e) {
-      String2.log("EDMessages error percent encoding\n" + e.toString());
-    }
+    // variants encoded to be Html Attributes
+    EDDTableConstraintsExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableConstraintsExample));
+    EDDTableDataTimeExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataTimeExample));
+    EDDTableDataValueExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableDataValueExample));
+    EDDTableGraphExampleHA =
+        XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableGraphExample));
+    EDDTableMapExampleHA = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableMapExample));
 
     EDDTableFromHttpGetDatasetDescription =
         XML.decodeEntities( // because this is used as plain text
@@ -2605,7 +2596,7 @@ public class EDMessages {
     lazyInitializeStatics(errorInMethod, messagesAr);
 
     for (int tl = 0; tl < nLanguages; tl++) {
-      blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], EDStatic.adminEmail);
+      blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], EDStatic.config.adminEmail);
     }
 
     standardShortDescriptionHtmlAr =
@@ -2615,12 +2606,12 @@ public class EDMessages {
           String2.replaceAll(
               standardShortDescriptionHtmlAr[tl],
               "&convertTimeReference;",
-              EDStatic.convertersActive ? convertTimeReferenceAr[tl] : "");
+              EDStatic.config.convertersActive ? convertTimeReferenceAr[tl] : "");
       standardShortDescriptionHtmlAr[tl] =
           String2.replaceAll(
               standardShortDescriptionHtmlAr[tl],
               "&wmsManyDatasets;",
-              EDStatic.wmsActive ? wmsManyDatasetsAr[tl] : "");
+              EDStatic.config.wmsActive ? wmsManyDatasetsAr[tl] : "");
     }
 
     // just one
@@ -2690,7 +2681,9 @@ public class EDMessages {
           String2.replaceAll(standardDataLicensesAr[tl], "&license;", "<kbd>license</kbd>");
       standardContactAr[tl] =
           String2.replaceAll(
-              standardContactAr[tl], "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
+              standardContactAr[tl],
+              "&adminEmail;",
+              SSR.getSafeEmailAddress(EDStatic.config.adminEmail));
       startBodyHtmlAr[tl] =
           String2.replaceAll(startBodyHtmlAr[tl], "&erddapVersion;", EDStatic.erddapVersion);
       endBodyHtmlAr[tl] =
@@ -2768,19 +2761,19 @@ public class EDMessages {
     }
 
     for (String palette : palettes) {
-      String tName = EDStatic.fullPaletteDirectory + palette + ".cpt";
+      String tName = EDStatic.config.fullPaletteDirectory + palette + ".cpt";
       Test.ensureTrue(
           File2.isFile(tName),
           "\"" + palette + "\" is listed in <palettes>, but there is no file " + tName);
     }
 
-    String tEmail = SSR.getSafeEmailAddress(EDStatic.adminEmail);
+    String tEmail = SSR.getSafeEmailAddress(EDStatic.config.adminEmail);
     for (int tl = 0; tl < nLanguages; tl++) {
       searchHintsTooltipAr[tl] =
           "<div class=\"standard_max_width\">"
               + searchHintsTooltipAr[tl]
               + "\n"
-              + (EDStatic.useLuceneSearchEngine
+              + (EDStatic.config.useLuceneSearchEngine
                   ? searchHintsLuceneTooltipAr[tl]
                   : searchHintsOriginalTooltipAr[tl])
               + "</div>";
@@ -2803,13 +2796,13 @@ public class EDMessages {
 
       doWithGraphsAr[tl] =
           String2.replaceAll(
-              doWithGraphsAr[tl], "&ssUse;", EDStatic.slideSorterActive ? ssUseAr[tl] : "");
+              doWithGraphsAr[tl], "&ssUse;", EDStatic.config.slideSorterActive ? ssUseAr[tl] : "");
 
       theLongDescriptionHtmlAr[tl] =
           String2.replaceAll(
               theLongDescriptionHtmlAr[tl],
               "&ssUse;",
-              EDStatic.slideSorterActive ? ssUseAr[tl] : "");
+              EDStatic.config.slideSorterActive ? ssUseAr[tl] : "");
       theLongDescriptionHtmlAr[tl] =
           String2.replaceAll(
               theLongDescriptionHtmlAr[tl],

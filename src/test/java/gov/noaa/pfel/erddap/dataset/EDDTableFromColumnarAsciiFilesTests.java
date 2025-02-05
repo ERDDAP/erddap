@@ -41,7 +41,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     String startUrl =
         "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/knb-lter-sbc."
             + which; // original test: .17
-    EDStatic.developmentMode = true;
+    EDStatic.config.developmentMode = true;
     String results =
         EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromEML(
                 false, // pauseForErrors,
@@ -68,7 +68,7 @@ class EDDTableFromColumnarAsciiFilesTests {
                   "-1"
                 }, // accessibleTo, local time_zone, defaultStandardizeWhat
                 false); // doIt loop?
-    EDStatic.developmentMode = false;
+    EDStatic.config.developmentMode = false;
 
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -848,10 +848,10 @@ class EDDTableFromColumnarAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_eml_1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "site_code,time,NH4_uM,NO3_uM,PO4_uM,TDN_uM,TDP_uM,TPC_uM,TPN_uM,TPP_uM,TSS_mg_per_L,Spec_Cond_uS_per_cm\n"
             + ",UTC,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,milligram per liter,siemens per centimeter\n"
@@ -1134,10 +1134,10 @@ class EDDTableFromColumnarAsciiFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n"
             + ",,,,,,,,\n"
@@ -1171,7 +1171,7 @@ class EDDTableFromColumnarAsciiFilesTests {
             .substring(0, 14); // 14 is enough to check hour. Hard
     // to
     // check min:sec.
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testTableColumnarAscii";
     EDDTableFromColumnarAsciiFiles.deleteCachedDatasetInfo(id);
@@ -1394,7 +1394,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     String dataDir =
         Path.of(EDDTableFromColumnarAsciiFilesTests.class.getResource("/data/").toURI()).toString();
@@ -1549,7 +1549,7 @@ class EDDTableFromColumnarAsciiFilesTests {
     int language = 0;
     // testVerboseOn();
     String tName, results, expected, userDapQuery;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     // one time
     results =

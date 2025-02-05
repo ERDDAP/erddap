@@ -557,7 +557,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -1482,7 +1482,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         String logFileName        = "c:/data/waterML/NWISDVDatasetFailures" + today + ".txt";
         Writer logFile = File2.getBufferedFileWriterUtf8(logFileName); 
         try {
-            String subsetDir   = EDStatic.contentDirectory + "subset/";
+            String subsetDir   = EDStatic.config.contentDirectory + "subset/";
             String fileNames[] = RegexFilenameFilter.list(dataStationsDir, ".*\\.json");
             StringBuilder results  = new StringBuilder();
             int nSkip = 0;
@@ -2791,7 +2791,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
     public static void testBasic() throws Throwable {
         EDD edd = EDD.oneFromDatasetsXml(null, "usgs_waterservices_f8b2_b8b1_96dd");
         int language = 0;
-        String dir = EDStatic.fullTestCacheDirectory;
+        String dir = EDStatic.config.fullTestCacheDirectory;
         String tName, query, tRestuls, results[], expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         Table table;
@@ -2799,7 +2799,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //dds
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".dds"); 
-        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2831,7 +2831,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //das
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".das"); 
-        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +

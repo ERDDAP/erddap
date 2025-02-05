@@ -93,8 +93,8 @@ public class GridDataAccessor implements AutoCloseable {
    * This is the constructor. This constructor sets everything up, but doesn't get any grid data.
    *
    * @param tEDDGrid the data source
-   * @param tRequestUrl the part of the user's request, after EDStatic.baseUrl, before '?'. Here, it
-   *     is just used for history metadata.
+   * @param tRequestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
+   *     Here, it is just used for history metadata.
    * @param tUserDapQuery the original user DAP-style query after the '?', still percentEncoded, may
    *     be null.
    * @param tRowMajor Set this to true if you want to get the data in row major order. Set this to
@@ -151,7 +151,7 @@ public class GridDataAccessor implements AutoCloseable {
     EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl());
     EDD.addToHistory(
         globalAttributes,
-        EDStatic.baseUrl
+        EDStatic.config.baseUrl
             + tRequestUrl
             + (tUserDapQuery == null || tUserDapQuery.length() == 0 ? "" : "?" + tUserDapQuery));
 
@@ -313,7 +313,7 @@ public class GridDataAccessor implements AutoCloseable {
     Arrays.fill(avInDriver, true);
     long nBytesPerPartialRequest = nDataBytesPerRow; // long to safely avoid overflow
     int tPartialRequestMaxBytes =
-        EDStatic.partialRequestMaxBytes; // local copy so constant for this calculation
+        EDStatic.config.partialRequestMaxBytes; // local copy so constant for this calculation
     if (rowMajor) {
       // work from right
       int av = axisAttributes.length - 1;

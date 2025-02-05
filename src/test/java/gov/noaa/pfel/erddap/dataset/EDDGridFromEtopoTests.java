@@ -46,10 +46,10 @@ class EDDGridFromEtopoTests {
             null,
             null,
             "altitude[(-90):500:(90)][(-180):500:(180)]",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             data180.className() + "_Entire",
             ".nc");
-    results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
+    results = NcHelper.ncdump(EDStatic.config.fullTestCacheDirectory + tName, "");
     expected =
         // " latitude = 11;\n" + // (has coord.var)\n" + //changed when switched to
         // netcdf-java 4.0, 2009-02-23
@@ -187,10 +187,10 @@ class EDDGridFromEtopoTests {
             null,
             null,
             "altitude[(-90):2000:(90)][(0):2000:(360)]",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             data360.className() + "_Entire",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "latitude,longitude,altitude\n"
             + "degrees_north,degrees_east,m\n"
@@ -268,10 +268,10 @@ class EDDGridFromEtopoTests {
             null,
             null,
             "altitude[(-90):2000:(90)][(0):2000:(360)]",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             data360.className() + "_timeGaps",
             ".timeGaps");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "Time gaps: (none, because there is no time axis variable)\n" + "nGaps=0\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
@@ -288,14 +288,14 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = data360.className() + "_Map360";
       tName =
           data360.makeNewFileForDapQuery(
               language, null, null, "altitude[(-90):(90)][(0):(360)]", obsDir, baseName, ".png");
-      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       baseName = data360.className() + "_TopoUnder";
@@ -309,7 +309,7 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
 
       // same data subset. Is cached file used?
@@ -324,7 +324,7 @@ class EDDGridFromEtopoTests {
               obsDir,
               baseName,
               ".png");
-      // Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+      // Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
       Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
     }
 

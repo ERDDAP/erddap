@@ -201,7 +201,7 @@ class EDDTableFromAudioFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String today =
         Calendar2.getCurrentISODateTimeStringZulu().substring(0, 12); // 12 is enough to check date
 

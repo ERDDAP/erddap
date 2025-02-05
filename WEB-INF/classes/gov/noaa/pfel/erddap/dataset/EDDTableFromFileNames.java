@@ -311,7 +311,7 @@ public class EDDTableFromFileNames extends EDDTable {
     fileDir = tFileDir;
     fileNameRegex = tFileNameRegex;
     accessibleViaFiles =
-        EDStatic.filesActive; // default for this dataset is 'true' and not changeable
+        EDStatic.config.filesActive; // default for this dataset is 'true' and not changeable
 
     if (!String2.isSomething(fileDir))
       throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
@@ -455,7 +455,7 @@ public class EDDTableFromFileNames extends EDDTable {
         from == fromRemoteFiles) {
       String qrName = quickRestartFullFileName();
 
-      if (EDStatic.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
+      if (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
 
         // try to do quickRestart
         // set creationTimeMillis to time of previous creation, so next time
@@ -1144,7 +1144,7 @@ public class EDDTableFromFileNames extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

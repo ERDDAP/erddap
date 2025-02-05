@@ -157,12 +157,12 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className(),
               ".das");
       results =
           String2.annotatedString(
-              File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+              File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
       // String2.log(results);
       expected =
           "Attributes {[10]\n"
@@ -429,10 +429,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className(),
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           // 2010-07-20 -132.4223 changed to -132.422 in 3 places
@@ -470,10 +470,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species\n"
@@ -511,9 +511,9 @@ class EDDTableFromOBISTests {
        * "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01";
        * //Carcharodon";
        * tName = obis.makeNewFileForDapQuery(null, null, userDapQuery,
-       * EDStatic.fullTestCacheDirectory,
+       * EDStatic.config.fullTestCacheDirectory,
        * obis.className() + "latlon", ".csv");
-       * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+       * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
        * tName);
        * //String2.log(results);
        * Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -529,10 +529,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -546,10 +546,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               obis.className() + "latlon",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -584,10 +584,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               fishbase.className() + "FishBaseGraph",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species, Citation\n"
@@ -606,10 +606,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               "longitude,latitude&Genus=Carcharodon&longitude!=NaN",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               fishbase.className() + "Map",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude\n"
@@ -746,10 +746,10 @@ class EDDTableFromOBISTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               dukeSeamap.className() + "duke",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, time, ID, Genus, Species, Citation\n"
@@ -787,10 +787,10 @@ class EDDTableFromOBISTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             argos.className() + "Argos",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);

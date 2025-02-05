@@ -97,8 +97,8 @@ import org.json.JSONTokener;
  * in EDStatic.
  *
  * <p>Authorization is specified by roles tags and accessibleTo tags in datasets.xml. <br>
- * If a user isn't authorized to use a dataset, then EDStatic.listPrivateDatasets determines whether
- * the dataset appears on lists of datasets (e.g., categorize or search). <br>
+ * If a user isn't authorized to use a dataset, then EDStatic.config.listPrivateDatasets determines
+ * whether the dataset appears on lists of datasets (e.g., categorize or search). <br>
  * If a user isn't authorized to use a dataset and requests info about that dataset,
  * EDStatic.redirectToLogin is called. <br>
  * These policies are enforced by checking edd.isAccessibleTo results from gridDatasetHashMap and
@@ -215,11 +215,11 @@ public class Erddap extends HttpServlet {
     // rename log.txt to preserve it so it can be analyzed if there was trouble before restart
     // In timestamp, change ':' to '.' so suitable for file names
     String timeStamp = String2.replaceAll(Calendar2.getCurrentISODateTimeStringLocal(), ":", ".");
-    String newLogTxt = EDStatic.fullLogsDirectory + "log.txt";
-    String BPD = EDStatic.bigParentDirectory;
+    String newLogTxt = EDStatic.config.fullLogsDirectory + "log.txt";
+    String BPD = EDStatic.config.bigParentDirectory;
     try {
       String oldLogTxt = BPD + "log.txt";
-      String logTextAr = EDStatic.fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt";
+      String logTextAr = EDStatic.config.fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt";
       if (File2.isFile(oldLogTxt)) {
         // pre ERDDAP version 1.15
         File2.copy(oldLogTxt, logTextAr);
@@ -233,8 +233,9 @@ public class Erddap extends HttpServlet {
       // rename log.txt.previous to preserve it so it can be analyzed if there was trouble before
       // restart
       String oldLogTxtP = BPD + "log.txt.previous";
-      String newLogTxtP = EDStatic.fullLogsDirectory + "log.txt.previous";
-      String logTextArP = EDStatic.fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt";
+      String newLogTxtP = EDStatic.config.fullLogsDirectory + "log.txt.previous";
+      String logTextArP =
+          EDStatic.config.fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt";
       if (File2.isFile(oldLogTxtP)) {
         // pre ERDDAP version 1.15
         File2.copy(oldLogTxtP, logTextArP);
@@ -251,7 +252,7 @@ public class Erddap extends HttpServlet {
         false, // tLogToSystemOut, tLogToSystemErr,
         newLogTxt,
         true,
-        EDStatic.logMaxSizeMB
+        EDStatic.config.logMaxSizeMB
             * Math2
                 .BytesPerMB); // fileName, append, maxSize (will be 1 .. 2000, so no int overflow)
     String2.log(
@@ -263,7 +264,7 @@ public class Erddap extends HttpServlet {
             + "logFile="
             + String2.logFileName()
             + " logMaxSizeMB="
-            + EDStatic.logMaxSizeMB
+            + EDStatic.config.logMaxSizeMB
             + "\n"
             + String2.standardHelpAboutMessage()
             + "\n"
@@ -285,25 +286,26 @@ public class Erddap extends HttpServlet {
 
     // on start up, always delete all files from fullPublicDirectory and fullCacheDirectory
     File2.deleteAllFiles(
-        EDStatic.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
+        EDStatic.config.fullPublicDirectory, true, false); // recursive, deleteEmptySubdirectories
     File2.deleteAllFiles(
-        EDStatic.fullCacheDirectory,
+        EDStatic.config.fullCacheDirectory,
         true,
         false); // in EDStatic, was true, true, but then subdirs created
     // delete cache subdirs other than starting with "_" (i.e., the dataset dirs, not _test)
-    String tFD[] = new File(EDStatic.fullCacheDirectory).list();
+    String tFD[] = new File(EDStatic.config.fullCacheDirectory).list();
     StringBuilder rdErrors = new StringBuilder();
     for (String fd : tFD) {
       if (fd != null
           && fd.length() > 0
           && !fd.startsWith("_")
-          && File2.isDirectory(EDStatic.fullCacheDirectory + fd)) {
+          && File2.isDirectory(EDStatic.config.fullCacheDirectory + fd)) {
         try {
-          rdErrors.append(RegexFilenameFilter.recursiveDelete(EDStatic.fullCacheDirectory + fd));
+          rdErrors.append(
+              RegexFilenameFilter.recursiveDelete(EDStatic.config.fullCacheDirectory + fd));
         } catch (Throwable t) {
           rdErrors.append(
               "ERROR in recursiveDelete("
-                  + EDStatic.fullCacheDirectory
+                  + EDStatic.config.fullCacheDirectory
                   + fd
                   + "):\n"
                   + MustBe.throwableToString(t));
@@ -312,8 +314,8 @@ public class Erddap extends HttpServlet {
     }
     if (rdErrors.length() > 0)
       EDStatic.email(
-          EDStatic.emailEverythingToCsv,
-          "Unable to completely clean " + EDStatic.fullCacheDirectory,
+          EDStatic.config.emailEverythingToCsv,
+          "Unable to completely clean " + EDStatic.config.fullCacheDirectory,
           rdErrors.toString());
 
     // copy (not rename!) subscriptionsV1.txt to preserve it
@@ -330,12 +332,13 @@ public class Erddap extends HttpServlet {
     File2.delete(BPD + "private"); // delete it
 
     // initialize Lucene
-    if (EDStatic.useLuceneSearchEngine) EDStatic.initializeLucene();
+    if (EDStatic.config.useLuceneSearchEngine) EDStatic.initializeLucene();
 
     // make new catInfo with first level hashMaps
-    int nCat = EDStatic.categoryAttributes.length;
+    int nCat = EDStatic.config.categoryAttributes.length;
     for (int cat = 0; cat < nCat; cat++)
-      categoryInfo.put(EDStatic.categoryAttributes[cat], new ConcurrentHashMap(16, 0.75f, 4));
+      categoryInfo.put(
+          EDStatic.config.categoryAttributes[cat], new ConcurrentHashMap(16, 0.75f, 4));
 
     // start RunLoadDatasets
     runLoadDatasets = new RunLoadDatasets(this);
@@ -451,7 +454,7 @@ public class Erddap extends HttpServlet {
   /** Get the Url of a request without the language code. */
   public String getUrlWithoutLang(HttpServletRequest request) {
     String requestUrl = request.getRequestURI();
-    int protocolStart = EDStatic.warName.length() + 2;
+    int protocolStart = EDStatic.config.warName.length() + 2;
     int langCodeEnd = requestUrl.indexOf("/", protocolStart);
     if (langCodeEnd < 0)
       // there is nothing after hostURL/erddap, no changes needed
@@ -465,7 +468,7 @@ public class Erddap extends HttpServlet {
       return requestUrl;
     }
     protocolStart = langCodeEnd + 1;
-    return "/" + EDStatic.warName + "/" + requestUrl.substring(protocolStart);
+    return "/" + EDStatic.config.warName + "/" + requestUrl.substring(protocolStart);
   }
 
   /**
@@ -574,8 +577,8 @@ public class Erddap extends HttpServlet {
         }
 
         // if (debugMode) String2.log(">> requestUrl=" + requestUrl);
-        if (getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/download/")
-            || getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/images/")) {
+        if (getUrlWithoutLang(request).startsWith("/" + EDStatic.config.warName + "/download/")
+            || getUrlWithoutLang(request).startsWith("/" + EDStatic.config.warName + "/images/")) {
           // small static content (e.g., erddap.css) is exempt from request limits
           //   (but still counts toward ipAddressMaxRequests above)
           // so don't wait
@@ -634,11 +637,11 @@ public class Erddap extends HttpServlet {
 
       // requestUrl should start with /erddap/
       // deal with /erddap
-      if (!requestUrl.startsWith("/" + EDStatic.warName + "/")) {
+      if (!requestUrl.startsWith("/" + EDStatic.config.warName + "/")) {
         sendRedirect(response, tErddapUrl + "/index.html");
         return;
       }
-      int protocolStart = EDStatic.warName.length() + 2; // lead and trailing /
+      int protocolStart = EDStatic.config.warName.length() + 2; // lead and trailing /
 
       // identify language code, if any
       int langCodeEnd = requestUrl.indexOf("/", protocolStart);
@@ -802,17 +805,18 @@ public class Erddap extends HttpServlet {
         doInformationHtml(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("legal.html")) {
         doLegalHtml(language, request, response, loggedInAs, endOfRequest, queryString);
-      } else if (endOfRequest.equals("login.html") && EDStatic.authentication.length() > 0) {
+      } else if (endOfRequest.equals("login.html") && EDStatic.config.authentication.length() > 0) {
         doLogin(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("loginGoogle.html")
-          && (EDStatic.authentication.equals("google")
-              || EDStatic.authentication.equals("oauth2"))) {
+          && (EDStatic.config.authentication.equals("google")
+              || EDStatic.config.authentication.equals("oauth2"))) {
         doLoginGoogle(language, request, response, loggedInAs);
       } else if (endOfRequest.equals("loginOrcid.html")
-          && (EDStatic.authentication.equals("orcid")
-              || EDStatic.authentication.equals("oauth2"))) {
+          && (EDStatic.config.authentication.equals("orcid")
+              || EDStatic.config.authentication.equals("oauth2"))) {
         doLoginOrcid(language, request, response, loggedInAs);
-      } else if (endOfRequest.equals("logout.html") && EDStatic.authentication.length() > 0) {
+      } else if (endOfRequest.equals("logout.html")
+          && EDStatic.config.authentication.length() > 0) {
         doLogout(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.equals("rest.html")) {
         doRestHtml(language, request, response, loggedInAs, endOfRequest, queryString);
@@ -830,7 +834,7 @@ public class Erddap extends HttpServlet {
       } else if (endOfRequest.equals("status.html")) {
         doStatus(language, request, response, loggedInAs, endOfRequest, queryString);
       } else if (endOfRequest.startsWith("dataProviderForm")) {
-        if (!EDStatic.dataProviderFormActive)
+        if (!EDStatic.config.dataProviderFormActive)
           sendResourceNotFoundError(
               requestNumber,
               request,
@@ -933,7 +937,7 @@ public class Erddap extends HttpServlet {
         int slowdown = 0;
         if (EDStatic.isClientAbortException(t))
           String2.log("#" + requestNumber + " Error: ClientAbortException");
-        else slowdown = EDStatic.slowDownTroubleMillis;
+        else slowdown = EDStatic.config.slowDownTroubleMillis;
 
         // "failure" includes clientAbort and there is no data
         long responseTime = System.currentTimeMillis() - doGetTime;
@@ -1004,7 +1008,7 @@ public class Erddap extends HttpServlet {
   }
 
   private void recordRequestResponseTime(int responseStatus, String requestUrl, long responseTime) {
-    int protocolStart = EDStatic.warName.length() + 2; // lead and trailing /
+    int protocolStart = EDStatic.config.warName.length() + 2; // lead and trailing /
 
     // identify language code, if any
     int langCodeEnd = requestUrl.indexOf("/", protocolStart);
@@ -1078,7 +1082,7 @@ public class Erddap extends HttpServlet {
     for (String plainFileType : plainFileTypes) {
 
       // index.pft  - return a list of resources
-      if (requestUrl.equals("/" + EDStatic.warName + "/index" + plainFileType)) {
+      if (requestUrl.equals("/" + EDStatic.config.warName + "/index" + plainFileType)) {
 
         String fileTypeName = File2.getExtension(requestUrl);
         EDStatic.tally.add("Main Resources List (since startup)", fileTypeName);
@@ -1090,9 +1094,9 @@ public class Erddap extends HttpServlet {
         table.addColumn("URL", urlCol);
         StringArray resources =
             new StringArray(new String[] {"info", "search", "categorize", "griddap", "tabledap"});
-        if (EDStatic.sosActive) resources.add("sos");
-        if (EDStatic.wcsActive) resources.add("wcs");
-        if (EDStatic.wmsActive) resources.add("wms");
+        if (EDStatic.config.sosActive) resources.add("sos");
+        if (EDStatic.config.wcsActive) resources.add("wcs");
+        if (EDStatic.config.wmsActive) resources.add("wms");
         for (int r = 0; r < resources.size(); r++) {
           resourceCol.add(resources.get(r));
           urlCol.add(
@@ -1121,7 +1125,7 @@ public class Erddap extends HttpServlet {
     }
 
     // only thing left should be erddap/index.html request
-    if (!requestUrl.equals("/" + EDStatic.warName + "/index.html")) {
+    if (!requestUrl.equals("/" + EDStatic.config.warName + "/index.html")) {
       sendResourceNotFoundError(requestNumber, request, response, "index.html expected");
       return;
     }
@@ -1287,7 +1291,7 @@ public class Erddap extends HttpServlet {
               + "</a>\n"
               + "    </td>\n"
               + "  </tr>\n");
-      if (EDStatic.sosActive)
+      if (EDStatic.config.sosActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1311,7 +1315,7 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      if (EDStatic.wcsActive)
+      if (EDStatic.config.wcsActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1335,7 +1339,7 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      if (EDStatic.wmsActive)
+      if (EDStatic.config.wmsActive)
         writer.write(
             "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
@@ -1408,7 +1412,7 @@ public class Erddap extends HttpServlet {
               """);
 
       // converters
-      if (EDStatic.convertersActive)
+      if (EDStatic.config.convertersActive)
         writer.write(
             "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
                 + EDStatic.messages.indexConvertersAr[language]
@@ -1483,7 +1487,7 @@ public class Erddap extends HttpServlet {
                 + "\n");
 
       // metadata
-      if (EDStatic.fgdcActive || EDStatic.iso19115Active) {
+      if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
         writer.write(
             "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
                 + EDStatic.messages.indexMetadataAr[language]
@@ -1494,7 +1498,7 @@ public class Erddap extends HttpServlet {
                 + "href=\""
                 + tErddapUrl
                 + "/"
-                + EDStatic.fgdcXmlDirectory
+                + EDConfig.fgdcXmlDirectory
                 + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
         String fgdcLink2 = // &#8209; is a non-breaking hyphen
             "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
@@ -1506,14 +1510,14 @@ public class Erddap extends HttpServlet {
                 + "href=\""
                 + tErddapUrl
                 + "/"
-                + EDStatic.iso19115XmlDirectory
+                + EDConfig.iso19115XmlDirectory
                 + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
         String isoLink2 = // &#8209; is a non-breaking hyphen
             "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
                 + ">ISO&nbsp;19115&#8209;2/19139"
                 + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                 + "</a>";
-        if (EDStatic.fgdcActive && EDStatic.iso19115Active)
+        if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
           writer.write(
               MessageFormat.format(
                   EDStatic.messages.indexWAF2Ar[language],
@@ -1521,7 +1525,7 @@ public class Erddap extends HttpServlet {
                   fgdcLink2,
                   isoLink1,
                   isoLink2));
-        else if (EDStatic.fgdcActive)
+        else if (EDStatic.config.fgdcActive)
           writer.write(
               MessageFormat.format(EDStatic.messages.indexWAF1Ar[language], fgdcLink1, fgdcLink2));
         else
@@ -1554,7 +1558,7 @@ public class Erddap extends HttpServlet {
               + "    <td>"
               + EDStatic.messages.statusHtmlAr[language]
               + "</td></tr>\n"
-              + (EDStatic.outOfDateDatasetsActive
+              + (EDStatic.config.outOfDateDatasetsActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/outOfDateDatasets.html\">"
@@ -1564,7 +1568,7 @@ public class Erddap extends HttpServlet {
                       + EDStatic.messages.outOfDateHtmlAr[language]
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.subscriptionSystemActive
+              + (EDStatic.config.subscriptionSystemActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/subscriptions/index.html\">"
@@ -1575,7 +1579,7 @@ public class Erddap extends HttpServlet {
                           EDStatic.messages.subscription0HtmlAr[language], "<br>", " ")
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.slideSorterActive
+              + (EDStatic.config.slideSorterActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/slidesorter.html\">"
@@ -1585,7 +1589,7 @@ public class Erddap extends HttpServlet {
                       + EDStatic.messages.ssUsePlainAr[language]
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.dataProviderFormActive
+              + (EDStatic.config.dataProviderFormActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
                       + "/dataProviderForm.html\">"
@@ -1836,7 +1840,7 @@ public class Erddap extends HttpServlet {
       if (session != null) {
         // it is stored on server.  user doesn't have access, so can't spoof it
         //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
       }
       session = request.getSession(); // make one if one doesn't exist
@@ -1857,7 +1861,7 @@ public class Erddap extends HttpServlet {
       String aud = jo.optString("aud");
       String verified = jo.optString("email_verified");
       String expires = jo.optString("exp");
-      if (!EDStatic.googleClientID.equals(aud)) // ensure this is request for my server
+      if (!EDStatic.config.googleClientID.equals(aud)) // ensure this is request for my server
       throw new SimpleException(msg + "unexpected aud=" + aud);
       if (email != null) email = email.toLowerCase(); // so case insensitive, to avoid trouble
       if (EDStatic.subscriptions == null) String2.ensureEmailAddress(email);
@@ -1880,7 +1884,7 @@ public class Erddap extends HttpServlet {
       throw new SimpleException(msg + "expires=" + expires + " isn't valid.");
 
       // success
-      session.setAttribute("loggedInAs:" + EDStatic.warName, email);
+      session.setAttribute("loggedInAs:" + EDStatic.config.warName, email);
       Math2.sleep(500); // give session changes time to take effect
       loginSucceeded(email);
       // sendRedirect(response, loginUrl + "?message=" +
@@ -1928,7 +1932,7 @@ public class Erddap extends HttpServlet {
       if (session != null) {
         // it is stored on server.  user doesn't have access, so can't spoof it
         //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
       }
       session = request.getSession(); // make one if one doesn't exist
@@ -1939,9 +1943,9 @@ public class Erddap extends HttpServlet {
           SSR.postFormGetResponseString( // throws Exception
               "https://orcid.org/oauth/token?"
                   + "client_id="
-                  + EDStatic.orcidClientID
+                  + EDStatic.config.orcidClientID
                   + "&client_secret="
-                  + EDStatic.orcidClientSecret
+                  + EDStatic.config.orcidClientSecret
                   + "&grant_type=authorization_code"
                   + "&redirect_uri="
                   + SSR.minimalPercentEncode(EDStatic.erddapHttpsUrl(language) + "/loginOrcid.html")
@@ -1996,7 +2000,7 @@ public class Erddap extends HttpServlet {
       }
 
       // success
-      session.setAttribute("loggedInAs:" + EDStatic.warName, orcid);
+      session.setAttribute("loggedInAs:" + EDStatic.config.warName, orcid);
       Math2.sleep(500); // give session changes time to take effect
       loginSucceeded(orcid);
       sendRedirect(
@@ -2062,7 +2066,7 @@ public class Erddap extends HttpServlet {
     }
 
     // *** CUSTOM
-    if (EDStatic.authentication.equals("custom")) {
+    if (EDStatic.config.authentication.equals("custom")) {
 
       // is user trying to log in?
       // use getParameter because form info should have been POST'd
@@ -2096,7 +2100,7 @@ public class Erddap extends HttpServlet {
             HttpSession session = request.getSession(); // make one if one doesn't exist
             // it is stored on server.  user doesn't have access, so can't spoof it
             //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-            session.setAttribute("loggedInAs:" + EDStatic.warName, user);
+            session.setAttribute("loggedInAs:" + EDStatic.config.warName, user);
             Math2.sleep(500); // give session changes time to take effect
             loginSucceeded(user);
             sendRedirect(
@@ -2109,7 +2113,7 @@ public class Erddap extends HttpServlet {
             // invalid login;  if currently logged in, logout
             HttpSession session = request.getSession(false); // don't make one if one doesn't exist
             if (session != null) {
-              session.removeAttribute("loggedInAs:" + EDStatic.warName);
+              session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
               session.invalidate(); // forget any related info
               Math2.sleep(500); // give session changes time to take effect
             }
@@ -2246,7 +2250,7 @@ public class Erddap extends HttpServlet {
     //  b) Unless the email is deleted before reaching GoodGeorge,
     //    at least GoodGeorge will know when someone is doing this.
     //  c) ??? Offer a link to withdraw this invitation / log out that email address.
-    if (EDStatic.authentication.equals("email")) {
+    if (EDStatic.config.authentication.equals("email")) {
 
       int offerValidMinutes = 15;
       // Is user submitting any info (from form or email)?
@@ -2319,9 +2323,9 @@ public class Erddap extends HttpServlet {
                     + email
                     + " .\n"
                     + "If you didn't make this request, please contact the ERDDAP administrator,\n"
-                    + EDStatic.adminIndividualName
+                    + EDStatic.config.adminIndividualName
                     + " (email: "
-                    + EDStatic.adminEmail
+                    + EDStatic.config.adminEmail
                     + "), to report this abuse.\n"
                     + "\n"
                     + "To log in to ERDDAP, click on this link\n"
@@ -2340,7 +2344,7 @@ public class Erddap extends HttpServlet {
                     + "is only valid in the same browser that you used to make the login request.");
         if (error.length() == 0) {
           session.setAttribute(
-              "loggingInAs:" + EDStatic.warName, email + "\n" + expires + "\n" + newNonce);
+              "loggingInAs:" + EDStatic.config.warName, email + "\n" + expires + "\n" + newNonce);
           Math2.sleep(500); // give session changes time to take effect
           sendRedirect(
               response,
@@ -2353,7 +2357,7 @@ public class Erddap extends HttpServlet {
                           + "Wait for the email. Then click the link in the email to log in."));
           return;
         } else { // trouble
-          session.removeAttribute("loggingInAs:" + EDStatic.warName);
+          session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
           session.invalidate(); // forget any related info
           Math2.sleep(500); // give session changes time to take effect
           sendRedirect(response, loginUrl + "?message=" + SSR.minimalPercentEncode(error));
@@ -2364,7 +2368,9 @@ public class Erddap extends HttpServlet {
         // does nonce match info stored in session?
         HttpSession session = request.getSession(false); // make one if one doesn't exist
         String info =
-            session == null ? "" : (String) session.getAttribute("loggingInAs:" + EDStatic.warName);
+            session == null
+                ? ""
+                : (String) session.getAttribute("loggingInAs:" + EDStatic.config.warName);
         String parts[] = String2.split(info, '\n');
         if (parts == null
             || parts.length != 3
@@ -2381,7 +2387,7 @@ public class Erddap extends HttpServlet {
             !nonce.equalsIgnoreCase(parts[2])) { // wrong nonce?
           // failure
           if (session != null) {
-            session.removeAttribute("loggingInAs:" + EDStatic.warName);
+            session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
             session.invalidate(); // forget any related info
             Math2.sleep(500); // give session changes time to take effect
           }
@@ -2395,8 +2401,8 @@ public class Erddap extends HttpServlet {
 
         } else {
           // success
-          session.removeAttribute("loggingInAs:" + EDStatic.warName);
-          session.setAttribute("loggedInAs:" + EDStatic.warName, email);
+          session.removeAttribute("loggingInAs:" + EDStatic.config.warName);
+          session.setAttribute("loggedInAs:" + EDStatic.config.warName, email);
           Math2.sleep(500); // give session changes time to take effect
           loginSucceeded(email);
           sendRedirect(
@@ -2501,9 +2507,9 @@ public class Erddap extends HttpServlet {
     }
 
     // *** google, orcid, oauth2
-    boolean isGoogle = EDStatic.authentication.equals("google");
-    boolean isOrcid = EDStatic.authentication.equals("orcid");
-    boolean isOauth2 = EDStatic.authentication.equals("oauth2");
+    boolean isGoogle = EDStatic.config.authentication.equals("google");
+    boolean isOrcid = EDStatic.config.authentication.equals("orcid");
+    boolean isOauth2 = EDStatic.config.authentication.equals("oauth2");
     if (isGoogle || isOrcid || isOauth2) {
 
       // Google login.html
@@ -2591,7 +2597,7 @@ public class Erddap extends HttpServlet {
                           + EDStatic.messages.loginGoogleSignInAr[language]
                           + "\n"
                           + "  <div id=\"g_id_onload\" data-client_id=\""
-                          + EDStatic.googleClientID
+                          + EDStatic.config.googleClientID
                           + "\"  data-callback=\"onSignIn\" data-itp_support=\"true\" data-use_fedcm_for_prompt=\"true\" ></div>"
                           + "  <div class=\"g_id_signin\" data-type=\"standard\"></div>"
                           + "\n<br>&nbsp;\n"
@@ -2607,7 +2613,7 @@ public class Erddap extends HttpServlet {
                           + (isOauth2 ? EDStatic.messages.orCommaAr[language] + " " : "")
                           + "<a rel=\"help\" href=\"https://orcid.org/oauth/authorize?"
                           + "client_id="
-                          + EDStatic.orcidClientID
+                          + EDStatic.config.orcidClientID
                           + // and add & to start of next line
                           "&response_type=code"
                           + "&scope=/authenticate"
@@ -2697,7 +2703,8 @@ public class Erddap extends HttpServlet {
     // because any of these errors could be in a script
     // and it's good to slow the script down (prevent 100 bad requests/second)
     // and if it's a human they won't even notice a short delay
-    if (EDStatic.slowDownTroubleMillis > 0) Math2.sleep(EDStatic.slowDownTroubleMillis);
+    if (EDStatic.config.slowDownTroubleMillis > 0)
+      Math2.sleep(EDStatic.config.slowDownTroubleMillis);
   }
 
   /**
@@ -2734,7 +2741,7 @@ public class Erddap extends HttpServlet {
       HttpSession session =
           request.getSession(false); // false = don't make a session if none currently
       if (session != null) { // should always be !null
-        session.removeAttribute("loggedInAs:" + EDStatic.warName);
+        session.removeAttribute("loggedInAs:" + EDStatic.config.warName);
         session.invalidate(); // forget any related info
         Math2.sleep(500); // give session changes time to take effect
         EDStatic.tally.add("Log out (since startup)", "success");
@@ -2744,15 +2751,16 @@ public class Erddap extends HttpServlet {
           "?message=" + SSR.minimalPercentEncode(EDStatic.messages.logoutSuccessAr[language]);
 
       // *** CUSTOM, EMAIL, ORCID logout
-      if (EDStatic.authentication.equals("custom")
-          || EDStatic.authentication.equals("email")
-          || EDStatic.authentication.equals("orcid")) {
+      if (EDStatic.config.authentication.equals("custom")
+          || EDStatic.config.authentication.equals("email")
+          || EDStatic.config.authentication.equals("orcid")) {
         sendRedirect(response, loginUrl + encodedSuccessMessage);
         return;
       }
 
       // *** GOOGLE and OAUTH2 (act as if user used google)
-      if (EDStatic.authentication.equals("google") || EDStatic.authentication.equals("oauth2")) {
+      if (EDStatic.config.authentication.equals("google")
+          || EDStatic.config.authentication.equals("oauth2")) {
 
         // send user to web page that signs out then redirects to login.html
         // see https://developers.google.com/identity/sign-in/web/
@@ -2765,7 +2773,7 @@ public class Erddap extends HttpServlet {
                 queryString,
                 EDStatic.messages.LogOutAr[language],
                 "<meta name=\"google-signin-client_id\" content=\""
-                    + EDStatic.googleClientID
+                    + EDStatic.config.googleClientID
                     + "\">\n",
                 out);
 
@@ -2773,7 +2781,7 @@ public class Erddap extends HttpServlet {
           HtmlWidgets widgets =
               new HtmlWidgets(
                   false, // tHtmlTooltips,
-                  EDStatic.imageDir);
+                  EDStatic.config.imageDir);
           writer.write(
               "<div class=\"standard_width\">\n"
                   + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.LogOutAr[language])
@@ -2864,7 +2872,8 @@ public class Erddap extends HttpServlet {
         EDStatic.messages
             .dataProviderFormLongDescriptionHTMLAr[language]
             .replaceAll(
-                "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                "&safeEmail;",
+                XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
             .replaceAll(
                 "&htmlTooltipImage;",
                 EDStatic.htmlTooltipImage(
@@ -2884,7 +2893,7 @@ public class Erddap extends HttpServlet {
 "<li>You fill out a 4-part form. When you finish a part,\n" +
 "  the information you just entered is\n"+
 "  sent to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<li>The ERDDAP administrator will contact you to figure out the best way to\n" +
 "  transfer the data and to work out other details.\n" +
 "  &nbsp;\n" +
@@ -2928,12 +2937,12 @@ public class Erddap extends HttpServlet {
 "  number of datasets, there are probably ways that we can work together to\n" +
 "  (semi-)automate the process of getting the datasets into ERDDAP.\n" +
 "  Please email the administrator of this ERDDAP\n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>)\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>)\n" +
 "  to discuss the options.\n" +
 "<p><strong>Need help?</strong>\n" +
 "<br>If you have questions or need help while filling out this form,\n" +
 "  please send an email to the administrator of this ERDDAP\n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "  <br>&nbsp;\n" +
 "\n" +
 
@@ -3080,12 +3089,12 @@ public class Erddap extends HttpServlet {
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 1, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 1, from " + fromInfo, content);
 
         // redirect to part 2
         sendRedirect(
@@ -3140,11 +3149,11 @@ public class Erddap extends HttpServlet {
       // begin text
       String dataProviderFormPart1 =
           EDStatic.messages.dataProviderFormPart1Ar[language].replaceAll(
-              "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+              "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)));
       writer.write(dataProviderFormPart1 /*
 "This is part 1 (of 4) of the Data Provider Form.\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
 */);
@@ -3193,7 +3202,8 @@ widgets.textField("emailAddress", "", //tooltip
           EDStatic.messages
               .dataProviderDataAr[language]
               .replaceAll(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
               .replace(
                   "&widgetGriddedOptions;",
                   widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, ""))
@@ -3219,7 +3229,7 @@ widgets.textField("emailAddress", "", //tooltip
 "<p>If your dataset is already served via an OPeNDAP server,\n" +
 "skip this form and just email the dataset's OPeNDAP URL\n" +
 "to the administrator of this ERDDAP \n" +
-"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+"  (<kbd>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<p>How is your gridded data stored?\n" +
 widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, "") +
 "\n" +
@@ -3562,12 +3572,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 2, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 2, from " + fromInfo, content);
 
         // redirect to part 3
         sendRedirect(
@@ -3629,12 +3639,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .dataProviderFormPart2HeaderAr[language]
               .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
               .replace(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)));
       writer.write(dataProviderFormPart2Header /*
 "This is part 2 (of 4) of the Data Provider Form\n" +
 "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
 "\n"
 */);
@@ -4203,12 +4214,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail,
+            EDStatic.config.adminEmail,
             "Data Provider Form - Part 3, from " + fromInfo,
             content.toString());
 
@@ -4272,11 +4283,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .dpf_part3HeaderAr[language]
               .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
               .replace(
-                  "&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                  "&safeEmail;",
+                  XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
           // "This is part 3 (of 4) of the Data Provider Form\n" +
           // "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
           // "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-          //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+          //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) +
+          // "</kbd>).\n" +
           // "<br>&nbsp;\n" +
           // "\n"
           );
@@ -4617,12 +4630,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // log the content to /logs/dataProviderForm.log
         String error =
             File2.appendFileUtf8(
-                EDStatic.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
+                EDStatic.config.fullLogsDirectory + "dataProviderForm.log", "*** " + content);
         if (error.length() > 0)
           String2.log(String2.ERROR + " while writing to logs/dataProviderForm.log:\n" + error);
         // email the content to the admin
         EDStatic.email(
-            EDStatic.adminEmail, "Data Provider Form - Part 4, from " + fromInfo, content);
+            EDStatic.config.adminEmail, "Data Provider Form - Part 4, from " + fromInfo, content);
 
         // redirect to Done
         sendRedirect(
@@ -4685,11 +4698,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   .dpf_part4HeaderAr[language]
                   .replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
                   .replace(
-                      "&safeEmail", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+                      "&safeEmail",
+                      XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)))
               // "This is part 4 (of 4) of the Data Provider Form\n" +
               // "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
               // "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" +
-              //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+              //     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.config.adminEmail)) +
+              // "</kbd>).\n" +
               // "<br>&nbsp;\n"
               + "\n");
 
@@ -4868,7 +4883,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.youAreHere(language, loggedInAs, EDStatic.messages.statusAr[language])
               + "<pre>");
       StringBuilder sb = new StringBuilder();
-      EDStatic.addIntroStatistics(sb, EDStatic.showLoadErrorsOnStatusPage, this);
+      EDStatic.addIntroStatistics(sb, EDStatic.config.showLoadErrorsOnStatusPage, this);
 
       // append number of active threads
       String traces = MustBe.allStackTraces(true, true);
@@ -5299,7 +5314,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               EDStatic.encodedAllPIppQuery)
           */
           );
-      if (EDStatic.sosActive)
+      if (EDStatic.config.sosActive)
         writer.write(
             "  <li>"
                 + EDStatic.messages.forSOSUseAr[language]
@@ -5307,7 +5322,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 +
                 // "  <li>For SOS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/sos/index", EDStatic.encodedAllPIppQuery));
-      if (EDStatic.wcsActive)
+      if (EDStatic.config.wcsActive)
         writer.write(
             "  <li>"
                 + EDStatic.messages.forWCSUseAr[language]
@@ -5315,7 +5330,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 +
                 // "  <li>For WCS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/wcs/index", EDStatic.encodedAllPIppQuery));
-      if (EDStatic.wmsActive)
+      if (EDStatic.config.wmsActive)
         writer.write(
             "  <li>"
                 + EDStatic.messages.forWMSUseAr[language]
@@ -5388,14 +5403,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "    <br>&nbsp;\n" +
                 "  </ul>\n"
                 */);
-      if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
+      if (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive) {
         writer.write(EDStatic.messages.restfulProtocolsAr[language] /*
                 "<li><a class=\"selfLink\" id=\"OtherProtocols\" href=\"#OtherProtocols\" rel=\"bookmark\"\n" +
                 ">ERDDAP's other protocols</a> also have web services that you can use.\n" +
                 "  See\n" +
                 "  <ul>\n"
                 */);
-        if (EDStatic.sosActive)
+        if (EDStatic.config.sosActive)
           writer.write(
               // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
               // "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
@@ -5404,7 +5419,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "/sos/documentation.html\">"
                   + EDStatic.messages.SOSDocumentationAr[language]
                   + "</a>\n");
-        if (EDStatic.wcsActive)
+        if (EDStatic.config.wcsActive)
           writer.write(
               // "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's
               // WCS documentation</a>\n");
@@ -5413,7 +5428,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "/wcs/documentation.html\">"
                   + EDStatic.messages.WCSDocumentationAr[language]
                   + "</a>\n");
-        if (EDStatic.wmsActive)
+        if (EDStatic.config.wmsActive)
           writer.write(
               // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
               // "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
@@ -5442,7 +5457,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           );
       String subscriptionOfferUrl =
           EDStatic.messages.subscriptionOfferUrlAr[language].replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.subscriptionSystemActive)
+      if (EDStatic.config.subscriptionSystemActive)
         writer.write(
             subscriptionOfferUrl
             /*
@@ -5459,7 +5474,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               +
               // "<li>ERDDAP offers several converters as web pages and as web services:\n" +
-              (EDStatic.convertersActive
+              (EDStatic.config.convertersActive
                   ? "  <ul>\n"
                       + "  <li><a rel=\"bookmark\" href=\""
                       + tErddapUrl
@@ -5503,7 +5518,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       + ")\n<br>&nbsp;\n"));
       String outOfDateKeepTrack =
           EDStatic.messages.outOfDateKeepTrackAr[language].replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
+      if (EDStatic.config.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
                 "<li>ERDDAP has a system to keep track of\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/outOfDateDatasets.html\">Out-Of-Date Datasets</a>.\n" +
                 "    See the Options at the bottom of that web page.\n" +
@@ -5628,7 +5643,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("categorize/index.html");
       writer.write(postMed);
-      if (EDStatic.convertersActive) {
+      if (EDStatic.config.convertersActive) {
         writer.write(pre);
         writer.write("convert/index.html");
         writer.write(postMed);
@@ -5675,14 +5690,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("information.html");
       writer.write(postHigh);
-      if (EDStatic.fgdcActive) {
+      if (EDStatic.config.fgdcActive) {
         writer.write(pre);
-        writer.write(EDStatic.fgdcXmlDirectory);
+        writer.write(EDConfig.fgdcXmlDirectory);
         writer.write(postLow);
       }
-      if (EDStatic.iso19115Active) {
+      if (EDStatic.config.iso19115Active) {
         writer.write(pre);
-        writer.write(EDStatic.iso19115XmlDirectory);
+        writer.write(EDConfig.iso19115XmlDirectory);
         writer.write(postLow);
       }
       writer.write(pre);
@@ -5697,12 +5712,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("search/index.html?" + EDStatic.encodedAllPIppQuery);
       writer.write(postHigh);
-      if (EDStatic.slideSorterActive) {
+      if (EDStatic.config.slideSorterActive) {
         writer.write(pre);
         writer.write("slidesorter.html");
         writer.write(postHigh);
       }
-      if (EDStatic.sosActive) {
+      if (EDStatic.config.sosActive) {
         writer.write(pre);
         writer.write("sos/documentation.html");
         writer.write(postHigh);
@@ -5710,7 +5725,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("sos/index.html?" + EDStatic.encodedAllPIppQuery);
         writer.write(postHigh);
       }
-      if (EDStatic.subscriptionSystemActive) {
+      if (EDStatic.config.subscriptionSystemActive) {
         writer.write(pre);
         writer.write("subscriptions/index.html");
         writer.write(postHigh);
@@ -5733,7 +5748,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("tabledap/index.html?" + EDStatic.encodedAllPIppQuery);
       writer.write(postHigh);
-      if (EDStatic.wcsActive) {
+      if (EDStatic.config.wcsActive) {
         writer.write(pre);
         writer.write("wcs/documentation.html");
         writer.write(postHigh);
@@ -5741,7 +5756,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("wcs/index.html?" + EDStatic.encodedAllPIppQuery);
         writer.write(postHigh);
       }
-      if (EDStatic.wmsActive) {
+      if (EDStatic.config.wmsActive) {
         writer.write(pre);
         writer.write("wms/documentation.html");
         writer.write(postHigh);
@@ -5751,8 +5766,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // special links only for ERD's erddap
-      if (EDStatic.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")
-          || EDStatic.baseUrl.equals("https://coastwatch.pfeg.noaa.gov")) {
+      if (EDStatic.config.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")
+          || EDStatic.config.baseUrl.equals("https://coastwatch.pfeg.noaa.gov")) {
         writer.write(pre);
         writer.write("download/AccessToPrivateDatasets.html");
         writer.write(postHigh);
@@ -5860,8 +5875,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
 
       // write the category urls
-      for (int ca1 = 0; ca1 < EDStatic.categoryAttributes.length; ca1++) {
-        String ca1InURL = EDStatic.categoryAttributesInURLs[ca1];
+      for (int ca1 = 0; ca1 < EDStatic.config.categoryAttributes.length; ca1++) {
+        String ca1InURL = EDStatic.config.categoryAttributesInURLs[ca1];
         StringArray cats = categoryInfo(ca1InURL);
         int nCats = cats.size();
         String catPre = pre + "categorize/" + ca1InURL + "/";
@@ -5941,7 +5956,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     boolean hasDatasetID = datasetIDStartsAt < requestUrl.length();
     String endOfRequestUrl =
         hasDatasetID
@@ -6294,7 +6309,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // make the outputStream for the response
     String cacheDir = dataset.cacheDirectory(); // it is created by EDD.ensureValid
     OutputStreamSource outputStreamSource;
-    if (EDStatic.awsS3OutputBucketUrl == null) {
+    if (EDStatic.config.awsS3OutputBucketUrl == null) {
       outputStreamSource =
           new OutputStreamFromHttpResponse(
               request,
@@ -6432,7 +6447,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String fullRequestUrl = EDStatic.baseUrl(loggedInAs) + requestUrl;
     String roles[] = EDStatic.getRoles(loggedInAs);
     // String2.log(">>fullRequestUrl=" + fullRequestUrl);
@@ -6903,7 +6918,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // remote, including public AWS S3
       sendRedirect(response, localDir + nameAndExt);
 
-    } else if (EDStatic.awsS3OutputBucketUrl != null) {
+    } else if (EDStatic.config.awsS3OutputBucketUrl != null) {
       // need lock to ensure other thread isn't working with local file?
       if (edd.filesInPrivateS3Bucket()) {
         String cacheDir =
@@ -6925,13 +6940,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // copy to awsS3OutputBucket and redirect
       String contentType = OutputStreamFromHttpResponse.getFileContentType(request, ext, ext);
       String fullAwsUrl =
-          EDStatic.awsS3OutputBucketUrl
+          EDStatic.config.awsS3OutputBucketUrl
               + edd.datasetID()
               + "/"
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
       SSR.uploadFileToAwsS3(
-          EDStatic.awsS3OutputTransferManager, localDir + nameAndExt, fullAwsUrl, contentType);
+          EDStatic.config.awsS3OutputTransferManager,
+          localDir + nameAndExt,
+          fullAwsUrl,
+          contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {
@@ -7024,7 +7042,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDD edd = gridDatasetHashMap.get(tids.get(ti));
         if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
+                (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // griddap requests may be graphics requests {
           titles.add(edd.title());
           ids.add(edd.datasetID());
@@ -7040,14 +7058,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         EDD edd = tableDatasetHashMap.get(tids.get(ti));
         if ((edd != null
                 && // if just deleted
-                (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)))
+                (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles)))
             || edd.graphsAccessibleToPublic()) { // tabledap requests may be graphics requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
       description = EDStatic.messages.EDDTableDapDescriptionAr[language];
-    } else if (EDStatic.sosActive && protocol.equals("sos")) {
+    } else if (EDStatic.config.sosActive && protocol.equals("sos")) {
       StringArray tids = tableDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -7057,7 +7075,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaSOS().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since sos requests are all data requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
@@ -7066,7 +7084,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       description =
           EDStatic.messages.sosDescriptionHtmlAr[language]
               + "\nFor details, see the 'S'OS links below.";
-    } else if (EDStatic.wcsActive && protocol.equals("wcs")) {
+    } else if (EDStatic.config.wcsActive && protocol.equals("wcs")) {
       StringArray tids = gridDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -7076,14 +7094,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaWCS().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))) {
           // no edd.graphsAccessibleToPublic() since wcs requests are all data requests
           titles.add(edd.title());
           ids.add(edd.datasetID());
         }
       }
       description = EDStatic.messages.wcsDescriptionHtmlAr[language];
-    } else if (EDStatic.wmsActive && protocol.equals("wms")) {
+    } else if (EDStatic.config.wmsActive && protocol.equals("wms")) {
       StringArray tids = gridDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -7093,7 +7111,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaWMS().length() == 0
-            && (EDStatic.listPrivateDatasets
+            && (EDStatic.config.listPrivateDatasets
                 || edd.isAccessibleTo(roles)
                 || edd.graphsAccessibleToPublic())) { // all wms requests are graphics requests
           titles.add(edd.title());
@@ -7131,7 +7149,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (True here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -7330,7 +7348,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.sosActive) {
+    if (!EDStatic.config.sosActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -7346,7 +7364,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     */
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -7794,7 +7812,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.sosActive) {
+    if (!EDStatic.config.sosActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -7896,7 +7914,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wcsActive) {
+    if (!EDStatic.config.wcsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -7909,7 +7927,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -8212,7 +8230,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wcsActive) {
+    if (!EDStatic.config.wcsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -8313,7 +8331,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -8326,7 +8344,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     int slashPo = endOfRequestUrl.indexOf('/'); // between datasetID/endEnd
@@ -8371,7 +8389,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.1.0",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8384,7 +8402,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.1.1",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8397,7 +8415,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             response,
             loggedInAs,
             "1.3.0",
-            EDStatic.wmsSampleDatasetID,
+            EDStatic.config.wmsSampleDatasetID,
             endOfRequest,
             queryString);
         return;
@@ -8529,7 +8547,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -8638,7 +8656,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -8651,15 +8669,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
+    String e0 =
+        tErddapUrl + "/wms/" + EDStatic.config.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
     String ec = "service=WMS&#x26;request=GetCapabilities&#x26;version=";
     String e1 = "service=WMS&#x26;version=";
     String e2 =
-        "&#x26;request=GetMap&#x26;bbox="; // + EDStatic.wmsSampleBBox + "&#x26;"; //needs c or s
+        "&#x26;request=GetMap&#x26;bbox="; // + EDStatic.config.wmsSampleBBox + "&#x26;"; //needs c
+    // or s
     // this section of code is in 2 places
     int bbox[] =
         String2.toIntArray(
-            String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
+            String2.split(EDStatic.config.wmsSampleBBox110, ',')); // extract info from 110 version
     int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
     tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
     String e2b =
@@ -8667,12 +8687,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + tHeight
             + "&#x26;bgcolor=0x808080&#x26;layers=";
     // Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-    String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+    String e3 =
+        EDStatic.config.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.config.wmsSampleVariable;
     String e4 = "&#x26;styles=&#x26;format=image/png";
     String et = "&#x26;transparent=TRUE";
     String st =
-        String2.isSomething(EDStatic.wmsSampleTime)
-            ? XML.encodeAsHTMLAttribute("&time=" + EDStatic.wmsSampleTime)
+        String2.isSomething(EDStatic.config.wmsSampleTime)
+            ? XML.encodeAsHTMLAttribute("&time=" + EDStatic.config.wmsSampleTime)
             : "";
 
     String tWmsGetCapabilities110 = e0 + ec + "1.1.0";
@@ -8683,7 +8704,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.1.0"
             + e2
-            + EDStatic.wmsSampleBBox110
+            + EDStatic.config.wmsSampleBBox110
             + st
             + "&#x26;s"
             + e2b
@@ -8696,7 +8717,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.1.1"
             + e2
-            + EDStatic.wmsSampleBBox110
+            + EDStatic.config.wmsSampleBBox110
             + st
             + "&#x26;s"
             + e2b
@@ -8709,7 +8730,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + e1
             + "1.3.0"
             + e2
-            + EDStatic.wmsSampleBBox130
+            + EDStatic.config.wmsSampleBBox130
             + st
             + "&#x26;c"
             + e2b
@@ -8718,11 +8739,41 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + ",Coastlines,Nations"
             + e4;
     String tWmsTransparentExample110 =
-        e0 + e1 + "1.1.0" + e2 + EDStatic.wmsSampleBBox110 + st + "&#x26;s" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.1.0"
+            + e2
+            + EDStatic.config.wmsSampleBBox110
+            + st
+            + "&#x26;s"
+            + e2b
+            + e3
+            + e4
+            + et;
     String tWmsTransparentExample111 =
-        e0 + e1 + "1.1.1" + e2 + EDStatic.wmsSampleBBox110 + st + "&#x26;s" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.1.1"
+            + e2
+            + EDStatic.config.wmsSampleBBox110
+            + st
+            + "&#x26;s"
+            + e2b
+            + e3
+            + e4
+            + et;
     String tWmsTransparentExample130 =
-        e0 + e1 + "1.3.0" + e2 + EDStatic.wmsSampleBBox130 + st + "&#x26;c" + e2b + e3 + e4 + et;
+        e0
+            + e1
+            + "1.3.0"
+            + e2
+            + EDStatic.config.wmsSampleBBox130
+            + st
+            + "&#x26;c"
+            + e2b
+            + e3
+            + e4
+            + et;
 
     // What is WMS?   (generic)
     OutputStream out = getHtmlOutputStreamUtf8(request, response);
@@ -8739,7 +8790,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<a href=\""
               + tErddapUrl
               + "/wms/"
-              + EDStatic.wmsSampleDatasetID
+              + EDStatic.config.wmsSampleDatasetID
               + "/index.html\">"
               + EDStatic.messages.likeThisAr[language]
               + "</a>";
@@ -9293,7 +9344,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * <p>Similarly, if request if from one dataset's wms, this method can cache results in separate
    * dataset directories. (Which is good, because dataset's cache is emptied when dataset reloaded.)
-   * Otherwise, it uses EDStatic.fullWmsCacheDirectory.
+   * Otherwise, it uses EDStatic.config.fullWmsCacheDirectory.
    *
    * @param language the index of the selected language
    * @param requestNumber The requestNumber assigned to this request by doGet().
@@ -9312,7 +9363,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Map<String, String> queryMap)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -9424,7 +9475,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (mainDatasetID != null) fileName = mainDatasetID + "_" + fileName;
       String cacheDir =
           mainDatasetID == null
-              ? EDStatic.fullWmsCacheDirectory
+              ? EDStatic.config.fullWmsCacheDirectory
               : EDD.cacheDirectory(mainDatasetID);
       if (reallyVerbose) String2.log("doWmsGetMap cacheDir=" + cacheDir);
 
@@ -9643,7 +9694,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         isNonDataLayer = true;
         // Land/LandMask not distinguished below, so consolidate images
         if (layersCsv.equals("LandMask")) layersCsv = "Land";
-        cacheDir = EDStatic.fullWmsCacheDirectory + layersCsv + "/";
+        cacheDir = EDStatic.config.fullWmsCacheDirectory + layersCsv + "/";
         fileName = layersCsv + "_" + String2.md5Hex12(bboxCsv + "w" + width + "h" + height);
       }
 
@@ -9870,7 +9921,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             new GridDataAccessor(
                 language,
                 eddGrid,
-                "/" + EDStatic.warName + "/griddap/" + datasetID + ".dods",
+                "/" + EDStatic.config.warName + "/griddap/" + datasetID + ".dods",
                 tQuery.toString(),
                 false, // Grid needs column-major order
                 true)) { // convertToNaN
@@ -9903,14 +9954,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (EDV.VALID_SCALES.indexOf(scale) < 0) scale = "Linear";
         String cptFullName =
             CompoundColorMap.makeCPT(
-                EDStatic.fullPaletteDirectory,
+                EDStatic.config.fullPaletteDirectory,
                 palette,
                 scale,
                 minData,
                 maxData,
                 nSections,
                 paletteContinuous,
-                EDStatic.fullCptCacheDirectory);
+                EDStatic.config.fullCptCacheDirectory);
 
         // draw the data on the map
         // for now, just cartesian  -- BEWARE: it may be stretched!
@@ -10001,7 +10052,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           msg = String2.noLongLines(msg, (width * 10 / 6) / tHeight, "    ");
           String lines[] = msg.split("\\n"); // not String2.split which trims
           g.setColor(Color.black);
-          g.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
+          g.setFont(new Font(EDStatic.config.fontFamily, Font.PLAIN, tHeight));
           int ty = tHeight * 2;
           for (String line : lines) {
             g.drawString(line, tHeight, ty);
@@ -10053,7 +10104,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       Map<String, String> queryMap)
       throws Throwable {
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -10184,38 +10235,38 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "    <ContactInformation>\n"
               + "      <ContactPersonPrimary>\n"
               + "        <ContactPerson>"
-              + XML.encodeAsXML(EDStatic.adminIndividualName)
+              + XML.encodeAsXML(EDStatic.config.adminIndividualName)
               + "</ContactPerson>\n"
               + "        <ContactOrganization>"
-              + XML.encodeAsXML(EDStatic.adminInstitution)
+              + XML.encodeAsXML(EDStatic.config.adminInstitution)
               + "</ContactOrganization>\n"
               + "      </ContactPersonPrimary>\n"
               + "      <ContactPosition>"
-              + XML.encodeAsXML(EDStatic.adminPosition)
+              + XML.encodeAsXML(EDStatic.config.adminPosition)
               + "</ContactPosition>\n"
               + "      <ContactAddress>\n"
               + "        <AddressType>postal</AddressType>\n"
               + "        <Address>"
-              + XML.encodeAsXML(EDStatic.adminAddress)
+              + XML.encodeAsXML(EDStatic.config.adminAddress)
               + "</Address>\n"
               + "        <City>"
-              + XML.encodeAsXML(EDStatic.adminCity)
+              + XML.encodeAsXML(EDStatic.config.adminCity)
               + "</City>\n"
               + "        <StateOrProvince>"
-              + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+              + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
               + "</StateOrProvince>\n"
               + "        <PostCode>"
-              + XML.encodeAsXML(EDStatic.adminPostalCode)
+              + XML.encodeAsXML(EDStatic.config.adminPostalCode)
               + "</PostCode>\n"
               + "        <Country>"
-              + XML.encodeAsXML(EDStatic.adminCountry)
+              + XML.encodeAsXML(EDStatic.config.adminCountry)
               + "</Country>\n"
               + "      </ContactAddress>\n"
               + "      <ContactVoiceTelephone>"
-              + XML.encodeAsXML(EDStatic.adminPhone)
+              + XML.encodeAsXML(EDStatic.config.adminPhone)
               + "</ContactVoiceTelephone>\n"
               + "      <ContactElectronicMailAddress>"
-              + XML.encodeAsXML(EDStatic.adminEmail)
+              + XML.encodeAsXML(EDStatic.config.adminEmail)
               + "</ContactElectronicMailAddress>\n"
               + "    </ContactInformation>\n"
               + "    <Fees>"
@@ -10456,7 +10507,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             // ???is CRS:88 the most appropriate  (see spec 6.7.5 and B.6)
             // "EPSG:5030" means "meters above the WGS84 ellipsoid."
             avUnits = "EPSG:5030"; // here just 1.1.0 or 1.1.1
-          } else if (EDStatic.units_standard.equals("UDUNITS")) {
+          } else if (EDStatic.config.units_standard.equals("UDUNITS")) {
             // convert other udnits to ucum   (this is in WMS GetCapabilities)
             avUnits = Units2.safeUdunitsToUcum(avUnits);
           }
@@ -10490,7 +10541,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           defaultValue =
               av.destinationToString(
                   (avi == eddGrid.depthIndex() ? -1 : 1) * av.lastDestinationValue());
-        } else if (EDStatic.units_standard.equals("UDUNITS")) {
+        } else if (EDStatic.config.units_standard.equals("UDUNITS")) {
           // convert other udnits to ucum (this is in WMS GetCapabilites)
           avUnits = Units2.safeUdunitsToUcum(avUnits);
         }
@@ -10802,7 +10853,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     if (queryString == null) queryString = "";
 
-    if (!EDStatic.wmsActive) {
+    if (!EDStatic.config.wmsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -10813,7 +10864,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               MessageFormat.format(EDStatic.messages.disabledAr[language], "WMS")));
       return;
     }
-    boolean wmsClientActive = EDStatic.wmsClientActive;
+    boolean wmsClientActive = EDStatic.config.wmsClientActive;
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && !tVersion.equals("1.3.0"))
@@ -10826,7 +10877,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     EDStatic.tally.add("WMS doWmsDemo (since startup)", tDatasetID);
 
     String tWmsSampleBBox =
-        tVersion.equals("1.3.0") ? EDStatic.wmsSampleBBox130 : EDStatic.wmsSampleBBox110;
+        tVersion.equals("1.3.0")
+            ? EDStatic.config.wmsSampleBBox130
+            : EDStatic.config.wmsSampleBBox110;
     String csrs = tVersion.equals("1.1.0") || tVersion.equals("1.1.1") ? "srs" : "crs";
 
     EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
@@ -10981,7 +11034,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       StringArray olNames =
           StringArray.fromCSV(
               "Land, Coastlines, LakesAndRivers"
-                  + (EDStatic.politicalBoundariesActive ? ", Nations, States" : ""));
+                  + (EDStatic.config.politicalBoundariesActive ? ", Nations, States" : ""));
       for (int i = 0; i < olNames.size(); i++)
         scripts.append(
             "    "
@@ -11015,7 +11068,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ".addTo(map);\n"
               + "  overlays.Coastlines.addTo(map);\n"
               + "  overlays.LakesAndRivers.addTo(map);\n"
-              + (EDStatic.politicalBoundariesActive ? "  overlays.Nations.addTo(map);\n" : "")
+              + (EDStatic.config.politicalBoundariesActive
+                  ? "  overlays.Nations.addTo(map);\n"
+                  : "")
               + "</script>\n");
     }
 
@@ -11177,12 +11232,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
 
       // *** What is WMS?
-      String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
+      String e0 =
+          tErddapUrl + "/wms/" + EDStatic.config.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
       String e1 = "service=WMS&#x26;version=";
       // this section of code is in 2 places
       int bbox[] =
           String2.toIntArray(
-              String2.split(EDStatic.wmsSampleBBox110, ',')); // extract info from 110 version
+              String2.split(
+                  EDStatic.config.wmsSampleBBox110, ',')); // extract info from 110 version
       int tHeight = ((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]);
       tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
       String e2 =
@@ -11194,7 +11251,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + tHeight
               + "&#x26;bgcolor=0x808080&#x26;layers=";
       // Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-      String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+      String e3 =
+          EDStatic.config.wmsSampleDatasetID
+              + EDD.WMS_SEPARATOR
+              + EDStatic.config.wmsSampleVariable;
       String e4 = "&#x26;styles=&#x26;format=image/png";
       String et = "&#x26;transparent=TRUE";
 
@@ -11718,7 +11778,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.geoServicesRestActive) {
+    if (!EDStatic.config.geoServicesRestActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -11732,7 +11792,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
     String erddapRestServices =
-        "/" + EDStatic.warName + "/rest/services"; // ESRI uses relative URLs
+        "/" + EDStatic.config.warName + "/rest/services"; // ESRI uses relative URLs
     String roles[] = EDStatic.getRoles(loggedInAs);
     String teor = String2.replaceAll(endOfRequest, "//", "/"); // bypasses a common ArcGIS problem
     if (teor.endsWith("/")) teor = teor.substring(0, teor.length() - 1); // so no empty part at end
@@ -11830,7 +11890,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (edd != null
             && // if just deleted
             edd.accessibleViaGeoServicesRest().length() == 0
-            && (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))
+            && (EDStatic.config.listPrivateDatasets || edd.isAccessibleTo(roles))
         // ESRI REST: treat as if all requests are data requests
         ) {
           ids.add(edd.datasetID());
@@ -12841,7 +12901,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   "{\n"
                       + "  \"href\" : \""
                       + tErddapUrl
-                      + relativeUrl.substring(EDStatic.warName.length() + 1)
+                      + relativeUrl.substring(EDStatic.config.warName.length() + 1)
                       + "/exportImage/"
                       + virtualFileName
                       + fileExtension
@@ -13371,7 +13431,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // And ok of it isn't even in datasets.xml.  Unknown files are removed.
         EDStatic.tally.add("SetDatasetFlag (since startup)", datasetID);
         EDStatic.tally.add("SetDatasetFlag (since last daily report)", datasetID);
-        File2.writeToFileUtf8(EDStatic.fullResetFlagDirectory + datasetID, datasetID);
+        File2.writeToFileUtf8(EDStatic.config.fullResetFlagDirectory + datasetID, datasetID);
         message = "SUCCESS: The flag has been set.";
         delaySeconds = 0;
       }
@@ -13426,7 +13486,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "version_full": "%s",
           "deployment_info": "%s"
         }"""
-                .formatted(ev, EDStatic.erddapVersion, EDStatic.deploymentInfo));
+                .formatted(ev, EDStatic.erddapVersion, EDStatic.config.deploymentInfo));
       } else {
         writer.write("ERDDAP_version=" + ev + "\n");
       }
@@ -13474,7 +13534,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.outOfDateDatasetsActive) {
+    if (!EDStatic.config.outOfDateDatasetsActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -13491,7 +13551,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // constants
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    int refreshEveryNMinutes = Math2.roundToInt(EDStatic.loadDatasetsMinMillis / 60000.0);
+    int refreshEveryNMinutes = Math2.roundToInt(EDStatic.config.loadDatasetsMinMillis / 60000.0);
 
     // parse endOfRequest
     String start = "outOfDateDatasets.";
@@ -13739,7 +13799,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.slideSorterActive) {
+    if (!EDStatic.config.slideSorterActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -14341,7 +14401,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String fileTypeName = "";
     String searchFor = "";
     /* retired 2017-10-27 String youAreHereTable =
@@ -14446,7 +14506,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // reduce datasetIDs to ones on requested page
       // IMPORTANT!!! For this to work correctly, datasetIDs must be
-      //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+      //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
       //  and in final sorted order.
       //  (True here)
       // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -14674,11 +14734,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String descriptionUrl = tErddapUrl + "/" + protocol + "/description.xml";
     String serviceWord = "search";
     String serviceUrl = tErddapUrl + "/" + protocol + "/" + serviceWord;
-    String tImageDirUrl = tErddapUrl + "/" + EDStatic.IMAGES_DIR; // has trailing /
+    String tImageDirUrl = tErddapUrl + "/" + EDStatic.config.IMAGES_DIR; // has trailing /
     String niceProtocol = "OpenSearch 1.1";
 
     String endOfRequestUrl =
@@ -14688,7 +14748,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // search standard_names for a good exampleSearchTerm
     String exampleSearchTerm = "datasetID"; // default    latitude?
-    int snpo = String2.indexOf(EDStatic.categoryAttributes, "standard_name");
+    int snpo = String2.indexOf(EDStatic.config.categoryAttributes, "standard_name");
     if (snpo >= 0) { // "standard_name" is a categoryAttribute
       String tryTerms[] = {
         "temperature",
@@ -14782,10 +14842,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // *** respond to /description.xml
     if (endOfRequestUrl.equals("description.xml")) {
-      // extract the unique single keywords from EDStatic.keywords,
+      // extract the unique single keywords from EDStatic.config.keywords,
       // and make them space separated
       // ??? or do this from all keywords of all datasets?
-      String tKeywords = EDStatic.keywords.toLowerCase();
+      String tKeywords = EDStatic.config.keywords.toLowerCase();
       tKeywords = String2.replaceAll(tKeywords, '>', ' ');
       tKeywords = String2.replaceAll(tKeywords, '|', ' ');
       tKeywords = String2.replaceAll(tKeywords, '\"', ' ');
@@ -14815,7 +14875,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "  <ShortName>ERDDAP</ShortName>\n"
                 + // <=16 chars
                 "  <Description>The ERDDAP at "
-                + XML.encodeAsXML(EDStatic.adminInstitution)
+                + XML.encodeAsXML(EDStatic.config.adminInstitution)
                 + // <=1024 chars
                 " is a data server that gives you a simple, consistent way to download subsets of "
                 + "scientific datasets in common file formats and make graphs and maps.</Description>\n"
@@ -14830,7 +14890,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + template
                 + "&#x26;format=rss\"/>\n"
                 + "  <Contact>"
-                + XML.encodeAsXML(EDStatic.adminEmail)
+                + XML.encodeAsXML(EDStatic.config.adminEmail)
                 + "</Contact>\n"
                 + "  <Tags>"
                 + XML.encodeAsXML(tKeywords)
@@ -14838,35 +14898,35 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "  <LongName>ERDDAP"
                 + // <=48 characters
                 XML.encodeAsXML(
-                    EDStatic.adminInstitution.length() <= 38
-                        ? " at " + EDStatic.adminInstitution
+                    EDStatic.config.adminInstitution.length() <= 38
+                        ? " at " + EDStatic.config.adminInstitution
                         : "")
                 + "</LongName>\n"
                 + "  <Image height=\""
-                + EDStatic.googleEarthLogoFileHeight
+                + EDStatic.config.googleEarthLogoFileHeight
                 + "\" "
                 + // preferred image first
                 "width=\""
-                + EDStatic.googleEarthLogoFileWidth
+                + EDStatic.config.googleEarthLogoFileWidth
                 + "\">"
                 + // type=\"image/png\" is optional
-                XML.encodeAsXML(tImageDirUrl + EDStatic.googleEarthLogoFile)
+                XML.encodeAsXML(tImageDirUrl + EDStatic.config.googleEarthLogoFile)
                 + "</Image>\n"
                 + "  <Image height=\""
-                + EDStatic.highResLogoImageFileHeight
+                + EDStatic.config.highResLogoImageFileHeight
                 + "\" "
                 + "width=\""
-                + EDStatic.highResLogoImageFileWidth
+                + EDStatic.config.highResLogoImageFileWidth
                 + "\">"
-                + XML.encodeAsXML(tImageDirUrl + EDStatic.highResLogoImageFile)
+                + XML.encodeAsXML(tImageDirUrl + EDStatic.config.highResLogoImageFile)
                 + "</Image>\n"
                 + "  <Image height=\""
-                + EDStatic.lowResLogoImageFileHeight
+                + EDStatic.config.lowResLogoImageFileHeight
                 + "\" "
                 + "width=\""
-                + EDStatic.lowResLogoImageFileWidth
+                + EDStatic.config.lowResLogoImageFileWidth
                 + "\">"
-                + XML.encodeAsXML(tImageDirUrl + EDStatic.lowResLogoImageFile)
+                + XML.encodeAsXML(tImageDirUrl + EDStatic.config.lowResLogoImageFile)
                 + "</Image>\n"
                 +
                 // ???need more and better examples
@@ -14877,7 +14937,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + // <=64 chars
                 "  <Attribution>"
                 + // credit for search results    <=256 chars
-                XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256))
+                XML.encodeAsXML(String2.noLongerThanDots(EDStatic.config.adminInstitution, 256))
                 + "</Attribution>\n"
                 + "  <SyndicationRight>"
                 + (loggedInAs == null ? "open" : "private")
@@ -14933,7 +14993,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (True here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -14992,10 +15052,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</updated>\n"
                 + "  <author> \n"
                 + "    <name>"
-                + XML.encodeAsXML(EDStatic.adminIndividualName)
+                + XML.encodeAsXML(EDStatic.config.adminIndividualName)
                 + "</name>\n"
                 + "    <email>"
-                + XML.encodeAsXML(EDStatic.adminEmail)
+                + XML.encodeAsXML(EDStatic.config.adminEmail)
                 + "</email>\n"
                 + "  </author> \n"
                 +
@@ -15276,9 +15336,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
-    String catAtts[] = EDStatic.categoryAttributes;
-    String catAttsInURLs[] = EDStatic.categoryAttributesInURLs;
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
+    String catAtts[] = EDStatic.config.categoryAttributes;
+    String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
     int nCatAtts = catAtts.length;
     String ANY = "(ANY)"; // don't translate so consistent on all erddaps?
 
@@ -15465,17 +15525,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     protocols.add(ANY);
     protocols.add("griddap");
     protocols.add("tabledap");
-    if (EDStatic.wmsActive) {
+    if (EDStatic.config.wmsActive) {
       protocols.add("WMS");
       protocolTooltip.append(
           "\n<p><strong>WMS</strong> - " + EDStatic.messages.wmsDescriptionHtmlAr[language]);
     }
-    if (EDStatic.wcsActive) {
+    if (EDStatic.config.wcsActive) {
       protocols.add("WCS");
       protocolTooltip.append(
           "\n<p><strong>WCS</strong> - " + EDStatic.messages.wcsDescriptionHtmlAr[language]);
     }
-    if (EDStatic.sosActive) {
+    if (EDStatic.config.sosActive) {
       protocols.add("SOS");
       protocolTooltip.append(
           "\n<p><strong>SOS</strong> - " + EDStatic.messages.sosDescriptionHtmlAr[language]);
@@ -16179,7 +16239,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param searchFor the Google-like string of search terms.
@@ -16220,7 +16280,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * @param language the index of the selected language
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param searchFor the Google-like string of search terms. Special cases: "" and "all" return all
@@ -16259,7 +16319,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // if failure (e.g., at startup, before Lucene indexes are made),
     //  temporarily go back to original search
     IndexSearcher indexSearcher =
-        EDStatic.useLuceneSearchEngine ? EDStatic.luceneIndexSearcher() : null;
+        EDStatic.config.useLuceneSearchEngine ? EDStatic.luceneIndexSearcher() : null;
 
     if (indexSearcher != null && EDStatic.luceneDocNToDatasetID != null) {
       // If useLuceneSearchEngine=true and searcher is valid,
@@ -16455,7 +16515,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (edd == null) edd = tableDatasetHashMap.get(tId);
       if (edd == null) // just deleted?
       continue;
-      if (!EDStatic.listPrivateDatasets
+      if (!EDStatic.config.listPrivateDatasets
           && !edd.isAccessibleTo(roles)
           && !edd.graphsAccessibleToPublic()) // search for datasets is always a metadata request
       continue;
@@ -16501,7 +16561,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *
    * @param loggedInAs the name of the logged in user (or null if not logged in). This is used to
    *     determine if the user has the right to know if a given dataset exists. (But dataset will be
-   *     matched if EDStatic.listPrivateDatasets.)
+   *     matched if EDStatic.config.listPrivateDatasets.)
    * @param tDatasetIDs The datasets to be considered (usually allDatasetIDs()). The order (sorted
    *     or not) is irrelevant.
    * @param graphOrMetadataRequest use true if this is for a graph or metadata request so that
@@ -16524,7 +16584,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (edd == null) edd = tableDatasetHashMap.get(tID);
       if (edd == null) // just deleted?
       continue;
-      if (EDStatic.listPrivateDatasets
+      if (EDStatic.config.listPrivateDatasets
           || edd.isAccessibleTo(roles)
           || (graphOrMetadataRequest && edd.graphsAccessibleToPublic())) {
         titlePa.add(edd.title());
@@ -16562,7 +16622,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
     String fileTypeName = File2.getExtension(endOfRequestUrl);
@@ -16583,10 +16643,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // parse endOfRequestUrl into parts
     String parts[] = String2.split(endOfRequestUrl, '/');
     String attributeInURL = parts.length < 1 ? "" : parts[0];
-    int whichAttribute = String2.indexOf(EDStatic.categoryAttributesInURLs, attributeInURL);
+    int whichAttribute = String2.indexOf(EDStatic.config.categoryAttributesInURLs, attributeInURL);
     if (reallyVerbose)
       String2.log("  attributeInURL=" + attributeInURL + " which=" + whichAttribute);
-    String attribute = whichAttribute < 0 ? "" : EDStatic.categoryAttributes[whichAttribute];
+    String attribute = whichAttribute < 0 ? "" : EDStatic.config.categoryAttributes[whichAttribute];
 
     String categoryName = parts.length < 2 ? "" : parts[1];
     if (reallyVerbose) String2.log("  categoryName=" + categoryName);
@@ -16882,7 +16942,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // reduce datasetIDs to ones on requested page
     // IMPORTANT!!! For this to work correctly, datasetIDs must be
-    //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+    //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
     //  and in final sorted order.
     //  (true here)
     // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -17056,14 +17116,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String requestUrlNoLang = getUrlWithoutLang(request);
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
-    if (requestUrlNoLang.equals("/" + EDStatic.warName + "/info")
-        || requestUrlNoLang.equals("/" + EDStatic.warName + "/info/")
-        || requestUrlNoLang.equals("/" + EDStatic.warName + "/info/index.htm")) {
+    if (requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info")
+        || requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info/")
+        || requestUrlNoLang.equals("/" + EDStatic.config.warName + "/info/index.htm")) {
       sendRedirect(
           response, tErddapUrl + "/info/index.html?" + EDStatic.passThroughPIppQueryPage1(request));
       return;
@@ -17127,7 +17187,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       // reduce tIDs to ones on requested page
       // IMPORTANT!!! For this to work correctly, datasetIDs must be
-      //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+      //  accessibleTo loggedInAs (or EDStatic.config.listPrivateDatasets)
       //  and in final sorted order.
       //  (True here)
       // Order of removal: more efficient to remove items at end, then items at beginning.
@@ -17236,7 +17296,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
 
           // jsonld
-          if (EDStatic.jsonldActive) { // && isSchemaDotOrgEnabled()){
+          if (EDStatic.config.jsonldActive) { // && isSchemaDotOrgEnabled()){
             try {
               writer.flush(); // so content above is sent to user ASAP while this content is created
               String roles[] = EDStatic.getRoles(loggedInAs);
@@ -17251,7 +17311,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 continue;
                 boolean isAccessible = edd.isAccessibleTo(roles);
                 boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-                if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+                if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible)
+                  continue;
                 datasets.add(edd);
               }
               // javascript version:
@@ -17304,9 +17365,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           response,
           EDStatic.bilingual(
               language,
-              MessageFormat.format(EDStatic.messages.infoRequestFormAr[0], EDStatic.warName),
+              MessageFormat.format(EDStatic.messages.infoRequestFormAr[0], EDStatic.config.warName),
               MessageFormat.format(
-                  EDStatic.messages.infoRequestFormAr[language], EDStatic.warName)));
+                  EDStatic.messages.infoRequestFormAr[language], EDStatic.config.warName)));
       return;
     }
     String tID = parts[0];
@@ -17477,7 +17538,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String s = valueSA.get(i);
           if (String2.isUrl(s)) {
             // display as a link
-            boolean isLocal = s.startsWith(EDStatic.baseUrl);
+            boolean isLocal = s.startsWith(EDStatic.config.baseUrl);
             s = XML.encodeAsHTMLAttribute(s);
             valueSA.set(
                 i, "<a href=\"" + s + "\">" + s + (isLocal ? "" : externalLinkHtml) + "</a>");
@@ -17537,7 +17598,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</a>.\n");
 
         // jsonld
-        if (EDStatic.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+        if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
           try {
             String tId = parts[0];
             boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
@@ -17588,7 +17649,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"@context\": \"http://schema.org\",\n"
             + "  \"@type\": \"DataCatalog\",\n"
             + "  \"name\": "
-            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.adminInstitution)
+            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.config.adminInstitution)
             + ",\n"
             + "  \"url\": "
             + String2.toJson65536(baseUrl)
@@ -17596,31 +17657,31 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"publisher\": {\n"
             + "    \"@type\": \"Organization\",\n"
             + "    \"name\": "
-            + String2.toJson65536(EDStatic.adminInstitution)
+            + String2.toJson65536(EDStatic.config.adminInstitution)
             + ",\n"
             + "    \"address\": {\n"
             + "      \"@type\": \"PostalAddress\",\n"
             + "      \"addressCountry\": "
-            + String2.toJson65536(EDStatic.adminCountry)
+            + String2.toJson65536(EDStatic.config.adminCountry)
             + ",\n"
             + "      \"addressLocality\": "
-            + String2.toJson65536(EDStatic.adminAddress + ", " + EDStatic.adminCity)
+            + String2.toJson65536(EDStatic.config.adminAddress + ", " + EDStatic.config.adminCity)
             + ",\n"
             + "      \"addressRegion\": "
-            + String2.toJson65536(EDStatic.adminStateOrProvince)
+            + String2.toJson65536(EDStatic.config.adminStateOrProvince)
             + ",\n"
             + "      \"postalCode\": "
-            + String2.toJson65536(EDStatic.adminPostalCode)
+            + String2.toJson65536(EDStatic.config.adminPostalCode)
             + "\n"
             + "    },\n"
             + "    \"telephone\": "
-            + String2.toJson65536(EDStatic.adminPhone)
+            + String2.toJson65536(EDStatic.config.adminPhone)
             + ",\n"
             + "    \"email\": "
-            + String2.toJson65536(EDStatic.adminEmail)
+            + String2.toJson65536(EDStatic.config.adminEmail)
             + ",\n"
             + "    \"sameAs\": "
-            + String2.toJson65536(EDStatic.adminInstitutionUrl)
+            + String2.toJson65536(EDStatic.config.adminInstitutionUrl)
             + "\n"
             + "  },\n"
             + "  \"fileFormat\": [\n"
@@ -17739,7 +17800,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "  \"includedInDataCatalog\": {\n"
             + "    \"@type\": \"DataCatalog\",\n"
             + "    \"name\": "
-            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.adminInstitution)
+            + String2.toJson65536("ERDDAP Data Server at " + EDStatic.config.adminInstitution)
             + ",\n"
             + "    \"sameAs\": "
             + String2.toJson65536(baseUrl)
@@ -17971,7 +18032,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -18172,7 +18233,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -18494,7 +18555,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -18679,7 +18740,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -18880,7 +18941,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
+    if (!EDStatic.config.subscriptionSystemActive || EDStatic.subscriptions == null) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -19083,7 +19144,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -19096,7 +19157,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    String requestUrl = request.getRequestURI(); // post EDStatic.baseUrl, pre "?"
+    String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
         datasetIDStartsAt >= requestUrl.length() ? "" : requestUrl.substring(datasetIDStartsAt);
 
@@ -19431,7 +19492,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -19712,7 +19773,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -20003,7 +20064,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -20306,7 +20367,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -20605,7 +20666,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -21686,7 +21747,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -22142,7 +22203,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -22383,7 +22444,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           MessageFormat.format(
                   EDStatic.messages.convertUnitsFilterAr[language],
                   tErddapUrl,
-                  EDStatic.units_standard)
+                  EDStatic.config.units_standard)
               + "\n");
 
       writer.write("</div>\n");
@@ -22422,7 +22483,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       throws Throwable {
 
     // first thing
-    if (!EDStatic.convertersActive) {
+    if (!EDStatic.config.convertersActive) {
       sendResourceNotFoundError(
           requestNumber,
           request,
@@ -22816,28 +22877,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Categorize", csa);
     if (fileTypeName.equals(".html")) {
       // 1 column: links
-      for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
+      for (int cat = 0; cat < EDStatic.config.categoryAttributesInURLs.length; cat++) {
         csa.add(
             "<a href=\""
                 + tErddapUrl
                 + "/categorize/"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "/index.html?"
                 + EDStatic.encodedPassThroughPIppQueryPage1(request)
                 + "\">"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "</a>");
       }
     } else {
       // 2 columns: categorize, url
       StringArray usa = new StringArray();
       table.addColumn("URL", usa);
-      for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
-        csa.add(EDStatic.categoryAttributesInURLs[cat]);
+      for (int cat = 0; cat < EDStatic.config.categoryAttributesInURLs.length; cat++) {
+        csa.add(EDStatic.config.categoryAttributesInURLs[cat]);
         usa.add(
             tErddapUrl
                 + "/categorize/"
-                + EDStatic.categoryAttributesInURLs[cat]
+                + EDStatic.config.categoryAttributesInURLs[cat]
                 + "/index"
                 + fileTypeName
                 + "?"
@@ -22926,7 +22987,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + "&nbsp;"
             + EDStatic.htmlTooltipImage(language, loggedInAs, tCategoryHtml)
             + "</h3>\n");
-    String attsInURLs[] = EDStatic.categoryAttributesInURLs;
+    String attsInURLs[] = EDStatic.config.categoryAttributesInURLs;
     HtmlWidgets widgets =
         new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); // true=htmlTooltips
     writer.write(
@@ -23115,19 +23176,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Subset", subCol);
     table.addColumn("tabledap", tdCol);
     table.addColumn("Make A Graph", magCol);
-    if (EDStatic.sosActive) table.addColumn("sos", sosCol);
-    if (EDStatic.wcsActive) table.addColumn("wcs", wcsCol);
-    if (EDStatic.wmsActive) table.addColumn("wms", wmsCol);
-    if (EDStatic.filesActive) table.addColumn("files", filesCol);
-    if (EDStatic.authentication.length() > 0) table.addColumn("Accessible", accessCol);
+    if (EDStatic.config.sosActive) table.addColumn("sos", sosCol);
+    if (EDStatic.config.wcsActive) table.addColumn("wcs", wcsCol);
+    if (EDStatic.config.wmsActive) table.addColumn("wms", wmsCol);
+    if (EDStatic.config.filesActive) table.addColumn("files", filesCol);
+    if (EDStatic.config.authentication.length() > 0) table.addColumn("Accessible", accessCol);
     int sortOn = table.addColumn("Title", titleCol);
     table.addColumn("Summary", summaryCol);
-    if (EDStatic.fgdcActive) table.addColumn("FGDC", fgdcCol);
-    if (EDStatic.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
+    if (EDStatic.config.fgdcActive) table.addColumn("FGDC", fgdcCol);
+    if (EDStatic.config.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
     table.addColumn("Info", infoCol);
     table.addColumn("Background Info", backgroundCol);
     table.addColumn("RSS", rssCol);
-    if (EDStatic.subscriptionSystemActive) table.addColumn("Email", emailCol);
+    if (EDStatic.config.subscriptionSystemActive) table.addColumn("Email", emailCol);
     table.addColumn("Institution", institutionCol);
     table.addColumn("Dataset ID", idCol);
     for (int i = 0; i < datasetIDs.size(); i++) {
@@ -23139,7 +23200,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
       boolean isAccessible = edd.isAccessibleTo(roles);
       boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-      if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+      if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
 
       // just show things (URLs, info) that user has access to
       String daps =
@@ -23178,7 +23239,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible && edd.accessibleViaFGDC().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.fgdcXmlDirectory
+                  + EDConfig.fgdcXmlDirectory
                   + edd.datasetID()
                   + EDD.fgdcSuffix
                   + ".xml"
@@ -23187,7 +23248,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           graphsAccessible && edd.accessibleViaISO19115().length() == 0
               ? tErddapUrl
                   + "/"
-                  + EDStatic.iso19115XmlDirectory
+                  + EDConfig.iso19115XmlDirectory
                   + edd.datasetID()
                   + EDD.iso19115Suffix
                   + ".xml"
@@ -23202,7 +23263,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               ? EDStatic.erddapUrl + "/rss/" + edd.datasetID() + ".rss"
               : ""); // never https url
       emailCol.add(
-          graphsAccessible && EDStatic.subscriptionSystemActive && !isAllDatasets
+          graphsAccessible && EDStatic.config.subscriptionSystemActive && !isAllDatasets
               ? tErddapUrl
                   + "/"
                   + Subscriptions.ADD_HTML
@@ -23258,10 +23319,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Sub-<br>set", subCol);
     table.addColumn("Table<br>DAP<br>Data", tdCol);
     table.addColumn("Make<br>A<br>Graph", magCol);
-    if (EDStatic.sosActive) table.addColumn("S<br>O<br>S", sosCol);
-    if (EDStatic.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
-    if (EDStatic.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
-    if (EDStatic.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
+    if (EDStatic.config.sosActive) table.addColumn("S<br>O<br>S", sosCol);
+    if (EDStatic.config.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
+    if (EDStatic.config.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
+    if (EDStatic.config.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
     String accessTip =
         EDStatic.messages.dtAccessibleAr[language]
             + // "You are logged in and ...
@@ -23272,21 +23333,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<br>\"yes\" = "
               + EDStatic.messages.dtAccessibleYesAr[language]
               + // "You are logged in and ...
-              (EDStatic.listPrivateDatasets
+              (EDStatic.config.listPrivateDatasets
                   ? "<br>\"no\" = " + EDStatic.messages.dtAccessibleNoAr[language]
                   : ""); // "You are logged in and ...
-    if (EDStatic.authentication.length() > 0
+    if (EDStatic.config.authentication.length() > 0
         && !isLoggedIn
         && // this erddap supports logging in
-        EDStatic.listPrivateDatasets)
+        EDStatic.config.listPrivateDatasets)
       accessTip += "<br>\"log in \" = " + EDStatic.messages.dtAccessibleLogInAr[language];
     accessTip += "<br>\"graphs\" = " + EDStatic.messages.dtAccessibleGraphsAr[language];
-    if (EDStatic.authentication.length() > 0)
+    if (EDStatic.config.authentication.length() > 0)
       table.addColumn(
           "Acces-<br>sible<br>" + EDStatic.htmlTooltipImage(language, loggedInAs, accessTip),
           accessCol);
     String loginHref =
-        EDStatic.authentication.length() == 0
+        EDStatic.config.authentication.length() == 0
             ? "no"
             : "<a rel=\"bookmark\" href=\""
                 + EDStatic.erddapHttpsUrl(language)
@@ -23298,13 +23359,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int sortOn = table.addColumn("Plain Title", plainTitleCol);
     table.addColumn("Sum-<br>mary", summaryCol);
     table.addColumn(
-        (EDStatic.fgdcActive ? "FGDC,<br>" : "")
-            + (EDStatic.iso19115Active ? "ISO,<br>" : "")
-            + (EDStatic.fgdcActive || EDStatic.iso19115Active ? "Metadata" : "Meta-<br>data"),
+        (EDStatic.config.fgdcActive ? "FGDC,<br>" : "")
+            + (EDStatic.config.iso19115Active ? "ISO,<br>" : "")
+            + (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active
+                ? "Metadata"
+                : "Meta-<br>data"),
         infoCol);
     table.addColumn("Back-<br>ground<br>Info", backgroundCol);
     table.addColumn("RSS", rssCol);
-    if (EDStatic.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
+    if (EDStatic.config.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
     table.addColumn("Institution", institutionCol);
     table.addColumn("Dataset ID", idCol);
     String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
@@ -23317,7 +23380,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
       boolean isAccessible = edd.isAccessibleTo(roles);
       boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-      if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
+      if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible) continue;
 
       // just show things (URLs, info) user has access to
       String daps =
@@ -23445,12 +23508,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   +
                   // fgdc
                   (edd.accessibleViaFGDC().length() > 0
-                      ? (EDStatic.fgdcActive ? "&nbsp;&nbsp;&nbsp;" : "")
+                      ? (EDStatic.config.fgdcActive ? "&nbsp;&nbsp;&nbsp;" : "")
                       : "&nbsp;<a rel=\"chapter\" "
                           + "href=\""
                           + tErddapUrl
                           + "/"
-                          + EDStatic.fgdcXmlDirectory
+                          + EDConfig.fgdcXmlDirectory
                           + edd.datasetID()
                           + EDD.fgdcSuffix
                           + ".xml\" "
@@ -23463,12 +23526,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   +
                   // iso
                   (edd.accessibleViaISO19115().length() > 0
-                      ? (EDStatic.iso19115Active ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "")
+                      ? (EDStatic.config.iso19115Active ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "")
                       : "&nbsp;<a rel=\"chapter\" "
                           + "href=\""
                           + tErddapUrl
                           + "/"
-                          + EDStatic.iso19115XmlDirectory
+                          + EDConfig.iso19115XmlDirectory
                           + edd.datasetID()
                           + EDD.iso19115Suffix
                           + ".xml\" "
@@ -23502,11 +23565,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "title=\""
                   + EDStatic.messages.clickBackgroundInfoAr[language]
                   + "\" >background"
-                  + (edd.infoUrl().startsWith(EDStatic.baseUrl) ? "" : externalLinkHtml)
+                  + (edd.infoUrl().startsWith(EDStatic.config.baseUrl) ? "" : externalLinkHtml)
                   + "</a>");
       rssCol.add(graphsAccessible && !isAllDatasets ? edd.rssHref(language, loggedInAs) : "&nbsp;");
       emailCol.add(
-          graphsAccessible && EDStatic.subscriptionSystemActive && !isAllDatasets
+          graphsAccessible && EDStatic.config.subscriptionSystemActive && !isAllDatasets
               ? edd.emailHref(language, loggedInAs)
               : "&nbsp;");
       String tInstitution = edd.institution();
@@ -23672,7 +23735,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // (e.g., all Advanced Search requests have fileName=AdvancedSearch)
         String ncFileName = fileName + "_" + Math2.random(Integer.MAX_VALUE) + ".nc";
         table.saveAsFlatNc(
-            EDStatic.fullPlainFileNcCacheDirectory + ncFileName,
+            EDStatic.config.fullPlainFileNcCacheDirectory + ncFileName,
             "row",
             false); // convertToFakeMissingValues
 
@@ -23682,13 +23745,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             requestNumber,
             request,
             response,
-            EDStatic.fullPlainFileNcCacheDirectory,
+            EDStatic.config.fullPlainFileNcCacheDirectory,
             "_plainFileNc/", // dir that appears to users (but it doesn't normally)
             ncFileName,
             out,
             outSource.usingCompression());
         // if simpleDelete fails, cache cleaning will delete it later
-        File2.simpleDelete(EDStatic.fullPlainFileNcCacheDirectory + ncFileName);
+        File2.simpleDelete(EDStatic.config.fullPlainFileNcCacheDirectory + ncFileName);
       }
       case ".nccsv" -> TableWriterNccsv.writeAllAndFinish(language, null, null, table, outSource);
       case ".tsv" ->
@@ -23840,14 +23903,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       try {
         StringArray actions = null;
 
-        if (EDStatic.subscriptionSystemActive) {
+        if (EDStatic.config.subscriptionSystemActive) {
           // get subscription actions
           try { // beware exceptions from subscriptions
             actions = EDStatic.subscriptions.listActions(tDatasetID);
           } catch (Throwable listT) {
             String content = MustBe.throwableToString(listT);
             String2.log(subject + ":\n" + content);
-            EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+            EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
             actions = new StringArray();
           }
         } else actions = new StringArray();
@@ -23865,7 +23928,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           if (verbose) String2.log("doing action[" + a + "]=" + tAction);
           try {
             if (tAction.startsWith("http://") || tAction.startsWith("https://")) {
-              if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0
+              if (tAction.indexOf("/" + EDStatic.config.warName + "/setDatasetFlag.txt?") > 0
                   && EDStatic.urlIsThisComputer(tAction)) {
                 // a dataset on this ERDDAP! just set the flag
                 // e.g.,
@@ -23919,7 +23982,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Throwable subT) {
         String content = MustBe.throwableToString(subT);
         String2.log(subject + ":\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
       }
     }
   }
@@ -23972,7 +24035,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // update dataset's Document in Lucene Index
     int nDatasetIDs = datasetIDs.size();
-    if (EDStatic.useLuceneSearchEngine && nDatasetIDs > 0) {
+    if (EDStatic.config.useLuceneSearchEngine && nDatasetIDs > 0) {
 
       try {
         // gc to avoid out-of-memory
@@ -24021,11 +24084,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
         // any exception is pretty horrible
         //  e.g., out of memory, index corrupt, IO exception
-        EDStatic.useLuceneSearchEngine = false;
+        EDStatic.config.useLuceneSearchEngine = false;
         String subject = String2.ERROR + " in updateLucene()";
         String content = MustBe.throwableToString(t);
         String2.log(subject + ":\n" + content);
-        EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
+        EDStatic.email(EDStatic.config.emailEverythingToCsv, subject, content);
 
         // abandon the changes and the indexWriter
         if (EDStatic.luceneIndexWriter != null) {

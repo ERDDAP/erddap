@@ -727,7 +727,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaSOS() {
     if (accessibleViaSOS == null) {
 
-      if (!EDStatic.sosActive)
+      if (!EDStatic.config.sosActive)
         accessibleViaSOS =
             String2.canonical(
                 MessageFormat.format(
@@ -750,7 +750,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaGeoServicesRest() {
     if (accessibleViaGeoServicesRest == null) {
 
-      if (!EDStatic.geoServicesRestActive) {
+      if (!EDStatic.config.geoServicesRestActive) {
         accessibleViaGeoServicesRest =
             String2.canonical(
                 MessageFormat.format(
@@ -835,7 +835,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWCS() {
     if (accessibleViaWCS == null) {
 
-      if (!EDStatic.wcsActive)
+      if (!EDStatic.config.wcsActive)
         accessibleViaWCS =
             String2.canonical(
                 MessageFormat.format(
@@ -896,7 +896,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null) {
 
-      if (!EDStatic.wmsActive)
+      if (!EDStatic.config.wmsActive)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
@@ -2601,7 +2601,7 @@ public abstract class EDDGrid extends EDD {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -2958,7 +2958,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but in unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null).
    * @param outputStreamSource the source of an outputStream that receives the results, usually
@@ -3362,10 +3362,10 @@ public abstract class EDDGrid extends EDD {
 
         } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
 
-          if (EDStatic.accessibleViaNC4.length() > 0)
+          if (EDStatic.config.accessibleViaNC4.length() > 0)
             throw new SimpleException(
                 EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr)
-                    + EDStatic.accessibleViaNC4);
+                    + EDStatic.config.accessibleViaNC4);
 
           // if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
           saveAsNc(
@@ -3433,7 +3433,8 @@ public abstract class EDDGrid extends EDD {
           File2.rename(cacheFullName + random, cacheFullName);
           if (!ok) // make eligible to be removed from cache in 5 minutes
           File2.touch(
-                cacheFullName, Math.max(0, EDStatic.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
+                cacheFullName,
+                Math.max(0, EDStatic.config.cacheMillis - 5 * Calendar2.MILLIS_PER_MINUTE));
 
           File2.isFile(
               cacheFullName,
@@ -3475,7 +3476,7 @@ public abstract class EDDGrid extends EDD {
       }
 
       // copy file to ...
-      if (EDStatic.awsS3OutputBucketUrl == null) {
+      if (EDStatic.config.awsS3OutputBucketUrl == null) {
 
         // copy file to outputStream
         // (I delayed getting actual outputStream as long as possible.)
@@ -3501,9 +3502,10 @@ public abstract class EDDGrid extends EDD {
         String contentType =
             OutputStreamFromHttpResponse.getFileContentType(
                 request, fileTypeName, fileTypeExtension);
-        String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
+        String fullAwsUrl =
+            EDStatic.config.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
         SSR.uploadFileToAwsS3(
-            EDStatic.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
+            EDStatic.config.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
         response.sendRedirect(fullAwsUrl);
       }
 
@@ -3521,7 +3523,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery from the user (may be "" or null), still percentEncoded (shouldn't be
    *     null). If the query has missing or invalid parameters, defaults will be used. If the query
    *     has irrelevant parameters, they will be ignored.
@@ -4799,7 +4801,7 @@ public abstract class EDDGrid extends EDD {
       }
 
       // bgColor
-      Color bgColor = EDStatic.graphBackgroundColor;
+      Color bgColor = EDStatic.config.graphBackgroundColor;
       String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
       if (tBGColor != null) {
         String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
@@ -6099,7 +6101,7 @@ public abstract class EDDGrid extends EDD {
    * THREDDs doesn't even object if userDapQuery is invalid.) See writeDAS().
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null).
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -6150,7 +6152,7 @@ public abstract class EDDGrid extends EDD {
    * }
    * </pre>
    *
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded
    *     (shouldn't be null). (Affects history only.)
    * @param writer a Writer. At the end of this method the Writer is flushed, not closed.
@@ -6185,7 +6187,7 @@ public abstract class EDDGrid extends EDD {
     EDD.addToHistory(gAtts, publicSourceUrl());
     EDD.addToHistory(
         gAtts,
-        EDStatic.baseUrl
+        EDStatic.config.baseUrl
             + requestUrl
             + (userDapQuery == null || userDapQuery.length() == 0 ? "" : "?" + userDapQuery));
 
@@ -6221,7 +6223,7 @@ public abstract class EDDGrid extends EDD {
    * </pre>
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param writer an 8859-1 writer, usually already buffered, to receive the results. At the end of
@@ -6362,7 +6364,7 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param loggedInAs
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
    *     the results. At the end of this method the outputStream is flushed, not closed.
    * @throws Throwable if trouble.
@@ -6481,7 +6483,7 @@ public abstract class EDDGrid extends EDD {
    * DODS DataDDS format (OPeNDAP 2.0, 7.2.3).
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -6668,7 +6670,7 @@ public abstract class EDDGrid extends EDD {
    * more extensive fixup].
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -7229,7 +7231,7 @@ public abstract class EDDGrid extends EDD {
    * (but presumably that is what it will request).
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param dir the directory (on this computer's hard drive) to use for temporary/cache files
@@ -7363,7 +7365,7 @@ public abstract class EDDGrid extends EDD {
       int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
       double fontScale = 1, vectorStandard = Double.NaN;
       String currentDrawLandMask = null; // null = not yet set
-      Color bgColor = EDStatic.graphBackgroundColor;
+      Color bgColor = EDStatic.config.graphBackgroundColor;
       for (String ampPart : ampParts) {
         // .bgColor
         if (ampPart.startsWith(".bgColor=")) {
@@ -8311,14 +8313,14 @@ public abstract class EDDGrid extends EDD {
           if (scale.length() == 0) scale = "Linear";
           cptFullName =
               CompoundColorMap.makeCPT(
-                  EDStatic.fullPaletteDirectory,
+                  EDStatic.config.fullPaletteDirectory,
                   palette,
                   scale,
                   paletteMin,
                   paletteMax,
                   nSections,
                   continuous,
-                  EDStatic.fullCptCacheDirectory);
+                  EDStatic.config.fullCptCacheDirectory);
 
           // make a graphDataLayer with coloredSurface setup
           graphDataLayer =
@@ -8486,25 +8488,25 @@ public abstract class EDDGrid extends EDD {
               if (vars[2] instanceof EDVTimeStamp)
                 colorMap =
                     new CompoundColorMap(
-                        EDStatic.fullPaletteDirectory,
+                        EDStatic.config.fullPaletteDirectory,
                         palette,
                         false, // false= data is seconds
                         paletteMin,
                         paletteMax,
                         nSections,
                         continuous,
-                        EDStatic.fullCptCacheDirectory);
+                        EDStatic.config.fullCptCacheDirectory);
               else
                 colorMap =
                     new CompoundColorMap(
-                        EDStatic.fullPaletteDirectory,
+                        EDStatic.config.fullPaletteDirectory,
                         palette,
                         scale,
                         paletteMin,
                         paletteMax,
                         nSections,
                         continuous,
-                        EDStatic.fullCptCacheDirectory);
+                        EDStatic.config.fullCptCacheDirectory);
             }
           }
 
@@ -8552,7 +8554,7 @@ public abstract class EDDGrid extends EDD {
       // transparentPng will revise this below
       if (pdf) {
         fontScale *= 1.4 * fontScale; // SgtMap.PDF_FONTSCALE=1.5 is too big
-        logoImageFile = EDStatic.highResLogoImageFile;
+        logoImageFile = EDStatic.config.highResLogoImageFile;
         pdfInfo =
             SgtUtil.createPdf(
                 SgtUtil.PDF_PORTRAIT,
@@ -8563,7 +8565,9 @@ public abstract class EDDGrid extends EDD {
       } else {
         fontScale *= imageWidth < 500 ? 1 : 1.25;
         logoImageFile =
-            sizeIndex <= 1 ? EDStatic.lowResLogoImageFile : EDStatic.highResLogoImageFile;
+            sizeIndex <= 1
+                ? EDStatic.config.lowResLogoImageFile
+                : EDStatic.config.highResLogoImageFile;
 
         // transparentPng supports returning requests outside of data
         // range to enable tiles that partially contain data. This
@@ -8685,7 +8689,7 @@ public abstract class EDDGrid extends EDD {
                   SgtUtil.LEGEND_BELOW,
                   EDStatic.messages.legendTitle1,
                   EDStatic.messages.legendTitle2,
-                  EDStatic.imageDir,
+                  EDStatic.config.imageDir,
                   logoImageFile,
                   minX,
                   maxX,
@@ -8750,7 +8754,7 @@ public abstract class EDDGrid extends EDD {
                     SgtUtil.LEGEND_BELOW,
                     EDStatic.messages.legendTitle1,
                     EDStatic.messages.legendTitle2,
-                    EDStatic.imageDir,
+                    EDStatic.config.imageDir,
                     logoImageFile,
                     minX,
                     maxX,
@@ -8799,7 +8803,7 @@ public abstract class EDDGrid extends EDD {
                     SgtUtil.LEGEND_BELOW,
                     EDStatic.messages.legendTitle1,
                     EDStatic.messages.legendTitle2,
-                    EDStatic.imageDir,
+                    EDStatic.config.imageDir,
                     logoImageFile,
                     minX,
                     maxX,
@@ -8819,7 +8823,7 @@ public abstract class EDDGrid extends EDD {
                     imageHeight,
                     Double.NaN, // graph imageWidth/imageHeight
                     drawSurface
-                        ? (!bgColor.equals(EDStatic.graphBackgroundColor)
+                        ? (!bgColor.equals(EDStatic.config.graphBackgroundColor)
                             ? bgColor
                             : palette.equals("BlackWhite") || palette.equals("WhiteBlack")
                                 ? new Color(0xccccff)
@@ -8888,7 +8892,7 @@ public abstract class EDDGrid extends EDD {
             msg = String2.noLongLines(msg, (imageWidth * 10 / 6) / tHeight, "    ");
             String lines[] = msg.split("\\n"); // not String2.split which trims
             g2.setColor(Color.black);
-            g2.setFont(new Font(EDStatic.fontFamily, Font.PLAIN, tHeight));
+            g2.setFont(new Font(EDStatic.config.fontFamily, Font.PLAIN, tHeight));
             int ty = tHeight * 2;
             for (String line : lines) {
               g2.drawString(line, tHeight, ty);
@@ -9282,7 +9286,7 @@ public abstract class EDDGrid extends EDD {
    * format. If no exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]. This method extracts the jsonp
    *     text to be prepended to the results (or null if none). See
@@ -9354,7 +9358,7 @@ public abstract class EDDGrid extends EDD {
    * successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -9454,7 +9458,7 @@ public abstract class EDDGrid extends EDD {
    * KVP format. If no exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]. This method extracts the jsonp
    *     text to be prepended to the results (or null if none). See
@@ -9539,7 +9543,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -10036,7 +10040,7 @@ public abstract class EDDGrid extends EDD {
    *     not used to test if this edd is accessibleTo loggedInAs, but it unusual cases
    *     (EDDTableFromPost?) it could be. Normally, this is just used to determine which erddapUrl
    *     to use (http vs https).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
    * @param fullOutName is dir + UniqueName + ".wav"
@@ -10136,7 +10140,7 @@ public abstract class EDDGrid extends EDD {
    * The file extension should be .itx
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -10335,7 +10339,7 @@ public abstract class EDDGrid extends EDD {
    * thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percent-encoded (shouldn't be
    *     null), e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -10618,7 +10622,7 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4.
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param fullFileName the name for the file (including directory and extension)
@@ -10941,7 +10945,7 @@ public abstract class EDDGrid extends EDD {
    *
    * @param language the index of the selected language
    * @param ncVersion either NetcdfFileFormat.NETCDF3 or NETCDF4.
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @throws Throwable
@@ -11287,7 +11291,7 @@ public abstract class EDDGrid extends EDD {
    * exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -11322,7 +11326,7 @@ public abstract class EDDGrid extends EDD {
    * exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -11357,7 +11361,7 @@ public abstract class EDDGrid extends EDD {
    * exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -11429,7 +11433,7 @@ public abstract class EDDGrid extends EDD {
    * Format .txt file. If no exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -11490,7 +11494,7 @@ public abstract class EDDGrid extends EDD {
    * .parquet file. If no exception is thrown, the data was successfully written.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
    * @param outputStreamSource the source of an outputStream (usually already buffered) to receive
@@ -11542,7 +11546,7 @@ public abstract class EDDGrid extends EDD {
    * xhtml table. See TableWriterHtml for details.
    *
    * @param language the index of the selected language
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be
    *     null). for a axis data, e.g., time[40:45], or for a grid data, e.g.,
    *     ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
@@ -13237,7 +13241,7 @@ public abstract class EDDGrid extends EDD {
             + "</a>\n"
             + "     (e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n"
             + "     2002-08-03T12:30:00.123Z).\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "     <br>ERDDAP has a utility to\n"
                     + "       <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -13283,7 +13287,7 @@ public abstract class EDDGrid extends EDD {
             + "     And this is consistent with some other places in ERDDAP that try to repair\n"
             + "     invalid input when the intention is clear, instead of just returning an error\n"
             + "     message.)\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "     ERDDAP has a utility to\n"
                     + "       <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -13350,7 +13354,7 @@ public abstract class EDDGrid extends EDD {
             + "       For example, a fully opaque (ff) greenish-blue color with red=22, green=88, blue=ee\n"
             + "       would be 0xff2288ee. Opaque white is 0xffffffff. Opaque light blue is 0xffccccff.\n"
             + "       The default on this ERDDAP is "
-            + String2.to0xHexString(EDStatic.graphBackgroundColor.getRGB(), 8)
+            + String2.to0xHexString(EDStatic.config.graphBackgroundColor.getRGB(), 8)
             + ".\n"
             + "     <li><kbd>&amp;.colorBar=<i>palette</i>|<i>continuous</i>|<i>scale</i>|<i>min</i>|<i>max</i>|<i>nSections</i></kbd> \n"
             + "       <br>This specifies the settings for a color bar.  The sub-values are:\n"
@@ -13993,38 +13997,38 @@ public abstract class EDDGrid extends EDD {
           "    </keywords>\n"
               + "    <responsibleParty>\n"
               + "      <individualName>"
-              + XML.encodeAsXML(EDStatic.adminIndividualName)
+              + XML.encodeAsXML(EDStatic.config.adminIndividualName)
               + "</individualName>\n"
               + "      <organisationName>"
-              + XML.encodeAsXML(EDStatic.adminInstitution)
+              + XML.encodeAsXML(EDStatic.config.adminInstitution)
               + "</organisationName>\n"
               + "      <positionName>"
-              + XML.encodeAsXML(EDStatic.adminPosition)
+              + XML.encodeAsXML(EDStatic.config.adminPosition)
               + "</positionName>\n"
               + "      <contactInfo>\n"
               + "        <phone>\n"
               + "          <voice>"
-              + XML.encodeAsXML(EDStatic.adminPhone)
+              + XML.encodeAsXML(EDStatic.config.adminPhone)
               + "</voice>\n"
               + "        </phone>\n"
               + "        <address>\n"
               + "          <deliveryPoint>"
-              + XML.encodeAsXML(EDStatic.adminAddress)
+              + XML.encodeAsXML(EDStatic.config.adminAddress)
               + "</deliveryPoint>\n"
               + "          <city>"
-              + XML.encodeAsXML(EDStatic.adminCity)
+              + XML.encodeAsXML(EDStatic.config.adminCity)
               + "</city>\n"
               + "          <administrativeArea>"
-              + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+              + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
               + "</administrativeArea>\n"
               + "          <postalCode>"
-              + XML.encodeAsXML(EDStatic.adminPostalCode)
+              + XML.encodeAsXML(EDStatic.config.adminPostalCode)
               + "</postalCode>\n"
               + "          <country>"
-              + XML.encodeAsXML(EDStatic.adminCountry)
+              + XML.encodeAsXML(EDStatic.config.adminCountry)
               + "</country>\n"
               + "          <electronicMailAddress>"
-              + XML.encodeAsXML(EDStatic.adminEmail)
+              + XML.encodeAsXML(EDStatic.config.adminEmail)
               + "</electronicMailAddress>\n"
               + "        </address>\n"
               + "        <onlineResource xlink:href=\""
@@ -14158,22 +14162,22 @@ public abstract class EDDGrid extends EDD {
       "    <ows:AccessConstraints>" + XML.encodeAsXML(accessConstraints()) + "</ows:AccessConstraints>\n" +
       "  </ows:ServiceIdentification>\n" +
       "  <ows:ServiceProvider>\n" +
-      "    <ows:ProviderName>" + XML.encodeAsXML(EDStatic.adminInstitution) + "</ows:ProviderName>\n" +
+      "    <ows:ProviderName>" + XML.encodeAsXML(EDStatic.config.adminInstitution) + "</ows:ProviderName>\n" +
       "    <ows:ProviderSite xlink:href=\"" + XML.encodeAsXML(EDStatic.erddapUrl) + "\">\n" +
       "    <ows:ServiceContact>\n" +
-      "      <ows:IndividualName>" + XML.encodeAsXML(EDStatic.adminIndividualName) + "</ows:IndividualName>\n" +
-      "      <ows:PositionName>" + XML.encodeAsXML(EDStatic.adminPosition) + "</ows:PositionName>\n" +
+      "      <ows:IndividualName>" + XML.encodeAsXML(EDStatic.config.adminIndividualName) + "</ows:IndividualName>\n" +
+      "      <ows:PositionName>" + XML.encodeAsXML(EDStatic.config.adminPosition) + "</ows:PositionName>\n" +
       "      <ows:ContactInfo>\n" +
       "        <ows:Phone>\n" +
-      "          <ows:Voice>" + XML.encodeAsXML(EDStatic.adminPhone) + "</ows:Voice>\n" +
+      "          <ows:Voice>" + XML.encodeAsXML(EDStatic.config.adminPhone) + "</ows:Voice>\n" +
       "        </ows:Phone>\n" +
       "        <ows:Address>\n" +
-      "          <ows:DeliveryPoint>" + XML.encodeAsXML(EDStatic.adminAddress) + "</ows:DeliveryPoint>\n" +
-      "          <ows:City>" + XML.encodeAsXML(EDStatic.adminCity) + "</ows:City>\n" +
-      "          <ows:AdministrativeArea>" + XML.encodeAsXML(EDStatic.adminStateOrProvince) + "</ows:AdministrativeArea>\n" +
-      "          <ows:PostalCode>" + XML.encodeAsXML(EDStatic.adminPostalCode) + "</ows:PostalCode>\n" +
-      "          <ows:Country>" + XML.encodeAsXML(EDStatic.adminCountry) + "</ows:Country>\n" +
-      "          <ows:ElectronicMailAddress>" + XML.encodeAsXML(EDStatic.adminEmail) + "</ows:ElectronicMailAddress>\n" +
+      "          <ows:DeliveryPoint>" + XML.encodeAsXML(EDStatic.config.adminAddress) + "</ows:DeliveryPoint>\n" +
+      "          <ows:City>" + XML.encodeAsXML(EDStatic.config.adminCity) + "</ows:City>\n" +
+      "          <ows:AdministrativeArea>" + XML.encodeAsXML(EDStatic.config.adminStateOrProvince) + "</ows:AdministrativeArea>\n" +
+      "          <ows:PostalCode>" + XML.encodeAsXML(EDStatic.config.adminPostalCode) + "</ows:PostalCode>\n" +
+      "          <ows:Country>" + XML.encodeAsXML(EDStatic.config.adminCountry) + "</ows:Country>\n" +
+      "          <ows:ElectronicMailAddress>" + XML.encodeAsXML(EDStatic.config.adminEmail) + "</ows:ElectronicMailAddress>\n" +
       "        </ows:Address>\n" +
       "      </ows:ContactInfo>\n" +
       "      <ows:Role>ERDDAP/WCS Administrator</ows:Role>\n" +
@@ -15452,7 +15456,7 @@ public abstract class EDDGrid extends EDD {
             + "      <br>In ERDDAP, this parameter is optional and the default is always the last time available.\n"
             + "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n"
             + "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n"
-            + (EDStatic.convertersActive
+            + (EDStatic.config.convertersActive
                 ? "      <br>ERDDAP has a utility to\n"
                     + "        <a rel=\"bookmark\" href=\""
                     + tErddapUrl
@@ -15596,7 +15600,7 @@ public abstract class EDDGrid extends EDD {
     String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
     String wcsUrl = tErddapUrl + "/wcs/" + datasetID() + "/" + wcsServer; // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate =
@@ -15632,7 +15636,7 @@ public abstract class EDDGrid extends EDD {
     String keywords = combinedGlobalAttributes.getString("keywords");
     String keywordsVocabulary = combinedGlobalAttributes.getString("keywords_vocabulary");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
       keywordsVocabulary = null;
     }
     String license = combinedGlobalAttributes.getString("license");
@@ -15645,18 +15649,24 @@ public abstract class EDDGrid extends EDD {
     String standardNameVocabulary = combinedGlobalAttributes.getString("standard_name_vocabulary");
 
     String adminInstitution =
-        EDStatic.adminInstitution == null ? unknown : EDStatic.adminInstitution;
+        EDStatic.config.adminInstitution == null ? unknown : EDStatic.config.adminInstitution;
     String adminIndividualName =
-        EDStatic.adminIndividualName == null ? unknown : EDStatic.adminIndividualName;
-    String adminPosition = EDStatic.adminPosition == null ? unknown : EDStatic.adminPosition;
-    String adminPhone = EDStatic.adminPhone == null ? unknown : EDStatic.adminPhone;
-    String adminAddress = EDStatic.adminAddress == null ? unknown : EDStatic.adminAddress;
-    String adminCity = EDStatic.adminCity == null ? unknown : EDStatic.adminCity;
+        EDStatic.config.adminIndividualName == null ? unknown : EDStatic.config.adminIndividualName;
+    String adminPosition =
+        EDStatic.config.adminPosition == null ? unknown : EDStatic.config.adminPosition;
+    String adminPhone = EDStatic.config.adminPhone == null ? unknown : EDStatic.config.adminPhone;
+    String adminAddress =
+        EDStatic.config.adminAddress == null ? unknown : EDStatic.config.adminAddress;
+    String adminCity = EDStatic.config.adminCity == null ? unknown : EDStatic.config.adminCity;
     String adminStateOrProvince =
-        EDStatic.adminStateOrProvince == null ? unknown : EDStatic.adminStateOrProvince;
-    String adminPostalCode = EDStatic.adminPostalCode == null ? unknown : EDStatic.adminPostalCode;
-    String adminCountry = EDStatic.adminCountry == null ? unknown : EDStatic.adminCountry;
-    String adminEmail = EDStatic.adminEmail == null ? unknown : EDStatic.adminEmail;
+        EDStatic.config.adminStateOrProvince == null
+            ? unknown
+            : EDStatic.config.adminStateOrProvince;
+    String adminPostalCode =
+        EDStatic.config.adminPostalCode == null ? unknown : EDStatic.config.adminPostalCode;
+    String adminCountry =
+        EDStatic.config.adminCountry == null ? unknown : EDStatic.config.adminCountry;
+    String adminEmail = EDStatic.config.adminEmail == null ? unknown : EDStatic.config.adminEmail;
 
     // testMinimalMetadata is useful for Bob doing tests of validity of FGDC results
     //  when a dataset has minimal metadata
@@ -16677,7 +16687,7 @@ public abstract class EDDGrid extends EDD {
     String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
     // String wcsUrl     = tErddapUrl + "/wcs/"     + datasetID() + "/" + wcsServer;  // "?" at end?
     String wmsUrl = tErddapUrl + "/wms/" + datasetID() + "/" + WMS_SERVER; // "?" at end?
-    String domain = EDStatic.baseUrl;
+    String domain = EDStatic.config.baseUrl;
     if (domain.startsWith("http://")) domain = domain.substring(7);
     else if (domain.startsWith("https://")) domain = domain.substring(8);
     String eddCreationDate = Calendar2.millisToIsoDateString(creationTimeMillis());
@@ -16712,7 +16722,7 @@ public abstract class EDDGrid extends EDD {
     String institution = combinedGlobalAttributes.getString("institution");
     String keywords = combinedGlobalAttributes.getString("keywords");
     if (keywords == null) { // use the crude, ERDDAP keywords
-      keywords = EDStatic.keywords;
+      keywords = EDStatic.config.keywords;
     }
     String license = combinedGlobalAttributes.getString("license");
     String project = combinedGlobalAttributes.getString("project");
@@ -16859,12 +16869,12 @@ public abstract class EDDGrid extends EDD {
             + "    <gmd:CI_ResponsibleParty>\n"
             + "      <gmd:individualName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "      </gmd:individualName>\n"
             + "      <gmd:organisationName>\n"
             + "        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "      </gmd:organisationName>\n"
             + "      <gmd:contactInfo>\n"
@@ -16873,7 +16883,7 @@ public abstract class EDDGrid extends EDD {
             + "            <gmd:CI_Telephone>\n"
             + "              <gmd:voice>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "              </gmd:voice>\n"
             + "            </gmd:CI_Telephone>\n"
@@ -16882,32 +16892,32 @@ public abstract class EDDGrid extends EDD {
             + "            <gmd:CI_Address>\n"
             + "              <gmd:deliveryPoint>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "              </gmd:deliveryPoint>\n"
             + "              <gmd:city>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "              </gmd:city>\n"
             + "              <gmd:administrativeArea>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "              </gmd:administrativeArea>\n"
             + "              <gmd:postalCode>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "              </gmd:postalCode>\n"
             + "              <gmd:country>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "              </gmd:country>\n"
             + "              <gmd:electronicMailAddress>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "              </gmd:electronicMailAddress>\n"
             + "            </gmd:CI_Address>\n"
@@ -17989,12 +17999,12 @@ public abstract class EDDGrid extends EDD {
             "            <gmd:CI_ResponsibleParty>\n"
             + "              <gmd:individualName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminIndividualName)
+            + XML.encodeAsXML(EDStatic.config.adminIndividualName)
             + "</gco:CharacterString>\n"
             + "              </gmd:individualName>\n"
             + "              <gmd:organisationName>\n"
             + "                <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminInstitution)
+            + XML.encodeAsXML(EDStatic.config.adminInstitution)
             + "</gco:CharacterString>\n"
             + "              </gmd:organisationName>\n"
             + "              <gmd:contactInfo>\n"
@@ -18003,7 +18013,7 @@ public abstract class EDDGrid extends EDD {
             + "                    <gmd:CI_Telephone>\n"
             + "                      <gmd:voice>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPhone)
+            + XML.encodeAsXML(EDStatic.config.adminPhone)
             + "</gco:CharacterString>\n"
             + "                      </gmd:voice>\n"
             + "                    </gmd:CI_Telephone>\n"
@@ -18012,32 +18022,32 @@ public abstract class EDDGrid extends EDD {
             + "                    <gmd:CI_Address>\n"
             + "                      <gmd:deliveryPoint>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminAddress)
+            + XML.encodeAsXML(EDStatic.config.adminAddress)
             + "</gco:CharacterString>\n"
             + "                      </gmd:deliveryPoint>\n"
             + "                      <gmd:city>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCity)
+            + XML.encodeAsXML(EDStatic.config.adminCity)
             + "</gco:CharacterString>\n"
             + "                      </gmd:city>\n"
             + "                      <gmd:administrativeArea>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminStateOrProvince)
+            + XML.encodeAsXML(EDStatic.config.adminStateOrProvince)
             + "</gco:CharacterString>\n"
             + "                      </gmd:administrativeArea>\n"
             + "                      <gmd:postalCode>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminPostalCode)
+            + XML.encodeAsXML(EDStatic.config.adminPostalCode)
             + "</gco:CharacterString>\n"
             + "                      </gmd:postalCode>\n"
             + "                      <gmd:country>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminCountry)
+            + XML.encodeAsXML(EDStatic.config.adminCountry)
             + "</gco:CharacterString>\n"
             + "                      </gmd:country>\n"
             + "                      <gmd:electronicMailAddress>\n"
             + "                        <gco:CharacterString>"
-            + XML.encodeAsXML(EDStatic.adminEmail)
+            + XML.encodeAsXML(EDStatic.config.adminEmail)
             + "</gco:CharacterString>\n"
             + "                      </gmd:electronicMailAddress>\n"
             + "                    </gmd:CI_Address>\n"

@@ -730,7 +730,7 @@ public class EDDTableFromDatabase extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -1096,7 +1096,7 @@ public class EDDTableFromDatabase extends EDDTable {
         tableColToRsCol[rv] =
             rs.findColumn(tName); // stored as 1..    throws Throwable if not found
       }
-      int triggerNRows = EDStatic.partialRequestMaxCells / resultsEDVs.length;
+      int triggerNRows = EDStatic.config.partialRequestMaxCells / resultsEDVs.length;
       Table table = makeEmptySourceTable(resultsEDVs, triggerNRows);
       PrimitiveArray paArray[] = new PrimitiveArray[nRv];
       for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
@@ -1731,7 +1731,7 @@ public class EDDTableFromDatabase extends EDDTable {
    * @throws Throwable if trouble
    */
   public static String getCSV(int language, String datasetID) throws Throwable {
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDTableFromDatabase tedd = (EDDTableFromDatabase) oneFromDatasetsXml(null, datasetID);
     String tName =
         tedd.makeNewFileForDapQuery(

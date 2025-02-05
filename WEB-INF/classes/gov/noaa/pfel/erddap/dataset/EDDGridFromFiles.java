@@ -192,7 +192,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     String tFileNameRegex = ".*";
     boolean tRecursive = false;
     String tPathRegex = ".*";
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     String tMetadataFrom = MF_LAST;
     int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
     String tDefaultDataQuery = null;
@@ -554,7 +554,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     matchAxisNDigits = tMatchAxisNDigits;
     int nav = tAxisVariables.length;
     int ndv = tDataVariables.length;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
 
@@ -793,7 +793,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     }
 
     // skip loading until after intial loadDatasets?
-    if (!EDStatic.forceSynchronousLoading
+    if (!EDStatic.config.forceSynchronousLoading
         && fileTable.nRows() == 0
         && EDStatic.initialLoadDatasets()) {
       requestReloadASAP();
@@ -912,7 +912,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // set up watchDirectory
     if (updateEveryNMillis > 0) {
       try {
-        if (EDStatic.useSharedWatchService) {
+        if (EDStatic.config.useSharedWatchService) {
           SharedWatchService.watchDirectory(fileDir, recursive, pathRegex, this, datasetID);
         } else {
           watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive, pathRegex);
@@ -922,14 +922,15 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
         String tmsg = MustBe.throwableToString(t);
         if (tmsg.indexOf("inotify instances") >= 0) tmsg += EDStatic.messages.inotifyFixAr[0];
-        EDStatic.email(EDStatic.adminEmail, subject, tmsg);
+        EDStatic.email(EDStatic.config.adminEmail, subject, tmsg);
       }
     }
 
     // doQuickRestart?
     boolean doQuickRestart =
         haveValidSourceInfo
-            && (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()));
+            && (testQuickRestart
+                || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()));
     if (verbose) String2.log("doQuickRestart=" + doQuickRestart);
 
     if (doQuickRestart) {
@@ -1367,7 +1368,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
     if (!badFileMap.isEmpty()) {
       String emailSB = badFileMapToString(badFileMap, dirList) + msg + "\n\n";
-      EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
+      EDStatic.email(EDStatic.config.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
     }
 
     // get source metadataFrom and axis values from FIRST|LAST file (lastModifiedTime)
@@ -1504,7 +1505,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     // if cacheFromUrl is remote ERDDAP /files/, subscribe to the dataset
     // This is like code in EDDTableFromFiles but "/griddap/"
     if (!doQuickRestart
-        && EDStatic.subscribeToRemoteErddapDataset
+        && EDStatic.config.subscribeToRemoteErddapDataset
         && cacheFromUrl != null
         && cacheFromUrl.startsWith("http")
         && cacheFromUrl.indexOf("/erddap/files/") > 0) {
@@ -1808,13 +1809,13 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
     // If too many events, call for reload.
     // This method isn't as nearly as efficient as full reload.
-    if (nEvents > EDStatic.updateMaxEvents) {
+    if (nEvents > EDStatic.config.updateMaxEvents) {
       if (verbose)
         String2.log(
             msg
                 + nEvents
                 + ">"
-                + EDStatic.updateMaxEvents
+                + EDStatic.config.updateMaxEvents
                 + " file events, so I called requestReloadASAP() instead of making changes here.");
       requestReloadASAP();
       return false;
@@ -2062,7 +2063,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       }
 
       // after changes all in place
-      if (EDStatic.updateSubsRssOnFileChanges) {
+      if (EDStatic.config.updateSubsRssOnFileChanges) {
         Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
       }
     }
@@ -2103,7 +2104,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
    */
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
-    if (EDStatic.useSharedWatchService) {
+    if (EDStatic.config.useSharedWatchService) {
       SharedWatchService.processEvents();
       return false;
     }
@@ -2705,7 +2706,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

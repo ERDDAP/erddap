@@ -138,7 +138,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     // Note that times are often too wide a range because they are for all observedProperties,
     //  not just the one used by this dataset.
     // This is not tested!
-    if (EDStatic.sosActive && stationDateEstCol >= 0) {
+    if (EDStatic.config.sosActive && stationDateEstCol >= 0) {
       sosOfferingPrefix = "urn:ioos:station:NOAA.NOS.CO-OPS:";
       sosOfferingType = "Station";
       // The index of the dataVariable with the sosOffering outer var (e.g. with
@@ -161,7 +161,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
