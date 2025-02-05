@@ -221,7 +221,7 @@ public class EDConfig {
   @FeatureFlag public final boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
   @FeatureFlag public final boolean wmsActive;
-  @FeatureFlag public final boolean quickRestart;
+  @FeatureFlag public boolean quickRestart;
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
