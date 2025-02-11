@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
+import gov.noaa.pfel.coastwatch.sgt.SgtUtil.PDFPageSize;
 import gov.noaa.pmel.sgt.Axis;
 import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.GridAttribute;
@@ -565,7 +566,8 @@ class SgtMapTests {
                     + ".pdf";
             File2.delete(tName); // old version? delete it
             Object oar[] =
-                SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, pdfWidths[size], pdfHeights[size], tName);
+                SgtUtil.createPdf(
+                    PDFPageSize.LETTER_PORTRAIT, pdfWidths[size], pdfHeights[size], tName);
             testMakeMap(
                 (Graphics2D) oar[0],
                 "over",

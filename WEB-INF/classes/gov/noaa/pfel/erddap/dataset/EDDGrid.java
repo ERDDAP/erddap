@@ -8557,7 +8557,7 @@ public abstract class EDDGrid extends EDD {
         logoImageFile = EDStatic.config.highResLogoImageFile;
         pdfInfo =
             SgtUtil.createPdf(
-                SgtUtil.PDF_PORTRAIT,
+                SgtUtil.PDFPageSize.LETTER_PORTRAIT,
                 imageWidth,
                 imageHeight,
                 outputStreamSource.outputStream(File2.UTF_8));
@@ -8871,7 +8871,7 @@ public abstract class EDDGrid extends EDD {
             if (pdfInfo == null)
               pdfInfo =
                   SgtUtil.createPdf(
-                      SgtUtil.PDF_PORTRAIT,
+                      SgtUtil.PDFPageSize.LETTER_PORTRAIT,
                       imageWidth,
                       imageHeight,
                       outputStreamSource.outputStream(File2.UTF_8));

@@ -5626,7 +5626,7 @@ public abstract class EDDTable extends EDD {
         // to be detected and handled before committing to sending results to client
         pdfInfo =
             SgtUtil.createPdf(
-                SgtUtil.PDF_PORTRAIT,
+                SgtUtil.PDFPageSize.LETTER_PORTRAIT,
                 imageWidth,
                 imageHeight,
                 outputStreamSource.outputStream(File2.UTF_8));
@@ -5929,7 +5929,7 @@ public abstract class EDDTable extends EDD {
             if (pdfInfo == null)
               pdfInfo =
                   SgtUtil.createPdf(
-                      SgtUtil.PDF_PORTRAIT,
+                      SgtUtil.PDFPageSize.LETTER_PORTRAIT,
                       imageWidth,
                       imageHeight,
                       outputStreamSource.outputStream(File2.UTF_8));
