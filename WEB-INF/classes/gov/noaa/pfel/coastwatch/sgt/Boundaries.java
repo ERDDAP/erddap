@@ -11,6 +11,8 @@ import com.cohort.util.LRUCache;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.BoundaryCounter;
+import gov.noaa.pfel.erddap.util.Metrics;
 import gov.noaa.pmel.sgt.dm.*;
 import java.io.*;
 import java.util.Collections;
@@ -68,9 +70,7 @@ public class Boundaries {
 
   private final Map<String, SGTLine> cache =
       Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
-  private int nCoarse = 0;
-  private int nSuccesses = 0;
-  private int nTossed = 0;
+  public BoundaryCounter counter;
 
   /** This identifies the subclass as National or State. */
   private String id = "";
@@ -134,10 +134,12 @@ public class Boundaries {
    * @param fileNames the 5 file names
    * @param fileFormat MATLAB_FORMAT or GMT_FORMAT
    */
-  public Boundaries(String id, String directory, ImmutableList<String> fileNames) {
+  public Boundaries(
+      String id, String directory, ImmutableList<String> fileNames, BoundaryCounter counter) {
     this.id = id;
     this.directory = directory;
     this.fileNames = fileNames;
+    this.counter = counter;
   }
 
   /**
@@ -177,7 +179,7 @@ public class Boundaries {
 
       // Don't cache it. Coarse resolutions are always fast because source file is small.
       // And the request is usually a large part of whole world. Most paths will be used.
-      nCoarse++;
+      counter.increment(Metrics.BoundaryRequest.coarse);
       tCoarse = "*";
       sgtLine = readSgtLineDouble(directory + fileNames.get(resolution), west, east, south, north);
 
@@ -204,11 +206,11 @@ public class Boundaries {
 
           // cache full?
           if (cache.size() == CACHE_SIZE) {
-            nTossed++;
+            counter.increment(Metrics.BoundaryRequest.tossed);
             tTossed = "*";
           } else {
             // if cache wasn't full, treat as success
-            nSuccesses++;
+            counter.increment(Metrics.BoundaryRequest.success);
             tSuccess = "*";
           }
 
@@ -218,7 +220,7 @@ public class Boundaries {
         } else {
 
           // yes, it is in cache;
-          nSuccesses++;
+          counter.increment(Metrics.BoundaryRequest.success);
           tSuccess = "*(alreadyInCache)";
         }
       } finally {
@@ -238,13 +240,13 @@ public class Boundaries {
               + (System.currentTimeMillis() - time)
               + "ms\n"
               + "      nCoarse="
-              + nCoarse
+              + counter.get(Metrics.BoundaryRequest.coarse)
               + tCoarse
               + " nSuccesses="
-              + nSuccesses
+              + counter.get(Metrics.BoundaryRequest.success)
               + tSuccess
               + " nTossed="
-              + nTossed
+              + counter.get(Metrics.BoundaryRequest.tossed)
               + tTossed);
     return sgtLine;
   }
@@ -678,25 +680,38 @@ public class Boundaries {
         + " of "
         + CACHE_SIZE
         + ",  nCoarse="
-        + nCoarse
+        + counter.get(Metrics.BoundaryRequest.coarse)
         + ", nSuccesses="
-        + nSuccesses
+        + counter.get(Metrics.BoundaryRequest.success)
         + ", nTossed="
-        + nTossed;
+        + counter.get(Metrics.BoundaryRequest.tossed);
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getNationalBoundaries() {
-    return new Boundaries("NationalBoundaries", REF_DIRECTORY, NATIONAL_FILE_NAMES);
+    return new Boundaries(
+        "NationalBoundaries",
+        REF_DIRECTORY,
+        NATIONAL_FILE_NAMES,
+        new BoundaryCounter(
+            "national_boundaries_request_total", "Requests for national boundaries"));
   }
 
   /** This is a convenience method to construct a national boundaries object. */
   public static Boundaries getStateBoundaries() {
-    return new Boundaries("StateBoundaries", REF_DIRECTORY, STATE_FILE_NAMES);
+    return new Boundaries(
+        "StateBoundaries",
+        REF_DIRECTORY,
+        STATE_FILE_NAMES,
+        new BoundaryCounter("state_boundaries_request_total", "Requests for state boundaries"));
   }
 
   /** This is a convenience method to construct a rivers object. */
   public static Boundaries getRivers() {
-    return new Boundaries("Rivers", REF_DIRECTORY, RIVER_FILE_NAMES);
+    return new Boundaries(
+        "Rivers",
+        REF_DIRECTORY,
+        RIVER_FILE_NAMES,
+        new BoundaryCounter("river_boundaries_request_total", "Requests for river boundaries"));
   }
 }

@@ -8,6 +8,8 @@ import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.LRUCache;
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.util.BoundaryCounter;
+import gov.noaa.pfel.erddap.util.Metrics;
 import java.awt.geom.GeneralPath;
 import java.io.*;
 import java.util.Collections;
@@ -70,9 +72,8 @@ public class GSHHS {
 
   private static final Map<String, GeneralPath> cache =
       Collections.synchronizedMap(new LRUCache<>(CACHE_SIZE));
-  private static int nCoarse = 0;
-  private static int nSuccesses = 0;
-  private static int nTossed = 0;
+  public static final BoundaryCounter requestStatus =
+      new BoundaryCounter("gshhs_request_total", "Requests to the GSHHS");
 
   /**
    * This limits the number of lakes that appear at lower resolutions. Smaller numbers lead to more
@@ -136,7 +137,7 @@ public class GSHHS {
       // Don't cache it. Coarse resolutions are always fast because source file is small.
       // And the request is usually a large part of whole world. Most paths will be used.
       tCoarse = "*";
-      nCoarse++;
+      requestStatus.increment(Metrics.BoundaryRequest.coarse);
 
       // make GeneralPath
       path =
@@ -174,10 +175,10 @@ public class GSHHS {
           // cache full?
           if (cache.size() == CACHE_SIZE) {
             tTossed = "*";
-            nTossed++;
+            requestStatus.increment(Metrics.BoundaryRequest.tossed);
           } else {
             tSuccess = "*"; // if cache wasn't full, treat as success
-            nSuccesses++;
+            requestStatus.increment(Metrics.BoundaryRequest.success);
           }
 
           // put new path in the cache
@@ -186,7 +187,7 @@ public class GSHHS {
         } else {
           // yes, it is in cache.
           tSuccess = "*(already in cache)";
-          nSuccesses++;
+          requestStatus.increment(Metrics.BoundaryRequest.success);
         }
       } finally {
         lock.unlock();
@@ -202,13 +203,13 @@ public class GSHHS {
               + (desiredLevel == 1 ? "land" : desiredLevel == 2 ? "lake" : "" + desiredLevel)
               + " done,"
               + " nCoarse="
-              + nCoarse
+              + requestStatus.get(Metrics.BoundaryRequest.coarse)
               + tCoarse
               + " nSuccesses="
-              + nSuccesses
+              + requestStatus.get(Metrics.BoundaryRequest.success)
               + tSuccess
               + " nTossed="
-              + nTossed
+              + requestStatus.get(Metrics.BoundaryRequest.tossed)
               + tTossed
               + " totalTime="
               + (System.currentTimeMillis() - time));
@@ -222,11 +223,11 @@ public class GSHHS {
         + " of "
         + CACHE_SIZE
         + ", nCoarse="
-        + nCoarse
+        + requestStatus.get(Metrics.BoundaryRequest.coarse)
         + ", nSuccesses="
-        + nSuccesses
+        + requestStatus.get(Metrics.BoundaryRequest.success)
         + ", nTossed="
-        + nTossed;
+        + requestStatus.get(Metrics.BoundaryRequest.tossed);
   }
 
   /** This is like getGeneralPath, but with no caching. */

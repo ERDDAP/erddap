@@ -9,6 +9,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import io.prometheus.metrics.model.snapshots.Unit;
 
 /**
  * This does a series of touches.
@@ -100,6 +101,10 @@ public class TouchThread extends Thread {
                   + (tElapsedTime > 10000 ? " (>10s!)" : ""));
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
+          EDStatic.metrics
+              .touchThreadDuration
+              .labelValues(Metrics.ThreadStatus.success.name())
+              .observe(Unit.millisToSeconds(tElapsedTime));
 
         } catch (InterruptedException e) {
           String2.log("%%% TouchThread was interrupted.");
@@ -120,6 +125,10 @@ public class TouchThread extends Thread {
                   + MustBe.throwableToString(e));
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
           String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
+          EDStatic.metrics
+              .touchThreadDuration
+              .labelValues(Metrics.ThreadStatus.fail.name())
+              .observe(Unit.millisToSeconds(tElapsedTime));
 
         } finally {
           // whether succeeded or failed
