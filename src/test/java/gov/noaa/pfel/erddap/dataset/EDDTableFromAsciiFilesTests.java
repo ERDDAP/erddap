@@ -2455,7 +2455,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "26938/</fileDir>\n"
             + "    <fileNameRegex>???</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -2614,7 +2614,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "26938/</fileDir>\n"
             + "    <fileNameRegex>AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions\\.csv</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -3681,7 +3681,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "27377/</fileDir>\n"
             + "    <fileNameRegex>???</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"
@@ -3884,7 +3884,7 @@ class EDDTableFromAsciiFilesTests {
             + "\" active=\"true\">\n"
             + "    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n"
             + "    <fileDir>"
-            + File2.addSlash(dataDir)
+            + File2.addSlash(dataDir.replace(".", "\\."))
             + "27377/</fileDir>\n"
             + "    <fileNameRegex>dummy\\.csv</fileNameRegex>\n"
             + "    <charset>ISO-8859-1</charset>\n"

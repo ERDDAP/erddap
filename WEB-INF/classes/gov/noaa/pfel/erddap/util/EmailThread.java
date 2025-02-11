@@ -10,6 +10,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.sun.mail.smtp.SMTPTransport;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import io.prometheus.metrics.model.snapshots.Unit;
 import jakarta.mail.Session;
 import java.util.concurrent.TimeUnit;
 
@@ -137,6 +138,10 @@ public class EmailThread extends Thread {
             oneEmailTime = System.currentTimeMillis() - oneEmailTime;
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistribution24);
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistributionTotal);
+            EDStatic.metrics
+                .emailThreadDuration
+                .labelValues(Metrics.ThreadStatus.success.name())
+                .observe(Unit.millisToSeconds(oneEmailTime));
             String2.log(
                 "%%% EmailThread successfully sent email #"
                     + (EDStatic.nextEmail.get() - 1)
@@ -156,6 +161,10 @@ public class EmailThread extends Thread {
             oneEmailTime = System.currentTimeMillis() - oneEmailTime;
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistribution24);
             String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistributionTotal);
+            EDStatic.metrics
+                .emailThreadDuration
+                .labelValues(Metrics.ThreadStatus.fail.name())
+                .observe(Unit.millisToSeconds(oneEmailTime));
             String2.log(
                 "%%% EmailThread ERROR sending email #"
                     + (EDStatic.nextEmail.get() - 1)
@@ -188,6 +197,10 @@ public class EmailThread extends Thread {
         // tally as failure with time=0 (also shows up as nEmails/session = 0)
         String2.distributeTime(0, EDStatic.emailThreadFailedDistribution24);
         String2.distributeTime(0, EDStatic.emailThreadFailedDistributionTotal);
+        EDStatic.metrics
+            .emailThreadDuration
+            .labelValues(Metrics.ThreadStatus.fail.name())
+            .observe(0);
         String2.log(
             "%%% EmailThread session ERROR at email #"
                 + (EDStatic.nextEmail.get() - 1)
@@ -216,6 +229,7 @@ public class EmailThread extends Thread {
         // note: failed session shows up as 0 emailsPerSession
         String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistribution24);
         String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistributionTotal);
+        EDStatic.metrics.emailsCountDistribution.observe(nEmailsPerSession);
 
         // if >=200 pending emails, dump the first 100 of them
         try {

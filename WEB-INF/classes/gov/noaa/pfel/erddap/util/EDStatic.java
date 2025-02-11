@@ -54,7 +54,6 @@ import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
 import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
-import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -251,33 +250,34 @@ public class EDStatic {
   public static final String fullPublicDirectory;
   public static final String downloadDir; // local directory on this computer
   public static final String imageDir; // local directory on this computer
+  public static final Metrics metrics;
   public static final Tally tally = new Tally();
-  public static int emailThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
+  public static int[] emailThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] emailThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int emailThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
   public static int[] emailThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int emailThreadNEmailsDistribution24[] =
+  public static int[] emailThreadNEmailsDistribution24 =
       new int[String2.CountDistributionSize]; // count, not time
   public static int[] emailThreadNEmailsDistributionTotal =
       new int[String2.CountDistributionSize]; // count, not time
-  public static int failureTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
-  public static int failureTimesDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int[] failureTimesDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int majorLoadDatasetsDistribution24[] = new int[String2.TimeDistributionSize];
+  public static int[] majorLoadDatasetsDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] minorLoadDatasetsDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] majorLoadDatasetsDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int minorLoadDatasetsDistribution24[] = new int[String2.TimeDistributionSize];
   public static int[] minorLoadDatasetsDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int responseTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
-  public static int responseTimesDistribution24[] = new int[String2.TimeDistributionSize];
-  public static int[] responseTimesDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int taskThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
+  public static int[] taskThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] taskThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] taskThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int taskThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
   public static int[] taskThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int touchThreadFailedDistribution24[] = new int[String2.TimeDistributionSize];
+  public static int[] touchThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] touchThreadFailedDistributionTotal = new int[String2.TimeDistributionSize];
-  public static int touchThreadSucceededDistribution24[] = new int[String2.TimeDistributionSize];
   public static int[] touchThreadSucceededDistributionTotal = new int[String2.TimeDistributionSize];
+  public static int[] responseTimesDistributionLoadDatasets = new int[String2.TimeDistributionSize];
+  public static int[] failureTimesDistributionLoadDatasets = new int[String2.TimeDistributionSize];
+  public static int[] responseTimesDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] failureTimesDistribution24 = new int[String2.TimeDistributionSize];
+  public static int[] responseTimesDistributionTotal = new int[String2.TimeDistributionSize];
+  public static int[] failureTimesDistributionTotal = new int[String2.TimeDistributionSize];
   public static final AtomicInteger requestsShed =
       new AtomicInteger(0); // since last Major LoadDatasets
   public static final AtomicInteger dangerousMemoryEmails =
@@ -297,8 +297,6 @@ public class EDStatic {
       null; // is read-only. Replacement is swapped into place.
   public static final long startupMillis = System.currentTimeMillis();
   public static final String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-  public static int nGridDatasets = 0; // as of end of last major loadDatasets
-  public static int nTableDatasets = 0; // as of end of last major loadDatasets
   public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
   public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
   // Currently Loading Dataset
@@ -1921,9 +1919,8 @@ public class EDStatic {
       setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
 
       usePrometheusMetrics = getSetupEVBoolean(setup, ev, "usePrometheusMetrics", true);
-      if (usePrometheusMetrics) {
-        JvmMetrics.builder().register(); // initialize the out-of-the-box JVM metrics
-      }
+      metrics = new Metrics();
+      metrics.initialize(usePrometheusMetrics);
 
       bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", "");
       bigParentDirectory = File2.addSlash(bigParentDirectory);
@@ -7354,6 +7351,7 @@ public class EDStatic {
       lastActiveRequestReportTime =
           System.currentTimeMillis(); // do first so other threads don't also report this
       dangerousMemoryEmails.incrementAndGet();
+      metrics.dangerousMemoryEmails.inc();
       activeRequests.remove(requestNumber + ""); // don't blame this request
       String activeRequestLines[] = activeRequests.values().toArray(new String[0]);
       Arrays.sort(activeRequestLines);
@@ -7396,6 +7394,7 @@ public class EDStatic {
         response,
         503, // Service Unavailable
         waitThenTryAgainAr[language]);
+    metrics.shedRequests.inc();
     return true;
   }
 
@@ -7523,6 +7522,7 @@ public class EDStatic {
                 .SC_REQUEST_ENTITY_TOO_LARGE; // http error 413 (the old name for Payload Too
         // Large), although it could be other user's requests
         // that are too large
+        metrics.dangerousMemoryFailures.inc();
         String ipAddress = getIPAddress(request);
         tally.add(
             "OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", ipAddress);
@@ -7539,6 +7539,7 @@ public class EDStatic {
         // Large), although it could be other user's requests
         // that are too large
         dangerousMemoryFailures.incrementAndGet();
+        metrics.dangerousMemoryFailures.inc();
         String ipAddress = getIPAddress(request);
         tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
         tally.add("OutOfMemory (Too Big), IP Address (since last daily report)", ipAddress);
@@ -7549,6 +7550,7 @@ public class EDStatic {
         errorNo =
             HttpServletResponse
                 .SC_REQUEST_ENTITY_TOO_LARGE; // http error 413 (the old name for Payload Too Large)
+        metrics.dangerousMemoryFailures.inc();
         String ipAddress = getIPAddress(request);
         tally.add(
             "OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
