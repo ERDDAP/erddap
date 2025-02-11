@@ -68497,10 +68497,9 @@ public class EDDTestDataset {
         "        <att name=\"Westernmost_Easting\" type=\"float\">-124.32333</att>\n"
         + //
         "    </sourceAttributes -->\n"
-        + //
-        "    <addAttributes>\n"
-        + //
-        "        <att name=\"keywords\">1984-2004,\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"subsetVariables\">line_station</att>\n"
+        + "        <att name=\"keywords\">1984-2004,\n"
         + //
         "Atmosphere &gt; Altitude &gt; Station Height,\n"
         + //

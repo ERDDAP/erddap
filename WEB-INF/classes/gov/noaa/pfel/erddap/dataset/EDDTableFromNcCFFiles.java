@@ -195,7 +195,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         standardizeWhat,
         sourceConVars,
         sourceConOps,
-        sourceConValues);
+        sourceConValues,
+        EDStatic.includeNcCFSubsetVariables);
     // } else {
     //    //Just return a table with globalAtts, columns with atts, but no rows.
     //    table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
@@ -315,7 +316,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
             ? DEFAULT_STANDARDIZEWHAT
             : tStandardizeWhat;
-    dataSourceTable.readNcCF(sampleFileName, null, tStandardizeWhat, null, null, null);
+    dataSourceTable.readNcCF(sampleFileName, null, tStandardizeWhat, null, null, null, true);
     double maxTimeES = Double.NaN;
     for (int c = 0; c < dataSourceTable.nColumns(); c++) {
       String colName = dataSourceTable.getColumnName(c);
@@ -385,10 +386,15 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
 
     // subsetVariables  (or get from outer variables in some file types?)
     if (dataSourceTable.globalAttributes().getString("subsetVariables") == null
-        && dataAddTable.globalAttributes().getString("subsetVariables") == null)
+        && dataAddTable.globalAttributes().getString("subsetVariables") == null) {
       dataAddTable
           .globalAttributes()
           .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
+    } else if (dataAddTable.globalAttributes().getString("subsetVariables") == null) {
+      dataAddTable
+          .globalAttributes()
+          .add("subsetVariables", dataSourceTable.globalAttributes().getString("subsetVariables"));
+    }
 
     // add the columnNameForExtract variable
     if (tColumnNameForExtract.length() > 0) {
