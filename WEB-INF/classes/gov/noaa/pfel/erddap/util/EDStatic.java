@@ -99,7 +99,7 @@ import org.apache.lucene.store.NIOFSDirectory;
  */
 public class EDStatic {
 
-  public static final Cleaner cleaner = Cleaner.create();
+  public static Cleaner cleaner = Cleaner.create();
 
   /** The all lowercase name for the program that appears in urls. */
   public static final String programname = "erddap";
@@ -208,8 +208,8 @@ public class EDStatic {
   public static final String INSTITUTION = "institution";
   public static final int TITLE_DOT_LENGTH = 95; // max nChar before inserting newlines
 
-  public static final EDConfig config;
-  public static final Metrics metrics;
+  public static EDConfig config;
+  public static Metrics metrics;
   public static final Tally tally = new Tally();
   public static int[] emailThreadFailedDistribution24 = new int[String2.TimeDistributionSize];
   public static int[] emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
@@ -545,7 +545,7 @@ public class EDStatic {
    * These values are loaded from the [contentDirectory]messages.xml file (if present) or
    * .../classes/gov/noaapfel/erddap/util/messages.xml.
    */
-  public static final EDMessages messages;
+  public static EDMessages messages;
 
   public static final ImmutableList<String> paletteSections =
       ImmutableList.of(
@@ -2422,9 +2422,29 @@ public class EDStatic {
       }
       luceneIndexWriter = null;
 
+      if (touchThread != null) {
+        touchThread.interrupt();
+        touchThread = null;
+      }
+
+      if (taskThread != null) {
+        taskThread.interrupt();
+        taskThread = null;
+      }
+
+      if (emailThread != null) {
+        emailThread.interrupt();
+        emailThread = null;
+      }
+
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
     }
+
+    cleaner = null;
+    messages = null;
+    config = null;
+    metrics = null;
   }
 
   /**

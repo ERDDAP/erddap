@@ -6,6 +6,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.*;
 import java.util.Arrays;
@@ -290,9 +291,7 @@ public class TopLevelHandler extends State {
       case "loadDatasetsMinMinutes" -> {
         int tnt = String2.parseInt(data.toString());
         EDStatic.config.loadDatasetsMinMillis =
-            (tnt < 1 || tnt == Integer.MAX_VALUE
-                    ? EDStatic.config.DEFAULT_loadDatasetsMinMinutes
-                    : tnt)
+            (tnt < 1 || tnt == Integer.MAX_VALUE ? EDConfig.DEFAULT_loadDatasetsMinMinutes : tnt)
                 * Calendar2.MILLIS_PER_MINUTE;
 
         if (reallyVerbose) {
