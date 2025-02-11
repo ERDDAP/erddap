@@ -375,8 +375,7 @@ public class SgtUtil {
         isBufferedImageAccelerated =
             "bufferedImage isAccelerated=" + (imCap == null ? "[unknown]" : imCap.isAccelerated());
       } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
-        isBufferedImageAccelerated = "bufferedImage isAccelerated=[unknown]";
+        isBufferedImageAccelerated = "bufferedImage isAccelerated=[" + t.toString() + "]";
       }
     }
     return isBufferedImageAccelerated;
