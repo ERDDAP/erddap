@@ -813,6 +813,7 @@ public class EDStatic {
   public static boolean updateSubsRssOnFileChanges;
   public static final boolean useEddReflection;
   public static boolean enableCors;
+  public static boolean includeNcCFSubsetVariables;
   public static final String corsAllowHeaders;
   public static final String[] corsAllowOrigin;
   public static final String[]
@@ -2307,6 +2308,8 @@ public class EDStatic {
       useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
       updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
       useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", false);
+      includeNcCFSubsetVariables =
+          getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
       enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
       corsAllowHeaders =
           getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
