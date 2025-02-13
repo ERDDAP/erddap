@@ -10,6 +10,7 @@ import com.cohort.util.Test;
 import com.google.common.io.Resources;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil.PDFPageSize;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pmel.sgt.Axis;
 import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.GridAttribute;
@@ -1026,9 +1027,7 @@ class SgtMapTests {
      */
     String vectorCpt =
         CompoundColorMap.makeCPT(
-            File2.getWebInfParentDirectory()
-                + // with / separator and / at the end
-                "WEB-INF/cptfiles/",
+            EDStatic.config.fullPaletteDirectory,
             "Rainbow",
             "Linear",
             0,
@@ -1039,9 +1038,7 @@ class SgtMapTests {
 
     String gridCpt =
         CompoundColorMap.makeCPT(
-            File2.getWebInfParentDirectory()
-                + // with / separator and / at the end
-                "WEB-INF/cptfiles/",
+            EDStatic.config.fullPaletteDirectory,
             "BlueWhiteRed", // "LightBlueWhite"
             "Linear",
             -10,
@@ -1110,9 +1107,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/", // imageDir
+        EDStatic.config.imageDir,
         "noaa20.gif", // logoImageFile
         minX,
         maxX,
@@ -1199,9 +1194,7 @@ class SgtMapTests {
         SgtUtil.LEGEND_BELOW,
         "NOAA",
         "CoastWatch",
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/", // imageDir
+        EDStatic.config.imageDir,
         "noaa20.gif", // logoImageFile
         minX[region],
         maxX[region],

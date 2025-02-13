@@ -11,6 +11,7 @@ public class Initialization {
     System.setProperty(
         "erddapContentDirectory", System.getProperty("user.dir") + "/development/test/");
     System.setProperty("skipEmailThread", String.valueOf(true));
+    EDStatic.init(System.getProperty("user.dir") + "/");
     EDD.debugMode = true;
     SgtMap.fontFamily = "SansSerif";
     EDStatic.config.useSaxParser = true;

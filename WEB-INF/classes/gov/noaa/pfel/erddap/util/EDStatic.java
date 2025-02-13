@@ -529,12 +529,10 @@ public class EDStatic {
   private static BufferedWriter emailLogFile;
 
   // these are set as a consequence of setup.xml info
-  public static final SgtGraph sgtGraph;
-  public static final String erddapUrl; // without slash at end
-  public static final String
-      erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
-  public static final String
-      preferredErddapUrl; // without slash at end   (https if avail, else http)
+  public static SgtGraph sgtGraph;
+  public static String erddapUrl; // without slash at end
+  public static String erddapHttpsUrl; // without slash at end   (may be useless, but won't be null)
+  public static String preferredErddapUrl; // without slash at end   (https if avail, else http)
   public static String computerName; // e.g., coastwatch (or "")
   public static Subscriptions subscriptions; // null if !EDStatic.config.subscriptionSystemActive
 
@@ -561,6 +559,8 @@ public class EDStatic {
 
   private static Map<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
 
+  private static boolean initialized = false;
+
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined
@@ -570,11 +570,18 @@ public class EDStatic {
    * @throws RuntimeException if trouble
    */
   static {
+    String webInfParentDirectory = File2.getWebInfParentDirectory();
+    init(webInfParentDirectory);
+  }
+
+  public static void init(String webInfParentDirectory) {
+    if (initialized) {
+      return;
+    }
+    initialized = true;
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-      String webInfParentDirectory = File2.getWebInfParentDirectory();
-
       // route calls to a logger to com.cohort.util.String2Log
       String2.setupCommonsLogging(-1);
       SSR.erddapVersion = erddapVersion;
@@ -2439,12 +2446,13 @@ public class EDStatic {
 
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
+    } finally {
+      initialized = false;
+      cleaner = null;
+      messages = null;
+      config = null;
+      metrics = null;
     }
-
-    cleaner = null;
-    messages = null;
-    config = null;
-    metrics = null;
   }
 
   /**

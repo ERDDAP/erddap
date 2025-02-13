@@ -14114,7 +14114,7 @@ class JettyTests {
     String2.log("\n*** EDDGridFromEtopo.testFiles(" + tDatasetID + ")\n");
     String results, expected;
 
-    String etopoFilePath = File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+    String etopoFilePath = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
     long etopoLastModifiedMillis = File2.getLastModified(etopoFilePath);
 
     // get /files/datasetID/.csv

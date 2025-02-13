@@ -354,6 +354,10 @@ public class File2 {
     return webInfParentDirectory;
   }
 
+  public static String getRefDirectory() {
+    return getWebInfParentDirectory() + "WEB-INF/ref/";
+  }
+
   public static void setWebInfParentDirectory(String webInfParentDir) {
     webInfParentDirectory = webInfParentDir.replace("\\", "/");
   }

@@ -51,10 +51,7 @@ public class GSHHS {
    * from the GSHHS project (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir
    * should have slash at end.
    */
-  public static final String gshhsDirectory =
-      File2.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final String gshhsDirectory = File2.getRefDirectory();
 
   /**
    * Since GeneralPaths are time-consuming to contruct, getGeneralPath caches the last CACHE_SIZE

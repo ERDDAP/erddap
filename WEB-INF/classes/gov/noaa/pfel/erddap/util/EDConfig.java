@@ -283,7 +283,7 @@ public class EDConfig {
     Path bpd = Path.of(bigParentDirectory);
     if (!bpd.isAbsolute()) {
       if (!File2.isDirectory(bigParentDirectory)) {
-        bigParentDirectory = File2.getWebInfParentDirectory() + bigParentDirectory;
+        bigParentDirectory = webInfParentDirectory + bigParentDirectory;
       }
     }
     Test.ensureTrue(

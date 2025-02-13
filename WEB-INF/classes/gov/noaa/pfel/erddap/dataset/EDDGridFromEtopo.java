@@ -47,8 +47,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EDDGridFromEtopo extends EDDGrid {
 
   /** Properties of the datafile */
-  protected static final String fileName =
-      File2.getWebInfParentDirectory() + "WEB-INF/ref/etopo1_ice_g_i2.bin";
+  protected static final String fileName = File2.getRefDirectory() + "etopo1_ice_g_i2.bin";
 
   protected static final double fileMinLon = -180, fileMaxLon = 180;
   protected static final double fileMinLat = -90, fileMaxLat = 90;
