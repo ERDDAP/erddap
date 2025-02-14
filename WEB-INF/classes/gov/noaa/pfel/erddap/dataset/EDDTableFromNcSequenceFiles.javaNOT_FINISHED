@@ -1148,7 +1148,7 @@ cdmSuggestion() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String dir = EDStatic.fullTestCacheDirectory;
+        String dir = EDStatic.config.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "testTableNcSequence";

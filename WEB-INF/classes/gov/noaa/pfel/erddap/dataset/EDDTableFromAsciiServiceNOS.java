@@ -138,7 +138,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     // Note that times are often too wide a range because they are for all observedProperties,
     //  not just the one used by this dataset.
     // This is not tested!
-    if (EDStatic.sosActive && stationDateEstCol >= 0) {
+    if (EDStatic.config.sosActive && stationDateEstCol >= 0) {
       sosOfferingPrefix = "urn:ioos:station:NOAA.NOS.CO-OPS:";
       sosOfferingType = "Station";
       // The index of the dataVariable with the sosOffering outer var (e.g. with
@@ -161,7 +161,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -231,22 +231,23 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0]
+              EDStatic.messages.queryErrorAr[0]
                   + "For this dataset, all queries must include a \"datum=\" constraint.",
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[language]
                   + "For this dataset, all queries must include a \"datum=\" constraint."));
     if (Double.isNaN(beginSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + "Missing time>= constraint.",
-              EDStatic.queryErrorAr[language] + "Missing time>= constraint."));
+              EDStatic.messages.queryErrorAr[0] + "Missing time>= constraint.",
+              EDStatic.messages.queryErrorAr[language] + "Missing time>= constraint."));
     if (Double.isNaN(endSeconds))
       throw new SimpleException(
           EDStatic.bilingual(
               language,
-              EDStatic.queryErrorAr[0] + "If present, the time<= constraint must be valid.",
-              EDStatic.queryErrorAr[language]
+              EDStatic.messages.queryErrorAr[0]
+                  + "If present, the time<= constraint must be valid.",
+              EDStatic.messages.queryErrorAr[language]
                   + "If present, the time<= constraint must be valid."));
     String beginTime =
         Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16); // no seconds

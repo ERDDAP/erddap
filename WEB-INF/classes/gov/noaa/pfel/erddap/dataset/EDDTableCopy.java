@@ -83,7 +83,7 @@ public class EDDTableCopy extends EDDTable {
     String tDefaultDataQuery = null;
     String tDefaultGraphQuery = null;
     String tAddVariablesWhere = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     int tStandardizeWhat = Integer.MAX_VALUE; // not specified by user
     int tnThreads = -1; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
@@ -282,7 +282,7 @@ public class EDDTableCopy extends EDDTable {
         tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE
             ? defaultStandardizeWhat()
             : tStandardizeWhat;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nTableThreads
 
     // check some things
@@ -314,7 +314,7 @@ public class EDDTableCopy extends EDDTable {
     if (reallyVerbose) String2.log("orderExtractBy=" + orderExtractBy);
 
     // ensure copyDatasetDir exists
-    String copyDatasetDir = EDStatic.fullCopyDirectory + datasetID + "/";
+    String copyDatasetDir = EDStatic.config.fullCopyDirectory + datasetID + "/";
     File2.makeDirectory(copyDatasetDir);
 
     // assign copy tasks to taskThread
@@ -466,7 +466,7 @@ public class EDDTableCopy extends EDDTable {
             .ensureTaskThreadIsRunningIfNeeded(); // clients (like this class) are responsible for
         // checking on it
 
-        if (EDStatic.forceSynchronousLoading) {
+        if (EDStatic.config.forceSynchronousLoading) {
           while (EDStatic.lastFinishedTask.get() < taskNumber) {
             Thread.sleep(2000);
           }
@@ -750,7 +750,7 @@ public class EDDTableCopy extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

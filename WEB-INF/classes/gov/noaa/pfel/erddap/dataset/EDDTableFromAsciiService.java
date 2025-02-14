@@ -214,7 +214,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source, without the
    *     outer or inner sequence name), <br>
@@ -299,7 +299,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create structures to hold the sourceAttributes temporarily
@@ -480,7 +480,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

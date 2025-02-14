@@ -69,7 +69,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -230,7 +230,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of "[standard]" will
-   *     be converted to the EDStatic.standardLicense.
+   *     be converted to the EDStatic.messages.standardLicense.
    * @param tAxisVariables is an Object[nAxisVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -296,9 +296,10 @@ public class EDDGridFromEDDTable extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -323,7 +324,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
     if (combinedGlobalAttributes.getString("cdm_data_type") == null)
       combinedGlobalAttributes.add("cdm_data_type", "Grid");
@@ -505,7 +506,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
   /**
    * This gets source data (not yet converted to destination data) from the data source for this
    * EDDGrid. Because this is called by GridDataAccessor, the request won't be the full user's
-   * request, but will be a partial request (for less than EDStatic.partialRequestMaxBytes).
+   * request, but will be a partial request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

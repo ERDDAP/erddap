@@ -22,7 +22,7 @@ public class EDDGridAggregateExistingDimensionHandler extends BaseGridHandler {
 
   private EDDGrid firstChild = null;
   private final StringArray tLocalSourceUrls = new StringArray();
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
   private String tSUServerType = null;

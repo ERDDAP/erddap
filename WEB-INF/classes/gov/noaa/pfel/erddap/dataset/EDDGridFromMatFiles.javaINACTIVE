@@ -233,7 +233,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 Variable var = ncFile.findVariable(tDataVariables[dvi].sourceName());  
                 if (var == null) 
                     throw new RuntimeException(
-                        MessageFormat.format(EDStatic.errorNotFoundIn,
+                        MessageFormat.format(EDStatic.messages.errorNotFoundIn,
                             "dataVariableSourceName=" + tDataVariables[dvi].sourceName(),
                             fileName)); //don't show directory
                 Array array = var.read(selection);
@@ -308,7 +308,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
         //make tables to hold variables
         String decomSampleFileName = FileVisitorDNLS.decompressIfNeeded(sampleFileName, 
-            tFileDir, EDStatic.fullDecompressedGenerateDatasetsXmlDirectory, 
+            tFileDir, EDStatic.config.fullDecompressedGenerateDatasetsXmlDirectory, 
             EDStatic.decompressedCacheMaxGB, false); //reuseExisting
         
         NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
@@ -714,9 +714,9 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".das"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -871,9 +871,9 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".dds"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -916,9 +916,9 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //verified with 
@@ -945,9 +945,9 @@ String csvExpected =
         //.csvp  with data from one file
         String2.log("\n*** .nc test read from one file  .csvp\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csvp"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //verified with 
@@ -959,9 +959,9 @@ csvExpected;
         //.csv0  with data from one file
         String2.log("\n*** .nc test read from one file  .csv0\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv0"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = csvExpected;
 //verified with 
@@ -972,9 +972,9 @@ csvExpected;
         //.csv  with data from several files
         String2.log("\n*** .nc test read from several files\n");       
         userDapQuery = "y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //verified with 
@@ -991,9 +991,9 @@ csvExpected;
         //.tsv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //verified with 
@@ -1020,9 +1020,9 @@ String tsvExpected =
         //.tsvp  with data from one file
         String2.log("\n*** .nc test read from one file  .tsvp\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsvp"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //verified with 
@@ -1034,9 +1034,9 @@ tsvExpected;
         //.tsv0  with data from one file
         String2.log("\n*** .nc test read from one file  .tsv0\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv0"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = tsvExpected;
 //verified with 

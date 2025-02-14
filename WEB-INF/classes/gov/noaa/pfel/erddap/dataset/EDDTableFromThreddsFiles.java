@@ -139,7 +139,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
-        EDStatic.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
+        EDStatic.config.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
         tFileNameRegex,
         tRecursive,
         tPathRegex,
@@ -246,8 +246,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       int lookForLength = lookFor.length();
 
       // mimic the remote dir structure in baseDir
-      String baseDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
-      // e.g. localFile EDStatic.fullCopyDirectory + tDatasetID +  /
+      String baseDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
+      // e.g. localFile EDStatic.config.fullCopyDirectory + tDatasetID +  /
       // WES001/2008/WES001_030MTBD029R00_20080429.nc
       File2.makeDirectory(baseDir);
 
@@ -469,7 +469,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
       EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
-      if (EDStatic.forceSynchronousLoading) {
+      if (EDStatic.config.forceSynchronousLoading) {
         boolean interrupted = false;
         while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
           try {
@@ -836,7 +836,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
     String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
     String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // download the 1 file
     // URL may not have .nc at end.  I think that's okay.  Keep exact file name from URL.

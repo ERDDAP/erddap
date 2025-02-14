@@ -58,7 +58,7 @@ class PersistentTableTests {
     Test.ensureTrue(longest <= 24, "");
 
     // make a new table
-    String name = EDStatic.fullTestCacheDirectory + "testPersistentTable.txt";
+    String name = EDStatic.config.fullTestCacheDirectory + "testPersistentTable.txt";
     File2.delete(name);
     int widths[] = {
       PersistentTable.BOOLEAN_LENGTH,

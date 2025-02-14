@@ -53,10 +53,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosATemp",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,degree_C,\n"
@@ -80,10 +80,10 @@ class EDDTableFromSOSTests {
             null,
             null, // 1612340, NaN, 2008-10-26
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:1612340\"&time>=2008-10-26T00&time<2008-10-26T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosATemp",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,degree_C,\n"
@@ -110,10 +110,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosATemp",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -241,10 +241,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               "&time>=2008-10-26T00&time<=2008-10-26T01&orderBy(\"station_id,time\")",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_nosSosATempAllStations",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected =
           "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n"
               + "degrees_east,degrees_north,,m,UTC,,degree_C,\n"
@@ -294,10 +294,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "longitude,latitude,station_id&orderBy(\"station_id\")",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosATempStationList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id\n"
             + "degrees_east,degrees_north,\n"
@@ -339,10 +339,10 @@ class EDDTableFromSOSTests {
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8447386\""
                 + "&time>=2006-01-01T00&time<=2006-01-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosPressure",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,air_pressure,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,millibars,\n"
@@ -376,10 +376,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9491094\"&time>=2008-09-01T00&time<=2008-09-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosPressure",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,air_pressure,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,millibars,\n"
@@ -407,10 +407,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosPressure",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -539,10 +539,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCond",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,conductivity,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,mS cm-1,\n"
@@ -570,10 +570,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCond",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -687,7 +687,7 @@ class EDDTableFromSOSTests {
                 null,
                 null,
                 preQuery + stations[i] + postQuery,
-                EDStatic.fullTestCacheDirectory,
+                EDStatic.config.fullTestCacheDirectory,
                 eddTable.className() + "_testFindValidStation",
                 ".csv");
         String2.pressEnterToContinue("SUCCESS with station=" + stations[i]);
@@ -736,11 +736,11 @@ class EDDTableFromSOSTests {
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:lc0301\""
                 + "&time>=2013-09-01T00:03&time<=2013-09-01T00:03", // It was hard to find a request
             // that had data
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCurrents",
             ".csv");
 
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,sensor_depth,direction_of_sea_water_velocity,sea_water_speed,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,orientation,sampling_rate,reporting_interval,processing_level,bin_size,first_bin_center,number_of_bins,bin\n"
             + "degrees_east,degrees_north,,m,UTC,,m,degrees_true,cm s-1,degrees_true,degrees,degrees,degree_C,,Hz,s,,m,m,,count\n"
@@ -805,10 +805,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosCurrents",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1099,10 +1099,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosSalinity",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1166,10 +1166,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosSalinity",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         // station 8419317: salinity is low because this is in estuary/river, not in
         // ocean
@@ -1390,10 +1390,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9468756\"&time>=2009-04-06T00&time<=2009-04-06T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWind",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust\n"
             + "degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1\n"
@@ -1421,10 +1421,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWind",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1551,10 +1551,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWLevel",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1661,10 +1661,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9454050\"&time>=2013-09-01T00&time<=2013-09-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWLevel",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         /*
          * //pre 2009-11-15 and post 2009-12-13
@@ -1784,10 +1784,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWTemp",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -1882,10 +1882,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8311062\"&time>=2008-08-01T14:00&time<2008-08-01T15:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWTemp",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         /*
          * "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n"
@@ -1934,10 +1934,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWTemp",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,degree_C,\n"
@@ -1961,10 +1961,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "altitude,longitude,latitude&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWTemp1",
             ".geoJson");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "{\n"
             + "  \"type\": \"MultiPoint\",\n"
@@ -1992,10 +1992,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_nosSosWTemp2",
             ".geoJson");
-    results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "{\n"
             + "  \"type\": \"FeatureCollection\",\n"
@@ -2156,10 +2156,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test1",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -2491,10 +2491,10 @@ class EDDTableFromSOSTests {
                 +
                 // 2019-03-19 was -87.94,29.16 now -87.944,29.108
                 "&longitude=-87.944&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n"
@@ -2524,10 +2524,10 @@ class EDDTableFromSOSTests {
                 // 2019-03-19 was -87.94 now -87.944
                 "&longitude=-87.944&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30"
                 + "&quality_flags=~\"3;.*\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n"
@@ -2554,10 +2554,10 @@ class EDDTableFromSOSTests {
             null,
             "&station_id=~\"(urn:ioos:station:wmo:41035|urn:ioos:station:wmo:42376)\""
                 + "&time>=2008-06-01T14:00&time<=2008-06-01T14:15",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test1b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         // Before revamping 2008-10, test returned values below. NOW DIFFERENT!
         // "urn:ioos:station:wmo:41035,-77.28,34.48,-1.6,2008-06-01T14:00:00Z,223,3.3\n"
@@ -2609,10 +2609,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:41012\"&time>=2008-06-01T00&time<=2008-06-01T01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n"
@@ -2657,10 +2657,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&time>=2008-06-14T00&time<=2008-06-14T02&altitude=-25",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_test3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n"
             + "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n"
@@ -2680,10 +2680,10 @@ class EDDTableFromSOSTests {
             null,
             "station_id,longitude,latitude,altitude,time,zztop"
                 + "&station_id=\"urn:ioos:network:noaa.nws.ndbc:all\"&time=2008-06-14T00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbc_testError",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
   }
 
   /**
@@ -2711,10 +2711,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosSalinity",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -2845,10 +2845,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01&time<2008-08-02",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosSalinity",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n"
             + "degrees_east,degrees_north,,m,UTC,,PSU\n"
@@ -2863,10 +2863,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&time>=2010-05-27T00:00:00Z&time<=2010-05-27T01:00:00Z",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosSalinityAll",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // 46081 appeared 2010-07-20, anrn6 and apqf1 disappeared 2010-10-10
         "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n"
             + "degrees_east,degrees_north,,m,UTC,,PSU\n"
@@ -2914,10 +2914,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:41012\"&time>=2002-06-01",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_LongTime",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
 
     int nb = Math.min(results.length(), 500);
     String2.log(
@@ -3006,10 +3006,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWLevel",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3137,10 +3137,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:55015\"&time>=2008-08-01T14:00&time<=2008-08-01T15:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWLevel",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,station_id,altitude,time,sensor_id,averaging_interval\n"
             + "degrees_east,degrees_north,,m,UTC,,s\n"
@@ -3177,10 +3177,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWTemp",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3307,10 +3307,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14:00&time<2008-08-01T20:00",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWTemp",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // 2021-12-13 lon, lat, alt all changed slightly 2019-03-19 was -0.6, now -1.0
         "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n"
             + "degrees_east,degrees_north,,m,UTC,,degree_C\n"
@@ -3346,22 +3346,22 @@ class EDDTableFromSOSTests {
     EDDTableFromSOS.timeParts = true;
     tName =
         eddTable.makeNewFileForDapQuery(
-            language, null, null, query, EDStatic.fullTestCacheDirectory, name, ".csv");
+            language, null, null, query, EDStatic.config.fullTestCacheDirectory, name, ".csv");
 
     EDDTableFromSOS.timeParts = false;
     tName =
         eddTable.makeNewFileForDapQuery(
-            language, null, null, query, EDStatic.fullTestCacheDirectory, name, ".csv");
+            language, null, null, query, EDStatic.config.fullTestCacheDirectory, name, ".csv");
 
     EDDTableFromSOS.timeParts = true;
     tName =
         eddTable.makeNewFileForDapQuery(
-            language, null, null, query, EDStatic.fullTestCacheDirectory, name, ".csv");
+            language, null, null, query, EDStatic.config.fullTestCacheDirectory, name, ".csv");
 
     EDDTableFromSOS.timeParts = false;
     tName =
         eddTable.makeNewFileForDapQuery(
-            language, null, null, query, EDStatic.fullTestCacheDirectory, name, ".csv");
+            language, null, null, query, EDStatic.config.fullTestCacheDirectory, name, ".csv");
 
     EDDTableFromSOS.timeParts = false;
   }
@@ -3391,10 +3391,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWaves",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3674,10 +3674,10 @@ class EDDTableFromSOSTests {
             null,
             "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14&time<=2008-08-01T17"
                 + "&calculation_method>=\"A\"&calculation_method<=\"Lonh\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWaves",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         // was
         // "longitude,latitude,station_id,altitude,time,SignificantWaveHeight,DominantWavePeriod,AverageWavePeriod,SwellHeight,SwellPeriod,WindWaveHeight,WindWavePeriod,WaterTemperature,WaveDuration,CalculationMethod,SamplingRate,NumberOfFrequencies,CenterFrequencies,Bandwidths,SpectralEnergy,MeanWaveDirectionPeakPeriod,SwellWaveDirection,WindWaveDirection,MeanWaveDirection,PrincipalWaveDirection,PolarCoordinateR1,PolarCoordinateR2,DirectionalWaveParameter,FourierCoefficientA1,FourierCoefficientA2,FourierCoefficientB1,FourierCoefficientB2\n"
@@ -3753,10 +3753,10 @@ class EDDTableFromSOSTests {
                 // UNKNOWN!
                 // but fixed 2010-06-22
                 "&calculation_method=~\"(zztop|Long.*)\"",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWaves",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
     // test error
@@ -3768,10 +3768,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01&time<=2008-09-05",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_ndbcSosWaves30",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       expected = "shouldn't get here";
       Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
@@ -3830,10 +3830,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWind",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "Attributes {\n"
             + " s {\n"
@@ -3986,10 +3986,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"urn:ioos:station:wmo:41004\"&time>=2008-08-01T00:00&time<=2008-08-01T04",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ndbcSosWind",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // 2019-03-19 was alt 5.0, now 4.0
         "longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust,upward_air_velocity\n"
             + "degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1,m s-1\n"
@@ -4031,8 +4031,8 @@ class EDDTableFromSOSTests {
      * now http://oceandata.gmri.org/cgi-bin/sos/V1.0/oostethys_sos.cgi
      */
     int language = 0;
-    boolean oSosActive = EDStatic.sosActive;
-    EDStatic.sosActive = true;
+    boolean oSosActive = EDStatic.config.sosActive;
+    EDStatic.config.sosActive = true;
     String tName, results, expected, userDapQuery;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getgomoosBuoy();
 
@@ -4105,10 +4105,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.datasetID() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         // before 2010-02-11 was
         // "longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n"
@@ -4219,10 +4219,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "longitude,latitude&longitude>-70",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "MapNT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // this changes a little periodically (NOT GOOD, stations have 1 point (which
         // applies to historic data and changes!)
@@ -4390,10 +4390,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "longitude,latitude&time=2007-12-11",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "MapWT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12
@@ -4440,10 +4440,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"A01\"&time=2007-12-11",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "MapWTAV",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12
         // -70.5658->-70.5655 42.5226->42.5232
@@ -4472,7 +4472,7 @@ class EDDTableFromSOSTests {
             + "-70.5652267750436,42.5227725835475,A01,-58.0,2007-12-11T00:00:00Z,NaN,NaN,323.0,NaN,NaN,NaN,NaN,NaN,3.956008,NaN,NaN,NaN,NaN,NaN,NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    EDStatic.sosActive = oSosActive;
+    EDStatic.config.sosActive = oSosActive;
     // debugMode = oDebugMode;
   }
 
@@ -4488,8 +4488,8 @@ class EDDTableFromSOSTests {
     // String2.log("\n*** EDDTableFromSOS.testNeracoos");
     // testVerboseOn();
     int language = 0;
-    boolean oSosActive = EDStatic.sosActive;
-    EDStatic.sosActive = true;
+    boolean oSosActive = EDStatic.config.sosActive;
+    EDStatic.config.sosActive = true;
     String tName, results, expected, userDapQuery;
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.getneracoosSos();
@@ -4557,10 +4557,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.datasetID() + "_Data",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         // before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
         // there was no data for D01 in the response
@@ -4595,10 +4595,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "longitude,latitude,station_id&longitude>-70",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "NeraNT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // "longitude,latitude,station_id\n" +
@@ -4667,10 +4667,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "longitude,latitude&time=2007-12-11",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "NeraWT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         // before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
@@ -4695,10 +4695,10 @@ class EDDTableFromSOSTests {
             null,
             null,
             "&station_id=\"A01\"&time=2007-12-11",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "neraAV",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n"
@@ -4724,7 +4724,7 @@ class EDDTableFromSOSTests {
             + "-70.5652267750436,42.5227725835475,A01,-54.0,2007-12-11T00:00:00Z,NaN,NaN,220.0,NaN,NaN,NaN,NaN,NaN,0.72111,NaN,NaN,NaN,NaN,NaN,NaN\n"
             + "-70.5652267750436,42.5227725835475,A01,-58.0,2007-12-11T00:00:00Z,NaN,NaN,323.0,NaN,NaN,NaN,NaN,NaN,3.956008,NaN,NaN,NaN,NaN,NaN,NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
-    EDStatic.sosActive = oSosActive;
+    EDStatic.config.sosActive = oSosActive;
     // debugMode = oDebugMode;
   }
 
@@ -4741,8 +4741,8 @@ class EDDTableFromSOSTests {
     // testVerboseOn();
 
     int language = 0;
-    boolean oSosActive = EDStatic.sosActive;
-    EDStatic.sosActive = true;
+    boolean oSosActive = EDStatic.config.sosActive;
+    EDStatic.config.sosActive = true;
     // boolean oDebugMode = debugMode;
     // debugMode = true;
     try {
@@ -4757,16 +4757,16 @@ class EDDTableFromSOSTests {
               null,
               null,
               "&time=2009-07-11", // &station_id=\"A01\"",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "tamu",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected = "zztop\n";
       Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     } finally {
-      EDStatic.sosActive = oSosActive;
+      EDStatic.config.sosActive = oSosActive;
       // debugMode = oDebugMode;
     }
   }
@@ -5659,10 +5659,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Entire",
               ".das");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "  wspv {\n"
@@ -5688,10 +5688,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Entire",
               ".dds");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "Dataset {\n"
@@ -5745,10 +5745,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Data1",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude, latitude, altitude, time, station_id, wvht, dpd, wtmp, dewp\n"
@@ -5768,10 +5768,10 @@ class EDDTableFromSOSTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Data2",
               ".csv");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected = "longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n";
       Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -5797,11 +5797,11 @@ class EDDTableFromSOSTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Data3",
               ".csv");
       String2.log("queryTime=" + (System.currentTimeMillis() - time));
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n"
@@ -5837,11 +5837,11 @@ class EDDTableFromSOSTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Data4",
               ".csv");
       String2.log("queryTime=" + (System.currentTimeMillis() - time));
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude,latitude,altitude,station_id,wvht,dpd,wtmp,dewp\n"
@@ -5875,11 +5875,11 @@ class EDDTableFromSOSTests {
               null,
               null,
               userDapQuery,
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Data5",
               ".csv");
       String2.log("queryTime=" + (System.currentTimeMillis() - time));
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "longitude,latitude,wtmp\n"

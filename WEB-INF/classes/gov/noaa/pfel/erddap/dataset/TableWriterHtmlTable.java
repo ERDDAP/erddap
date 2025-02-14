@@ -127,7 +127,7 @@ public class TableWriterHtmlTable extends TableWriter {
     writeUnits = tWriteUnits;
     showFirstNRows = tShowFirstNRows >= 0 ? tShowFirstNRows : Integer.MAX_VALUE;
     tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
-    externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
+    externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
     questionMarkImageUrl = tQuestionMarkImageUrl;
   }
 
@@ -350,7 +350,7 @@ public class TableWriterHtmlTable extends TableWriter {
     }
 
     // write the data
-    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.baseHttpsUrl);
+    boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.config.baseHttpsUrl);
     for (int row = 0; row < showNRows; row++) {
       writer.write("<tr>\n");
       somethingWritten = false;
@@ -378,8 +378,9 @@ public class TableWriterHtmlTable extends TableWriter {
                   // display as a link
                   url = fileAccessBaseUrl[col] + s + fileAccessSuffix[col];
                   boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
+                      url.startsWith(EDStatic.config.baseUrl)
+                          || (baseHttpsUrlIsSomething
+                              && url.startsWith(EDStatic.config.baseHttpsUrl));
                   s =
                       "<a href=\""
                           + XML.encodeAsHTMLAttribute(url)
@@ -392,8 +393,9 @@ public class TableWriterHtmlTable extends TableWriter {
                   // display as a link
                   url = s;
                   boolean isLocal =
-                      url.startsWith(EDStatic.baseUrl)
-                          || (baseHttpsUrlIsSomething && url.startsWith(EDStatic.baseHttpsUrl));
+                      url.startsWith(EDStatic.config.baseUrl)
+                          || (baseHttpsUrlIsSomething
+                              && url.startsWith(EDStatic.config.baseHttpsUrl));
                   s =
                       "<a href=\""
                           + XML.encodeAsHTMLAttribute(url)
@@ -489,7 +491,7 @@ public class TableWriterHtmlTable extends TableWriter {
     if (isMBLimited && !allDataDisplayed)
       writer.write(
           "<span class=\"warningColor\">"
-              + EDStatic.htmlTableMaxMessageAr[language]
+              + EDStatic.messages.htmlTableMaxMessageAr[language]
               + "</span>"
               + (xhtmlMode ? "<br />" : "<br>")
               + "\n");
@@ -566,7 +568,7 @@ public class TableWriterHtmlTable extends TableWriter {
             encode,
             writeUnits,
             tShowFirstNRows,
-            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
+            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile);
     tw.writeAllAndFinish(table);
     tw.close();
   }

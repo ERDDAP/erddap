@@ -962,7 +962,7 @@ class EDDTableFromNcFilesTests {
             + "    String cf_role \"timeseries_id\";\n"
             + "    String ioos_category \"Identifier\";\n"
             + "    String long_name \"Station Identifier\";\n"
-            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
+            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  longitude {\n"
             + "    String _CoordinateAxisType \"Lon\";\n"
@@ -1014,12 +1014,12 @@ class EDDTableFromNcFilesTests {
             + "  common_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Common Name\";\n"
-            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
+            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  species_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Species Name\";\n"
-            + (EDStatic.useSaxParser ? "    String units \"unitless\";\n" : "")
+            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  size {\n"
             + "    Int16 _FillValue 32767;\n"
@@ -1075,7 +1075,9 @@ class EDDTableFromNcFilesTests {
     // today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     expected =
         "/tabledap/erdCinpKfmSFNH.das\";\n"
-            + (EDStatic.useSaxParser ? "    String id \"KFMSizeFrequencyNaturalHabitat\";\n" : "")
+            + (EDStatic.config.useSaxParser
+                ? "    String id \"KFMSizeFrequencyNaturalHabitat\";\n"
+                : "")
             + "    String infoUrl \"https://www.nps.gov/chis/naturescience/index.htm\";\n"
             + "    String institution \"CINP\";\n"
             + "    String keywords \"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n"
@@ -1138,7 +1140,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
@@ -1171,7 +1173,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
@@ -1198,7 +1200,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n"
@@ -1227,7 +1229,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n"
@@ -1256,7 +1258,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : ",degrees_east,degrees_north,m,UTC,,,mm\n")
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n";
@@ -1278,7 +1280,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "longitude,latitude,depth,time,id,species_name,size\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
                 : "degrees_east,degrees_north,m,UTC,,,mm\n")
             + "-120.35,34.05,5.0,2005-07-01T00:00:00Z,San Miguel (Hare Rock),Haliotis rufescens,13\n";
@@ -10895,7 +10897,7 @@ class EDDTableFromNcFilesTests {
     // set hardFlag
     String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
     Math2.sleep(1000);
-    File2.writeToFileUtf8(EDStatic.fullHardFlagDirectory + "testTimeSince19000101", "test");
+    File2.writeToFileUtf8(EDStatic.config.fullHardFlagDirectory + "testTimeSince19000101", "test");
     String2.log(
         "I just set a hardFlag for testTimeSince19000101.\n" + "Now I'm waiting 10 seconds.");
     Math2.sleep(10000);
@@ -10903,7 +10905,7 @@ class EDDTableFromNcFilesTests {
     String tIndex = SSR.getUrlResponseStringUnchanged("http://localhost:8080/erddap/status.html");
     Math2.sleep(5000);
     // read the log file
-    String tLog = File2.readFromFileUtf8(EDStatic.fullLogsDirectory + "log.txt")[1];
+    String tLog = File2.readFromFileUtf8(EDStatic.config.fullLogsDirectory + "log.txt")[1];
     String expected = // ***
         "unloading datasetID=testTimeSince19000101\n"
             + "\\*\\*\\* deleting cached dataset info for datasetID=testTimeSince19000101\n"
@@ -10911,7 +10913,7 @@ class EDDTableFromNcFilesTests {
             + "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n"
             + "\n"
             + "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n"
-            + "LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n"
+            + "LoadDatasets.run EDStatic.config.developmentMode=true ..........T..............\n"
             + "  datasetsRegex=\\(testTimeSince19000101\\) inputStream=null majorLoad=false";
 
     int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 40)));
@@ -12616,7 +12618,7 @@ class EDDTableFromNcFilesTests {
                 "time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,"
                     + "bar,atmp,dewp,vis,ptdy,tide,wspu,wspv&station=\"41006\""
                     + "&time>0."); // random integer will be appended to avoid cached response
-    String baseOut = EDStatic.fullTestCacheDirectory + "EDDTableFromNcFilesTestSpeed";
+    String baseOut = EDStatic.config.fullTestCacheDirectory + "EDDTableFromNcFilesTestSpeed";
     ArrayList al;
     int timeOutSeconds = 120;
     String extensions[] =
@@ -17054,10 +17056,10 @@ class EDDTableFromNcFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             zarr.className() + "_testData",
             ".das");
-    String results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     String expected =
         "Attributes {\n"
             + //
@@ -17184,10 +17186,10 @@ class EDDTableFromNcFilesTests {
             null,
             null,
             "dim0,dim1,dim2,dim3,group_with_dims_var4D&dim0%3E=0&dim0%3C=0&dim3%3E=4&dim3%3C=6&dim2%3E=9&dim2%3C=10",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             zarr.className(),
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "dim0,dim1,dim2,dim3,group_with_dims_var4D\n"
             + //

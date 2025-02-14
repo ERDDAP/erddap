@@ -357,7 +357,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         FileVisitorDNLS.decompressIfNeeded(
             sampleFileName,
             tFileDir,
-            EDStatic.fullDecompressedGenerateDatasetsXmlDirectory,
+            EDStatic.config.fullDecompressedGenerateDatasetsXmlDirectory,
             EDStatic.decompressedCacheMaxGB,
             false); // reuseExisting
     table.readAudioFile(decomSampleFileName, false, true); // getData, addElapsedTimeColumn
@@ -406,7 +406,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
     varName = table.getColumnName(0); // Table.ELAPSED_TIME
     sourceAtts = table.columnAttributes(0);
     addAtts = new Attributes();
-    if (EDStatic.variablesMustHaveIoosCategory) addAtts.set("ioos_category", "Time");
+    if (EDStatic.config.variablesMustHaveIoosCategory) addAtts.set("ioos_category", "Time");
     pa = table.getColumn(0);
     axisSourceTable.addColumn(1, varName, pa, sourceAtts);
     axisAddTable.addColumn(1, varName, pa, addAtts);
@@ -417,7 +417,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
       pa = table.getColumn(col);
       sourceAtts = table.columnAttributes(col);
       addAtts = new Attributes();
-      if (EDStatic.variablesMustHaveIoosCategory) addAtts.set("ioos_category", "Other");
+      if (EDStatic.config.variablesMustHaveIoosCategory) addAtts.set("ioos_category", "Other");
       if (pa.isIntegerType()) {
         addAtts
             .add("colorBarMinimum", Math2.niceDouble(-pa.missingValueAsDouble(), 2))

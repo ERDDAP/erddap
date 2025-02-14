@@ -58,7 +58,7 @@ public class TopLevelHandlerTests {
     context.setMajorLoad(false);
     context.setErddap(new Erddap());
     context.setLastLuceneUpdate(0);
-    context.setDatasetsRegex(EDStatic.datasetsRegex);
+    context.setDatasetsRegex(EDStatic.config.datasetsRegex);
     context.setReallyVerbose(false);
 
     factory = SAXParserFactory.newInstance();
@@ -102,7 +102,7 @@ public class TopLevelHandlerTests {
 
   @Test
   void unusualActivityTest() {
-    assertEquals(EDStatic.unusualActivity, 25);
+    assertEquals(EDStatic.config.unusualActivity, 25);
   }
 
   @Test

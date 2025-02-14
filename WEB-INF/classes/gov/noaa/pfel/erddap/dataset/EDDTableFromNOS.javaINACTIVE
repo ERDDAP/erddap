@@ -236,7 +236,7 @@ public class EDDTableFromNOS extends EDDTable{
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
-     *     will be converted to the EDStatic.standardLicense.
+     *     will be converted to the EDStatic.messages.standardLicense.
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source),
      *    <br>[1]=String destinationName (the name to be presented to the ERDDAP user, 
@@ -337,7 +337,7 @@ public class EDDTableFromNOS extends EDDTable{
         String tLicense = combinedGlobalAttributes.getString("license");
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+                String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
 
 
@@ -511,7 +511,7 @@ public class EDDTableFromNOS extends EDDTable{
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -933,10 +933,10 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNOS.test das dds for entire dataset\n");
-        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".das"); 
         results = String2.annotatedString(File2.directReadFrom88591File(
-            EDStatic.fullTestCacheDirectory + tName));
+            EDStatic.config.fullTestCacheDirectory + tName));
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
 "Attributes {[10]\n" +
@@ -1069,10 +1069,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".dds"); 
         results = String2.annotatedString(File2.directReadFrom88591File(
-            EDStatic.fullTestCacheDirectory + tName));
+            EDStatic.config.fullTestCacheDirectory + tName));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -1101,9 +1101,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.asc test of just station data
         userDapQuery = "longitude,latitude,station_name,station_id" +
             "&longitude=" + tLon + "&latitude=" + tLat; 
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_station1", ".asc"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1123,9 +1123,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.asc test of just station data          REGEX
         userDapQuery = "longitude,latitude,station_name,station_id" +
             "&station_name" + PrimitiveArray.REGEX_OP + "\"P.*e.*\""; 
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_station2", ".asc"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         expected =   
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1182,9 +1182,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
 
         //.asc    test 1 lon,lat point
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_Data", ".asc"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1218,9 +1218,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude>=" + (tLon-0.01) + "&longitude<" + (tLon+0.01) + 
             "&wind_speed>2.2&wind_speed<3.2" +  //wind_speed
             "&latitude=" + tLat + "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_Num", ".csv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , degrees_true\n" +
@@ -1231,9 +1231,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name,wind_speed,wind_from_direction" + 
             "&station_name>\"Prov\"&station_name<\"Prow\"" +
             "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_name", ".csv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_speed, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , m s-1, degrees_true\n" +
@@ -1247,9 +1247,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name,wind_speed,wind_from_direction" + 
             "&station_id>\"8454\"&station_id<\"8455\"" +
             "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_id", ".csv"); 
-        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_speed, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , m s-1, degrees_true\n" +
@@ -1280,10 +1280,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //"&stationID=9411340&time>=1993-09-09&time<=1993-09-11"; //succeeds, including data on 9/9
             "&stationID=9411340&time>=1993-09-09&time<=1993-09-10";  //fails: no data
             //"&stationID=9411340&time=1993-09-09"; //fails: no data
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
-        results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
-        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName));
+        Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +
@@ -1310,10 +1310,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name," +
             "wind_speed,wind_from_direction,wind_speed_of_gust,MaxExceeded,RateExceeded" +
             "&longitude>-125&longitude<-115&latitude>30&latitude<35&time=2006-01-01";
-        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.config.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
-        results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
-        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName));
+        Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +
@@ -1340,9 +1340,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             String tUserDapQuery = "longitude,latitude,time,station_name," +
                 "wind_speed,wind_from_direction,wind_speed_of_gust" +
                 "&longitude=" + tLon + "&latitude=" + tLat + "&time>=" + beginDate + "&time<=2007-05-01"; //>366 days (their limit)
-            tName = wind.makeNewFileForDapQuery(language, null, null, tUserDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = wind.makeNewFileForDapQuery(language, null, null, tUserDapQuery, EDStatic.config.fullTestCacheDirectory, 
                 wind.className() + "_DataTime", ".asc"); 
-            results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+            results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName));
             expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +
@@ -1374,8 +1374,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         //data for mapExample
         tName = wind.makeNewFileForDapQuery(language, null, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-02", 
-            EDStatic.fullTestCacheDirectory, wind.className() + "Map", ".csv");
-        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            EDStatic.config.fullTestCacheDirectory, wind.className() + "Map", ".csv");
+        results = File2.readFromFile(EDStatic.config.fullTestCacheDirectory + tName)[1];
         expected = 
 "longitude, latitude\n" +
 "degrees_east, degrees_north\n" +

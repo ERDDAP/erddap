@@ -97,11 +97,11 @@ public class EmailThread extends Thread {
                 + Calendar2.getCurrentISODateTimeStringLocalTZ());
         Object oar[] =
             SSR.openEmailSession(
-                EDStatic.emailSmtpHost,
-                EDStatic.emailSmtpPort, // throws Exception
-                EDStatic.emailUserName,
-                EDStatic.emailPassword,
-                EDStatic.emailProperties);
+                EDStatic.config.emailSmtpHost,
+                EDStatic.config.emailSmtpPort, // throws Exception
+                EDStatic.config.emailUserName,
+                EDStatic.config.emailPassword,
+                EDStatic.config.emailProperties);
         session = (Session) oar[0];
         smtpTransport = (SMTPTransport) oar[1];
 
@@ -129,7 +129,7 @@ public class EmailThread extends Thread {
             SSR.lowSendEmail(
                 session,
                 smtpTransport,
-                EDStatic.emailFromAddress,
+                EDStatic.config.emailFromAddress,
                 emailOA[0],
                 emailOA[1],
                 emailOA[2]); // toAddresses, subject, content);

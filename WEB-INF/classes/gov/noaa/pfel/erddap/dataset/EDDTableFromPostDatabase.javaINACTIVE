@@ -376,7 +376,7 @@ boolean addTestPostUser = false;
      *
      * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
-     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
@@ -521,9 +521,9 @@ boolean addTestPostUser = false;
             EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postSurg3"); 
  
             //das
-            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
                 tedd.className() + "_ps3_Data", ".das"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -858,9 +858,9 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
                 tedd.className() + "_ps3_Data", ".dds"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -916,8 +916,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1role", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1role", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -929,8 +929,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleLIOD", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1roleLIOD", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             //same expected
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("*** testPostSurg3 1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
@@ -941,8 +941,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleP", ".csv"); 
-                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1roleP", ".csv"); 
+                results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -956,8 +956,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleWP", ".csv"); 
-                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1roleWP", ".csv"); 
+                results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -970,8 +970,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleL", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1roleL", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -985,8 +985,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1rolePDLI", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_1rolePDLI", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -1001,8 +1001,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "longitude,latitude,time&time>=2007-05-01&time<2007-09-01";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_LLT", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_ps3_LLT", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             //String2.log("results=\n" + results.substring(0, Math.min(results.length(), 10000)));
             po = results.indexOf("NaN");
             String2.log("\nresults.length()=" + results.length() + "  NaN po=" + po);
@@ -1030,9 +1030,9 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postDet3"); 
 /* */
             //das
-            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
                 tedd.className() + "_pd3_Data", ".das"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -1220,9 +1220,9 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.config.fullTestCacheDirectory, 
                 tedd.className() + "_pd3_Data", ".dds"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1252,8 +1252,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&unique_tag_id=\"19835\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1tag", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1tag", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
 //the row from the surgery table is
 //"19835, DAVID WELCH, -121.97974, 49.07988, 2007-05-16T22:00:00Z, 2007-05-13T07:00:00Z, NaN, 70.0, 140.0, NaN, NaN, A, A69-1105-AE, , /"SOCKEYE, KOKANEE/", 2008-09-29T23:29:37Z, 90, 30, 0, RANDOM, 0, 2055.0, 204.0, 69.0, INTERNAL, NaN, NaN, NaN, KINTAMA RESEARCH, Hatchery, WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE, ONCORHYNCHUS NERKA, 1.0, CULTUS LAKE, 7991, INCH CREEK HATCHERY, -122.16152, 49.17132, 2007-05-13T07:00:00Z, ADRIAN LADOUCEUR, SHADE, 6.7, NaN\n";
             expected =   
@@ -1270,8 +1270,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1role", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1role", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             //expected = same
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** testPostDet3 1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
@@ -1280,8 +1280,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleLIOD", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1roleLIOD", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             //same expected
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** testPostDet3 1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
@@ -1292,8 +1292,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleP", ".csv"); 
-                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1roleP", ".csv"); 
+                results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -1307,8 +1307,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
-                    EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleWP", ".csv"); 
-                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1roleWP", ".csv"); 
+                results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -1321,8 +1321,8 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleL", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                EDStatic.config.fullTestCacheDirectory, tedd.className() + "_pd3_1roleL", ".csv"); 
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
 String2.log("\n" + results.substring(0, 4000) + "\n");
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, stock, surgery_time, surgery_location, tagger\n" +
@@ -1388,9 +1388,9 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
                 //",stock,surgery_time,surgery_location,tagger" +
                 //"&unique_tag_id=\"1039490\"",
 
-                EDStatic.fullTestCacheDirectory, 
+                EDStatic.config.fullTestCacheDirectory, 
                 tedd.className() + "_pd3_tag", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "unique_tag_id, PI, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, serial_number, stock, surgery_time, surgery_location, tagger\n" +
 ", , degrees_east, degrees_north, UTC, m, , UTC, , , m, , , , , UTC, , \n" +
@@ -1411,7 +1411,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
     public static void testPostSurg3Direct() throws Throwable {
         String2.log("\n*** EDDTableFromPostDatabase.testPostSurg3Direct");
         testVerboseOn();
-        String dir = EDStatic.fullTestCacheDirectory;
+        String dir = EDStatic.config.fullTestCacheDirectory;
         String tName, tQuery, results, expected;
         Table table;
         try {

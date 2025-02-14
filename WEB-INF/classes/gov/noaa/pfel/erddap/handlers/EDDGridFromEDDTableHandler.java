@@ -19,7 +19,7 @@ public class EDDGridFromEDDTableHandler extends BaseGridHandler {
     this.context = context;
   }
 
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tUpdateEveryNMillis = 0;
   private EDDTable tEDDTable = null;
   private int tGapThreshold = 1000;

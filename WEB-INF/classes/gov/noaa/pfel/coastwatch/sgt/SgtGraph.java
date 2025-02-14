@@ -59,8 +59,6 @@ public class SgtGraph {
 
   public static Color DefaultBackgroundColor = new Color(0xCCCCFF); // just the RGB part (no A)
   public final int widenOnePoint = 1; // pixels
-  public static String fullTestCacheDir =
-      "/erddapBPD/cache/_test/"; // EDStatic resets this if needed
 
   /**
    * Constructor. This throws exception if trouble

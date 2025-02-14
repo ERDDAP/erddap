@@ -376,7 +376,7 @@ class EDDTableFromHyraxFilesTests {
       // delete the last file in the collection
       if (deleteCachedInfoAndOneFile) {
         EDDTableFromHyraxFiles.deleteCachedDatasetInfo(id);
-        File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
+        File2.delete(EDStatic.config.fullCopyDirectory + id + "/" + deletedFile);
         Math2.sleep(1000);
       }
 
@@ -386,7 +386,7 @@ class EDDTableFromHyraxFilesTests {
         // String2.pressEnterToContinue(
         // "\n****** BOB! ******\n" +
         // "This test just deleted a file:\n" +
-        // EDStatic.fullCopyDirectory + id + "/" + deletedFile + "\n" +
+        // EDStatic.config.fullCopyDirectory + id + "/" + deletedFile + "\n" +
         // "The background task to re-download it should have already started.\n" +
         // "The remote dataset is really slow.\n" +
         // "Wait for it to finish background tasks.\n\n");
@@ -411,10 +411,10 @@ class EDDTableFromHyraxFilesTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_Entire",
               ".das");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       expected =
           "Attributes {\n"
@@ -589,10 +589,10 @@ class EDDTableFromHyraxFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -622,10 +622,10 @@ class EDDTableFromHyraxFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_stationList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,time,uwnd,vwnd,wspd,upstr,vpstr,nobs\n"
@@ -665,10 +665,10 @@ class EDDTableFromHyraxFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1StationGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,time,upstr,vpstr\n"
             + "degrees_east,degrees_north,UTC,m2/s2,m2/s2\n"

@@ -896,7 +896,7 @@ class EDDTableFromMultidimNcFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "argoFloats";
     if (deleteCachedInfo) EDD.deleteCachedDatasetInfo(id);
@@ -2549,7 +2549,7 @@ class EDDTableFromMultidimNcFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testTreatDimensionsAs";
     if (deleteCachedInfo) EDD.deleteCachedDatasetInfo(id);
@@ -2933,7 +2933,7 @@ class EDDTableFromMultidimNcFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     String id = "testTreatDimensionsAs2";
     if (deleteCachedInfo) EDD.deleteCachedDatasetInfo(id);
@@ -3487,7 +3487,7 @@ class EDDTableFromMultidimNcFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestLong();
 
@@ -3996,7 +3996,7 @@ class EDDTableFromMultidimNcFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     // test the floats work as expected
     float f = String2.parseFloat("-3.4E38");
@@ -4082,7 +4082,7 @@ class EDDTableFromMultidimNcFilesTests {
   void testCharAsString(boolean deleteCachedInfo) throws Throwable {
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     // print dumpString of one of the data files
     // String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir +
     // "nccf/testCharAsString/7900364_prof.nc", "-h"));
@@ -4826,7 +4826,7 @@ class EDDTableFromMultidimNcFilesTests {
   void testScriptOnlyRequest() throws Throwable {
 
     EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles) EDDTestDataset.getTS_ATMP_AAD();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     // edd.makeNewFileForDapQuery(0, null, null, )
     String fileTypeExtension = ".csv";
     String fileName = "testScriptOnlyRequest" + fileTypeExtension;

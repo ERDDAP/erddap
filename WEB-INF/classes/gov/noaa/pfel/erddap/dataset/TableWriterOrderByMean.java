@@ -83,7 +83,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     final String[] cols =
         Table.parseOrderByColumnNamesCsvString(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "orderByMean: ",
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + "orderByMean: ",
             tOrderByCsv);
     orderBy = new String[cols.length];
 
@@ -246,7 +246,10 @@ public class TableWriterOrderByMean extends TableWriterAll {
       int col = table.findColumnNumber(orderBy[k]);
       if (col < 0)
         throw new SimpleException(
-            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByMeanAr)
+            EDStatic.bilingual(
+                    language,
+                    EDStatic.messages.queryErrorAr,
+                    EDStatic.messages.queryErrorOrderByMeanAr)
                 + (language == 0 ? " " : "\n")
                 + "unknown orderBy column="
                 + orderBy[k]
@@ -262,7 +265,9 @@ public class TableWriterOrderByMean extends TableWriterAll {
               if (!(column.isIntegerType() || column.isFloatingPointType())) {
                 throw new SimpleException(
                     EDStatic.bilingual(
-                            language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByMeanAr)
+                            language,
+                            EDStatic.messages.queryErrorAr,
+                            EDStatic.messages.queryErrorOrderByMeanAr)
                         + (language == 0 ? " " : "\n")
                         + "Cannot group numerically for column="
                         + columnName

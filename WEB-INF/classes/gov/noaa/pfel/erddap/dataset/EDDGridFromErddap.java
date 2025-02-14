@@ -82,8 +82,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-    boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
+    boolean tSubscribeToRemoteErddapDataset = EDStatic.config.subscribeToRemoteErddapDataset;
     boolean tRedirect = true;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
@@ -221,7 +221,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -240,11 +241,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     redirect = tRedirect;
     nThreads = tnThreads; // interpret invalid values (like -1) as EDStatic.nGridThreads
     dimensionValuesInMemory = tDimensionValuesInMemory;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles; // tentative. see below
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles; // tentative. see below
 
     // quickRestart
     Attributes quickRestartAttributes = null;
-    if (EDStatic.quickRestart
+    if (EDStatic.config.quickRestart
         && EDStatic.initialLoadDatasets()
         && File2.isFile(quickRestartFullFileName())) {
       // try to do quick initialLoadDatasets()
@@ -324,7 +325,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
           // deal with remote not having ioos_category, but this ERDDAP requiring it
           Attributes tAddAttributes = new Attributes();
-          if (EDStatic.variablesMustHaveIoosCategory
+          if (EDStatic.config.variablesMustHaveIoosCategory
               && tSourceAttributes.getString("ioos_category") == null) {
 
             // guess ioos_category   (alternative is always assign "Unknown")
@@ -360,7 +361,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
           // deal with remote not having ioos_category, but this ERDDAP requiring it
           Attributes tAddAttributes = new Attributes();
-          if (EDStatic.variablesMustHaveIoosCategory
+          if (EDStatic.config.variablesMustHaveIoosCategory
               && tSourceAttributes.getString("ioos_category") == null) {
 
             // guess ioos_category   (alternative is always assign "Unknown")
@@ -568,7 +569,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     int newSize = dad.getSize();
     if (newSize < oldSize)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + "["
@@ -622,7 +623,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     }
     if (oldValues.elementType() != newValues.elementType())
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -636,7 +637,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     // ensure last old value is unchanged
     if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
     throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + msg
               + edvga.destinationName()
@@ -672,7 +673,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
     if (error.length() > 0)
       throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+          EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
               + "\n("
               + edvga.destinationName()
               + " was "
@@ -887,7 +888,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.
@@ -936,16 +937,16 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         throw t instanceof WaitThenTryAgainException
             ? t
             : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n("
-                    + EDStatic.errorFromDataSource
+                    + EDStatic.messages.errorFromDataSource
                     + t
                     + ")",
                 t);
       }
       if (pa.length != axisVariables.length + 1)
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(Details: An unexpected data structure was returned from the source.)");
       results[axisVariables.length + dv] = pa[0];
       if (dv == 0) {
@@ -956,7 +957,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
           String tError = results[av].almostEqual(pa[av + 1]);
           if (tError.length() > 0)
             throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+                EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                     + "\n(Details: The axis values for dataVariable=0,axis="
                     + av
                     + "\ndon't equal the axis values for dataVariable="

@@ -323,7 +323,7 @@ public class EDDTableFromDatabase extends EDDTable {
    *     </ul>
    *     Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
    *     Special case: if combinedGlobalAttributes name="license", any instance of
-   *     value="[standard]" will be converted to the EDStatic.standardLicense.
+   *     value="[standard]" will be converted to the EDStatic.messages.standardLicense.
    * @param tDataVariables is an Object[nDataVariables][3]: <br>
    *     [0]=String sourceName (the name of the data variable in the dataset source), <br>
    *     [1]=String destinationName (the name to be presented to the ERDDAP user, or null to use the
@@ -513,7 +513,7 @@ public class EDDTableFromDatabase extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create dataVariables[]
@@ -730,7 +730,7 @@ public class EDDTableFromDatabase extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -826,8 +826,8 @@ public class EDDTableFromDatabase extends EDDTable {
             throw new SimpleException(
                 EDStatic.bilingual(
                     language,
-                    EDStatic.queryErrorAr[0] + "Invalid syntax for \"" + p + "\".",
-                    EDStatic.queryErrorAr[language]
+                    EDStatic.messages.queryErrorAr[0] + "Invalid syntax for \"" + p + "\".",
+                    EDStatic.messages.queryErrorAr[language]
                         + "Invalid syntax for \""
                         + p
                         + "\".")); // should have been caught already
@@ -840,12 +840,13 @@ public class EDDTableFromDatabase extends EDDTable {
               throw new SimpleException(
                   EDStatic.bilingual(
                       language,
-                      EDStatic.queryErrorAr[0]
+                      EDStatic.messages.queryErrorAr[0]
                           + MessageFormat.format(
-                              EDStatic.queryErrorUnknownVariableAr[0], tQueryOrderBy.get(oi)),
-                      EDStatic.queryErrorAr[language]
+                              EDStatic.messages.queryErrorUnknownVariableAr[0],
+                              tQueryOrderBy.get(oi)),
+                      EDStatic.messages.queryErrorAr[language]
                           + MessageFormat.format(
-                              EDStatic.queryErrorUnknownVariableAr[language],
+                              EDStatic.messages.queryErrorUnknownVariableAr[language],
                               tQueryOrderBy.get(oi))));
             String tSourceName = dataVariableSourceNames()[v];
             tQueryOrderBy.set(oi, tSourceName);
@@ -930,15 +931,15 @@ public class EDDTableFromDatabase extends EDDTable {
         throw new WaitThenTryAgainException(
             EDStatic.bilingual(
                 language,
-                EDStatic.waitThenTryAgainAr[0]
+                EDStatic.messages.waitThenTryAgainAr[0]
                     + "("
-                    + EDStatic.databaseUnableToConnectAr[0]
+                    + EDStatic.messages.databaseUnableToConnectAr[0]
                     + ": "
                     + t
                     + ")",
-                EDStatic.waitThenTryAgainAr[language]
+                EDStatic.messages.waitThenTryAgainAr[language]
                     + "("
-                    + EDStatic.databaseUnableToConnectAr[language]
+                    + EDStatic.messages.databaseUnableToConnectAr[language]
                     + ": "
                     + t
                     + ")"));
@@ -1095,7 +1096,7 @@ public class EDDTableFromDatabase extends EDDTable {
         tableColToRsCol[rv] =
             rs.findColumn(tName); // stored as 1..    throws Throwable if not found
       }
-      int triggerNRows = EDStatic.partialRequestMaxCells / resultsEDVs.length;
+      int triggerNRows = EDStatic.config.partialRequestMaxCells / resultsEDVs.length;
       Table table = makeEmptySourceTable(resultsEDVs, triggerNRows);
       PrimitiveArray paArray[] = new PrimitiveArray[nRv];
       for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
@@ -1149,7 +1150,8 @@ public class EDDTableFromDatabase extends EDDTable {
         if ((paArray[0].size() > 0 && !hasNext) || paArray[0].size() >= triggerNRows) {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
-                "EDDTableFromDatabase.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+                "EDDTableFromDatabase.getDataForDapQuery"
+                    + EDStatic.messages.caughtInterruptedAr[0]);
 
           // convert script columns into data columns
           if (scriptNames != null)
@@ -1200,11 +1202,11 @@ public class EDDTableFromDatabase extends EDDTable {
       // String2.log("EDDTableFromDatabase caught:\n" + msg);
 
       if (msg.indexOf(MustBe.THERE_IS_NO_DATA) >= 0
-          || msg.indexOf(EDStatic.caughtInterruptedAr[0]) >= 0) {
+          || msg.indexOf(EDStatic.messages.caughtInterruptedAr[0]) >= 0) {
         throw t;
       } else {
         // all other errors probably from database
-        throw new Throwable(EDStatic.errorFromDataSource + t, t);
+        throw new Throwable(EDStatic.messages.errorFromDataSource + t, t);
       }
     }
   }
@@ -1729,7 +1731,7 @@ public class EDDTableFromDatabase extends EDDTable {
    * @throws Throwable if trouble
    */
   public static String getCSV(int language, String datasetID) throws Throwable {
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDTableFromDatabase tedd = (EDDTableFromDatabase) oneFromDatasetsXml(null, datasetID);
     String tName =
         tedd.makeNewFileForDapQuery(

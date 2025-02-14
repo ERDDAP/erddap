@@ -33,7 +33,7 @@ class EDDGridLon0360Tests {
     int language = 0;
     String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_nesdisVHNchlaWeekly_Lon0360();
     /* */
@@ -398,7 +398,7 @@ class EDDGridLon0360Tests {
     int language = 0;
     String tName, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getecocast_Lon0360();
     tName =
@@ -448,7 +448,7 @@ class EDDGridLon0360Tests {
     int language = 0;
     String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
 
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettest_etopo180_Lon0360();
 
@@ -697,7 +697,7 @@ class EDDGridLon0360Tests {
     // debugMode = true;
     String tName, userDapQuery, results, expected;
     int po;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDGrid eddGrid;
 
     // test notApplicable (dataset maxLon already <180)

@@ -72,7 +72,10 @@ public class TableWriterJsonl extends TableWriter {
     jsonp = tJsonp;
     if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.errorJsonpFunctionNameAr));
+          EDStatic.bilingual(
+              language,
+              EDStatic.messages.queryErrorAr,
+              EDStatic.messages.errorJsonpFunctionNameAr));
   }
 
   /**

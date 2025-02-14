@@ -28,7 +28,7 @@ class EDDTableCopyTests {
     int language = 0;
 
     String tName, results, expected, expected2, expected3, userDapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
     // String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
     userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
@@ -566,10 +566,10 @@ class EDDTableCopyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -595,10 +595,10 @@ class EDDTableCopyTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -621,10 +621,10 @@ class EDDTableCopyTests {
             null,
             null,
             "pi&distinct()",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet1Var",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     String2.log(results);
     expected = "pi\n" + "\n" + "BARRY BEREJIKIAN\n" + "CEDAR CHITTENDEN\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
@@ -641,10 +641,10 @@ class EDDTableCopyTests {
             null,
             null,
             "pi,common_name&distinct()",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet2var",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = // this will change
         "pi,common_name\n"
             + ",\n"
@@ -684,10 +684,10 @@ class EDDTableCopyTests {
             null,
             null,
             "pi,common_name,surgery_id&distinct()",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet3var",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "pi,common_name,surgery_id\n" + ",,\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
@@ -709,10 +709,10 @@ class EDDTableCopyTests {
             null,
             null,
             "&pi=\"BARRY BEREJIKIAN\"&common_name=\"STEELHEAD\"&surgery_id=2846",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_postDet1tag",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n"
@@ -735,10 +735,10 @@ class EDDTableCopyTests {
             null,
             null,
             tQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_peb_constrained",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n"
             + "degrees_east,degrees_north,UTC,,,,,,\n"

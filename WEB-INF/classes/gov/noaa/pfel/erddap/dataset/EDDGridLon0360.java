@@ -81,7 +81,7 @@ public class EDDGridLon0360 extends EDDGrid {
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
     boolean tAccessibleViaWMS = true;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -239,7 +239,8 @@ public class EDDGridLon0360 extends EDDGrid {
     setAccessibleTo(tAccessibleTo);
     setGraphsAccessibleTo(tGraphsAccessibleTo);
     if (!tAccessibleViaWMS)
-      accessibleViaWMS = String2.canonical(MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
+      accessibleViaWMS =
+          String2.canonical(MessageFormat.format(EDStatic.messages.noXxxAr[0], "WMS"));
     onChange = tOnChange;
     fgdcFile = tFgdcFile;
     iso19115File = tIso19115File;
@@ -283,10 +284,11 @@ public class EDDGridLon0360 extends EDDGrid {
       tChildDataset = oChildDataset;
     }
     // for rest of constructor, use temporary, stable tChildDataset reference.
-    // String2.log(">> accessibleViaFiles " + EDStatic.filesActive + " " + tAccessibleViaFiles + " "
+    // String2.log(">> accessibleViaFiles " + EDStatic.config.filesActive + " " +
+    // tAccessibleViaFiles + " "
     // + tChildDataset.accessibleViaFiles);
     accessibleViaFiles =
-        EDStatic.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
+        EDStatic.config.filesActive && tAccessibleViaFiles && tChildDataset.accessibleViaFiles;
 
     // UNUSUAL: if valid value not specified, copy from childDataset
     setReloadEveryNMinutes(
@@ -517,7 +519,7 @@ public class EDDGridLon0360 extends EDDGrid {
       if (tChildDataset == null) {
         EDD.requestReloadASAP(localChildDatasetID);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local datasetID="
                 + localChildDatasetID
                 + " not found)");
@@ -633,7 +635,7 @@ public class EDDGridLon0360 extends EDDGrid {
   /**
    * This gets data (not yet standardized) from the data source for this EDDGrid. Because this is
    * called by GridDataAccessor, the request won't be the full user's request, but will be a partial
-   * request (for less than EDStatic.partialRequestMaxBytes).
+   * request (for less than EDStatic.config.partialRequestMaxBytes).
    *
    * @param language the index of the selected language
    * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null.

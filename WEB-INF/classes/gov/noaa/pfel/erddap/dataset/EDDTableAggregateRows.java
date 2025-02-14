@@ -280,7 +280,7 @@ public class EDDTableAggregateRows extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // specify what sourceCanConstrain
@@ -535,7 +535,7 @@ public class EDDTableAggregateRows extends EDDTable {
       if (tChild == null) {
         EDD.requestReloadASAP(localChildrenID[c]);
         throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr)
+            EDStatic.simpleBilingual(language, EDStatic.messages.waitThenTryAgainAr)
                 + "\n(underlying local child["
                 + c
                 + "] datasetID="
@@ -552,7 +552,7 @@ public class EDDTableAggregateRows extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

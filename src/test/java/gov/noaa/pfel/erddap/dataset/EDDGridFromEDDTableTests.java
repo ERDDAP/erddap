@@ -215,7 +215,7 @@ class EDDGridFromEDDTableTests {
     // String2.log("\n*** EDDGridFromEDDTable.testBasic\n");
     // testVerboseOn();
     String tName, results, expected;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
     int po;
     int language = 0;
     EDDGrid edd = (EDDGrid) EDDTestDataset.gettestGridFromTable();

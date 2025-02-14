@@ -27,7 +27,7 @@ public class LoadDatasetsTests {
     loadDatasets =
         new LoadDatasets(
             new Erddap(),
-            EDStatic.datasetsRegex,
+            EDStatic.config.datasetsRegex,
             File2.getBufferedInputStream(pathToDatasetsXml),
             true);
     loadDatasets.run();
@@ -47,7 +47,7 @@ public class LoadDatasetsTests {
     loadDatasets =
         new LoadDatasets(
             new Erddap(),
-            EDStatic.datasetsRegex,
+            EDStatic.config.datasetsRegex,
             File2.getBufferedInputStream(pathToDatasetsXml),
             true);
     loadDatasets.run();

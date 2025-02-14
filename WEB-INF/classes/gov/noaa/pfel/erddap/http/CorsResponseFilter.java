@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
-/** Add CORS headers to the response if EDStatic.enableCors is true. */
+/** Add CORS headers to the response if EDStatic.config.enableCors is true. */
 @WebFilter("/*")
 public class CorsResponseFilter implements Filter {
   public static final String DEFAULT_ALLOW_HEADERS =
@@ -24,7 +24,7 @@ public class CorsResponseFilter implements Filter {
   public void doFilter(
       ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
       throws IOException, ServletException {
-    if (EDStatic.enableCors) {
+    if (EDStatic.config.enableCors) {
       HttpServletRequest request = (HttpServletRequest) servletRequest;
       HttpServletResponse response = (HttpServletResponse) servletResponse;
       String requestOrigin = StringUtils.trim(request.getHeader("Origin"));
@@ -32,7 +32,7 @@ public class CorsResponseFilter implements Filter {
         requestOrigin = null;
       }
 
-      if (EDStatic.corsAllowOrigin == null || EDStatic.corsAllowOrigin.length == 0) {
+      if (EDStatic.config.corsAllowOrigin == null || EDStatic.config.corsAllowOrigin.length == 0) {
         // If corsAllowOrigin is not set, any origin is allowed
         if (String2.isSomething(requestOrigin)) {
           response.setHeader("Access-Control-Allow-Origin", requestOrigin);
@@ -43,7 +43,8 @@ public class CorsResponseFilter implements Filter {
         // If corsAllowedOrigin is set, make sure the request origin was provided and is in the
         // corsAllowedOrigin list
         if (String2.isSomething(requestOrigin)) {
-          if (Arrays.asList(EDStatic.corsAllowOrigin).contains(requestOrigin.toLowerCase())) {
+          if (Arrays.asList(EDStatic.config.corsAllowOrigin)
+              .contains(requestOrigin.toLowerCase())) {
             response.setHeader("Access-Control-Allow-Origin", requestOrigin);
           } else {
             response.setHeader(
@@ -55,7 +56,7 @@ public class CorsResponseFilter implements Filter {
       }
 
       response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      response.setHeader("Access-Control-Allow-Headers", EDStatic.corsAllowHeaders);
+      response.setHeader("Access-Control-Allow-Headers", EDStatic.config.corsAllowHeaders);
 
       if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);

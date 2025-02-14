@@ -56,10 +56,10 @@ class EDDTableFromThreddsFilesTests {
               null,
               null,
               "",
-              EDStatic.fullTestCacheDirectory,
+              EDStatic.config.fullTestCacheDirectory,
               eddTable.className() + "_ShipEntire",
               ".das");
-      results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+      results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
       // String2.log(results);
       boolean with = false; // 2014-01-09 several lines disappeared, 2016-09-16 returned, ...
       // disappeared,
@@ -701,10 +701,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ShipEntire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -749,10 +749,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_ShipCruiseList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "cruise_id\n" + "\n" + "Cruise_id undefined for now\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -766,10 +766,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Ship1StationGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "time,latitude,longitude,airPressure,airTemperature,flag\n"
@@ -1231,10 +1231,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Attributes {\n"
@@ -1378,10 +1378,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_Entire",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -1408,10 +1408,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_stationList",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station\n"
@@ -1460,10 +1460,10 @@ class EDDTableFromThreddsFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_1StationGTLT",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     // one depth, by hand via DAP form: (note that depth is already negative!)
     // Lat, 37.13015 Time=1122592440 depth=-12 Lon=-122.361253

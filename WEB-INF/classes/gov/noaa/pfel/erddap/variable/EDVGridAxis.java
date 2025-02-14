@@ -557,14 +557,17 @@ public class EDVGridAxis extends EDV {
    */
   public String spacingDescription(int language) {
     boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
-    if (sourceValues().size() == 1) return "(" + EDStatic.EDDGridJustOneValueAr[language] + ")";
+    if (sourceValues().size() == 1)
+      return "(" + EDStatic.messages.EDDGridJustOneValueAr[language] + ")";
     String s =
         isTimeStamp
             ? Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000)
             : "" + Math2.floatToDouble(averageSpacing());
     return s
         + " ("
-        + (isEvenlySpaced() ? EDStatic.EDDGridEvenAr[language] : EDStatic.EDDGridUnevenAr[language])
+        + (isEvenlySpaced()
+            ? EDStatic.messages.EDDGridEvenAr[language]
+            : EDStatic.messages.EDDGridUnevenAr[language])
         + ")";
   }
 
@@ -603,7 +606,9 @@ public class EDVGridAxis extends EDV {
         + tUnits
         + "<br>"
         + "with "
-        + (isEvenlySpaced() ? EDStatic.EDDGridEvenAr[language] : EDStatic.EDDGridUnevenAr[language])
+        + (isEvenlySpaced()
+            ? EDStatic.messages.EDDGridEvenAr[language]
+            : EDStatic.messages.EDDGridUnevenAr[language])
         + " spacing "
         + (isEvenlySpaced() ? "" : "~")
         + "= "

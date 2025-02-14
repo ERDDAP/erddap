@@ -586,7 +586,7 @@ public class EDDTableFromCassandra extends EDDTable {
     String tLicense = combinedGlobalAttributes.getString("license");
     if (tLicense != null)
       combinedGlobalAttributes.set(
-          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
+          "license", String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
     combinedGlobalAttributes.removeValue("\"null\"");
 
     // create dataVariables[]
@@ -1149,7 +1149,7 @@ public class EDDTableFromCassandra extends EDDTable {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter
@@ -1412,7 +1412,7 @@ public class EDDTableFromCassandra extends EDDTable {
       rvToResultsEDV[rv] = dataVariables[resultsDVI[rv]];
     }
     // triggerNRows + 1000 since lists expand, so hard to catch exactly
-    int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
+    int triggerNRows = EDStatic.config.partialRequestMaxCells / nRv;
     Table table = makeEmptySourceTable(rvToResultsEDV, triggerNRows + 1000);
 
     // make a call to Cassandra for each row in pkdTable
@@ -1422,7 +1422,7 @@ public class EDDTableFromCassandra extends EDDTable {
 
       if (Thread.currentThread().isInterrupted())
         throw new SimpleException(
-            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.caughtInterruptedAr[0]);
+            "EDDTableFromCassandra.getDataForDapQuery" + EDStatic.messages.caughtInterruptedAr[0]);
 
       // Make the BoundStatement
       // ***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
@@ -1601,7 +1601,7 @@ public class EDDTableFromCassandra extends EDDTable {
       if (rvToResultsEDV[rv].sourceDataPAType() == PAType.STRING)
         rvToTypeCodec[rv] = CodecRegistry.DEFAULT_INSTANCE.codecFor(rvToCassDataType[rv]);
     }
-    int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
+    int triggerNRows = EDStatic.config.partialRequestMaxCells / nRv;
     PrimitiveArray paArray[] = new PrimitiveArray[nRv];
     for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
 

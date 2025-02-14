@@ -595,7 +595,7 @@ class EDDTableFromFileNamesTests {
     // debugMode = true;
     // testVerboseOn();
     int language = 0;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected, query, tName;
 
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestFileNames();
@@ -853,7 +853,7 @@ class EDDTableFromFileNamesTests {
   void testAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected, query, tName;
     int language = 0;
 
@@ -1380,7 +1380,7 @@ class EDDTableFromFileNamesTests {
     String2.log(msg);
     Test.ensureTrue(time < expTime * 2, "Too slow: " + msg);
     Object o2[];
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     Table fileTable;
     StringArray subDirs;
     int fileTableNRows;

@@ -17,7 +17,7 @@ public class EDDGridFromEtopoHandler extends StateWithParent {
   }
 
   private boolean tAccessibleViaWMS = true;
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tnThreads = -1;
   private boolean tDimensionValuesInMemory = true;
 

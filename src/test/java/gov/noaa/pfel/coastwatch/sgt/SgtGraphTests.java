@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -46,10 +47,7 @@ class SgtGraphTests {
     SgtGraph sgtGraph =
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
-    String imageDir =
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/";
+    String imageDir = EDStatic.config.imageDir;
 
     int width = 400;
     int height = 600;
@@ -249,10 +247,7 @@ class SgtGraphTests {
     SgtGraph sgtGraph =
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
-    String imageDir =
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/";
+    String imageDir = EDStatic.config.imageDir;
     String baseImageName =
         "SgtGraph_testDiverseGraphs_" + (xIsLogAxis ? "X" : "") + (yIsLogAxis ? "Y" : "");
 
@@ -1025,10 +1020,7 @@ class SgtGraphTests {
     SgtGraph sgtGraph =
         new SgtGraph("SansSerif"); // "DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe
     // choice
-    String imageDir =
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/";
+    String imageDir = EDStatic.config.imageDir;
 
     int width = 400;
     int height = 300;
@@ -1052,7 +1044,7 @@ class SgtGraphTests {
         new CompoundColorMap(
             // String baseDir, String palette, String scale, double minData,
             // double maxData, int nSections, boolean continuous, String resultDir)
-            File2.getWebInfParentDirectory() + "WEB-INF/cptfiles/",
+            EDStatic.config.fullPaletteDirectory,
             "Rainbow",
             "linear",
             0,

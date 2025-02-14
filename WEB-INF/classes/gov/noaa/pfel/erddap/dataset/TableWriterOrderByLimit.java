@@ -58,13 +58,19 @@ public class TableWriterOrderByLimit extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByLimitAr)
               + (language == 0 ? " " : "\n")
               + "No CSV.");
     String csv[] = String2.split(tOrderByCsv, ',');
     if (csv.length == 0)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByLimitAr)
               + (language == 0 ? " " : "\n")
               + "CSV.length=0.");
 
@@ -76,7 +82,10 @@ public class TableWriterOrderByLimit extends TableWriterAll {
     limitN = String2.parseInt(csv[csv.length - 1]);
     if (limitN <= 0 || limitN == Integer.MAX_VALUE)
       throw new SimpleException(
-          EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr)
+          EDStatic.bilingual(
+                  language,
+                  EDStatic.messages.queryErrorAr,
+                  EDStatic.messages.queryErrorOrderByLimitAr)
               + (language == 0 ? " " : "\n")
               + "limit="
               + csv[csv.length - 1]

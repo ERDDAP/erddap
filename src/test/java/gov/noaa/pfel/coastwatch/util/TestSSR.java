@@ -10,6 +10,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -120,19 +121,15 @@ public class TestSSR {
 
     // dosShell
     String2.log("test dosShell");
-    String tempGif =
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "images/temp.gif";
+    String tempGif = EDStatic.config.imageDir + "temp.gif";
     File2.delete(tempGif);
     try {
       Test.ensureEqual(
           String2.toNewlineString(
               dosShell(
                       "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" "
-                          + File2.getWebInfParentDirectory()
-                          + // with / separator and / at the end
-                          "images/subtitle.jpg "
+                          + EDStatic.config.imageDir
+                          + "subtitle.jpg "
                           + tempGif,
                       10)
                   .toArray()),
@@ -172,7 +169,7 @@ public class TestSSR {
 
     // zip without directory info
     String2.log("\n* test zip without dir info" + testMB);
-    String zipDir = File2.getWebInfParentDirectory() + "temp/";
+    String zipDir = SSR.getTempDirectory();
     String zipName = "TestSSR.zip";
     String fileName = "TestSSR.txt";
     // write a longText file
@@ -229,7 +226,7 @@ public class TestSSR {
     // gzip without directory info
     for (int rep = 0; rep < 2; rep++) {
       String2.log("\n* test gzip without dir info" + testMB);
-      String gzipDir = File2.getWebInfParentDirectory() + "temp/";
+      String gzipDir = SSR.getTempDirectory();
       String gzipName = "TestSSRG.txt.gz";
       fileName = "TestSSRG.txt";
       // write a longText file

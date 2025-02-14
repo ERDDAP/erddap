@@ -129,7 +129,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         tDataVariables,
         tReloadEveryNMinutes,
         tUpdateEveryNMillis,
-        EDStatic.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
+        EDStatic.config.fullCopyDirectory + tDatasetID + "/", // force fileDir to be the copyDir
         tFileNameRegex,
         tRecursive,
         tPathRegex,
@@ -215,8 +215,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       int lookForLength = lookFor.length();
 
       // mimic the remote dir structure in baseDir
-      String baseDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
-      // e.g. localFile EDStatic.fullCopyDirectory + tDatasetID +  /
+      String baseDir = EDStatic.config.fullCopyDirectory + tDatasetID + "/";
+      // e.g. localFile EDStatic.config.fullCopyDirectory + tDatasetID +  /
       // 1987/M07/pentad_19870710_v11l35flk.nc.gz
       File2.makeDirectory(baseDir);
 
@@ -397,7 +397,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
       EDStatic.lastAssignedTask.put(tDatasetID, taskNumber);
       EDStatic.ensureTaskThreadIsRunningIfNeeded(); // ensure info is up-to-date
 
-      if (EDStatic.forceSynchronousLoading) {
+      if (EDStatic.config.forceSynchronousLoading) {
         boolean interrupted = false;
         while (!interrupted && EDStatic.lastFinishedTask.get() < taskNumber) {
           try {

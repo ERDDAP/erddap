@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import ucar.units.Unit;
-import ucar.units.UnitFormat;
 
 /**
  * This class has static methods to convert units from one standard to another. An old local copy of
@@ -1114,9 +1113,6 @@ public class Units2 {
     return udunitsToUcum(ud1).equals(udunitsToUcum(ud2));
   }
 
-  // ******************************
-  public static final UnitFormat unitFormat = ucar.units.StandardUnitFormat.instance();
-
   /**
    * This tries to return a standardized (lightly canonical) version of a UDUnits string. This is
    * mostly about standardizing syntax and converting synonyms to 1 option. This is just a standard
@@ -1140,7 +1136,7 @@ public class Units2 {
    */
   public static String safeCanonicalUdunitsString(String udunits) {
     try {
-      Unit units = unitFormat.parse(udunits);
+      Unit units = ucar.units.StandardUnitFormat.instance().parse(udunits);
       return units == null ? null : units.getCanonicalString();
     } catch (Exception e) {
       return null;

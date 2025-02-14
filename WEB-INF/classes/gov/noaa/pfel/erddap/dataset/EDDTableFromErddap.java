@@ -75,9 +75,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     int tReloadEveryNMinutes = Integer.MAX_VALUE;
     String tAccessibleTo = null;
     String tGraphsAccessibleTo = null;
-    boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+    boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
     StringArray tOnChange = new StringArray();
-    boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
+    boolean tSubscribeToRemoteErddapDataset = EDStatic.config.subscribeToRemoteErddapDataset;
     boolean tRedirect = true;
     String tFgdcFile = null;
     String tIso19115File = null;
@@ -222,7 +222,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
     subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
     redirect = tRedirect;
-    accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles; // tentative. see below
+    accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles; // tentative. see below
 
     // erddap support all constraints:
     sourceNeedsExpandedFP_EQ = false;
@@ -234,7 +234,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     Table sourceTable = new Table();
     sourceGlobalAttributes = sourceTable.globalAttributes();
     boolean qrMode =
-        EDStatic.quickRestart
+        EDStatic.config.quickRestart
             && EDStatic.initialLoadDatasets()
             && File2.isFile(
                 quickRestartFullFileName()); // goofy: name is .nc but contents are NCCSV
@@ -357,7 +357,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
       // deal with remote not having ioos_category, but this ERDDAP requiring it
       Attributes tAddAtt = new Attributes();
-      if (EDStatic.variablesMustHaveIoosCategory && tSourceAtt.getString("ioos_category") == null) {
+      if (EDStatic.config.variablesMustHaveIoosCategory
+          && tSourceAtt.getString("ioos_category") == null) {
 
         // guess ioos_category   (alternative is always assign "Unknown")
         Attributes tAtts =
@@ -574,7 +575,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
    *
    * @param language the index of the selected language
    * @param loggedInAs the user's login name if logged in (or null if not logged in).
-   * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+   * @param requestUrl the part of the user's request, after EDStatic.config.baseUrl, before '?'.
    * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be
    *     null.
    * @param tableWriter

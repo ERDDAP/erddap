@@ -629,7 +629,7 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
     String tDatasetID = "cass_bobKeyspace_bobTable";
@@ -1207,7 +1207,7 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query = null;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     String tDatasetID = "cassTestFraction";
 
@@ -1310,7 +1310,7 @@ class EDDTableFromCassandraTests {
     int language = 0;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
     String tDatasetID = "cass1Device";
@@ -1718,7 +1718,7 @@ class EDDTableFromCassandraTests {
     // debugMode = true;
     long cumTime = 0;
     String query;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected;
     int po;
     String tDatasetID = "cass_bobKeyspace_staticTest";

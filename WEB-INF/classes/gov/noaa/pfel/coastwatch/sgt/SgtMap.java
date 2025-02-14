@@ -125,10 +125,7 @@ public class SgtMap {
    * (?=f|h|i|l|c) files. The files are from the GSHHS project
    * (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html). landMaskDir should have slash at end.
    */
-  public static final String fullRefDirectory =
-      File2.getWebInfParentDirectory()
-          + // with / separator and / at the end
-          "WEB-INF/ref/";
+  public static final String fullRefDirectory = File2.getRefDirectory();
 
   // some of this information is in DataSet.properties too, see BAthymFGDC
   public static final String etopoFileName = "etopo1_ice_g_i2.bin";

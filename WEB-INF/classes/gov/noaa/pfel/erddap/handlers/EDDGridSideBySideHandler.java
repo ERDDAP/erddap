@@ -21,7 +21,7 @@ public class EDDGridSideBySideHandler extends BaseGridHandler {
   }
 
   private final ArrayList<EDDGrid> tChildDatasets = new ArrayList<>();
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
   private int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
   @Override

@@ -444,7 +444,7 @@ class EDDTableFromParquetFilesTests {
   @ValueSource(booleans = {true, false})
   void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
     String tName, results, tResults, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
     String id = "testParquet";

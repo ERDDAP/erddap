@@ -29,7 +29,7 @@ class EDDTableFromEDDGridTests {
     String id = "erdMBsstdmday_AsATable";
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTableFromEDDGrid.oneFromDatasetsXml(null, id);
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     /* */
     // das
     tName =

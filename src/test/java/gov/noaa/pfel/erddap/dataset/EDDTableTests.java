@@ -29,7 +29,7 @@ class EDDTableTests {
   void testSosNdbcMet() throws Throwable {
     String2.log("\n*** EDDTable.testSosNdbcMet()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2141,10 +2141,10 @@ class EDDTableTests {
             null,
             null,
             dapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos5png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
 
     // *** #6 all stations, 1 obsProp,
     String sosQuery6csv = // no obsProp
@@ -2209,10 +2209,10 @@ class EDDTableTests {
             null,
             null,
             dapQuery6[0],
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_testSos6png",
             ".png");
-    Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+    Test.displayInBrowser("file://" + EDStatic.config.fullTestCacheDirectory + fileName);
     /*  */
 
   }
@@ -2223,7 +2223,7 @@ class EDDTableTests {
   void testSosCurrents() throws Throwable {
     String2.log("\n*** EDDTable.testSosCurrents()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "ndbcSosCurrents");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2450,7 +2450,7 @@ class EDDTableTests {
   void testSosGomoos() throws Throwable {
     String2.log("\n*** EDDTable.testSosGomoos()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "gomoosBuoy");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2496,7 +2496,7 @@ class EDDTableTests {
   void testSosOostethys() throws Throwable {
     String2.log("\n*** EDDTable.testSosOostethys()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String sosQuery, fileName, results, expected;
     int language = 0;
     java.io.StringWriter writer;
@@ -2668,7 +2668,7 @@ class EDDTableTests {
   @org.junit.jupiter.api.Test
   void testCharacters() throws Throwable {
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettest_chars();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected;
     int language = 0;
 
@@ -2693,12 +2693,12 @@ class EDDTableTests {
   void testLargeResults() throws Throwable {
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String testDir = EDStatic.fullTestCacheDirectory;
+    String testDir = EDStatic.config.fullTestCacheDirectory;
 
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableColumnarAscii();
 
     // This is to force there to be multiple passes for each column when writing the nc file.
-    EDStatic.partialRequestMaxCells = 5;
+    EDStatic.config.partialRequestMaxCells = 5;
     userDapQuery = "";
     tName =
         eddTable.makeNewFileForDapQuery(
@@ -2747,6 +2747,6 @@ class EDDTableTests {
     results = results.substring(resultsStart);
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-    EDStatic.partialRequestMaxCells = EDStatic.DEFAULT_partialRequestMaxCells;
+    EDStatic.config.partialRequestMaxCells = EDStatic.config.DEFAULT_partialRequestMaxCells;
   }
 }

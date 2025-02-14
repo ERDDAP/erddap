@@ -538,7 +538,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         FileVisitorDNLS.decompressIfNeeded(
             sampleFileName,
             tFileDir,
-            EDStatic.fullDecompressedGenerateDatasetsXmlDirectory,
+            EDStatic.config.fullDecompressedGenerateDatasetsXmlDirectory,
             EDStatic.decompressedCacheMaxGB,
             false); // reuseExisting
     String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");

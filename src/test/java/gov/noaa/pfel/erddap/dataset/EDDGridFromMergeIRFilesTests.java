@@ -182,7 +182,7 @@ class EDDGridFromMergeIRFilesTests {
     EDDGrid edd = (EDDGrid) EDDTestDataset.getmergeIR();
     EDDGrid eddZ = (EDDGrid) EDDTestDataset.getmergeIRZ();
     EDDGrid eddgz = (EDDGrid) EDDTestDataset.getmergeIRgz();
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     String tName, results, expected, dapQuery;
     int po;
 
