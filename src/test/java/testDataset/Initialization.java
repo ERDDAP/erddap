@@ -15,5 +15,6 @@ public class Initialization {
     EDD.debugMode = true;
     SgtMap.fontFamily = "SansSerif";
     EDStatic.config.useSaxParser = true;
+    EDStatic.testingDontDestroy = true;
   }
 }

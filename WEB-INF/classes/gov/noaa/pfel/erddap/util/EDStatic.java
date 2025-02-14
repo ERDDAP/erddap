@@ -561,6 +561,11 @@ public class EDStatic {
 
   private static boolean initialized = false;
 
+  // When doing JettyTests, the servlet gets torn down and so it calls EDStatic.destroy.
+  // However we aren't actually done testing at that point, so we don't want to call destroy
+  // during testing. This should only be set to tru during testing.
+  public static boolean testingDontDestroy = false;
+
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined
@@ -2344,6 +2349,9 @@ public class EDStatic {
    * tomcat is stopped.
    */
   public static void destroy() {
+    if (testingDontDestroy) {
+      return;
+    }
     try {
       if (subscriptions != null) {
         subscriptions.close();
