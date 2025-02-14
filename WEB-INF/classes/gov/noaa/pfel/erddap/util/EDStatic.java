@@ -571,6 +571,8 @@ public class EDStatic {
    */
   static {
     String webInfParentDirectory = File2.getWebInfParentDirectory();
+    // route calls to a logger to com.cohort.util.String2Log
+    String2.setupCommonsLogging(-1);
     init(webInfParentDirectory);
   }
 
@@ -582,8 +584,6 @@ public class EDStatic {
     String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
-      // route calls to a logger to com.cohort.util.String2Log
-      String2.setupCommonsLogging(-1);
       SSR.erddapVersion = erddapVersion;
 
       String eol = String2.lineSeparator;
@@ -2347,6 +2347,7 @@ public class EDStatic {
     try {
       if (subscriptions != null) {
         subscriptions.close();
+        subscriptions = null;
       }
       String names[] = String2.toStringArray(runningThreads.keySet().toArray());
       String2.log(
