@@ -12888,6 +12888,68 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String fileNameAndExt =
         requestUrl.length() <= datasetIDStartsAt ? "" : requestUrl.substring(datasetIDStartsAt);
 
+    if (EDStatic.redirectDocumentationToGitHubIo && "download".equals(protocol)) {
+      if (fileNameAndExt != null) {
+        switch (fileNameAndExt) {
+          case "AccessToPrivateDatasets.html":
+            sendRedirect(response, "https://erddap.github.io/docs/user/AccessToPrivateDatasets");
+            return;
+          case "changes.html":
+            sendRedirect(response, "https://erddap.github.io/changes");
+            return;
+          case "EDDTableFromEML.html":
+            sendRedirect(response, "https://erddap.github.io/docs/server-admin/EDDTableFromEML");
+            return;
+          case "grids.html":
+            sendRedirect(response, "https://erddap.github.io/docs/server-admin/scaling");
+            return;
+          case "NCCSV_1.00.html":
+            sendRedirect(response, "https://erddap.github.io/docs/user/nccsv-1.00");
+            return;
+          case "NCCSV_1.10.html":
+            sendRedirect(response, "https://erddap.github.io/docs/user/nccsv-1.10");
+            return;
+          case "NCCSV.html":
+            sendRedirect(response, "https://erddap.github.io/docs/user/nccsv-1.20");
+            return;
+          case "ScriptCalendar2.html":
+            sendRedirect(
+                response,
+                "https://erddap.github.io/docs/dokka/-e-r-d-d-a-p/com.cohort.util/-script-calendar2");
+            return;
+          case "ScriptMath.html":
+            sendRedirect(
+                response,
+                "https://erddap.github.io/docs/dokka/-e-r-d-d-a-p/com.cohort.util/-script-math");
+            return;
+          case "ScriptMath2.html":
+            sendRedirect(
+                response,
+                "https://erddap.github.io/docs/dokka/-e-r-d-d-a-p/com.cohort.util/-script-math2");
+            return;
+          case "ScriptRow.html":
+            sendRedirect(
+                response,
+                "https://erddap.github.io/docs/dokka/-e-r-d-d-a-p/com.cohort.util/-script-row");
+            return;
+          case "ScriptString2.html":
+            sendRedirect(
+                response,
+                "https://erddap.github.io/docs/dokka/-e-r-d-d-a-p/com.cohort.util/-script-string2");
+            return;
+          case "SearchMultipleERDDAPs.html":
+            sendRedirect(response, "https://erddap.github.io/SearchMultipleERDDAPs.html");
+            return;
+          case "setup.html":
+            sendRedirect(response, "https://erddap.github.io/docs/server-admin/deploy-install");
+            return;
+          case "setupDatasetsXml.html":
+            sendRedirect(response, "https://erddap.github.io/docs/server-admin/datasets");
+            return;
+        }
+      }
+    }
+
     String ext = File2.getExtension(fileNameAndExt);
     String fileName = fileNameAndExt.substring(0, fileNameAndExt.length() - ext.length());
     OutputStreamSource outSource =

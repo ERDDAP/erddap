@@ -1840,6 +1840,8 @@ public class EDStatic {
   private static Map<String, String> gdxAcronymsHashMap, gdxVariableNamesHashMap;
   public static boolean useSharedWatchService = true;
 
+  public static boolean redirectDocumentationToGitHubIo = true;
+
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined
@@ -2317,6 +2319,8 @@ public class EDStatic {
       warName = getSetupEVString(setup, ev, "warName", "erddap");
       useSharedWatchService = getSetupEVBoolean(setup, ev, "useSharedWatchService", true);
       deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
+      redirectDocumentationToGitHubIo =
+          getSetupEVBoolean(setup, ev, "redirectDocumentationToGitHubIo", true);
 
       // use Lucence?
       if (searchEngine.equals("lucene")) {
