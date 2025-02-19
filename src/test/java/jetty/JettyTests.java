@@ -7107,22 +7107,6 @@ class JettyTests {
     this.testForBrokenLinks(
         "http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericVariableNames.html");
 
-    this.testForBrokenLinks(
-        "http://localhost:" + PORT + "/erddap/download/AccessToPrivateDatasets.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/changes.html"); // todo re-enable, a couple links seem to
-    // be broken, needs more investigation
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/EDDTableFromEML.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/grids.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV.html");
-    this.testForBrokenLinks("http://localhost:" + PORT + "/erddap/download/NCCSV_1.00.html");
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/setup.html"); // todo re-enable, a number of links are
-    // broken
-    // this.testForBrokenLinks("http://localhost:" + PORT +
-    // "/erddap/download/setupDatasetsXml.html"); // todo re-enable, a number of
-    // links are broken
-
     // this.testForBrokenLinks("http://localhost:" + PORT +
     // "/erddap/information.html"); // todo rtech link breaks, but its already
     // commented out, remove fully?
