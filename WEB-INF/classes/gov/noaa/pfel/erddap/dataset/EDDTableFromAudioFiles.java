@@ -323,7 +323,7 @@ public class EDDTableFromAudioFiles extends EDDTableFromFiles {
               destPA.elementType() != PAType.STRING, // addColorBarMinMax
               true)); // tryToFindLLAT
       if (c > 0) {
-        if (EDStatic.variablesMustHaveIoosCategory)
+        if (EDStatic.config.variablesMustHaveIoosCategory)
           dataAddTable.columnAttributes(c).set("ioos_category", "Other");
         if (sourcePA.isIntegerType()) {
           dataAddTable

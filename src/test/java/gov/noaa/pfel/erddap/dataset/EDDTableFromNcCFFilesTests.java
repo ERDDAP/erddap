@@ -1176,10 +1176,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits\n"
@@ -1198,10 +1198,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1b",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "line_station\n"
@@ -1237,10 +1237,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1Kevin20130109a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "traj,obs,time,longitude,latitude,temp,ve,vn\n"
@@ -1258,10 +1258,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_test1Kevin20130109a",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "traj,obs,time,longitude,latitude,temp,ve,vn\n"
@@ -1293,7 +1293,7 @@ class EDDTableFromNcCFFilesTests {
     // boolean oTableDebug = Table.debugMode; Table.debugMode = true;
 
     String tName, results, expected, userDapQuery;
-    String dir = EDStatic.fullTestCacheDirectory;
+    String dir = EDStatic.config.fullTestCacheDirectory;
     EDDTable eddTable = (EDDTable) EDDTestDataset.getpmelTaoMonPos();
     Table table;
 
@@ -1409,7 +1409,7 @@ class EDDTableFromNcCFFilesTests {
           "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.",
           "");
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(
           eddTable, null, "Dataset should be null from exception during construction.");
     }
@@ -1423,7 +1423,7 @@ class EDDTableFromNcCFFilesTests {
           "java.lang.RuntimeException: datasets.xml error on line #\\d{1,7}: An <att> tag doesn't have a \"name\" attribute.",
           "");
     }
-    if (EDStatic.useSaxParser) {
+    if (EDStatic.config.useSaxParser) {
       Test.ensureEqual(
           eddTable, null, "Dataset should be null from exception during construction.");
     }
@@ -1480,10 +1480,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger",
             ".dds");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "Dataset {\n"
@@ -1510,10 +1510,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             "",
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger",
             ".das");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     boolean simplifiedTimeBlocks =
         results.indexOf("Float64 actual_range 56463.676934285555, 56683.652143735904") > -1;
@@ -1706,10 +1706,10 @@ class EDDTableFromNcCFFilesTests {
             + "    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n"
             + "    String creator_name \"Neal Pettigrew\";\n"
             + "    String creator_url \"http://gyre.umeoce.maine.edu\";\n"
-            + (EDStatic.useSaxParser ? "    Int32 delta_t 30;\n" : "")
+            + (EDStatic.config.useSaxParser ? "    Int32 delta_t 30;\n" : "")
             + "    String depth_datum \"Sea Level\";\n"
             + "    Float64 Easternmost_Easting -70.42755;\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 ending_julian_day_number 56683.64583333349;\n"
                     + "    String ending_julian_day_string \"2014-01-26 15:30:00\";\n"
                 : "")
@@ -1739,7 +1739,7 @@ class EDDTableFromNcCFFilesTests {
             + "    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n"
             + "    String institution_url \"http://gyre.umeoce.maine.edu\";\n"
             + "    Int32 instrument_number 0;\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    String julian_day_convention \"Julian date convention begins at 00:00:00 UTC on 17 November 1858 AD\";\n"
                 : "")
             + "    String keywords \"accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Optics > Turbidity, Earth Science > Oceans > Ocean Pressure > Sea Level Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, Earth Science > Oceans > Ocean Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Density, Earth Science > Oceans > Salinity/Density > Salinity, height, level, maine, marine, name, o2, ocean, oceanography, oceans, optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds\";\n"
@@ -1779,7 +1779,7 @@ class EDDTableFromNcCFFilesTests {
             + "    String sourceUrl \"\\(local files\\)\";\n"
             + "    Float64 Southernmost_Northing 43.18019;\n"
             + "    String standard_name_vocabulary \"CF-1.6\";\n"
-            + (EDStatic.useSaxParser
+            + (EDStatic.config.useSaxParser
                 ? "    Float64 starting_julian_day_number 56463.66666666651;\n"
                     + "    String starting_julian_day_string \"2013-06-20 16:00:00\";\n"
                 : "")
@@ -1810,10 +1810,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger1",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n"
@@ -1831,10 +1831,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger2",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected =
         "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n"
@@ -1851,10 +1851,10 @@ class EDDTableFromNcCFFilesTests {
             null,
             null,
             userDapQuery,
-            EDStatic.fullTestCacheDirectory,
+            EDStatic.config.fullTestCacheDirectory,
             eddTable.className() + "_bridger3",
             ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = "station\n" + "\n" + "B01\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -1882,7 +1882,7 @@ class EDDTableFromNcCFFilesTests {
     // testVerboseOn();
     int language = 0;
     String tName, results, expected, userDapQuery;
-    String testCacheDir = EDStatic.fullTestCacheDirectory;
+    String testCacheDir = EDStatic.config.fullTestCacheDirectory;
     String scalarVars = ",crs,WODf,WODfd";
 
     // From Ajay Krishnan, NCEI/NODC, from

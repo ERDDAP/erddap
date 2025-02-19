@@ -39,7 +39,7 @@ class EDDGridSideBySideTests {
     int language = 0;
     String tName, baseName, results, expected;
     String dapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
 
     // *** NDBC is also IMPORTANT UNIQUE TEST of >1 variable in a file
     EDDGrid qsWind8 = (EDDGrid) EDDTestDataset.geterdQSwind8day();
@@ -281,7 +281,7 @@ class EDDGridSideBySideTests {
     int language = 0;
     String tName, results, expected;
     String dapQuery;
-    String tDir = EDStatic.fullTestCacheDirectory;
+    String tDir = EDStatic.config.fullTestCacheDirectory;
     Test.ensureEqual(Calendar2.epochSecondsToIsoStringTZ(1.1306736E9), "2005-10-30T12:00:00Z", "");
 
     EDDGrid qs1 = (EDDGrid) EDDTestDataset.geterdQSstress1day();
@@ -394,9 +394,9 @@ class EDDGridSideBySideTests {
      * EDDGrid qsx1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStaux1day");
      * dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
      * tName = qsx1.makeNewFileForDapQuery(language, null, null, dapQuery,
-     * EDStatic.fullTestCacheDirectory,
+     * EDStatic.config.fullTestCacheDirectory,
      * qsz1.className() + "sbsx", ".csv");
-     * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+     * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
      * tName);
      * //String2.log(results);
      * expected =
@@ -415,9 +415,9 @@ class EDDGridSideBySideTests {
      * EDDGrid qsy1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStauy1day");
      * dapQuery = "tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
      * tName = qsy1.makeNewFileForDapQuery(language, null, null, dapQuery,
-     * EDStatic.fullTestCacheDirectory,
+     * EDStatic.config.fullTestCacheDirectory,
      * qsy1.className() + "sbsy", ".csv");
-     * results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory +
+     * results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory +
      * tName);
      * //String2.log(results);
      * expected =
@@ -493,8 +493,14 @@ class EDDGridSideBySideTests {
         "analysed_sst_a[1][(10):100:(12)][(-20):100:(-18)],analysed_sst_b[1][(10):100:(12)][(-20):100:(-18)]";
     tName =
         eddGrid.makeNewFileForDapQuery(
-            language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, "sbsDupNames", ".csv");
-    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            language,
+            null,
+            null,
+            dapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            "sbsDupNames",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     // String2.log(results);
     expected = // note that all _a and _b values are the same
         "time,latitude,longitude,analysed_sst_a,analysed_sst_b\n"

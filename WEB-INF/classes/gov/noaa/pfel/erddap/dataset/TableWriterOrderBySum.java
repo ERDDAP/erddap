@@ -76,7 +76,7 @@ public class TableWriterOrderBySum extends TableWriterAll {
     otherTableWriter = tOtherTableWriter;
     final String[] cols =
         Table.parseOrderByColumnNamesCsvString(
-            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "orderBySum: ",
+            EDStatic.simpleBilingual(language, EDStatic.messages.queryErrorAr) + "orderBySum: ",
             tOrderByCsv);
     orderBy = new String[cols.length];
 
@@ -229,7 +229,10 @@ public class TableWriterOrderBySum extends TableWriterAll {
       int col = table.findColumnNumber(orderBy[k]);
       if (col < 0)
         throw new SimpleException(
-            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderBySumAr)
+            EDStatic.bilingual(
+                    language,
+                    EDStatic.messages.queryErrorAr,
+                    EDStatic.messages.queryErrorOrderBySumAr)
                 + (language == 0 ? " " : "\n")
                 + "Unknown orderBy column="
                 + orderBy[k]
@@ -245,7 +248,9 @@ public class TableWriterOrderBySum extends TableWriterAll {
               if (!(column.isIntegerType() || column.isFloatingPointType())) {
                 throw new SimpleException(
                     EDStatic.bilingual(
-                            language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderBySumAr)
+                            language,
+                            EDStatic.messages.queryErrorAr,
+                            EDStatic.messages.queryErrorOrderBySumAr)
                         + (language == 0 ? " " : "\n")
                         + "Cannot group numerically for column="
                         + columnName

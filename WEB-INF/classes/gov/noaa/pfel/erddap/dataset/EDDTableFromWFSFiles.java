@@ -158,7 +158,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
    *     examples in JavaDocs for generateDatasetsXml.
    * @param tRowElementXPath the element (XPath style) identifying a row, If null or "", the default
    *     will be used: /wfs:FeatureCollection/gml:featureMember .
-   * @param fullFileName recommended: EDStatic.fullCopyDirectory + datasetID + "/data.tsv"
+   * @param fullFileName recommended: EDStatic.config.fullCopyDirectory + datasetID + "/data.tsv"
    * @return error string ("" if no error)
    */
   public static String downloadData(
@@ -367,7 +367,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
                 dataSourceTable.globalAttributes(),
                 // another cdm_data_type could be better; this is good for now
                 hasLonLatTime(dataAddTable) ? "Point" : "Other",
-                EDStatic.fullCopyDirectory + tDatasetID + "/",
+                EDStatic.config.fullCopyDirectory + tDatasetID + "/",
                 externalAddGlobalAttributes,
                 suggestKeywords(dataSourceTable, dataAddTable)));
     dataAddTable.globalAttributes().set("rowElementXPath", tRowElementXPath);
@@ -395,7 +395,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             // "    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" + //irrelevant/overridden
             // "    <recursive>false</recursive>\n" +            //irrelevant/overridden
             // "    <pathRegex>.*</pathRegex>\n" +               //irrelevant/overridden
-            // "    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
+            // "    <fileDir>" + EDStatic.config.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             "    <metadataFrom>last</metadataFrom>\n"
             + "    <standardizeWhat>"
             + tStandardizeWhat

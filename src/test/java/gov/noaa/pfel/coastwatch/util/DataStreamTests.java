@@ -21,10 +21,7 @@ class DataStreamTests {
   @org.junit.jupiter.api.Test
   void basicTest() throws Exception {
     // write bytes to a file
-    String fileName =
-        File2.getWebInfParentDirectory()
-            + // with / separator and / at the end
-            "WEB-INF/temp/TestDataStream";
+    String fileName = SSR.getTempDirectory() + "TestDataStream";
     DataOutputStream dos =
         new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
     byte buffer[] = new byte[128];

@@ -13,8 +13,8 @@ public class EDDTableFromErddapHandler extends BaseTableHandler {
     super(saxHandler, datasetID, completeState);
   }
 
-  private boolean tAccessibleViaFiles = EDStatic.defaultAccessibleViaFiles;
-  private boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
+  private boolean tAccessibleViaFiles = EDStatic.config.defaultAccessibleViaFiles;
+  private boolean tSubscribeToRemoteErddapDataset = EDStatic.config.subscribeToRemoteErddapDataset;
   private boolean tRedirect = true;
   private String tLocalSourceUrl = null;
 

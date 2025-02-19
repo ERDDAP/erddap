@@ -561,17 +561,17 @@ public class HtmlWidgets {
         // "copy text/image to clipboard" buttons
         "\ndata:image/png;base64\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
         + "');return false};navigator.clipboard.writeText("
         + "document.getElementById('"
         + img2ID
         + "').getAttribute('data-src')"
         + // reuse img2Url data from img2ID.data-src
         ");\" style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.copyTextToClipboardAr[language]
+        + EDStatic.messages.copyTextToClipboardAr[language]
         + "</button>\n"
         + "<button type=\"button\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('"
-        + EDStatic.copyToClipboardNotAvailableAr[language]
+        + EDStatic.messages.copyToClipboardNotAvailableAr[language]
         + "');return false};"
         + " var img = new Image();"
         + " img.onload = () => {"
@@ -587,7 +587,7 @@ public class HtmlWidgets {
         + // reuse img2Url data from img2ID.data-src
         " return false;\""
         + " style=\"cursor: pointer; cursor: hand;\" >"
-        + EDStatic.copyImageToClipboardAr[language]
+        + EDStatic.messages.copyImageToClipboardAr[language]
         + "</button>";
   }
 
@@ -1593,7 +1593,7 @@ public class HtmlWidgets {
    * htmlTooltipScript (see above) must be already in the document. See tip().
    *
    * @param imageRef the reference for the question mark image (e.g.,
-   *     EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile)
+   *     EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.messages.questionMarkImageFile)
    * @param alt the alt text to be displayed, e.g., "?" (not yet encoded)
    * @param html the html tooltip text, e.g., "Hi,<br>
    *     there!". It needs explicit br tags to set window width correctly. For plain text, use

@@ -196,7 +196,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         sourceConVars,
         sourceConOps,
         sourceConValues,
-        EDStatic.includeNcCFSubsetVariables);
+        EDStatic.config.includeNcCFSubsetVariables);
     // } else {
     //    //Just return a table with globalAtts, columns with atts, but no rows.
     //    table.readNcMetadata(decompFullName, sourceDataNames.toArray(), sourceDataTypes,
